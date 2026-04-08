@@ -1,22 +1,28 @@
-# 🧠 Velantrim Exocortex (MVP)
+# 🧠 Velantrim Exocortex
 
-Minimal explainable AI system with trace-based truth validation.
+**Velantrim** — это детерминированная, объяснимая когнитивная система (exocortex), в которой истина контролируется структурой, а не генерацией.
+
+Система построена по принципу:
+> **Trace → Validation → Answer**  
+> (а не “сначала ответ → потом объяснение”)
 
 ---
 
-## ⚙️ Architecture
+# ⚙️ Core Pipeline
 
 ```text
 Query
  ↓
-Retrieve (scoring)
+Tokenize
+ ↓
+Retrieve (scoring / BM25-lite)
  ↓
 Facts Pack (confidence)
  ↓
-TRACE
+TRACE (provenance)
  ↓
-Guardian
+Guardian (structure validation)
  ↓
-Truth Gate
+Truth Gate (truth validation)
  ↓
 Answer + Trace
