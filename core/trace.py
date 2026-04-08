@@ -1,4 +1,3 @@
-```python
 # core/trace.py
 
 from typing import List, Dict, Any
