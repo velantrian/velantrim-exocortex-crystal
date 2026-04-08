@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 from core.trace import build_trace
+from core.memory import store_fact  # ← добавлено
 
 # =========================
 # 📦 MOCK DATABASE
@@ -56,12 +57,19 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
 # =========================
 def build_facts_pack(
     retrieved: List[Dict[str, Any]],
-    query: str  # оставлено для будущей логики (например weighting)
+    query: str
 ) -> Dict[str, List[Dict[str, Any]]]:
     facts: List[Dict[str, Any]] = []
 
     for item in retrieved:
         confidence = round(item.get("_score", 0.5), 3)
+
+        # 🔴 ВАЖНО: сохраняем факт в память
+        store_fact({
+            "fact_id": item["id"],
+            "claim": item["text"],
+            "source": item["source"]
+        })
 
         facts.append({
             "fact_id": item["id"],
