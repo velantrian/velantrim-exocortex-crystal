@@ -18,6 +18,7 @@ def tokenize(text: str) -> List[str]:
     return [word.lower().strip(".,!?;:()[]{}\"'") for word in text.split() if word.strip()]
 
 
+# used later for BM25 / graph score normalization
 def normalize_score(score: float, max_score: float) -> float:
     if max_score <= 0:
         return 0.0
@@ -53,7 +54,10 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
 # =========================
 # 📦 FACTS PACK
 # =========================
-def build_facts_pack(retrieved: List[Dict[str, Any]], query: str) -> Dict[str, List[Dict[str, Any]]]:
+def build_facts_pack(
+    retrieved: List[Dict[str, Any]],
+    query: str  # оставлено для будущей логики (например weighting)
+) -> Dict[str, List[Dict[str, Any]]]:
     facts: List[Dict[str, Any]] = []
 
     for item in retrieved:
@@ -76,7 +80,10 @@ def build_facts_pack(retrieved: List[Dict[str, Any]], query: str) -> Dict[str, L
 # =========================
 # 🛡 GUARDIAN
 # =========================
-def guardian(facts_pack: Dict[str, List[Dict[str, Any]]], trace: List[Dict[str, Any]]) -> bool:
+def guardian(
+    facts_pack: Dict[str, List[Dict[str, Any]]],
+    trace: List[Dict[str, Any]]
+) -> bool:
     facts = facts_pack.get("facts", [])
 
     if not facts or not trace:
@@ -118,7 +125,10 @@ def truth_gate(facts_pack: Dict[str, List[Dict[str, Any]]]) -> bool:
 # =========================
 # 🧠 GENERATION
 # =========================
-def generate_answer(facts_pack: Dict[str, List[Dict[str, Any]]], trace: List[Dict[str, Any]]) -> Dict[str, Any]:
+def generate_answer(
+    facts_pack: Dict[str, List[Dict[str, Any]]],
+    trace: List[Dict[str, Any]]
+) -> Dict[str, Any]:
     answer = " ".join(f["claim"] for f in facts_pack["facts"])
     return {
         "answer": answer,
