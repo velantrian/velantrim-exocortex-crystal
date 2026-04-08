@@ -1,7 +1,7 @@
 # core/pipeline.py
 
 from typing import List, Dict
-
+from core.trace import build_trace
 
 # =========================
 # 📦 MOCK DATABASE
@@ -60,9 +60,13 @@ def generate_answer(facts_pack: Dict) -> str:
 def run(query: str) -> str:
     retrieved = retrieve(query)
     facts_pack = build_facts_pack(retrieved)
+    trace = build_trace(retrieved)
 
-    if not truth_gate(facts_pack):
-        return "⚠️ Not enough data."
+    if not trace:
+    return "⚠️ No trace. Answer blocked."
+
+if not truth_gate(facts_pack):
+    return "⚠️ Not enough data."
 
     return generate_answer(facts_pack)
 
