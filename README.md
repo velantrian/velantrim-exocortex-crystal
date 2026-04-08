@@ -1,14 +1,19 @@
 # 🧠 Velantrim Exocortex
 
-**Velantrim** — это детерминированная, объяснимая когнитивная система (exocortex), в которой истина контролируется структурой, а не генерацией.
+---
 
-Система построена по принципу:
+## 🇬🇧 EN
+
+**Velantrim** is a truth-first, explainable cognitive system (exocortex) where truth is controlled by structure, not by generation.
+
+The system follows the principle:
+
 > **Trace → Validation → Answer**  
-> (а не “сначала ответ → потом объяснение”)
+> not “first answer, then explain”.
 
 ---
 
-# ⚙️ Core Pipeline
+### ⚙️ Core Pipeline
 
 ```text
 Query
