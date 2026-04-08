@@ -1,2 +1,22 @@
-# velantrim-exocortex-crystal
-Truth-first exocortex architecture. Graph-based memory, retrieval, and controlled generation with Facts Pack and Truth Gate. Designed for transparent, low-noise AI systems without hallucinations.
+# 🧠 Velantrim Exocortex (MVP)
+
+Minimal explainable AI system with trace-based truth validation.
+
+---
+
+## ⚙️ Architecture
+
+```text
+Query
+ ↓
+Retrieve (scoring)
+ ↓
+Facts Pack (confidence)
+ ↓
+TRACE
+ ↓
+Guardian
+ ↓
+Truth Gate
+ ↓
+Answer + Trace
