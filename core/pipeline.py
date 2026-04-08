@@ -26,20 +26,24 @@ def normalize_score(score: float, max_score: float) -> float:
 
 
 # =========================
-# 🔍 RETRIEVAL
+# 🔍 RETRIEVAL (BM25-lite)
 # =========================
-def retrieve(query: str, k: int = 3) -> List[Dict[str, str]]:
+def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
     query_words = tokenize(query)
     scored: List[Dict[str, Any]] = []
 
     for item in DATABASE:
         text_words = tokenize(item["text"])
+
         overlap = len(set(query_words) & set(text_words))
+        length_penalty = len(text_words)
+
+        score = overlap / (length_penalty + 1)
 
         if overlap > 0:
             scored.append({
                 **item,
-                "_score": overlap
+                "_score": score
             })
 
     scored.sort(key=lambda x: x["_score"], reverse=True)
@@ -50,21 +54,21 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, str]]:
 # 📦 FACTS PACK
 # =========================
 def build_facts_pack(retrieved: List[Dict[str, Any]], query: str) -> Dict[str, List[Dict[str, Any]]]:
-    query_words = set(tokenize(query))
     facts: List[Dict[str, Any]] = []
 
     for item in retrieved:
-        text_words = set(tokenize(item["text"]))
-        overlap = len(query_words & text_words)
-        confidence = normalize_score(overlap, max(1, len(query_words)))
+        confidence = round(item.get("_score", 0.5), 3)
 
         facts.append({
             "fact_id": item["id"],
             "claim": item["text"],
             "source": item["source"],
-            "confidence": round(max(0.5, confidence), 2),
+            "confidence": confidence,
             "truth_status": "UNVERIFIED",
         })
+
+    # сортировка по уверенности
+    facts.sort(key=lambda x: x["confidence"], reverse=True)
 
     return {"facts": facts}
 
@@ -75,10 +79,7 @@ def build_facts_pack(retrieved: List[Dict[str, Any]], query: str) -> Dict[str, L
 def guardian(facts_pack: Dict[str, List[Dict[str, Any]]], trace: List[Dict[str, Any]]) -> bool:
     facts = facts_pack.get("facts", [])
 
-    if not facts:
-        return False
-
-    if not trace:
+    if not facts or not trace:
         return False
 
     if len(trace) != len(facts):
