@@ -14,9 +14,12 @@
 #   - Подключить LLM для generate_answer()
 #   - ESM: полная матрица переходов между состояниями
 
+import logging
 from typing import List, Dict, Any, Optional
 from core.trace import build_trace, promote_trace, format_trace
-from core.memory import store_fact, transition_esm
+from core.memory import store_fact, get_fact, transition_esm
+
+logger = logging.getLogger(__name__)
 
 # ─── MOCK DATABASE (L3 заглушка) ──────────────────────────────────────────────
 # В продакшене: Neo4j / KuzuDB граф. Единственный источник истины.
@@ -88,16 +91,21 @@ def build_facts_pack(
     Собрать FactsPack из retrieved фактов.
     Каждый факт сохраняется в L0/L1 память через store_fact().
     truth_status = UNVERIFIED до прохождения TruthGate.
+    epistemic_state берётся из retrieve() — владелец начального ESM-состояния.
     """
     facts: List[Dict[str, Any]] = []
 
     for item in retrieved:
+        fact_id = item.get("id") or item.get("fact_id")
+        if not fact_id:
+            continue  # согласованно с build_trace: пропускаем без id
+
         fact = {
-            "fact_id":         item["id"],
+            "fact_id":         fact_id,
             "claim":           item["text"],
             "source":          item["source"],
             "confidence":      item["_score"],
-            "epistemic_state": "Observed",
+            "epistemic_state": item["epistemic_state"],  # из retrieve(), не дублируем
             "truth_status":    "UNVERIFIED",
         }
         # L0/L1 сохранение
@@ -132,7 +140,7 @@ def guardian(
         return False, "FactsPack пустой"
     if not trace:
         return False, "Trace пустой — провенанс отсутствует"
-    if len(trace) != len(facts):
+    if len(trace) < len(facts):
         return False, f"Несоответствие: {len(facts)} фактов, {len(trace)} trace-элементов"
 
     for fact in facts:
@@ -159,7 +167,8 @@ def truth_gate(
     """
     Верифицирует факты перед записью в L3.
     Возвращает (passed: bool, reason: str | None).
-    При passed=True: facts переводятся в ESM-состояние Validated.
+    Переход фактов в ESM-состояние Validated выполняется вызывающей стороной
+    (run()) при passed=True. truth_gate() только принимает решение о верификации.
     """
     facts = facts_pack.get("facts", [])
 
@@ -195,7 +204,12 @@ def generate_answer(
         if f.get("epistemic_state") in {"Validated", "Supported"}
     ]
     if not validated_facts:
-        validated_facts = facts_pack["facts"]  # fallback
+        logger.warning(
+            "generate_answer: нет фактов в состоянии Validated/Supported — "
+            "fallback на все %d факта(ов)",
+            len(facts_pack["facts"]),
+        )
+        validated_facts = facts_pack["facts"]
 
     answer = " | ".join(f["claim"] for f in validated_facts)
 
@@ -239,11 +253,13 @@ def run(query: str) -> Dict[str, Any]:
     if not gate_ok:
         return _blocked(f"TruthGate: {gate_reason}", query, facts_pack, trace)
 
-    # 6. ESM: перевести факты и trace в Validated
+    # 6. ESM: перевести факты и trace в Validated через transition_esm (единственный путь)
     for fact in facts_pack["facts"]:
-        fact["epistemic_state"] = "Validated"
-        fact["truth_status"]    = "VERIFIED"
         transition_esm(fact["fact_id"], "Validated")
+        updated = get_fact(fact["fact_id"])
+        if updated:
+            fact["epistemic_state"] = updated["epistemic_state"]
+        fact["truth_status"] = "VERIFIED"
 
     promote_trace(trace, "Validated")
 
@@ -270,6 +286,7 @@ def _blocked(
 # ─── TEST ─────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import json
+    logging.basicConfig(level=logging.INFO)
     queries = [
         "What is quantum entanglement?",
         "How does DNA work?",

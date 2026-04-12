@@ -9,6 +9,7 @@
 # Полная архитектура L0–L6: см. docs/Velantrim_V8_Crystal_Sprint1_toc.md
 # ESM (Epistemic State Machine): 8 состояний жизненного цикла факта.
 
+import os
 import sqlite3
 import json
 from datetime import datetime, timezone
@@ -28,32 +29,50 @@ ESM_STATES = {
     "ImmutableCore",  # неизменяем (Ring Zero)
 }
 
+# ─── ESM: матрица допустимых переходов ────────────────────────────────────────
+# Observed → Validated: разрешён как MVP fast-path через TruthGate.
+# Состояния вне матрицы (Contradicted, Deprecated, ImmutableCore) — Sprint 2.
+ESM_TRANSITIONS: Dict[str, set] = {
+    "Observed":      {"Hypothesized", "Supported", "Validated", "Collapsed"},
+    "Hypothesized":  {"Supported", "Validated", "Collapsed"},
+    "Supported":     {"Validated", "Collapsed"},
+    "Validated":     {"ImmutableCore", "Collapsed"},
+    "Contradicted":  {"Deprecated", "Collapsed"},
+    "Deprecated":    {"Collapsed"},
+    "Collapsed":     set(),
+    "ImmutableCore": set(),
+}
+
 # ─── L0: рабочая память (in-memory, живёт только в сессии) ────────────────────
 _L0: Dict[str, Dict] = {}
 
 # ─── L1: SQLite путь ──────────────────────────────────────────────────────────
 SQLITE_PATH = "./data/velantrim_memory.db"
 
+# ─── L1: кешированное соединение (создаётся один раз, DDL — один раз) ─────────
+_conn: Optional[sqlite3.Connection] = None
+
 
 def _get_conn() -> sqlite3.Connection:
-    import os
-    os.makedirs("./data", exist_ok=True)
-    conn = sqlite3.connect(SQLITE_PATH)
-    conn.row_factory = sqlite3.Row
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS facts (
-            fact_id        TEXT PRIMARY KEY,
-            claim          TEXT NOT NULL,
-            source         TEXT NOT NULL,
-            confidence     REAL DEFAULT 0.5,
-            epistemic_state TEXT DEFAULT 'Observed',
-            created_at     TEXT NOT NULL,
-            updated_at     TEXT NOT NULL,
-            metadata       TEXT DEFAULT '{}'
-        )
-    """)
-    conn.commit()
-    return conn
+    global _conn
+    if _conn is None:
+        os.makedirs("./data", exist_ok=True)
+        _conn = sqlite3.connect(SQLITE_PATH)
+        _conn.row_factory = sqlite3.Row
+        _conn.execute("""
+            CREATE TABLE IF NOT EXISTS facts (
+                fact_id        TEXT PRIMARY KEY,
+                claim          TEXT NOT NULL,
+                source         TEXT NOT NULL,
+                confidence     REAL DEFAULT 0.5,
+                epistemic_state TEXT DEFAULT 'Observed',
+                created_at     TEXT NOT NULL,
+                updated_at     TEXT NOT NULL,
+                metadata       TEXT DEFAULT '{}'
+            )
+        """)
+        _conn.commit()
+    return _conn
 
 
 # ─── API ───────────────────────────────────────────────────────────────────────
@@ -74,6 +93,8 @@ def store_fact(fact: Dict) -> None:
     if epistemic_state not in ESM_STATES:
         raise ValueError(f"store_fact: недопустимое ESM-состояние '{epistemic_state}'")
 
+    metadata_dict = fact.get("metadata", {})
+
     record = {
         "fact_id":         fact_id,
         "claim":           fact.get("claim", ""),
@@ -82,13 +103,14 @@ def store_fact(fact: Dict) -> None:
         "epistemic_state": epistemic_state,
         "created_at":      now,
         "updated_at":      now,
-        "metadata":        json.dumps(fact.get("metadata", {})),
+        "metadata":        metadata_dict,   # L0: храним как dict, не как строку
     }
 
     # L0
     _L0[fact_id] = record
 
-    # L1
+    # L1: metadata сериализуется только для SQLite
+    l1_record = {**record, "metadata": json.dumps(metadata_dict)}
     with _get_conn() as conn:
         conn.execute("""
             INSERT INTO facts
@@ -104,7 +126,7 @@ def store_fact(fact: Dict) -> None:
                 epistemic_state = excluded.epistemic_state,
                 updated_at      = excluded.updated_at,
                 metadata        = excluded.metadata
-        """, record)
+        """, l1_record)
 
 
 def get_fact(fact_id: str) -> Optional[Dict]:
@@ -117,8 +139,8 @@ def get_fact(fact_id: str) -> Optional[Dict]:
         ).fetchone()
         if row:
             result = dict(row)
-            result["metadata"] = json.loads(result["metadata"])
-            _L0[fact_id] = result  # прогреть L0
+            result["metadata"] = json.loads(result["metadata"])  # L1→dict
+            _L0[fact_id] = result  # прогреть L0 уже с dict
             return result
     return None
 
@@ -127,7 +149,7 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
     """
     Перевести факт в новое ESM-состояние.
     Прямой SET epistemic_state минуя эту функцию — архитектурный баг.
-    В полной реализации: переходы проверяются матрицей допустимых переходов.
+    Допустимые переходы определяются матрицей ESM_TRANSITIONS.
     """
     if new_state not in ESM_STATES:
         raise ValueError(f"transition_esm: недопустимое состояние '{new_state}'")
@@ -135,6 +157,13 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
     fact = get_fact(fact_id)
     if not fact:
         return False
+
+    current_state = fact.get("epistemic_state", "Observed")
+    allowed = ESM_TRANSITIONS.get(current_state)
+    if allowed is not None and new_state not in allowed:
+        raise ValueError(
+            f"transition_esm: переход '{current_state}' → '{new_state}' недопустим"
+        )
 
     now = datetime.now(timezone.utc).isoformat()
     fact["epistemic_state"] = new_state
