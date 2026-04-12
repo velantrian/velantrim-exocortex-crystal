@@ -1,187 +1,286 @@
-from typing import List, Dict, Any
-from core.trace import build_trace
-from core.memory import store_fact  # ← добавлено
+# core/pipeline.py
+# Velantrim ExoCortex — Core Pipeline
+# v8.0.2-sprint1
+#
+# Принцип: Graph = Truth · LLM = Language · Memory = Physiology
+# Пайплайн: Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer
+#
+# Текущий уровень: MVP (L0/L1 память, BM25-lite retrieval).
+# Полная архитектура L0–L6: docs/Velantrim_V8_Crystal_Sprint1_toc.md
+#
+# TODO (Sprint 2):
+#   - Заменить DATABASE на L3 граф (Neo4j / KuzuDB)
+#   - Подключить HybridRetriever (BM25 + vector + HotGraph)
+#   - Подключить LLM для generate_answer()
+#   - ESM: полная матрица переходов между состояниями
 
-# =========================
-# 📦 MOCK DATABASE
-# =========================
+from typing import List, Dict, Any, Optional
+from core.trace import build_trace, promote_trace, format_trace
+from core.memory import store_fact, transition_esm
+
+# ─── MOCK DATABASE (L3 заглушка) ──────────────────────────────────────────────
+# В продакшене: Neo4j / KuzuDB граф. Единственный источник истины.
+# Прямой MERGE в граф минуя TruthGate — архитектурный баг.
 DATABASE = [
-    {"id": "f1", "text": "Water boils at 100°C", "source": "physics"},
-    {"id": "f2", "text": "Quantum entanglement links particles instantly", "source": "physics"},
-    {"id": "f3", "text": "Earth revolves around the Sun", "source": "astronomy"},
+    {"id": "f1", "text": "Water boils at 100°C at sea level",     "source": "physics",    "confidence": 0.99},
+    {"id": "f2", "text": "Quantum entanglement links particles",    "source": "physics",    "confidence": 0.85},
+    {"id": "f3", "text": "Earth revolves around the Sun",          "source": "astronomy",  "confidence": 0.99},
+    {"id": "f4", "text": "The human brain has ~86 billion neurons","source": "neuroscience","confidence": 0.90},
+    {"id": "f5", "text": "DNA encodes genetic information",        "source": "biology",    "confidence": 0.99},
 ]
 
 
-# =========================
-# 🔧 HELPERS
-# =========================
+# ─── HELPERS ──────────────────────────────────────────────────────────────────
+
 def tokenize(text: str) -> List[str]:
-    return [word.lower().strip(".,!?;:()[]{}\"'") for word in text.split() if word.strip()]
+    return [
+        word.lower().strip(".,!?;:()[]{}\"'")
+        for word in text.split() if word.strip()
+    ]
 
 
-# used later for BM25 / graph score normalization
 def normalize_score(score: float, max_score: float) -> float:
     if max_score <= 0:
         return 0.0
-    value = score / max_score
-    return max(0.0, min(1.0, value))
+    return max(0.0, min(1.0, score / max_score))
 
 
-# =========================
-# 🔍 RETRIEVAL (BM25-lite)
-# =========================
+# ─── RETRIEVAL (BM25-lite) ────────────────────────────────────────────────────
+# TODO Sprint 2: HybridRetriever (BM25 + vector + HotGraph + HippoRAG PageRank)
+
 def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
+    """
+    BM25-lite поиск по DATABASE.
+    Возвращает топ-k фактов отсортированных по score.
+    Все факты начинают с epistemic_state='Observed' (сырой вход).
+    """
     query_words = tokenize(query)
     scored: List[Dict[str, Any]] = []
 
     for item in DATABASE:
         text_words = tokenize(item["text"])
-
         overlap = len(set(query_words) & set(text_words))
-        length_penalty = len(text_words)
+        if overlap == 0:
+            continue
 
-        score = overlap / (length_penalty + 1)
+        raw_score = overlap / (len(text_words) + 1)
+        # учитываем базовую уверенность источника
+        final_score = raw_score * item.get("confidence", 1.0)
 
-        if overlap > 0:
-            scored.append({
-                **item,
-                "_score": score
-            })
+        scored.append({
+            **item,
+            "_score":          round(final_score, 4),
+            "epistemic_state": "Observed",   # ESM: начальное состояние
+            "origin":          "retrieval",
+        })
 
     scored.sort(key=lambda x: x["_score"], reverse=True)
     return scored[:k]
 
 
-# =========================
-# 📦 FACTS PACK
-# =========================
+# ─── FACTS PACK ───────────────────────────────────────────────────────────────
+
 def build_facts_pack(
     retrieved: List[Dict[str, Any]],
-    query: str
-) -> Dict[str, List[Dict[str, Any]]]:
+    query: str,
+) -> Dict[str, Any]:
+    """
+    Собрать FactsPack из retrieved фактов.
+    Каждый факт сохраняется в L0/L1 память через store_fact().
+    truth_status = UNVERIFIED до прохождения TruthGate.
+    """
     facts: List[Dict[str, Any]] = []
 
     for item in retrieved:
-        confidence = round(item.get("_score", 0.5), 3)
+        fact = {
+            "fact_id":         item["id"],
+            "claim":           item["text"],
+            "source":          item["source"],
+            "confidence":      item["_score"],
+            "epistemic_state": "Observed",
+            "truth_status":    "UNVERIFIED",
+        }
+        # L0/L1 сохранение
+        store_fact(fact)
 
-        # 🔴 ВАЖНО: сохраняем факт в память
-        store_fact({
-            "fact_id": item["id"],
-            "claim": item["text"],
-            "source": item["source"]
-        })
+        facts.append(fact)
 
-        facts.append({
-            "fact_id": item["id"],
-            "claim": item["text"],
-            "source": item["source"],
-            "confidence": confidence,
-            "truth_status": "UNVERIFIED",
-        })
-
-    # сортировка по уверенности
     facts.sort(key=lambda x: x["confidence"], reverse=True)
 
-    return {"facts": facts}
-
-
-# =========================
-# 🛡 GUARDIAN
-# =========================
-def guardian(
-    facts_pack: Dict[str, List[Dict[str, Any]]],
-    trace: List[Dict[str, Any]]
-) -> bool:
-    facts = facts_pack.get("facts", [])
-
-    if not facts or not trace:
-        return False
-
-    if len(trace) != len(facts):
-        return False
-
-    for fact in facts:
-        if not fact.get("fact_id"):
-            return False
-        if not fact.get("claim"):
-            return False
-        if not fact.get("source"):
-            return False
-        if fact.get("confidence", 0) <= 0:
-            return False
-
-    return True
-
-
-# =========================
-# 🛡 TRUTH GATE
-# =========================
-def truth_gate(facts_pack: Dict[str, List[Dict[str, Any]]]) -> bool:
-    facts = facts_pack.get("facts", [])
-    if not facts:
-        return False
-
-    for fact in facts:
-        if not fact.get("source"):
-            return False
-        if fact.get("confidence", 0) <= 0:
-            return False
-
-    return True
-
-
-# =========================
-# 🧠 GENERATION
-# =========================
-def generate_answer(
-    facts_pack: Dict[str, List[Dict[str, Any]]],
-    trace: List[Dict[str, Any]]
-) -> Dict[str, Any]:
-    answer = " ".join(f["claim"] for f in facts_pack["facts"])
     return {
-        "answer": answer,
-        "facts": facts_pack["facts"],
-        "trace": trace,
+        "facts": facts,
+        "query": query,
+        "total": len(facts),
     }
 
 
-# =========================
-# 🚀 PIPELINE
-# =========================
+# ─── GUARDIAN ─────────────────────────────────────────────────────────────────
+# Структурная проверка — последний рубеж перед ответом.
+# 0 токенов · синхронный · Fast Path.
+
+def guardian(
+    facts_pack: Dict[str, Any],
+    trace: List[Dict[str, Any]],
+) -> tuple[bool, Optional[str]]:
+    """
+    Проверяет структурную целостность FactsPack и Trace.
+    Возвращает (passed: bool, reason: str | None).
+    """
+    facts = facts_pack.get("facts", [])
+
+    if not facts:
+        return False, "FactsPack пустой"
+    if not trace:
+        return False, "Trace пустой — провенанс отсутствует"
+    if len(trace) != len(facts):
+        return False, f"Несоответствие: {len(facts)} фактов, {len(trace)} trace-элементов"
+
+    for fact in facts:
+        if not fact.get("fact_id"):
+            return False, f"Факт без fact_id: {fact}"
+        if not fact.get("claim"):
+            return False, f"Факт без claim: {fact['fact_id']}"
+        if not fact.get("source"):
+            return False, f"Факт без source: {fact['fact_id']}"
+        if fact.get("confidence", 0) <= 0:
+            return False, f"Нулевая confidence: {fact['fact_id']}"
+
+    return True, None
+
+
+# ─── TRUTH GATE ───────────────────────────────────────────────────────────────
+# Единственный вход в L3 граф. Обход = архитектурный баг.
+# TODO Sprint 2: полная ESM матрица переходов, Laplace confidence.
+
+def truth_gate(
+    facts_pack: Dict[str, Any],
+    min_confidence: float = 0.05,
+) -> tuple[bool, Optional[str]]:
+    """
+    Верифицирует факты перед записью в L3.
+    Возвращает (passed: bool, reason: str | None).
+    При passed=True: facts переводятся в ESM-состояние Validated.
+    """
+    facts = facts_pack.get("facts", [])
+
+    if not facts:
+        return False, "Нет фактов для верификации"
+
+    for fact in facts:
+        if not fact.get("source"):
+            return False, f"Факт без source: {fact.get('fact_id')}"
+        if fact.get("confidence", 0) < min_confidence:
+            return False, (
+                f"Confidence {fact['confidence']} < порога {min_confidence}: "
+                f"{fact.get('fact_id')}"
+            )
+
+    return True, None
+
+
+# ─── GENERATION ───────────────────────────────────────────────────────────────
+# TODO Sprint 2: заменить join на LLM с FactsPack как системным контекстом.
+
+def generate_answer(
+    facts_pack: Dict[str, Any],
+    trace: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """
+    Генерация ответа из верифицированных фактов.
+    Текущая реализация: extractive (join фактов).
+    Sprint 2: LLM генерация с FactsPack в system prompt.
+    """
+    validated_facts = [
+        f for f in facts_pack["facts"]
+        if f.get("epistemic_state") in {"Validated", "Supported"}
+    ]
+    if not validated_facts:
+        validated_facts = facts_pack["facts"]  # fallback
+
+    answer = " | ".join(f["claim"] for f in validated_facts)
+
+    return {
+        "answer":       answer,
+        "facts":        validated_facts,
+        "trace":        trace,
+        "trace_fmt":    format_trace(trace),
+        "total_facts":  len(validated_facts),
+    }
+
+
+# ─── MAIN PIPELINE ────────────────────────────────────────────────────────────
+
 def run(query: str) -> Dict[str, Any]:
+    """
+    Полный пайплайн Velantrim:
+    Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer
+
+    Принцип: Trace → Validation → Answer.
+    Не наоборот.
+    """
+    # 1. Retrieval
     retrieved = retrieve(query)
+    if not retrieved:
+        return _blocked("Retrieval вернул 0 результатов.", query)
+
+    # 2. FactsPack
     facts_pack = build_facts_pack(retrieved, query)
+
+    # 3. Trace
     trace = build_trace(retrieved)
 
-    if not trace:
-        return {
-            "error": "No trace. Answer blocked.",
-            "answer": None,
-            "facts": facts_pack.get("facts", []),
-            "trace": trace,
-        }
+    # 4. Guardian (структурная проверка)
+    guardian_ok, guardian_reason = guardian(facts_pack, trace)
+    if not guardian_ok:
+        return _blocked(f"Guardian: {guardian_reason}", query, facts_pack, trace)
 
-    if not guardian(facts_pack, trace):
-        return {
-            "error": "Guardian blocked response.",
-            "answer": None,
-            "facts": facts_pack.get("facts", []),
-            "trace": trace,
-        }
+    # 5. TruthGate (верификация)
+    gate_ok, gate_reason = truth_gate(facts_pack)
+    if not gate_ok:
+        return _blocked(f"TruthGate: {gate_reason}", query, facts_pack, trace)
 
-    if not truth_gate(facts_pack):
-        return {
-            "error": "Not enough data.",
-            "answer": None,
-            "facts": facts_pack.get("facts", []),
-            "trace": trace,
-        }
+    # 6. ESM: перевести факты и trace в Validated
+    for fact in facts_pack["facts"]:
+        fact["epistemic_state"] = "Validated"
+        fact["truth_status"]    = "VERIFIED"
+        transition_esm(fact["fact_id"], "Validated")
 
+    promote_trace(trace, "Validated")
+
+    # 7. Generate
     return generate_answer(facts_pack, trace)
 
 
-# =========================
-# 🧪 TEST
-# =========================
+def _blocked(
+    reason: str,
+    query: str,
+    facts_pack: Optional[Dict] = None,
+    trace: Optional[List] = None,
+) -> Dict[str, Any]:
+    """Стандартный ответ при блокировке пайплайна."""
+    return {
+        "error":  reason,
+        "answer": None,
+        "query":  query,
+        "facts":  facts_pack.get("facts", []) if facts_pack else [],
+        "trace":  trace or [],
+    }
+
+
+# ─── TEST ─────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    print(run("What is quantum entanglement?"))
+    import json
+    queries = [
+        "What is quantum entanglement?",
+        "How does DNA work?",
+        "Tell me about the Sun",
+    ]
+    for q in queries:
+        print(f"\n{'='*60}")
+        print(f"QUERY: {q}")
+        result = run(q)
+        print(f"ANSWER: {result.get('answer', 'BLOCKED')}")
+        if result.get("error"):
+            print(f"ERROR:  {result['error']}")
+        if result.get("trace_fmt"):
+            print(result["trace_fmt"])
