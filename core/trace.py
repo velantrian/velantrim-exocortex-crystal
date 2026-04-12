@@ -10,6 +10,7 @@
 
 from typing import List, Dict, Any
 from datetime import datetime, timezone
+from core.memory import ESM_STATES
 
 
 # ─── TRACE BUILDER ────────────────────────────────────────────────────────────
@@ -59,7 +60,14 @@ def promote_trace(
     Вызывается из pipeline после truth_gate() → True.
 
     Пример: promote_trace(trace, "Validated")
+
+    NOTE: Мутирует элементы trace in-place И возвращает тот же список.
+    Вызывающий код в pipeline.py полагается на in-place мутацию;
+    возвращаемое значение сохранено для симметрии API.
     """
+    if new_state not in ESM_STATES:
+        raise ValueError(f"promote_trace: недопустимое ESM-состояние '{new_state}'")
+
     now = datetime.now(timezone.utc).isoformat()
     for element in trace:
         element["epistemic_state"] = new_state
@@ -76,9 +84,9 @@ def format_trace(trace: List[Dict[str, Any]]) -> str:
     lines = ["TRACE:"]
     for i, el in enumerate(trace, 1):
         lines.append(
-            f"  [{i}] {el['fact_id']} | "
-            f"source={el['source']} | "
-            f"state={el['epistemic_state']} | "
+            f"  [{i}] {el.get('fact_id', '?')} | "
+            f"source={el.get('source', '?')} | "
+            f"state={el.get('epistemic_state', '?')} | "
             f"confidence={el.get('confidence', '?')}"
         )
     return "\n".join(lines)
