@@ -1,0 +1,126 @@
+{
+  "rfc_mismatches": [
+    {
+      "idx": 3,
+      "chunk_id": "velantrim_v8_003_tri_novykh_izmereniia_chitai_eto_prezhde_chem_idti_v_rfc00650067",
+      "rfc_field": "RFC0065-0067",
+      "title_rfc": "RFC0065–0067",
+      "title": "✨ Три новых измерения — читай это прежде чем идти в RFC0065–0067"
+    },
+    {
+      "idx": 27,
+      "chunk_id": "velantrim_v8_027_rfc0067_v20_creative_intelligence_layer",
+      "rfc_field": "RFC0067 v2.0",
+      "title_rfc": "RFC0067",
+      "title": "RFC0067 v2.0: Creative Intelligence Layer"
+    },
+    {
+      "idx": 54,
+      "chunk_id": "velantrim_v8_056_rfc0036rfc0051",
+      "rfc_field": "RFC0036-RFC0051",
+      "title_rfc": "RFC0036–RFC0051",
+      "title": "📜 RFC0036–RFC0051"
+    }
+  ],
+  "duplicate_rfcs": {
+    "RFC0067 v2.0": [
+      4,
+      11,
+      27,
+      31
+    ],
+    "RFC0052": [
+      6,
+      12
+    ],
+    "RFC0016": [
+      7,
+      26,
+      45
+    ],
+    "RFC0065": [
+      9,
+      62
+    ],
+    "RFC0062": [
+      13,
+      60
+    ],
+    "RFC0039": [
+      14,
+      16,
+      38
+    ],
+    "RFC0001": [
+      24,
+      29
+    ],
+    "RFC0004": [
+      25,
+      41
+    ]
+  },
+  "cyrillic_chunk_ids": [],
+  "null_layers": [
+    0
+  ],
+  "empty_depends_on": [
+    0,
+    1,
+    2,
+    5,
+    10,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    29,
+    32,
+    33,
+    36,
+    37,
+    39,
+    40,
+    42,
+    44,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51
+  ],
+  "mega_blobs": [
+    {
+      "idx": 8,
+      "chunk_id": "velantrim_v8_008_rfc0066_concept_emergence_organicheskoe_rozhdenie_kontseptov",
+      "char_count": 55625,
+      "title": "RFC0066: Concept Emergence — Органическое рождение концептов"
+    },
+    {
+      "idx": 12,
+      "chunk_id": "velantrim_v8_012_integrirovannye_komponenty_iz_hyperia_v520",
+      "char_count": 119921,
+      "title": "🧬 Интегрированные компоненты (из HYPERIA v5.20)"
+    },
+    {
+      "idx": 60,
+      "chunk_id": "velantrim_v8_062_rfc0062_tz-fix_integration_patch",
+      "char_count": 80787,
+      "title": "🔧 RFC0062 — TZ-Fix Integration Patch"
+    }
+  ],
+  "empty_stubs": [
+    {
+      "idx": 0,
+      "chunk_id": "velantrim_v8_000__header",
+      "char_count": 50,
+      "title": "💠 Velantrim V8 Crystal — Full Edition + Sprint 1"
+    }
+  ],
+  "duplicate_chunk_ids": {},
+  "rfc0067_versions": []
+}
