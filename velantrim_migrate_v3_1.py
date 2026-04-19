@@ -360,6 +360,21 @@ def validate_all(chunks: List[Dict], id_map: Dict[str, str]) -> bool:
         json.dump(dep_report, f, indent=2, ensure_ascii=False)
     logger.info("✅ Dependency report: migration_dependency_report.json")
 
+    # Проверка остатков старых ID в контенте
+    if id_map:
+        leftover = []
+        for c in chunks:
+            if "content" in c:
+                for old_id in id_map:
+                    if re.search(rf'(?<!\w){re.escape(old_id)}(?!\w)', c["content"]):
+                        leftover.append({"chunk": c.get("chunk_id"), "old_id": old_id})
+        if leftover:
+            with open("leftover_ids.json", "w", encoding='utf-8') as f:
+                json.dump(leftover, f, indent=2, ensure_ascii=False)
+            logger.warning(f"⚠️  {len(leftover)} старых ID осталось в тексте → leftover_ids.json")
+        else:
+            logger.info("✅ Остатков старых ID в контенте не найдено")
+
     return True
 
 def compute_diff(old: List[Dict], new: List[Dict]) -> Tuple[List[Dict], int]:
@@ -454,6 +469,13 @@ def run_pipeline(input_file: str, dry_run: bool = False, skip_backup: bool = Fal
         json.dump(diff, f, indent=2, ensure_ascii=False)
     logger.info(f"   Diff: {diff_file}")
 
+    # Save id_map for audit trail
+    if id_map:
+        mapping_file = Path(input_file).stem + "_id_map.json"
+        with open(mapping_file, "w", encoding='utf-8') as f:
+            json.dump(id_map, f, indent=2, ensure_ascii=False)
+        logger.info(f"   ID map: {mapping_file}")
+
     # Checksum после
     checksum_after = compute_checksum(chunks)
     logger.info(f"   Checksum: {checksum_after[:16]}...")
@@ -484,6 +506,66 @@ def run_pipeline(input_file: str, dry_run: bool = False, skip_backup: bool = Fal
 
     return True
 
+def validate_standalone(file_path: str) -> None:
+    """Автономная проверка JSONL без миграции."""
+    chunks = load_jsonl(file_path)
+    ids = [c.get("chunk_id") for c in chunks if "chunk_id" in c]
+    id_set = set(ids)
+    print(f"Чанков: {len(chunks)}")
+    print(f"Уникальных ID: {len(id_set)}")
+
+    if len(ids) != len(id_set):
+        dupes = [x for x in id_set if ids.count(x) > 1]
+        print(f"❌ Дубликаты chunk_id: {dupes}")
+    else:
+        print("✅ chunk_id уникальны")
+
+    dangling = [
+        (c.get("chunk_id"), dep)
+        for c in chunks
+        for dep in c.get("depends_on", [])
+        if dep not in id_set
+    ]
+    if dangling:
+        print(f"⚠️  Висячих ссылок: {len(dangling)}")
+        with open("validate_dangling.json", "w", encoding='utf-8') as f:
+            json.dump(dangling, f, indent=2, ensure_ascii=False)
+        print("   Сохранено в validate_dangling.json")
+    else:
+        print("✅ Ссылки целостны")
+
+    cyrillic = [c.get("chunk_id") for c in chunks if re.search(r'[а-яА-Я]', c.get("chunk_id", ""))]
+    if cyrillic:
+        print(f"⚠️  Кириллических ID: {len(cyrillic)}: {cyrillic[:5]}")
+    else:
+        print("✅ Кириллических ID нет")
+
+    stubs = sum(1 for c in chunks if len(c.get("content", "")) < 150)
+    null_layers = sum(1 for c in chunks if not c.get("layer"))
+    print(f"Стабов (<150 символов): {stubs}")
+    print(f"Null layer: {null_layers}")
+
+
+def diff_files(old_path: str, new_path: str) -> None:
+    """Сравнение двух JSONL-файлов с сохранением отчёта."""
+    old = load_jsonl(old_path)
+    new = load_jsonl(new_path)
+    diff, count = compute_diff(old, new)
+    print(f"Изменено чанков: {len(diff)}, полей: {count}")
+    with open("diff_report.json", "w", encoding='utf-8') as f:
+        json.dump(diff, f, indent=2, ensure_ascii=False)
+    print("Отчёт сохранён в diff_report.json")
+
+
+def do_rollback(backup_file: str, target_file: str) -> None:
+    """Восстановление файла из резервной копии."""
+    if not Path(backup_file).exists():
+        print(f"❌ Бэкап не найден: {backup_file}")
+        exit(1)
+    shutil.copy(backup_file, target_file)
+    print(f"✅ Восстановлено: {target_file}")
+
+
 def main():
     parser = argparse.ArgumentParser(prog="velantrim-migrate")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -493,11 +575,28 @@ def main():
     migrate_p.add_argument("--dry-run", action="store_true", help="Preview changes without writing")
     migrate_p.add_argument("--skip-backup", action="store_true", help="Skip backup creation")
 
+    validate_p = subparsers.add_parser("validate", help="Check JSONL integrity without migrating")
+    validate_p.add_argument("file", help="Input JSONL file")
+
+    diff_p = subparsers.add_parser("diff", help="Compare two JSONL files")
+    diff_p.add_argument("old_file")
+    diff_p.add_argument("new_file")
+
+    rollback_p = subparsers.add_parser("rollback", help="Restore file from backup")
+    rollback_p.add_argument("backup_file")
+    rollback_p.add_argument("target_file")
+
     args = parser.parse_args()
 
     if args.command == "migrate":
         success = run_pipeline(args.file, args.dry_run, args.skip_backup)
         exit(0 if success else 1)
+    elif args.command == "validate":
+        validate_standalone(args.file)
+    elif args.command == "diff":
+        diff_files(args.old_file, args.new_file)
+    elif args.command == "rollback":
+        do_rollback(args.backup_file, args.target_file)
 
 if __name__ == "__main__":
     main()
