@@ -1,5 +1,103 @@
-🔱 Velantrim ExoCortex — README_COREВерсия: v8.0.2-sprint1 · Апрель 2026
-Читай этот файл первым — и человек, и AI.
-Новая технология или изменение архитектуры — сначала сюда, потом в crystal.md.Что этоVelantrim — система долгосрочной памяти для AI-агента.
-Не история чатов. Не плоский список заметок. Живой граф знаний с биологической моделью памяти, защитой истины и органическим рождением концептов.Агент с Velantrim помнит между сессиями, учится на ошибках, предвидит нужды пользователя и тратит на 85%+ меньше токенов на recall — потому что не пересчитывает то, что уже знает.Три принципа — фундамент всех решенийGraph = Truth       → единственный источник истины — граф L3. LLM говорит, граф решает.Memory = Physiology → память устроена как человеческая: слои L0–L6, decay, консолидация.Dual-Process        → Fast Path (ответ за мс) / Slow Path (фон, без блокировок).Если компонент попадает в Fast Path когда должен быть в Slow Path — это архитектурный баг.
-Если LLM пишет факт в граф минуя TruthGate — это баг, не фича.Карта слоёв памятиСлойНазваниеХранилищеDecayL0Working Memory · рефлексыRAMсекундыL1Short-Term Memory · эпизодыSQLite + FTS5минуты–часыL1.5Velum · Synaptic Pre-Graph + Saliencein-memory dictсессияL2Mid-Term Memory · темыSQLiteдниL3Long-Term Graph · единственная истинаNeo4j / KuzuDBFSRS power-lawL3.5ImmutableCore · снепшотыNeo4j (Ring Zero)не меняетсяL4ReasoningBank · паттерныSQLiteThompson SamplingL4.5Memory Volition · осознанная запись— (RFC0065)—L5Anticipatory · SAE + LSMRAMrollingL5.5PredictiveFusionLayer · SAE×LSMRAMrollingL6Values Core · ценностиpending RFCнеизменяемКлючевые механизмыМеханизмRFCСутьTruthGate + ESM—8 эпистемических состояний. Факт входит только через Gate.Concept EmergenceRFC0066Органическое рождение концептов из co-occurrence. 0 токенов.Memory VolitionRFC0065Агент осознанно записывает в LTM через memory.write_voluntary().Creative IntelligenceRFC0067 v2.0Analogy Graph + Semantic Bridge Engine + Adaptive Decoder.Knowledge IngestionRFC0063Поглощение PDF/книг/статей в L3 без ручного разбора.Thompson SamplingL4Выбор стратегии рассуждения с exploration/exploitation балансом.FSRS Decayv8.0R = (1 + 19/81 × t/S)^(-0.5) — power-law вместо Ebbinghaus.NeuroCoreRFC0068Пластичный SSM-слой. Phase 0 (пассивный). Feature-flag выкл.Технический стекГраф:       Neo4j (production) · KuzuDB (LITE/Personal)Кэш:        Redis (Fast Path) · SQLite fallback (авто при сбое)Embed:      CPU-only во время диалога · 0 GPU в runtimeLLM:        любой через абстракцию · Qwen3-1.7B для lazy namingScheduler:  APScheduler (SleepTimeWorker · nightly jobs)Метрики:    Prometheus + GrafanaТесты:      pytest + pytest-asyncio · test_invariants.py · test_sprint1_additions.pyСтруктура файлов проектаvelantrim/│├── README_CORE.md              ← ТЫ ЗДЕСЬ. Читай первым.│├── crystal.md                  ← Полная спецификация (18k строк).│                                 RFC0016–RFC0068, код, тесты, инварианты.│├── velantrim_config.py         ← Все константы. EmergenceConfig, FSRS params,│                                 NEUROCORE flags. Хардкод запрещён.│├── concept_emergence.py        ← RFC0066: ConceptEmergenceDetector, ProtoConcept.│                                 Sprint 1+1.1: asyncio.Lock, FIX-K3, l5_5 scaffold.│├── tests/│   ├── test_invariants.py      ← I1–I37 (100% покрытие) · I38–I65 pending.│   └── test_sprint1_additions.py ← I50, I50-b, I66(FIX), I70, K3, A1, A2, A3.│└── migrations/    └── apply_migrations.py     ← Накатывание схемы Neo4j.Текущий статус патчейP0  (8/8)  ✅   P1  (10/10) ✅   P2  (6/6)  ✅P3  (7/7)  ✅   P4  (6/6)  ✅   Sprint 1+1.1 (8/8) ✅Sprint 1 ключевые изменения (подробно в Changelog crystal.md):FIX-K3 — исправлен критический баг: Hebbian Learning не работал для медленно растущих концептовasyncio.Lock + _gc_impl split — устранён DEADLOCK в daily_maintenance()observe() теперь async — все call sites требуют awaitEmergenceConfig +3 константы: HEBBIAN_DECAY_FACTOR, SALIENCE_MULTIPLIER, L5_5_INTEGRATIONPending:L6 Values Core → RFC pendingNeuroCore Phase 1 → после анализа Phase 0 метрикI38–I65 инварианты → Sprint 2+Инварианты — самые важныеGraph = Truth (I1):    LLM не пишет в L3 напрямую. Никогда.TruthGate (I2):        Единственный вход в L3 — через ESM.transition().RingZero (I6):         ImmutableCore не изменяется без human approval + dual-key.I50:                   ConceptEmergenceDetector не пишет в граф при observe().I50-b:                 ProtoConcept → :Concept только через TruthGate.I66:                   ProtoConcept живёт только в памяти (_protos dict).I70:                   Активных proto ≤ MAX_ACTIVE_PROTOS = 500.I-K3:                  GC не удаляет наблюдения моложе TTL_DAYS (FIX-K3).I68 (NeuroCoreIsolation): NeuroCore НИКОГДА не изменяет L3 граф.Метрики успеха (целевые)МетрикаЦельСнижение токенов (recall P95)≥ 85%Латентность поиска P95< 500msHot Graph traversal1–3 мсТочность извлечения памяти> 90%contradiction_detection_rate> 98%CPU в диалоге (LITE)10–15% 1 ядраRAM горячий граф (LITE)2–5 MBПравило README-firstХочешь добавить новый механизм или технологию?Опиши концепт здесь в 2–3 строкахУбедись что вписывается в три принципа вышеТолько потом лезь в crystal.md и пиши RFCЭто дешевле, безопаснее и расходует меньше токенов при правках.Graph = Truth · LLM = Language · Memory = Physiology · Volition = Agency · Emergence = Life
+# 🔱 Velantrim ExoCortex — Crystal
+
+**Version**: v8.0.2-sprint1 (spec) · MVP (code) · April 2026
+
+> ⚠️ **Honest status**: this repo contains two layers:
+> - **📜 Design spec** — `Velantrim_V8_Crystal_Sprint1.jsonl` (63 chunks, 947KB) describing the full system.
+> - **🧩 MVP implementation** — `core/` (~600 lines) that implements ~3% of the spec.
+>
+> Most RFCs are **designed, not yet coded**. See [ROADMAP.md](./ROADMAP.md) for what's real.
+
+---
+
+## What is Velantrim
+
+Velantrim is a long-term memory system for AI agents: a living knowledge graph with a biological memory model, truth gating, and organic concept emergence — *when fully built*. Right now the working code is a minimum viable pipeline demonstrating the core ideas (ESM lifecycle, truth gate, provenance trace).
+
+## Three principles (spec-level)
+
+1. **Graph = Truth** — the L3 graph is the single source of truth; LLMs speak, the graph decides.
+2. **Memory = Physiology** — layers L0–L6 with FSRS decay and consolidation.
+3. **Dual-Process** — Fast Path (ms) for the user, Slow Path (async) for the system.
+
+## What's actually in this repo
+
+| Path | Status | What it is |
+|------|--------|------------|
+| `core/memory.py` | ✅ MVP | L0 (in-memory) + L1 (SQLite) + ESM state machine (8 states) |
+| `core/pipeline.py` | ✅ MVP | Retrieve → FactsPack → Guardian → TruthGate → Answer |
+| `core/trace.py` | ✅ MVP | Provenance chain for each fact |
+| `tests/` | ✅ MVP | Unit tests for ESM and pipeline |
+| `Velantrim_V8_Crystal_Sprint1.jsonl` | 📜 Spec | Full system design (63 chunks, 947KB) |
+| Metadata tooling | ✅ Stable | `audit_metadata.py`, `fix_metadata*.py`, `velantrim_migrate_v3_1.py` for jsonl maintenance |
+
+## What's in the spec but NOT yet in the code
+
+- 🕸️ RFC0016 — Velum L1.5 synaptic pre-graph
+- 🌱 RFC0066 — Concept Emergence (ProtoConcept, Hebbian learning)
+- 🗳️ RFC0065 — Memory Volition (`memory.write_voluntary()`)
+- 🎨 RFC0067 v2.0 — Analogy Graph + Semantic Bridge Engine
+- 📚 RFC0063 — Knowledge Ingestion Pipeline
+- 🧠 RFC0068 — NeuroCore (plastic memory layer)
+- 🧮 FSRS power-law decay `R = (1 + 19/81 × t/S)^(-0.5)`
+- 🔒 Ring Zero / VALUES_CORE immutability (I6)
+- 🗄️ Neo4j / KuzuDB / Redis integration
+- 🔄 Async/await throughout (code is currently sync)
+- 📊 Sprint A patches A1–A10 (documented in `SPRINT_A_V2_ADDITIONAL_PATCHES.md` — not yet wired)
+
+Sprint A patch progress in code: **0 / 45**. See [ROADMAP.md](./ROADMAP.md).
+
+## Quick start
+
+```bash
+git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
+cd velantrim-exocortex-crystal
+pip install -r requirements.txt
+python -m core.pipeline        # runs 3 demo queries
+pytest tests/                  # runs the MVP test suite
+```
+
+## ESM — Epistemic State Machine (implemented)
+
+Facts live in one of 8 states:
+
+```
+Observed → Hypothesized → Supported → Validated → ImmutableCore
+                                   ↘ Contradicted → Deprecated → Collapsed
+```
+
+MVP fast-path allows `Observed → Validated` directly for the demo pipeline. The full transition rules from the spec (evidence_count ≥ 2, truth_gate ≥ 0.7, etc.) are a Sprint 2 task.
+
+## Spec documents
+
+- `Velantrim_V8_Crystal_Sprint1.jsonl` — canonical knowledge base (63 chunks)
+- `Velantrim_V8_Crystal_Sprint1_toc.md` — human-readable table of contents
+- `METADATA_FIX_REPORT.md` — history of the metadata hardening work
+- `SPRINT_A_V2_ADDITIONAL_PATCHES.md` — A6–A10 patch designs (not wired to code)
+- `MIGRATION_GUIDE_V3_1.md` — how to use the migration tool
+
+## Invariants tracked in the spec (not yet enforced by tests)
+
+| ID | Name | Status |
+|----|------|--------|
+| I1 | Graph = Truth | 🟡 MVP approximates via TruthGate |
+| I2 | TruthGate is the only entry to L3 | 🟡 MVP enforces on SQLite, not Neo4j |
+| I6 | RingZeroImmutable | ✅ enforced in `transition_esm()` |
+| I50/I50-b/I66/I70/I-K3 | Concept Emergence | ❌ component not yet coded |
+| I68 | NeuroCoreIsolation | ❌ component not yet coded |
+
+Enforcement via `tests/test_invariants.py` — Sprint 3+.
+
+## Contributing
+
+1. Read this README first.
+2. Check `ROADMAP.md` to see if your idea is already scoped.
+3. New architectural ideas → open an issue before editing the spec.
+
+## License
+
+MIT — see [LICENSE](./LICENSE).
+
+---
+
+> Graph = Truth · LLM = Language · Memory = Physiology · Volition = Agency · Emergence = Life

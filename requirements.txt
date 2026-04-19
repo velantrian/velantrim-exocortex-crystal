@@ -1,0 +1,13 @@
+# Velantrim ExoCortex — runtime dependencies
+# MVP uses only stdlib, but pytest required for tests.
+
+# Testing
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+
+# Future Sprint 2+ dependencies (commented — do not install yet):
+# neo4j>=5.15.0
+# redis>=5.0.0
+# kuzu>=0.1.0
+# apscheduler>=3.10.0
+# prometheus-client>=0.19.0

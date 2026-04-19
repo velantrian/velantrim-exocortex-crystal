@@ -30,18 +30,31 @@ ESM_STATES = {
 }
 
 # ─── ESM: матрица допустимых переходов ────────────────────────────────────────
-# Observed → Validated: разрешён как MVP fast-path через TruthGate.
-# Состояния вне матрицы (Contradicted, Deprecated, ImmutableCore) — Sprint 2.
+# MVP fast-path: Observed → Validated разрешён напрямую для демо-пайплайна.
+# Полная цепь (Hypothesized → Supported → Validated) требует evidence_count
+# и truth_gate_score — это задача Sprint 2 (см. RFC0001 в jsonl).
+# I6: VALUES_CORE / RING_ZERO защищены в transition_esm, не через матрицу.
 ESM_TRANSITIONS: Dict[str, set] = {
     "Observed":      {"Hypothesized", "Supported", "Validated", "Collapsed"},
     "Hypothesized":  {"Supported", "Validated", "Collapsed"},
     "Supported":     {"Validated", "Collapsed"},
-    "Validated":     {"ImmutableCore", "Collapsed"},
+    "Validated":     {"Contradicted", "ImmutableCore", "Collapsed"},
     "Contradicted":  {"Deprecated", "Collapsed"},
     "Deprecated":    {"Collapsed"},
     "Collapsed":     set(),
     "ImmutableCore": set(),
 }
+
+# ─── RING ZERO / VALUES CORE: неизменяемые факты (I6) ─────────────────────────
+# По спецификации RFC0001 / ESM: эти факты frozen на состоянии Validated.
+# Любая попытка transition_esm() для них — raise ImmutableStateError.
+IMMUTABLE_FACT_IDS = {"VALUES_CORE", "RING_ZERO"}
+
+
+class ImmutableStateError(Exception):
+    """Raised when attempting to transition a Ring Zero / VALUES_CORE fact."""
+    pass
+
 
 # ─── L0: рабочая память (in-memory, живёт только в сессии) ────────────────────
 _L0: Dict[str, Dict] = {}
@@ -153,6 +166,13 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
     """
     if new_state not in ESM_STATES:
         raise ValueError(f"transition_esm: недопустимое состояние '{new_state}'")
+
+    # I6 (RingZeroImmutable): VALUES_CORE / RING_ZERO не изменяются никогда.
+    if fact_id in IMMUTABLE_FACT_IDS:
+        raise ImmutableStateError(
+            f"transition_esm: факт '{fact_id}' защищён Ring Zero (I6), "
+            f"переход в '{new_state}' запрещён"
+        )
 
     fact = get_fact(fact_id)
     if not fact:

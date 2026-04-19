@@ -1,3 +1,34 @@
+# Python
 __pycache__/
 *.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Data (SQLite, local graph, logs)
 data/
+*.db
+*.db-journal
+*.log
+
+# Environment
+.venv/
+venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project-specific: auto-generated reports
+migration_dependency_report.json
+*_diff.json
+*_backup_*.jsonl
+validate_dangling.json
