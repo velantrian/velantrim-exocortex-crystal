@@ -89,3 +89,46 @@ def test_store_fact_rejects_invalid_state():
     with pytest.raises(ValueError, match="недопустимое ESM"):
         store_fact({"fact_id": "bad", "claim": "x", "source": "s",
                     "epistemic_state": "NotAState"})
+
+
+# ─── B1: L0 LRU cache ─────────────────────────────────────────────────────────
+
+def test_lru_cap_respected():
+    """B1: L0 must never exceed L0_CAP entries."""
+    from core.memory import store_fact, _L0, L0_CAP
+    for i in range(L0_CAP + 3):
+        store_fact({"fact_id": f"lru_{i}", "claim": f"c{i}", "source": "t",
+                    "confidence": 0.5})
+    assert len(_L0) <= L0_CAP
+
+
+def test_lru_evicts_oldest():
+    """B1: first-inserted entry is evicted when capacity is exceeded."""
+    from core.memory import store_fact, _L0, L0_CAP
+    for i in range(L0_CAP):
+        store_fact({"fact_id": f"ev_{i}", "claim": f"c{i}", "source": "t",
+                    "confidence": 0.5})
+    assert "ev_0" in _L0  # still present before overflow
+
+    store_fact({"fact_id": "ev_overflow", "claim": "x", "source": "t",
+                "confidence": 0.5})
+    assert "ev_0" not in _L0  # evicted (oldest)
+    assert "ev_overflow" in _L0
+
+
+def test_lru_read_refreshes_recency():
+    """B1: reading a fact makes it most-recently-used; a newer insert evicts another."""
+    from core.memory import store_fact, get_fact, _L0, L0_CAP
+    for i in range(L0_CAP):
+        store_fact({"fact_id": f"rec_{i}", "claim": f"c{i}", "source": "t",
+                    "confidence": 0.5})
+
+    # Read rec_0 — moves it to MRU position
+    get_fact("rec_0")
+
+    # Add one more — should evict rec_1 (now oldest), not rec_0
+    store_fact({"fact_id": "rec_new", "claim": "x", "source": "t",
+                "confidence": 0.5})
+
+    assert "rec_0" in _L0   # refreshed, not evicted
+    assert "rec_1" not in _L0  # was oldest after rec_0 was refreshed

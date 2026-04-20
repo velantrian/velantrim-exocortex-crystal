@@ -31,4 +31,9 @@ Thumbs.db
 migration_dependency_report.json
 *_diff.json
 *_backup_*.jsonl
+*_migrated.jsonl
+*_id_map.json
+*_deps.jsonl
+*.bak
 validate_dangling.json
+audit_issues.json
