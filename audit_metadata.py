@@ -81,20 +81,20 @@ def audit_jsonl(filepath):
                 if depends_on is not None and len(depends_on) == 0:
                     issues['empty_depends_on'].append(idx)
 
-                # Check char count
-                char_count = chunk.get('char_count', 0)
-                if char_count > 50000:
+                # E1: use actual content length, not stale char_count field
+                content_len = len(chunk.get('content', ''))
+                if content_len > 50000:
                     issues['mega_blobs'].append({
                         'idx': idx,
                         'chunk_id': chunk_id,
-                        'char_count': char_count,
+                        'char_count': content_len,
                         'title': title[:60]
                     })
-                if char_count < 150:
+                if content_len < 150:
                     issues['empty_stubs'].append({
                         'idx': idx,
                         'chunk_id': chunk_id,
-                        'char_count': char_count,
+                        'char_count': content_len,
                         'title': title[:60]
                     })
 

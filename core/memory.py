@@ -1,17 +1,19 @@
 # core/memory.py
 # Velantrim ExoCortex — Memory Layer
-# v8.0.2-sprint1
+# v8.1.0-sprint1
 #
 # Уровни памяти:
-#   L0: in-memory dict (рабочая память сессии)
+#   L0: LRU in-memory cache (CAP=5, OrderedDict)
 #   L1: SQLite (краткосрочная, персистентная между запусками)
 #
-# Полная архитектура L0–L6: см. docs/Velantrim_V8_Crystal_Sprint1_toc.md
+# Полная архитектура L0–L6: docs/Velantrim_V8_Crystal_Sprint1_toc.md
 # ESM (Epistemic State Machine): 8 состояний жизненного цикла факта.
 
 import os
 import sqlite3
 import json
+from collections import OrderedDict
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import Dict, Optional
 
@@ -31,8 +33,6 @@ ESM_STATES = {
 
 # ─── ESM: матрица допустимых переходов ────────────────────────────────────────
 # MVP fast-path: Observed → Validated разрешён напрямую для демо-пайплайна.
-# Полная цепь (Hypothesized → Supported → Validated) требует evidence_count
-# и truth_gate_score — это задача Sprint 2 (см. RFC0001 в jsonl).
 # I6: VALUES_CORE / RING_ZERO защищены в transition_esm, не через матрицу.
 ESM_TRANSITIONS: Dict[str, set] = {
     "Observed":      {"Hypothesized", "Supported", "Validated", "Collapsed"},
@@ -46,8 +46,6 @@ ESM_TRANSITIONS: Dict[str, set] = {
 }
 
 # ─── RING ZERO / VALUES CORE: неизменяемые факты (I6) ─────────────────────────
-# По спецификации RFC0001 / ESM: эти факты frozen на состоянии Validated.
-# Любая попытка transition_esm() для них — raise ImmutableStateError.
 IMMUTABLE_FACT_IDS = {"VALUES_CORE", "RING_ZERO"}
 
 
@@ -56,43 +54,71 @@ class ImmutableStateError(Exception):
     pass
 
 
-# ─── L0: рабочая память (in-memory, живёт только в сессии) ────────────────────
-_L0: Dict[str, Dict] = {}
+# ─── L0: LRU cache (in-memory, живёт только в сессии) ─────────────────────────
+L0_CAP = 5
+_L0: OrderedDict = OrderedDict()
 
 # ─── L1: SQLite путь ──────────────────────────────────────────────────────────
 SQLITE_PATH = "./data/velantrim_memory.db"
 
-# ─── L1: кешированное соединение (создаётся один раз, DDL — один раз) ─────────
-_conn: Optional[sqlite3.Connection] = None
+_DDL = """
+    CREATE TABLE IF NOT EXISTS facts (
+        fact_id        TEXT PRIMARY KEY,
+        claim          TEXT NOT NULL,
+        source         TEXT NOT NULL,
+        confidence     REAL DEFAULT 0.5,
+        epistemic_state TEXT DEFAULT 'Observed',
+        created_at     TEXT NOT NULL,
+        updated_at     TEXT NOT NULL,
+        metadata       TEXT DEFAULT '{}'
+    )
+"""
 
 
-def _get_conn() -> sqlite3.Connection:
-    global _conn
-    if _conn is None:
-        os.makedirs("./data", exist_ok=True)
-        _conn = sqlite3.connect(SQLITE_PATH)
-        _conn.row_factory = sqlite3.Row
-        _conn.execute("""
-            CREATE TABLE IF NOT EXISTS facts (
-                fact_id        TEXT PRIMARY KEY,
-                claim          TEXT NOT NULL,
-                source         TEXT NOT NULL,
-                confidence     REAL DEFAULT 0.5,
-                epistemic_state TEXT DEFAULT 'Observed',
-                created_at     TEXT NOT NULL,
-                updated_at     TEXT NOT NULL,
-                metadata       TEXT DEFAULT '{}'
-            )
-        """)
-        _conn.commit()
-    return _conn
+@contextmanager
+def _db():
+    """Connection per operation — no global state, no database-is-locked."""
+    db_dir = os.path.dirname(SQLITE_PATH)
+    if db_dir:
+        os.makedirs(db_dir, exist_ok=True)
+    conn = sqlite3.connect(SQLITE_PATH)
+    conn.row_factory = sqlite3.Row
+    conn.execute(_DDL)
+    conn.commit()
+    try:
+        yield conn
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+# ─── L0 helpers ───────────────────────────────────────────────────────────────
+
+def _l0_put(fact_id: str, record: Dict) -> None:
+    """Insert into L0 LRU cache, evict oldest entry when over capacity."""
+    if fact_id in _L0:
+        del _L0[fact_id]
+    _L0[fact_id] = record
+    if len(_L0) > L0_CAP:
+        _L0.popitem(last=False)  # evict least-recently-used
+
+
+def _l0_get(fact_id: str) -> Optional[Dict]:
+    """Return from L0, refreshing recency. Returns None on miss."""
+    if fact_id not in _L0:
+        return None
+    _L0.move_to_end(fact_id)
+    return _L0[fact_id]
 
 
 # ─── API ───────────────────────────────────────────────────────────────────────
 
 def store_fact(fact: Dict) -> None:
     """
-    Сохранить факт в L0 (RAM) и L1 (SQLite).
+    Сохранить факт в L0 (LRU RAM) и L1 (SQLite).
     Начальное состояние ESM: Observed.
     Прямая запись в L3 граф — только через TruthGate (не здесь).
     """
@@ -116,15 +142,13 @@ def store_fact(fact: Dict) -> None:
         "epistemic_state": epistemic_state,
         "created_at":      now,
         "updated_at":      now,
-        "metadata":        metadata_dict,   # L0: храним как dict, не как строку
+        "metadata":        metadata_dict,
     }
 
-    # L0
-    _L0[fact_id] = record
+    _l0_put(fact_id, record)
 
-    # L1: metadata сериализуется только для SQLite
     l1_record = {**record, "metadata": json.dumps(metadata_dict)}
-    with _get_conn() as conn:
+    with _db() as conn:
         conn.execute("""
             INSERT INTO facts
                 (fact_id, claim, source, confidence, epistemic_state,
@@ -143,17 +167,18 @@ def store_fact(fact: Dict) -> None:
 
 
 def get_fact(fact_id: str) -> Optional[Dict]:
-    """Получить факт: сначала L0, потом L1."""
-    if fact_id in _L0:
-        return _L0[fact_id]
-    with _get_conn() as conn:
+    """Получить факт: сначала L0 (LRU), потом L1."""
+    cached = _l0_get(fact_id)
+    if cached is not None:
+        return cached
+    with _db() as conn:
         row = conn.execute(
             "SELECT * FROM facts WHERE fact_id = ?", (fact_id,)
         ).fetchone()
         if row:
             result = dict(row)
-            result["metadata"] = json.loads(result["metadata"])  # L1→dict
-            _L0[fact_id] = result  # прогреть L0 уже с dict
+            result["metadata"] = json.loads(result["metadata"])
+            _l0_put(fact_id, result)
             return result
     return None
 
@@ -162,12 +187,10 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
     """
     Перевести факт в новое ESM-состояние.
     Прямой SET epistemic_state минуя эту функцию — архитектурный баг.
-    Допустимые переходы определяются матрицей ESM_TRANSITIONS.
     """
     if new_state not in ESM_STATES:
         raise ValueError(f"transition_esm: недопустимое состояние '{new_state}'")
 
-    # I6 (RingZeroImmutable): VALUES_CORE / RING_ZERO не изменяются никогда.
     if fact_id in IMMUTABLE_FACT_IDS:
         raise ImmutableStateError(
             f"transition_esm: факт '{fact_id}' защищён Ring Zero (I6), "
@@ -189,8 +212,8 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
     fact["epistemic_state"] = new_state
     fact["updated_at"] = now
 
-    _L0[fact_id] = fact
-    with _get_conn() as conn:
+    _l0_put(fact_id, fact)
+    with _db() as conn:
         conn.execute(
             "UPDATE facts SET epistemic_state = ?, updated_at = ? WHERE fact_id = ?",
             (new_state, now, fact_id)
@@ -200,7 +223,7 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
 
 def get_all_facts(epistemic_state: Optional[str] = None) -> list:
     """Получить все факты из L1. Опционально — фильтр по ESM-состоянию."""
-    with _get_conn() as conn:
+    with _db() as conn:
         if epistemic_state:
             rows = conn.execute(
                 "SELECT * FROM facts WHERE epistemic_state = ?",

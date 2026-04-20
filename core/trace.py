@@ -54,16 +54,13 @@ def build_trace(retrieved: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 def promote_trace(
     trace: List[Dict[str, Any]],
     new_state: str
-) -> List[Dict[str, Any]]:
+) -> None:
     """
     Обновить epistemic_state всех элементов trace после прохождения TruthGate.
     Вызывается из pipeline после truth_gate() → True.
+    Мутирует элементы trace in-place.
 
     Пример: promote_trace(trace, "Validated")
-
-    NOTE: Мутирует элементы trace in-place И возвращает тот же список.
-    Вызывающий код в pipeline.py полагается на in-place мутацию;
-    возвращаемое значение сохранено для симметрии API.
     """
     if new_state not in ESM_STATES:
         raise ValueError(f"promote_trace: недопустимое ESM-состояние '{new_state}'")
@@ -72,7 +69,6 @@ def promote_trace(
     for element in trace:
         element["epistemic_state"] = new_state
         element["promoted_at"] = now
-    return trace
 
 
 def format_trace(trace: List[Dict[str, Any]]) -> str:
