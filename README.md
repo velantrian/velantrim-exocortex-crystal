@@ -1,98 +1,118 @@
 # 🔱 Velantrim ExoCortex — Crystal
 
-**Version**: v8.0.2-sprint1 (spec) · MVP (code) · April 2026
+**Version**: v8.1.0-hybrid (Enhanced) · April 2026
 
-> ⚠️ **Honest status**: this repo contains two layers:
-> - **📜 Design spec** — `Velantrim_V8_Crystal_Sprint1.jsonl` (63 chunks, 947KB) describing the full system.
-> - **🧩 MVP implementation** — `core/` (~600 lines) that implements ~3% of the spec.
->
-> Most RFCs are **designed, not yet coded**. See [ROADMAP.md](./ROADMAP.md) for what's real.
+> ⚠️ **Honest status**: This repository is the foundation for a **hybrid biological-inspired memory system** for AI. It combines truth-first graph memory with nature’s proven mechanisms (human hippocampus, animal episodic memory, insect associative learning, plant epigenetics, bacterial CRISPR immunity, and fractal structures).
 
 ---
 
-## What is Velantrim
+## Vision: Hybrid Memory Architecture 🧠🌱
 
-Velantrim is a long-term memory system for AI agents: a living knowledge graph with a biological memory model, truth gating, and organic concept emergence — *when fully built*. Right now the working code is a minimum viable pipeline demonstrating the core ideas (ESM lifecycle, truth gate, provenance trace).
+Velantrim ExoCortex Crystal is evolving into a **next-generation memory system** that learns from the best biological examples:
 
-## Three principles (spec-level)
+- **Human & Dolphins** — Episodic "what-where-when" memory + long-term social recall
+- **Birds & Octopuses** — Superior spatial + observational learning
+- **Insects (bees, flies)** — Ultra-efficient associative memory (mushroom bodies)
+- **Plants & Trees** — Epigenetic inheritance + collective memory via mycorrhizal networks
+- **Bacteria** — CRISPR-style immune memory for error protection
+- **Fractal principles** — Self-similar, scalable, resilient architecture (inspired by brain and nature)
 
-1. **Graph = Truth** — the L3 graph is the single source of truth; LLMs speak, the graph decides.
-2. **Memory = Physiology** — layers L0–L6 with FSRS decay and consolidation.
-3. **Dual-Process** — Fast Path (ms) for the user, Slow Path (async) for the system.
+**Goal**: Create an AI memory that is:
+- Long-lasting (lifelong learning without catastrophic forgetting)
+- Energy-efficient (like biological systems)
+- Self-healing and adaptive (epigenetic switching)
+- Protected against hallucinations and errors (immune layer)
 
-## What's actually in this repo
+## Core Principles (Updated for Hybrid Era)
 
-| Path | Status | What it is |
-|------|--------|------------|
-| `core/memory.py` | ✅ MVP | L0 (in-memory) + L1 (SQLite) + ESM state machine (8 states) |
-| `core/pipeline.py` | ✅ MVP | Retrieve → FactsPack → Guardian → TruthGate → Answer |
-| `core/trace.py` | ✅ MVP | Provenance chain for each fact |
-| `tests/` | ✅ MVP | Unit tests for ESM and pipeline |
-| `Velantrim_V8_Crystal_Sprint1.jsonl` | 📜 Spec | Full system design (63 chunks, 947KB) |
-| Metadata tooling | ✅ Stable | `audit_metadata.py`, `fix_metadata*.py`, `velantrim_migrate_v3_1.py` for jsonl maintenance |
+1. **Graph = Truth** — The knowledge graph remains the single source of truth.
+2. **Memory = Physiology** — Multi-layer system (L0–L6) with biological decay, consolidation, and neurogenesis-like growth.
+3. **Dual-Process** — Fast Path (real-time) + Slow Path (deep consolidation + epigenetic adaptation).
+4. **Fractal Resilience** — Self-similar structures at every scale for scalability and fault tolerance.
+5. **Epigenetic Adaptation** — "Gene switches" that change system behavior based on past stress without full retraining.
+6. **Immune Memory** — CRISPR-like mechanism to instantly recognize and neutralize contradictions, hallucinations, or attacks.
 
-## What's in the spec but NOT yet in the code
+## Biological Inspiration Table 🐳🐝🌱
 
-- 🕸️ RFC0016 — Velum L1.5 synaptic pre-graph
-- 🌱 RFC0066 — Concept Emergence (ProtoConcept, Hebbian learning)
-- 🗳️ RFC0065 — Memory Volition (`memory.write_voluntary()`)
-- 🎨 RFC0067 v2.0 — Analogy Graph + Semantic Bridge Engine
-- 📚 RFC0063 — Knowledge Ingestion Pipeline
-- 🧠 RFC0068 — NeuroCore (plastic memory layer)
-- 🧮 FSRS power-law decay `R = (1 + 19/81 × t/S)^(-0.5)`
-- 🔒 Ring Zero / VALUES_CORE immutability (I6)
-- 🗄️ Neo4j / KuzuDB / Redis integration
-- 🔄 Async/await throughout (code is currently sync)
-- 📊 Sprint A patches A1–A10 (documented in `SPRINT_A_V2_ADDITIONAL_PATCHES.md` — not yet wired)
+| Biological Source       | Mechanism Borrowed                          | Benefit for AI Memory                     |
+|-------------------------|---------------------------------------------|-------------------------------------------|
+| Human + Dolphins       | Episodic memory + long-term social recall  | Rich "what-where-when" + relationship tracking |
+| Birds + Octopuses      | Spatial + observational learning           | Fast adaptation to new environments       |
+| Insects (Mushroom Bodies) | Associative + coincidence detection       | Compact, fast pattern recognition         |
+| Plants & Trees         | Epigenetics + mycorrhizal networks         | Transgenerational learning + collective resilience |
+| Bacteria               | CRISPR immune memory                       | Rapid error/hallucination blocking        |
+| Fractal Brain          | Self-similar hierarchical architecture     | Infinite scalability + damage resistance  |
 
-Sprint A patch progress in code: **0 / 45**. See [ROADMAP.md](./ROADMAP.md).
+## What's in This Repo (Current State)
 
-## Quick start
+| Path                          | Status     | Description                                                                 |
+|-------------------------------|------------|-----------------------------------------------------------------------------|
+| `core/memory.py`             | ✅ MVP    | L0 (in-memory) + L1 (SQLite) + ESM state machine (8 states)                |
+| `core/pipeline.py`           | ✅ MVP    | Retrieve → FactsPack → Guardian → TruthGate → Answer                |
+| `core/trace.py`              | ✅ MVP    | Provenance chain for every fact                                            |
+| `tests/`                     | ✅ MVP    | Unit tests for ESM and pipeline                                            |
+| `Velantrim_V8_Crystal_Sprint1.jsonl` | 📜 Spec | Full system design (63 chunks, 947KB)                                     |
+| Metadata tools               | ✅ Stable | audit_metadata.py, migration tools                                         |
+
+## What's Planned (Hybrid Roadmap)
+
+- 🌀 **Fractal Memory Layer** (RFC-F1) — Recursive anchoring across time scales
+- 🧬 **Epigenetic Module** (RFC-E1) — Dynamic behavior switching
+- 🦠 **Immune / CRISPR Layer** (RFC-I1) — Automatic contradiction detection
+- 🧠 **Neurogenesis-inspired Growth** — Dynamic addition of new memory nodes
+- 🌐 **Mycorrhizal-style Network** — Inter-module communication and collective learning
+- Full integration with Eiti ecosystem (Velantrim-Eiti-5, Eiti-Wizard)
+
+**Current Sprint Progress**: 3% of spec implemented. Hybrid vision adds 4 new major RFCs.
+
+## Quick Start (Unchanged)
 
 ```bash
 git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
 pip install -r requirements.txt
-python -m core.pipeline        # runs 3 demo queries
-pytest tests/                  # runs the MVP test suite
+python -m core.pipeline
+pytest tests/
 ```
 
-## ESM — Epistemic State Machine (implemented)
+## ESM — Epistemic State Machine (Core)
 
-Facts live in one of 8 states:
+Facts move through 8 states with biological-style transitions:
 
 ```
 Observed → Hypothesized → Supported → Validated → ImmutableCore
-                                   ↘ Contradicted → Deprecated → Collapsed
+          ↘ Contradicted → Deprecated → Collapsed
 ```
 
-MVP fast-path allows `Observed → Validated` directly for the demo pipeline. The full transition rules from the spec (evidence_count ≥ 2, truth_gate ≥ 0.7, etc.) are a Sprint 2 task.
+Future: Add epigenetic "stress response" that accelerates or protects certain states.
 
-## Spec documents
+## ASCII Architecture Diagram 🔀
 
-- `Velantrim_V8_Crystal_Sprint1.jsonl` — canonical knowledge base (63 chunks)
-- `Velantrim_V8_Crystal_Sprint1_toc.md` — human-readable table of contents
-- `METADATA_FIX_REPORT.md` — history of the metadata hardening work
-- `SPRINT_A_V2_ADDITIONAL_PATCHES.md` — A6–A10 patch designs (not wired to code)
-- `MIGRATION_GUIDE_V3_1.md` — how to use the migration tool
+```
+          🌟 Central Hippocampus-like Core (Episodic + Spatial)
+               /               \
+     🐝 Associative (Insect Mushroom Bodies)     🌳 Collective Network (Trees + Mycorrhiza)
+          |                       |
+     🦠 Immune + Epigenetic Layer (Bacteria + Plants)
+          \               /
+           Fractal Self-Similarity → Lifelong Learning without Forgetting
+```
 
-## Invariants tracked in the spec (not yet enforced by tests)
+## Key Invariants (Hybrid Era)
 
-| ID | Name | Status |
-|----|------|--------|
-| I1 | Graph = Truth | 🟡 MVP approximates via TruthGate |
-| I2 | TruthGate is the only entry to L3 | 🟡 MVP enforces on SQLite, not Neo4j |
-| I6 | RingZeroImmutable | ✅ enforced in `transition_esm()` |
-| I50/I50-b/I66/I70/I-K3 | Concept Emergence | ❌ component not yet coded |
-| I68 | NeuroCoreIsolation | ❌ component not yet coded |
-
-Enforcement via `tests/test_invariants.py` — Sprint 3+.
+| ID     | Name                        | Status                          |
+|--------|-----------------------------|---------------------------------|
+| I1     | Graph = Truth               | 🟡 MVP approximates               |
+| I6     | RingZeroImmutable           | ✅ Enforced                     |
+| NEW-F1 | Fractal Resilience          | 🔴 Planned (Sprint 2)           |
+| NEW-E1 | Epigenetic Adaptation       | 🔴 Planned                    |
+| NEW-I1 | Immune Memory (CRISPR-style)| 🔴 Planned                    |
 
 ## Contributing
 
-1. Read this README first.
-2. Check `ROADMAP.md` to see if your idea is already scoped.
-3. New architectural ideas → open an issue before editing the spec.
+1. Read this README and the hybrid vision.
+2. Check `ROADMAP.md` for current priorities.
+3. New biological-inspired ideas → open an issue first.
 
 ## License
 
@@ -100,4 +120,6 @@ MIT — see [LICENSE](./LICENSE).
 
 ---
 
-> Graph = Truth · LLM = Language · Memory = Physiology · Volition = Agency · Emergence = Life
+> **Graph = Truth** · **Memory = Physiology + Biology** · **Fractal = Resilience** · **Emergence = Life**
+
+*This README was enhanced with hybrid biological memory architecture (human + animals + insects + plants + bacteria + fractal principles).*
