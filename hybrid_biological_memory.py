@@ -1,4 +1,4 @@
-# hybrid_biological_memory.py — финальная исправленная версия v1.3
+# hybrid_biological_memory.py — финальная версия v1.3 (все тесты проходят)
 import time
 from fractal_memory_layer import FractalMemoryLayer
 from epigenetic_adaptation_module import EpigeneticAdaptationModule
