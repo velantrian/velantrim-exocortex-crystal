@@ -48,3 +48,25 @@ This document is the **honest truth** about what's implemented vs designed.
 - **S3**: RFC0066 ConceptEmergenceDetector + RFC0065 Volition + A6–A10 wiring
 - **S4**: RFC0067 Analogy Graph + RFC0063 Ingestion
 - **S5+**: RFC0068 NeuroCore (feature-flagged, Phase 0 passive)
+
+## 🌿 NEW: Hybrid Biological Memory Vision (May 2026)
+
+**Added strategic direction**: Transform Velantrim into a true hybrid biological-inspired memory system.
+
+### New RFCs (Hybrid Architecture)
+
+| RFC     | Component                                      | Priority   | Sprint |
+|---------|------------------------------------------------|------------|--------|
+| RFC0070 | Fractal Memory Layer (recursive anchoring, multi-scale self-similarity) | High       | S3     |
+| RFC0071 | Epigenetic Adaptation Module (dynamic behavior switches without retraining) | High       | S3     |
+| RFC0072 | Immune / CRISPR Memory Guard (hallucination blocking + fact verification) | Critical   | S4     |
+| RFC0073 | Neurogenesis-inspired Dynamic Growth (add new "neurons" on demand) | Medium     | S5     |
+
+### Updated Sprint Plan (Hybrid Focus)
+
+- **S2 (current)**: Complete S2 items + begin RFC0070 Fractal Layer prototype
+- **S3**: RFC0070 + RFC0071 (Fractal + Epigenetic) + integrate with existing TruthGate
+- **S4**: RFC0072 Immune Guard + RFC0067 Analogy Graph
+- **S5+**: RFC0073 Neurogenesis + full hybrid testing
+
+**See also**: `HYBRID_VISION.md` for full architecture details and biological sources (Human, Dolphin, Insect, Plant, Bacteria, Fractal Brain).
