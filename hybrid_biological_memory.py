@@ -1,4 +1,4 @@
-# hybrid_biological_memory.py — v1.2 (full public API matching tests)
+# hybrid_biological_memory.py — финальная исправленная версия v1.3
 import time
 from fractal_memory_layer import FractalMemoryLayer
 from epigenetic_adaptation_module import EpigeneticAdaptationModule
@@ -12,24 +12,21 @@ class HybridBiologicalMemory:
         self.epigenetic_module = EpigeneticAdaptationModule()
         self.immune_guard = ImmuneCRISPRMemoryGuard()
         self.neurogenesis_module = NeurogenesisDynamicGrowth()
-        self.neurogenesis = self.neurogenesis_module  # alias for tests
+        self.neurogenesis = self.neurogenesis_module   # алиас для тестов
         self.memory_log = []
         print(f"🌿🧠 HybridBiologicalMemory '{self.name}' initialized with 4 biological layers.")
 
     def add_memory(self, text: str, importance: float = 0.5):
-        self.memory_log.append({"text": text, "importance": importance, "timestamp": time.time()})
         self.fractal_layer.add_memory(text, importance)
         self.neurogenesis_module.integrate_new_memory({"text": text}, importance)
         self.immune_guard.check_fact(text)
-        return True  # tests expect True
+        self.memory_log.append({"text": text, "importance": importance})
+        return True
 
     def adapt_behavior(self, params: dict = None):
         if params is None:
             params = {}
-        result = self.epigenetic_module.adapt_behavior(params)
-        if "verification_strength" not in result:
-            result["verification_strength"] = 0.85
-        return result
+        return self.epigenetic_module.adapt_behavior(params)
 
     def add_new_neurons(self, count: int):
         return self.neurogenesis_module.add_new_neurons(count)
@@ -38,23 +35,18 @@ class HybridBiologicalMemory:
         self.epigenetic_module.record_stress(level, reason)
 
     def check_and_block_contradiction(self, text: str):
-        return True  # simulation
+        return self.immune_guard.check_fact(text)
 
     def inherit_to_child(self):
         return HybridBiologicalMemory(name=f"{self.name}-child")
 
-    def get_full_stats(self):
+    def get_full_status(self):
         return {
-            "fractal": getattr(self.fractal_layer, 'get_stats', lambda: {})(),
-            "epigenetic": getattr(self.epigenetic_module, 'get_state', lambda: {})(),
-            "immune": getattr(self.immune_guard, 'get_immunity_report', lambda: {})(),
-            "neurogenesis": getattr(self.neurogenesis_module, 'get_stats', lambda: {})()
+            "fractal": self.fractal_layer.get_stats(),
+            "epigenetic": self.epigenetic_module.get_state(),
+            "immune": self.immune_guard.get_immunity_report(),
+            "neurogenesis": self.neurogenesis_module.get_stats()
         }
 
-    def get_full_status(self):
-        return self.get_full_stats()
-
-if __name__ == "__main__":
-    hbm = HybridBiologicalMemory()
-    hbm.add_memory("Test event", 0.9)
-    print(hbm.get_full_stats())
+    def get_full_stats(self):
+        return self.get_full_status()
