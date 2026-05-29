@@ -4,6 +4,7 @@
 # Testing
 pytest>=8.0.0
 pytest-asyncio>=0.23.0
+pytest-cov>=4.1.0
 
 # Future Sprint 2+ dependencies (commented — do not install yet):
 # neo4j>=5.15.0

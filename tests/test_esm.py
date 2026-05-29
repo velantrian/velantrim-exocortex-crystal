@@ -4,27 +4,9 @@ Tests for core/memory.py ESM (Epistemic State Machine).
 Covers only the MVP-level behavior actually implemented in code.
 Full RFC0001 invariants (I1–I95) are a Sprint 3+ task.
 """
-import os
-import sys
-import tempfile
 import pytest
 
-# Ensure core/ is importable
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
-
-@pytest.fixture(autouse=True)
-def isolated_db(monkeypatch, tmp_path):
-    """Each test gets its own SQLite file and fresh L0 cache."""
-    from core import memory
-    # Reset module-level state
-    memory._L0.clear()
-    memory._conn = None
-    monkeypatch.setattr(memory, "SQLITE_PATH", str(tmp_path / "test.db"))
-    yield
-    if memory._conn is not None:
-        memory._conn.close()
-        memory._conn = None
+# DB isolation is provided by the autouse `isolated_db` fixture in conftest.py.
 
 
 def test_esm_has_eight_states():

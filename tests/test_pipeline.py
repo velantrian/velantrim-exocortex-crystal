@@ -1,21 +1,7 @@
 """Smoke tests for the MVP pipeline."""
-import os
-import sys
 import pytest
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
-
-@pytest.fixture(autouse=True)
-def isolated_db(monkeypatch, tmp_path):
-    from core import memory
-    memory._L0.clear()
-    memory._conn = None
-    monkeypatch.setattr(memory, "SQLITE_PATH", str(tmp_path / "test.db"))
-    yield
-    if memory._conn is not None:
-        memory._conn.close()
-        memory._conn = None
+# DB isolation is provided by the autouse `isolated_db` fixture in conftest.py.
 
 
 def test_pipeline_happy_path():
@@ -44,3 +30,101 @@ def test_trace_is_built_for_each_fact():
         assert "fact_id" in el
         assert "epistemic_state" in el
         assert el["epistemic_state"] == "Validated"
+
+
+# ─── helpers ──────────────────────────────────────────────────────────────────
+
+def test_tokenize_lowercases_and_strips_punctuation():
+    from core.pipeline import tokenize
+    assert tokenize("Hello, WORLD! (DNA)") == ["hello", "world", "dna"]
+
+
+def test_normalize_score_clamps_and_guards_zero_max():
+    from core.pipeline import normalize_score
+    assert normalize_score(5, 0) == 0.0       # guard against div-by-zero
+    assert normalize_score(2, 4) == 0.5
+    assert normalize_score(10, 4) == 1.0      # clamped to 1.0
+
+
+def test_retrieve_respects_k_and_skips_non_matches():
+    from core.pipeline import retrieve
+    hits = retrieve("the", k=2)               # common token, several matches
+    assert len(hits) <= 2
+    assert all(h["epistemic_state"] == "Observed" for h in hits)
+    assert retrieve("zxqvbnmqwerty") == []
+
+
+# ─── guardian ───────────────────────────────────────────────────────────────
+
+def test_guardian_rejects_empty_facts():
+    from core.pipeline import guardian
+    ok, reason = guardian({"facts": []}, [{"fact_id": "x"}])
+    assert ok is False and "пустой" in reason
+
+
+def test_guardian_rejects_empty_trace():
+    from core.pipeline import guardian
+    ok, reason = guardian({"facts": [{"fact_id": "x"}]}, [])
+    assert ok is False and "Trace" in reason
+
+
+def test_guardian_rejects_trace_fact_count_mismatch():
+    from core.pipeline import guardian
+    facts = {"facts": [{"fact_id": "a", "claim": "c", "source": "s", "confidence": 1},
+                       {"fact_id": "b", "claim": "c", "source": "s", "confidence": 1}]}
+    ok, reason = guardian(facts, [{"fact_id": "a"}])
+    assert ok is False and "Несоответствие" in reason
+
+
+@pytest.mark.parametrize("bad_fact, needle", [
+    ({"fact_id": "", "claim": "c", "source": "s", "confidence": 1}, "fact_id"),
+    ({"fact_id": "a", "claim": "", "source": "s", "confidence": 1}, "claim"),
+    ({"fact_id": "a", "claim": "c", "source": "", "confidence": 1}, "source"),
+    ({"fact_id": "a", "claim": "c", "source": "s", "confidence": 0}, "confidence"),
+])
+def test_guardian_field_level_rejections(bad_fact, needle):
+    from core.pipeline import guardian
+    ok, reason = guardian({"facts": [bad_fact]}, [{"fact_id": "a"}])
+    assert ok is False and needle in reason
+
+
+def test_guardian_accepts_well_formed_pack():
+    from core.pipeline import guardian
+    facts = {"facts": [{"fact_id": "a", "claim": "c", "source": "s", "confidence": 0.9}]}
+    ok, reason = guardian(facts, [{"fact_id": "a"}])
+    assert ok is True and reason is None
+
+
+# ─── truth_gate ─────────────────────────────────────────────────────────────
+
+def test_truth_gate_rejects_empty():
+    from core.pipeline import truth_gate
+    ok, reason = truth_gate({"facts": []})
+    assert ok is False
+
+
+def test_truth_gate_rejects_missing_source():
+    from core.pipeline import truth_gate
+    ok, reason = truth_gate({"facts": [{"fact_id": "a", "confidence": 0.9}]})
+    assert ok is False and "source" in reason
+
+
+def test_truth_gate_rejects_below_threshold():
+    from core.pipeline import truth_gate
+    ok, reason = truth_gate(
+        {"facts": [{"fact_id": "a", "source": "s", "confidence": 0.01}]},
+        min_confidence=0.05,
+    )
+    assert ok is False and "порога" in reason
+
+
+# ─── generate_answer fallback ─────────────────────────────────────────────────
+
+def test_generate_answer_falls_back_when_nothing_validated():
+    from core.pipeline import generate_answer
+    pack = {"facts": [{"fact_id": "a", "claim": "raw", "source": "s",
+                       "epistemic_state": "Observed"}]}
+    out = generate_answer(pack, trace=[])
+    # No Validated/Supported facts → fall back to all facts rather than empty.
+    assert out["total_facts"] == 1
+    assert "raw" in out["answer"]

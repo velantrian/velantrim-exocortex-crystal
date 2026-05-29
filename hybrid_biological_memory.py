@@ -58,14 +58,15 @@ class EpigeneticAdaptationModule:
         else:
             self.current_mode = "normal"
 
-    def adapt_behavior(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def adapt_behavior(self, params: Dict[str, Any] = None) -> Dict[str, Any]:
         adapted = {
             "temperature": 0.7 if self.current_mode == "verification" else 1.0,
             "verification_strength": 0.95 if self.current_mode == "verification" else 0.6,
             "creativity": 0.4 if self.current_mode == "conservation" else 0.8,
             "exploration": 0.3 if self.current_mode == "normal" else 0.6
         }
-        adapted.update(params)
+        if params:
+            adapted.update(params)
         return adapted
 
     def get_state(self) -> Dict:
