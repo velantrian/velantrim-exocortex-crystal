@@ -128,3 +128,34 @@ def test_generate_answer_falls_back_when_nothing_validated():
     # No Validated/Supported facts → fall back to all facts rather than empty.
     assert out["total_facts"] == 1
     assert "raw" in out["answer"]
+
+
+# ─── build_facts_pack ─────────────────────────────────────────────────────────
+
+def test_build_facts_pack_skips_items_without_id():
+    from core.pipeline import build_facts_pack
+    pack = build_facts_pack(
+        [{"text": "no id", "source": "s", "_score": 0.5,
+          "epistemic_state": "Observed"}],
+        "q",
+    )
+    assert pack["facts"] == []
+    assert pack["total"] == 0
+
+
+# ─── run() block paths (guardian / truth_gate rejection) ──────────────────────
+
+def test_run_blocks_when_guardian_fails(monkeypatch):
+    from core import pipeline
+    monkeypatch.setattr(pipeline, "guardian", lambda fp, tr: (False, "boom"))
+    result = pipeline.run("quantum entanglement")
+    assert result["answer"] is None
+    assert "Guardian: boom" in result["error"]
+
+
+def test_run_blocks_when_truth_gate_fails(monkeypatch):
+    from core import pipeline
+    monkeypatch.setattr(pipeline, "truth_gate", lambda fp, **k: (False, "nope"))
+    result = pipeline.run("DNA")
+    assert result["answer"] is None
+    assert "TruthGate: nope" in result["error"]

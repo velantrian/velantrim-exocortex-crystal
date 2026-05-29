@@ -70,6 +70,20 @@ def test_transition_esm_missing_fact_returns_false():
     assert transition_esm("ghost", "Validated") is False
 
 
+def test_db_rolls_back_on_exception():
+    """_db() must roll back (and re-raise) when the with-block raises."""
+    from core import memory
+    with pytest.raises(ValueError, match="boom"):
+        with memory._db() as conn:
+            conn.execute(
+                "INSERT INTO facts (fact_id, claim, source, created_at, updated_at) "
+                "VALUES ('rb', 'c', 's', 't', 't')"
+            )
+            raise ValueError("boom")
+    # The insert must not have been committed.
+    assert get_fact("rb") is None
+
+
 def test_get_all_facts_unfiltered_and_filtered():
     store_fact({"fact_id": "a1", "claim": "c", "source": "s", "confidence": 0.5})
     store_fact({"fact_id": "a2", "claim": "c", "source": "s", "confidence": 0.5})

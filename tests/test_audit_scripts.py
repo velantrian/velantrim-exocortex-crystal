@@ -80,6 +80,55 @@ def test_audit_print_report_runs(tmp_path, capsys):
     assert "Total chunks: 1" in out
 
 
+def test_audit_jsonl_covers_remaining_rfc0067_and_blank_lines(tmp_path):
+    records = [
+        "",                                       # blank line is skipped
+        # RFC0067: field v2.0 but title v1.0
+        {"idx": 0, "chunk_id": "a", "rfc": "RFC0067 v2.0",
+         "title": "RFC0067 v1.0 legacy", "content": "x" * 200, "layer": "L1"},
+        # RFC0067: mixed versions present only in tags
+        {"idx": 1, "chunk_id": "b", "rfc": "RFC0067",
+         "title": "RFC0067 overview", "content": "y" * 200, "layer": "L1",
+         "tags": ["v1.0", "v2.0"]},
+    ]
+    path = _write_jsonl(tmp_path / "v.jsonl", records)
+    chunks, issues = audit_metadata.audit_jsonl(path)
+    assert len(chunks) == 2                        # blank line skipped
+    problems = {v["issue"] for v in issues["rfc0067_versions"]}
+    assert "rfc_field_v2_title_v1" in problems
+    assert "mixed_versions_in_tags" in problems
+
+
+def test_print_report_emits_every_section(capsys):
+    # Hand-build a fully populated issues dict so every conditional block in
+    # print_report runs (including the ">10 cyrillic" truncation branch).
+    issues = {
+        "rfc_mismatches": [{"idx": 0, "chunk_id": "c0", "rfc_field": "RFC0001",
+                            "title_rfc": "RFC0002", "title": "mismatch"}],
+        "duplicate_rfcs": {"RFC0001": [0, 1]},
+        "cyrillic_chunk_ids": [{"idx": i, "chunk_id": f"чанк{i}"} for i in range(12)],
+        "null_layers": [3],
+        "empty_depends_on": [4],
+        "mega_blobs": [{"idx": 5, "chunk_id": "c5", "char_count": 60000,
+                        "title": "big"}],
+        "empty_stubs": [{"idx": 6, "chunk_id": "c6", "char_count": 10,
+                         "title": "tiny"}],
+        "duplicate_chunk_ids": {"dup": [7, 8]},
+        "rfc0067_versions": [{"idx": 9, "chunk_id": "c9", "rfc": "RFC0067 v2.0",
+                              "title": "t", "issue": "rfc_field_v2_title_v1"}],
+    }
+    audit_metadata.print_report([{}, {}], issues)
+    out = capsys.readouterr().out
+    assert "RFC MISMATCHES" in out
+    assert "DUPLICATE RFC NUMBERS" in out
+    assert "RFC0067 VERSION INCONSISTENCIES" in out
+    assert "CYRILLIC CHUNK_IDS" in out
+    assert "... and 2 more" in out               # >10 truncation branch
+    assert "MEGA-BLOBS" in out
+    assert "EMPTY STUBS" in out
+    assert "DUPLICATE CHUNK_IDS" in out
+
+
 def test_check_duplicates_smoke(tmp_path, capsys):
     # check_duplicates indexes up to 62, so provide 63 minimal chunks.
     records = [
