@@ -266,6 +266,74 @@ def test_main_diff(tmp_path, monkeypatch, capsys):
     assert "Modified: 1" in capsys.readouterr().out
 
 
+def test_stream_process_layer_inference_and_blank_lines(tmp_path):
+    records = [
+        "",                                                   # blank line skipped
+        {"chunk_id": "x", "title": "Ring Zero core", "content": "z" * 200},
+        # 'session' in title → L1; depends_on is a non-list/non-str → coerced to []
+        {"chunk_id": "y", "title": "session layer", "content": "z" * 200,
+         "depends_on": 123},
+    ]
+    path = _write(tmp_path / "in.jsonl", records)
+    diff, meta, links, id_set, adjacency = mig._stream_process(path, None, {}, None)
+    assert id_set == {"x", "y"}
+    assert adjacency["y"] == []                               # int depends_on dropped
+    assert meta["layers_added"] == 2                          # L0 + L1 inferred
+
+
+def test_validate_all_warns_on_cycles_dangling_and_bad_json(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    chunks = [
+        {"chunk_id": "a", "rfc": "RFC0001", "depends_on": ["b"], "content": "x"},
+        {"chunk_id": "b", "rfc": "RFC0001", "depends_on": ["a", "ghost"],
+         "content": "y"},
+    ]
+    assert mig.validate_all(chunks, {}) is True
+    # cycles (a↔b), dangling (ghost) and rfc duplicates (RFC0001) all warned
+    assert (tmp_path / "migration_dependency_report.json").exists()
+
+
+def test_validate_all_rejects_unserializable_chunk(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    chunks = [{"chunk_id": "a", "depends_on": [], "bad": {1, 2, 3}}]  # set → not JSON
+    assert mig.validate_all(chunks, {}) is False
+
+
+def test_validate_standalone_reports_duplicate_ids(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    path = _write(tmp_path / "d.jsonl", [
+        {"chunk_id": "dup", "depends_on": [], "content": "x" * 200, "layer": "L1"},
+        {"chunk_id": "dup", "depends_on": [], "content": "y" * 200, "layer": "L1"},
+    ])
+    mig.validate_standalone(path)
+    assert "Duplicate chunk_ids" in capsys.readouterr().out
+
+
+def test_run_pipeline_warns_on_cycles_and_dangling(tmp_path):
+    path = _write(tmp_path / "in.jsonl", [
+        {"chunk_id": "a", "title": "t", "content": "x" * 200, "depends_on": ["b"]},
+        {"chunk_id": "b", "title": "t", "content": "y" * 200,
+         "depends_on": ["a", "ghost"]},
+    ])
+    ok = mig.run_pipeline(str(path), dry_run=False, skip_backup=True)
+    assert ok is True
+    assert (tmp_path / "in_migrated.jsonl").exists()
+
+
+def test_fill_dependencies_skips_blank_lines(tmp_path):
+    from fill_dependencies import fill_dependencies
+    inp = tmp_path / "in.jsonl"
+    inp.write_text(
+        '{"chunk_id": "a", "content": "See RFC0004", "rfc": "RFC0001", "depends_on": []}\n'
+        '\n',                                       # blank line is skipped (line 23)
+        encoding="utf-8",
+    )
+    out = tmp_path / "out.jsonl"
+    fixes = fill_dependencies(str(inp), str(out))
+    assert fixes["total_chunks"] == 1
+    assert fixes["depends_on_populated"] == 1
+
+
 def test_main_rollback(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
     backup = _write(tmp_path / "b.jsonl", [{"chunk_id": "a"}])
