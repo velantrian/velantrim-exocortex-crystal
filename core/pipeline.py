@@ -9,8 +9,9 @@
 # Полная архитектура L0–L6: docs/Velantrim_V8_Crystal_Sprint1_toc.md
 #
 # TODO (Sprint 2):
-#   - Заменить DATABASE на L3 граф (Neo4j / KuzuDB)
-#   - Подключить HybridRetriever (BM25 + vector + HotGraph)
+#   - L3 граф: реализовать LadybugDB backend (core/l3_graph.py) — спайк pending.
+#     (Kuzu заморожен окт.2025; LadybugDB — его Cypher-совместимый преемник.)
+#   - Подключить HybridRetriever (BM25 + vector + HotGraph) поверх L3 vector index
 #   - Подключить LLM для generate_answer()
 #   - ESM: полная матрица переходов между состояниями
 
@@ -20,12 +21,14 @@ from core.trace import build_trace, promote_trace, format_trace
 from core.memory import (
     store_fact, get_fact, transition_esm, SUBJECTIVE_CLAIM_TYPES,
 )
+from core.l3_graph import get_l3_graph
 
 logger = logging.getLogger(__name__)
 
-# ─── MOCK DATABASE (L3 заглушка) ──────────────────────────────────────────────
-# В продакшене: Neo4j / KuzuDB граф. Единственный источник истины.
-# Прямой MERGE в граф минуя TruthGate — архитектурный баг.
+# ─── RETRIEVAL CORPUS (источник для retrieve, не L3) ──────────────────────────
+# Это корпус для извлечения, не канонический граф. Канон L3 живёт в
+# core/l3_graph.py и наполняется только после TruthGate (см. run, шаг 6).
+# Прямой MERGE в L3 минуя TruthGate — архитектурный баг.
 DATABASE = [
     {"id": "f1", "text": "Water boils at 100°C at sea level",     "source": "physics",    "confidence": 0.99},
     {"id": "f2", "text": "Quantum entanglement links particles",    "source": "physics",    "confidence": 0.85},
@@ -298,12 +301,15 @@ def run(query: str) -> Dict[str, Any]:
     # 6. ESM: перевести факты и trace в Validated через transition_esm (единственный путь).
     #    truth_status выставляется по claim_type: VERIFIED только для WORLD_FACT,
     #    субъективное валидируется как опыт (Validated), но истиной о мире не становится.
+    graph = get_l3_graph()
     for fact in facts_pack["facts"]:
         transition_esm(fact["fact_id"], "Validated")
         updated = get_fact(fact["fact_id"])
         if updated:
             fact["epistemic_state"] = updated["epistemic_state"]
         fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"))
+        # Единственный вход в L3: канонический MERGE строго после TruthGate.
+        graph.merge_fact(fact)
 
     promote_trace(trace, "Validated")
 

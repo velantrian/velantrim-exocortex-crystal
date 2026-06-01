@@ -15,6 +15,28 @@ def test_pipeline_happy_path():
         assert f["truth_status"] == "VERIFIED"
 
 
+def test_validated_facts_are_merged_into_l3_graph():
+    """The single entry into L3 is TruthGate: validated facts land in the graph."""
+    from core.pipeline import run
+    from core.l3_graph import get_l3_graph
+
+    result = run("quantum entanglement")
+    graph = get_l3_graph()
+    graph_ids = {f["fact_id"] for f in graph.all_facts()}
+    for f in result["facts"]:
+        assert f["fact_id"] in graph_ids
+        assert graph.get_fact(f["fact_id"])["truth_status"] == "VERIFIED"
+
+
+def test_blocked_pipeline_does_not_write_to_l3_graph():
+    """A fact that never passes TruthGate must not appear in canonical L3."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+
+    pipeline.run("zxqvbnmqwerty")  # empty retrieval → blocked before promotion
+    assert get_l3_graph().all_facts() == []
+
+
 def test_pipeline_empty_retrieval_blocks():
     from core.pipeline import run
     result = run("zxqvbnmqwerty")   # matches nothing in DATABASE
