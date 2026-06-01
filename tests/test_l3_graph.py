@@ -96,15 +96,55 @@ def test_factory_unknown_backend_raises():
 
 
 def test_factory_respects_env_var(monkeypatch):
+    """The factory must consult VELANTRIM_L3_BACKEND to choose a backend."""
+    import core.l3_graph as l3
     reset_l3_graph()
-    monkeypatch.setenv("VELANTRIM_L3_BACKEND", "ladybug")
-    # ladybug backend is a deliberate stub until the spike lands.
-    with pytest.raises(NotImplementedError, match="LadybugDB"):
-        get_l3_graph()
+    # Register a throwaway backend so the test needs no native deps.
+    monkeypatch.setitem(l3._BACKENDS, "dummy", MockL3Graph)
+    monkeypatch.setenv("VELANTRIM_L3_BACKEND", "dummy")
+    assert isinstance(get_l3_graph(), MockL3Graph)
 
 
-# ─── LadybugDB stub ───────────────────────────────────────────────────────────
+# ─── LadybugDB backend (optional native dep; skipped where absent) ────────────
 
-def test_ladybug_backend_is_not_yet_implemented():
-    with pytest.raises(NotImplementedError, match="спайк"):
-        LadybugL3Graph()
+@pytest.fixture
+def lbug(tmp_path):
+    pytest.importorskip("ladybug")
+    return LadybugL3Graph(db_path=str(tmp_path / "l3.lbug"))
+
+
+def test_ladybug_merge_is_idempotent_upsert(lbug):
+    lbug.merge_fact({"fact_id": "f2", "claim": "v1", "source": "physics",
+                     "claim_type": "WORLD_FACT", "truth_status": "VERIFIED",
+                     "confidence": 0.85, "significance": 0.5})
+    lbug.merge_fact({"fact_id": "f2", "claim": "v2"})  # same id → upsert
+    facts = lbug.all_facts()
+    assert len(facts) == 1
+    node = lbug.get_fact("f2")
+    assert node["claim"] == "v2"
+    assert node["truth_status"] == "VERIFIED"  # untouched field preserved
+
+
+def test_ladybug_merge_requires_fact_id(lbug):
+    with pytest.raises(ValueError, match="fact_id"):
+        lbug.merge_fact({"claim": "no id"})
+
+
+def test_ladybug_get_fact_missing_returns_none(lbug):
+    assert lbug.get_fact("ghost") is None
+
+
+def test_ladybug_metadata_round_trips(lbug):
+    lbug.merge_fact({"fact_id": "m1", "claim": "c", "source": "s",
+                     "metadata": {"tags": ["a", "b"], "n": 3}})
+    assert lbug.get_fact("m1")["metadata"] == {"tags": ["a", "b"], "n": 3}
+
+
+def test_ladybug_edges_and_neighbors_with_type_filter(lbug):
+    for fid in ("person", "place", "feeling"):
+        lbug.merge_fact({"fact_id": fid, "claim": fid, "source": "s"})
+    lbug.add_edge("person", "AT", "place")
+    lbug.add_edge("person", "FELT", "feeling")
+
+    assert {n["fact_id"] for n in lbug.neighbors("person")} == {"place", "feeling"}
+    assert [n["fact_id"] for n in lbug.neighbors("person", rel_type="AT")] == ["place"]

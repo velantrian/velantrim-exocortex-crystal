@@ -6,9 +6,13 @@ pytest>=8.0.0
 pytest-asyncio>=0.23.0
 pytest-cov>=4.1.0
 
+# Optional L3 graph backend (embedded, Cypher; successor to the frozen Kuzu).
+# Default backend is 'mock' (stdlib only); install to enable LadybugDB:
+#   pip install ladybug   (pulls numpy)
+# ladybug>=0.17.0
+
 # Future Sprint 2+ dependencies (commented — do not install yet):
 # neo4j>=5.15.0
 # redis>=5.0.0
-# kuzu>=0.1.0
 # apscheduler>=3.10.0
 # prometheus-client>=0.19.0

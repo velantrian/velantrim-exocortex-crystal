@@ -116,29 +116,131 @@ class MockL3Graph(L3GraphBackend):
 
 # ─── LADYBUGDB BACKEND (слот под спайк) ───────────────────────────────────────
 
-class LadybugL3Graph(L3GraphBackend):
+class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
     """
-    Backend на LadybugDB (Cypher MERGE, vector index, full-text).
+    Backend на LadybugDB — embedded, Cypher-совместимый преемник Kuzu
+    (Kuzu заморожен окт.2025). Узлы Fact + обобщённые рёбра EDGE с типом-свойством.
 
-    Намеренно не реализован до спайка: API форка ещё не верифицирован в этом
-    окружении. Слот существует и выбирается через VELANTRIM_L3_BACKEND=ladybug,
-    но падает с явной ошибкой — чтобы не тащить непроверенный Cypher в прод.
-    План спайка: поднять embedded LadybugDB, прогнать MERGE одного узла и
-    vector index по claim'ам, затем заменить тело методов реальными запросами.
+    API верифицирован спайком (v0.17.0): Database/Connection, MERGE-upsert по
+    PRIMARY KEY, REL-таблицы, vector index (INSTALL vector / CREATE_VECTOR_INDEX).
+
+    `ladybug` — опциональная зависимость (нативный пакет + numpy). Импорт ленивый;
+    при отсутствии — понятный ImportError. Дефолтный backend остаётся 'mock', а
+    эти методы исключены из coverage-гейта (pragma), т.к. CI не ставит ladybug;
+    поведение проверяется локально тестами под pytest.importorskip('ladybug').
     """
 
-    def __init__(self, db_path: str = "./data/velantrim_l3.ladybug") -> None:
-        raise NotImplementedError(
-            "LadybugDB backend ещё не реализован (ожидает спайк). "
-            "Используй backend='mock' до завершения интеграции. "
-            "См. ROADMAP: L3 граф на LadybugDB."
-        )
+    # Колонки узла Fact, которые персистим (остальное — в metadata JSON).
+    _COLS = [
+        "fact_id", "claim", "source", "confidence", "epistemic_state",
+        "claim_type", "source_status", "significance", "truth_status", "metadata",
+    ]
 
-    def merge_fact(self, fact): ...        # pragma: no cover
-    def get_fact(self, fact_id): ...       # pragma: no cover
-    def all_facts(self): ...               # pragma: no cover
-    def add_edge(self, src_id, rel_type, dst_id, props=None): ...  # pragma: no cover
-    def neighbors(self, fact_id, rel_type=None): ...               # pragma: no cover
+    def __init__(self, db_path: str = "./data/velantrim_l3.lbug") -> None:
+        try:
+            import ladybug as lb
+        except ImportError as e:
+            raise ImportError(
+                "LadybugDB backend требует пакет 'ladybug' (опциональная "
+                "зависимость): pip install ladybug. Дефолт — backend='mock'."
+            ) from e
+        self._lb = lb
+        self._db = lb.Database(db_path)
+        self._conn = lb.Connection(self._db)
+        self._ensure_schema()
+
+    def _ensure_schema(self) -> None:
+        for ddl in (
+            "CREATE NODE TABLE Fact(fact_id STRING PRIMARY KEY, claim STRING, "
+            "source STRING, confidence DOUBLE, epistemic_state STRING, "
+            "claim_type STRING, source_status STRING, significance DOUBLE, "
+            "truth_status STRING, metadata STRING)",
+            "CREATE REL TABLE EDGE(FROM Fact TO Fact, rel_type STRING, props STRING)",
+        ):
+            try:
+                self._conn.execute(ddl)
+            except Exception:
+                pass  # таблица уже существует — схема идемпотентна
+
+    @staticmethod
+    def _serialize(fact: Dict[str, Any]) -> Dict[str, Any]:
+        # metadata кодируется base64: LadybugDB авто-парсит STRING вида {..}/[..]
+        # как map/list и теряет JSON-кавычки, поэтому JSON прячем за base64.
+        import json, base64
+        out = {}
+        for col in LadybugL3Graph._COLS:
+            if col == "metadata":
+                raw = json.dumps(fact.get("metadata", {})).encode("utf-8")
+                out["metadata"] = base64.b64encode(raw).decode("ascii")
+            elif col in fact:
+                out[col] = fact[col]
+        return out
+
+    @staticmethod
+    def _row_to_fact(row: list, cols: list) -> Dict[str, Any]:
+        import json, base64
+        d = dict(zip(cols, row))
+        if "metadata" in d and isinstance(d["metadata"], str):
+            try:
+                d["metadata"] = json.loads(base64.b64decode(d["metadata"]))
+            except (ValueError, TypeError):
+                d["metadata"] = {}
+        return {k: v for k, v in d.items() if v is not None}
+
+    def merge_fact(self, fact: Dict[str, Any]) -> None:
+        fact_id = fact.get("fact_id")
+        if not fact_id:
+            raise ValueError("merge_fact: fact_id обязателен")
+        params = self._serialize(fact)
+        sets = [f"f.{c} = ${c}" for c in params if c != "fact_id"]
+        cypher = "MERGE (f:Fact {fact_id: $fact_id})"
+        if sets:
+            cypher += " SET " + ", ".join(sets)
+        self._conn.execute(cypher, params)
+
+    def get_fact(self, fact_id: str) -> Optional[Dict[str, Any]]:
+        cols = self._COLS
+        ret = ", ".join(f"f.{c}" for c in cols)
+        res = self._conn.execute(
+            f"MATCH (f:Fact {{fact_id: $id}}) RETURN {ret}", {"id": fact_id})
+        if not res.has_next():
+            return None
+        return self._row_to_fact(res.get_next(), cols)
+
+    def all_facts(self) -> List[Dict[str, Any]]:
+        cols = self._COLS
+        ret = ", ".join(f"f.{c}" for c in cols)
+        res = self._conn.execute(f"MATCH (f:Fact) RETURN {ret}")
+        out = []
+        while res.has_next():
+            out.append(self._row_to_fact(res.get_next(), cols))
+        return out
+
+    def add_edge(
+        self, src_id: str, rel_type: str, dst_id: str,
+        props: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        import json
+        self._conn.execute(
+            "MATCH (a:Fact {fact_id: $s}), (b:Fact {fact_id: $d}) "
+            "MERGE (a)-[e:EDGE {rel_type: $rt}]->(b) SET e.props = $p",
+            {"s": src_id, "d": dst_id, "rt": rel_type, "p": json.dumps(props or {})})
+
+    def neighbors(
+        self, fact_id: str, rel_type: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        cols = self._COLS
+        ret = ", ".join(f"b.{c}" for c in cols)
+        cypher = "MATCH (a:Fact {fact_id: $id})-[e:EDGE]->(b:Fact)"
+        params: Dict[str, Any] = {"id": fact_id}
+        if rel_type is not None:
+            cypher += " WHERE e.rel_type = $rt"
+            params["rt"] = rel_type
+        res = self._conn.execute(f"{cypher} RETURN {ret}", params)
+        out = []
+        while res.has_next():
+            out.append(self._row_to_fact(res.get_next(), cols))
+        return out
 
 
 # ─── ФАБРИКА / SINGLETON ──────────────────────────────────────────────────────
