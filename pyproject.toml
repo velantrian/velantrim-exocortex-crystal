@@ -28,6 +28,11 @@ ladybug = [
 embeddings = [
     "sentence-transformers>=2.2.0",
 ]
+# LLM answer generation via Claude (VELANTRIM_GENERATOR=anthropic).
+# Optional: the default generator is the dependency-free ExtractiveGenerator.
+llm = [
+    "anthropic>=0.40.0",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

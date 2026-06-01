@@ -16,17 +16,20 @@ def isolated_db(monkeypatch, tmp_path):
     no long-lived connection to tear down — we only need to redirect the DB
     path and clear the module-level in-memory cache.
     """
-    from core import memory, l3_graph, embedding
+    from core import memory, l3_graph, embedding, generation
 
     memory._L0.clear()
     monkeypatch.setattr(memory, "SQLITE_PATH", str(tmp_path / "test.db"))
-    # Pin the deterministic, dependency-free embedder so tests never load a
-    # neural model (the production default is 'auto', which would).
+    # Pin the deterministic, dependency-free backends so tests never load a
+    # neural model or hit the network (production defaults differ).
     monkeypatch.setenv("VELANTRIM_EMBEDDER", "hashing")
-    # Fresh in-memory L3 graph + embedder per test (module-level singletons).
+    monkeypatch.setenv("VELANTRIM_GENERATOR", "extractive")
+    # Fresh module-level singletons per test.
     l3_graph.reset_l3_graph()
     embedding.reset_embedder()
+    generation.reset_generator()
     yield
     memory._L0.clear()
     l3_graph.reset_l3_graph()
     embedding.reset_embedder()
+    generation.reset_generator()
