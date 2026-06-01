@@ -17,7 +17,9 @@
 import logging
 from typing import List, Dict, Any, Optional
 from core.trace import build_trace, promote_trace, format_trace
-from core.memory import store_fact, get_fact, transition_esm
+from core.memory import (
+    store_fact, get_fact, transition_esm, SUBJECTIVE_CLAIM_TYPES,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -106,6 +108,10 @@ def build_facts_pack(
             "source":          item["source"],
             "confidence":      item["_score"],
             "epistemic_state": item["epistemic_state"],  # из retrieve(), не дублируем
+            # retrieval-факты — утверждения о мире из внешнего источника.
+            "claim_type":      item.get("claim_type", "WORLD_FACT"),
+            "source_status":   item.get("source_status", "EXTERNAL"),
+            "significance":    item.get("significance", 0.5),
             "truth_status":    "UNVERIFIED",
         }
         # L0/L1 сохранение
@@ -167,6 +173,14 @@ def truth_gate(
     """
     Верифицирует факты перед записью в L3.
     Возвращает (passed: bool, reason: str | None).
+
+    Type-aware: ворота НЕ выбрасывают субъективное, но не дают ему
+    маскироваться под факт о мире.
+      - WORLD_FACT      → требует source + confidence ≥ порога.
+      - субъективные    → проходят без доказательной планки (чувство реально
+        (EMOTION, OPINION…)  как чувство), но не станут WORLD_FACT.
+      - LLM_OUTPUT      → не может быть WORLD_FACT сам по себе.
+
     Переход фактов в ESM-состояние Validated выполняется вызывающей стороной
     (run()) при passed=True. truth_gate() только принимает решение о верификации.
     """
@@ -178,6 +192,21 @@ def truth_gate(
     for fact in facts:
         if not fact.get("source"):
             return False, f"Факт без source: {fact.get('fact_id')}"
+
+        claim_type = fact.get("claim_type", "WORLD_FACT")
+
+        # LLM-вывод сам по себе не является фактом о внешнем мире.
+        if claim_type == "WORLD_FACT" and fact.get("source_status") == "LLM_OUTPUT":
+            return False, (
+                f"LLM_OUTPUT не может быть WORLD_FACT без независимого источника: "
+                f"{fact.get('fact_id')}"
+            )
+
+        # Субъективные утверждения валидны как опыт — без доказательной планки.
+        if claim_type in SUBJECTIVE_CLAIM_TYPES:
+            continue
+
+        # WORLD_FACT и INTERPRETATION — требуют минимальной уверенности.
         if fact.get("confidence", 0) < min_confidence:
             return False, (
                 f"Confidence {fact['confidence']} < порога {min_confidence}: "
@@ -185,6 +214,19 @@ def truth_gate(
             )
 
     return True, None
+
+
+def _truth_status_for(claim_type: str) -> str:
+    """
+    Истинностный статус по модальности утверждения.
+    Значимость отделена от истины: всё валидируется как память,
+    но WORLD_FACT — единственное, что становится VERIFIED.
+    """
+    if claim_type == "WORLD_FACT":
+        return "VERIFIED"
+    if claim_type == "INTERPRETATION":
+        return "HYPOTHESIS"
+    return "SUBJECTIVE"
 
 
 # ─── GENERATION ───────────────────────────────────────────────────────────────
@@ -253,13 +295,15 @@ def run(query: str) -> Dict[str, Any]:
     if not gate_ok:
         return _blocked(f"TruthGate: {gate_reason}", query, facts_pack, trace)
 
-    # 6. ESM: перевести факты и trace в Validated через transition_esm (единственный путь)
+    # 6. ESM: перевести факты и trace в Validated через transition_esm (единственный путь).
+    #    truth_status выставляется по claim_type: VERIFIED только для WORLD_FACT,
+    #    субъективное валидируется как опыт (Validated), но истиной о мире не становится.
     for fact in facts_pack["facts"]:
         transition_esm(fact["fact_id"], "Validated")
         updated = get_fact(fact["fact_id"])
         if updated:
             fact["epistemic_state"] = updated["epistemic_state"]
-        fact["truth_status"] = "VERIFIED"
+        fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"))
 
     promote_trace(trace, "Validated")
 

@@ -118,6 +118,70 @@ def test_truth_gate_rejects_below_threshold():
     assert ok is False and "порога" in reason
 
 
+# ─── type-aware truth_gate (ось модальности) ──────────────────────────────────
+
+def test_truth_gate_passes_subjective_without_confidence_threshold():
+    """A feeling is real as a feeling: EMOTION passes even at low confidence."""
+    from core.pipeline import truth_gate
+    ok, reason = truth_gate(
+        {"facts": [{"fact_id": "e", "source": "user", "confidence": 0.0,
+                    "claim_type": "EMOTION", "source_status": "USER_REPORTED"}]},
+        min_confidence=0.05,
+    )
+    assert ok is True and reason is None
+
+
+def test_truth_gate_blocks_llm_output_as_world_fact():
+    """LLM output can never be a world fact by itself."""
+    from core.pipeline import truth_gate
+    ok, reason = truth_gate(
+        {"facts": [{"fact_id": "h", "source": "model", "confidence": 0.9,
+                    "claim_type": "WORLD_FACT", "source_status": "LLM_OUTPUT"}]},
+    )
+    assert ok is False and "LLM_OUTPUT" in reason
+
+
+def test_truth_status_reflects_claim_type():
+    """Promotion must label subjective claims SUBJECTIVE, not VERIFIED."""
+    from core.pipeline import _truth_status_for
+    assert _truth_status_for("WORLD_FACT") == "VERIFIED"
+    assert _truth_status_for("EMOTION") == "SUBJECTIVE"
+    assert _truth_status_for("USER_EXPERIENCE") == "SUBJECTIVE"
+    assert _truth_status_for("INTERPRETATION") == "HYPOTHESIS"
+
+
+def test_canonical_emotion_is_validated_but_not_world_fact():
+    """ChatGPT's canonical case: 'felt anxious talking to X' is a valid
+    experience (Validated) but must never become a verified world fact."""
+    from core import pipeline, memory
+
+    pack = {
+        "facts": [{
+            "fact_id": "anx1",
+            "claim": "Пользователь почувствовал тревогу при разговоре с X",
+            "source": "chat",
+            "confidence": 0.9,
+            "epistemic_state": "Observed",
+            "claim_type": "EMOTION",
+            "source_status": "USER_REPORTED",
+            "significance": 0.7,
+        }],
+        "query": "q",
+        "total": 1,
+    }
+    memory.store_fact(pack["facts"][0])
+
+    ok, _ = pipeline.truth_gate(pack)
+    assert ok is True
+
+    fact = pack["facts"][0]
+    memory.transition_esm(fact["fact_id"], "Validated")
+    fact["truth_status"] = pipeline._truth_status_for(fact["claim_type"])
+
+    assert fact["truth_status"] == "SUBJECTIVE"   # valid feeling…
+    assert fact["claim_type"] != "WORLD_FACT"     # …but not a fact about the world
+
+
 # ─── generate_answer fallback ─────────────────────────────────────────────────
 
 def test_generate_answer_falls_back_when_nothing_validated():

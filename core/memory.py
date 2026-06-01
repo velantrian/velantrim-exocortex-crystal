@@ -45,6 +45,39 @@ ESM_TRANSITIONS: Dict[str, set] = {
     "ImmutableCore": set(),
 }
 
+# ─── CLAIM TYPE: модальность утверждения (ось, ортогональная ESM) ─────────────
+# ESM отвечает на «насколько проверено», claim_type — на «что это за утверждение».
+# WORLD_FACT отделён от FACT намеренно: «факт о внешнем мире», а не «проверено».
+# Чувство реально как чувство — EMOTION может стать Validated, но НЕ WORLD_FACT.
+CLAIM_TYPES = {
+    "WORLD_FACT",       # утверждение о внешнем мире (требует доказательств)
+    "USER_EXPERIENCE",  # событие, как его пережил пользователь
+    "EMOTION",          # внутреннее состояние / чувство
+    "INTERPRETATION",   # вывод / объяснение (гипотеза)
+    "OPINION",          # мнение пользователя
+    "GOAL",             # цель
+    "PREFERENCE",       # предпочтение
+}
+DEFAULT_CLAIM_TYPE = "WORLD_FACT"
+
+# ─── SOURCE STATUS: происхождение утверждения (source monitoring) ─────────────
+# Защита от source-confusion: путаницы «видел / вообразил / услышал / додумал».
+SOURCE_STATUSES = {
+    "USER_REPORTED",  # сообщил пользователь
+    "OBSERVED",       # наблюдалось системой
+    "DERIVED",        # выведено из других фактов
+    "EXTERNAL",       # внешний источник / retrieval
+    "LLM_OUTPUT",     # ответ модели — сам по себе НЕ факт о мире
+    "UNKNOWN",
+}
+DEFAULT_SOURCE_STATUS = "UNKNOWN"
+
+# claim_type, для которых TruthGate НЕ требует доказательной планки:
+# они валидны как субъективный опыт, но не как факт о мире.
+SUBJECTIVE_CLAIM_TYPES = {
+    "USER_EXPERIENCE", "EMOTION", "OPINION", "PREFERENCE", "GOAL",
+}
+
 # ─── RING ZERO / VALUES CORE: неизменяемые факты (I6) ─────────────────────────
 IMMUTABLE_FACT_IDS = {"VALUES_CORE", "RING_ZERO"}
 
@@ -68,11 +101,31 @@ _DDL = """
         source         TEXT NOT NULL,
         confidence     REAL DEFAULT 0.5,
         epistemic_state TEXT DEFAULT 'Observed',
+        claim_type     TEXT DEFAULT 'WORLD_FACT',
+        source_status  TEXT DEFAULT 'UNKNOWN',
+        significance   REAL DEFAULT 0.5,
         created_at     TEXT NOT NULL,
         updated_at     TEXT NOT NULL,
         metadata       TEXT DEFAULT '{}'
     )
 """
+
+# ─── Миграция: колонки, добавленные после первого релиза схемы ────────────────
+# CREATE TABLE IF NOT EXISTS не трогает уже существующую БД, поэтому старые файлы
+# velantrim_memory.db нужно догнать через ALTER TABLE ADD COLUMN (idempotent).
+_MIGRATIONS = [
+    ("claim_type",    "TEXT DEFAULT 'WORLD_FACT'"),
+    ("source_status", "TEXT DEFAULT 'UNKNOWN'"),
+    ("significance",  "REAL DEFAULT 0.5"),
+]
+
+
+def _migrate(conn) -> None:
+    """Добавить недостающие колонки в существующую таблицу facts (idempotent)."""
+    existing = {row["name"] for row in conn.execute("PRAGMA table_info(facts)")}
+    for column, ddl in _MIGRATIONS:
+        if column not in existing:
+            conn.execute(f"ALTER TABLE facts ADD COLUMN {column} {ddl}")
 
 
 @contextmanager
@@ -84,6 +137,7 @@ def _db():
     conn = sqlite3.connect(SQLITE_PATH)
     conn.row_factory = sqlite3.Row
     conn.execute(_DDL)
+    _migrate(conn)
     conn.commit()
     try:
         yield conn
@@ -132,6 +186,14 @@ def store_fact(fact: Dict) -> None:
     if epistemic_state not in ESM_STATES:
         raise ValueError(f"store_fact: недопустимое ESM-состояние '{epistemic_state}'")
 
+    claim_type = fact.get("claim_type", DEFAULT_CLAIM_TYPE)
+    if claim_type not in CLAIM_TYPES:
+        raise ValueError(f"store_fact: недопустимый claim_type '{claim_type}'")
+
+    source_status = fact.get("source_status", DEFAULT_SOURCE_STATUS)
+    if source_status not in SOURCE_STATUSES:
+        raise ValueError(f"store_fact: недопустимый source_status '{source_status}'")
+
     metadata_dict = fact.get("metadata", {})
 
     record = {
@@ -140,6 +202,9 @@ def store_fact(fact: Dict) -> None:
         "source":          fact.get("source", "unknown"),
         "confidence":      round(float(fact.get("confidence", 0.5)), 4),
         "epistemic_state": epistemic_state,
+        "claim_type":      claim_type,
+        "source_status":   source_status,
+        "significance":    round(float(fact.get("significance", 0.5)), 4),
         "created_at":      now,
         "updated_at":      now,
         "metadata":        metadata_dict,
@@ -152,15 +217,20 @@ def store_fact(fact: Dict) -> None:
         conn.execute("""
             INSERT INTO facts
                 (fact_id, claim, source, confidence, epistemic_state,
+                 claim_type, source_status, significance,
                  created_at, updated_at, metadata)
             VALUES
                 (:fact_id, :claim, :source, :confidence, :epistemic_state,
+                 :claim_type, :source_status, :significance,
                  :created_at, :updated_at, :metadata)
             ON CONFLICT(fact_id) DO UPDATE SET
                 claim           = excluded.claim,
                 source          = excluded.source,
                 confidence      = excluded.confidence,
                 epistemic_state = excluded.epistemic_state,
+                claim_type      = excluded.claim_type,
+                source_status   = excluded.source_status,
+                significance    = excluded.significance,
                 updated_at      = excluded.updated_at,
                 metadata        = excluded.metadata
         """, l1_record)
