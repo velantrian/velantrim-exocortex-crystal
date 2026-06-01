@@ -11,9 +11,13 @@
 #     FactsPack кладётся в system с prompt caching; модель claude-opus-4-8,
 #     adaptive thinking. Включается VELANTRIM_GENERATOR=anthropic.
 
-import os
+import logging
 from abc import ABC, abstractmethod
 from typing import Dict, List, Any, Optional
+
+from core._registry import BackendRegistry
+
+logger = logging.getLogger(__name__)
 
 # Truth-first инструкция: отвечать строго по переданным фактам.
 _SYSTEM_PROMPT = (
@@ -82,13 +86,21 @@ class AnthropicGenerator(Generator):
             "text": _SYSTEM_PROMPT + _facts_block(facts),
             "cache_control": {"type": "ephemeral"},  # кэшируем стабильный префикс
         }]
-        response = self._client.messages.create(
-            model=self._model,
-            max_tokens=1024,
-            system=system,
-            thinking={"type": "adaptive"},
-            messages=[{"role": "user", "content": query}],
-        )
+        try:
+            response = self._client.messages.create(
+                model=self._model,
+                max_tokens=1024,
+                system=system,
+                thinking={"type": "adaptive"},
+                messages=[{"role": "user", "content": query}],
+            )
+        except Exception as e:  # noqa: BLE001 — сетевой/rate-limit сбой не должен ронять ответ
+            # Деградируем до extractive, а не падаем: факты уже верифицированы.
+            logger.warning(
+                "AnthropicGenerator: сбой API (%s), откат на extractive",
+                type(e).__name__,
+            )
+            return ExtractiveGenerator().generate(query, facts)
         return "".join(
             block.text for block in response.content if block.type == "text"
         ).strip()
@@ -101,7 +113,17 @@ _GENERATORS = {
     "anthropic": AnthropicGenerator,
 }
 
-_INSTANCE: Optional[Generator] = None
+
+def _make(name: str) -> Generator:
+    if name not in _GENERATORS:
+        raise ValueError(
+            f"get_generator: неизвестный backend '{name}'. "
+            f"Доступно: {sorted(_GENERATORS)}"
+        )
+    return _GENERATORS[name]()
+
+
+_REGISTRY = BackendRegistry("VELANTRIM_GENERATOR", "extractive", _make)
 
 
 def get_generator(backend: Optional[str] = None) -> Generator:
@@ -109,22 +131,9 @@ def get_generator(backend: Optional[str] = None) -> Generator:
     Singleton генератора. Backend — аргументом или VELANTRIM_GENERATOR
     (по умолчанию 'extractive').
     """
-    global _INSTANCE
-    if _INSTANCE is not None and backend is None:
-        return _INSTANCE
-    name = backend or os.environ.get("VELANTRIM_GENERATOR", "extractive")
-    if name not in _GENERATORS:
-        raise ValueError(
-            f"get_generator: неизвестный backend '{name}'. "
-            f"Доступно: {sorted(_GENERATORS)}"
-        )
-    instance = _GENERATORS[name]()
-    if backend is None:
-        _INSTANCE = instance
-    return instance
+    return _REGISTRY.get(backend)
 
 
 def reset_generator() -> None:
     """Сбросить singleton (для тестов)."""
-    global _INSTANCE
-    _INSTANCE = None
+    _REGISTRY.reset()

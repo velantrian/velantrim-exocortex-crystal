@@ -13,15 +13,23 @@
 #   SentenceTransformerEmbedder — реальные эмбеддинги (опц. зависимость,
 #     ленивый импорт). Включается VELANTRIM_EMBEDDER=sbert.
 #
+# ⚠️ Не смешивай эмбеддеры на одном персистентном L3-сторе: векторы от hashing и
+# sbert несопоставимы по косинусу. Выбери один backend на хранилище. (Полный
+# guard — тег эмбеддера на узле + сверка при поиске — отложен, см. ROADMAP.)
+#
 # Важно: хэш стабильный (hashlib), а не встроенный hash() — иначе векторы
 # не воспроизводятся между процессами и ломается персистентность в L3.
 
 import hashlib
+import logging
 import math
-import os
 import re
 from abc import ABC, abstractmethod
 from typing import List, Optional
+
+from core._registry import BackendRegistry
+
+logger = logging.getLogger(__name__)
 
 # Размерность вектора. Фиксирована: L3-граф хранит FLOAT[EMBED_DIM].
 # Чем больше, тем реже коллизии хэш-трюка между разными словами (ценой размера).
@@ -151,37 +159,18 @@ _EMBEDDERS = {
     "sbert": SentenceTransformerEmbedder,
 }
 
-_INSTANCE: Optional[Embedder] = None
 
-
-def get_embedder(backend: Optional[str] = None) -> Embedder:
-    """
-    Singleton эмбеддера. Backend — аргументом или VELANTRIM_EMBEDDER
-    (по умолчанию 'auto').
-
-    Режимы:
-      'auto'    — взять реальную модель (sbert), если установлена; иначе
-                  откатиться на HashingEmbedder. Безопасный дефолт: где есть
-                  sentence-transformers — настоящая семантика, где нет (напр. CI)
-                  — детерминированный лексический поиск без зависимостей.
-      'hashing' — всегда HashingEmbedder.
-      'sbert'   — всегда нейроэмбеддинги (ImportError, если пакет не стоит).
-    """
-    global _INSTANCE
-    if _INSTANCE is not None and backend is None:
-        return _INSTANCE
-    name = backend or os.environ.get("VELANTRIM_EMBEDDER", "auto")
-    instance = _instantiate(name)
-    if backend is None:
-        _INSTANCE = instance
-    return instance
-
-
-def _instantiate(name: str) -> Embedder:
+def _make(name: str) -> Embedder:
     if name == "auto":
         try:
             return SentenceTransformerEmbedder()
-        except ImportError:
+        except Exception as e:  # noqa: BLE001 — любой сбой загрузки → откат
+            # Не только ImportError: модель может не скачаться (офлайн / HF down).
+            # Дефолт обязан деградировать, а не ронять пайплайн.
+            logger.warning(
+                "auto-эмбеддер: sbert недоступен (%s), откат на HashingEmbedder",
+                type(e).__name__,
+            )
             return HashingEmbedder()
     if name not in _EMBEDDERS:
         raise ValueError(
@@ -191,7 +180,25 @@ def _instantiate(name: str) -> Embedder:
     return _EMBEDDERS[name]()
 
 
+_REGISTRY = BackendRegistry("VELANTRIM_EMBEDDER", "auto", _make)
+
+
+def get_embedder(backend: Optional[str] = None) -> Embedder:
+    """
+    Singleton эмбеддера. Backend — аргументом или VELANTRIM_EMBEDDER
+    (по умолчанию 'auto').
+
+    Режимы:
+      'auto'    — взять реальную модель (sbert), если доступна; при ЛЮБОМ сбое
+                  загрузки (пакет не стоит, модель не скачать) — откат на
+                  HashingEmbedder. Безопасный дефолт: где есть sbert — настоящая
+                  семантика, иначе — детерминированный лексический поиск.
+      'hashing' — всегда HashingEmbedder.
+      'sbert'   — всегда нейроэмбеддинги (ImportError, если пакет не стоит).
+    """
+    return _REGISTRY.get(backend)
+
+
 def reset_embedder() -> None:
     """Сбросить singleton (для тестов)."""
-    global _INSTANCE
-    _INSTANCE = None
+    _REGISTRY.reset()
