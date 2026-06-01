@@ -97,3 +97,69 @@ def test_get_all_facts_unfiltered_and_filtered():
 
     validated = get_all_facts(epistemic_state="Validated")
     assert {f["fact_id"] for f in validated} == {"a2"}
+
+
+# ─── claim_type / source_status / significance (ось модальности) ──────────────
+
+def test_new_fields_default_when_omitted():
+    """store_fact must apply sane defaults for the orthogonal modality axis."""
+    _L0.clear()
+    store_fact({"fact_id": "d1", "claim": "c", "source": "s", "confidence": 0.5})
+    _L0.clear()  # force the L1 read path
+    f = get_fact("d1")
+    assert f["claim_type"] == "WORLD_FACT"
+    assert f["source_status"] == "UNKNOWN"
+    assert f["significance"] == pytest.approx(0.5)
+
+
+def test_new_fields_round_trip_through_l1():
+    _L0.clear()
+    store_fact({"fact_id": "e1", "claim": "felt anxious", "source": "user",
+                "confidence": 0.9, "claim_type": "EMOTION",
+                "source_status": "USER_REPORTED", "significance": 0.7})
+    _L0.clear()
+    f = get_fact("e1")
+    assert f["claim_type"] == "EMOTION"
+    assert f["source_status"] == "USER_REPORTED"
+    assert f["significance"] == pytest.approx(0.7)
+
+
+def test_store_fact_rejects_unknown_claim_type():
+    with pytest.raises(ValueError, match="claim_type"):
+        store_fact({"fact_id": "bad", "claim": "c", "source": "s",
+                    "claim_type": "TELEPATHY"})
+
+
+def test_store_fact_rejects_unknown_source_status():
+    with pytest.raises(ValueError, match="source_status"):
+        store_fact({"fact_id": "bad2", "claim": "c", "source": "s",
+                    "source_status": "OUIJA_BOARD"})
+
+
+def test_migration_adds_columns_to_legacy_table(monkeypatch, tmp_path):
+    """A pre-existing DB built on the old schema must gain the new columns."""
+    import sqlite3
+    from core import memory
+
+    legacy = str(tmp_path / "legacy.db")
+    conn = sqlite3.connect(legacy)
+    conn.execute("""
+        CREATE TABLE facts (
+            fact_id TEXT PRIMARY KEY, claim TEXT NOT NULL, source TEXT NOT NULL,
+            confidence REAL DEFAULT 0.5, epistemic_state TEXT DEFAULT 'Observed',
+            created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+            metadata TEXT DEFAULT '{}'
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+    memory._L0.clear()
+    monkeypatch.setattr(memory, "SQLITE_PATH", legacy)
+    # store_fact opens _db(), which must ALTER the legacy table before INSERT.
+    store_fact({"fact_id": "leg1", "claim": "c", "source": "s",
+                "claim_type": "OPINION", "significance": 0.3})
+    memory._L0.clear()
+    f = get_fact("leg1")
+    assert f["claim_type"] == "OPINION"
+    assert f["significance"] == pytest.approx(0.3)
