@@ -29,7 +29,7 @@ This document is the **honest truth** about what's implemented vs designed.
 | RFC0063 | Knowledge Ingestion Pipeline | S4 |
 | RFC0068 | NeuroCore (plastic memory, Phase 0 passive tracker) | S5+ |
 | RFC0017 | FSRS power-law decay `R=(1+19/81×t/S)^(-0.5)` | S2 |
-| — | Neo4j / KuzuDB integration (currently only SQLite) | S2 |
+| — | L3 graph adapter + LadybugDB backend (Kuzu frozen Oct'25; spike done, wiring real backend) | S2 |
 | — | Redis + fallback queue | S2 |
 | — | Async/await throughout (currently sync) | S2 |
 | — | Sprint A patches A1–A10 (documented, not wired) | S3 |

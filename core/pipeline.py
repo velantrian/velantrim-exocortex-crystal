@@ -9,23 +9,28 @@
 # Полная архитектура L0–L6: docs/Velantrim_V8_Crystal_Sprint1_toc.md
 #
 # TODO (Sprint 2):
-#   - Заменить DATABASE на L3 граф (Neo4j / KuzuDB)
-#   - Подключить HybridRetriever (BM25 + vector + HotGraph)
+#   - L3 граф: реализовать LadybugDB backend (core/l3_graph.py) — спайк pending.
+#     (Kuzu заморожен окт.2025; LadybugDB — его Cypher-совместимый преемник.)
+#   - Подключить HybridRetriever (BM25 + vector + HotGraph) поверх L3 vector index
 #   - Подключить LLM для generate_answer()
 #   - ESM: полная матрица переходов между состояниями
 
 import logging
+from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from core.trace import build_trace, promote_trace, format_trace
 from core.memory import (
     store_fact, get_fact, transition_esm, SUBJECTIVE_CLAIM_TYPES,
 )
+from core.l3_graph import get_l3_graph
+from core.embedding import get_embedder, cosine
 
 logger = logging.getLogger(__name__)
 
-# ─── MOCK DATABASE (L3 заглушка) ──────────────────────────────────────────────
-# В продакшене: Neo4j / KuzuDB граф. Единственный источник истины.
-# Прямой MERGE в граф минуя TruthGate — архитектурный баг.
+# ─── RETRIEVAL CORPUS (источник для retrieve, не L3) ──────────────────────────
+# Это корпус для извлечения, не канонический граф. Канон L3 живёт в
+# core/l3_graph.py и наполняется только после TruthGate (см. run, шаг 6).
+# Прямой MERGE в L3 минуя TruthGate — архитектурный баг.
 DATABASE = [
     {"id": "f1", "text": "Water boils at 100°C at sea level",     "source": "physics",    "confidence": 0.99},
     {"id": "f2", "text": "Quantum entanglement links particles",    "source": "physics",    "confidence": 0.85},
@@ -50,27 +55,34 @@ def normalize_score(score: float, max_score: float) -> float:
     return max(0.0, min(1.0, score / max_score))
 
 
-# ─── RETRIEVAL (BM25-lite) ────────────────────────────────────────────────────
-# TODO Sprint 2: HybridRetriever (BM25 + vector + HotGraph + HippoRAG PageRank)
+# ─── RETRIEVAL (vector / semantic) ────────────────────────────────────────────
+# Косинусная близость эмбеддингов вместо лексического пересечения токенов.
+# Это убирает баг ранжирования по стоп-словам (запрос "...about the Sun" больше
+# не цепляет факт по слову "the"). Эмбеддер сменный (core/embedding.py): дефолт —
+# HashingEmbedder, реальная семантика — через VELANTRIM_EMBEDDER=sbert.
+# TODO Sprint 2: гибрид (vector + HotGraph + HippoRAG PageRank).
+
+# Порог отсечения шума от хэш-коллизий: ниже — не релевантно.
+_RETRIEVAL_MIN_SIM = 0.05
+
 
 def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
     """
-    BM25-lite поиск по DATABASE.
-    Возвращает топ-k фактов отсортированных по score.
+    Семантический поиск по DATABASE через косинус эмбеддингов.
+    Возвращает топ-k фактов, отсортированных по score (близость × confidence).
     Все факты начинают с epistemic_state='Observed' (сырой вход).
     """
-    query_words = tokenize(query)
+    embedder = get_embedder()
+    q_vec = embedder.embed(query)
     scored: List[Dict[str, Any]] = []
 
     for item in DATABASE:
-        text_words = tokenize(item["text"])
-        overlap = len(set(query_words) & set(text_words))
-        if overlap == 0:
+        sim = cosine(q_vec, embedder.embed(item["text"]))
+        if sim < _RETRIEVAL_MIN_SIM:
             continue
 
-        raw_score = overlap / (len(text_words) + 1)
-        # учитываем базовую уверенность источника
-        final_score = raw_score * item.get("confidence", 1.0)
+        # близость взвешиваем базовой уверенностью источника
+        final_score = sim * item.get("confidence", 1.0)
 
         scored.append({
             **item,
@@ -264,15 +276,53 @@ def generate_answer(
     }
 
 
+# ─── EPISODIC BINDING ─────────────────────────────────────────────────────────
+# Эпизодическая память: «что-где-когда-с-кем». Факты, вспомненные вместе,
+# связываются в L3 ненаправленной парой рёбер CO_OCCURRED с контекстом эпизода.
+# Рёбра соединяют уже валидированные узлы — это не обход TruthGate (тот сторожит
+# только вход факта-узла в канон).
+
+_EPISODE_REL = "CO_OCCURRED"
+
+
+def _link_episode(
+    graph,
+    facts: List[Dict[str, Any]],
+    query: str,
+    episode: Optional[Dict[str, Any]],
+) -> None:
+    """Связать со-вспомненные факты эпизодическим ребром (who/where/when/event)."""
+    ids = [f["fact_id"] for f in facts]
+    if len(ids) < 2:
+        return  # эпизодическая связь нужна минимум двум фактам
+
+    episode = episode or {}
+    props: Dict[str, Any] = {
+        "query": query,
+        "when": episode.get("when") or datetime.now(timezone.utc).isoformat(),
+    }
+    for key in ("who", "where", "event"):
+        if episode.get(key) is not None:
+            props[key] = episode[key]
+
+    # Цепочка соседних пар (а не все пары) — O(n) связок, достаточно для эпизода.
+    for a, b in zip(ids, ids[1:]):
+        graph.add_edge(a, _EPISODE_REL, b, props)
+        graph.add_edge(b, _EPISODE_REL, a, props)
+
+
 # ─── MAIN PIPELINE ────────────────────────────────────────────────────────────
 
-def run(query: str) -> Dict[str, Any]:
+def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Полный пайплайн Velantrim:
     Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer
 
     Принцип: Trace → Validation → Answer.
     Не наоборот.
+
+    episode — необязательный контекст эпизода (who / where / when / event):
+    факты, вспомненные вместе, связываются в L3 эпизодическим ребром.
     """
     # 1. Retrieval
     retrieved = retrieve(query)
@@ -298,12 +348,18 @@ def run(query: str) -> Dict[str, Any]:
     # 6. ESM: перевести факты и trace в Validated через transition_esm (единственный путь).
     #    truth_status выставляется по claim_type: VERIFIED только для WORLD_FACT,
     #    субъективное валидируется как опыт (Validated), но истиной о мире не становится.
+    graph = get_l3_graph()
     for fact in facts_pack["facts"]:
         transition_esm(fact["fact_id"], "Validated")
         updated = get_fact(fact["fact_id"])
         if updated:
             fact["epistemic_state"] = updated["epistemic_state"]
         fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"))
+        # Единственный вход в L3: канонический MERGE строго после TruthGate.
+        graph.merge_fact(fact)
+
+    # 6b. Эпизодическая связка: факты, вспомненные в одном запросе, связаны.
+    _link_episode(graph, facts_pack["facts"], query, episode)
 
     promote_trace(trace, "Validated")
 

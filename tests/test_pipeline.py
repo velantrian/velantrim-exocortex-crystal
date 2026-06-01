@@ -15,6 +15,79 @@ def test_pipeline_happy_path():
         assert f["truth_status"] == "VERIFIED"
 
 
+def test_validated_facts_are_merged_into_l3_graph():
+    """The single entry into L3 is TruthGate: validated facts land in the graph."""
+    from core.pipeline import run
+    from core.l3_graph import get_l3_graph
+
+    result = run("quantum entanglement")
+    graph = get_l3_graph()
+    graph_ids = {f["fact_id"] for f in graph.all_facts()}
+    for f in result["facts"]:
+        assert f["fact_id"] in graph_ids
+        assert graph.get_fact(f["fact_id"])["truth_status"] == "VERIFIED"
+
+
+def test_blocked_pipeline_does_not_write_to_l3_graph():
+    """A fact that never passes TruthGate must not appear in canonical L3."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+
+    pipeline.run("zxqvbnmqwerty")  # empty retrieval → blocked before promotion
+    assert get_l3_graph().all_facts() == []
+
+
+# ─── episodic binding ─────────────────────────────────────────────────────────
+
+def _two_retrieved():
+    return [
+        {"id": "f2", "text": "Quantum entanglement links particles",
+         "source": "physics", "confidence": 0.85, "_score": 0.6,
+         "epistemic_state": "Observed", "origin": "retrieval"},
+        {"id": "f5", "text": "DNA encodes genetic information",
+         "source": "biology", "confidence": 0.99, "_score": 0.5,
+         "epistemic_state": "Observed", "origin": "retrieval"},
+    ]
+
+
+def test_run_links_co_recalled_facts_with_episode_context(monkeypatch):
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: _two_retrieved())
+    pipeline.run("two facts",
+                 episode={"who": ["user"], "where": "lab", "when": "2026-06-01T17:00"})
+
+    g = get_l3_graph()
+    assert "f5" in {n["fact_id"] for n in g.neighbors("f2")}
+    edge = next(e for e in g._edges if e[0] == "f2" and e[2] == "f5")
+    assert edge[1] == "CO_OCCURRED"
+    assert edge[3]["who"] == ["user"]
+    assert edge[3]["where"] == "lab"
+    assert edge[3]["when"] == "2026-06-01T17:00"
+
+
+def test_single_fact_recall_creates_no_episode_edge(monkeypatch):
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: _two_retrieved()[:1])
+    pipeline.run("one fact")
+    assert get_l3_graph()._edges == []
+
+
+def test_link_episode_defaults_when_to_now_without_context():
+    from core import pipeline
+    from core.l3_graph import MockL3Graph
+
+    g = MockL3Graph()
+    facts = [{"fact_id": "a"}, {"fact_id": "b"}]
+    pipeline._link_episode(g, facts, "q", episode=None)
+    edge = next(e for e in g._edges if e[0] == "a")
+    assert "when" in edge[3] and edge[3]["when"]      # auto-stamped
+    assert "who" not in edge[3]                        # no context → no who/where
+
+
 def test_pipeline_empty_retrieval_blocks():
     from core.pipeline import run
     result = run("zxqvbnmqwerty")   # matches nothing in DATABASE
@@ -48,10 +121,25 @@ def test_normalize_score_clamps_and_guards_zero_max():
 
 def test_retrieve_respects_k_and_skips_non_matches():
     from core.pipeline import retrieve
-    hits = retrieve("the", k=2)               # common token, several matches
+    hits = retrieve("the", k=2)               # pure stopword query → nothing
     assert len(hits) <= 2
     assert all(h["epistemic_state"] == "Observed" for h in hits)
     assert retrieve("zxqvbnmqwerty") == []
+
+
+def test_retrieve_is_semantic_not_stopword_matching():
+    """Regression: 'Tell me about the Sun' must NOT pull the brain fact in via
+    the shared stopword 'the' (the old BM25-lite bug)."""
+    from core.pipeline import retrieve
+    hits = retrieve("Tell me about the Sun")
+    ids = [h["id"] for h in hits]
+    assert "f3" in ids          # Earth revolves around the Sun
+    assert "f4" not in ids      # The human brain ... (no longer a false match)
+
+
+def test_retrieve_pure_stopword_query_returns_nothing():
+    from core.pipeline import retrieve
+    assert retrieve("how do you do") == []
 
 
 # ─── guardian ───────────────────────────────────────────────────────────────

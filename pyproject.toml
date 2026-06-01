@@ -18,6 +18,16 @@ dev = [
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.1.0",
 ]
+# L3 canonical graph backend (embedded, Cypher-compatible Kuzu successor).
+# Optional: the default L3 backend is the dependency-free in-memory mock.
+ladybug = [
+    "ladybug>=0.17.0",
+]
+# Real neural embeddings for semantic retrieval (VELANTRIM_EMBEDDER=sbert).
+# Optional: the default embedder is the dependency-free HashingEmbedder.
+embeddings = [
+    "sentence-transformers>=2.2.0",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
