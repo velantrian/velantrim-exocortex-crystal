@@ -60,3 +60,24 @@ def test_factory_explicit_backend_not_cached():
 def test_factory_unknown_backend_raises():
     with pytest.raises(ValueError, match="неизвестный backend"):
         get_embedder(backend="word2vec")
+
+
+def test_auto_falls_back_to_hashing_without_sbert(monkeypatch):
+    import core.embedding as emb
+
+    def boom(*a, **k):
+        raise ImportError("sentence-transformers not installed")
+
+    monkeypatch.setattr(emb, "SentenceTransformerEmbedder", boom)
+    assert isinstance(emb._instantiate("auto"), emb.HashingEmbedder)
+
+
+def test_sbert_captures_real_semantics():
+    """Neural embeddings link 'Sun'~'solar' — which the lexical default cannot."""
+    pytest.importorskip("sentence_transformers")
+    from core.embedding import SentenceTransformerEmbedder, cosine
+    e = SentenceTransformerEmbedder()
+    sun_solar = cosine(e.embed("the Sun"), e.embed("solar star in the sky"))
+    sun_quantum = cosine(e.embed("the Sun"), e.embed("quantum entanglement"))
+    assert sun_solar > 0.3
+    assert sun_solar > sun_quantum

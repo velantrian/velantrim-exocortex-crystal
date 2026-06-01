@@ -20,6 +20,9 @@ def isolated_db(monkeypatch, tmp_path):
 
     memory._L0.clear()
     monkeypatch.setattr(memory, "SQLITE_PATH", str(tmp_path / "test.db"))
+    # Pin the deterministic, dependency-free embedder so tests never load a
+    # neural model (the production default is 'auto', which would).
+    monkeypatch.setenv("VELANTRIM_EMBEDDER", "hashing")
     # Fresh in-memory L3 graph + embedder per test (module-level singletons).
     l3_graph.reset_l3_graph()
     embedding.reset_embedder()
