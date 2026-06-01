@@ -136,6 +136,9 @@ def _db():
         os.makedirs(db_dir, exist_ok=True)
     conn = sqlite3.connect(SQLITE_PATH)
     conn.row_factory = sqlite3.Row
+    # WAL: writer не блокирует readers (лучше параллелизм для evidence/audit).
+    # Свойство файла БД — ставится один раз и сохраняется; повтор безвреден.
+    conn.execute("PRAGMA journal_mode=WAL")
     conn.execute(_DDL)
     _migrate(conn)
     conn.commit()

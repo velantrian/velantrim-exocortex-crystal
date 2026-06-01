@@ -70,6 +70,14 @@ def test_transition_esm_missing_fact_returns_false():
     assert transition_esm("ghost", "Validated") is False
 
 
+def test_db_uses_wal_journal_mode():
+    """Evidence/audit store runs in WAL so writers don't block readers."""
+    from core import memory
+    with memory._db() as conn:
+        mode = conn.execute("PRAGMA journal_mode").fetchone()[0]
+    assert mode.lower() == "wal"
+
+
 def test_db_rolls_back_on_exception():
     """_db() must roll back (and re-raise) when the with-block raises."""
     from core import memory

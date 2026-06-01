@@ -11,6 +11,8 @@ htmlcov/
 data/
 *.db
 *.db-journal
+*.db-wal
+*.db-shm
 *.log
 
 # Environment
