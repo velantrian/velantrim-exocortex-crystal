@@ -24,6 +24,7 @@ from core.memory import (
 )
 from core.l3_graph import get_l3_graph
 from core.embedding import get_embedder, cosine
+from core.generation import get_generator
 
 logger = logging.getLogger(__name__)
 
@@ -242,16 +243,16 @@ def _truth_status_for(claim_type: str) -> str:
 
 
 # ─── GENERATION ───────────────────────────────────────────────────────────────
-# TODO Sprint 2: заменить join на LLM с FactsPack как системным контекстом.
+# Ответ формирует сменный Generator (core/generation.py): дефолт — extractive,
+# опционально — LLM (Claude) с FactsPack в system. Граф остаётся источником истины.
 
 def generate_answer(
     facts_pack: Dict[str, Any],
     trace: List[Dict[str, Any]],
 ) -> Dict[str, Any]:
     """
-    Генерация ответа из верифицированных фактов.
-    Текущая реализация: extractive (join фактов).
-    Sprint 2: LLM генерация с FactsPack в system prompt.
+    Генерация ответа из верифицированных фактов через get_generator().
+    Дефолт-backend extractive (склейка); LLM — через VELANTRIM_GENERATOR=anthropic.
     """
     validated_facts = [
         f for f in facts_pack["facts"]
@@ -265,7 +266,7 @@ def generate_answer(
         )
         validated_facts = facts_pack["facts"]
 
-    answer = " | ".join(f["claim"] for f in validated_facts)
+    answer = get_generator().generate(facts_pack.get("query", ""), validated_facts)
 
     return {
         "answer":       answer,

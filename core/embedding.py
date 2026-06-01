@@ -157,21 +157,38 @@ _INSTANCE: Optional[Embedder] = None
 def get_embedder(backend: Optional[str] = None) -> Embedder:
     """
     Singleton эмбеддера. Backend — аргументом или VELANTRIM_EMBEDDER
-    (по умолчанию 'hashing').
+    (по умолчанию 'auto').
+
+    Режимы:
+      'auto'    — взять реальную модель (sbert), если установлена; иначе
+                  откатиться на HashingEmbedder. Безопасный дефолт: где есть
+                  sentence-transformers — настоящая семантика, где нет (напр. CI)
+                  — детерминированный лексический поиск без зависимостей.
+      'hashing' — всегда HashingEmbedder.
+      'sbert'   — всегда нейроэмбеддинги (ImportError, если пакет не стоит).
     """
     global _INSTANCE
     if _INSTANCE is not None and backend is None:
         return _INSTANCE
-    name = backend or os.environ.get("VELANTRIM_EMBEDDER", "hashing")
-    if name not in _EMBEDDERS:
-        raise ValueError(
-            f"get_embedder: неизвестный backend '{name}'. "
-            f"Доступно: {sorted(_EMBEDDERS)}"
-        )
-    instance = _EMBEDDERS[name]()
+    name = backend or os.environ.get("VELANTRIM_EMBEDDER", "auto")
+    instance = _instantiate(name)
     if backend is None:
         _INSTANCE = instance
     return instance
+
+
+def _instantiate(name: str) -> Embedder:
+    if name == "auto":
+        try:
+            return SentenceTransformerEmbedder()
+        except ImportError:
+            return HashingEmbedder()
+    if name not in _EMBEDDERS:
+        raise ValueError(
+            f"get_embedder: неизвестный backend '{name}'. "
+            f"Доступно: {sorted(_EMBEDDERS) + ['auto']}"
+        )
+    return _EMBEDDERS[name]()
 
 
 def reset_embedder() -> None:
