@@ -93,6 +93,20 @@ def test_mock_vector_search_ignores_nodes_without_claim():
     assert g.vector_search([0.1] * 8) == []
 
 
+def test_mock_vector_search_breaks_ties_by_significance():
+    """Equal relevance → the more significant memory ranks first (salience)."""
+    from core.embedding import get_embedder
+    g = MockL3Graph()
+    claim = "Earth revolves around the Sun"
+    g.merge_fact({"fact_id": "low", "claim": claim, "significance": 0.1})
+    g.merge_fact({"fact_id": "high", "claim": claim, "significance": 0.9})
+
+    hits = g.vector_search(get_embedder().embed("Tell me about the Sun"), k=2)
+    assert hits[0]["fact_id"] == "high"
+    assert hits[0]["_relevance"] == hits[1]["_relevance"]  # same semantic relevance
+    assert hits[0]["_score"] > hits[1]["_score"]           # but salience tips it
+
+
 # ─── factory / singleton ──────────────────────────────────────────────────────
 
 def test_factory_default_is_mock_singleton():

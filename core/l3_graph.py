@@ -20,6 +20,20 @@ import os
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Any
 
+# Вклад значимости (salience) в ранжирование vector_search: итоговый скор =
+# близость × (1 + W × significance). Релевантность доминирует, значимость
+# поднимает важные воспоминания при близких косинусах. significance ≠ truth.
+_SIGNIFICANCE_WEIGHT = 0.5
+
+
+def _salience_score(similarity: float, significance: Any) -> float:
+    """Близость, усиленная значимостью узла (по умолчанию significance=0.5)."""
+    try:
+        sig = float(significance)
+    except (TypeError, ValueError):
+        sig = 0.5
+    return similarity * (1.0 + _SIGNIFICANCE_WEIGHT * sig)
+
 
 # ─── ИНТЕРФЕЙС BACKEND ────────────────────────────────────────────────────────
 
@@ -135,7 +149,8 @@ class MockL3Graph(L3GraphBackend):
             if sim <= 0.0:
                 continue
             node = dict(self._nodes[fact_id])
-            node["_score"] = round(sim, 6)
+            node["_relevance"] = round(sim, 6)
+            node["_score"] = round(_salience_score(sim, node.get("significance", 0.5)), 6)
             scored.append(node)
         scored.sort(key=lambda n: n["_score"], reverse=True)
         return scored[:k]
@@ -264,11 +279,13 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
         self, src_id: str, rel_type: str, dst_id: str,
         props: Optional[Dict[str, Any]] = None,
     ) -> None:
-        import json
+        import json, base64
+        # props в base64 по той же причине, что и metadata (см. _serialize).
+        payload = base64.b64encode(json.dumps(props or {}).encode("utf-8")).decode("ascii")
         self._conn.execute(
             "MATCH (a:Fact {fact_id: $s}), (b:Fact {fact_id: $d}) "
             "MERGE (a)-[e:EDGE {rel_type: $rt}]->(b) SET e.props = $p",
-            {"s": src_id, "d": dst_id, "rt": rel_type, "p": json.dumps(props or {})})
+            {"s": src_id, "d": dst_id, "rt": rel_type, "p": payload})
 
     def neighbors(
         self, fact_id: str, rel_type: Optional[str] = None,
@@ -300,18 +317,23 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
             self._conn.execute("CALL CREATE_VECTOR_INDEX('Fact', 'fact_vec', 'embedding')")
         except Exception:
             return []  # нет строк с эмбеддингом — искать не по чему
+        # Берём с запасом (k*3), затем пере-ранжируем по значимости, чтобы
+        # salient-воспоминание не выпало из top-k при близких косинусах.
         res = self._conn.execute(
             "CALL QUERY_VECTOR_INDEX('Fact', 'fact_vec', $q, $k) "
             "RETURN node.fact_id, distance",
-            {"q": query_vector, "k": k})
+            {"q": query_vector, "k": max(k * 3, k)})
         out = []
         while res.has_next():
             fact_id, distance = res.get_next()
             node = self.get_fact(fact_id)
             if node is not None:
-                node["_score"] = round(1.0 - distance, 6)  # близость ≈ 1 - дист.
+                sim = 1.0 - distance  # близость ≈ 1 - косинусное расстояние
+                node["_relevance"] = round(sim, 6)
+                node["_score"] = round(_salience_score(sim, node.get("significance", 0.5)), 6)
                 out.append(node)
-        return out
+        out.sort(key=lambda n: n["_score"], reverse=True)
+        return out[:k]
 
 
 # ─── ФАБРИКА / SINGLETON ──────────────────────────────────────────────────────

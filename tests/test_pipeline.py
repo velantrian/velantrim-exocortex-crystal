@@ -37,6 +37,57 @@ def test_blocked_pipeline_does_not_write_to_l3_graph():
     assert get_l3_graph().all_facts() == []
 
 
+# ─── episodic binding ─────────────────────────────────────────────────────────
+
+def _two_retrieved():
+    return [
+        {"id": "f2", "text": "Quantum entanglement links particles",
+         "source": "physics", "confidence": 0.85, "_score": 0.6,
+         "epistemic_state": "Observed", "origin": "retrieval"},
+        {"id": "f5", "text": "DNA encodes genetic information",
+         "source": "biology", "confidence": 0.99, "_score": 0.5,
+         "epistemic_state": "Observed", "origin": "retrieval"},
+    ]
+
+
+def test_run_links_co_recalled_facts_with_episode_context(monkeypatch):
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: _two_retrieved())
+    pipeline.run("two facts",
+                 episode={"who": ["user"], "where": "lab", "when": "2026-06-01T17:00"})
+
+    g = get_l3_graph()
+    assert "f5" in {n["fact_id"] for n in g.neighbors("f2")}
+    edge = next(e for e in g._edges if e[0] == "f2" and e[2] == "f5")
+    assert edge[1] == "CO_OCCURRED"
+    assert edge[3]["who"] == ["user"]
+    assert edge[3]["where"] == "lab"
+    assert edge[3]["when"] == "2026-06-01T17:00"
+
+
+def test_single_fact_recall_creates_no_episode_edge(monkeypatch):
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: _two_retrieved()[:1])
+    pipeline.run("one fact")
+    assert get_l3_graph()._edges == []
+
+
+def test_link_episode_defaults_when_to_now_without_context():
+    from core import pipeline
+    from core.l3_graph import MockL3Graph
+
+    g = MockL3Graph()
+    facts = [{"fact_id": "a"}, {"fact_id": "b"}]
+    pipeline._link_episode(g, facts, "q", episode=None)
+    edge = next(e for e in g._edges if e[0] == "a")
+    assert "when" in edge[3] and edge[3]["when"]      # auto-stamped
+    assert "who" not in edge[3]                        # no context → no who/where
+
+
 def test_pipeline_empty_retrieval_blocks():
     from core.pipeline import run
     result = run("zxqvbnmqwerty")   # matches nothing in DATABASE

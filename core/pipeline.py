@@ -16,6 +16,7 @@
 #   - ESM: полная матрица переходов между состояниями
 
 import logging
+from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from core.trace import build_trace, promote_trace, format_trace
 from core.memory import (
@@ -275,15 +276,53 @@ def generate_answer(
     }
 
 
+# ─── EPISODIC BINDING ─────────────────────────────────────────────────────────
+# Эпизодическая память: «что-где-когда-с-кем». Факты, вспомненные вместе,
+# связываются в L3 ненаправленной парой рёбер CO_OCCURRED с контекстом эпизода.
+# Рёбра соединяют уже валидированные узлы — это не обход TruthGate (тот сторожит
+# только вход факта-узла в канон).
+
+_EPISODE_REL = "CO_OCCURRED"
+
+
+def _link_episode(
+    graph,
+    facts: List[Dict[str, Any]],
+    query: str,
+    episode: Optional[Dict[str, Any]],
+) -> None:
+    """Связать со-вспомненные факты эпизодическим ребром (who/where/when/event)."""
+    ids = [f["fact_id"] for f in facts]
+    if len(ids) < 2:
+        return  # эпизодическая связь нужна минимум двум фактам
+
+    episode = episode or {}
+    props: Dict[str, Any] = {
+        "query": query,
+        "when": episode.get("when") or datetime.now(timezone.utc).isoformat(),
+    }
+    for key in ("who", "where", "event"):
+        if episode.get(key) is not None:
+            props[key] = episode[key]
+
+    # Цепочка соседних пар (а не все пары) — O(n) связок, достаточно для эпизода.
+    for a, b in zip(ids, ids[1:]):
+        graph.add_edge(a, _EPISODE_REL, b, props)
+        graph.add_edge(b, _EPISODE_REL, a, props)
+
+
 # ─── MAIN PIPELINE ────────────────────────────────────────────────────────────
 
-def run(query: str) -> Dict[str, Any]:
+def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Полный пайплайн Velantrim:
     Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer
 
     Принцип: Trace → Validation → Answer.
     Не наоборот.
+
+    episode — необязательный контекст эпизода (who / where / when / event):
+    факты, вспомненные вместе, связываются в L3 эпизодическим ребром.
     """
     # 1. Retrieval
     retrieved = retrieve(query)
@@ -318,6 +357,9 @@ def run(query: str) -> Dict[str, Any]:
         fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"))
         # Единственный вход в L3: канонический MERGE строго после TruthGate.
         graph.merge_fact(fact)
+
+    # 6b. Эпизодическая связка: факты, вспомненные в одном запросе, связаны.
+    _link_episode(graph, facts_pack["facts"], query, episode)
 
     promote_trace(trace, "Validated")
 
