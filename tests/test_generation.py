@@ -89,3 +89,14 @@ def test_anthropic_generator_concatenates_text_blocks_only():
     fake.messages = MultiBlockMessages()
     out = AnthropicGenerator(client=fake).generate("q", [{"claim": "c"}])
     assert out == "answer"  # thinking block excluded
+
+
+def test_anthropic_generator_falls_back_to_extractive_on_api_error():
+    class BoomMessages:
+        def create(self, **kwargs):
+            raise RuntimeError("rate limited")
+
+    fake = _FakeClient()
+    fake.messages = BoomMessages()
+    out = AnthropicGenerator(client=fake).generate("q", [{"claim": "A"}, {"claim": "B"}])
+    assert out == "A | B"  # graceful degradation, not a crash

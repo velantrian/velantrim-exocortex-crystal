@@ -62,14 +62,18 @@ def test_factory_unknown_backend_raises():
         get_embedder(backend="word2vec")
 
 
-def test_auto_falls_back_to_hashing_without_sbert(monkeypatch):
+@pytest.mark.parametrize("exc", [
+    ImportError("sentence-transformers not installed"),
+    OSError("model download failed (offline)"),  # not just ImportError
+])
+def test_auto_falls_back_to_hashing_on_any_load_failure(monkeypatch, exc):
     import core.embedding as emb
 
     def boom(*a, **k):
-        raise ImportError("sentence-transformers not installed")
+        raise exc
 
     monkeypatch.setattr(emb, "SentenceTransformerEmbedder", boom)
-    assert isinstance(emb._instantiate("auto"), emb.HashingEmbedder)
+    assert isinstance(emb._make("auto"), emb.HashingEmbedder)
 
 
 def test_sbert_captures_real_semantics():

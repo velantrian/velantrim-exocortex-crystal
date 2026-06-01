@@ -107,18 +107,6 @@ def test_trace_is_built_for_each_fact():
 
 # ─── helpers ──────────────────────────────────────────────────────────────────
 
-def test_tokenize_lowercases_and_strips_punctuation():
-    from core.pipeline import tokenize
-    assert tokenize("Hello, WORLD! (DNA)") == ["hello", "world", "dna"]
-
-
-def test_normalize_score_clamps_and_guards_zero_max():
-    from core.pipeline import normalize_score
-    assert normalize_score(5, 0) == 0.0       # guard against div-by-zero
-    assert normalize_score(2, 4) == 0.5
-    assert normalize_score(10, 4) == 1.0      # clamped to 1.0
-
-
 def test_retrieve_respects_k_and_skips_non_matches():
     from core.pipeline import retrieve
     hits = retrieve("the", k=2)               # pure stopword query → nothing

@@ -41,21 +41,6 @@ DATABASE = [
 ]
 
 
-# ─── HELPERS ──────────────────────────────────────────────────────────────────
-
-def tokenize(text: str) -> List[str]:
-    return [
-        word.lower().strip(".,!?;:()[]{}\"'")
-        for word in text.split() if word.strip()
-    ]
-
-
-def normalize_score(score: float, max_score: float) -> float:
-    if max_score <= 0:
-        return 0.0
-    return max(0.0, min(1.0, score / max_score))
-
-
 # ─── RETRIEVAL (vector / semantic) ────────────────────────────────────────────
 # Косинусная близость эмбеддингов вместо лексического пересечения токенов.
 # Это убирает баг ранжирования по стоп-словам (запрос "...about the Sun" больше

@@ -16,9 +16,10 @@
 # поглощения Apple). LadybugDB — embedded, Cypher-совместимый, с vector index
 # и full-text search. Cypher стандартный → backend остаётся переносимым.
 
-import os
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Any
+
+from core._registry import BackendRegistry
 
 # Вклад значимости (salience) в ранжирование vector_search: итоговый скор =
 # близость × (1 + W × significance). Релевантность доминирует, значимость
@@ -306,23 +307,23 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
     def vector_search(
         self, query_vector: List[float], k: int = 5,
     ) -> List[Dict[str, Any]]:
-        # Спайк показал: индекс HNSW нельзя пересоздать под тем же именем, но
-        # DROP+CREATE надёжно охватывает все текущие строки → делаем так перед
-        # поиском (масштаб MVP мал). distance — косинусное расстояние (0 = точно).
-        try:
-            self._conn.execute("CALL DROP_VECTOR_INDEX('Fact', 'fact_vec')")
-        except Exception:
-            pass
+        # Индекс создаём один раз: спайк подтвердил, что строки, добавленные
+        # ПОСЛЕ создания, видны поиску — дорогой DROP+CREATE на каждый запрос не
+        # нужен. Повторный CREATE → "already exists" → глотаем.
         try:
             self._conn.execute("CALL CREATE_VECTOR_INDEX('Fact', 'fact_vec', 'embedding')")
         except Exception:
-            return []  # нет строк с эмбеддингом — искать не по чему
+            pass  # индекс уже есть, либо строк с эмбеддингом ещё нет
         # Берём с запасом (k*3), затем пере-ранжируем по значимости, чтобы
         # salient-воспоминание не выпало из top-k при близких косинусах.
-        res = self._conn.execute(
-            "CALL QUERY_VECTOR_INDEX('Fact', 'fact_vec', $q, $k) "
-            "RETURN node.fact_id, distance",
-            {"q": query_vector, "k": max(k * 3, k)})
+        # distance — косинусное расстояние (0 = точно).
+        try:
+            res = self._conn.execute(
+                "CALL QUERY_VECTOR_INDEX('Fact', 'fact_vec', $q, $k) "
+                "RETURN node.fact_id, distance",
+                {"q": query_vector, "k": max(k * 3, k)})
+        except Exception:
+            return []  # индекса нет (пустой граф) — искать не по чему
         out = []
         while res.has_next():
             fact_id, distance = res.get_next()
@@ -343,7 +344,17 @@ _BACKENDS = {
     "ladybug": LadybugL3Graph,
 }
 
-_INSTANCE: Optional[L3GraphBackend] = None
+
+def _make(name: str) -> L3GraphBackend:
+    if name not in _BACKENDS:
+        raise ValueError(
+            f"get_l3_graph: неизвестный backend '{name}'. "
+            f"Доступно: {sorted(_BACKENDS)}"
+        )
+    return _BACKENDS[name]()
+
+
+_REGISTRY = BackendRegistry("VELANTRIM_L3_BACKEND", "mock", _make)
 
 
 def get_l3_graph(backend: Optional[str] = None) -> L3GraphBackend:
@@ -351,23 +362,9 @@ def get_l3_graph(backend: Optional[str] = None) -> L3GraphBackend:
     Вернуть singleton L3-графа. Backend выбирается аргументом или
     переменной окружения VELANTRIM_L3_BACKEND (по умолчанию 'mock').
     """
-    global _INSTANCE
-    if _INSTANCE is not None and backend is None:
-        return _INSTANCE
-
-    name = backend or os.environ.get("VELANTRIM_L3_BACKEND", "mock")
-    if name not in _BACKENDS:
-        raise ValueError(
-            f"get_l3_graph: неизвестный backend '{name}'. "
-            f"Доступно: {sorted(_BACKENDS)}"
-        )
-    instance = _BACKENDS[name]()
-    if backend is None:
-        _INSTANCE = instance
-    return instance
+    return _REGISTRY.get(backend)
 
 
 def reset_l3_graph() -> None:
     """Сбросить singleton (для тестов)."""
-    global _INSTANCE
-    _INSTANCE = None
+    _REGISTRY.reset()
