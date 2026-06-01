@@ -55,6 +55,16 @@ class L3GraphBackend(ABC):
     ) -> List[Dict[str, Any]]:
         """Соседние узлы по исходящим рёбрам (опционально фильтр по типу)."""
 
+    @abstractmethod
+    def vector_search(
+        self, query_vector: List[float], k: int = 5,
+    ) -> List[Dict[str, Any]]:
+        """
+        Семантический поиск по эмбеддингам узлов.
+        Возвращает до k фактов, отсортированных по убыванию близости;
+        каждый дополнен полем '_score' (косинусная близость).
+        """
+
 
 # ─── MOCK BACKEND (in-memory, дефолт) ─────────────────────────────────────────
 
@@ -69,6 +79,8 @@ class MockL3Graph(L3GraphBackend):
         self._nodes: Dict[str, Dict[str, Any]] = {}
         # ребро: (src_id, rel_type, dst_id, props)
         self._edges: List[tuple] = []
+        # эмбеддинги узлов для vector_search (отдельно от данных узла)
+        self._vectors: Dict[str, List[float]] = {}
 
     def merge_fact(self, fact: Dict[str, Any]) -> None:
         fact_id = fact.get("fact_id")
@@ -78,6 +90,11 @@ class MockL3Graph(L3GraphBackend):
         node = self._nodes.get(fact_id, {})
         node.update(fact)
         self._nodes[fact_id] = node
+        # Эмбеддинг claim'а для семантического поиска.
+        claim = node.get("claim")
+        if claim:
+            from core.embedding import get_embedder
+            self._vectors[fact_id] = get_embedder().embed(claim)
 
     def get_fact(self, fact_id: str) -> Optional[Dict[str, Any]]:
         node = self._nodes.get(fact_id)
@@ -108,10 +125,26 @@ class MockL3Graph(L3GraphBackend):
                 out.append(dict(node))
         return out
 
+    def vector_search(
+        self, query_vector: List[float], k: int = 5,
+    ) -> List[Dict[str, Any]]:
+        from core.embedding import cosine
+        scored = []
+        for fact_id, vec in self._vectors.items():
+            sim = cosine(query_vector, vec)
+            if sim <= 0.0:
+                continue
+            node = dict(self._nodes[fact_id])
+            node["_score"] = round(sim, 6)
+            scored.append(node)
+        scored.sort(key=lambda n: n["_score"], reverse=True)
+        return scored[:k]
+
     def clear(self) -> None:
         """Сброс состояния (для тестов)."""
         self._nodes.clear()
         self._edges.clear()
+        self._vectors.clear()
 
 
 # ─── LADYBUGDB BACKEND (слот под спайк) ───────────────────────────────────────
@@ -150,11 +183,16 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
         self._ensure_schema()
 
     def _ensure_schema(self) -> None:
+        from core.embedding import EMBED_DIM
+        try:
+            self._conn.execute("INSTALL vector; LOAD vector;")
+        except Exception:
+            pass  # расширение уже установлено/загружено
         for ddl in (
-            "CREATE NODE TABLE Fact(fact_id STRING PRIMARY KEY, claim STRING, "
-            "source STRING, confidence DOUBLE, epistemic_state STRING, "
-            "claim_type STRING, source_status STRING, significance DOUBLE, "
-            "truth_status STRING, metadata STRING)",
+            f"CREATE NODE TABLE Fact(fact_id STRING PRIMARY KEY, claim STRING, "
+            f"source STRING, confidence DOUBLE, epistemic_state STRING, "
+            f"claim_type STRING, source_status STRING, significance DOUBLE, "
+            f"truth_status STRING, metadata STRING, embedding FLOAT[{EMBED_DIM}])",
             "CREATE REL TABLE EDGE(FROM Fact TO Fact, rel_type STRING, props STRING)",
         ):
             try:
@@ -193,6 +231,12 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
             raise ValueError("merge_fact: fact_id обязателен")
         params = self._serialize(fact)
         sets = [f"f.{c} = ${c}" for c in params if c != "fact_id"]
+        # Эмбеддинг claim'а в FLOAT[]-колонку для нативного vector index.
+        claim = fact.get("claim")
+        if claim:
+            from core.embedding import get_embedder
+            params["embedding"] = get_embedder().embed(claim)
+            sets.append("f.embedding = $embedding")
         cypher = "MERGE (f:Fact {fact_id: $fact_id})"
         if sets:
             cypher += " SET " + ", ".join(sets)
@@ -240,6 +284,33 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
         out = []
         while res.has_next():
             out.append(self._row_to_fact(res.get_next(), cols))
+        return out
+
+    def vector_search(
+        self, query_vector: List[float], k: int = 5,
+    ) -> List[Dict[str, Any]]:
+        # Спайк показал: индекс HNSW нельзя пересоздать под тем же именем, но
+        # DROP+CREATE надёжно охватывает все текущие строки → делаем так перед
+        # поиском (масштаб MVP мал). distance — косинусное расстояние (0 = точно).
+        try:
+            self._conn.execute("CALL DROP_VECTOR_INDEX('Fact', 'fact_vec')")
+        except Exception:
+            pass
+        try:
+            self._conn.execute("CALL CREATE_VECTOR_INDEX('Fact', 'fact_vec', 'embedding')")
+        except Exception:
+            return []  # нет строк с эмбеддингом — искать не по чему
+        res = self._conn.execute(
+            "CALL QUERY_VECTOR_INDEX('Fact', 'fact_vec', $q, $k) "
+            "RETURN node.fact_id, distance",
+            {"q": query_vector, "k": k})
+        out = []
+        while res.has_next():
+            fact_id, distance = res.get_next()
+            node = self.get_fact(fact_id)
+            if node is not None:
+                node["_score"] = round(1.0 - distance, 6)  # близость ≈ 1 - дист.
+                out.append(node)
         return out
 
 

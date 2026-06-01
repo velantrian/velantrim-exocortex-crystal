@@ -70,10 +70,25 @@ def test_normalize_score_clamps_and_guards_zero_max():
 
 def test_retrieve_respects_k_and_skips_non_matches():
     from core.pipeline import retrieve
-    hits = retrieve("the", k=2)               # common token, several matches
+    hits = retrieve("the", k=2)               # pure stopword query → nothing
     assert len(hits) <= 2
     assert all(h["epistemic_state"] == "Observed" for h in hits)
     assert retrieve("zxqvbnmqwerty") == []
+
+
+def test_retrieve_is_semantic_not_stopword_matching():
+    """Regression: 'Tell me about the Sun' must NOT pull the brain fact in via
+    the shared stopword 'the' (the old BM25-lite bug)."""
+    from core.pipeline import retrieve
+    hits = retrieve("Tell me about the Sun")
+    ids = [h["id"] for h in hits]
+    assert "f3" in ids          # Earth revolves around the Sun
+    assert "f4" not in ids      # The human brain ... (no longer a false match)
+
+
+def test_retrieve_pure_stopword_query_returns_nothing():
+    from core.pipeline import retrieve
+    assert retrieve("how do you do") == []
 
 
 # ─── guardian ───────────────────────────────────────────────────────────────

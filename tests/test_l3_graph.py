@@ -70,6 +70,27 @@ def test_clear_resets_state():
     g.clear()
     assert g.all_facts() == []
     assert g.neighbors("a") == []
+    assert g.vector_search([1.0]) == []
+
+
+def test_mock_vector_search_ranks_by_semantic_similarity():
+    from core.embedding import get_embedder
+    g = MockL3Graph()
+    g.merge_fact({"fact_id": "sun", "claim": "Earth revolves around the Sun"})
+    g.merge_fact({"fact_id": "brain", "claim": "The human brain has 86 billion neurons"})
+    g.merge_fact({"fact_id": "dna", "claim": "DNA encodes genetic information"})
+
+    q = get_embedder().embed("Tell me about the Sun")
+    hits = g.vector_search(q, k=2)
+    assert hits[0]["fact_id"] == "sun"
+    assert hits[0]["_score"] > 0.3
+    assert "brain" not in {h["fact_id"] for h in hits}  # no false match
+
+
+def test_mock_vector_search_ignores_nodes_without_claim():
+    g = MockL3Graph()
+    g.merge_fact({"fact_id": "noclaim", "source": "s"})  # no claim → no embedding
+    assert g.vector_search([0.1] * 8) == []
 
 
 # ─── factory / singleton ──────────────────────────────────────────────────────
@@ -148,3 +169,21 @@ def test_ladybug_edges_and_neighbors_with_type_filter(lbug):
 
     assert {n["fact_id"] for n in lbug.neighbors("person")} == {"place", "feeling"}
     assert [n["fact_id"] for n in lbug.neighbors("person", rel_type="AT")] == ["place"]
+
+
+def test_ladybug_vector_search_via_native_index(lbug):
+    from core.embedding import get_embedder
+    lbug.merge_fact({"fact_id": "sun", "claim": "Earth revolves around the Sun",
+                     "source": "astronomy"})
+    lbug.merge_fact({"fact_id": "dna", "claim": "DNA encodes genetic information",
+                     "source": "biology"})
+
+    q = get_embedder().embed("Tell me about the Sun")
+    hits = lbug.vector_search(q, k=2)
+    assert hits[0]["fact_id"] == "sun"
+    assert hits[0]["_score"] > 0.3
+
+
+def test_ladybug_vector_search_empty_graph_returns_empty(lbug):
+    from core.embedding import EMBED_DIM
+    assert lbug.vector_search([0.0] * EMBED_DIM, k=3) == []

@@ -23,6 +23,11 @@ dev = [
 ladybug = [
     "ladybug>=0.17.0",
 ]
+# Real neural embeddings for semantic retrieval (VELANTRIM_EMBEDDER=sbert).
+# Optional: the default embedder is the dependency-free HashingEmbedder.
+embeddings = [
+    "sentence-transformers>=2.2.0",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

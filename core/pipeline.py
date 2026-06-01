@@ -22,6 +22,7 @@ from core.memory import (
     store_fact, get_fact, transition_esm, SUBJECTIVE_CLAIM_TYPES,
 )
 from core.l3_graph import get_l3_graph
+from core.embedding import get_embedder, cosine
 
 logger = logging.getLogger(__name__)
 
@@ -53,27 +54,34 @@ def normalize_score(score: float, max_score: float) -> float:
     return max(0.0, min(1.0, score / max_score))
 
 
-# ─── RETRIEVAL (BM25-lite) ────────────────────────────────────────────────────
-# TODO Sprint 2: HybridRetriever (BM25 + vector + HotGraph + HippoRAG PageRank)
+# ─── RETRIEVAL (vector / semantic) ────────────────────────────────────────────
+# Косинусная близость эмбеддингов вместо лексического пересечения токенов.
+# Это убирает баг ранжирования по стоп-словам (запрос "...about the Sun" больше
+# не цепляет факт по слову "the"). Эмбеддер сменный (core/embedding.py): дефолт —
+# HashingEmbedder, реальная семантика — через VELANTRIM_EMBEDDER=sbert.
+# TODO Sprint 2: гибрид (vector + HotGraph + HippoRAG PageRank).
+
+# Порог отсечения шума от хэш-коллизий: ниже — не релевантно.
+_RETRIEVAL_MIN_SIM = 0.05
+
 
 def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
     """
-    BM25-lite поиск по DATABASE.
-    Возвращает топ-k фактов отсортированных по score.
+    Семантический поиск по DATABASE через косинус эмбеддингов.
+    Возвращает топ-k фактов, отсортированных по score (близость × confidence).
     Все факты начинают с epistemic_state='Observed' (сырой вход).
     """
-    query_words = tokenize(query)
+    embedder = get_embedder()
+    q_vec = embedder.embed(query)
     scored: List[Dict[str, Any]] = []
 
     for item in DATABASE:
-        text_words = tokenize(item["text"])
-        overlap = len(set(query_words) & set(text_words))
-        if overlap == 0:
+        sim = cosine(q_vec, embedder.embed(item["text"]))
+        if sim < _RETRIEVAL_MIN_SIM:
             continue
 
-        raw_score = overlap / (len(text_words) + 1)
-        # учитываем базовую уверенность источника
-        final_score = raw_score * item.get("confidence", 1.0)
+        # близость взвешиваем базовой уверенностью источника
+        final_score = sim * item.get("confidence", 1.0)
 
         scored.append({
             **item,
