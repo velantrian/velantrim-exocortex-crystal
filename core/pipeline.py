@@ -334,18 +334,27 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     # 6. ESM: перевести факты и trace в Validated через transition_esm (единственный путь).
     #    truth_status выставляется по claim_type: VERIFIED только для WORLD_FACT,
     #    субъективное валидируется как опыт (Validated), но истиной о мире не становится.
+    #
+    #    Cross-store нюанс: SQLite (pending) и L3 (канон) — два хранилища без общей
+    #    транзакции. Сбой записи в L3 ловим и возвращаем _blocked, а не роняем
+    #    пайплайн трейсбеком. Частичное состояние допустимо: SQLite-факт может
+    #    остаться Validated без узла в L3 — merge_fact идемпотентен, повторный
+    #    прогон до-мержит. Источник истины — граф, SQLite лишь pending-кэш.
     graph = get_l3_graph()
-    for fact in facts_pack["facts"]:
-        transition_esm(fact["fact_id"], "Validated")
-        updated = get_fact(fact["fact_id"])
-        if updated:
-            fact["epistemic_state"] = updated["epistemic_state"]
-        fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"))
-        # Единственный вход в L3: канонический MERGE строго после TruthGate.
-        graph.merge_fact(fact)
-
-    # 6b. Эпизодическая связка: факты, вспомненные в одном запросе, связаны.
-    _link_episode(graph, facts_pack["facts"], query, episode)
+    try:
+        for fact in facts_pack["facts"]:
+            transition_esm(fact["fact_id"], "Validated")
+            updated = get_fact(fact["fact_id"])
+            if updated:
+                fact["epistemic_state"] = updated["epistemic_state"]
+            fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"))
+            # Единственный вход в L3: канонический MERGE строго после TruthGate.
+            graph.merge_fact(fact)
+        # 6b. Эпизодическая связка: факты, вспомненные в одном запросе, связаны.
+        _link_episode(graph, facts_pack["facts"], query, episode)
+    except Exception as e:  # noqa: BLE001 — сбой L3 не должен ронять пайплайн
+        logger.error("L3-промоция не удалась: %s", e)
+        return _blocked(f"L3 promotion failed: {e}", query, facts_pack, trace)
 
     promote_trace(trace, "Validated")
 

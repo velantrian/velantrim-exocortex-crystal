@@ -28,6 +28,31 @@ def test_validated_facts_are_merged_into_l3_graph():
         assert graph.get_fact(f["fact_id"])["truth_status"] == "VERIFIED"
 
 
+def test_run_blocks_gracefully_when_l3_promotion_fails(monkeypatch):
+    """L3 (canon) and SQLite (pending) have no shared transaction. A failed L3
+    merge must surface as a blocked result, not a raw traceback — and the
+    documented partial state holds: the fact is Validated in SQLite (re-run
+    re-merges, MERGE is idempotent), the graph stays empty."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    from core.memory import get_fact
+
+    graph = get_l3_graph()
+
+    def boom(_fact):
+        raise RuntimeError("L3 backend down")
+
+    monkeypatch.setattr(graph, "merge_fact", boom)
+
+    result = pipeline.run("quantum entanglement")
+    assert result["answer"] is None
+    assert "L3 promotion failed" in result["error"]
+    # graph never received the node…
+    assert graph.all_facts() == []
+    # …but the SQLite-side ESM transition already happened (acceptable, idempotent).
+    assert get_fact("f2")["epistemic_state"] == "Validated"
+
+
 def test_blocked_pipeline_does_not_write_to_l3_graph():
     """A fact that never passes TruthGate must not appear in canonical L3."""
     from core import pipeline
