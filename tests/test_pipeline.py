@@ -155,6 +155,34 @@ def test_retrieve_pure_stopword_query_returns_nothing():
     assert retrieve("how do you do") == []
 
 
+def test_retrieve_recalls_facts_learned_via_ingest():
+    """Closing the loop: a fact accepted through ingest() lands in L3 and is
+    then recallable by retrieve() (origin='memory'), not just the seed corpus."""
+    from core.ingest import ingest
+    from core.pipeline import retrieve
+
+    ingest("Photosynthesis converts sunlight into energy")  # → canonical L3
+    hits = retrieve("sunlight energy")
+
+    recalled = [h for h in hits if h["origin"] == "memory"]
+    assert recalled, "expected a recall from L3 memory"
+    assert any("Photosynthesis" in h["text"] for h in recalled)
+
+
+def test_rerun_recalls_validated_fact_without_esm_error():
+    """A second run of the same query recalls the now-Validated L3 fact; the
+    promotion loop must not try to re-transition it (Validated→Validated is
+    illegal in the ESM matrix)."""
+    from core.pipeline import run
+
+    first = run("quantum entanglement")
+    assert first["answer"] is not None
+
+    second = run("quantum entanglement")
+    assert second.get("error") is None
+    assert second["answer"] is not None
+
+
 # ─── guardian ───────────────────────────────────────────────────────────────
 
 def test_guardian_rejects_empty_facts():

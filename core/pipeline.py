@@ -42,10 +42,12 @@ DATABASE = [
 
 
 # ─── RETRIEVAL (vector / semantic) ────────────────────────────────────────────
-# Косинусная близость эмбеддингов вместо лексического пересечения токенов.
-# Это убирает баг ранжирования по стоп-словам (запрос "...about the Sun" больше
-# не цепляет факт по слову "the"). Эмбеддер сменный (core/embedding.py): дефолт —
-# HashingEmbedder, реальная семантика — через VELANTRIM_EMBEDDER=sbert.
+# Косинусная близость эмбеддингов по ДВУМ источникам:
+#   1) сид-корпус DATABASE — внешние факты «из коробки»;
+#   2) канон L3 — то, что система уже выучила и провела через врата.
+# Recall из L3 замыкает цикл «узнал → запомнил → вспомнил»: факты, принятые
+# через ingest()/pipeline, становятся доступны для ответа. Дедуп по id.
+# Эмбеддер сменный (core/embedding.py): дефолт HashingEmbedder, sbert опционально.
 # TODO Sprint 2: гибрид (vector + HotGraph + HippoRAG PageRank).
 
 # Порог отсечения шума от хэш-коллизий: ниже — не релевантно.
@@ -54,31 +56,52 @@ _RETRIEVAL_MIN_SIM = 0.05
 
 def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
     """
-    Семантический поиск по DATABASE через косинус эмбеддингов.
-    Возвращает топ-k фактов, отсортированных по score (близость × confidence).
-    Все факты начинают с epistemic_state='Observed' (сырой вход).
+    Семантический поиск по сид-корпусу DATABASE и канонической памяти L3.
+    Возвращает топ-k фактов по score (близость × confidence), дедуп по id.
+    Корпус-факты приходят как Observed, recall из L3 — со своим ESM-состоянием.
     """
     embedder = get_embedder()
     q_vec = embedder.embed(query)
-    scored: List[Dict[str, Any]] = []
+    by_id: Dict[str, Dict[str, Any]] = {}
 
+    def _offer(item: Dict[str, Any]) -> None:
+        # Дедуп по id: один и тот же факт может быть и в корпусе, и в L3.
+        prev = by_id.get(item["id"])
+        if prev is None or item["_score"] > prev["_score"]:
+            by_id[item["id"]] = item
+
+    # Источник 1: сид-корпус (внешние факты, сырой вход → Observed).
     for item in DATABASE:
         sim = cosine(q_vec, embedder.embed(item["text"]))
         if sim < _RETRIEVAL_MIN_SIM:
             continue
-
-        # близость взвешиваем базовой уверенностью источника
-        final_score = sim * item.get("confidence", 1.0)
-
-        scored.append({
+        _offer({
             **item,
-            "_score":          round(final_score, 4),
-            "epistemic_state": "Observed",   # ESM: начальное состояние
+            "_score":          round(sim * item.get("confidence", 1.0), 4),
+            "epistemic_state": "Observed",
             "origin":          "retrieval",
         })
 
-    scored.sort(key=lambda x: x["_score"], reverse=True)
-    return scored[:k]
+    # Источник 2: каноническая память L3 (recall выученного).
+    for node in get_l3_graph().vector_search(q_vec, k=k):
+        sim = node.get("_relevance", 0.0)
+        if sim < _RETRIEVAL_MIN_SIM:
+            continue
+        conf = node.get("confidence", 1.0)
+        _offer({
+            "id":              node["fact_id"],
+            "text":            node.get("claim", ""),
+            "source":          node.get("source", "memory"),
+            "confidence":      conf,
+            "claim_type":      node.get("claim_type", "WORLD_FACT"),
+            "source_status":   node.get("source_status", "DERIVED"),
+            "significance":    node.get("significance", 0.5),
+            "_score":          round(sim * conf, 4),
+            "epistemic_state": node.get("epistemic_state", "Validated"),
+            "origin":          "memory",
+        })
+
+    return sorted(by_id.values(), key=lambda x: x["_score"], reverse=True)[:k]
 
 
 # ─── FACTS PACK ───────────────────────────────────────────────────────────────
@@ -343,10 +366,13 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     graph = get_l3_graph()
     try:
         for fact in facts_pack["facts"]:
-            transition_esm(fact["fact_id"], "Validated")
-            updated = get_fact(fact["fact_id"])
-            if updated:
-                fact["epistemic_state"] = updated["epistemic_state"]
+            # Recall-факт из L3 уже Validated — повторный переход недопустим в
+            # ESM-матрице, поэтому переводим только ещё не валидированные.
+            if fact.get("epistemic_state") != "Validated":
+                transition_esm(fact["fact_id"], "Validated")
+                updated = get_fact(fact["fact_id"])
+                if updated:
+                    fact["epistemic_state"] = updated["epistemic_state"]
             fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"))
             # Единственный вход в L3: канонический MERGE строго после TruthGate.
             graph.merge_fact(fact)
