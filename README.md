@@ -57,14 +57,18 @@ Velantrim ExoCortex Crystal is evolving into a **next-generation memory system**
 | `core/consolidate.py`| ✅ | SleepCycle: significance-weighted confidence decay (FSRS-style) |
 | `core/trace.py`      | ✅ | Provenance chain for every fact |
 | `core/_registry.py`  | ✅ | Shared swappable-backend singleton factory |
-| `tests/`             | ✅ | 230+ tests across memory, pipeline, L3, embedding, generation, ingest, reconcile, consolidate |
+| `core/adaptation.py` | ✅ | Epigenetic adaptive TruthGate threshold (RFC0071) — stress ↑ → stricter, healthy flow → relaxes |
+| `core/observe.py`    | ✅ | Memory observability report over the L3 canonical graph |
+| `core/metrics.py`    | ✅ | Lightweight in-process counters (query / ingest / gate) |
+| `core/cli.py`        | ✅ | CLI: `ingest` / `ask` / `history` / `report` |
+| `tests/`             | ✅ | 250+ tests across memory, pipeline, L3, embedding, generation, ingest, reconcile, consolidate, adaptation |
 | `Velantrim_V8_Crystal_Sprint1.jsonl` | 📜 Spec | Full system design (63 chunks, 947KB) |
 | Metadata tools       | ✅ Stable | audit_metadata.py, migration tools |
 
 ## What's Planned (Hybrid Roadmap)
 
-- 🌀 **Fractal Memory Layer** (RFC-F1) — Recursive anchoring across time scales
-- 🧬 **Epigenetic Module** (RFC-E1) — Dynamic behavior switching
+- 🌀 **Fractal Memory Layer** (RFC-F1) — Recursive anchoring across time scales (prototype: `fractal_memory_layer.py`, not yet wired into the core pipeline)
+- 🧬 **Epigenetic Module** (RFC-E1) — ✅ wired into the adaptive TruthGate (`core/adaptation.py`, RFC0071)
 - 🦠 **Immune / CRISPR Layer** (RFC-I1) — ✅ conflict-candidate detection (`find_conflicts`/`contradict`); auto-NLI classification still planned
 - 🧠 **Neurogenesis-inspired Growth** — Dynamic addition of new memory nodes
 - 🌐 **Mycorrhizal-style Network** — Inter-module communication and collective learning
@@ -111,8 +115,8 @@ Future: Add epigenetic "stress response" that accelerates or protects certain st
 |--------|-----------------------------|---------------------------------|
 | I1     | Graph = Truth               | ✅ real L3 graph; single entry via TruthGate |
 | I6     | RingZeroImmutable           | ✅ Enforced                     |
-| NEW-F1 | Fractal Resilience          | 🔴 Planned                    |
-| NEW-E1 | Epigenetic Adaptation       | 🔴 Planned                    |
+| NEW-F1 | Fractal Resilience          | 🔴 Planned (prototype only)   |
+| NEW-E1 | Epigenetic Adaptation       | ✅ wired into adaptive TruthGate (`core/adaptation.py`, RFC0071) |
 | NEW-I1 | Immune Memory (CRISPR-style)| 🟡 conflict-candidate detection done; auto-NLI planned |
 
 ## Contributing

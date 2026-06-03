@@ -23,7 +23,7 @@ This document is the **honest truth** about what's implemented vs designed.
 
 ## ✅ Implemented (metadata tooling, not runtime)
 
-- `audit_metadata.py`, `fix_metadata*.py`, `fill_dependencies.py`, `check_rfc_duplicates.py`
+- `audit_metadata.py`, `fill_dependencies.py`, `check_rfc_duplicates.py`
 - `velantrim_migrate_v3_1.py` — production migration tool with rollback
 - Metadata hardening: Cyrillic → ASCII (39→0), layers 55→1 null, deps 54→27
 

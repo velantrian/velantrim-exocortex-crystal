@@ -176,7 +176,13 @@ def build_facts_pack(
             "fact_id":         fact_id,
             "claim":           item["text"],
             "source":          item["source"],
-            "confidence":      item["_score"],
+            # confidence — ЭПИСТЕМИЧЕСКАЯ уверенность (из источника или канона L3),
+            # а не ранг релевантности. Раньше сюда писался item["_score"]
+            # (близость × confidence), и это значение через merge_fact уезжало в
+            # канон, молча разъедая confidence узла при КАЖДОМ recall (sim ≤ 1 →
+            # уверенность только падала). Ранг релевантности живёт отдельно, в
+            # _score, и в канон не попадает (см. _l3_payload).
+            "confidence":      round(float(item.get("confidence", item.get("_score", 0.5))), 4),
             "epistemic_state": item["epistemic_state"],  # из retrieve(), не дублируем
             # retrieval-факты — утверждения о мире из внешнего источника.
             "claim_type":      item.get("claim_type", "WORLD_FACT"),
@@ -184,12 +190,16 @@ def build_facts_pack(
             "significance":    item.get("significance", 0.5),
             "truth_status":    "UNVERIFIED",
         }
-        # L0/L1 сохранение
+        # L0/L1 сохранение (store_fact не персистит транзитный _score).
         store_fact(fact)
-
+        # _score — ранг релевантности, только для упорядочивания пака; в канон не
+        # пишется (_l3_payload берёт чистую персистентную запись без _score).
+        fact["_score"] = round(float(item.get("_score", fact["confidence"])), 4)
         facts.append(fact)
 
-    facts.sort(key=lambda x: x["confidence"], reverse=True)
+    # retrieve() уже отдаёт факты по убыванию _score; ранжируем по релевантности
+    # (_score), а не по confidence — это разные оси.
+    facts.sort(key=lambda x: x["_score"], reverse=True)
 
     return {
         "facts": facts,
@@ -432,6 +442,22 @@ def recall_by_entity(
 
 # ─── MAIN PIPELINE ────────────────────────────────────────────────────────────
 
+def _l3_payload(fact: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Канонический payload для merge_fact: берём ПЕРСИСТЕНТНУЮ запись из L0/L1
+    (get_fact) — с created_at / updated_at / metadata — и накладываем truth_status
+    (его нет среди колонок SQLite, он живёт только в каноне).
+
+    Зачем: раньше в L3 уходил «голый» in-memory fact без created_at/metadata, и
+    SleepCycle (consolidate) не находил опорную метку времени → спад НИКОГДА не
+    применялся к свежеинжестированным узлам, пока их не тронет reconcile. Чистая
+    персистентная запись чинит это и гарантирует, что в канон попадёт реальная
+    confidence, а не транзитный _score (которого в записи нет).
+    """
+    record = get_fact(fact["fact_id"]) or fact
+    return {**record, "truth_status": fact.get("truth_status")}
+
+
 def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Полный пайплайн Velantrim:
@@ -488,7 +514,9 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
                     fact["epistemic_state"] = updated["epistemic_state"]
             fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"))
             # Единственный вход в L3: канонический MERGE строго после TruthGate.
-            graph.merge_fact(fact)
+            # Мержим персистентную запись (created_at/metadata → для SleepCycle),
+            # а не транзитный fact с _score (см. _l3_payload).
+            graph.merge_fact(_l3_payload(fact))
         # 6b. Эпизодическая связка: факты, вспомненные в одном запросе, связаны.
         _link_episode(graph, facts_pack["facts"], query, episode)
     except Exception as e:  # noqa: BLE001 — сбой L3 не должен ронять пайплайн
