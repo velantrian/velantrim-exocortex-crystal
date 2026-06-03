@@ -52,7 +52,7 @@ DATABASE = [
 
 # Порог отсечения шума от хэш-коллизий: ниже — не релевантно.
 _RETRIEVAL_MIN_SIM = 0.05
-# Затухание активации на каждый хоп graph-walk (ассоциативный recall).
+# Damping активации на каждый хоп graph-walk (PageRank-распространение).
 _GRAPH_WALK_DECAY = 0.5
 # Глубина graph-walk (число хопов от vector-хитов).
 _GRAPH_WALK_HOPS = 2
@@ -112,32 +112,42 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
         vector_hits.append(node)
 
     # Источник 3: multi-hop graph-walk от vector-хитов (ассоциативный recall).
-    # Затухающее распространение активации (ядро personalized-PageRank): на
-    # каждом хопе скор × decay. Связанные в графе валидные факты всплывают, даже
-    # если их собственная близость к запросу ниже порога. Устаревшие соседи
-    # (не Validated) не распространяют и не возвращаются. BFS: каждый узел берём
-    # на кратчайшем пути (наибольшая активация), без раздувания на циклах.
-    visited = {hit["fact_id"] for hit in vector_hits}
-    frontier = [
-        (hit["fact_id"], hit.get("_relevance", 0.0) * hit.get("confidence", 1.0))
+    # Personalized PageRank (без итераций до сходимости): активация течёт от
+    # vector-хитов по рёбрам, на каждом хопе умножаясь на damping и делясь между
+    # исходящими соседями (по out-degree). Достижимое по НЕСКОЛЬКИМ путям
+    # суммируется — хорошо связанные «хабы» поднимаются. Распространяют и
+    # возвращаются только Validated; в seed-хиты активация не вливается (у них
+    # авторитетный vector-скор). Глубина — _GRAPH_WALK_HOPS, damping <1 +
+    # ограничение хопов гарантируют сходимость без раздувания на циклах.
+    seeds = {hit["fact_id"] for hit in vector_hits}
+    graph_score: Dict[str, float] = {}
+    node_cache: Dict[str, Dict[str, Any]] = {}
+    current = {
+        hit["fact_id"]: hit.get("_relevance", 0.0) * hit.get("confidence", 1.0)
         for hit in vector_hits
-    ]
+    }
     for _hop in range(_GRAPH_WALK_HOPS):
-        nxt = []
-        for fid, score in frontier:
-            decayed = score * _GRAPH_WALK_DECAY
-            for neighbor in graph.neighbors(fid):
-                if neighbor.get("epistemic_state") != "Validated":
-                    continue
+        nxt: Dict[str, float] = {}
+        for fid, act in current.items():
+            valid = [n for n in graph.neighbors(fid)
+                     if n.get("epistemic_state") == "Validated"]
+            if not valid:
+                continue
+            share = act * _GRAPH_WALK_DECAY / len(valid)
+            for neighbor in valid:
                 nid = neighbor["fact_id"]
-                if nid in visited:
-                    continue
-                visited.add(nid)
-                _offer(_from_node(neighbor, decayed, "graph"))
-                nxt.append((nid, decayed))
+                if nid in seeds:
+                    continue  # в vector-хиты активацию не вливаем
+                nxt[nid] = nxt.get(nid, 0.0) + share
+                node_cache[nid] = neighbor
         if not nxt:
             break
-        frontier = nxt
+        for nid, val in nxt.items():
+            graph_score[nid] = graph_score.get(nid, 0.0) + val
+        current = nxt
+
+    for nid, score in graph_score.items():
+        _offer(_from_node(node_cache[nid], score, "graph"))
 
     return sorted(by_id.values(), key=lambda x: x["_score"], reverse=True)[:k]
 

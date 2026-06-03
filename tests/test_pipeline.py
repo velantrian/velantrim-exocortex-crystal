@@ -229,6 +229,26 @@ def test_graph_walk_is_multi_hop_with_decay():
     assert hits["A"]["_score"] > hits["B"]["_score"] > hits["C"]["_score"]
 
 
+def test_graph_walk_sums_activation_across_paths():
+    """PageRank-style: a hub reachable from two vector hits accumulates more
+    activation than a node reachable from only one."""
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    for fid, claim in [("A", "alpha topic"), ("B", "beta topic"),
+                       ("hub", "shared concept"), ("X", "lonely note")]:
+        g.merge_fact({"fact_id": fid, "claim": claim, "source": "s",
+                      "confidence": 1.0, "epistemic_state": "Validated"})
+    g.add_edge("A", "CO_OCCURRED", "hub", {})   # hub reached from both hits
+    g.add_edge("B", "CO_OCCURRED", "hub", {})
+    g.add_edge("A", "CO_OCCURRED", "X", {})     # X reached from one hit only
+
+    hits = {h["id"]: h for h in retrieve("alpha beta", k=5)}
+    assert hits["A"]["origin"] == "memory" and hits["B"]["origin"] == "memory"
+    assert hits["hub"]["origin"] == "graph" and hits["X"]["origin"] == "graph"
+    assert hits["hub"]["_score"] > hits["X"]["_score"]   # two paths > one
+
+
 def test_graph_walk_skips_deprecated_neighbors():
     from core.pipeline import retrieve
     from core.l3_graph import get_l3_graph
