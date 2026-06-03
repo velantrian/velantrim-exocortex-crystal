@@ -227,3 +227,15 @@ def test_ladybug_get_edges_round_trips_props(lbug):
 def test_ladybug_vector_search_empty_graph_returns_empty(lbug):
     from core.embedding import EMBED_DIM
     assert lbug.vector_search([0.0] * EMBED_DIM, k=3) == []
+
+
+def test_ladybug_honors_env_path_for_persistence(monkeypatch, tmp_path):
+    pytest.importorskip("ladybug")
+    from core.l3_graph import LadybugL3Graph
+    db = tmp_path / "persist.lbug"
+    monkeypatch.setenv("VELANTRIM_L3_PATH", str(db))
+
+    g = LadybugL3Graph()  # no db_path → resolves from VELANTRIM_L3_PATH
+    g.merge_fact({"fact_id": "p1", "claim": "persisted", "source": "s"})
+    assert g.get_fact("p1")["claim"] == "persisted"
+    assert db.exists()  # written to the configured location

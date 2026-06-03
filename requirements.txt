@@ -9,6 +9,8 @@ pytest-cov>=4.1.0
 # Optional L3 graph backend (embedded, Cypher; successor to the frozen Kuzu).
 # Default backend is 'mock' (stdlib only); install to enable LadybugDB:
 #   pip install ladybug   (pulls numpy)
+# Persistent mode: VELANTRIM_L3_BACKEND=ladybug  VELANTRIM_L3_PATH=./data/velantrim_l3.lbug
+# (LadybugDB persists to disk across restarts; the mock backend is in-memory.)
 # ladybug>=0.17.0
 
 # Future Sprint 2+ dependencies (commented — do not install yet):
