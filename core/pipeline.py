@@ -21,6 +21,7 @@ from typing import List, Dict, Any, Optional
 from core.trace import build_trace, promote_trace, format_trace
 from core.memory import (
     store_fact, get_fact, transition_esm, SUBJECTIVE_CLAIM_TYPES,
+    enqueue_l3_write, pending_l3_writes, clear_l3_write,
 )
 from core.l3_graph import get_l3_graph
 from core.embedding import get_embedder, cosine, assert_compatible_embedder
@@ -461,6 +462,35 @@ def _l3_payload(fact: Dict[str, Any]) -> Dict[str, Any]:
     return {**record, "truth_status": fact.get("truth_status")}
 
 
+def drain_l3_outbox(graph=None) -> int:
+    """
+    До-мержить в L3 факты, чья запись в канон ранее упала (self-heal).
+
+    L3 и SQLite не делят транзакцию: при сбое merge факт остаётся Validated в
+    SQLite, но без узла в графе (см. enqueue в run()). Здесь идемпотентно
+    повторяем MERGE для очереди и снимаем из неё успешные. Если бэкенд всё ещё
+    недоступен — оставляем в очереди и прекращаем попытки до следующего раза.
+    Возвращает число успешно до-мерженных фактов.
+    """
+    graph = graph or get_l3_graph()
+    healed = 0
+    for fid in pending_l3_writes():
+        fact = get_fact(fid)
+        if fact is None:
+            clear_l3_write(fid)  # факт исчез из SQLite — снимаем устаревшую запись
+            continue
+        fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"))
+        try:
+            graph.merge_fact(_l3_payload(fact))
+        except Exception as e:  # noqa: BLE001 — бэкенд ещё недоступен, не теряем очередь
+            logger.warning(
+                "drain_l3_outbox: %s всё ещё ждёт (%s)", fid, type(e).__name__)
+            break
+        clear_l3_write(fid)
+        healed += 1
+    return healed
+
+
 def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Полный пайплайн Velantrim:
@@ -473,6 +503,8 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     факты, вспомненные вместе, связываются в L3 эпизодическим ребром.
     """
     metrics.incr("query.total")
+    # 0. Self-heal: до-мержить факты, чья запись в L3 ранее упала (outbox).
+    drain_l3_outbox()
     # 1. Retrieval
     retrieved = retrieve(query)
     if not retrieved:
@@ -502,9 +534,10 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     #
     #    Cross-store нюанс: SQLite (pending) и L3 (канон) — два хранилища без общей
     #    транзакции. Сбой записи в L3 ловим и возвращаем _blocked, а не роняем
-    #    пайплайн трейсбеком. Частичное состояние допустимо: SQLite-факт может
-    #    остаться Validated без узла в L3 — merge_fact идемпотентен, повторный
-    #    прогон до-мержит. Источник истины — граф, SQLite лишь pending-кэш.
+    #    пайплайн трейсбеком. Частичное состояние самовосстанавливается: упавшие
+    #    факты ставятся в outbox (enqueue_l3_write) и идемпотентно до-мержатся при
+    #    следующем обращении (drain_l3_outbox, шаг 0). Источник истины — граф,
+    #    SQLite лишь pending-кэш.
     graph = get_l3_graph()
     try:
         for fact in facts_pack["facts"]:
@@ -525,6 +558,9 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     except Exception as e:  # noqa: BLE001 — сбой L3 не должен ронять пайплайн
         logger.error("L3-промоция не удалась: %s", e)
         adaptation.record_block()
+        # Ставим упавшие факты в outbox — до-мержатся при следующем обращении.
+        for f in facts_pack["facts"]:
+            enqueue_l3_write(f["fact_id"])
         return _blocked(f"L3 promotion failed: {e}", query, facts_pack, trace)
 
     promote_trace(trace, "Validated")

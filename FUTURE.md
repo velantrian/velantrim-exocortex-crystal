@@ -74,13 +74,20 @@ test_consolidate_starts_clock_for_baseline_less_node`.
 directly queryable on Ladybug for observability — not required for correctness
 anymore. Untestable in CI (LadybugDB is an opt-in dependency), so deferred.
 
-### 2.4 L3 ↔ SQLite transactionality (outbox)
-**Why:** `pipeline.run()` already documents (lines ~470) that the canon (L3) and
-the pending store (SQLite) share no transaction; a failed L3 merge leaves a
-Validated SQLite fact with no graph node. Today this is patched by "MERGE is
-idempotent, re-run re-merges" — fine for a sync MVP, fragile under crashes.
-**Do:** a small outbox table (pending L3 writes) drained idempotently on
-startup / next request, so partial state self-heals without manual re-runs.
+### 2.4 L3 ↔ SQLite transactionality (outbox) — DONE ✅
+**Why:** the canon (L3) and the pending store (SQLite) share no transaction; a
+failed L3 merge used to leave a Validated SQLite fact with no graph node,
+healed only by re-running the *same* query.
+**Done:** a persistent `l3_outbox` table (`core/memory.py`:
+`enqueue_l3_write` / `pending_l3_writes` / `clear_l3_write`). On an L3 merge
+failure `run()` enqueues the affected facts; every `run()` first calls
+`drain_l3_outbox()`, which idempotently re-merges queued facts and clears them
+on success (and keeps them queued if the backend is still down). Partial state
+now self-heals on the next request, no manual re-run. Tested in
+`tests/test_pipeline.py` (self-heal, stale-entry drop, backend-still-down).
+**Remaining (optional):** drain from `ingest()` too (its single merge is still
+unguarded), and a background/async drainer once the async pipeline (§2.8) lands
+— today drain is synchronous, piggy-backed on the next `run()`.
 
 ### 2.5 Don't leak the internal `_score` in public results
 **Why:** `generate_answer` returns `facts` that now carry the transient `_score`

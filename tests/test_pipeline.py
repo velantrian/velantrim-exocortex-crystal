@@ -62,6 +62,59 @@ def test_blocked_pipeline_does_not_write_to_l3_graph():
     assert get_l3_graph().all_facts() == []
 
 
+# ─── L3 outbox (self-healing partial state) ───────────────────────────────────
+
+def test_l3_outbox_self_heals_failed_merge(monkeypatch):
+    """A failed L3 merge queues the fact; draining the outbox after the backend
+    recovers lands the node in the canon — no manual re-run of the same query."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    from core.memory import pending_l3_writes
+
+    graph = get_l3_graph()
+    real_merge = graph.merge_fact
+    monkeypatch.setattr(graph, "merge_fact",
+                        lambda _f: (_ for _ in ()).throw(RuntimeError("L3 down")))
+
+    blocked = pipeline.run("quantum entanglement")
+    assert blocked["answer"] is None
+    assert "L3 promotion failed" in blocked["error"]
+    assert graph.all_facts() == []
+    assert "f2" in pending_l3_writes()              # queued for retry
+
+    monkeypatch.setattr(graph, "merge_fact", real_merge)   # backend recovers
+    assert pipeline.drain_l3_outbox() >= 1
+    assert pending_l3_writes() == []
+    assert "f2" in {f["fact_id"] for f in graph.all_facts()}
+
+
+def test_drain_l3_outbox_drops_stale_entry():
+    """An outbox entry whose SQLite fact vanished is dropped, not retried forever."""
+    from core import pipeline
+    from core.memory import enqueue_l3_write, pending_l3_writes
+
+    enqueue_l3_write("ghost")                       # never stored in SQLite
+    assert pipeline.drain_l3_outbox() == 0
+    assert pending_l3_writes() == []
+
+
+def test_drain_l3_outbox_keeps_queue_when_backend_down(monkeypatch):
+    """If the backend is still down during a drain, the entry stays queued."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    from core.memory import store_fact, enqueue_l3_write, pending_l3_writes
+
+    store_fact({"fact_id": "q1", "claim": "c", "source": "s",
+                "confidence": 0.8, "epistemic_state": "Validated"})
+    enqueue_l3_write("q1")
+    graph = get_l3_graph()
+    monkeypatch.setattr(graph, "merge_fact",
+                        lambda _f: (_ for _ in ()).throw(RuntimeError("down")))
+
+    assert pipeline.drain_l3_outbox() == 0
+    assert "q1" in pending_l3_writes()              # kept for retry
+
+
 # ─── episodic binding ─────────────────────────────────────────────────────────
 
 def _two_retrieved():
