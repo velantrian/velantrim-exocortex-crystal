@@ -128,14 +128,15 @@ spread activation the way a `CO_OCCURRED` edge does).
 
 ### 3.3 Integrate (or retire) the biological prototypes
 **Today:** only the epigenetic module is wired (`core/adaptation.py`). The
-fractal (`fractal_memory_layer.py`), neurogenesis
-(`neurogenesis_dynamic_growth.py`) and immune (`immune_crispr_memory_guard.py`)
-modules are standalone prototypes with `print()`-style demos — tested in
-isolation, but the core pipeline never calls them. The README promises an
-architecture the runtime doesn't yet have.
+fractal (`prototypes/fractal_memory_layer.py`), neurogenesis
+(`prototypes/neurogenesis_dynamic_growth.py`) and immune
+(`prototypes/immune_crispr_memory_guard.py`) modules are standalone prototypes
+with `print()`-style demos — tested in isolation, but the core pipeline never
+calls them. They now live under `prototypes/` (moved out of the repo root) so
+the layering is explicit: `prototypes/` may depend on `core/`, never the
+reverse.
 **Research:** decide per module — wire it into the pipeline with a real
-contract (like adaptation was), or move it to an explicit `prototypes/` area so
-the README stops over-promising. Concretely:
+contract (like adaptation was), or keep it as an explicit prototype. Concretely:
 - **Fractal (RFC0070):** what does multi-scale anchoring buy retrieval that the
   significance-weighted `vector_search` doesn't already approximate?
 - **Neurogenesis (RFC0073):** map "new neurons" onto a concrete capacity/

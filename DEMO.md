@@ -5,13 +5,13 @@
 ## Quick Start
 
 ```bash
-python hybrid_biological_memory.py
+python -m prototypes.hybrid_biological_memory
 ```
 
 ## Example Usage
 
 ```python
-from hybrid_biological_memory import HybridBiologicalMemory
+from prototypes.hybrid_biological_memory import HybridBiologicalMemory
 
 # Initialize the full hybrid system
 hbm = HybridBiologicalMemory()
@@ -55,11 +55,13 @@ print("Child system created successfully")
 ## Expected Output (example)
 
 ```
-Adapted verification strength: 0.92
+🌿🧠 HybridBiologicalMemory 'Velantrim-Hybrid' инициализирована (4 биологических слоя)
+Adapted verification strength: 0.65
+🔒 Blocked by CRISPR guard: capital of france is berlin
 Contradiction blocked: True
-New neurons added: 15
-Full stats: {'fractal': {...}, 'epigenetic': {...}, 'immune': {...}, 'neurogenesis': {...}}
-Child inherited successfully
+Added 15 new neurons. Total: 20
+Full stats: {'name': ..., 'fractal': {...}, 'epigenetic': {...}, 'immune': {...}, 'neurogenesis': {...}}
+Child system created: Velantrim-Hybrid-child
 ```
 
 ## Integration with Velantrim / Eiti

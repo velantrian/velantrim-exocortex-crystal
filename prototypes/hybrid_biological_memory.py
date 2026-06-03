@@ -1,22 +1,24 @@
-# hybrid_biological_memory.py
+# prototypes/hybrid_biological_memory.py
 # HybridBiologicalMemory v2.1 — биологически вдохновлённая память
 # RFC0070–0073 | Velantrim ExoCortex Crystal
 #
-# Это фасад над четырьмя каноническими слоями. Реализации живут в отдельных
-# модулях (single source of truth), а не дублируются здесь:
-#   - FractalMemoryLayer          → fractal_memory_layer.py        (RFC0070)
-#   - EpigeneticAdaptationModule  → epigenetic_adaptation_module.py (RFC0071)
-#   - ImmuneCRISPRMemoryGuard     → immune_crispr_memory_guard.py   (RFC0072)
-#   - NeurogenesisDynamicGrowth   → neurogenesis_dynamic_growth.py  (RFC0073)
+# Это фасад над четырьмя слоями. Реализации живут в отдельных модулях
+# (single source of truth), а не дублируются здесь:
+#   - FractalMemoryLayer          → prototypes/fractal_memory_layer.py       (RFC0070)
+#   - EpigeneticAdaptationModule  → epigenetic_adaptation_module.py (wired в core, RFC0071)
+#   - ImmuneCRISPRMemoryGuard     → prototypes/immune_crispr_memory_guard.py (RFC0072)
+#   - NeurogenesisDynamicGrowth   → prototypes/neurogenesis_dynamic_growth.py (RFC0073)
+#
+# ⚠️ Прототип: НЕ вшит в core-пайплайн (в отличие от epigenetic). См. FUTURE.md §3.3.
 
 import time
 import uuid
 from typing import Dict, List, Any, Optional
 
-from fractal_memory_layer import FractalMemoryLayer
+from prototypes.fractal_memory_layer import FractalMemoryLayer
 from epigenetic_adaptation_module import EpigeneticAdaptationModule
-from immune_crispr_memory_guard import ImmuneCRISPRMemoryGuard
-from neurogenesis_dynamic_growth import NeurogenesisDynamicGrowth
+from prototypes.immune_crispr_memory_guard import ImmuneCRISPRMemoryGuard
+from prototypes.neurogenesis_dynamic_growth import NeurogenesisDynamicGrowth
 
 # Известные противоречия, которыми засевается иммунный страж — чтобы базовые
 # галлюцинации блокировались "из коробки" (заменяет хардкод старых заглушек).
@@ -116,3 +118,34 @@ class HybridBiologicalMemory:
             "neurogenesis": self.neurogenesis_module.get_stats(),
             "total_memories": len(self.memory_log),
         }
+
+
+# Demo — повторяет пример из DEMO.md, чтобы `python -m prototypes.hybrid_biological_memory`
+# действительно что-то показывал. Прототип, не вшит в core-пайплайн (см. FUTURE.md §3.3).
+if __name__ == "__main__":  # pragma: no cover
+    hbm = HybridBiologicalMemory()
+
+    # 1. Память (фрактальный + нейрогенезный слои)
+    hbm.add_memory(
+        "Important event: first deep conversation about biological memory",
+        importance=0.95,
+    )
+
+    # 2. Стресс → эпигенетическая адаптация
+    hbm.record_stress(0.82, "hallucination_detected")
+    adapted = hbm.adapt_behavior()
+    print("Adapted verification strength:", adapted["verification_strength"])
+
+    # 3. Иммунный страж (CRISPR): блок известного противоречия
+    blocked = hbm.check_and_block_contradiction("The capital of France is Berlin")
+    print("Contradiction blocked:", blocked)
+
+    # 4. Нейрогенез: новые пластичные «нейроны»
+    print(hbm.add_new_neurons(15))
+
+    # 5. Полная сводка по слоям
+    print("Full stats:", hbm.get_full_stats())
+
+    # 6. Наследование дочерней памяти (как семена у растений)
+    child = hbm.inherit_to_child()
+    print("Child system created:", child.name)

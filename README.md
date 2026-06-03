@@ -67,7 +67,7 @@ Velantrim ExoCortex Crystal is evolving into a **next-generation memory system**
 
 ## What's Planned (Hybrid Roadmap)
 
-- 🌀 **Fractal Memory Layer** (RFC-F1) — Recursive anchoring across time scales (prototype: `fractal_memory_layer.py`, not yet wired into the core pipeline)
+- 🌀 **Fractal Memory Layer** (RFC-F1) — Recursive anchoring across time scales (prototype: `prototypes/fractal_memory_layer.py`, not yet wired into the core pipeline)
 - 🧬 **Epigenetic Module** (RFC-E1) — ✅ wired into the adaptive TruthGate (`core/adaptation.py`, RFC0071)
 - 🦠 **Immune / CRISPR Layer** (RFC-I1) — ✅ conflict-candidate detection (`find_conflicts`/`contradict`); auto-NLI classification still planned
 - 🧠 **Neurogenesis-inspired Growth** — Dynamic addition of new memory nodes
