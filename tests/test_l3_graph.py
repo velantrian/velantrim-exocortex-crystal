@@ -142,7 +142,29 @@ def test_factory_explicit_backend_is_not_cached():
 
 def test_factory_unknown_backend_raises():
     with pytest.raises(ValueError, match="неизвестный backend"):
-        get_l3_graph(backend="neo4j")
+        get_l3_graph(backend="sqlite3")
+
+
+def test_auto_falls_back_to_mock_when_ladybug_unavailable(monkeypatch):
+    import core.l3_graph as l3
+    reset_l3_graph()
+
+    def boom():
+        raise RuntimeError("LadybugDB not available")
+
+    monkeypatch.setattr(l3, "LadybugL3Graph", boom)
+    assert isinstance(l3._make("auto"), MockL3Graph)
+
+
+def test_neo4j_backend_requires_driver():
+    # neo4j is an optional dependency; without it the slot raises a clear error.
+    try:
+        import neo4j  # noqa: F401
+    except ImportError:
+        with pytest.raises(ImportError, match="neo4j"):
+            get_l3_graph(backend="neo4j")
+    else:
+        pytest.skip("neo4j installed; backend needs a live server to verify")
 
 
 def test_factory_respects_env_var(monkeypatch):

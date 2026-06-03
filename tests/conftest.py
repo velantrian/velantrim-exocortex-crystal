@@ -21,7 +21,9 @@ def isolated_db(monkeypatch, tmp_path):
     memory._L0.clear()
     monkeypatch.setattr(memory, "SQLITE_PATH", str(tmp_path / "test.db"))
     # Pin the deterministic, dependency-free backends so tests never load a
-    # neural model or hit the network (production defaults differ).
+    # neural model, touch disk, or hit the network (production defaults differ:
+    # L3=auto→LadybugDB, embedder=auto→sbert, generator=extractive).
+    monkeypatch.setenv("VELANTRIM_L3_BACKEND", "mock")
     monkeypatch.setenv("VELANTRIM_EMBEDDER", "hashing")
     monkeypatch.setenv("VELANTRIM_GENERATOR", "extractive")
     # Fresh module-level singletons per test.

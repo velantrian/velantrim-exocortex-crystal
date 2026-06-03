@@ -1,19 +1,19 @@
 # core/pipeline.py
 # Velantrim ExoCortex — Core Pipeline
-# v8.0.2-sprint1
+# v8.7.0-sprint2
 #
 # Принцип: Graph = Truth · LLM = Language · Memory = Physiology
 # Пайплайн: Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer
 #
-# Текущий уровень: MVP (L0/L1 память, BM25-lite retrieval).
-# Полная архитектура L0–L6: docs/Velantrim_V8_Crystal_Sprint1_toc.md
+# Ретрив — векторный (косинус эмбеддингов) по сид-корпусу + recall из L3.
+# Ответ — сменный Generator (extractive по умолчанию, опц. LLM). L3 — сменный
+# backend (auto→LadybugDB / mock / neo4j). Полная архитектура L0–L6:
+# docs/Velantrim_V8_Crystal_Sprint1_toc.md
 #
-# TODO (Sprint 2):
-#   - L3 граф: реализовать LadybugDB backend (core/l3_graph.py) — спайк pending.
-#     (Kuzu заморожен окт.2025; LadybugDB — его Cypher-совместимый преемник.)
-#   - Подключить HybridRetriever (BM25 + vector + HotGraph) поверх L3 vector index
-#   - Подключить LLM для generate_answer()
-#   - ESM: полная матрица переходов между состояниями
+# TODO (дальше):
+#   - HybridRetriever: добавить graph-walk / PageRank поверх vector-recall
+#   - ESM: полная матрица переходов + автоматические Supported/Hypothesized
+#   - Первоклассные эпизодические узлы (Person/Place/Time) вместо props рёбер
 
 import logging
 from datetime import datetime, timezone
@@ -450,7 +450,6 @@ def _blocked(
 
 # ─── TEST ─────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    import json
     logging.basicConfig(level=logging.INFO)
     queries = [
         "What is quantum entanglement?",
