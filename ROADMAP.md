@@ -2,15 +2,24 @@
 
 This document is the **honest truth** about what's implemented vs designed.
 
-## ✅ Implemented (MVP, ~600 lines in `core/`)
+## ✅ Implemented (`core/`, 230+ tests)
 
-- L0 (in-memory dict) + L1 (SQLite) memory layers
+- L0 (in-memory LRU) + L1 (SQLite, WAL) memory layers; `update_fact`
 - ESM state machine with 8 states and transition validation
 - Ring Zero immutability guard (I6) for `VALUES_CORE` / `RING_ZERO` fact IDs
-- BM25-lite retrieval over a hardcoded demo DATABASE (5 facts)
-- Guardian (structural check) + TruthGate (confidence threshold)
-- Provenance trace builder (`core/trace.py`)
-- Tests: ESM transitions, Ring Zero, pipeline smoke (`tests/`)
+- Claim-modality axis (`claim_type` / `source_status` / `significance`),
+  orthogonal to ESM; **type-aware TruthGate** (subjective ≠ world-fact)
+- Vector/semantic retrieval (cosine) over a seed corpus **+ recall from L3**
+- L3 canonical graph adapter — swappable backend `auto`→**LadybugDB** / `mock` /
+  `neo4j`; nodes, edges, `vector_search`, persistence (`VELANTRIM_L3_PATH`)
+- Swappable embedder (`auto`→sentence-transformers / hashing) and answer
+  generator (extractive / Claude LLM)
+- Ingestion (`core/ingest.py`): utterance → claim_type → gate → L3
+- Truth maintenance (`core/reconcile.py`): reinforce / supersede / contradict /
+  find_conflicts (immune candidate detection)
+- SleepCycle (`core/consolidate.py`): significance-weighted confidence decay (FSRS-style)
+- Episodic linking + `recall_episode` / `recall_by_entity`
+- Guardian (structural check), provenance trace (`core/trace.py`)
 
 ## ✅ Implemented (metadata tooling, not runtime)
 
@@ -26,25 +35,29 @@ This document is the **honest truth** about what's implemented vs designed.
 | RFC0066 | Concept Emergence, ProtoConcept, Hebbian learning | S3 |
 | RFC0065 | Memory Volition, `write_voluntary()`, VolitionWorker | S3 |
 | RFC0067 v2.0 | Analogy Graph, Semantic Bridge Engine, Adaptive Decoder | S4 |
-| RFC0063 | Knowledge Ingestion Pipeline | S4 |
 | RFC0068 | NeuroCore (plastic memory, Phase 0 passive tracker) | S5+ |
-| RFC0017 | FSRS power-law decay `R=(1+19/81×t/S)^(-0.5)` | S2 |
-| — | L3 graph adapter + LadybugDB backend (Kuzu frozen Oct'25; spike done, wiring real backend) | S2 |
 | — | Redis + fallback queue | S2 |
 | — | Async/await throughout (currently sync) | S2 |
 | — | Sprint A patches A1–A10 (documented, not wired) | S3 |
 
+> ✅ **Now done** (were in this table): RFC0017 FSRS-style decay → `core/consolidate.py`;
+> RFC0063 Ingestion → `core/ingest.py`; L3 graph adapter + LadybugDB backend
+> (`core/l3_graph.py`, Kuzu frozen Oct'25 → LadybugDB successor, Neo4j optional).
+
 ## 📊 Invariant enforcement status
 
 - **I6** (RingZeroImmutable): ✅ enforced in `memory.py` + test
-- **I1, I2**: 🟡 partial (MVP-level, SQLite only, not Neo4j graph)
+- **I1** (Graph = Truth): ✅ real L3 graph (auto→LadybugDB / mock / neo4j); single entry via TruthGate
+- **I2**: 🟡 partial
 - **I50, I50-b, I66, I70, I-K3, I68**: ❌ components not yet coded
 - **I38–I65**: ❌ pending Sprint 3+
 
 ## Sprint plan
 
-- **S1 (this sprint)**: Honesty — fix README, ESM bugs, add tests/CI/LICENSE
-- **S2**: FSRS decay + Neo4j abstraction + async pipeline
+- **S1**: Honesty — fix README, ESM bugs, add tests/CI/LICENSE
+- **S2**: ✅ vector retrieval + L3 recall, swappable L3/embedder/generator
+  backends (LadybugDB default, Neo4j optional), FSRS-style decay, ingestion,
+  truth maintenance. Remaining: async pipeline + Redis queue
 - **S3**: RFC0066 ConceptEmergenceDetector + RFC0065 Volition + A6–A10 wiring
 - **S4**: RFC0067 Analogy Graph + RFC0063 Ingestion
 - **S5+**: RFC0068 NeuroCore (feature-flagged, Phase 0 passive)

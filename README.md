@@ -47,23 +47,30 @@ Velantrim ExoCortex Crystal is evolving into a **next-generation memory system**
 
 | Path                          | Status     | Description                                                                 |
 |-------------------------------|------------|-----------------------------------------------------------------------------|
-| `core/memory.py`             | ✅ MVP    | L0 (in-memory) + L1 (SQLite) + ESM state machine (8 states)                |
-| `core/pipeline.py`           | ✅ MVP    | Retrieve → FactsPack → Guardian → TruthGate → Answer                |
-| `core/trace.py`              | ✅ MVP    | Provenance chain for every fact                                            |
-| `tests/`                     | ✅ MVP    | Unit tests for ESM and pipeline                                            |
-| `Velantrim_V8_Crystal_Sprint1.jsonl` | 📜 Spec | Full system design (63 chunks, 947KB)                                     |
-| Metadata tools               | ✅ Stable | audit_metadata.py, migration tools                                         |
+| `core/memory.py`     | ✅ | L0 (in-memory LRU) + L1 (SQLite, WAL) + ESM (8 states) + `update_fact` |
+| `core/pipeline.py`   | ✅ | Retrieve (vector + L3 recall) → FactsPack → Guardian → TruthGate → L3 → Answer; episodic linking + `recall_episode`/`recall_by_entity` |
+| `core/l3_graph.py`   | ✅ | Swappable L3 canonical graph: `auto`→LadybugDB / `mock` / `neo4j`; nodes, edges, `vector_search` |
+| `core/embedding.py`  | ✅ | Swappable embedder: `auto`→sentence-transformers / dependency-free hashing |
+| `core/generation.py` | ✅ | Swappable answer generator: extractive (default) / Claude LLM |
+| `core/ingest.py`     | ✅ | Utterance → claim_type classification → gate → L3 |
+| `core/reconcile.py`  | ✅ | Truth maintenance: reinforce / supersede / contradict / find_conflicts |
+| `core/consolidate.py`| ✅ | SleepCycle: significance-weighted confidence decay (FSRS-style) |
+| `core/trace.py`      | ✅ | Provenance chain for every fact |
+| `core/_registry.py`  | ✅ | Shared swappable-backend singleton factory |
+| `tests/`             | ✅ | 230+ tests across memory, pipeline, L3, embedding, generation, ingest, reconcile, consolidate |
+| `Velantrim_V8_Crystal_Sprint1.jsonl` | 📜 Spec | Full system design (63 chunks, 947KB) |
+| Metadata tools       | ✅ Stable | audit_metadata.py, migration tools |
 
 ## What's Planned (Hybrid Roadmap)
 
 - 🌀 **Fractal Memory Layer** (RFC-F1) — Recursive anchoring across time scales
 - 🧬 **Epigenetic Module** (RFC-E1) — Dynamic behavior switching
-- 🦠 **Immune / CRISPR Layer** (RFC-I1) — Automatic contradiction detection
+- 🦠 **Immune / CRISPR Layer** (RFC-I1) — ✅ conflict-candidate detection (`find_conflicts`/`contradict`); auto-NLI classification still planned
 - 🧠 **Neurogenesis-inspired Growth** — Dynamic addition of new memory nodes
 - 🌐 **Mycorrhizal-style Network** — Inter-module communication and collective learning
 - Full integration with Eiti ecosystem (Velantrim-Eiti-5, Eiti-Wizard)
 
-**Current Sprint Progress**: 3% of spec implemented. Hybrid vision adds 4 new major RFCs.
+**Current status**: full fact lifecycle runs end-to-end — ingest → classify → TruthGate → L3 graph → vector + episodic recall → reinforce / supersede / contradict / decay. Swappable backends (L3: auto→LadybugDB / mock / neo4j; embedder: auto→sbert / hashing; generator: extractive / Claude), zero-dep defaults, 230+ tests. The broader Hybrid vision (Fractal / Epigenetic / Neurogenesis RFCs) is still ahead.
 
 ## Quick Start (Unchanged)
 
@@ -102,11 +109,11 @@ Future: Add epigenetic "stress response" that accelerates or protects certain st
 
 | ID     | Name                        | Status                          |
 |--------|-----------------------------|---------------------------------|
-| I1     | Graph = Truth               | 🟡 MVP approximates               |
+| I1     | Graph = Truth               | ✅ real L3 graph; single entry via TruthGate |
 | I6     | RingZeroImmutable           | ✅ Enforced                     |
-| NEW-F1 | Fractal Resilience          | 🔴 Planned (Sprint 2)           |
+| NEW-F1 | Fractal Resilience          | 🔴 Planned                    |
 | NEW-E1 | Epigenetic Adaptation       | 🔴 Planned                    |
-| NEW-I1 | Immune Memory (CRISPR-style)| 🔴 Planned                    |
+| NEW-I1 | Immune Memory (CRISPR-style)| 🟡 conflict-candidate detection done; auto-NLI planned |
 
 ## Contributing
 
