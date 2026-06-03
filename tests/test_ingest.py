@@ -59,6 +59,18 @@ def test_ingest_empty_raises():
         ingest("   ")
 
 
+def test_ingest_exact_repeat_reinforces_confidence():
+    """An exact re-assertion is independent evidence → reinforce, not duplicate."""
+    first = ingest("Water boils at 100 degrees Celsius")
+    assert first["accepted"] and not first.get("reinforced")
+    c1 = first["fact"]["confidence"]
+
+    second = ingest("Water boils at 100 degrees Celsius")
+    assert second["reinforced"] is True
+    assert second["fact"]["confidence"] > c1
+    assert second["fact"]["metadata"]["observations"] == 2
+
+
 def test_ingest_low_confidence_world_fact_is_blocked():
     # WORLD_FACT below the TruthGate threshold is not accepted into canon.
     res = ingest("Plain statement of fact", confidence=0.0)

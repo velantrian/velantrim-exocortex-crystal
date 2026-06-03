@@ -18,6 +18,7 @@ from typing import Dict, Any, Optional
 from core.memory import store_fact, get_fact, transition_esm
 from core.l3_graph import get_l3_graph
 from core.pipeline import guardian, truth_gate, _truth_status_for
+from core.reconcile import reinforce
 
 # Маркеры модальности (RU + EN). Порядок важен: проверяем от частного к общему.
 _CLAIM_MARKERS = [
@@ -92,6 +93,14 @@ def ingest(
         ct = claim_type
 
     fid = fact_id or _fact_id(utterance)
+
+    # Точный повтор уже принятого факта (тот же content-hash id, Validated) —
+    # это независимое свидетельство: подкрепляем confidence, а не плодим дубль.
+    prior = get_fact(fid)
+    if prior is not None and prior.get("epistemic_state") == "Validated":
+        reinforce(fid)
+        return {"accepted": True, "reinforced": True, "fact": get_fact(fid)}
+
     fact = {
         "fact_id": fid,
         "claim": utterance.strip(),

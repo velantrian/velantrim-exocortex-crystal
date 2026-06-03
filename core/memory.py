@@ -256,6 +256,40 @@ def get_fact(fact_id: str) -> Optional[Dict]:
     return None
 
 
+# ─── Колонки, которые можно точечно обновлять без смены ESM-состояния ─────────
+_UPDATABLE = {"claim", "source", "confidence", "significance",
+              "claim_type", "source_status", "metadata"}
+
+
+def update_fact(fact_id: str, **fields) -> bool:
+    """
+    Точечно обновить поля факта, НЕ трогая epistemic_state.
+    Смена ESM-состояния — только через transition_esm. Возвращает True, если
+    факт найден и обновлён.
+    """
+    fields = {k: v for k, v in fields.items() if k in _UPDATABLE}
+    existing = get_fact(fact_id)
+    if existing is None or not fields:
+        return False
+
+    now = datetime.now(timezone.utc).isoformat()
+    sets, params = [], {"fact_id": fact_id, "updated_at": now}
+    for key, value in fields.items():
+        sets.append(f"{key} = :{key}")
+        params[key] = json.dumps(value) if key == "metadata" else value
+
+    with _db() as conn:
+        conn.execute(
+            f"UPDATE facts SET {', '.join(sets)}, updated_at = :updated_at "
+            f"WHERE fact_id = :fact_id",
+            params,
+        )
+
+    merged = {**existing, **fields, "updated_at": now}
+    _l0_put(fact_id, merged)
+    return True
+
+
 def transition_esm(fact_id: str, new_state: str) -> bool:
     """
     Перевести факт в новое ESM-состояние.

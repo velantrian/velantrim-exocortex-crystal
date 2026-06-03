@@ -70,6 +70,24 @@ def test_transition_esm_missing_fact_returns_false():
     assert transition_esm("ghost", "Validated") is False
 
 
+def test_update_fact_changes_columns_without_touching_esm():
+    store_fact({"fact_id": "u1", "claim": "c", "source": "s", "confidence": 0.5})
+    transition_esm("u1", "Validated")
+    from core.memory import update_fact
+    assert update_fact("u1", confidence=0.9, metadata={"observations": 3}) is True
+    f = get_fact("u1")
+    assert f["confidence"] == 0.9
+    assert f["metadata"] == {"observations": 3}
+    assert f["epistemic_state"] == "Validated"   # ESM untouched
+
+
+def test_update_fact_missing_or_no_fields_returns_false():
+    from core.memory import update_fact
+    assert update_fact("nope", confidence=0.9) is False          # missing fact
+    store_fact({"fact_id": "u2", "claim": "c", "source": "s"})
+    assert update_fact("u2", epistemic_state="Validated") is False  # not updatable
+
+
 def test_db_uses_wal_journal_mode():
     """Evidence/audit store runs in WAL so writers don't block readers."""
     from core import memory
