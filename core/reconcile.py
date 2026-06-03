@@ -18,13 +18,17 @@
 # (см. ingest.ingest), это безопасно.
 
 from datetime import datetime, timezone
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 from core.memory import get_fact, store_fact, transition_esm, update_fact
 from core.l3_graph import get_l3_graph
+from core.embedding import get_embedder
 
 REL_SUPERSEDED_BY = "SUPERSEDED_BY"
 REL_CONTRADICTS = "CONTRADICTS"
+
+# Порог "похоже, но это ДРУГОЙ факт" → кандидат на противоречие/замещение.
+_CONFLICT_MIN_SIM = 0.5
 
 
 def _now() -> str:
@@ -105,3 +109,41 @@ def contradict(fact_id: str, by_id: str) -> bool:
         changed = True
     get_l3_graph().add_edge(fact_id, REL_CONTRADICTS, by_id, {"at": _now()})
     return changed
+
+
+def find_conflicts(
+    claim: str,
+    *,
+    fact_id: Optional[str] = None,
+    threshold: float = _CONFLICT_MIN_SIM,
+    k: int = 5,
+) -> List[Dict[str, Any]]:
+    """
+    Выявить КАНДИДАТОВ на конфликт: канонические WORLD_FACTs, семантически
+    близкие к claim (≥ threshold), но это другой факт и не дословный повтор.
+
+    Намеренно НЕ помечает ничего автоматически — близость по эмбеддингам не
+    отличает «уточнение» от «противоречия». Решение принимает вызывающая
+    сторона через supersede()/contradict(). Это сигнал для ревью, не вердикт.
+    """
+    graph = get_l3_graph()
+    q_vec = get_embedder().embed(claim)
+    claim_norm = claim.strip().lower()
+    out: List[Dict[str, Any]] = []
+    for node in graph.vector_search(q_vec, k=k):
+        if node.get("fact_id") == fact_id:
+            continue
+        if node.get("claim_type", "WORLD_FACT") != "WORLD_FACT":
+            continue
+        if node.get("epistemic_state") != "Validated":
+            continue
+        if node.get("claim", "").strip().lower() == claim_norm:
+            continue  # дословный повтор — это reinforce, а не конфликт
+        if node.get("_relevance", 0.0) < threshold:
+            continue
+        out.append({
+            "fact_id": node["fact_id"],
+            "claim": node.get("claim", ""),
+            "similarity": node.get("_relevance", 0.0),
+        })
+    return out

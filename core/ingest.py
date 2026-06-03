@@ -18,7 +18,7 @@ from typing import Dict, Any, Optional
 from core.memory import store_fact, get_fact, transition_esm
 from core.l3_graph import get_l3_graph
 from core.pipeline import guardian, truth_gate, _truth_status_for
-from core.reconcile import reinforce
+from core.reconcile import reinforce, find_conflicts
 
 # Маркеры модальности (RU + EN). Порядок важен: проверяем от частного к общему.
 _CLAIM_MARKERS = [
@@ -138,4 +138,11 @@ def ingest(
     graph = get_l3_graph()
     graph.merge_fact(fact)
 
-    return {"accepted": True, "fact": fact}
+    result = {"accepted": True, "fact": fact}
+    # Immune-сигнал: для фактов о мире выявляем кандидатов на конфликт с каноном
+    # (близкие, но другие). Не действуем автоматически — отдаём на решение.
+    if ct == "WORLD_FACT":
+        conflicts = find_conflicts(utterance, fact_id=fid)
+        if conflicts:
+            result["conflicts"] = conflicts
+    return result
