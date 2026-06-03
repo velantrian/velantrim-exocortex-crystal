@@ -116,6 +116,18 @@ def test_recall_episode_empty_for_unlinked_fact():
     assert recall_episode("never-seen") == []
 
 
+def test_recall_by_entity_finds_facts_by_who_and_where(monkeypatch):
+    from core import pipeline
+
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: _two_retrieved())
+    pipeline.run("topic", episode={"who": ["alice"], "where": "lab"})
+
+    assert pipeline.recall_by_entity(who="alice") == ["f2", "f5"]
+    assert pipeline.recall_by_entity(where="lab") == ["f2", "f5"]
+    assert pipeline.recall_by_entity(who="bob") == []
+    assert pipeline.recall_by_entity() == []   # no criterion → nothing
+
+
 def test_single_fact_recall_creates_no_episode_edge(monkeypatch):
     from core import pipeline
     from core.l3_graph import get_l3_graph

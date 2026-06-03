@@ -66,6 +66,7 @@ def reinforce(fact_id: str, agreement: bool = True) -> Optional[float]:
         new_conf = round(conf * obs / (obs + 1), 4)
 
     meta["observations"] = obs + 1
+    meta["last_consolidated"] = _now()  # подкрепление сбрасывает часы спада
     update_fact(fact_id, confidence=new_conf, metadata=meta)
     _sync_l3(fact_id)
     return new_conf

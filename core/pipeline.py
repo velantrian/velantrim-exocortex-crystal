@@ -339,6 +339,31 @@ def recall_episode(fact_id: str) -> List[Dict[str, Any]]:
     return out
 
 
+def recall_by_entity(
+    *, who: Optional[str] = None, where: Optional[str] = None,
+) -> List[str]:
+    """
+    Recall по сущности: id фактов, чьи эпизоды упоминают данного who/where.
+    Entity-индекс поверх props рёбер CO_OCCURRED — отвечает на «какие факты
+    связаны с person X / местом Y» без отдельных entity-узлов в схеме L3.
+    """
+    if who is None and where is None:
+        return []
+    graph = get_l3_graph()
+    matched = set()
+    for node in graph.all_facts():
+        fid = node["fact_id"]
+        for edge in graph.get_edges(fid, _EPISODE_REL):
+            props = edge.get("props", {})
+            if who is not None and who in (props.get("who") or []):
+                matched.add(fid)
+                break
+            if where is not None and where == props.get("where"):
+                matched.add(fid)
+                break
+    return sorted(matched)
+
+
 # ─── MAIN PIPELINE ────────────────────────────────────────────────────────────
 
 def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:

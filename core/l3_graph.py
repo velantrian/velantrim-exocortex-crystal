@@ -207,7 +207,12 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
         "claim_type", "source_status", "significance", "truth_status", "metadata",
     ]
 
-    def __init__(self, db_path: str = "./data/velantrim_l3.lbug") -> None:
+    def __init__(self, db_path: Optional[str] = None) -> None:
+        import os
+        # Путь персистентной БД настраивается через VELANTRIM_L3_PATH; БД
+        # переживает перезапуски (в отличие от in-memory mock-дефолта).
+        if db_path is None:
+            db_path = os.environ.get("VELANTRIM_L3_PATH", "./data/velantrim_l3.lbug")
         try:
             import ladybug as lb
         except ImportError as e:
