@@ -106,7 +106,8 @@ class HybridBiologicalMemory:
         child.immune_guard.blocked_patterns |= self.immune_guard.blocked_patterns
         return child
 
-    def get_full_status(self) -> Dict[str, Any]:
+    def get_full_stats(self) -> Dict[str, Any]:
+        """Сводный статус всех четырёх слоёв (используется DEMO.md и тестами)."""
         return {
             "name": self.name,
             "fractal": self.fractal_layer.get_stats(),
@@ -115,6 +116,3 @@ class HybridBiologicalMemory:
             "neurogenesis": self.neurogenesis_module.get_stats(),
             "total_memories": len(self.memory_log),
         }
-
-    def get_full_stats(self) -> Dict[str, Any]:
-        return self.get_full_status()

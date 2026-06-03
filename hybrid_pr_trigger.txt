@@ -1,3 +1,0 @@
-This commit creates the initial difference for the Hybrid Biological Memory PR (RFC0070–0073). Ready for review and merge.
-
-Hybrid Biological Memory Architecture is now complete and integrated.
