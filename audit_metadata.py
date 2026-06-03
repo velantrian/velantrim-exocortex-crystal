@@ -210,7 +210,7 @@ def print_report(chunks, issues):
     print("=" * 80)
 
 if __name__ == '__main__':
-    jsonl_path = Path(__file__).parent / 'Velantrim_V8_Crystal_Sprint1.jsonl'
+    jsonl_path = Path(__file__).parent / 'docs' / 'Velantrim_V8_Crystal_Sprint1.jsonl'
 
     if not jsonl_path.exists():
         print(f"Error: {jsonl_path} not found", file=sys.stderr)

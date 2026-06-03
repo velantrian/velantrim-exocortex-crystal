@@ -1,136 +1,154 @@
 # 🔱 Velantrim ExoCortex — Crystal
 
-**Version**: v8.1.0-hybrid (Enhanced) · April 2026
+**Verifiable, local-first, open-source memory infrastructure for trustworthy AI systems.**
 
-> ⚠️ **Honest status**: This repository is the foundation for a **hybrid biological-inspired memory system** for AI. It combines truth-first graph memory with nature’s proven mechanisms (human hippocampus, animal episodic memory, insect associative learning, plant epigenetics, bacterial CRISPR immunity, and fractal structures).
+**Version**: v8.1.0 · 2026
+
+> Velantrim is not another chatbot. It is a **verifiable memory layer** that AI
+> systems can write to and read from, where **every stored fact carries its
+> provenance, its epistemic state, and its source** — and where nothing enters
+> the canonical graph except through a single audited gate (the *TruthGate*).
+> It runs **locally by default**: no cloud, no telemetry, no external calls
+> unless you explicitly opt in.
 
 ---
 
-## Vision: Hybrid Memory Architecture 🧠🌱
+## Why this exists
 
-Velantrim ExoCortex Crystal is evolving into a **next-generation memory system** that learns from the best biological examples:
+LLM-based systems are confidently wrong. They blend what a user *said*, what was
+*observed*, what was *inferred*, and what the model *hallucinated* into a single
+undifferentiated stream — and there is no way to ask *"where did this come from,
+and how sure are we?"*
 
-- **Human & Dolphins** — Episodic "what-where-when" memory + long-term social recall
-- **Birds & Octopuses** — Superior spatial + observational learning
-- **Insects (bees, flies)** — Ultra-efficient associative memory (mushroom bodies)
-- **Plants & Trees** — Epigenetic inheritance + collective memory via mycorrhizal networks
-- **Bacteria** — CRISPR-style immune memory for error protection
-- **Fractal principles** — Self-similar, scalable, resilient architecture (inspired by brain and nature)
+Velantrim addresses this at the infrastructure level. It treats memory as a
+**graph of verifiable facts** rather than an opaque vector blob:
 
-**Goal**: Create an AI memory that is:
-- Long-lasting (lifelong learning without catastrophic forgetting)
-- Energy-efficient (like biological systems)
-- Self-healing and adaptive (epigenetic switching)
-- Protected against hallucinations and errors (immune layer)
+- **Graph = Truth** — one canonical knowledge graph is the single source of
+  truth; the only way in is through the TruthGate.
+- **Provenance for every fact** — each fact records its `source`,
+  `source_status` (user-reported / observed / derived / external / LLM-output),
+  and a full trace chain (`core/trace.py`).
+- **Epistemic honesty** — facts move through an 8-state machine
+  (Observed → … → Validated → ImmutableCore, or → Contradicted → Collapsed),
+  so the system can distinguish *"verified"* from *"someone claimed this"*.
+- **Local-first & private by design** — default backends are stdlib-only and
+  run entirely on your machine. See [PRIVACY.md](./PRIVACY.md) and
+  [GDPR.md](./GDPR.md).
 
-## Core Principles (Updated for Hybrid Era)
+## European public benefit
 
-1. **Graph = Truth** — The knowledge graph remains the single source of truth.
-2. **Memory = Physiology** — Multi-layer system (L0–L6) with biological decay, consolidation, and neurogenesis-like growth.
-3. **Dual-Process** — Fast Path (real-time) + Slow Path (deep consolidation + epigenetic adaptation).
-4. **Fractal Resilience** — Self-similar structures at every scale for scalability and fault tolerance.
-5. **Epigenetic Adaptation** — "Gene switches" that change system behavior based on past stress without full retraining.
-6. **Immune Memory** — CRISPR-like mechanism to instantly recognize and neutralize contradictions, hallucinations, or attacks.
+Velantrim is built as **open European infrastructure** for AI that has to be
+*accountable*: privacy-respecting, auditable, and operable without sending
+personal data to third-party clouds. The design directly supports
+GDPR principles — data minimisation, purpose limitation, the right to
+rectification (via fact supersession) and erasure (logical collapse, with
+physical purge on the roadmap), and full auditability of provenance. See
+[GDPR.md](./GDPR.md) for the article-by-article mapping.
 
-## Biological Inspiration Table 🐳🐝🌱
+## What's in this repo (current, honest state)
 
-| Biological Source       | Mechanism Borrowed                          | Benefit for AI Memory                     |
-|-------------------------|---------------------------------------------|-------------------------------------------|
-| Human + Dolphins       | Episodic memory + long-term social recall  | Rich "what-where-when" + relationship tracking |
-| Birds + Octopuses      | Spatial + observational learning           | Fast adaptation to new environments       |
-| Insects (Mushroom Bodies) | Associative + coincidence detection       | Compact, fast pattern recognition         |
-| Plants & Trees         | Epigenetics + mycorrhizal networks         | Transgenerational learning + collective resilience |
-| Bacteria               | CRISPR immune memory                       | Rapid error/hallucination blocking        |
-| Fractal Brain          | Self-similar hierarchical architecture     | Infinite scalability + damage resistance  |
+| Path                  | Status | Description                                                                 |
+|-----------------------|--------|-----------------------------------------------------------------------------|
+| `core/memory.py`      | ✅ | L0 (in-memory LRU) + L1 (SQLite, WAL) + ESM (8 states) + `update_fact`      |
+| `core/pipeline.py`    | ✅ | Retrieve (vector + L3 recall) → FactsPack → Guardian → TruthGate → L3 → Answer; episodic linking + `recall_episode`/`recall_by_entity` |
+| `core/l3_graph.py`    | ✅ | Swappable L3 canonical graph: `auto`→LadybugDB / `mock` / `neo4j`; nodes, edges, `vector_search` |
+| `core/embedding.py`   | ✅ | Swappable embedder: `auto`→sentence-transformers / dependency-free hashing  |
+| `core/generation.py`  | ✅ | Swappable answer generator: extractive (default, local) / Claude LLM (opt-in) |
+| `core/ingest.py`      | ✅ | Utterance → claim_type classification → gate → L3                           |
+| `core/reconcile.py`   | ✅ | Truth maintenance: reinforce / supersede / contradict / find_conflicts      |
+| `core/consolidate.py` | ✅ | SleepCycle: significance-weighted confidence decay (FSRS-style)             |
+| `core/trace.py`       | ✅ | Provenance chain for every fact                                             |
+| `core/adaptation.py`  | ✅ | Adaptive TruthGate threshold (RFC0071): stress ↑ → stricter; healthy → relaxes |
+| `core/observe.py`     | ✅ | Memory observability report over the L3 canonical graph                     |
+| `core/metrics.py`     | ✅ | Lightweight in-process counters (query / ingest / gate)                     |
+| `core/cli.py`         | ✅ | CLI: `ingest` / `ask` / `history` / `report`                                |
+| `tests/`              | ✅ | **265 passing**, 12 skipped, **99% coverage** (gate: 95%) — see [TEST_REPORT.md](./TEST_REPORT.md) |
+| `docs/Velantrim_V8_Crystal_Sprint1.jsonl` | 📜 Spec | Full system design (63 chunks) |
 
-## What's in This Repo (Current State)
+**Current status**: the full fact lifecycle runs end-to-end — ingest → classify
+→ TruthGate → L3 graph → vector + episodic recall → reinforce / supersede /
+contradict / decay. Swappable backends, zero-dependency defaults.
 
-| Path                          | Status     | Description                                                                 |
-|-------------------------------|------------|-----------------------------------------------------------------------------|
-| `core/memory.py`     | ✅ | L0 (in-memory LRU) + L1 (SQLite, WAL) + ESM (8 states) + `update_fact` |
-| `core/pipeline.py`   | ✅ | Retrieve (vector + L3 recall) → FactsPack → Guardian → TruthGate → L3 → Answer; episodic linking + `recall_episode`/`recall_by_entity` |
-| `core/l3_graph.py`   | ✅ | Swappable L3 canonical graph: `auto`→LadybugDB / `mock` / `neo4j`; nodes, edges, `vector_search` |
-| `core/embedding.py`  | ✅ | Swappable embedder: `auto`→sentence-transformers / dependency-free hashing |
-| `core/generation.py` | ✅ | Swappable answer generator: extractive (default) / Claude LLM |
-| `core/ingest.py`     | ✅ | Utterance → claim_type classification → gate → L3 |
-| `core/reconcile.py`  | ✅ | Truth maintenance: reinforce / supersede / contradict / find_conflicts |
-| `core/consolidate.py`| ✅ | SleepCycle: significance-weighted confidence decay (FSRS-style) |
-| `core/trace.py`      | ✅ | Provenance chain for every fact |
-| `core/_registry.py`  | ✅ | Shared swappable-backend singleton factory |
-| `core/adaptation.py` | ✅ | Epigenetic adaptive TruthGate threshold (RFC0071) — stress ↑ → stricter, healthy flow → relaxes |
-| `core/observe.py`    | ✅ | Memory observability report over the L3 canonical graph |
-| `core/metrics.py`    | ✅ | Lightweight in-process counters (query / ingest / gate) |
-| `core/cli.py`        | ✅ | CLI: `ingest` / `ask` / `history` / `report` |
-| `tests/`             | ✅ | 250+ tests across memory, pipeline, L3, embedding, generation, ingest, reconcile, consolidate, adaptation |
-| `Velantrim_V8_Crystal_Sprint1.jsonl` | 📜 Spec | Full system design (63 chunks, 947KB) |
-| Metadata tools       | ✅ Stable | audit_metadata.py, migration tools |
-
-## What's Planned (Hybrid Roadmap)
-
-- 🌀 **Fractal Memory Layer** (RFC-F1) — Recursive anchoring across time scales (prototype: `prototypes/fractal_memory_layer.py`, not yet wired into the core pipeline)
-- 🧬 **Epigenetic Module** (RFC-E1) — ✅ wired into the adaptive TruthGate (`core/adaptation.py`, RFC0071)
-- 🦠 **Immune / CRISPR Layer** (RFC-I1) — ✅ conflict-candidate detection (`find_conflicts`/`contradict`); auto-NLI classification still planned
-- 🧠 **Neurogenesis-inspired Growth** — Dynamic addition of new memory nodes
-- 🌐 **Mycorrhizal-style Network** — Inter-module communication and collective learning
-- Full integration with Eiti ecosystem (Velantrim-Eiti-5, Eiti-Wizard)
-
-**Current status**: full fact lifecycle runs end-to-end — ingest → classify → TruthGate → L3 graph → vector + episodic recall → reinforce / supersede / contradict / decay. Swappable backends (L3: auto→LadybugDB / mock / neo4j; embedder: auto→sbert / hashing; generator: extractive / Claude), zero-dep defaults, 230+ tests. The broader Hybrid vision (Fractal / Epigenetic / Neurogenesis RFCs) is still ahead.
-
-## Quick Start (Unchanged)
+## Quick start
 
 ```bash
 git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
-pip install -r requirements.txt
-python -m core.pipeline
-pytest tests/
+pip install -r requirements.txt        # stdlib-only runtime; deps are for tests/optional backends
+python -m core.pipeline                # runs the end-to-end demo, fully local
+pytest                                 # 265 passing, 99% coverage
 ```
 
-## ESM — Epistemic State Machine (Core)
+No data leaves your machine. See [DEMO.md](./DEMO.md) for a walkthrough of the
+ingest → evidence → trace → answer chain.
 
-Facts move through 8 states with biological-style transitions:
+## ESM — Epistemic State Machine (core)
+
+Facts move through 8 states with validated transitions:
 
 ```
 Observed → Hypothesized → Supported → Validated → ImmutableCore
-          ↘ Contradicted → Deprecated → Collapsed
+                                    ↘ Contradicted → Deprecated → Collapsed
 ```
 
-Future: Add epigenetic "stress response" that accelerates or protects certain states.
+`claim_type` (world-fact / experience / emotion / opinion / …) is an
+orthogonal axis to ESM: a feeling is *real as a feeling* and can become
+`Validated`, but it never becomes a `WORLD_FACT`. This is how Velantrim avoids
+laundering subjective input into objective truth.
 
-## ASCII Architecture Diagram 🔀
+## Key invariants
 
-```
-          🌟 Central Hippocampus-like Core (Episodic + Spatial)
-               /               \
-     🐝 Associative (Insect Mushroom Bodies)     🌳 Collective Network (Trees + Mycorrhiza)
-          |                       |
-     🦠 Immune + Epigenetic Layer (Bacteria + Plants)
-          \               /
-           Fractal Self-Similarity → Lifelong Learning without Forgetting
-```
+| ID     | Name                  | Status                                                       |
+|--------|-----------------------|-------------------------------------------------------------|
+| I1     | Graph = Truth         | ✅ real L3 graph; single entry via TruthGate                 |
+| I6     | Ring Zero Immutable   | ✅ enforced (`VALUES_CORE` / `RING_ZERO` cannot transition)  |
+| E1     | Epigenetic Adaptation | ✅ wired into adaptive TruthGate (`core/adaptation.py`)       |
+| I1-prov| Provenance preserved  | ✅ every fact has source + source_status + trace             |
 
-## Key Invariants (Hybrid Era)
+## Roadmap
 
-| ID     | Name                        | Status                          |
-|--------|-----------------------------|---------------------------------|
-| I1     | Graph = Truth               | ✅ real L3 graph; single entry via TruthGate |
-| I6     | RingZeroImmutable           | ✅ Enforced                     |
-| NEW-F1 | Fractal Resilience          | 🔴 Planned (prototype only)   |
-| NEW-E1 | Epigenetic Adaptation       | ✅ wired into adaptive TruthGate (`core/adaptation.py`, RFC0071) |
-| NEW-I1 | Immune Memory (CRISPR-style)| 🟡 conflict-candidate detection done; auto-NLI planned |
+Three to five fundable, verifiable deliverables (see [ROADMAP.md](./ROADMAP.md)
+for the full breakdown and honest implemented-vs-designed split):
+
+1. **Verifiable provenance & audit trail** — complete the trace chain so any
+   answer can be replayed back to its sources. *(foundation in place)*
+2. **GDPR data-subject operations** — first-class rectification and erasure
+   (logical collapse → physical purge) with audit logging.
+3. **Local-first persistence & packaging** — reproducible, dependency-free
+   deployment; embedded graph backend (LadybugDB) with on-disk persistence.
+4. **Conflict / hallucination detection** — promote `find_conflicts` candidate
+   detection to automatic NLI-based contradiction blocking.
+5. **Documentation, security audit & CI** — sustained test coverage, security
+   review (see [SECURITY.md](./SECURITY.md)), and reproducible CI.
+
+## Documentation
+
+- [PRIVACY.md](./PRIVACY.md) — what data is stored, where, and what never leaves the device
+- [GDPR.md](./GDPR.md) — article-by-article mapping of the design to GDPR
+- [SECURITY.md](./SECURITY.md) — threat model and responsible disclosure
+- [TEST_REPORT.md](./TEST_REPORT.md) — current, un-inflated test results
+- [ROADMAP.md](./ROADMAP.md) — implemented vs. designed, sprint by sprint
+
+## Research inspiration
+
+The longer-term design draws on biological memory systems — hippocampal
+episodic memory, insect associative learning (mushroom bodies), plant
+epigenetic adaptation, and CRISPR-style immune recognition of contradictions.
+These are *research directions and metaphors*, not current runtime features;
+see [HYBRID_VISION.md](./HYBRID_VISION.md) and [FUTURE.md](./FUTURE.md). The
+shippable infrastructure described above does not depend on any of them.
 
 ## Contributing
 
-1. Read this README and the hybrid vision.
-2. Check `ROADMAP.md` for current priorities.
-3. New biological-inspired ideas → open an issue first.
+1. Read this README and [ROADMAP.md](./ROADMAP.md).
+2. Open an issue before large changes.
+3. Keep the honesty invariant: `ROADMAP.md` distinguishes *implemented* from
+   *designed* — please preserve that distinction.
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+[MIT](./LICENSE).
 
 ---
 
-> **Graph = Truth** · **Memory = Physiology + Biology** · **Fractal = Resilience** · **Emergence = Life**
-
-*This README was enhanced with hybrid biological memory architecture (human + animals + insects + plants + bacteria + fractal principles).*
+> **Graph = Truth** · **Provenance = Trust** · **Local-first = Privacy**

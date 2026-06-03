@@ -52,7 +52,7 @@ def fill_dependencies(input_path: str, output_path: str) -> dict:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Fill depends_on from RFC content references")
-    parser.add_argument('input_file', nargs='?', default='Velantrim_V8_Crystal_Sprint1.jsonl')
+    parser.add_argument('input_file', nargs='?', default='docs/Velantrim_V8_Crystal_Sprint1.jsonl')
     parser.add_argument('--dry-run', action='store_true',
                         help="Count changes without writing any files")
     args = parser.parse_args()

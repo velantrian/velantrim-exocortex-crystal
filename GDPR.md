@@ -1,0 +1,77 @@
+# GDPR Alignment
+
+Velantrim is designed as **GDPR-compliant memory infrastructure for Europe**.
+This document maps the architecture to the relevant articles and principles of
+Regulation (EU) 2016/679 (GDPR). It is an engineering self-assessment, not
+legal advice — operators remain responsible for compliant deployment.
+
+> **Key point:** Velantrim is a **local-first library**, not a hosted service.
+> In the default configuration the data controller is the operator running it
+> on their own device; **no personal data is transmitted to Velantrim's authors
+> or any third party** (see [PRIVACY.md](./PRIVACY.md)).
+
+## Principles (Article 5)
+
+| Principle | How Velantrim supports it |
+|-----------|---------------------------|
+| **Lawfulness, fairness, transparency** | Every fact carries explicit `source` and `source_status`; the provenance trace (`core/trace.py`) makes processing transparent and auditable. |
+| **Purpose limitation** | `claim_type` records the nature/purpose of each stored claim; subjective claims are kept separate from world-facts. |
+| **Data minimisation** | Stdlib-only local runtime; no telemetry, no analytics, no background collection. The store contains only facts the operator writes. |
+| **Accuracy** | The TruthGate, ESM verification states, and `reconcile.py` (supersede / contradict / find_conflicts) exist specifically to keep stored facts accurate and to flag conflicts. |
+| **Storage limitation** | FSRS-style confidence decay (`core/consolidate.py`) and logical collapse support time-bounded retention. |
+| **Integrity & confidentiality** | Single-entry TruthGate, Ring Zero immutability (I6), validated ESM transitions, and the self-healing L3 outbox. See [SECURITY.md](./SECURITY.md). |
+| **Accountability** | Provenance trace + audit-oriented test suite (265 tests, 99% coverage) demonstrate and document processing. |
+
+## Data subject rights (Chapter III)
+
+| Right | Article | Status in Velantrim |
+|-------|---------|---------------------|
+| **Information / transparency** | 13–14 | ✅ Provenance & source status recorded per fact. |
+| **Access** | 15 | ✅ `get_all_facts()` / CLI `report` export the full store (plain SQLite/JSON). |
+| **Rectification** | 16 | ✅ `update_fact()` and supersede flow (`core/reconcile.py`). |
+| **Erasure ("right to be forgotten")** | 17 | 🟡 Logical erasure via ESM `Collapsed` today; **physical purge of collapsed records is a roadmap deliverable**. Deleting local `data/` removes all data immediately. |
+| **Restriction of processing** | 18 | 🟡 `Deprecated` / `Collapsed` states exclude facts from active recall; explicit per-fact restriction flag is planned. |
+| **Data portability** | 20 | ✅ Export is standard SQLite + JSON, fully portable. |
+| **Object** | 21 | 🟡 Operator-controlled; supported operationally via erasure/restriction. |
+
+## Privacy by design and by default (Article 25)
+
+- **Local-first**: no network listener and no outbound calls by default; personal
+  data never leaves the device unless the operator opts into an external backend.
+- **Provenance-first**: the system cannot store a fact without recording where it
+  came from, satisfying transparency obligations at the data-structure level.
+- **Least surprise**: optional backends that change the data-flow boundary
+  (Claude generator, remote Neo4j) are **off by default** and documented in
+  [PRIVACY.md](./PRIVACY.md).
+
+## Records of processing & security (Articles 30, 32)
+
+- The provenance trace and in-process metrics (`core/metrics.py`,
+  `core/observe.py`) provide the raw material for a record of processing.
+- Security measures appropriate to a local single-user library are described in
+  [SECURITY.md](./SECURITY.md). **Encryption at rest** is delegated to the host
+  (full-disk/filesystem encryption); application-level encryption is on the
+  roadmap.
+
+## International transfers (Chapter V)
+
+In the default local configuration there are **no transfers**. Enabling the
+optional Claude generator transmits processed facts to Anthropic and is the
+operator's decision and responsibility; use a local backend to avoid any
+transfer.
+
+## Roadmap to fuller compliance
+
+These are explicit, fundable deliverables (see [ROADMAP.md](./ROADMAP.md)):
+
+1. **Physical erasure** of collapsed facts with tombstoning and audit log
+   (Art. 17).
+2. **Per-fact processing-restriction** flag (Art. 18).
+3. **Application-level encryption at rest** option (Art. 32).
+4. **Exportable record-of-processing** report (Art. 30).
+
+## Contact
+
+Data-protection questions: **qarythus@gmail.com**.
+
+*This assessment reflects the codebase as of 2026 and is maintained alongside it.*
