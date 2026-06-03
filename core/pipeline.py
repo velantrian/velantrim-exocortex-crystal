@@ -23,7 +23,7 @@ from core.memory import (
     store_fact, get_fact, transition_esm, SUBJECTIVE_CLAIM_TYPES,
 )
 from core.l3_graph import get_l3_graph
-from core.embedding import get_embedder, cosine
+from core.embedding import get_embedder, cosine, assert_compatible_embedder
 from core.generation import get_generator
 from core import metrics, adaptation
 
@@ -68,6 +68,9 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
     """
     embedder = get_embedder()
     graph = get_l3_graph()
+    # Защита от смешивания эмбеддеров: ловим смену эмбеддера на персистентном
+    # сторе (несравнимые векторы → битое ранжирование). Первый вызов штампует.
+    assert_compatible_embedder(graph)
     q_vec = embedder.embed(query)
     by_id: Dict[str, Dict[str, Any]] = {}
 

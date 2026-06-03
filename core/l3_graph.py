@@ -48,6 +48,20 @@ class L3GraphBackend(ABC):
     чтобы backend можно было менять, не трогая pipeline.
     """
 
+    # ─── Отпечаток эмбеддера (защита от смешивания векторов) ───────────────────
+    # Конкретные методы (не abstract): хранят id эмбеддера, которым построены
+    # векторы стора, чтобы embedding.assert_compatible_embedder ловил смену
+    # эмбеддера. Дефолт — in-process атрибут; этого достаточно для mock и для
+    # обнаружения смены в рамках сессии. Кросс-рестарт-персист отпечатка на
+    # LadybugDB/Neo4j (строка metadata) — опциональный шаг, см. FUTURE.md §2.2.
+    def embedder_fingerprint(self) -> Optional[str]:
+        """id эмбеддера, которым построены векторы стора (None до первой записи)."""
+        return getattr(self, "_embedder_fp", None)
+
+    def set_embedder_fingerprint(self, fingerprint: str) -> None:
+        """Зафиксировать id эмбеддера для этого стора."""
+        self._embedder_fp = fingerprint
+
     @abstractmethod
     def merge_fact(self, fact: Dict[str, Any]) -> None:
         """Upsert канонического узла по fact_id. Идемпотентно."""
@@ -137,6 +151,7 @@ class MockL3Graph(L3GraphBackend):
         # entity-узлы и связи факт→сущность (отдельно от Fact-пространства)
         self._entities: Dict[str, Dict[str, Any]] = {}
         self._mentions: List[tuple] = []  # (fact_id, entity_id, rel)
+        self._embedder_fp: Optional[str] = None  # отпечаток эмбеддера стора
 
     def merge_entity(self, entity_id: str, kind: str, label: str) -> None:
         self._entities[entity_id] = {
@@ -241,6 +256,7 @@ class MockL3Graph(L3GraphBackend):
         self._vectors.clear()
         self._entities.clear()
         self._mentions.clear()
+        self._embedder_fp = None
 
 
 # ─── LADYBUGDB BACKEND (слот под спайк) ───────────────────────────────────────

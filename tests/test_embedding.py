@@ -3,7 +3,9 @@ import pytest
 
 from core.embedding import (
     EMBED_DIM,
+    EmbedderMismatchError,
     HashingEmbedder,
+    assert_compatible_embedder,
     cosine,
     get_embedder,
     reset_embedder,
@@ -85,3 +87,58 @@ def test_sbert_captures_real_semantics():
     sun_quantum = cosine(e.embed("the Sun"), e.embed("quantum entanglement"))
     assert sun_solar > 0.3
     assert sun_solar > sun_quantum
+
+
+# ─── Embedder identity + mismatch guard ───────────────────────────────────────
+
+class _StubEmbedder:
+    """A throwaway embedder with a controllable id, for guard tests."""
+    def __init__(self, id_):
+        self.id = id_
+
+    def embed(self, text):
+        return [0.0] * EMBED_DIM
+
+
+def test_hashing_embedder_exposes_stable_id():
+    assert get_embedder("hashing").id == f"hashing-{EMBED_DIM}"
+
+
+def test_guard_stamps_fingerprint_on_first_use():
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    assert g.embedder_fingerprint() is None
+    assert_compatible_embedder(g)                      # first use → stamp
+    assert g.embedder_fingerprint() == f"hashing-{EMBED_DIM}"
+    assert_compatible_embedder(g)                      # same embedder → no-op
+
+
+def test_guard_warns_on_embedder_switch(monkeypatch, caplog):
+    from core import embedding
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    g.set_embedder_fingerprint("sbert-foo-2048")       # store built with sbert
+    monkeypatch.setattr(embedding, "get_embedder",
+                        lambda backend=None: _StubEmbedder(f"hashing-{EMBED_DIM}"))
+    with caplog.at_level("WARNING"):
+        assert_compatible_embedder(g)                  # mismatch → warns, no raise
+    assert any("not cosine-comparable" in r.message for r in caplog.records)
+
+
+def test_guard_raises_in_strict_mode(monkeypatch):
+    from core import embedding
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    g.set_embedder_fingerprint("sbert-foo-2048")
+    monkeypatch.setattr(embedding, "get_embedder",
+                        lambda backend=None: _StubEmbedder(f"hashing-{EMBED_DIM}"))
+    monkeypatch.setenv("VELANTRIM_EMBEDDER_STRICT", "1")
+    with pytest.raises(EmbedderMismatchError):
+        assert_compatible_embedder(g)
+
+
+def test_retrieve_stamps_store_fingerprint():
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    retrieve("quantum entanglement")
+    assert get_l3_graph().embedder_fingerprint() == f"hashing-{EMBED_DIM}"

@@ -17,6 +17,7 @@ from typing import Dict, Any, Optional
 
 from core.memory import store_fact, get_fact, transition_esm
 from core.l3_graph import get_l3_graph
+from core.embedding import assert_compatible_embedder
 from core.pipeline import guardian, truth_gate, _truth_status_for, _l3_payload
 from core.reconcile import reinforce, find_conflicts
 from core import metrics, adaptation
@@ -141,6 +142,8 @@ def ingest(
     fact["truth_status"] = _truth_status_for(ct)
 
     graph = get_l3_graph()
+    # Защита от смешивания эмбеддеров: merge кладёт вектор claim'а в стор.
+    assert_compatible_embedder(graph)
     # Мержим персистентную запись (created_at/metadata) — иначе SleepCycle не
     # найдёт опорную метку времени для спада (см. pipeline._l3_payload).
     graph.merge_fact(_l3_payload(fact))

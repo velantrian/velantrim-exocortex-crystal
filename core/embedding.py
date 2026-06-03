@@ -23,6 +23,7 @@
 import hashlib
 import logging
 import math
+import os
 import re
 from abc import ABC, abstractmethod
 from typing import List, Optional
@@ -30,6 +31,11 @@ from typing import List, Optional
 from core._registry import BackendRegistry
 
 logger = logging.getLogger(__name__)
+
+
+class EmbedderMismatchError(Exception):
+    """Raised (strict mode) when a store's vectors were built with a different
+    embedder than the active one — their cosine similarities are meaningless."""
 
 # Размерность вектора. Фиксирована: L3-граф хранит FLOAT[EMBED_DIM].
 # Чем больше, тем реже коллизии хэш-трюка между разными словами (ценой размера).
@@ -82,6 +88,10 @@ class Embedder(ABC):
     """Контракт эмбеддера: текст → вектор фиксированной размерности EMBED_DIM."""
 
     dim: int = EMBED_DIM
+    # Стабильный идентификатор эмбеддера: всё, что делает векторы НЕсравнимыми по
+    # косинусу (семейство, модель, размерность). Хранится на узлах/сторе для
+    # защиты от смешивания эмбеддеров (assert_compatible_embedder).
+    id: str = "embedder"
 
     @abstractmethod
     def embed(self, text: str) -> List[float]:
@@ -104,6 +114,7 @@ class HashingEmbedder(Embedder):
     """
 
     dim = EMBED_DIM
+    id = f"hashing-{EMBED_DIM}"
 
     def embed(self, text: str) -> List[float]:
         vec = [0.0] * EMBED_DIM
@@ -141,6 +152,7 @@ class SentenceTransformerEmbedder(Embedder):  # pragma: no cover
             ) from e
         self._model = SentenceTransformer(model_name)
         self.dim = EMBED_DIM
+        self.id = f"sbert-{model_name}-{EMBED_DIM}"
 
     def embed(self, text: str) -> List[float]:
         raw = self._model.encode(text or "", normalize_embeddings=True).tolist()
@@ -202,3 +214,39 @@ def get_embedder(backend: Optional[str] = None) -> Embedder:
 def reset_embedder() -> None:
     """Сбросить singleton (для тестов)."""
     _REGISTRY.reset()
+
+
+# ─── EMBEDDER-MISMATCH GUARD ──────────────────────────────────────────────────
+# Векторы от hashing и sbert НЕсравнимы по косинусу (см. шапку модуля). На
+# персистентном L3-сторе смена эмбеддера тихо ломает ранжирование vector_search —
+# самый незаметный класс багов (результаты просто потихоньку портятся). Guard
+# штампует id эмбеддера на сторе при первом использовании и громко предупреждает
+# (или падает в strict-режиме) при последующем несовпадении.
+
+_STRICT_ENV = "VELANTRIM_EMBEDDER_STRICT"
+
+
+def assert_compatible_embedder(graph) -> None:
+    """
+    Сверить активный эмбеддер с тем, которым построен L3-стор.
+
+    graph должен поддерживать embedder_fingerprint()/set_embedder_fingerprint()
+    (см. L3GraphBackend). Первый вызов фиксирует отпечаток; дальше при
+    несовпадении — warning, а при VELANTRIM_EMBEDDER_STRICT=1 — EmbedderMismatchError.
+    """
+    active = get_embedder().id
+    stored = graph.embedder_fingerprint()
+    if stored is None:
+        graph.set_embedder_fingerprint(active)
+        return
+    if stored == active:
+        return
+    msg = (
+        f"L3 store was built with embedder '{stored}' but the active embedder is "
+        f"'{active}'; their vectors are not cosine-comparable, so vector_search "
+        f"ranking is unreliable. Pin one embedder per store (VELANTRIM_EMBEDDER) "
+        f"or rebuild the store."
+    )
+    if os.environ.get(_STRICT_ENV, "").lower() in ("1", "true", "yes"):
+        raise EmbedderMismatchError(msg)
+    logger.warning(msg)
