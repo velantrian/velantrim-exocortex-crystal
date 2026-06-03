@@ -320,6 +320,25 @@ def _link_episode(
         graph.add_edge(b, _EPISODE_REL, a, props)
 
 
+def recall_episode(fact_id: str) -> List[Dict[str, Any]]:
+    """
+    Эпизодический recall: с какими фактами и в каком контексте (who/where/when/
+    query) данный факт вспоминался вместе. Читает рёбра CO_OCCURRED — делает
+    эпизодические данные, которые писал _link_episode, запрашиваемыми.
+    """
+    out: List[Dict[str, Any]] = []
+    for edge in get_l3_graph().get_edges(fact_id, _EPISODE_REL):
+        props = edge.get("props", {})
+        out.append({
+            "with":  edge["target"],
+            "who":   props.get("who"),
+            "where": props.get("where"),
+            "when":  props.get("when"),
+            "query": props.get("query"),
+        })
+    return out
+
+
 # ─── MAIN PIPELINE ────────────────────────────────────────────────────────────
 
 def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
