@@ -19,7 +19,7 @@ from core.memory import store_fact, get_fact, transition_esm
 from core.l3_graph import get_l3_graph
 from core.pipeline import guardian, truth_gate, _truth_status_for
 from core.reconcile import reinforce, find_conflicts
-from core import metrics
+from core import metrics, adaptation
 
 # Маркеры модальности (RU + EN). Порядок важен: проверяем от частного к общему.
 _CLAIM_MARKERS = [
@@ -130,6 +130,7 @@ def ingest(
         ok, reason = truth_gate(facts_pack)
     if not ok:
         metrics.incr("ingest.blocked")
+        adaptation.record_block()
         return {"accepted": False, "reason": reason, "fact": fact}
 
     # Прошёл врата → Validated, truth_status по модальности, MERGE в канон L3.
@@ -143,6 +144,7 @@ def ingest(
     graph.merge_fact(fact)
 
     metrics.incr("ingest.accepted")
+    adaptation.record_success()
     result = {"accepted": True, "fact": fact}
     # Immune-сигнал: для фактов о мире выявляем кандидатов на конфликт с каноном
     # (близкие, но другие). Не действуем автоматически — отдаём на решение.
