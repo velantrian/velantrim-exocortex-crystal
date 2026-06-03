@@ -84,6 +84,16 @@ class L3GraphBackend(ABC):
         """
 
     @abstractmethod
+    def incoming_edges(
+        self, fact_id: str, rel_type: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        """
+        Входящие рёбра факта (зеркало get_edges). Элемент: {rel_type, source,
+        props}. Нужен для обратных запросов: чем факт заменён / что его
+        опровергает / что на него ссылается.
+        """
+
+    @abstractmethod
     def vector_search(
         self, query_vector: List[float], k: int = 5,
     ) -> List[Dict[str, Any]]:
@@ -179,6 +189,18 @@ class MockL3Graph(L3GraphBackend):
             if rel_type is not None and rel != rel_type:
                 continue
             out.append({"rel_type": rel, "target": dst, "props": dict(props)})
+        return out
+
+    def incoming_edges(
+        self, fact_id: str, rel_type: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        out = []
+        for src, rel, dst, props in self._edges:
+            if dst != fact_id:
+                continue
+            if rel_type is not None and rel != rel_type:
+                continue
+            out.append({"rel_type": rel, "source": src, "props": dict(props)})
         return out
 
     def clear(self) -> None:
@@ -355,6 +377,27 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
             out.append({"rel_type": rel, "target": target, "props": props})
         return out
 
+    def incoming_edges(
+        self, fact_id: str, rel_type: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        import json, base64
+        cypher = "MATCH (a:Fact)-[e:EDGE]->(b:Fact {fact_id: $id})"
+        params: Dict[str, Any] = {"id": fact_id}
+        if rel_type is not None:
+            cypher += " WHERE e.rel_type = $rt"
+            params["rt"] = rel_type
+        res = self._conn.execute(
+            f"{cypher} RETURN e.rel_type, a.fact_id, e.props", params)
+        out = []
+        while res.has_next():
+            rel, source, raw = res.get_next()
+            try:
+                props = json.loads(base64.b64decode(raw)) if raw else {}
+            except (ValueError, TypeError):
+                props = {}
+            out.append({"rel_type": rel, "source": source, "props": props})
+        return out
+
     def vector_search(
         self, query_vector: List[float], k: int = 5,
     ) -> List[Dict[str, Any]]:
@@ -502,6 +545,24 @@ class Neo4jL3Graph(L3GraphBackend):  # pragma: no cover
             except (ValueError, TypeError):
                 props = {}
             out.append({"rel_type": r["rt"], "target": r["t"], "props": props})
+        return out
+
+    def incoming_edges(self, fact_id, rel_type=None) -> List[Dict[str, Any]]:
+        import json
+        cypher = "MATCH (a:Fact)-[e:EDGE]->(b:Fact {fact_id: $id})"
+        params = {"id": fact_id}
+        if rel_type is not None:
+            cypher += " WHERE e.rel_type = $rt"
+            params["rt"] = rel_type
+        rows = self._run(
+            cypher + " RETURN e.rel_type AS rt, a.fact_id AS s, e.props AS p", **params)
+        out = []
+        for r in rows:
+            try:
+                props = json.loads(r["p"]) if r["p"] else {}
+            except (ValueError, TypeError):
+                props = {}
+            out.append({"rel_type": r["rt"], "source": r["s"], "props": props})
         return out
 
     def vector_search(self, query_vector, k=5) -> List[Dict[str, Any]]:

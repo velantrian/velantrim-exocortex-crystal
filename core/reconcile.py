@@ -112,6 +112,28 @@ def contradict(fact_id: str, by_id: str) -> bool:
     return changed
 
 
+def fact_history(fact_id: str) -> Dict[str, List[str]]:
+    """
+    Truth-провенанс факта: что с ним связано по рёбрам поддержания истины.
+    Использует входящие и исходящие рёбра (incoming_edges / get_edges).
+
+    Возвращает id'шники:
+      superseded_by   — чем этот факт заменён (исходящее SUPERSEDED_BY)
+      supersedes      — какие факты он заменил (входящее SUPERSEDED_BY)
+      contradicts     — что он опровергает (исходящее CONTRADICTS)
+      contradicted_by — кто опровергает его (входящее CONTRADICTS)
+    """
+    graph = get_l3_graph()
+    out = graph.get_edges(fact_id)
+    inc = graph.incoming_edges(fact_id)
+    return {
+        "superseded_by":   [e["target"] for e in out if e["rel_type"] == REL_SUPERSEDED_BY],
+        "supersedes":      [e["source"] for e in inc if e["rel_type"] == REL_SUPERSEDED_BY],
+        "contradicts":     [e["target"] for e in out if e["rel_type"] == REL_CONTRADICTS],
+        "contradicted_by": [e["source"] for e in inc if e["rel_type"] == REL_CONTRADICTS],
+    }
+
+
 def find_conflicts(
     claim: str,
     *,

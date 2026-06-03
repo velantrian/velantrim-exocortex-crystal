@@ -8,6 +8,7 @@ from core.reconcile import (
     supersede,
     contradict,
     find_conflicts,
+    fact_history,
     REL_SUPERSEDED_BY,
     REL_CONTRADICTS,
 )
@@ -83,6 +84,30 @@ def test_contradict_non_validated_adds_edge_without_state_change():
     assert changed is False
     assert get_fact("obs")["epistemic_state"] == "Observed"
     assert any(e[0] == "obs" and e[1] == REL_CONTRADICTS for e in get_l3_graph()._edges)
+
+
+# ─── fact_history (truth provenance) ──────────────────────────────────────────
+
+def test_fact_history_tracks_supersede_both_directions():
+    _validated("old", claim="earth is flat")
+    supersede("old", {"fact_id": "new", "claim": "earth is round",
+                      "source": "s", "confidence": 0.9})
+    assert fact_history("old")["superseded_by"] == ["new"]
+    assert fact_history("new")["supersedes"] == ["old"]
+
+
+def test_fact_history_tracks_contradiction_both_directions():
+    _validated("claim_x")
+    contradict("claim_x", "evidence_y")
+    assert fact_history("claim_x")["contradicts"] == ["evidence_y"]
+    # the contradicting source sees it from the other side
+    assert "claim_x" in fact_history("evidence_y")["contradicted_by"]
+
+
+def test_fact_history_empty_for_isolated_fact():
+    _validated("solo")
+    assert fact_history("solo") == {
+        "superseded_by": [], "supersedes": [], "contradicts": [], "contradicted_by": []}
 
 
 # ─── find_conflicts ───────────────────────────────────────────────────────────
