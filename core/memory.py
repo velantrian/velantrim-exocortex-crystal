@@ -110,6 +110,18 @@ _DDL = """
     )
 """
 
+# ─── L3 OUTBOX: персистентная очередь до-мержа в канон ────────────────────────
+# L3 (канон) и SQLite (pending) не делят транзакцию. Если merge в L3 упал (бэкенд
+# недоступен), факт остаётся Validated в SQLite без узла в графе. Outbox делает
+# это самовосстанавливающимся: упавший факт ставится в очередь и идемпотентно
+# до-мержится при следующем обращении (drain), а не ждёт повтора того же запроса.
+_OUTBOX_DDL = """
+    CREATE TABLE IF NOT EXISTS l3_outbox (
+        fact_id     TEXT PRIMARY KEY,
+        enqueued_at TEXT NOT NULL
+    )
+"""
+
 # ─── Миграция: колонки, добавленные после первого релиза схемы ────────────────
 # CREATE TABLE IF NOT EXISTS не трогает уже существующую БД, поэтому старые файлы
 # velantrim_memory.db нужно догнать через ALTER TABLE ADD COLUMN (idempotent).
@@ -140,6 +152,7 @@ def _db():
     # Свойство файла БД — ставится один раз и сохраняется; повтор безвреден.
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute(_DDL)
+    conn.execute(_OUTBOX_DDL)
     _migrate(conn)
     conn.commit()
     try:
@@ -344,3 +357,29 @@ def get_all_facts(epistemic_state: Optional[str] = None) -> list:
             r["metadata"] = json.loads(r["metadata"])
             result.append(r)
         return result
+
+
+# ─── L3 OUTBOX API ────────────────────────────────────────────────────────────
+
+def enqueue_l3_write(fact_id: str) -> None:
+    """Поставить факт в очередь до-мержа в L3 (idempotent: upsert по fact_id)."""
+    now = datetime.now(timezone.utc).isoformat()
+    with _db() as conn:
+        conn.execute(
+            "INSERT INTO l3_outbox (fact_id, enqueued_at) VALUES (?, ?) "
+            "ON CONFLICT(fact_id) DO UPDATE SET enqueued_at = excluded.enqueued_at",
+            (fact_id, now),
+        )
+
+
+def pending_l3_writes() -> list:
+    """fact_id'ы, ожидающие до-мержа в L3 (в порядке постановки)."""
+    with _db() as conn:
+        return [row["fact_id"] for row in conn.execute(
+            "SELECT fact_id FROM l3_outbox ORDER BY enqueued_at, fact_id")]
+
+
+def clear_l3_write(fact_id: str) -> None:
+    """Убрать факт из очереди (после успешного мержа или если он больше не нужен)."""
+    with _db() as conn:
+        conn.execute("DELETE FROM l3_outbox WHERE fact_id = ?", (fact_id,))
