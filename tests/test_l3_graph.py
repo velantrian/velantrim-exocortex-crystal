@@ -71,6 +71,20 @@ def test_get_edges_returns_targets_with_props():
     assert g.get_edges("missing") == []
 
 
+def test_entity_nodes_merge_link_and_reverse_query():
+    g = MockL3Graph()
+    g.merge_fact({"fact_id": "f1", "claim": "met alice in the lab"})
+    g.merge_fact({"fact_id": "f2", "claim": "alice ran the experiment"})
+    g.merge_fact({"fact_id": "f3", "claim": "unrelated"})
+    g.merge_entity("who:alice", "person", "alice")
+    g.link_fact_to_entity("f1", "who:alice")
+    g.link_fact_to_entity("f2", "who:alice")
+
+    facts = {n["fact_id"] for n in g.facts_for_entity("who:alice")}
+    assert facts == {"f1", "f2"}                 # f3 not linked
+    assert g.facts_for_entity("who:bob") == []   # unknown entity
+
+
 def test_incoming_edges_mirror_get_edges():
     g = MockL3Graph()
     for fid in ("a", "b", "c"):
@@ -258,6 +272,16 @@ def test_ladybug_get_edges_round_trips_props(lbug):
     assert len(edges) == 1
     assert edges[0]["target"] == "b"
     assert edges[0]["props"] == {"who": ["user"], "where": "lab"}
+
+
+def test_ladybug_entity_nodes_round_trip(lbug):
+    lbug.merge_fact({"fact_id": "f1", "claim": "met alice", "source": "s"})
+    lbug.merge_fact({"fact_id": "f2", "claim": "alice spoke", "source": "s"})
+    lbug.merge_entity("who:alice", "person", "alice")
+    lbug.link_fact_to_entity("f1", "who:alice")
+    lbug.link_fact_to_entity("f2", "who:alice")
+    assert {n["fact_id"] for n in lbug.facts_for_entity("who:alice")} == {"f1", "f2"}
+    assert lbug.facts_for_entity("who:bob") == []
 
 
 def test_ladybug_incoming_edges_round_trips(lbug):

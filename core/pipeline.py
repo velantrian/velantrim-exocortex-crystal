@@ -342,18 +342,37 @@ def generate_answer(
 _EPISODE_REL = "CO_OCCURRED"
 
 
+def _entity_refs(episode: Dict[str, Any]) -> List[tuple]:
+    """Сущности эпизода → [(entity_id, kind, label)] для who/where."""
+    refs = []
+    for name in (episode.get("who") or []):
+        refs.append((f"who:{name}", "person", name))
+    where = episode.get("where")
+    if where is not None:
+        refs.append((f"where:{where}", "place", where))
+    return refs
+
+
 def _link_episode(
     graph,
     facts: List[Dict[str, Any]],
     query: str,
     episode: Optional[Dict[str, Any]],
 ) -> None:
-    """Связать со-вспомненные факты эпизодическим ребром (who/where/when/event)."""
+    """Связать со-вспомненные факты эпизодом: who/where → entity-узлы (для любого
+    числа фактов) + ребро CO_OCCURRED между парами (минимум два факта)."""
     ids = [f["fact_id"] for f in facts]
-    if len(ids) < 2:
-        return  # эпизодическая связь нужна минимум двум фактам
-
     episode = episode or {}
+
+    # Первоклассные entity-узлы who/where: каждый факт упоминает сущность.
+    for entity_id, kind, label in _entity_refs(episode):
+        graph.merge_entity(entity_id, kind, label)
+        for fid in ids:
+            graph.link_fact_to_entity(fid, entity_id)
+
+    if len(ids) < 2:
+        return  # эпизодическое ребро нужно минимум двум фактам
+
     props: Dict[str, Any] = {
         "query": query,
         "when": episode.get("when") or datetime.now(timezone.utc).isoformat(),
@@ -391,24 +410,18 @@ def recall_by_entity(
     *, who: Optional[str] = None, where: Optional[str] = None,
 ) -> List[str]:
     """
-    Recall по сущности: id фактов, чьи эпизоды упоминают данного who/where.
-    Entity-индекс поверх props рёбер CO_OCCURRED — отвечает на «какие факты
-    связаны с person X / местом Y» без отдельных entity-узлов в схеме L3.
+    Recall по сущности: id фактов, упоминающих person/place. Прямой обратный
+    обход первоклассных entity-узлов (facts_for_entity), а не скан рёбер.
+    who/where задаются объединением (union).
     """
     if who is None and where is None:
         return []
     graph = get_l3_graph()
     matched = set()
-    for node in graph.all_facts():
-        fid = node["fact_id"]
-        for edge in graph.get_edges(fid, _EPISODE_REL):
-            props = edge.get("props", {})
-            if who is not None and who in (props.get("who") or []):
-                matched.add(fid)
-                break
-            if where is not None and where == props.get("where"):
-                matched.add(fid)
-                break
+    if who is not None:
+        matched.update(n["fact_id"] for n in graph.facts_for_entity(f"who:{who}"))
+    if where is not None:
+        matched.update(n["fact_id"] for n in graph.facts_for_entity(f"where:{where}"))
     return sorted(matched)
 
 
