@@ -48,19 +48,24 @@ DATABASE = [
 # Recall из L3 замыкает цикл «узнал → запомнил → вспомнил»: факты, принятые
 # через ingest()/pipeline, становятся доступны для ответа. Дедуп по id.
 # Эмбеддер сменный (core/embedding.py): дефолт HashingEmbedder, sbert опционально.
-# TODO Sprint 2: гибрид (vector + HotGraph + HippoRAG PageRank).
+# Гибрид: vector-recall + 1-hop graph-walk (spreading activation / HippoRAG-lite).
+# TODO: многошаговый walk / PageRank-веса.
 
 # Порог отсечения шума от хэш-коллизий: ниже — не релевантно.
 _RETRIEVAL_MIN_SIM = 0.05
+# Затухание для фактов, подтянутых по графу из vector-хитов (ассоциативный recall).
+_GRAPH_WALK_DECAY = 0.5
 
 
 def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
     """
-    Семантический поиск по сид-корпусу DATABASE и канонической памяти L3.
-    Возвращает топ-k фактов по score (близость × confidence), дедуп по id.
+    Гибридный поиск: косинус эмбеддингов по сид-корпусу DATABASE и канону L3,
+    затем 1-hop graph-walk — связанные в графе факты всплывают по ассоциации
+    (spreading activation). Возвращает топ-k по score, дедуп по id.
     Корпус-факты приходят как Observed, recall из L3 — со своим ESM-состоянием.
     """
     embedder = get_embedder()
+    graph = get_l3_graph()
     q_vec = embedder.embed(query)
     by_id: Dict[str, Dict[str, Any]] = {}
 
@@ -82,24 +87,42 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
             "origin":          "retrieval",
         })
 
-    # Источник 2: каноническая память L3 (recall выученного).
-    for node in get_l3_graph().vector_search(q_vec, k=k):
-        sim = node.get("_relevance", 0.0)
-        if sim < _RETRIEVAL_MIN_SIM:
-            continue
-        conf = node.get("confidence", 1.0)
-        _offer({
+    def _from_node(node: Dict[str, Any], score: float, origin: str) -> Dict[str, Any]:
+        return {
             "id":              node["fact_id"],
             "text":            node.get("claim", ""),
             "source":          node.get("source", "memory"),
-            "confidence":      conf,
+            "confidence":      node.get("confidence", 1.0),
             "claim_type":      node.get("claim_type", "WORLD_FACT"),
             "source_status":   node.get("source_status", "DERIVED"),
             "significance":    node.get("significance", 0.5),
-            "_score":          round(sim * conf, 4),
+            "_score":          round(score, 4),
             "epistemic_state": node.get("epistemic_state", "Validated"),
-            "origin":          "memory",
-        })
+            "origin":          origin,
+        }
+
+    # Источник 2: каноническая память L3 (recall выученного).
+    vector_hits = []
+    for node in graph.vector_search(q_vec, k=k):
+        sim = node.get("_relevance", 0.0)
+        if sim < _RETRIEVAL_MIN_SIM:
+            continue
+        _offer(_from_node(node, sim * node.get("confidence", 1.0), "memory"))
+        vector_hits.append(node)
+
+    # Источник 3: 1-hop graph-walk от vector-хитов (ассоциативный recall).
+    # Связанные в графе валидные факты всплывают, даже если их собственная
+    # близость к запросу была ниже порога. Устаревшие (Deprecated/Contradicted)
+    # соседи не возвращаются. Скор — затухающий от родителя.
+    for hit in vector_hits:
+        parent_score = hit.get("_relevance", 0.0) * hit.get("confidence", 1.0)
+        for neighbor in graph.neighbors(hit["fact_id"]):
+            if neighbor.get("epistemic_state") != "Validated":
+                continue
+            if neighbor["fact_id"] in by_id:
+                continue
+            _offer(_from_node(
+                neighbor, parent_score * _GRAPH_WALK_DECAY, "graph"))
 
     return sorted(by_id.values(), key=lambda x: x["_score"], reverse=True)[:k]
 
