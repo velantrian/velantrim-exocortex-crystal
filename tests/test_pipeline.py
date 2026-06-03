@@ -15,6 +15,27 @@ def test_pipeline_happy_path():
         assert f["truth_status"] == "VERIFIED"
 
 
+def test_run_result_facts_hide_internal_score_field():
+    """The relevance rank (_score) is internal: the answer payload exposes the
+    real fact fields but no underscore-prefixed keys."""
+    from core.pipeline import run
+    result = run("quantum entanglement")
+    assert result["facts"]
+    for f in result["facts"]:
+        assert not any(k.startswith("_") for k in f), f
+        assert f["fact_id"] and f["claim"]          # real fields still present
+
+
+def test_blocked_result_facts_hide_internal_score_field(monkeypatch):
+    """The blocked payload is cleaned the same way as the answer payload."""
+    from core import pipeline
+    monkeypatch.setattr(pipeline, "truth_gate", lambda fp, **k: (False, "nope"))
+    result = pipeline.run("quantum entanglement")
+    assert result["answer"] is None and result["facts"]
+    for f in result["facts"]:
+        assert not any(k.startswith("_") for k in f), f
+
+
 def test_validated_facts_are_merged_into_l3_graph():
     """The single entry into L3 is TruthGate: validated facts land in the graph."""
     from core.pipeline import run
