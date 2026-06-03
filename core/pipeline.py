@@ -48,13 +48,14 @@ DATABASE = [
 # Recall из L3 замыкает цикл «узнал → запомнил → вспомнил»: факты, принятые
 # через ingest()/pipeline, становятся доступны для ответа. Дедуп по id.
 # Эмбеддер сменный (core/embedding.py): дефолт HashingEmbedder, sbert опционально.
-# Гибрид: vector-recall + 1-hop graph-walk (spreading activation / HippoRAG-lite).
-# TODO: многошаговый walk / PageRank-веса.
+# Гибрид: vector-recall + multi-hop graph-walk (spreading activation / HippoRAG-lite).
 
 # Порог отсечения шума от хэш-коллизий: ниже — не релевантно.
 _RETRIEVAL_MIN_SIM = 0.05
-# Затухание для фактов, подтянутых по графу из vector-хитов (ассоциативный recall).
+# Затухание активации на каждый хоп graph-walk (ассоциативный recall).
 _GRAPH_WALK_DECAY = 0.5
+# Глубина graph-walk (число хопов от vector-хитов).
+_GRAPH_WALK_HOPS = 2
 
 
 def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
@@ -110,19 +111,33 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
         _offer(_from_node(node, sim * node.get("confidence", 1.0), "memory"))
         vector_hits.append(node)
 
-    # Источник 3: 1-hop graph-walk от vector-хитов (ассоциативный recall).
-    # Связанные в графе валидные факты всплывают, даже если их собственная
-    # близость к запросу была ниже порога. Устаревшие (Deprecated/Contradicted)
-    # соседи не возвращаются. Скор — затухающий от родителя.
-    for hit in vector_hits:
-        parent_score = hit.get("_relevance", 0.0) * hit.get("confidence", 1.0)
-        for neighbor in graph.neighbors(hit["fact_id"]):
-            if neighbor.get("epistemic_state") != "Validated":
-                continue
-            if neighbor["fact_id"] in by_id:
-                continue
-            _offer(_from_node(
-                neighbor, parent_score * _GRAPH_WALK_DECAY, "graph"))
+    # Источник 3: multi-hop graph-walk от vector-хитов (ассоциативный recall).
+    # Затухающее распространение активации (ядро personalized-PageRank): на
+    # каждом хопе скор × decay. Связанные в графе валидные факты всплывают, даже
+    # если их собственная близость к запросу ниже порога. Устаревшие соседи
+    # (не Validated) не распространяют и не возвращаются. BFS: каждый узел берём
+    # на кратчайшем пути (наибольшая активация), без раздувания на циклах.
+    visited = {hit["fact_id"] for hit in vector_hits}
+    frontier = [
+        (hit["fact_id"], hit.get("_relevance", 0.0) * hit.get("confidence", 1.0))
+        for hit in vector_hits
+    ]
+    for _hop in range(_GRAPH_WALK_HOPS):
+        nxt = []
+        for fid, score in frontier:
+            decayed = score * _GRAPH_WALK_DECAY
+            for neighbor in graph.neighbors(fid):
+                if neighbor.get("epistemic_state") != "Validated":
+                    continue
+                nid = neighbor["fact_id"]
+                if nid in visited:
+                    continue
+                visited.add(nid)
+                _offer(_from_node(neighbor, decayed, "graph"))
+                nxt.append((nid, decayed))
+        if not nxt:
+            break
+        frontier = nxt
 
     return sorted(by_id.values(), key=lambda x: x["_score"], reverse=True)[:k]
 
