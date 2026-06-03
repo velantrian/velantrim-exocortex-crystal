@@ -25,7 +25,7 @@ from core.memory import (
 from core.l3_graph import get_l3_graph
 from core.embedding import get_embedder, cosine
 from core.generation import get_generator
-from core import metrics
+from core import metrics, adaptation
 
 logger = logging.getLogger(__name__)
 
@@ -238,10 +238,12 @@ def guardian(
 
 def truth_gate(
     facts_pack: Dict[str, Any],
-    min_confidence: float = 0.05,
+    min_confidence: Optional[float] = None,
 ) -> tuple[bool, Optional[str]]:
     """
     Верифицирует факты перед записью в L3.
+    min_confidence=None → адаптивный порог (epigenetic verification, RFC0071):
+    после блокировок порог растёт (защитнее), при здоровом потоке — расслабляется.
     Возвращает (passed: bool, reason: str | None).
 
     Type-aware: ворота НЕ выбрасывают субъективное, но не дают ему
@@ -254,6 +256,8 @@ def truth_gate(
     Переход фактов в ESM-состояние Validated выполняется вызывающей стороной
     (run()) при passed=True. truth_gate() только принимает решение о верификации.
     """
+    if min_confidence is None:
+        min_confidence = adaptation.verification_threshold()
     facts = facts_pack.get("facts", [])
 
     if not facts:
@@ -454,11 +458,13 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     # 4. Guardian (структурная проверка)
     guardian_ok, guardian_reason = guardian(facts_pack, trace)
     if not guardian_ok:
+        adaptation.record_block()   # стресс → растёт verification (RFC0071)
         return _blocked(f"Guardian: {guardian_reason}", query, facts_pack, trace)
 
     # 5. TruthGate (верификация)
     gate_ok, gate_reason = truth_gate(facts_pack)
     if not gate_ok:
+        adaptation.record_block()
         return _blocked(f"TruthGate: {gate_reason}", query, facts_pack, trace)
 
     # 6. ESM: перевести факты и trace в Validated через transition_esm (единственный путь).
@@ -487,12 +493,14 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         _link_episode(graph, facts_pack["facts"], query, episode)
     except Exception as e:  # noqa: BLE001 — сбой L3 не должен ронять пайплайн
         logger.error("L3-промоция не удалась: %s", e)
+        adaptation.record_block()
         return _blocked(f"L3 promotion failed: {e}", query, facts_pack, trace)
 
     promote_trace(trace, "Validated")
 
     # 7. Generate
     metrics.incr("query.answered")
+    adaptation.record_success()     # здоровый исход → порог расслабляется
     return generate_answer(facts_pack, trace)
 
 
