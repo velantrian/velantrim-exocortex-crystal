@@ -58,6 +58,16 @@ _RETRIEVAL_MIN_SIM = 0.05
 _GRAPH_WALK_DECAY = 0.5
 # Глубина graph-walk (число хопов от vector-хитов).
 _GRAPH_WALK_HOPS = 2
+# Веса распространения активации по типу ребра. Truth-maintenance рёбра НЕ
+# передают релевантность: факт не «релевантнее» оттого, что его опровергают
+# (CONTRADICTS) или что он заменён (SUPERSEDED_BY) — иначе graph-walk поднимал бы
+# именно опровергаемое/устаревшее. Эпизодическая ассоциация (CO_OCCURRED) и любые
+# неизвестные типы распространяют нормально (вес по умолчанию 1.0).
+_WALK_EDGE_WEIGHTS = {
+    "CONTRADICTS": 0.0,
+    "SUPERSEDED_BY": 0.0,
+}
+_WALK_DEFAULT_EDGE_WEIGHT = 1.0
 
 
 def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
@@ -119,8 +129,9 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
     # Источник 3: multi-hop graph-walk от vector-хитов (ассоциативный recall).
     # Personalized PageRank (без итераций до сходимости): активация течёт от
     # vector-хитов по рёбрам, на каждом хопе умножаясь на damping и делясь между
-    # исходящими соседями (по out-degree). Достижимое по НЕСКОЛЬКИМ путям
-    # суммируется — хорошо связанные «хабы» поднимаются. Распространяют и
+    # исходящими соседями пропорционально весу типа ребра (_WALK_EDGE_WEIGHTS:
+    # truth-maintenance рёбра вес 0 — не распространяют). Достижимое по НЕСКОЛЬКИМ
+    # путям суммируется — хорошо связанные «хабы» поднимаются. Распространяют и
     # возвращаются только Validated; в seed-хиты активация не вливается (у них
     # авторитетный vector-скор). Глубина — _GRAPH_WALK_HOPS, damping <1 +
     # ограничение хопов гарантируют сходимость без раздувания на циклах.
@@ -134,17 +145,30 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
     for _hop in range(_GRAPH_WALK_HOPS):
         nxt: Dict[str, float] = {}
         for fid, act in current.items():
-            valid = [n for n in graph.neighbors(fid)
-                     if n.get("epistemic_state") == "Validated"]
-            if not valid:
+            # Исходящие рёбра с типом → весом; распространяют только рёбра с
+            # весом > 0 к Validated-узлам. Делёж активации пропорционален весам
+            # (нормировка по их сумме), а не по чистому out-degree — рёбра с
+            # весом 0 не «съедают» долю соседей.
+            targets = []
+            for edge in graph.get_edges(fid):
+                weight = _WALK_EDGE_WEIGHTS.get(
+                    edge["rel_type"], _WALK_DEFAULT_EDGE_WEIGHT)
+                if weight <= 0.0:
+                    continue
+                node = graph.get_fact(edge["target"])
+                if node is None or node.get("epistemic_state") != "Validated":
+                    continue
+                targets.append((node, weight))
+            total_weight = sum(w for _, w in targets)
+            if total_weight <= 0.0:
                 continue
-            share = act * _GRAPH_WALK_DECAY / len(valid)
-            for neighbor in valid:
-                nid = neighbor["fact_id"]
+            for node, weight in targets:
+                nid = node["fact_id"]
                 if nid in seeds:
                     continue  # в vector-хиты активацию не вливаем
+                share = act * _GRAPH_WALK_DECAY * (weight / total_weight)
                 nxt[nid] = nxt.get(nid, 0.0) + share
-                node_cache[nid] = neighbor
+                node_cache[nid] = node
         if not nxt:
             break
         for nid, val in nxt.items():

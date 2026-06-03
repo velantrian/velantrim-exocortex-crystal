@@ -337,6 +337,26 @@ def test_graph_walk_skips_deprecated_neighbors():
     assert "A" in ids and "old" not in ids        # stale neighbor not recalled
 
 
+def test_graph_walk_does_not_propagate_through_truth_maintenance_edges():
+    """Edge-type weighting: relevance spreads along an episodic CO_OCCURRED edge
+    but NOT along a CONTRADICTS edge — even to a Validated node. A fact isn't
+    'more relevant' because the vector hit contradicts it."""
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    for fid, claim in [("A", "sunlight energy"), ("assoc", "leaf cells"),
+                       ("rival", "moonlight myth")]:
+        g.merge_fact({"fact_id": fid, "claim": claim, "source": "s",
+                      "confidence": 1.0, "epistemic_state": "Validated"})
+    g.add_edge("A", "CO_OCCURRED", "assoc", {})   # association → propagates
+    g.add_edge("A", "CONTRADICTS", "rival", {})   # truth-maintenance → does not
+
+    ids = {h["id"] for h in retrieve("sunlight energy", k=5)}
+    assert "A" in ids                              # direct vector hit
+    assert "assoc" in ids                          # pulled in by association
+    assert "rival" not in ids                      # contradiction does not spread
+
+
 def test_retrieve_recalls_facts_learned_via_ingest():
     """Closing the loop: a fact accepted through ingest() lands in L3 and is
     then recallable by retrieve() (origin='memory'), not just the seed corpus."""
