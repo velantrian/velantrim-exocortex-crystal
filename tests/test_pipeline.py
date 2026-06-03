@@ -191,6 +191,38 @@ def test_retrieve_pure_stopword_query_returns_nothing():
     assert retrieve("how do you do") == []
 
 
+def test_retrieve_graph_walk_surfaces_linked_facts():
+    """A fact linked in the graph to a vector hit surfaces by association
+    (spreading activation), even with no lexical overlap with the query."""
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    g.merge_fact({"fact_id": "A", "claim": "sunlight energy photosynthesis",
+                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated"})
+    g.merge_fact({"fact_id": "B", "claim": "chlorophyll molecule structure",
+                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated"})
+    g.add_edge("A", "CO_OCCURRED", "B", {})
+
+    hits = {h["id"]: h for h in retrieve("sunlight energy")}
+    assert hits["A"]["origin"] == "memory"        # direct vector hit
+    assert hits["B"]["origin"] == "graph"         # pulled in via the edge
+    assert hits["B"]["_score"] < hits["A"]["_score"]   # decayed by distance
+
+
+def test_graph_walk_skips_deprecated_neighbors():
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    g.merge_fact({"fact_id": "A", "claim": "sunlight energy", "source": "s",
+                  "confidence": 0.9, "epistemic_state": "Validated"})
+    g.merge_fact({"fact_id": "old", "claim": "outdated note", "source": "s",
+                  "confidence": 0.9, "epistemic_state": "Deprecated"})
+    g.add_edge("A", "SUPERSEDED_BY", "old", {})
+
+    ids = {h["id"] for h in retrieve("sunlight energy")}
+    assert "A" in ids and "old" not in ids        # stale neighbor not recalled
+
+
 def test_retrieve_recalls_facts_learned_via_ingest():
     """Closing the loop: a fact accepted through ingest() lands in L3 and is
     then recallable by retrieve() (origin='memory'), not just the seed corpus."""
