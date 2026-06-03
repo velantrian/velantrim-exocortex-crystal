@@ -103,6 +103,21 @@ class L3GraphBackend(ABC):
         каждый дополнен полем '_score' (косинусная близость).
         """
 
+    # ─── Эпизодические entity-узлы (Person/Place/Time как первоклассные узлы) ──
+    @abstractmethod
+    def merge_entity(self, entity_id: str, kind: str, label: str) -> None:
+        """Upsert entity-узла (kind: person/place/time). Идемпотентно."""
+
+    @abstractmethod
+    def link_fact_to_entity(
+        self, fact_id: str, entity_id: str, rel: str = "MENTIONS",
+    ) -> None:
+        """Связать факт с entity-узлом (факт упоминает сущность)."""
+
+    @abstractmethod
+    def facts_for_entity(self, entity_id: str) -> List[Dict[str, Any]]:
+        """Факты, связанные с entity-узлом (обратный обход MENTIONS)."""
+
 
 # ─── MOCK BACKEND (in-memory, дефолт) ─────────────────────────────────────────
 
@@ -119,6 +134,22 @@ class MockL3Graph(L3GraphBackend):
         self._edges: List[tuple] = []
         # эмбеддинги узлов для vector_search (отдельно от данных узла)
         self._vectors: Dict[str, List[float]] = {}
+        # entity-узлы и связи факт→сущность (отдельно от Fact-пространства)
+        self._entities: Dict[str, Dict[str, Any]] = {}
+        self._mentions: List[tuple] = []  # (fact_id, entity_id, rel)
+
+    def merge_entity(self, entity_id: str, kind: str, label: str) -> None:
+        self._entities[entity_id] = {
+            "entity_id": entity_id, "kind": kind, "label": label}
+
+    def link_fact_to_entity(self, fact_id, entity_id, rel="MENTIONS") -> None:
+        edge = (fact_id, entity_id, rel)
+        if edge not in self._mentions:
+            self._mentions.append(edge)
+
+    def facts_for_entity(self, entity_id: str) -> List[Dict[str, Any]]:
+        ids = [fid for fid, eid, _ in self._mentions if eid == entity_id]
+        return [dict(self._nodes[fid]) for fid in ids if fid in self._nodes]
 
     def merge_fact(self, fact: Dict[str, Any]) -> None:
         fact_id = fact.get("fact_id")
@@ -208,6 +239,8 @@ class MockL3Graph(L3GraphBackend):
         self._nodes.clear()
         self._edges.clear()
         self._vectors.clear()
+        self._entities.clear()
+        self._mentions.clear()
 
 
 # ─── LADYBUGDB BACKEND (слот под спайк) ───────────────────────────────────────
@@ -262,6 +295,8 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
             f"claim_type STRING, source_status STRING, significance DOUBLE, "
             f"truth_status STRING, metadata STRING, embedding FLOAT[{EMBED_DIM}])",
             "CREATE REL TABLE EDGE(FROM Fact TO Fact, rel_type STRING, props STRING)",
+            "CREATE NODE TABLE Entity(entity_id STRING PRIMARY KEY, kind STRING, label STRING)",
+            "CREATE REL TABLE MENTIONS(FROM Fact TO Entity, rel STRING)",
         ):
             try:
                 self._conn.execute(ddl)
@@ -396,6 +431,28 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
             except (ValueError, TypeError):
                 props = {}
             out.append({"rel_type": rel, "source": source, "props": props})
+        return out
+
+    def merge_entity(self, entity_id: str, kind: str, label: str) -> None:
+        self._conn.execute(
+            "MERGE (e:Entity {entity_id: $id}) SET e.kind = $kind, e.label = $label",
+            {"id": entity_id, "kind": kind, "label": label})
+
+    def link_fact_to_entity(self, fact_id, entity_id, rel="MENTIONS") -> None:
+        self._conn.execute(
+            "MATCH (f:Fact {fact_id: $f}), (e:Entity {entity_id: $e}) "
+            "MERGE (f)-[m:MENTIONS {rel: $rel}]->(e)",
+            {"f": fact_id, "e": entity_id, "rel": rel})
+
+    def facts_for_entity(self, entity_id: str) -> List[Dict[str, Any]]:
+        cols = self._COLS
+        ret = ", ".join(f"f.{c}" for c in cols)
+        res = self._conn.execute(
+            f"MATCH (f:Fact)-[:MENTIONS]->(e:Entity {{entity_id: $id}}) RETURN {ret}",
+            {"id": entity_id})
+        out = []
+        while res.has_next():
+            out.append(self._row_to_fact(res.get_next(), cols))
         return out
 
     def vector_search(
@@ -564,6 +621,22 @@ class Neo4jL3Graph(L3GraphBackend):  # pragma: no cover
                 props = {}
             out.append({"rel_type": r["rt"], "source": r["s"], "props": props})
         return out
+
+    def merge_entity(self, entity_id, kind, label) -> None:
+        self._run("MERGE (e:Entity {entity_id: $id}) SET e.kind = $k, e.label = $l",
+                  id=entity_id, k=kind, l=label)
+
+    def link_fact_to_entity(self, fact_id, entity_id, rel="MENTIONS") -> None:
+        self._run(
+            "MATCH (f:Fact {fact_id: $f}), (e:Entity {entity_id: $e}) "
+            "MERGE (f)-[m:MENTIONS {rel: $rel}]->(e)",
+            f=fact_id, e=entity_id, rel=rel)
+
+    def facts_for_entity(self, entity_id) -> List[Dict[str, Any]]:
+        rows = self._run(
+            "MATCH (f:Fact)-[:MENTIONS]->(e:Entity {entity_id: $id}) "
+            "RETURN properties(f) AS p", id=entity_id)
+        return [self._node(r["p"]) for r in rows]
 
     def vector_search(self, query_vector, k=5) -> List[Dict[str, Any]]:
         from core.embedding import cosine
