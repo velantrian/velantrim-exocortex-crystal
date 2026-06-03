@@ -45,13 +45,22 @@ can't tell what they're running.
 (`importlib.metadata.version`) and reference it from the README. Drop the
 per-file `vX.Y.Z` header comments (they rot on every edit).
 
-### 2.2 Embedder-mismatch guard on a persistent L3 store
-**Why:** `core/embedding.py:16` already warns that hashing vectors and sbert
-vectors are not cosine-comparable. On a persistent LadybugDB/Neo4j store, mixing
-embedders silently corrupts `vector_search` ranking — the hardest class of bug
-to notice (results just get subtly worse).
-**Do:** stamp the embedder id/dim on each node (or a store-level metadata row)
-and refuse (or warn loudly) when the active embedder differs at query time.
+### 2.2 Embedder-mismatch guard on a persistent L3 store — in-process guard DONE ✅
+**Why:** hashing vectors and sbert vectors are not cosine-comparable. Mixing
+embedders on a store silently corrupts `vector_search` ranking — the hardest
+class of bug to notice (results just get subtly worse).
+**Done:** embedders expose a stable `id` (family + dim, + model for sbert,
+`core/embedding.py`). The L3 backend stores an embedder fingerprint
+(`L3GraphBackend.embedder_fingerprint` / `set_embedder_fingerprint`), and
+`assert_compatible_embedder()` — called from `pipeline.retrieve()` and
+`ingest()` — stamps it on first use and warns loudly on a later switch (or
+raises `EmbedderMismatchError` under `VELANTRIM_EMBEDDER_STRICT=1`). Tested in
+`tests/test_embedding.py`.
+**Remaining (optional):** the fingerprint is currently in-process state, so it
+catches a switch within a running session. To catch a switch *across restarts*
+on a persistent LadybugDB/Neo4j store, persist the fingerprint in a store
+metadata row (and/or stamp `embedder_id` per node — note Ladybug needs it added
+to `_COLS`). Untestable in CI (persistent backends are opt-in), so deferred.
 
 ### 2.3 `created_at` as a first-class Ladybug column (nicety) — functional gap CLOSED ✅
 **Status:** the SleepCycle decay is now backend-agnostic. `consolidate()`
