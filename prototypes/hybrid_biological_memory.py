@@ -118,3 +118,34 @@ class HybridBiologicalMemory:
             "neurogenesis": self.neurogenesis_module.get_stats(),
             "total_memories": len(self.memory_log),
         }
+
+
+# Demo — повторяет пример из DEMO.md, чтобы `python -m prototypes.hybrid_biological_memory`
+# действительно что-то показывал. Прототип, не вшит в core-пайплайн (см. FUTURE.md §3.3).
+if __name__ == "__main__":  # pragma: no cover
+    hbm = HybridBiologicalMemory()
+
+    # 1. Память (фрактальный + нейрогенезный слои)
+    hbm.add_memory(
+        "Important event: first deep conversation about biological memory",
+        importance=0.95,
+    )
+
+    # 2. Стресс → эпигенетическая адаптация
+    hbm.record_stress(0.82, "hallucination_detected")
+    adapted = hbm.adapt_behavior()
+    print("Adapted verification strength:", adapted["verification_strength"])
+
+    # 3. Иммунный страж (CRISPR): блок известного противоречия
+    blocked = hbm.check_and_block_contradiction("The capital of France is Berlin")
+    print("Contradiction blocked:", blocked)
+
+    # 4. Нейрогенез: новые пластичные «нейроны»
+    print(hbm.add_new_neurons(15))
+
+    # 5. Полная сводка по слоям
+    print("Full stats:", hbm.get_full_stats())
+
+    # 6. Наследование дочерней памяти (как семена у растений)
+    child = hbm.inherit_to_child()
+    print("Child system created:", child.name)
