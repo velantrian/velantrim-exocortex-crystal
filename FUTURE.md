@@ -89,11 +89,14 @@ now self-heals on the next request, no manual re-run. Tested in
 unguarded), and a background/async drainer once the async pipeline (§2.8) lands
 — today drain is synchronous, piggy-backed on the next `run()`.
 
-### 2.5 Don't leak the internal `_score` in public results
-**Why:** `generate_answer` returns `facts` that now carry the transient `_score`
-rank. Harmless but leaky — consumers shouldn't depend on an internal field.
-**Do:** strip `_`-prefixed keys when shaping the public result (the Neo4j
-backend's `_props` already does this for nodes — make it a shared helper).
+### 2.5 Don't leak the internal `_score` in public results — DONE ✅
+**Why:** `generate_answer` returned `facts` carrying the transient `_score` rank.
+Harmless but leaky — consumers shouldn't depend on an internal field.
+**Done:** `pipeline._public_facts()` strips `_`-prefixed keys at the `run()`
+boundary (both the answer and the blocked payload). `_score` stays available
+where it is genuinely part of the contract — `retrieve()` and
+`vector_search()` results. Tested in `tests/test_pipeline.py`
+(`test_run_result_facts_hide_internal_score_field` + blocked variant).
 
 ### 2.6 CI should mirror the local quality gate
 **Why:** `pyproject.toml` enforces `--cov-fail-under=95`, but `.github/workflows/ci.yml`

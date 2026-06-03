@@ -321,6 +321,15 @@ def _truth_status_for(claim_type: str) -> str:
 # Ответ формирует сменный Generator (core/generation.py): дефолт — extractive,
 # опционально — LLM (Claude) с FactsPack в system. Граф остаётся источником истины.
 
+def _public_facts(facts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Очистить факты от внутренних служебных полей (ключи с префиксом '_', напр.
+    транзитный _score) перед возвратом вызывающей стороне. Ранг релевантности —
+    деталь ретрива, а не часть ответа; в канон он тоже не уходит (см. _l3_payload).
+    """
+    return [{k: v for k, v in f.items() if not k.startswith("_")} for f in facts]
+
+
 def generate_answer(
     facts_pack: Dict[str, Any],
     trace: List[Dict[str, Any]],
@@ -345,7 +354,7 @@ def generate_answer(
 
     return {
         "answer":       answer,
-        "facts":        validated_facts,
+        "facts":        _public_facts(validated_facts),
         "trace":        trace,
         "trace_fmt":    format_trace(trace),
         "total_facts":  len(validated_facts),
@@ -583,7 +592,7 @@ def _blocked(
         "error":  reason,
         "answer": None,
         "query":  query,
-        "facts":  facts_pack.get("facts", []) if facts_pack else [],
+        "facts":  _public_facts(facts_pack.get("facts", [])) if facts_pack else [],
         "trace":  trace or [],
     }
 
