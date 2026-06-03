@@ -141,11 +141,16 @@ false-positive contradictions from poisoning the canon.
 
 ### 3.2 Graph-walk retrieval beyond 1–2 hops (HippoRAG-style)
 **Today:** `pipeline.retrieve` does a personalized-PageRank-lite spread over
-`Validated` neighbors with a fixed 2-hop depth and 0.5 damping. It's a good
-seed but untuned.
-**Research:** evaluate spreading-activation depth/damping against a retrieval
-benchmark; consider edge-type-weighted walks (an `CONTRADICTS` edge should not
-spread activation the way a `CO_OCCURRED` edge does).
+`Validated` neighbors with a fixed 2-hop depth and 0.5 damping.
+**Done:** edge-type-weighted walks — `_WALK_EDGE_WEIGHTS` (`core/pipeline.py`)
+zeroes out truth-maintenance edges (`CONTRADICTS`, `SUPERSEDED_BY`) so they
+don't spread relevance, while episodic `CO_OCCURRED` (and any unknown type)
+propagate normally; activation is shared proportional to edge weight, not raw
+out-degree. Tested in `tests/test_pipeline.py`
+(`test_graph_walk_does_not_propagate_through_truth_maintenance_edges`).
+**Remaining (research):** tune depth/damping against a real retrieval benchmark,
+and consider per-edge-type weights beyond the binary on/off (e.g. weaker spread
+for `MENTIONS` than for `CO_OCCURRED`). Needs an eval harness, so deferred.
 
 ### 3.3 Integrate (or retire) the biological prototypes
 **Today:** only the epigenetic module is wired (`core/adaptation.py`). The
