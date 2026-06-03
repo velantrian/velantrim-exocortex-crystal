@@ -1,22 +1,24 @@
-# hybrid_biological_memory.py
+# prototypes/hybrid_biological_memory.py
 # HybridBiologicalMemory v2.1 — биологически вдохновлённая память
 # RFC0070–0073 | Velantrim ExoCortex Crystal
 #
-# Это фасад над четырьмя каноническими слоями. Реализации живут в отдельных
-# модулях (single source of truth), а не дублируются здесь:
-#   - FractalMemoryLayer          → fractal_memory_layer.py        (RFC0070)
-#   - EpigeneticAdaptationModule  → epigenetic_adaptation_module.py (RFC0071)
-#   - ImmuneCRISPRMemoryGuard     → immune_crispr_memory_guard.py   (RFC0072)
-#   - NeurogenesisDynamicGrowth   → neurogenesis_dynamic_growth.py  (RFC0073)
+# Это фасад над четырьмя слоями. Реализации живут в отдельных модулях
+# (single source of truth), а не дублируются здесь:
+#   - FractalMemoryLayer          → prototypes/fractal_memory_layer.py       (RFC0070)
+#   - EpigeneticAdaptationModule  → epigenetic_adaptation_module.py (wired в core, RFC0071)
+#   - ImmuneCRISPRMemoryGuard     → prototypes/immune_crispr_memory_guard.py (RFC0072)
+#   - NeurogenesisDynamicGrowth   → prototypes/neurogenesis_dynamic_growth.py (RFC0073)
+#
+# ⚠️ Прототип: НЕ вшит в core-пайплайн (в отличие от epigenetic). См. FUTURE.md §3.3.
 
 import time
 import uuid
 from typing import Dict, List, Any, Optional
 
-from fractal_memory_layer import FractalMemoryLayer
+from prototypes.fractal_memory_layer import FractalMemoryLayer
 from epigenetic_adaptation_module import EpigeneticAdaptationModule
-from immune_crispr_memory_guard import ImmuneCRISPRMemoryGuard
-from neurogenesis_dynamic_growth import NeurogenesisDynamicGrowth
+from prototypes.immune_crispr_memory_guard import ImmuneCRISPRMemoryGuard
+from prototypes.neurogenesis_dynamic_growth import NeurogenesisDynamicGrowth
 
 # Известные противоречия, которыми засевается иммунный страж — чтобы базовые
 # галлюцинации блокировались "из коробки" (заменяет хардкод старых заглушек).

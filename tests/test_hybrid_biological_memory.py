@@ -6,9 +6,9 @@
 # tests pin the facade's wiring and its public API surface (used by DEMO.md).
 
 import pytest
-from hybrid_biological_memory import HybridBiologicalMemory
+from prototypes.hybrid_biological_memory import HybridBiologicalMemory
 from epigenetic_adaptation_module import EpigeneticAdaptationModule
-from neurogenesis_dynamic_growth import NeurogenesisDynamicGrowth
+from prototypes.neurogenesis_dynamic_growth import NeurogenesisDynamicGrowth
 
 
 def test_initialization_wires_canonical_modules():

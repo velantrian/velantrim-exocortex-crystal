@@ -1,14 +1,14 @@
 """Tests for the standalone biologically-inspired modules (RFC0070–0073).
 
 These modules ship richer implementations than the inline stubs in
-hybrid_biological_memory.py and previously had zero test coverage.
+prototypes/hybrid_biological_memory.py and previously had zero test coverage.
 """
 import pytest
 
 from epigenetic_adaptation_module import EpigeneticAdaptationModule
-from fractal_memory_layer import FractalMemoryLayer
-from immune_crispr_memory_guard import ImmuneCRISPRMemoryGuard
-from neurogenesis_dynamic_growth import NeurogenesisDynamicGrowth
+from prototypes.fractal_memory_layer import FractalMemoryLayer
+from prototypes.immune_crispr_memory_guard import ImmuneCRISPRMemoryGuard
+from prototypes.neurogenesis_dynamic_growth import NeurogenesisDynamicGrowth
 
 
 # ─── RFC0071: Epigenetic Adaptation ───────────────────────────────────────────

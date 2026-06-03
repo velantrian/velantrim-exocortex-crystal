@@ -5,13 +5,13 @@
 ## Quick Start
 
 ```bash
-python hybrid_biological_memory.py
+python -m prototypes.hybrid_biological_memory
 ```
 
 ## Example Usage
 
 ```python
-from hybrid_biological_memory import HybridBiologicalMemory
+from prototypes.hybrid_biological_memory import HybridBiologicalMemory
 
 # Initialize the full hybrid system
 hbm = HybridBiologicalMemory()
