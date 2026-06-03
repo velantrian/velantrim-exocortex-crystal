@@ -209,6 +209,26 @@ def test_retrieve_graph_walk_surfaces_linked_facts():
     assert hits["B"]["_score"] < hits["A"]["_score"]   # decayed by distance
 
 
+def test_graph_walk_is_multi_hop_with_decay():
+    """Activation spreads multiple hops, decaying each hop: A→B→C from a query
+    that only matches A. C (2 hops out) ranks below B (1 hop) below A."""
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    for fid, claim in [("A", "sunlight energy"), ("B", "leaf cells"),
+                       ("C", "soil minerals")]:
+        g.merge_fact({"fact_id": fid, "claim": claim, "source": "s",
+                      "confidence": 1.0, "epistemic_state": "Validated"})
+    g.add_edge("A", "CO_OCCURRED", "B", {})
+    g.add_edge("B", "CO_OCCURRED", "C", {})
+
+    hits = {h["id"]: h for h in retrieve("sunlight energy", k=5)}
+    assert hits["A"]["origin"] == "memory"
+    assert hits["B"]["origin"] == "graph"
+    assert hits["C"]["origin"] == "graph"          # reached 2 hops out
+    assert hits["A"]["_score"] > hits["B"]["_score"] > hits["C"]["_score"]
+
+
 def test_graph_walk_skips_deprecated_neighbors():
     from core.pipeline import retrieve
     from core.l3_graph import get_l3_graph
