@@ -53,15 +53,17 @@ to notice (results just get subtly worse).
 **Do:** stamp the embedder id/dim on each node (or a store-level metadata row)
 and refuse (or warn loudly) when the active embedder differs at query time.
 
-### 2.3 `created_at` should survive every L3 backend
-**Why:** the SleepCycle fix relies on `created_at` reaching the L3 node. The
-`mock` backend stores arbitrary keys, so it works. But `LadybugL3Graph._COLS`
-(`core/l3_graph.py`) does **not** include `created_at`/`updated_at`, so on
-Ladybug the decay baseline still falls back to `metadata['last_consolidated']`
-(only set after the first reinforce/consolidate). Newly-ingested-and-untouched
-facts on Ladybug therefore still skip the first decay window.
-**Do:** add `created_at`/`updated_at` to `_COLS` (and the Neo4j props), or fold
-a `created_at` into `metadata` at merge time so every backend has a baseline.
+### 2.3 `created_at` as a first-class Ladybug column (nicety) — functional gap CLOSED ✅
+**Status:** the SleepCycle decay is now backend-agnostic. `consolidate()`
+self-heals a node with no baseline timestamp (e.g. LadybugDB, whose `_COLS`
+whitelist drops `created_at`) by starting its decay clock in `metadata`
+(persisted by every backend) on first sight, instead of skipping it forever.
+See `core/consolidate.py` + `tests/test_consolidate.py::
+test_consolidate_starts_clock_for_baseline_less_node`.
+**Remaining (optional):** add `created_at`/`updated_at` to
+`LadybugL3Graph._COLS` (`core/l3_graph.py`) + the schema DDL so the timestamp is
+directly queryable on Ladybug for observability — not required for correctness
+anymore. Untestable in CI (LadybugDB is an opt-in dependency), so deferred.
 
 ### 2.4 L3 ↔ SQLite transactionality (outbox)
 **Why:** `pipeline.run()` already documents (lines ~470) that the canon (L3) and

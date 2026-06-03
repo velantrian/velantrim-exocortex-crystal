@@ -47,6 +47,17 @@ def consolidate(
                     or node.get("created_at")
                     or node.get("updated_at"))
         if not baseline:
+            # Узел без опорной метки времени — например, бэкенд канона не
+            # персистит created_at как колонку (LadybugDB хранит только _COLS,
+            # см. l3_graph.LadybugL3Graph._COLS). Раньше такой узел пропускался
+            # НАВСЕГДА → спад по нему не запускался вообще. Вместо этого заводим
+            # часы спада с текущего момента: метку кладём в metadata (её
+            # персистят ВСЕ бэкенды — mock / ladybug / neo4j), и на следующем
+            # прогоне baseline уже найдётся. Сам спад в этот раз не применяем —
+            # возраст узла неизвестен, отсчёт честно стартует «сейчас».
+            meta["last_consolidated"] = now.isoformat()
+            if update_fact(node["fact_id"], metadata=meta):
+                graph.merge_fact(get_fact(node["fact_id"]))
             continue
         try:
             last = datetime.fromisoformat(baseline)
