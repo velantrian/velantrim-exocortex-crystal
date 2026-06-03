@@ -7,6 +7,7 @@ from core.reconcile import (
     reinforce,
     supersede,
     contradict,
+    find_conflicts,
     REL_SUPERSEDED_BY,
     REL_CONTRADICTS,
 )
@@ -82,3 +83,36 @@ def test_contradict_non_validated_adds_edge_without_state_change():
     assert changed is False
     assert get_fact("obs")["epistemic_state"] == "Observed"
     assert any(e[0] == "obs" and e[1] == REL_CONTRADICTS for e in get_l3_graph()._edges)
+
+
+# ─── find_conflicts ───────────────────────────────────────────────────────────
+
+def _validated_worldfact(fact_id, claim):
+    store_fact({"fact_id": fact_id, "claim": claim, "source": "s",
+                "confidence": 0.9, "claim_type": "WORLD_FACT"})
+    transition_esm(fact_id, "Validated")
+    get_l3_graph().merge_fact(get_fact(fact_id))
+
+
+def test_find_conflicts_surfaces_near_but_different_canonical_fact():
+    _validated_worldfact("cap1", "The capital of Australia is Sydney")
+    hits = find_conflicts("The capital of Australia is Canberra")
+    assert "cap1" in {h["fact_id"] for h in hits}
+
+
+def test_find_conflicts_excludes_self_exact_repeat_and_unrelated():
+    _validated_worldfact("cap1", "The capital of Australia is Sydney")
+    _validated_worldfact("bee1", "Bees communicate through waggle dance")
+    # exact repeat of cap1 → reinforcement, not a conflict; self excluded by id;
+    # unrelated bee fact below threshold.
+    hits = find_conflicts("The capital of Australia is Sydney", fact_id="cap1")
+    assert hits == []
+
+
+def test_find_conflicts_ignores_subjective_claims():
+    store_fact({"fact_id": "emo1", "claim": "I feel the capital is wrong",
+                "source": "user", "confidence": 0.9, "claim_type": "EMOTION"})
+    transition_esm("emo1", "Validated")
+    get_l3_graph().merge_fact(get_fact("emo1"))
+    # an EMOTION node is never a world-fact conflict candidate
+    assert find_conflicts("the capital is wrong") == []

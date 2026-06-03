@@ -71,6 +71,21 @@ def test_ingest_exact_repeat_reinforces_confidence():
     assert second["fact"]["metadata"]["observations"] == 2
 
 
+def test_ingest_surfaces_conflict_candidates_for_world_facts():
+    """A new WORLD_FACT close to existing canon surfaces conflict candidates for
+    explicit review — it does NOT auto-contradict."""
+    from core.memory import get_fact
+
+    ingest("The capital of Australia is Sydney")
+    res = ingest("The capital of Australia is Canberra")
+    assert res["accepted"] is True
+    assert "conflicts" in res
+    assert any("Sydney" in c["claim"] for c in res["conflicts"])
+    # both still Validated — detection only surfaces, never auto-marks
+    sydney_id = res["conflicts"][0]["fact_id"]
+    assert get_fact(sydney_id)["epistemic_state"] == "Validated"
+
+
 def test_ingest_low_confidence_world_fact_is_blocked():
     # WORLD_FACT below the TruthGate threshold is not accepted into canon.
     res = ingest("Plain statement of fact", confidence=0.0)
