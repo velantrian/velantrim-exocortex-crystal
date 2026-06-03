@@ -71,6 +71,16 @@ class L3GraphBackend(ABC):
         """Соседние узлы по исходящим рёбрам (опционально фильтр по типу)."""
 
     @abstractmethod
+    def get_edges(
+        self, fact_id: str, rel_type: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        """
+        Исходящие рёбра факта вместе с их props (в отличие от neighbors,
+        который отдаёт только узлы). Элемент: {rel_type, target, props}.
+        Нужен, чтобы читать эпизодический контекст who/where/when из рёбер.
+        """
+
+    @abstractmethod
     def vector_search(
         self, query_vector: List[float], k: int = 5,
     ) -> List[Dict[str, Any]]:
@@ -155,6 +165,18 @@ class MockL3Graph(L3GraphBackend):
             scored.append(node)
         scored.sort(key=lambda n: n["_score"], reverse=True)
         return scored[:k]
+
+    def get_edges(
+        self, fact_id: str, rel_type: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        out = []
+        for src, rel, dst, props in self._edges:
+            if src != fact_id:
+                continue
+            if rel_type is not None and rel != rel_type:
+                continue
+            out.append({"rel_type": rel, "target": dst, "props": dict(props)})
+        return out
 
     def clear(self) -> None:
         """Сброс состояния (для тестов)."""
@@ -302,6 +324,27 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
         out = []
         while res.has_next():
             out.append(self._row_to_fact(res.get_next(), cols))
+        return out
+
+    def get_edges(
+        self, fact_id: str, rel_type: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        import json, base64
+        cypher = "MATCH (a:Fact {fact_id: $id})-[e:EDGE]->(b:Fact)"
+        params: Dict[str, Any] = {"id": fact_id}
+        if rel_type is not None:
+            cypher += " WHERE e.rel_type = $rt"
+            params["rt"] = rel_type
+        res = self._conn.execute(
+            f"{cypher} RETURN e.rel_type, b.fact_id, e.props", params)
+        out = []
+        while res.has_next():
+            rel, target, raw = res.get_next()
+            try:
+                props = json.loads(base64.b64decode(raw)) if raw else {}
+            except (ValueError, TypeError):
+                props = {}
+            out.append({"rel_type": rel, "target": target, "props": props})
         return out
 
     def vector_search(

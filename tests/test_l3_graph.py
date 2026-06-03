@@ -56,6 +56,21 @@ def test_edges_and_neighbors_with_type_filter():
     assert [n["fact_id"] for n in only_at] == ["place"]
 
 
+def test_get_edges_returns_targets_with_props():
+    g = MockL3Graph()
+    g.merge_fact({"fact_id": "a", "claim": "x"})
+    g.merge_fact({"fact_id": "b", "claim": "y"})
+    g.add_edge("a", "CO_OCCURRED", "b", {"who": ["user"], "when": "2026-06-01"})
+    g.add_edge("a", "AT", "b")
+
+    co = g.get_edges("a", rel_type="CO_OCCURRED")
+    assert len(co) == 1
+    assert co[0]["target"] == "b"
+    assert co[0]["props"] == {"who": ["user"], "when": "2026-06-01"}
+    assert len(g.get_edges("a")) == 2          # both rel types, unfiltered
+    assert g.get_edges("missing") == []
+
+
 def test_neighbors_skips_dangling_edge_targets():
     g = MockL3Graph()
     g.merge_fact({"fact_id": "src", "claim": "c"})
@@ -196,6 +211,17 @@ def test_ladybug_vector_search_via_native_index(lbug):
     hits = lbug.vector_search(q, k=2)
     assert hits[0]["fact_id"] == "sun"
     assert hits[0]["_score"] > 0.3
+
+
+def test_ladybug_get_edges_round_trips_props(lbug):
+    lbug.merge_fact({"fact_id": "a", "claim": "x", "source": "s"})
+    lbug.merge_fact({"fact_id": "b", "claim": "y", "source": "s"})
+    lbug.add_edge("a", "CO_OCCURRED", "b", {"who": ["user"], "where": "lab"})
+
+    edges = lbug.get_edges("a", rel_type="CO_OCCURRED")
+    assert len(edges) == 1
+    assert edges[0]["target"] == "b"
+    assert edges[0]["props"] == {"who": ["user"], "where": "lab"}
 
 
 def test_ladybug_vector_search_empty_graph_returns_empty(lbug):

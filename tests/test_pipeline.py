@@ -92,6 +92,30 @@ def test_run_links_co_recalled_facts_with_episode_context(monkeypatch):
     assert edge[3]["when"] == "2026-06-01T17:00"
 
 
+def test_recall_episode_reads_who_where_when(monkeypatch):
+    """The episodic context written by _link_episode is now queryable."""
+    from core import pipeline
+
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: _two_retrieved())
+    pipeline.run("session topic",
+                 episode={"who": ["user", "assistant"], "where": "chat",
+                          "when": "2026-06-01"})
+
+    episodes = pipeline.recall_episode("f2")
+    assert episodes, "expected an episodic link from f2"
+    ep = episodes[0]
+    assert ep["with"] == "f5"
+    assert ep["who"] == ["user", "assistant"]
+    assert ep["where"] == "chat"
+    assert ep["when"] == "2026-06-01"
+    assert ep["query"] == "session topic"
+
+
+def test_recall_episode_empty_for_unlinked_fact():
+    from core.pipeline import recall_episode
+    assert recall_episode("never-seen") == []
+
+
 def test_single_fact_recall_creates_no_episode_edge(monkeypatch):
     from core import pipeline
     from core.l3_graph import get_l3_graph
