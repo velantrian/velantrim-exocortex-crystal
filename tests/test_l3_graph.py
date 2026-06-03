@@ -71,6 +71,20 @@ def test_get_edges_returns_targets_with_props():
     assert g.get_edges("missing") == []
 
 
+def test_incoming_edges_mirror_get_edges():
+    g = MockL3Graph()
+    for fid in ("a", "b", "c"):
+        g.merge_fact({"fact_id": fid, "claim": fid})
+    g.add_edge("a", "SUPERSEDED_BY", "b", {"at": "t1"})
+    g.add_edge("c", "CONTRADICTS", "b", {})
+
+    inc = g.incoming_edges("b")
+    assert {(e["rel_type"], e["source"]) for e in inc} == {
+        ("SUPERSEDED_BY", "a"), ("CONTRADICTS", "c")}
+    assert g.incoming_edges("b", rel_type="CONTRADICTS")[0]["source"] == "c"
+    assert g.incoming_edges("a") == []          # nothing points at a
+
+
 def test_neighbors_skips_dangling_edge_targets():
     g = MockL3Graph()
     g.merge_fact({"fact_id": "src", "claim": "c"})
@@ -244,6 +258,17 @@ def test_ladybug_get_edges_round_trips_props(lbug):
     assert len(edges) == 1
     assert edges[0]["target"] == "b"
     assert edges[0]["props"] == {"who": ["user"], "where": "lab"}
+
+
+def test_ladybug_incoming_edges_round_trips(lbug):
+    for fid in ("old", "new"):
+        lbug.merge_fact({"fact_id": fid, "claim": fid, "source": "s"})
+    lbug.add_edge("old", "SUPERSEDED_BY", "new", {"at": "t1"})
+    inc = lbug.incoming_edges("new")
+    assert len(inc) == 1
+    assert inc[0]["source"] == "old"
+    assert inc[0]["rel_type"] == "SUPERSEDED_BY"
+    assert inc[0]["props"] == {"at": "t1"}
 
 
 def test_ladybug_vector_search_empty_graph_returns_empty(lbug):
