@@ -51,3 +51,28 @@ def test_consolidate_skips_non_validated():
     result = consolidate()
     assert result["decayed"] == 0
     assert get_fact("obs")["confidence"] == 0.8
+
+
+def test_consolidate_starts_clock_for_baseline_less_node():
+    """A canonical node with no created_at/last_consolidated (e.g. a backend
+    that doesn't persist created_at as a column) must not be skipped forever:
+    the first cycle starts its decay clock via metadata, the next one decays it.
+    Backend-agnostic — metadata is persisted by every backend."""
+    store_fact({"fact_id": "nobase", "claim": "c", "source": "s",
+                "confidence": 0.8, "significance": 0.0})
+    transition_esm("nobase", "Validated")
+    g = get_l3_graph()
+    # Merge a bare node: simulate a backend that dropped created_at + metadata.
+    g.merge_fact({"fact_id": "nobase", "claim": "c", "source": "s",
+                  "confidence": 0.8, "significance": 0.0,
+                  "epistemic_state": "Validated"})
+    assert "created_at" not in g.get_fact("nobase")
+
+    now = datetime.now(timezone.utc)
+    first = consolidate(now=now)
+    assert first["decayed"] == 0                                  # clock just started …
+    assert g.get_fact("nobase")["metadata"]["last_consolidated"]  # … baseline now set
+
+    second = consolidate(now=now + timedelta(days=30))
+    assert second["decayed"] >= 1                                 # now it decays
+    assert g.get_fact("nobase")["confidence"] < 0.8
