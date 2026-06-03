@@ -25,6 +25,7 @@ from core.memory import (
 from core.l3_graph import get_l3_graph
 from core.embedding import get_embedder, cosine
 from core.generation import get_generator
+from core import metrics
 
 logger = logging.getLogger(__name__)
 
@@ -438,6 +439,7 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     episode — необязательный контекст эпизода (who / where / when / event):
     факты, вспомненные вместе, связываются в L3 эпизодическим ребром.
     """
+    metrics.incr("query.total")
     # 1. Retrieval
     retrieved = retrieve(query)
     if not retrieved:
@@ -490,6 +492,7 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     promote_trace(trace, "Validated")
 
     # 7. Generate
+    metrics.incr("query.answered")
     return generate_answer(facts_pack, trace)
 
 
@@ -500,6 +503,7 @@ def _blocked(
     trace: Optional[List] = None,
 ) -> Dict[str, Any]:
     """Стандартный ответ при блокировке пайплайна."""
+    metrics.incr("query.blocked")
     return {
         "error":  reason,
         "answer": None,

@@ -16,7 +16,7 @@ def isolated_db(monkeypatch, tmp_path):
     no long-lived connection to tear down — we only need to redirect the DB
     path and clear the module-level in-memory cache.
     """
-    from core import memory, l3_graph, embedding, generation
+    from core import memory, l3_graph, embedding, generation, metrics
 
     memory._L0.clear()
     monkeypatch.setattr(memory, "SQLITE_PATH", str(tmp_path / "test.db"))
@@ -30,6 +30,7 @@ def isolated_db(monkeypatch, tmp_path):
     l3_graph.reset_l3_graph()
     embedding.reset_embedder()
     generation.reset_generator()
+    metrics.reset()
     yield
     memory._L0.clear()
     l3_graph.reset_l3_graph()
