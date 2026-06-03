@@ -1,7 +1,9 @@
 """Tests for core/erasure.py — GDPR Art. 17 physical right to erasure."""
 import pytest
 
-from core.erasure import erase_fact, erasure_log, is_erased
+from core.erasure import (
+    erase_fact, erasure_log, is_erased, record_derivation,
+)
 from core.memory import (
     store_fact, get_fact, enqueue_l3_write, pending_l3_writes, get_tombstone,
     ImmutableStateError,
@@ -114,6 +116,59 @@ def test_erasure_log_lists_tombstones_content_free():
     assert {"f1", "f2"} <= ids
     blob = str(log)
     assert "alpha" not in blob and "beta" not in blob
+
+
+def test_cascade_erases_derived_facts():
+    _seed("src", claim="source fact")
+    _seed("d1", claim="derived one")
+    _seed("d2", claim="derived two")
+    record_derivation("d1", "src")
+    record_derivation("d2", "src")
+
+    receipt = erase_fact("src", cascade=True)
+
+    assert is_erased("src") and is_erased("d1") and is_erased("d2")
+    assert get_fact("d1") is None and get_fact("d2") is None
+    cascaded_ids = {c["fact_id"] for c in receipt["cascaded"]}
+    assert cascaded_ids == {"d1", "d2"}
+    # Derived tombstones record the cascade origin.
+    from core.memory import get_tombstone
+    assert get_tombstone("d1")["reason"] == "cascade_from:src"
+
+
+def test_no_cascade_leaves_derived_intact():
+    _seed("src", claim="source")
+    _seed("d1", claim="derived")
+    record_derivation("d1", "src")
+
+    erase_fact("src")  # cascade defaults to False
+
+    assert is_erased("src")
+    assert is_erased("d1") is False
+    assert get_fact("d1") is not None
+
+
+def test_cascade_is_cycle_safe():
+    _seed("a", claim="a")
+    _seed("b", claim="b")
+    record_derivation("b", "a")   # b derived from a
+    record_derivation("a", "b")   # a derived from b (artificial cycle)
+
+    receipt = erase_fact("a", cascade=True)  # must terminate
+
+    assert is_erased("a") and is_erased("b")
+    assert {c["fact_id"] for c in receipt["cascaded"]} == {"b"}
+
+
+def test_cascade_never_erases_ring_zero():
+    _seed("src", claim="source")
+    record_derivation("VALUES_CORE", "src")  # artificial: derive Ring Zero from src
+
+    receipt = erase_fact("src", cascade=True)
+
+    assert is_erased("src")
+    assert {c["fact_id"] for c in receipt["cascaded"]} == set()  # Ring Zero skipped
+    assert is_erased("VALUES_CORE") is False
 
 
 def test_cli_erase_and_erasures(capsys):

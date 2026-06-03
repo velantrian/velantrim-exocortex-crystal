@@ -106,7 +106,8 @@ _DDL = """
         significance   REAL DEFAULT 0.5,
         created_at     TEXT NOT NULL,
         updated_at     TEXT NOT NULL,
-        metadata       TEXT DEFAULT '{}'
+        metadata       TEXT DEFAULT '{}',
+        restricted     INTEGER DEFAULT 0
     )
 """
 
@@ -144,6 +145,7 @@ _MIGRATIONS = [
     ("claim_type",    "TEXT DEFAULT 'WORLD_FACT'"),
     ("source_status", "TEXT DEFAULT 'UNKNOWN'"),
     ("significance",  "REAL DEFAULT 0.5"),
+    ("restricted",    "INTEGER DEFAULT 0"),  # GDPR Art. 18 (processing restriction)
 ]
 
 
@@ -399,6 +401,31 @@ def clear_l3_write(fact_id: str) -> None:
     """Убрать факт из очереди (после успешного мержа или если он больше не нужен)."""
     with _db() as conn:
         conn.execute("DELETE FROM l3_outbox WHERE fact_id = ?", (fact_id,))
+
+
+# ─── ОГРАНИЧЕНИЕ ОБРАБОТКИ (GDPR Art. 18) ─────────────────────────────────────
+# restricted=1 означает «факт хранится, но исключён из активной обработки»
+# (recall/ответы). Это НЕ удаление и НЕ смена ESM-состояния: факт остаётся
+# валидным, но временно «заморожен». Обратимо. Оркестрация синка в L3 —
+# в core/compliance.py (memory.py не импортирует l3_graph, чтобы не плодить цикл).
+
+def set_restricted(fact_id: str, restricted: bool) -> bool:
+    """
+    Пометить/снять ограничение обработки факта (L0 + L1). Возвращает True, если
+    факт найден. Не трогает ESM-состояние. Синк в L3 — на вызывающей стороне.
+    """
+    existing = get_fact(fact_id)
+    if existing is None:
+        return False
+    val = int(bool(restricted))
+    now = datetime.now(timezone.utc).isoformat()
+    with _db() as conn:
+        conn.execute(
+            "UPDATE facts SET restricted = ?, updated_at = ? WHERE fact_id = ?",
+            (val, now, fact_id),
+        )
+    _l0_put(fact_id, {**existing, "restricted": val, "updated_at": now})
+    return True
 
 
 # ─── ФИЗИЧЕСКОЕ УДАЛЕНИЕ (GDPR Art. 17) ───────────────────────────────────────

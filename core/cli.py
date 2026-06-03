@@ -19,6 +19,9 @@ from core.pipeline import run
 from core.reconcile import fact_history
 from core.observe import memory_report, format_report
 from core.erasure import erase_fact, erasure_log
+from core.compliance import (
+    restrict_processing, unrestrict_processing, record_of_processing,
+)
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -39,7 +42,17 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_erase.add_argument(
         "--reason", default="data_subject_request",
         help="причина удаления (для tombstone / Art. 30)")
+    p_erase.add_argument(
+        "--cascade", action="store_true",
+        help="также удалить факты, выведенные из этого (DERIVED_FROM)")
     sub.add_parser("erasures", help="журнал удалений (tombstones, Art. 30)")
+    p_restrict = sub.add_parser(
+        "restrict", help="ограничить обработку факта (GDPR Art. 18)")
+    p_restrict.add_argument("fact_id")
+    p_unrestrict = sub.add_parser(
+        "unrestrict", help="снять ограничение обработки (GDPR Art. 18)")
+    p_unrestrict.add_argument("fact_id")
+    sub.add_parser("ropa", help="record of processing (GDPR Art. 30)")
 
     args = parser.parse_args(argv)
 
@@ -63,9 +76,16 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(format_report(memory_report()))
     elif args.cmd == "erase":
         print(json.dumps(
-            erase_fact(args.fact_id, reason=args.reason), ensure_ascii=False))
+            erase_fact(args.fact_id, reason=args.reason, cascade=args.cascade),
+            ensure_ascii=False))
     elif args.cmd == "erasures":
         print(json.dumps(erasure_log(), ensure_ascii=False))
+    elif args.cmd == "restrict":
+        print(json.dumps(restrict_processing(args.fact_id), ensure_ascii=False))
+    elif args.cmd == "unrestrict":
+        print(json.dumps(unrestrict_processing(args.fact_id), ensure_ascii=False))
+    elif args.cmd == "ropa":
+        print(json.dumps(record_of_processing(), ensure_ascii=False, indent=2))
     return 0
 
 

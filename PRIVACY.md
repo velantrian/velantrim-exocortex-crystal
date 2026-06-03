@@ -69,9 +69,14 @@ all processing on-device.
   `core/reconcile.py` correct or replace facts.
 - **Erasure** — `erase_fact()` (`core/erasure.py`, CLI `erase`) physically
   removes a fact from every layer (L0/L1/L3 + outbox) and records a content-free
-  tombstone. Facts can also be logically collapsed (ESM `Collapsed`) when you
-  want to retain a non-active record, and deleting the local `data/` files
-  removes everything at once.
+  tombstone; `--cascade` also erases facts derived from it. Facts can also be
+  logically collapsed (ESM `Collapsed`) when you want to retain a non-active
+  record, and deleting the local `data/` files removes everything at once.
+- **Restriction** — `restrict_processing()` / `unrestrict_processing()`
+  (`core/compliance.py`, CLI `restrict` / `unrestrict`) reversibly excludes a
+  fact from recall and answers without deleting it.
+- **Record of processing** — `record_of_processing()` (CLI `ropa`) exports an
+  aggregate, content-free overview of what is stored and how.
 
 See [GDPR.md](./GDPR.md) for how these map to specific GDPR articles.
 
