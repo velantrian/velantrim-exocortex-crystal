@@ -18,10 +18,16 @@ dev = [
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.1.0",
 ]
-# L3 canonical graph backend (embedded, Cypher-compatible Kuzu successor).
-# Optional: the default L3 backend is the dependency-free in-memory mock.
+# L3 canonical graph backend. Default mode 'auto' uses LadybugDB when installed
+# (recommended production engine, Kuzu successor) and falls back to the
+# dependency-free in-memory mock otherwise.
 ladybug = [
     "ladybug>=0.17.0",
+]
+# Optional alternative L3 backend (server-based). Select with
+# VELANTRIM_L3_BACKEND=neo4j + NEO4J_URI/NEO4J_USER/NEO4J_PASSWORD.
+neo4j = [
+    "neo4j>=5.0.0",
 ]
 # Real neural embeddings for semantic retrieval (VELANTRIM_EMBEDDER=sbert).
 # Optional: the default embedder is the dependency-free HashingEmbedder.

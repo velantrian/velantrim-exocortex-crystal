@@ -16,10 +16,13 @@
 # поглощения Apple). LadybugDB — embedded, Cypher-совместимый, с vector index
 # и full-text search. Cypher стандартный → backend остаётся переносимым.
 
+import logging
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Any
 
 from core._registry import BackendRegistry
+
+logger = logging.getLogger(__name__)
 
 # Вклад значимости (salience) в ранжирование vector_search: итоговый скор =
 # близость × (1 + W × significance). Релевантность доминирует, значимость
@@ -385,30 +388,183 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
         return out[:k]
 
 
+# ─── NEO4J BACKEND (опциональная альтернатива) ────────────────────────────────
+
+class Neo4jL3Graph(L3GraphBackend):  # pragma: no cover
+    """
+    Backend на Neo4j (опциональная альтернатива LadybugDB). Стандартный Cypher
+    через neo4j-драйвер; конфиг — NEO4J_URI / NEO4J_USER / NEO4J_PASSWORD /
+    NEO4J_DATABASE. metadata и props рёбер хранятся JSON-строкой (Neo4j не
+    допускает вложенных map в свойствах); embedding — массив float.
+
+    `neo4j` — опциональная зависимость (ленивый импорт). vector_search считает
+    косинус на стороне Python (версионно-независимо, без vector-index Neo4j).
+
+    Сетевой бэкенд: требует запущенного сервера Neo4j. В этом окружении сервера
+    нет, поэтому класс исключён из coverage-гейта; Cypher повторяет проверенный
+    в спайке LadybugL3Graph (MERGE/MATCH-семантика идентична).
+    """
+
+    def __init__(self) -> None:
+        import os
+        try:
+            from neo4j import GraphDatabase
+        except ImportError as e:
+            raise ImportError(
+                "Neo4j backend требует пакет 'neo4j' (опциональная зависимость): "
+                "pip install neo4j. Дефолт — backend='auto' (LadybugDB/mock)."
+            ) from e
+        uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
+        user = os.environ.get("NEO4J_USER", "neo4j")
+        password = os.environ.get("NEO4J_PASSWORD", "neo4j")
+        self._db = os.environ.get("NEO4J_DATABASE", "neo4j")
+        self._driver = GraphDatabase.driver(uri, auth=(user, password))
+        self._driver.execute_query(
+            "CREATE CONSTRAINT fact_id IF NOT EXISTS "
+            "FOR (f:Fact) REQUIRE f.fact_id IS UNIQUE",
+            database_=self._db)
+
+    def _run(self, cypher: str, **params):
+        records, _, _ = self._driver.execute_query(
+            cypher, database_=self._db, **params)
+        return records
+
+    @staticmethod
+    def _props(fact: Dict[str, Any]) -> Dict[str, Any]:
+        import json
+        out = {}
+        for k, v in fact.items():
+            if k.startswith("_"):
+                continue
+            out[k] = json.dumps(v) if k == "metadata" else v
+        return out
+
+    @staticmethod
+    def _node(props: Dict[str, Any]) -> Dict[str, Any]:
+        import json
+        d = dict(props)
+        if isinstance(d.get("metadata"), str):
+            try:
+                d["metadata"] = json.loads(d["metadata"])
+            except (ValueError, TypeError):
+                d["metadata"] = {}
+        d.pop("embedding", None)
+        return d
+
+    def merge_fact(self, fact: Dict[str, Any]) -> None:
+        if not fact.get("fact_id"):
+            raise ValueError("merge_fact: fact_id обязателен")
+        props = self._props(fact)
+        if fact.get("claim"):
+            from core.embedding import get_embedder
+            props["embedding"] = get_embedder().embed(fact["claim"])
+        self._run("MERGE (f:Fact {fact_id: $id}) SET f += $props",
+                  id=fact["fact_id"], props=props)
+
+    def get_fact(self, fact_id: str) -> Optional[Dict[str, Any]]:
+        rows = self._run(
+            "MATCH (f:Fact {fact_id: $id}) RETURN properties(f) AS p", id=fact_id)
+        return self._node(rows[0]["p"]) if rows else None
+
+    def all_facts(self) -> List[Dict[str, Any]]:
+        rows = self._run("MATCH (f:Fact) RETURN properties(f) AS p")
+        return [self._node(r["p"]) for r in rows]
+
+    def add_edge(self, src_id, rel_type, dst_id, props=None) -> None:
+        import json
+        self._run(
+            "MATCH (a:Fact {fact_id: $s}), (b:Fact {fact_id: $d}) "
+            "MERGE (a)-[e:EDGE {rel_type: $rt}]->(b) SET e.props = $p",
+            s=src_id, d=dst_id, rt=rel_type, p=json.dumps(props or {}))
+
+    def neighbors(self, fact_id, rel_type=None) -> List[Dict[str, Any]]:
+        cypher = "MATCH (a:Fact {fact_id: $id})-[e:EDGE]->(b:Fact)"
+        params = {"id": fact_id}
+        if rel_type is not None:
+            cypher += " WHERE e.rel_type = $rt"
+            params["rt"] = rel_type
+        rows = self._run(cypher + " RETURN properties(b) AS p", **params)
+        return [self._node(r["p"]) for r in rows]
+
+    def get_edges(self, fact_id, rel_type=None) -> List[Dict[str, Any]]:
+        import json
+        cypher = "MATCH (a:Fact {fact_id: $id})-[e:EDGE]->(b:Fact)"
+        params = {"id": fact_id}
+        if rel_type is not None:
+            cypher += " WHERE e.rel_type = $rt"
+            params["rt"] = rel_type
+        rows = self._run(
+            cypher + " RETURN e.rel_type AS rt, b.fact_id AS t, e.props AS p", **params)
+        out = []
+        for r in rows:
+            try:
+                props = json.loads(r["p"]) if r["p"] else {}
+            except (ValueError, TypeError):
+                props = {}
+            out.append({"rel_type": r["rt"], "target": r["t"], "props": props})
+        return out
+
+    def vector_search(self, query_vector, k=5) -> List[Dict[str, Any]]:
+        from core.embedding import cosine
+        rows = self._run(
+            "MATCH (f:Fact) WHERE f.embedding IS NOT NULL "
+            "RETURN f.fact_id AS id, f.embedding AS v")
+        scored = []
+        for r in rows:
+            sim = cosine(query_vector, r["v"])
+            if sim <= 0.0:
+                continue
+            node = self.get_fact(r["id"])
+            if node is None:
+                continue
+            node["_relevance"] = round(sim, 6)
+            node["_score"] = round(_salience_score(sim, node.get("significance", 0.5)), 6)
+            scored.append(node)
+        scored.sort(key=lambda n: n["_score"], reverse=True)
+        return scored[:k]
+
+
 # ─── ФАБРИКА / SINGLETON ──────────────────────────────────────────────────────
 
 _BACKENDS = {
-    "mock": MockL3Graph,
-    "ladybug": LadybugL3Graph,
+    "mock": MockL3Graph,        # in-memory, без зависимостей (dev / CI)
+    "ladybug": LadybugL3Graph,  # рекомендуемый прод-дефолт (преемник Kuzu)
+    "neo4j": Neo4jL3Graph,      # опциональная альтернатива (нужен сервер)
 }
 
 
 def _make(name: str) -> L3GraphBackend:
+    if name == "auto":
+        # Прод-дефолт: LadybugDB, если доступен; иначе — mock (CI / без зависимостей).
+        try:
+            return LadybugL3Graph()
+        except Exception as e:  # noqa: BLE001 — любой сбой инициализации → откат
+            logger.warning(
+                "auto L3: LadybugDB недоступен (%s), откат на in-memory mock",
+                type(e).__name__,
+            )
+            return MockL3Graph()
     if name not in _BACKENDS:
         raise ValueError(
             f"get_l3_graph: неизвестный backend '{name}'. "
-            f"Доступно: {sorted(_BACKENDS)}"
+            f"Доступно: {sorted(_BACKENDS) + ['auto']}"
         )
     return _BACKENDS[name]()
 
 
-_REGISTRY = BackendRegistry("VELANTRIM_L3_BACKEND", "mock", _make)
+_REGISTRY = BackendRegistry("VELANTRIM_L3_BACKEND", "auto", _make)
 
 
 def get_l3_graph(backend: Optional[str] = None) -> L3GraphBackend:
     """
-    Вернуть singleton L3-графа. Backend выбирается аргументом или
-    переменной окружения VELANTRIM_L3_BACKEND (по умолчанию 'mock').
+    Вернуть singleton L3-графа. Backend — аргументом или VELANTRIM_L3_BACKEND.
+
+    Режимы:
+      'auto' (дефолт) — LadybugDB, если установлен (рекомендуемый прод-движок,
+                        преемник Kuzu); иначе in-memory mock без зависимостей.
+      'ladybug'       — всегда LadybugDB (ImportError, если пакета нет).
+      'neo4j'         — опциональная альтернатива (нужен запущенный сервер).
+      'mock'          — всегда in-memory (dev / CI).
     """
     return _REGISTRY.get(backend)
 

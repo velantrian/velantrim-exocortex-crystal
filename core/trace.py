@@ -1,6 +1,6 @@
 # core/trace.py
 # Velantrim ExoCortex — Trace / Provenance Layer
-# v8.0.2-sprint1
+# v8.7.0-sprint2
 #
 # Назначение: строит цепочку провенанса для каждого факта.
 # Принцип: Trace → Validation → Answer (не наоборот).
