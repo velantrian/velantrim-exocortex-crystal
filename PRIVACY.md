@@ -67,9 +67,11 @@ all processing on-device.
   export the full store; it is plain SQLite/JSON you can read directly.
 - **Rectification** — `update_fact()` and the supersede flow in
   `core/reconcile.py` correct or replace facts.
-- **Erasure** — facts can be logically collapsed (ESM `Collapsed` state).
-  *Physical purge* of collapsed records is on the roadmap; until then, deleting
-  the local `data/` files removes everything.
+- **Erasure** — `erase_fact()` (`core/erasure.py`, CLI `erase`) physically
+  removes a fact from every layer (L0/L1/L3 + outbox) and records a content-free
+  tombstone. Facts can also be logically collapsed (ESM `Collapsed`) when you
+  want to retain a non-active record, and deleting the local `data/` files
+  removes everything at once.
 
 See [GDPR.md](./GDPR.md) for how these map to specific GDPR articles.
 

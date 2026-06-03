@@ -20,6 +20,9 @@ This document is the **honest truth** about what's implemented vs designed.
 - SleepCycle (`core/consolidate.py`): significance-weighted confidence decay (FSRS-style)
 - Episodic linking + `recall_episode` / `recall_by_entity`
 - Guardian (structural check), provenance trace (`core/trace.py`)
+- GDPR Art. 17 physical erasure (`core/erasure.py`): `erase_fact` purges a fact
+  across L0/L1/L3 + outbox and writes a content-free audit tombstone
+  (`erasure_log`); CLI `erase` / `erasures`
 
 ## ✅ Implemented (metadata tooling, not runtime)
 

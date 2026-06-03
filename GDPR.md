@@ -29,7 +29,7 @@ legal advice — operators remain responsible for compliant deployment.
 | **Information / transparency** | 13–14 | ✅ Provenance & source status recorded per fact. |
 | **Access** | 15 | ✅ `get_all_facts()` / CLI `report` export the full store (plain SQLite/JSON). |
 | **Rectification** | 16 | ✅ `update_fact()` and supersede flow (`core/reconcile.py`). |
-| **Erasure ("right to be forgotten")** | 17 | 🟡 Logical erasure via ESM `Collapsed` today; **physical purge of collapsed records is a roadmap deliverable**. Deleting local `data/` removes all data immediately. |
+| **Erasure ("right to be forgotten")** | 17 | ✅ **Physical erasure** (`core/erasure.py`): `erase_fact()` removes the fact from L0, L1, the L3 canonical graph (node + all edges + mentions) and the outbox, then writes a content-free tombstone. CLI: `erase`. |
 | **Restriction of processing** | 18 | 🟡 `Deprecated` / `Collapsed` states exclude facts from active recall; explicit per-fact restriction flag is planned. |
 | **Data portability** | 20 | ✅ Export is standard SQLite + JSON, fully portable. |
 | **Object** | 21 | 🟡 Operator-controlled; supported operationally via erasure/restriction. |
@@ -48,6 +48,10 @@ legal advice — operators remain responsible for compliant deployment.
 
 - The provenance trace and in-process metrics (`core/metrics.py`,
   `core/observe.py`) provide the raw material for a record of processing.
+- The **erasure log** (`erasure_log` table; `erasure_log()` / CLI `erasures`)
+  is a content-free record of every Art. 17 deletion — `fact_id`, timestamp,
+  reason, actor, and a SHA-256 hash of the erased claim — proving *what* and
+  *when* was erased **without retaining the personal data itself**.
 - Security measures appropriate to a local single-user library are described in
   [SECURITY.md](./SECURITY.md). **Encryption at rest** is delegated to the host
   (full-disk/filesystem encryption); application-level encryption is on the
@@ -64,11 +68,12 @@ transfer.
 
 These are explicit, fundable deliverables (see [ROADMAP.md](./ROADMAP.md)):
 
-1. **Physical erasure** of collapsed facts with tombstoning and audit log
-   (Art. 17).
+1. ✅ **Physical erasure** with content-free tombstoning and audit log
+   (Art. 17) — *implemented* in `core/erasure.py`.
 2. **Per-fact processing-restriction** flag (Art. 18).
 3. **Application-level encryption at rest** option (Art. 32).
 4. **Exportable record-of-processing** report (Art. 30).
+5. **Cascade erasure** of facts derived from an erased source.
 
 ## Contact
 

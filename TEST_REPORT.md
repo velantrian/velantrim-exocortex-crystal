@@ -7,11 +7,11 @@ numbers: run `pytest` yourself and you will get the figures below.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **265** |
+| **Tests passing** | **274** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **~99%** (gate enforced at 95%) |
-| Test files | 21 (`tests/test_*.py`) |
+| Test files | 22 (`tests/test_*.py`) |
 | Python | 3.11 (3.10+ supported) |
 | Runtime dependencies | standard library only |
 
@@ -24,7 +24,7 @@ Neo4j, Anthropic) that are not installed in the default environment.
 
 ```bash
 pip install -r requirements.txt
-pytest                 # 265 passed, 12 skipped
+pytest                 # 274 passed, 12 skipped
 ```
 
 ## Coverage by module (core/)
@@ -33,19 +33,20 @@ pytest                 # 265 passed, 12 skipped
 |--------|------:|------:|
 | `core/_registry.py`    | 18  | 100% |
 | `core/adaptation.py`   | 22  | 100% |
-| `core/cli.py`          | 30  | 100% |
+| `core/cli.py`          | 39  | 100% |
 | `core/consolidate.py`  | 38  | 95%  |
 | `core/embedding.py`    | 76  | 100% |
+| `core/erasure.py`      | 23  | 100% |
 | `core/generation.py`   | 41  | 100% |
 | `core/ingest.py`       | 58  | 100% |
-| `core/l3_graph.py`     | 141 | 99%  |
-| `core/memory.py`       | 146 | 100% |
+| `core/l3_graph.py`     | 150 | 99%  |
+| `core/memory.py`       | 164 | 100% |
 | `core/metrics.py`      | 10  | 100% |
 | `core/observe.py`      | 35  | 100% |
 | `core/pipeline.py`     | 237 | 99%  |
 | `core/reconcile.py`    | 76  | 96%  |
 | `core/trace.py`        | 26  | 100% |
-| **Total (repo-wide)**  | **1698** | **~99%** |
+| **Total (repo-wide)**  | **1757** | **~99%** |
 
 ## What the tests cover
 
@@ -60,6 +61,7 @@ pytest                 # 265 passed, 12 skipped
 | Truth maintenance (reinforce/supersede/contradict) | `test_reconcile.py` |
 | Consolidation / FSRS-style decay | `test_consolidate.py` |
 | Provenance trace | `test_trace.py` |
+| GDPR Art. 17 physical erasure + tombstones | `test_erasure.py` |
 | Adaptive TruthGate threshold | `test_adaptation.py` |
 | Observability & metrics | `test_observe.py`, `test_metrics.py` |
 | Migration tooling & rollback | `test_migration.py`, `test_migration_extra.py` |
