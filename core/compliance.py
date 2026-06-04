@@ -21,6 +21,7 @@ from typing import Dict, Any, List, Optional
 
 from core.memory import set_restricted, get_fact, get_all_facts, get_tombstones
 from core.l3_graph import get_l3_graph
+from core import crypto
 
 
 def _now() -> str:
@@ -102,6 +103,8 @@ def record_of_processing(controller: Optional[str] = None) -> Dict[str, Any]:
             "in the default configuration."),
         "backends": {"l3_graph": l3, "embedder": embedder, "generator": generator},
         "international_transfer": transfers,
+        "encryption_at_rest": crypto.is_enabled(),
+        "encryption_backend": crypto.backend_name(),
         "fact_count": len(facts),
         "categories_of_data": dict(by_claim_type),
         "by_epistemic_state": dict(by_state),
@@ -123,5 +126,6 @@ def record_of_processing(controller: Optional[str] = None) -> Dict[str, Any]:
             "validated ESM transitions",
             "content-free erasure tombstones",
             "no telemetry; no outbound calls by default",
-        ],
+        ] + ([f"encryption at rest ({crypto.backend_name()}) on claim/metadata"]
+             if crypto.is_enabled() else []),
     }

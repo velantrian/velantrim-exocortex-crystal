@@ -30,7 +30,9 @@ Velantrim stores **facts** that an AI system writes to memory. Each fact record
 | `metadata` | Free-form JSON you control |
 
 If you store personal data inside `claim`/`metadata`, treat the store
-accordingly — see [GDPR.md](./GDPR.md).
+accordingly — see [GDPR.md](./GDPR.md). You can additionally **encrypt these
+fields at rest** by setting `VELANTRIM_ENCRYPTION_KEY` (see *Encryption at rest*
+below).
 
 ## Where data lives
 
@@ -41,6 +43,16 @@ accordingly — see [GDPR.md](./GDPR.md).
 
 The `data/` directory and all `*.db` files are git-ignored and never leave the
 repository or your machine on their own.
+
+## Encryption at rest (optional)
+
+Set `VELANTRIM_ENCRYPTION_KEY` (a passphrase or a Fernet key) to encrypt the
+personal-data fields (`claim`, `metadata`) of the L1 SQLite store. The database
+file then holds ciphertext for those fields; reads decrypt transparently. With
+the optional `cryptography` package this uses Fernet (AES); otherwise a
+dependency-free authenticated HMAC-SHA256 cipher. Off by default. See
+[SECURITY.md](./SECURITY.md) and [GDPR.md](./GDPR.md) (Art. 32). On-disk L3
+backends are not yet covered — use host disk encryption for those.
 
 ## What is collected and sent externally
 
