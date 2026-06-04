@@ -55,7 +55,7 @@ def test_ingest_explicit_claim_type_overrides_classifier():
 
 
 def test_ingest_empty_raises():
-    with pytest.raises(ValueError, match="пустая реплика"):
+    with pytest.raises(ValueError, match="empty utterance"):
         ingest("   ")
 
 

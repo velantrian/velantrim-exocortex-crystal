@@ -50,7 +50,7 @@ def test_transition_esm_invalid_transition_raises():
     from core.memory import store_fact, transition_esm
     store_fact({"fact_id": "t3", "claim": "x", "source": "s", "confidence": 0.5,
                 "epistemic_state": "Collapsed"})
-    with pytest.raises(ValueError, match="недопустим"):
+    with pytest.raises(ValueError, match="is not allowed"):
         transition_esm("t3", "Validated")
 
 
@@ -68,7 +68,7 @@ def test_ring_zero_is_immutable():
 
 def test_store_fact_rejects_invalid_state():
     from core.memory import store_fact
-    with pytest.raises(ValueError, match="недопустимое ESM"):
+    with pytest.raises(ValueError, match="invalid ESM"):
         store_fact({"fact_id": "bad", "claim": "x", "source": "s",
                     "epistemic_state": "NotAState"})
 

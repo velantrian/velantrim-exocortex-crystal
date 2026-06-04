@@ -2,13 +2,13 @@
 # Velantrim ExoCortex — Command-line interface
 # v8.8.0-sprint2
 #
-# Тонкая обёртка над ядром: ingest / ask / history / report.
+# A thin wrapper over the core: ingest / ask / history / report.
 #   python -m core.cli ingest "Water boils at 100C"
 #   python -m core.cli ask    "how does water behave"
 #   python -m core.cli history <fact_id>
 #   python -m core.cli report
 #   python -m core.cli erase  <fact_id> [--reason ...]   # GDPR Art. 17
-#   python -m core.cli erasures                          # журнал удалений
+#   python -m core.cli erasures                          # deletion log
 
 import argparse
 import json
@@ -29,28 +29,28 @@ def main(argv: Optional[List[str]] = None) -> int:
         prog="velantrim", description="Velantrim ExoCortex memory CLI")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
-    p_ing = sub.add_parser("ingest", help="принять реплику в память")
+    p_ing = sub.add_parser("ingest", help="accept an utterance into memory")
     p_ing.add_argument("text")
-    p_ask = sub.add_parser("ask", help="спросить (retrieve → gate → answer)")
+    p_ask = sub.add_parser("ask", help="ask (retrieve → gate → answer)")
     p_ask.add_argument("query")
-    p_hist = sub.add_parser("history", help="truth-провенанс факта")
+    p_hist = sub.add_parser("history", help="truth provenance of a fact")
     p_hist.add_argument("fact_id")
-    sub.add_parser("report", help="сводка по канонической памяти L3")
+    sub.add_parser("report", help="summary of L3 canonical memory")
     p_erase = sub.add_parser(
-        "erase", help="физически удалить факт по всем тканям (GDPR Art. 17)")
+        "erase", help="physically delete a fact across all fabrics (GDPR Art. 17)")
     p_erase.add_argument("fact_id")
     p_erase.add_argument(
         "--reason", default="data_subject_request",
-        help="причина удаления (для tombstone / Art. 30)")
+        help="reason for deletion (for tombstone / Art. 30)")
     p_erase.add_argument(
         "--cascade", action="store_true",
-        help="также удалить факты, выведенные из этого (DERIVED_FROM)")
-    sub.add_parser("erasures", help="журнал удалений (tombstones, Art. 30)")
+        help="also delete facts derived from this one (DERIVED_FROM)")
+    sub.add_parser("erasures", help="deletion log (tombstones, Art. 30)")
     p_restrict = sub.add_parser(
-        "restrict", help="ограничить обработку факта (GDPR Art. 18)")
+        "restrict", help="restrict processing of a fact (GDPR Art. 18)")
     p_restrict.add_argument("fact_id")
     p_unrestrict = sub.add_parser(
-        "unrestrict", help="снять ограничение обработки (GDPR Art. 18)")
+        "unrestrict", help="lift the processing restriction (GDPR Art. 18)")
     p_unrestrict.add_argument("fact_id")
     sub.add_parser("ropa", help="record of processing (GDPR Art. 30)")
 

@@ -2,18 +2,18 @@
 # Velantrim ExoCortex — Core Pipeline
 # v8.7.0-sprint2
 #
-# Принцип: Graph = Truth · LLM = Language · Memory = Physiology
-# Пайплайн: Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer
+# Principle: Graph = Truth · LLM = Language · Memory = Physiology
+# Pipeline: Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer
 #
-# Ретрив — векторный (косинус эмбеддингов) по сид-корпусу + recall из L3.
-# Ответ — сменный Generator (extractive по умолчанию, опц. LLM). L3 — сменный
-# backend (auto→LadybugDB / mock / neo4j). Полная архитектура L0–L6:
+# Retrieval — vector-based (cosine of embeddings) over the seed corpus + recall from L3.
+# The answer — a pluggable Generator (extractive by default, optional LLM). L3 — a pluggable
+# backend (auto→LadybugDB / mock / neo4j). Full L0–L6 architecture:
 # docs/Velantrim_V8_Crystal_Sprint1_toc.md
 #
-# TODO (дальше):
-#   - HybridRetriever: добавить graph-walk / PageRank поверх vector-recall
-#   - ESM: полная матрица переходов + автоматические Supported/Hypothesized
-#   - Первоклассные эпизодические узлы (Person/Place/Time) вместо props рёбер
+# TODO (next):
+#   - HybridRetriever: add graph-walk / PageRank on top of vector-recall
+#   - ESM: full transition matrix + automatic Supported/Hypothesized
+#   - First-class episodic nodes (Person/Place/Time) instead of edge props
 
 import logging
 from datetime import datetime, timezone
@@ -30,10 +30,10 @@ from core import metrics, adaptation
 
 logger = logging.getLogger(__name__)
 
-# ─── RETRIEVAL CORPUS (источник для retrieve, не L3) ──────────────────────────
-# Это корпус для извлечения, не канонический граф. Канон L3 живёт в
-# core/l3_graph.py и наполняется только после TruthGate (см. run, шаг 6).
-# Прямой MERGE в L3 минуя TruthGate — архитектурный баг.
+# ─── RETRIEVAL CORPUS (source for retrieve, not L3) ──────────────────────────
+# This is a retrieval corpus, not the canonical graph. The L3 canon lives in
+# core/l3_graph.py and is populated only after the TruthGate (see run, step 6).
+# A direct MERGE into L3 bypassing the TruthGate is an architectural bug.
 DATABASE = [
     {"id": "f1", "text": "Water boils at 100°C at sea level",     "source": "physics",    "confidence": 0.99},
     {"id": "f2", "text": "Quantum entanglement links particles",    "source": "physics",    "confidence": 0.85},
@@ -44,25 +44,25 @@ DATABASE = [
 
 
 # ─── RETRIEVAL (vector / semantic) ────────────────────────────────────────────
-# Косинусная близость эмбеддингов по ДВУМ источникам:
-#   1) сид-корпус DATABASE — внешние факты «из коробки»;
-#   2) канон L3 — то, что система уже выучила и провела через врата.
-# Recall из L3 замыкает цикл «узнал → запомнил → вспомнил»: факты, принятые
-# через ingest()/pipeline, становятся доступны для ответа. Дедуп по id.
-# Эмбеддер сменный (core/embedding.py): дефолт HashingEmbedder, sbert опционально.
-# Гибрид: vector-recall + multi-hop graph-walk (spreading activation / HippoRAG-lite).
+# Cosine similarity of embeddings over TWO sources:
+#   1) seed corpus DATABASE — external facts "out of the box";
+#   2) the L3 canon — what the system has already learned and run through the gates.
+# Recall from L3 closes the loop "learned → remembered → recalled": facts accepted
+# via ingest()/pipeline become available for the answer. Dedup by id.
+# The embedder is pluggable (core/embedding.py): default HashingEmbedder, sbert optional.
+# Hybrid: vector-recall + multi-hop graph-walk (spreading activation / HippoRAG-lite).
 
-# Порог отсечения шума от хэш-коллизий: ниже — не релевантно.
+# Cutoff threshold for noise from hash collisions: below this — not relevant.
 _RETRIEVAL_MIN_SIM = 0.05
-# Damping активации на каждый хоп graph-walk (PageRank-распространение).
+# Activation damping per graph-walk hop (PageRank propagation).
 _GRAPH_WALK_DECAY = 0.5
-# Глубина graph-walk (число хопов от vector-хитов).
+# Graph-walk depth (number of hops from vector hits).
 _GRAPH_WALK_HOPS = 2
-# Веса распространения активации по типу ребра. Truth-maintenance рёбра НЕ
-# передают релевантность: факт не «релевантнее» оттого, что его опровергают
-# (CONTRADICTS) или что он заменён (SUPERSEDED_BY) — иначе graph-walk поднимал бы
-# именно опровергаемое/устаревшее. Эпизодическая ассоциация (CO_OCCURRED) и любые
-# неизвестные типы распространяют нормально (вес по умолчанию 1.0).
+# Activation propagation weights by edge type. Truth-maintenance edges do NOT
+# carry relevance: a fact is not "more relevant" because it is refuted
+# (CONTRADICTS) or because it is replaced (SUPERSEDED_BY) — otherwise graph-walk would lift
+# exactly the refuted/obsolete. Episodic association (CO_OCCURRED) and any
+# unknown types propagate normally (default weight 1.0).
 _WALK_EDGE_WEIGHTS = {
     "CONTRADICTS": 0.0,
     "SUPERSEDED_BY": 0.0,
@@ -72,26 +72,26 @@ _WALK_DEFAULT_EDGE_WEIGHT = 1.0
 
 def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
     """
-    Гибридный поиск: косинус эмбеддингов по сид-корпусу DATABASE и канону L3,
-    затем 1-hop graph-walk — связанные в графе факты всплывают по ассоциации
-    (spreading activation). Возвращает топ-k по score, дедуп по id.
-    Корпус-факты приходят как Observed, recall из L3 — со своим ESM-состоянием.
+    Hybrid search: cosine of embeddings over the seed corpus DATABASE and the L3 canon,
+    then a 1-hop graph-walk — facts linked in the graph surface by association
+    (spreading activation). Returns the top-k by score, deduped by id.
+    Corpus facts arrive as Observed, recall from L3 — with its own ESM state.
     """
     embedder = get_embedder()
     graph = get_l3_graph()
-    # Защита от смешивания эмбеддеров: ловим смену эмбеддера на персистентном
-    # сторе (несравнимые векторы → битое ранжирование). Первый вызов штампует.
+    # Guard against mixing embedders: we catch an embedder swap on a persistent
+    # store (incomparable vectors → broken ranking). The first call stamps it.
     assert_compatible_embedder(graph)
     q_vec = embedder.embed(query)
     by_id: Dict[str, Dict[str, Any]] = {}
 
     def _offer(item: Dict[str, Any]) -> None:
-        # Дедуп по id: один и тот же факт может быть и в корпусе, и в L3.
+        # Dedup by id: the same fact may be both in the corpus and in L3.
         prev = by_id.get(item["id"])
         if prev is None or item["_score"] > prev["_score"]:
             by_id[item["id"]] = item
 
-    # Источник 1: сид-корпус (внешние факты, сырой вход → Observed).
+    # Source 1: seed corpus (external facts, raw input → Observed).
     for item in DATABASE:
         sim = cosine(q_vec, embedder.embed(item["text"]))
         if sim < _RETRIEVAL_MIN_SIM:
@@ -117,26 +117,26 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
             "origin":          origin,
         }
 
-    # Источник 2: каноническая память L3 (recall выученного).
+    # Source 2: L3 canonical memory (recall of what was learned).
     vector_hits = []
     for node in graph.vector_search(q_vec, k=k):
         sim = node.get("_relevance", 0.0)
         if sim < _RETRIEVAL_MIN_SIM:
             continue
         if node.get("restricted"):
-            continue  # GDPR Art. 18: ограниченные факты не участвуют в обработке
+            continue  # GDPR Art. 18: restricted facts do not take part in processing
         _offer(_from_node(node, sim * node.get("confidence", 1.0), "memory"))
         vector_hits.append(node)
 
-    # Источник 3: multi-hop graph-walk от vector-хитов (ассоциативный recall).
-    # Personalized PageRank (без итераций до сходимости): активация течёт от
-    # vector-хитов по рёбрам, на каждом хопе умножаясь на damping и делясь между
-    # исходящими соседями пропорционально весу типа ребра (_WALK_EDGE_WEIGHTS:
-    # truth-maintenance рёбра вес 0 — не распространяют). Достижимое по НЕСКОЛЬКИМ
-    # путям суммируется — хорошо связанные «хабы» поднимаются. Распространяют и
-    # возвращаются только Validated; в seed-хиты активация не вливается (у них
-    # авторитетный vector-скор). Глубина — _GRAPH_WALK_HOPS, damping <1 +
-    # ограничение хопов гарантируют сходимость без раздувания на циклах.
+    # Source 3: multi-hop graph-walk from vector hits (associative recall).
+    # Personalized PageRank (without iterating to convergence): activation flows from
+    # vector hits along edges, on each hop multiplied by damping and split among
+    # outgoing neighbors proportionally to the edge type's weight (_WALK_EDGE_WEIGHTS:
+    # truth-maintenance edges weight 0 — do not propagate). What is reachable via SEVERAL
+    # paths is summed — well-connected "hubs" rise. Only Validated nodes
+    # propagate and are returned; activation is not poured into seed hits (they have
+    # an authoritative vector score). Depth — _GRAPH_WALK_HOPS, damping <1 +
+    # the hop limit guarantee convergence without blowing up on cycles.
     seeds = {hit["fact_id"] for hit in vector_hits}
     graph_score: Dict[str, float] = {}
     node_cache: Dict[str, Dict[str, Any]] = {}
@@ -147,10 +147,10 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
     for _hop in range(_GRAPH_WALK_HOPS):
         nxt: Dict[str, float] = {}
         for fid, act in current.items():
-            # Исходящие рёбра с типом → весом; распространяют только рёбра с
-            # весом > 0 к Validated-узлам. Делёж активации пропорционален весам
-            # (нормировка по их сумме), а не по чистому out-degree — рёбра с
-            # весом 0 не «съедают» долю соседей.
+            # Outgoing edges by type → weight; only edges with
+            # weight > 0 propagate to Validated nodes. Activation is split proportionally to weights
+            # (normalized by their sum), not by raw out-degree — edges with
+            # weight 0 do not "eat" a neighbor's share.
             targets = []
             for edge in graph.get_edges(fid):
                 weight = _WALK_EDGE_WEIGHTS.get(
@@ -161,7 +161,7 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
                 if node is None or node.get("epistemic_state") != "Validated":
                     continue
                 if node.get("restricted"):
-                    continue  # GDPR Art. 18: не распространяем активацию на ограниченные
+                    continue  # GDPR Art. 18: do not propagate activation to restricted facts
                 targets.append((node, weight))
             total_weight = sum(w for _, w in targets)
             if total_weight <= 0.0:
@@ -169,7 +169,7 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
             for node, weight in targets:
                 nid = node["fact_id"]
                 if nid in seeds:
-                    continue  # в vector-хиты активацию не вливаем
+                    continue  # do not pour activation into vector hits
                 share = act * _GRAPH_WALK_DECAY * (weight / total_weight)
                 nxt[nid] = nxt.get(nid, 0.0) + share
                 node_cache[nid] = node
@@ -192,45 +192,45 @@ def build_facts_pack(
     query: str,
 ) -> Dict[str, Any]:
     """
-    Собрать FactsPack из retrieved фактов.
-    Каждый факт сохраняется в L0/L1 память через store_fact().
-    truth_status = UNVERIFIED до прохождения TruthGate.
-    epistemic_state берётся из retrieve() — владелец начального ESM-состояния.
+    Assemble a FactsPack from the retrieved facts.
+    Each fact is stored in L0/L1 memory via store_fact().
+    truth_status = UNVERIFIED until passing the TruthGate.
+    epistemic_state is taken from retrieve() — the owner of the initial ESM state.
     """
     facts: List[Dict[str, Any]] = []
 
     for item in retrieved:
         fact_id = item.get("id") or item.get("fact_id")
         if not fact_id:
-            continue  # согласованно с build_trace: пропускаем без id
+            continue  # consistent with build_trace: skip entries without an id
 
         fact = {
             "fact_id":         fact_id,
             "claim":           item["text"],
             "source":          item["source"],
-            # confidence — ЭПИСТЕМИЧЕСКАЯ уверенность (из источника или канона L3),
-            # а не ранг релевантности. Раньше сюда писался item["_score"]
-            # (близость × confidence), и это значение через merge_fact уезжало в
-            # канон, молча разъедая confidence узла при КАЖДОМ recall (sim ≤ 1 →
-            # уверенность только падала). Ранг релевантности живёт отдельно, в
-            # _score, и в канон не попадает (см. _l3_payload).
+            # confidence — EPISTEMIC confidence (from the source or the L3 canon),
+            # not a relevance rank. Previously item["_score"]
+            # (similarity × confidence) was written here, and that value traveled via merge_fact
+            # into the canon, silently eroding the node's confidence on EVERY recall (sim ≤ 1 →
+            # confidence only fell). The relevance rank lives separately, in
+            # _score, and does not reach the canon (see _l3_payload).
             "confidence":      round(float(item.get("confidence", item.get("_score", 0.5))), 4),
-            "epistemic_state": item["epistemic_state"],  # из retrieve(), не дублируем
-            # retrieval-факты — утверждения о мире из внешнего источника.
+            "epistemic_state": item["epistemic_state"],  # from retrieve(), not duplicated
+            # retrieval facts — claims about the world from an external source.
             "claim_type":      item.get("claim_type", "WORLD_FACT"),
             "source_status":   item.get("source_status", "EXTERNAL"),
             "significance":    item.get("significance", 0.5),
             "truth_status":    "UNVERIFIED",
         }
-        # L0/L1 сохранение (store_fact не персистит транзитный _score).
+        # L0/L1 store (store_fact does not persist the transient _score).
         store_fact(fact)
-        # _score — ранг релевантности, только для упорядочивания пака; в канон не
-        # пишется (_l3_payload берёт чистую персистентную запись без _score).
+        # _score — the relevance rank, only for ordering the pack; not written
+        # to the canon (_l3_payload takes the clean persistent record without _score).
         fact["_score"] = round(float(item.get("_score", fact["confidence"])), 4)
         facts.append(fact)
 
-    # retrieve() уже отдаёт факты по убыванию _score; ранжируем по релевантности
-    # (_score), а не по confidence — это разные оси.
+    # retrieve() already returns facts by descending _score; we rank by relevance
+    # (_score), not by confidence — these are different axes.
     facts.sort(key=lambda x: x["_score"], reverse=True)
 
     return {
@@ -241,91 +241,91 @@ def build_facts_pack(
 
 
 # ─── GUARDIAN ─────────────────────────────────────────────────────────────────
-# Структурная проверка — последний рубеж перед ответом.
-# 0 токенов · синхронный · Fast Path.
+# Structural check — the last line of defense before the answer.
+# 0 tokens · synchronous · Fast Path.
 
 def guardian(
     facts_pack: Dict[str, Any],
     trace: List[Dict[str, Any]],
 ) -> tuple[bool, Optional[str]]:
     """
-    Проверяет структурную целостность FactsPack и Trace.
-    Возвращает (passed: bool, reason: str | None).
+    Checks the structural integrity of the FactsPack and Trace.
+    Returns (passed: bool, reason: str | None).
     """
     facts = facts_pack.get("facts", [])
 
     if not facts:
-        return False, "FactsPack пустой"
+        return False, "FactsPack is empty"
     if not trace:
-        return False, "Trace пустой — провенанс отсутствует"
+        return False, "Trace is empty — provenance is missing"
     if len(trace) < len(facts):
-        return False, f"Несоответствие: {len(facts)} фактов, {len(trace)} trace-элементов"
+        return False, f"Mismatch: {len(facts)} facts, {len(trace)} trace elements"
 
     for fact in facts:
         if not fact.get("fact_id"):
-            return False, f"Факт без fact_id: {fact}"
+            return False, f"Fact without fact_id: {fact}"
         if not fact.get("claim"):
-            return False, f"Факт без claim: {fact['fact_id']}"
+            return False, f"Fact without claim: {fact['fact_id']}"
         if not fact.get("source"):
-            return False, f"Факт без source: {fact['fact_id']}"
+            return False, f"Fact without source: {fact['fact_id']}"
         if fact.get("confidence", 0) <= 0:
-            return False, f"Нулевая confidence: {fact['fact_id']}"
+            return False, f"Zero confidence: {fact['fact_id']}"
 
     return True, None
 
 
 # ─── TRUTH GATE ───────────────────────────────────────────────────────────────
-# Единственный вход в L3 граф. Обход = архитектурный баг.
-# TODO Sprint 2: полная ESM матрица переходов, Laplace confidence.
+# The only entry into the L3 graph. Bypassing it = an architectural bug.
+# TODO Sprint 2: full ESM transition matrix, Laplace confidence.
 
 def truth_gate(
     facts_pack: Dict[str, Any],
     min_confidence: Optional[float] = None,
 ) -> tuple[bool, Optional[str]]:
     """
-    Верифицирует факты перед записью в L3.
-    min_confidence=None → адаптивный порог (epigenetic verification, RFC0071):
-    после блокировок порог растёт (защитнее), при здоровом потоке — расслабляется.
-    Возвращает (passed: bool, reason: str | None).
+    Verifies facts before writing to L3.
+    min_confidence=None → adaptive threshold (epigenetic verification, RFC0071):
+    after blocks the threshold rises (more defensive), under a healthy flow — it relaxes.
+    Returns (passed: bool, reason: str | None).
 
-    Type-aware: ворота НЕ выбрасывают субъективное, но не дают ему
-    маскироваться под факт о мире.
-      - WORLD_FACT      → требует source + confidence ≥ порога.
-      - субъективные    → проходят без доказательной планки (чувство реально
-        (EMOTION, OPINION…)  как чувство), но не станут WORLD_FACT.
-      - LLM_OUTPUT      → не может быть WORLD_FACT сам по себе.
+    Type-aware: the gate does NOT throw out the subjective, but does not let it
+    masquerade as a fact about the world.
+      - WORLD_FACT      → requires source + confidence ≥ threshold.
+      - subjective      → pass without an evidentiary bar (a feeling is real
+        (EMOTION, OPINION…)  as a feeling), but will not become WORLD_FACT.
+      - LLM_OUTPUT      → cannot be WORLD_FACT by itself.
 
-    Переход фактов в ESM-состояние Validated выполняется вызывающей стороной
-    (run()) при passed=True. truth_gate() только принимает решение о верификации.
+    Transitioning facts into the Validated ESM state is done by the caller
+    (run()) when passed=True. truth_gate() only makes the verification decision.
     """
     if min_confidence is None:
         min_confidence = adaptation.verification_threshold()
     facts = facts_pack.get("facts", [])
 
     if not facts:
-        return False, "Нет фактов для верификации"
+        return False, "No facts to verify"
 
     for fact in facts:
         if not fact.get("source"):
-            return False, f"Факт без source: {fact.get('fact_id')}"
+            return False, f"Fact without source: {fact.get('fact_id')}"
 
         claim_type = fact.get("claim_type", "WORLD_FACT")
 
-        # LLM-вывод сам по себе не является фактом о внешнем мире.
+        # An LLM output by itself is not a fact about the external world.
         if claim_type == "WORLD_FACT" and fact.get("source_status") == "LLM_OUTPUT":
             return False, (
-                f"LLM_OUTPUT не может быть WORLD_FACT без независимого источника: "
+                f"LLM_OUTPUT cannot be WORLD_FACT without an independent source: "
                 f"{fact.get('fact_id')}"
             )
 
-        # Субъективные утверждения валидны как опыт — без доказательной планки.
+        # Subjective claims are valid as experience — without an evidentiary bar.
         if claim_type in SUBJECTIVE_CLAIM_TYPES:
             continue
 
-        # WORLD_FACT и INTERPRETATION — требуют минимальной уверенности.
+        # WORLD_FACT and INTERPRETATION — require a minimum confidence.
         if fact.get("confidence", 0) < min_confidence:
             return False, (
-                f"Confidence {fact['confidence']} < порога {min_confidence}: "
+                f"Confidence {fact['confidence']} < threshold {min_confidence}: "
                 f"{fact.get('fact_id')}"
             )
 
@@ -334,9 +334,9 @@ def truth_gate(
 
 def _truth_status_for(claim_type: str) -> str:
     """
-    Истинностный статус по модальности утверждения.
-    Значимость отделена от истины: всё валидируется как память,
-    но WORLD_FACT — единственное, что становится VERIFIED.
+    Truth status by claim modality.
+    Significance is separated from truth: everything is validated as memory,
+    but WORLD_FACT is the only thing that becomes VERIFIED.
     """
     if claim_type == "WORLD_FACT":
         return "VERIFIED"
@@ -346,14 +346,14 @@ def _truth_status_for(claim_type: str) -> str:
 
 
 # ─── GENERATION ───────────────────────────────────────────────────────────────
-# Ответ формирует сменный Generator (core/generation.py): дефолт — extractive,
-# опционально — LLM (Claude) с FactsPack в system. Граф остаётся источником истины.
+# The answer is formed by a pluggable Generator (core/generation.py): default — extractive,
+# optionally — an LLM (Claude) with the FactsPack in system. The graph remains the source of truth.
 
 def _public_facts(facts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Очистить факты от внутренних служебных полей (ключи с префиксом '_', напр.
-    транзитный _score) перед возвратом вызывающей стороне. Ранг релевантности —
-    деталь ретрива, а не часть ответа; в канон он тоже не уходит (см. _l3_payload).
+    Strip facts of internal service fields (keys prefixed with '_', e.g.
+    the transient _score) before returning to the caller. The relevance rank is
+    a retrieval detail, not part of the answer; it also does not reach the canon (see _l3_payload).
     """
     return [{k: v for k, v in f.items() if not k.startswith("_")} for f in facts]
 
@@ -363,8 +363,8 @@ def generate_answer(
     trace: List[Dict[str, Any]],
 ) -> Dict[str, Any]:
     """
-    Генерация ответа из верифицированных фактов через get_generator().
-    Дефолт-backend extractive (склейка); LLM — через VELANTRIM_GENERATOR=anthropic.
+    Generate an answer from verified facts via get_generator().
+    Default backend extractive (concatenation); LLM — via VELANTRIM_GENERATOR=anthropic.
     """
     validated_facts = [
         f for f in facts_pack["facts"]
@@ -372,8 +372,8 @@ def generate_answer(
     ]
     if not validated_facts:
         logger.warning(
-            "generate_answer: нет фактов в состоянии Validated/Supported — "
-            "fallback на все %d факта(ов)",
+            "generate_answer: no facts in Validated/Supported state — "
+            "falling back to all %d fact(s)",
             len(facts_pack["facts"]),
         )
         validated_facts = facts_pack["facts"]
@@ -390,16 +390,16 @@ def generate_answer(
 
 
 # ─── EPISODIC BINDING ─────────────────────────────────────────────────────────
-# Эпизодическая память: «что-где-когда-с-кем». Факты, вспомненные вместе,
-# связываются в L3 ненаправленной парой рёбер CO_OCCURRED с контекстом эпизода.
-# Рёбра соединяют уже валидированные узлы — это не обход TruthGate (тот сторожит
-# только вход факта-узла в канон).
+# Episodic memory: "what-where-when-with-whom". Facts recalled together are
+# linked in L3 by an undirected pair of CO_OCCURRED edges with the episode context.
+# The edges connect already validated nodes — this is not a TruthGate bypass (it guards
+# only a fact node's entry into the canon).
 
 _EPISODE_REL = "CO_OCCURRED"
 
 
 def _entity_refs(episode: Dict[str, Any]) -> List[tuple]:
-    """Сущности эпизода → [(entity_id, kind, label)] для who/where."""
+    """Episode entities → [(entity_id, kind, label)] for who/where."""
     refs = []
     for name in (episode.get("who") or []):
         refs.append((f"who:{name}", "person", name))
@@ -415,19 +415,19 @@ def _link_episode(
     query: str,
     episode: Optional[Dict[str, Any]],
 ) -> None:
-    """Связать со-вспомненные факты эпизодом: who/where → entity-узлы (для любого
-    числа фактов) + ребро CO_OCCURRED между парами (минимум два факта)."""
+    """Link co-recalled facts by an episode: who/where → entity nodes (for any
+    number of facts) + a CO_OCCURRED edge between pairs (at least two facts)."""
     ids = [f["fact_id"] for f in facts]
     episode = episode or {}
 
-    # Первоклассные entity-узлы who/where: каждый факт упоминает сущность.
+    # First-class who/where entity nodes: each fact mentions the entity.
     for entity_id, kind, label in _entity_refs(episode):
         graph.merge_entity(entity_id, kind, label)
         for fid in ids:
             graph.link_fact_to_entity(fid, entity_id)
 
     if len(ids) < 2:
-        return  # эпизодическое ребро нужно минимум двум фактам
+        return  # an episodic edge needs at least two facts
 
     props: Dict[str, Any] = {
         "query": query,
@@ -437,7 +437,7 @@ def _link_episode(
         if episode.get(key) is not None:
             props[key] = episode[key]
 
-    # Цепочка соседних пар (а не все пары) — O(n) связок, достаточно для эпизода.
+    # A chain of adjacent pairs (not all pairs) — O(n) links, enough for an episode.
     for a, b in zip(ids, ids[1:]):
         graph.add_edge(a, _EPISODE_REL, b, props)
         graph.add_edge(b, _EPISODE_REL, a, props)
@@ -445,9 +445,9 @@ def _link_episode(
 
 def recall_episode(fact_id: str) -> List[Dict[str, Any]]:
     """
-    Эпизодический recall: с какими фактами и в каком контексте (who/where/when/
-    query) данный факт вспоминался вместе. Читает рёбра CO_OCCURRED — делает
-    эпизодические данные, которые писал _link_episode, запрашиваемыми.
+    Episodic recall: with which facts and in what context (who/where/when/
+    query) this fact was recalled together. Reads CO_OCCURRED edges — makes
+    the episodic data that _link_episode wrote queryable.
     """
     out: List[Dict[str, Any]] = []
     for edge in get_l3_graph().get_edges(fact_id, _EPISODE_REL):
@@ -466,9 +466,9 @@ def recall_by_entity(
     *, who: Optional[str] = None, where: Optional[str] = None,
 ) -> List[str]:
     """
-    Recall по сущности: id фактов, упоминающих person/place. Прямой обратный
-    обход первоклассных entity-узлов (facts_for_entity), а не скан рёбер.
-    who/where задаются объединением (union).
+    Recall by entity: ids of facts mentioning a person/place. A direct reverse
+    traversal of first-class entity nodes (facts_for_entity), not an edge scan.
+    who/where are combined by union.
     """
     if who is None and where is None:
         return []
@@ -485,15 +485,15 @@ def recall_by_entity(
 
 def _l3_payload(fact: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Канонический payload для merge_fact: берём ПЕРСИСТЕНТНУЮ запись из L0/L1
-    (get_fact) — с created_at / updated_at / metadata — и накладываем truth_status
-    (его нет среди колонок SQLite, он живёт только в каноне).
+    Canonical payload for merge_fact: take the PERSISTENT record from L0/L1
+    (get_fact) — with created_at / updated_at / metadata — and overlay truth_status
+    (it is not among the SQLite columns, it lives only in the canon).
 
-    Зачем: раньше в L3 уходил «голый» in-memory fact без created_at/metadata, и
-    SleepCycle (consolidate) не находил опорную метку времени → спад НИКОГДА не
-    применялся к свежеинжестированным узлам, пока их не тронет reconcile. Чистая
-    персистентная запись чинит это и гарантирует, что в канон попадёт реальная
-    confidence, а не транзитный _score (которого в записи нет).
+    Why: previously a "bare" in-memory fact without created_at/metadata went to L3, and
+    SleepCycle (consolidate) did not find a reference timestamp → decay was NEVER
+    applied to freshly ingested nodes until reconcile touched them. The clean
+    persistent record fixes this and guarantees that the real confidence reaches the canon,
+    not the transient _score (which is not in the record).
     """
     record = get_fact(fact["fact_id"]) or fact
     return {**record, "truth_status": fact.get("truth_status")}
@@ -501,27 +501,27 @@ def _l3_payload(fact: Dict[str, Any]) -> Dict[str, Any]:
 
 def drain_l3_outbox(graph=None) -> int:
     """
-    До-мержить в L3 факты, чья запись в канон ранее упала (self-heal).
+    Re-merge into L3 the facts whose write to the canon previously failed (self-heal).
 
-    L3 и SQLite не делят транзакцию: при сбое merge факт остаётся Validated в
-    SQLite, но без узла в графе (см. enqueue в run()). Здесь идемпотентно
-    повторяем MERGE для очереди и снимаем из неё успешные. Если бэкенд всё ещё
-    недоступен — оставляем в очереди и прекращаем попытки до следующего раза.
-    Возвращает число успешно до-мерженных фактов.
+    L3 and SQLite do not share a transaction: on a merge failure a fact stays Validated in
+    SQLite but without a node in the graph (see enqueue in run()). Here we idempotently
+    retry the MERGE for the queue and remove the successful ones. If the backend is still
+    unavailable — we leave it in the queue and stop trying until next time.
+    Returns the number of successfully re-merged facts.
     """
     graph = graph or get_l3_graph()
     healed = 0
     for fid in pending_l3_writes():
         fact = get_fact(fid)
         if fact is None:
-            clear_l3_write(fid)  # факт исчез из SQLite — снимаем устаревшую запись
+            clear_l3_write(fid)  # the fact vanished from SQLite — drop the stale entry
             continue
         fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"))
         try:
             graph.merge_fact(_l3_payload(fact))
-        except Exception as e:  # noqa: BLE001 — бэкенд ещё недоступен, не теряем очередь
+        except Exception as e:  # noqa: BLE001 — backend still unavailable, do not lose the queue
             logger.warning(
-                "drain_l3_outbox: %s всё ещё ждёт (%s)", fid, type(e).__name__)
+                "drain_l3_outbox: %s is still waiting (%s)", fid, type(e).__name__)
             break
         clear_l3_write(fid)
         healed += 1
@@ -530,22 +530,22 @@ def drain_l3_outbox(graph=None) -> int:
 
 def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
-    Полный пайплайн Velantrim:
+    The full Velantrim pipeline:
     Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer
 
-    Принцип: Trace → Validation → Answer.
-    Не наоборот.
+    Principle: Trace → Validation → Answer.
+    Not the other way around.
 
-    episode — необязательный контекст эпизода (who / where / when / event):
-    факты, вспомненные вместе, связываются в L3 эпизодическим ребром.
+    episode — optional episode context (who / where / when / event):
+    facts recalled together are linked in L3 by an episodic edge.
     """
     metrics.incr("query.total")
-    # 0. Self-heal: до-мержить факты, чья запись в L3 ранее упала (outbox).
+    # 0. Self-heal: re-merge facts whose write to L3 previously failed (outbox).
     drain_l3_outbox()
     # 1. Retrieval
     retrieved = retrieve(query)
     if not retrieved:
-        return _blocked("Retrieval вернул 0 результатов.", query)
+        return _blocked("Retrieval returned 0 results.", query)
 
     # 2. FactsPack
     facts_pack = build_facts_pack(retrieved, query)
@@ -553,49 +553,49 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     # 3. Trace
     trace = build_trace(retrieved)
 
-    # 4. Guardian (структурная проверка)
+    # 4. Guardian (structural check)
     guardian_ok, guardian_reason = guardian(facts_pack, trace)
     if not guardian_ok:
-        adaptation.record_block()   # стресс → растёт verification (RFC0071)
+        adaptation.record_block()   # stress → verification rises (RFC0071)
         return _blocked(f"Guardian: {guardian_reason}", query, facts_pack, trace)
 
-    # 5. TruthGate (верификация)
+    # 5. TruthGate (verification)
     gate_ok, gate_reason = truth_gate(facts_pack)
     if not gate_ok:
         adaptation.record_block()
         return _blocked(f"TruthGate: {gate_reason}", query, facts_pack, trace)
 
-    # 6. ESM: перевести факты и trace в Validated через transition_esm (единственный путь).
-    #    truth_status выставляется по claim_type: VERIFIED только для WORLD_FACT,
-    #    субъективное валидируется как опыт (Validated), но истиной о мире не становится.
+    # 6. ESM: transition facts and trace to Validated via transition_esm (the only path).
+    #    truth_status is set by claim_type: VERIFIED only for WORLD_FACT,
+    #    the subjective is validated as experience (Validated), but does not become truth about the world.
     #
-    #    Cross-store нюанс: SQLite (pending) и L3 (канон) — два хранилища без общей
-    #    транзакции. Сбой записи в L3 ловим и возвращаем _blocked, а не роняем
-    #    пайплайн трейсбеком. Частичное состояние самовосстанавливается: упавшие
-    #    факты ставятся в outbox (enqueue_l3_write) и идемпотентно до-мержатся при
-    #    следующем обращении (drain_l3_outbox, шаг 0). Источник истины — граф,
-    #    SQLite лишь pending-кэш.
+    #    Cross-store nuance: SQLite (pending) and L3 (canon) — two stores without a shared
+    #    transaction. We catch a write failure to L3 and return _blocked, rather than crash
+    #    the pipeline with a traceback. Partial state self-heals: failed
+    #    facts are put into the outbox (enqueue_l3_write) and idempotently re-merged on the
+    #    next access (drain_l3_outbox, step 0). The source of truth is the graph,
+    #    SQLite is just a pending cache.
     graph = get_l3_graph()
     try:
         for fact in facts_pack["facts"]:
-            # Recall-факт из L3 уже Validated — повторный переход недопустим в
-            # ESM-матрице, поэтому переводим только ещё не валидированные.
+            # A recall fact from L3 is already Validated — a repeated transition is not allowed in
+            # the ESM matrix, so we only transition the not-yet-validated ones.
             if fact.get("epistemic_state") != "Validated":
                 transition_esm(fact["fact_id"], "Validated")
                 updated = get_fact(fact["fact_id"])
                 if updated:
                     fact["epistemic_state"] = updated["epistemic_state"]
             fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"))
-            # Единственный вход в L3: канонический MERGE строго после TruthGate.
-            # Мержим персистентную запись (created_at/metadata → для SleepCycle),
-            # а не транзитный fact с _score (см. _l3_payload).
+            # The only entry into L3: the canonical MERGE strictly after the TruthGate.
+            # We merge the persistent record (created_at/metadata → for SleepCycle),
+            # not the transient fact with _score (see _l3_payload).
             graph.merge_fact(_l3_payload(fact))
-        # 6b. Эпизодическая связка: факты, вспомненные в одном запросе, связаны.
+        # 6b. Episodic binding: facts recalled in one query are linked.
         _link_episode(graph, facts_pack["facts"], query, episode)
-    except Exception as e:  # noqa: BLE001 — сбой L3 не должен ронять пайплайн
-        logger.error("L3-промоция не удалась: %s", e)
+    except Exception as e:  # noqa: BLE001 — an L3 failure must not crash the pipeline
+        logger.error("L3 promotion failed: %s", e)
         adaptation.record_block()
-        # Ставим упавшие факты в outbox — до-мержатся при следующем обращении.
+        # We put the failed facts into the outbox — they will be re-merged on the next access.
         for f in facts_pack["facts"]:
             enqueue_l3_write(f["fact_id"])
         return _blocked(f"L3 promotion failed: {e}", query, facts_pack, trace)
@@ -604,7 +604,7 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
 
     # 7. Generate
     metrics.incr("query.answered")
-    adaptation.record_success()     # здоровый исход → порог расслабляется
+    adaptation.record_success()     # a healthy outcome → the threshold relaxes
     return generate_answer(facts_pack, trace)
 
 
@@ -614,7 +614,7 @@ def _blocked(
     facts_pack: Optional[Dict] = None,
     trace: Optional[List] = None,
 ) -> Dict[str, Any]:
-    """Стандартный ответ при блокировке пайплайна."""
+    """Standard response when the pipeline is blocked."""
     metrics.incr("query.blocked")
     return {
         "error":  reason,

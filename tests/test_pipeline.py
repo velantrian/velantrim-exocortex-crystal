@@ -390,7 +390,7 @@ def test_rerun_recalls_validated_fact_without_esm_error():
 def test_guardian_rejects_empty_facts():
     from core.pipeline import guardian
     ok, reason = guardian({"facts": []}, [{"fact_id": "x"}])
-    assert ok is False and "пустой" in reason
+    assert ok is False and "empty" in reason
 
 
 def test_guardian_rejects_empty_trace():
@@ -404,7 +404,7 @@ def test_guardian_rejects_trace_fact_count_mismatch():
     facts = {"facts": [{"fact_id": "a", "claim": "c", "source": "s", "confidence": 1},
                        {"fact_id": "b", "claim": "c", "source": "s", "confidence": 1}]}
     ok, reason = guardian(facts, [{"fact_id": "a"}])
-    assert ok is False and "Несоответствие" in reason
+    assert ok is False and "Mismatch" in reason
 
 
 @pytest.mark.parametrize("bad_fact, needle", [
@@ -446,7 +446,7 @@ def test_truth_gate_rejects_below_threshold():
         {"facts": [{"fact_id": "a", "source": "s", "confidence": 0.01}]},
         min_confidence=0.05,
     )
-    assert ok is False and "порога" in reason
+    assert ok is False and "threshold" in reason
 
 
 # ─── type-aware truth_gate (ось модальности) ──────────────────────────────────

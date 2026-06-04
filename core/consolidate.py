@@ -1,18 +1,18 @@
 # core/consolidate.py
-# Velantrim ExoCortex — SleepCycle (фоновая консолидация)
+# Velantrim ExoCortex — SleepCycle (background consolidation)
 # v8.7.0-sprint2
 #
-# Память-физиология: «use it or lose it». reinforce() поднимает confidence при
-# использовании; consolidate() — временной спад при забвении. Значимое
-# (significance) забывается медленнее. Это пара к reinforce и RFC0017 (FSRS)
-# из ROADMAP.
+# Memory physiology: "use it or lose it". reinforce() raises confidence on
+# use; consolidate() — a time-based decay on forgetting. The significant
+# (significance) is forgotten more slowly. This is the counterpart to reinforce and RFC0017 (FSRS)
+# from the ROADMAP.
 #
-# Спад не разрушает факт (не Deprecate) — лишь снижает confidence, а значит и
-# ранг в retrieve() (score = близость × confidence). Забытое тускнеет, но не
-# исчезает; повторное свидетельство (reinforce) возвращает его.
+# Decay does not destroy a fact (no Deprecate) — it only lowers confidence, and thus the
+# rank in retrieve() (score = similarity × confidence). What is forgotten fades but does not
+# disappear; repeated evidence (reinforce) brings it back.
 #
-# Идемпотентность: спад считается от metadata['last_consolidated'] и сдвигает
-# его на now. Повторный прогон в тот же момент → elapsed=0 → без изменений.
+# Idempotency: decay is computed from metadata['last_consolidated'] and shifts
+# it to now. A repeated run at the same moment → elapsed=0 → no changes.
 
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional
@@ -20,8 +20,8 @@ from typing import Dict, Any, Optional
 from core.memory import get_fact, update_fact
 from core.l3_graph import get_l3_graph
 
-_HALF_LIFE_DAYS = 30.0   # период полу-распада confidence у незначимого факта
-_FLOOR = 0.02            # ниже не опускаем — факт тускнеет, но не исчезает
+_HALF_LIFE_DAYS = 30.0   # confidence half-life period for an insignificant fact
+_FLOOR = 0.02            # we do not go below this — a fact fades but does not disappear
 
 
 def consolidate(
@@ -31,9 +31,9 @@ def consolidate(
     floor: float = _FLOOR,
 ) -> Dict[str, Any]:
     """
-    Прогнать спад confidence по каноническим (Validated) фактам L3.
-    Эффективный полу-период = half_life_days × (1 + significance): значимое
-    держится дольше. Возвращает {'decayed': n, 'at': iso}.
+    Run confidence decay over canonical (Validated) L3 facts.
+    Effective half-life = half_life_days × (1 + significance): the significant
+    holds out longer. Returns {'decayed': n, 'at': iso}.
     """
     now = now or datetime.now(timezone.utc)
     graph = get_l3_graph()
@@ -47,14 +47,14 @@ def consolidate(
                     or node.get("created_at")
                     or node.get("updated_at"))
         if not baseline:
-            # Узел без опорной метки времени — например, бэкенд канона не
-            # персистит created_at как колонку (LadybugDB хранит только _COLS,
-            # см. l3_graph.LadybugL3Graph._COLS). Раньше такой узел пропускался
-            # НАВСЕГДА → спад по нему не запускался вообще. Вместо этого заводим
-            # часы спада с текущего момента: метку кладём в metadata (её
-            # персистят ВСЕ бэкенды — mock / ladybug / neo4j), и на следующем
-            # прогоне baseline уже найдётся. Сам спад в этот раз не применяем —
-            # возраст узла неизвестен, отсчёт честно стартует «сейчас».
+            # A node without a reference timestamp — for example, the canon backend does not
+            # persist created_at as a column (LadybugDB stores only _COLS,
+            # see l3_graph.LadybugL3Graph._COLS). Previously such a node was skipped
+            # FOREVER → decay never ran on it at all. Instead we start
+            # the decay clock from the current moment: the mark goes into metadata (which
+            # ALL backends persist — mock / ladybug / neo4j), and on the next
+            # run baseline will already be found. We do not apply decay this time —
+            # the node's age is unknown, the count honestly starts "now".
             meta["last_consolidated"] = now.isoformat()
             if update_fact(node["fact_id"], metadata=meta):
                 graph.merge_fact(get_fact(node["fact_id"]))
@@ -66,7 +66,7 @@ def consolidate(
 
         elapsed_days = (now - last).total_seconds() / 86400.0
         if elapsed_days <= 0.0:
-            continue  # уже консолидировано на этот момент — идемпотентно
+            continue  # already consolidated at this moment — idempotent
 
         sig = float(node.get("significance", 0.5))
         eff_hl = half_life_days * (1.0 + sig)

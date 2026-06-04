@@ -23,7 +23,7 @@ def test_factory_default_is_extractive_singleton():
 
 
 def test_factory_unknown_backend_raises():
-    with pytest.raises(ValueError, match="неизвестный backend"):
+    with pytest.raises(ValueError, match="unknown backend"):
         get_generator(backend="gpt")
 
 

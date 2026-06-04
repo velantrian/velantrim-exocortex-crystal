@@ -2,23 +2,23 @@
 # Velantrim ExoCortex — Memory Observability
 # v8.8.0-sprint2
 #
-# Окно в каноническую память L3: сколько фактов, в каких ESM-состояниях, каких
-# модальностей и истинностных статусов, сколько противоречий/устаревших, какие
-# просели по confidence (забыты SleepCycle), и рёбра по типам. Поддерживает цель
-# «прозрачная память без галлюцинаций» — состояние истины видно одним вызовом.
+# A window into L3 canonical memory: how many facts, in which ESM states, of which
+# modalities and truth statuses, how many contradictions/obsolete, which
+# have dropped in confidence (forgotten by SleepCycle), and edges by type. Supports the goal
+# of "transparent memory without hallucinations" — the state of truth is visible in one call.
 
 from collections import Counter
 from typing import Dict, Any, List
 
 from core.l3_graph import get_l3_graph
 
-# Ниже этого confidence факт считаем «слабым» (просел при консолидации/спаде).
+# Below this confidence we consider a fact "weak" (dropped during consolidation/decay).
 _WEAK_CONFIDENCE = 0.2
 
 
 def memory_report(*, weak_confidence: float = _WEAK_CONFIDENCE) -> Dict[str, Any]:
     """
-    Сводка по каноническому графу L3. Детерминированно, только чтение.
+    Summary of the L3 canonical graph. Deterministic, read-only.
     """
     graph = get_l3_graph()
     facts = graph.all_facts()
@@ -64,7 +64,7 @@ def memory_report(*, weak_confidence: float = _WEAK_CONFIDENCE) -> Dict[str, Any
 
 
 def format_report(report: Dict[str, Any]) -> str:
-    """Человекочитаемый вид отчёта memory_report()."""
+    """Human-readable rendering of the memory_report() report."""
     lines = [
         "MEMORY REPORT (L3 canonical graph)",
         f"  facts: {report['total_facts']}  "

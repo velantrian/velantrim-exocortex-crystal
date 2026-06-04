@@ -2,20 +2,20 @@
 # Velantrim ExoCortex — Truth Maintenance (reconcile)
 # v8.6.0-sprint2
 #
-# Что происходит, когда новый факт встречает уже существующий канон:
-#   reinforce()  — повторное независимое свидетельство → confidence растёт
-#                  (Laplace-затухание), противоречащее → падает. Память отражает
-#                  накопленную надёжность, а не последнюю запись.
-#   supersede()  — переформулировка: старый факт → Deprecated + ребро
-#                  SUPERSEDED_BY на новый (новый → Validated). Память обновляется
-#                  версионно, а не перезаписывается вслепую.
-#   contradict() — старый факт → Contradicted + ребро CONTRADICTS на источник.
-#                  (Immune-слой из README.) Не затирает молча.
+# What happens when a new fact meets the existing canon:
+#   reinforce()  — repeated independent evidence → confidence rises
+#                  (Laplace decay), contradicting evidence → falls. Memory reflects
+#                  accumulated reliability, not the last write.
+#   supersede()  — a reformulation: the old fact → Deprecated + a
+#                  SUPERSEDED_BY edge to the new one (new → Validated). Memory is updated
+#                  by versioning, not overwritten blindly.
+#   contradict() — the old fact → Contradicted + a CONTRADICTS edge to the source.
+#                  (The immune layer from the README.) Does not silently overwrite.
 #
-# Всё детерминировано и явно. Авто-детекция семантических противоречий (NLI/LLM)
-# намеренно НЕ делается здесь — она дала бы ложные срабатывания; оставлена как
-# будущий хук. Единственная авто-операция — reinforce при точном повторе claim
-# (см. ingest.ingest), это безопасно.
+# Everything is deterministic and explicit. Auto-detection of semantic contradictions (NLI/LLM)
+# is intentionally NOT done here — it would produce false positives; left as a
+# future hook. The only auto-operation is reinforce on an exact claim repeat
+# (see ingest.ingest), which is safe.
 
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional, List
@@ -27,7 +27,7 @@ from core.embedding import get_embedder
 REL_SUPERSEDED_BY = "SUPERSEDED_BY"
 REL_CONTRADICTS = "CONTRADICTS"
 
-# Порог "похоже, но это ДРУГОЙ факт" → кандидат на противоречие/замещение.
+# Threshold for "similar, but it is a DIFFERENT fact" → a contradiction/supersession candidate.
 _CONFLICT_MIN_SIM = 0.5
 
 
@@ -36,7 +36,7 @@ def _now() -> str:
 
 
 def _sync_l3(fact_id: str) -> Optional[Dict[str, Any]]:
-    """Пере-смержить факт из SQLite в L3, чтобы канон отражал свежее состояние."""
+    """Re-merge the fact from SQLite into L3 so the canon reflects the latest state."""
     fact = get_fact(fact_id)
     if fact is not None:
         get_l3_graph().merge_fact(fact)
@@ -45,12 +45,12 @@ def _sync_l3(fact_id: str) -> Optional[Dict[str, Any]]:
 
 def reinforce(fact_id: str, agreement: bool = True) -> Optional[float]:
     """
-    Подкрепить факт независимым свидетельством. Возвращает новый confidence
-    (или None, если факта нет).
+    Reinforce a fact with independent evidence. Returns the new confidence
+    (or None if the fact does not exist).
 
-    agreement=True  → confidence += (1 - confidence) / (obs + 1)  — затухающий рост.
-    agreement=False → confidence *= obs / (obs + 1)               — затухающее падение.
-    Счётчик наблюдений хранится в metadata['observations'].
+    agreement=True  → confidence += (1 - confidence) / (obs + 1)  — decaying growth.
+    agreement=False → confidence *= obs / (obs + 1)               — decaying decline.
+    The observation counter is stored in metadata['observations'].
     """
     fact = get_fact(fact_id)
     if fact is None:
@@ -66,7 +66,7 @@ def reinforce(fact_id: str, agreement: bool = True) -> Optional[float]:
         new_conf = round(conf * obs / (obs + 1), 4)
 
     meta["observations"] = obs + 1
-    meta["last_consolidated"] = _now()  # подкрепление сбрасывает часы спада
+    meta["last_consolidated"] = _now()  # reinforcement resets the decay clock
     update_fact(fact_id, confidence=new_conf, metadata=meta)
     _sync_l3(fact_id)
     return new_conf
@@ -74,13 +74,13 @@ def reinforce(fact_id: str, agreement: bool = True) -> Optional[float]:
 
 def supersede(old_id: str, new_fact: Dict[str, Any]) -> str:
     """
-    Новый факт замещает старый. Старый: Validated → Contradicted → Deprecated
-    (+ ребро old -SUPERSEDED_BY-> new). Новый: сохраняется и Validated.
-    Возвращает fact_id нового факта.
+    A new fact supersedes the old one. Old: Validated → Contradicted → Deprecated
+    (+ an old -SUPERSEDED_BY-> new edge). New: stored and Validated.
+    Returns the fact_id of the new fact.
     """
     new_id = new_fact.get("fact_id")
     if not new_id:
-        raise ValueError("supersede: new_fact.fact_id обязателен")
+        raise ValueError("supersede: new_fact.fact_id is required")
 
     store_fact({**new_fact, "epistemic_state": "Observed"})
     transition_esm(new_id, "Validated")
@@ -88,7 +88,7 @@ def supersede(old_id: str, new_fact: Dict[str, Any]) -> str:
 
     old = get_fact(old_id)
     if old is not None and old.get("epistemic_state") == "Validated":
-        # Прямого Validated→Deprecated в матрице нет: идём через Contradicted.
+        # There is no direct Validated→Deprecated in the matrix: we go via Contradicted.
         transition_esm(old_id, "Contradicted")
         transition_esm(old_id, "Deprecated")
         _sync_l3(old_id)
@@ -99,8 +99,8 @@ def supersede(old_id: str, new_fact: Dict[str, Any]) -> str:
 
 def contradict(fact_id: str, by_id: str) -> bool:
     """
-    Пометить факт как опровергнутый источником by_id: Validated → Contradicted
-    (+ ребро fact -CONTRADICTS-> by). Возвращает True, если состояние изменилось.
+    Mark a fact as refuted by source by_id: Validated → Contradicted
+    (+ a fact -CONTRADICTS-> by edge). Returns True if the state changed.
     """
     fact = get_fact(fact_id)
     changed = False
@@ -114,14 +114,14 @@ def contradict(fact_id: str, by_id: str) -> bool:
 
 def fact_history(fact_id: str) -> Dict[str, List[str]]:
     """
-    Truth-провенанс факта: что с ним связано по рёбрам поддержания истины.
-    Использует входящие и исходящие рёбра (incoming_edges / get_edges).
+    Truth provenance of a fact: what it is linked to via truth-maintenance edges.
+    Uses incoming and outgoing edges (incoming_edges / get_edges).
 
-    Возвращает id'шники:
-      superseded_by   — чем этот факт заменён (исходящее SUPERSEDED_BY)
-      supersedes      — какие факты он заменил (входящее SUPERSEDED_BY)
-      contradicts     — что он опровергает (исходящее CONTRADICTS)
-      contradicted_by — кто опровергает его (входящее CONTRADICTS)
+    Returns ids:
+      superseded_by   — what replaced this fact (outgoing SUPERSEDED_BY)
+      supersedes      — which facts it replaced (incoming SUPERSEDED_BY)
+      contradicts     — what it refutes (outgoing CONTRADICTS)
+      contradicted_by — who refutes it (incoming CONTRADICTS)
     """
     graph = get_l3_graph()
     out = graph.get_edges(fact_id)
@@ -142,12 +142,12 @@ def find_conflicts(
     k: int = 5,
 ) -> List[Dict[str, Any]]:
     """
-    Выявить КАНДИДАТОВ на конфликт: канонические WORLD_FACTs, семантически
-    близкие к claim (≥ threshold), но это другой факт и не дословный повтор.
+    Identify conflict CANDIDATES: canonical WORLD_FACTs semantically
+    close to claim (≥ threshold), but a different fact and not a verbatim repeat.
 
-    Намеренно НЕ помечает ничего автоматически — близость по эмбеддингам не
-    отличает «уточнение» от «противоречия». Решение принимает вызывающая
-    сторона через supersede()/contradict(). Это сигнал для ревью, не вердикт.
+    Intentionally does NOT mark anything automatically — embedding similarity does not
+    distinguish a "refinement" from a "contradiction". The decision is made by the caller
+    via supersede()/contradict(). This is a signal for review, not a verdict.
     """
     graph = get_l3_graph()
     q_vec = get_embedder().embed(claim)
@@ -161,7 +161,7 @@ def find_conflicts(
         if node.get("epistemic_state") != "Validated":
             continue
         if node.get("claim", "").strip().lower() == claim_norm:
-            continue  # дословный повтор — это reinforce, а не конфликт
+            continue  # a verbatim repeat is a reinforce, not a conflict
         if node.get("_relevance", 0.0) < threshold:
             continue
         out.append({

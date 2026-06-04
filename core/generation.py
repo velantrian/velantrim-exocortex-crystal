@@ -1,15 +1,15 @@
 # core/generation.py
-# Velantrim ExoCortex — Answer Generation (сменная абстракция)
+# Velantrim ExoCortex — Answer Generation (pluggable abstraction)
 # v8.5.0-sprint2
 #
-# Принцип: LLM = Language, Graph = Truth. Генератор формулирует ответ ТОЛЬКО из
-# фактов, прошедших TruthGate — он не добавляет внешнее знание (анти-галлюцинация).
+# Principle: LLM = Language, Graph = Truth. The generator phrases the answer ONLY
+# from facts that passed the TruthGate — it adds no external knowledge (anti-hallucination).
 #
-# Backend сменный:
-#   ExtractiveGenerator (дефолт) — без зависимостей: склейка claim'ов. CI-safe.
-#   AnthropicGenerator — Claude (официальный SDK). Опц. зависимость + ANTHROPIC_API_KEY.
-#     FactsPack кладётся в system с prompt caching; модель claude-opus-4-8,
-#     adaptive thinking. Включается VELANTRIM_GENERATOR=anthropic.
+# Pluggable backend:
+#   ExtractiveGenerator (default) — dependency-free: concatenation of claims. CI-safe.
+#   AnthropicGenerator — Claude (official SDK). Optional dependency + ANTHROPIC_API_KEY.
+#     The FactsPack is placed in system with prompt caching; model claude-opus-4-8,
+#     adaptive thinking. Enabled with VELANTRIM_GENERATOR=anthropic.
 
 import logging
 from abc import ABC, abstractmethod
@@ -19,7 +19,7 @@ from core._registry import BackendRegistry
 
 logger = logging.getLogger(__name__)
 
-# Truth-first инструкция: отвечать строго по переданным фактам.
+# Truth-first instruction: answer strictly from the provided facts.
 _SYSTEM_PROMPT = (
     "You are Velantrim's answer generator. Answer the user's question using ONLY "
     "the verified facts listed below. Do not add information from your own "
@@ -38,43 +38,43 @@ def _facts_block(facts: List[Dict[str, Any]]) -> str:
     return "\n".join(lines)
 
 
-# ─── ИНТЕРФЕЙС ────────────────────────────────────────────────────────────────
+# ─── INTERFACE ────────────────────────────────────────────────────────────────
 
 class Generator(ABC):
-    """Контракт генератора: (запрос, факты) → текст ответа."""
+    """Generator contract: (query, facts) → answer text."""
 
     @abstractmethod
     def generate(self, query: str, facts: List[Dict[str, Any]]) -> str:
-        """Сформулировать ответ строго по переданным (проверенным) фактам."""
+        """Phrase the answer strictly from the provided (verified) facts."""
 
 
-# ─── EXTRACTIVE (дефолт, без зависимостей) ────────────────────────────────────
+# ─── EXTRACTIVE (default, dependency-free) ────────────────────────────────────
 
 class ExtractiveGenerator(Generator):
-    """Экстрактивный генератор: склейка claim'ов. Детерминированный, CI-safe."""
+    """Extractive generator: concatenation of claims. Deterministic, CI-safe."""
 
     def generate(self, query: str, facts: List[Dict[str, Any]]) -> str:
         return " | ".join(f.get("claim", "") for f in facts)
 
 
-# ─── ANTHROPIC (опц. зависимость) ─────────────────────────────────────────────
+# ─── ANTHROPIC (optional dependency) ─────────────────────────────────────────────
 
 class AnthropicGenerator(Generator):
     """
-    Генерация ответа моделью Claude по официальному SDK.
+    Answer generation by the Claude model via the official SDK.
 
-    FactsPack уходит в system-блок с prompt caching (стабильный префикс →
-    кэш-хиты при повторах), запрос пользователя — в user-сообщение. Модель
-    claude-opus-4-8 + adaptive thinking. Отвечает только по верифицированным
-    фактам (см. _SYSTEM_PROMPT) — графа остаётся источником истины.
+    The FactsPack goes into the system block with prompt caching (stable prefix →
+    cache hits on repeats), the user's query — into a user message. Model
+    claude-opus-4-8 + adaptive thinking. Answers only from verified
+    facts (see _SYSTEM_PROMPT) — the graph remains the source of truth.
 
-    `anthropic` — опц. зависимость; нужен ANTHROPIC_API_KEY. Исключено из
-    coverage-гейта (CI не ставит SDK и не делает сетевых вызовов); поведение
-    проверяется тестом с подставным клиентом.
+    `anthropic` — optional dependency; requires ANTHROPIC_API_KEY. Excluded from
+    the coverage gate (CI does not install the SDK and makes no network calls); behavior
+    is verified by a test with a stub client.
     """
 
     def __init__(self, model: str = "claude-opus-4-8", client: Any = None) -> None:
-        if client is None:  # pragma: no cover - реальный клиент требует опц. зависимость
+        if client is None:  # pragma: no cover - a real client requires the optional dependency
             import anthropic
             client = anthropic.Anthropic()
         self._client = client
@@ -84,7 +84,7 @@ class AnthropicGenerator(Generator):
         system = [{
             "type": "text",
             "text": _SYSTEM_PROMPT + _facts_block(facts),
-            "cache_control": {"type": "ephemeral"},  # кэшируем стабильный префикс
+            "cache_control": {"type": "ephemeral"},  # cache the stable prefix
         }]
         try:
             response = self._client.messages.create(
@@ -94,10 +94,10 @@ class AnthropicGenerator(Generator):
                 thinking={"type": "adaptive"},
                 messages=[{"role": "user", "content": query}],
             )
-        except Exception as e:  # noqa: BLE001 — сетевой/rate-limit сбой не должен ронять ответ
-            # Деградируем до extractive, а не падаем: факты уже верифицированы.
+        except Exception as e:  # noqa: BLE001 — a network/rate-limit failure must not crash the answer
+            # Degrade to extractive rather than fail: the facts are already verified.
             logger.warning(
-                "AnthropicGenerator: сбой API (%s), откат на extractive",
+                "AnthropicGenerator: API failure (%s), falling back to extractive",
                 type(e).__name__,
             )
             return ExtractiveGenerator().generate(query, facts)
@@ -106,7 +106,7 @@ class AnthropicGenerator(Generator):
         ).strip()
 
 
-# ─── ФАБРИКА / SINGLETON ──────────────────────────────────────────────────────
+# ─── FACTORY / SINGLETON ──────────────────────────────────────────────────────
 
 _GENERATORS = {
     "extractive": ExtractiveGenerator,
@@ -117,8 +117,8 @@ _GENERATORS = {
 def _make(name: str) -> Generator:
     if name not in _GENERATORS:
         raise ValueError(
-            f"get_generator: неизвестный backend '{name}'. "
-            f"Доступно: {sorted(_GENERATORS)}"
+            f"get_generator: unknown backend '{name}'. "
+            f"Available: {sorted(_GENERATORS)}"
         )
     return _GENERATORS[name]()
 
@@ -128,12 +128,12 @@ _REGISTRY = BackendRegistry("VELANTRIM_GENERATOR", "extractive", _make)
 
 def get_generator(backend: Optional[str] = None) -> Generator:
     """
-    Singleton генератора. Backend — аргументом или VELANTRIM_GENERATOR
-    (по умолчанию 'extractive').
+    Generator singleton. Backend — via argument or VELANTRIM_GENERATOR
+    (default 'extractive').
     """
     return _REGISTRY.get(backend)
 
 
 def reset_generator() -> None:
-    """Сбросить singleton (для тестов)."""
+    """Reset the singleton (for tests)."""
     _REGISTRY.reset()

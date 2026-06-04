@@ -2,11 +2,11 @@
 # Velantrim ExoCortex — Trace / Provenance Layer
 # v8.7.0-sprint2
 #
-# Назначение: строит цепочку провенанса для каждого факта.
-# Принцип: Trace → Validation → Answer (не наоборот).
-# Каждый trace-элемент содержит epistemic_state из ESM.
+# Purpose: builds the provenance chain for each fact.
+# Principle: Trace → Validation → Answer (not the other way around).
+# Each trace element carries the epistemic_state from ESM.
 #
-# Полная архитектура: docs/Velantrim_V8_Crystal_Sprint1_toc.md
+# Full architecture: docs/Velantrim_V8_Crystal_Sprint1_toc.md
 
 from typing import List, Dict, Any
 from datetime import datetime, timezone
@@ -17,19 +17,19 @@ from core.memory import ESM_STATES
 
 def build_trace(retrieved: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Построить trace-цепочку из списка извлечённых фактов.
+    Build a trace chain from a list of retrieved facts.
 
-    Каждый элемент содержит:
-      - fact_id:         идентификатор факта
-      - source:          источник (откуда пришёл факт)
-      - origin:          способ получения (retrieval / ingestion / volition)
-      - epistemic_state: текущее ESM-состояние факта
-      - retrieved_at:    временная метка извлечения
+    Each element contains:
+      - fact_id:         the fact's identifier
+      - source:          source (where the fact came from)
+      - origin:          how it was obtained (retrieval / ingestion / volition)
+      - epistemic_state: the fact's current ESM state
+      - retrieved_at:    the retrieval timestamp
 
     epistemic_state:
-      Observed → факт только что получен из retrieval, ещё не верифицирован.
-      Validated → прошёл TruthGate (выставляется в pipeline после truth_gate()).
-      Полный список ESM-состояний: core/memory.py → ESM_STATES.
+      Observed → the fact was just obtained from retrieval, not yet verified.
+      Validated → passed the TruthGate (set in the pipeline after truth_gate()).
+      Full list of ESM states: core/memory.py → ESM_STATES.
     """
     trace: List[Dict[str, Any]] = []
     now = datetime.now(timezone.utc).isoformat()
@@ -37,7 +37,7 @@ def build_trace(retrieved: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     for item in retrieved:
         fact_id = item.get("id") or item.get("fact_id")
         if not fact_id:
-            continue  # пропустить некорректные записи
+            continue  # skip malformed entries
 
         trace.append({
             "fact_id":         fact_id,
@@ -56,14 +56,14 @@ def promote_trace(
     new_state: str
 ) -> None:
     """
-    Обновить epistemic_state всех элементов trace после прохождения TruthGate.
-    Вызывается из pipeline после truth_gate() → True.
-    Мутирует элементы trace in-place.
+    Update the epistemic_state of all trace elements after passing the TruthGate.
+    Called from the pipeline after truth_gate() → True.
+    Mutates the trace elements in-place.
 
-    Пример: promote_trace(trace, "Validated")
+    Example: promote_trace(trace, "Validated")
     """
     if new_state not in ESM_STATES:
-        raise ValueError(f"promote_trace: недопустимое ESM-состояние '{new_state}'")
+        raise ValueError(f"promote_trace: invalid ESM state '{new_state}'")
 
     now = datetime.now(timezone.utc).isoformat()
     for element in trace:
@@ -73,7 +73,7 @@ def promote_trace(
 
 def format_trace(trace: List[Dict[str, Any]]) -> str:
     """
-    Человекочитаемый вывод trace-цепочки для логов и ответа.
+    Human-readable rendering of the trace chain for logs and the answer.
     """
     if not trace:
         return "TRACE: empty"
