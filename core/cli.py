@@ -22,6 +22,7 @@ from core.erasure import erase_fact, erasure_log
 from core.compliance import (
     restrict_processing, unrestrict_processing, record_of_processing,
 )
+from core.audit import audit_log, verify_audit_log
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -53,6 +54,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         "unrestrict", help="lift the processing restriction (GDPR Art. 18)")
     p_unrestrict.add_argument("fact_id")
     sub.add_parser("ropa", help="record of processing (GDPR Art. 30)")
+    sub.add_parser("audit", help="tamper-evident audit log (erase/restrict events)")
+    sub.add_parser("audit-verify", help="verify audit-log integrity (hash chain + signatures)")
 
     args = parser.parse_args(argv)
 
@@ -86,6 +89,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(json.dumps(unrestrict_processing(args.fact_id), ensure_ascii=False))
     elif args.cmd == "ropa":
         print(json.dumps(record_of_processing(), ensure_ascii=False, indent=2))
+    elif args.cmd == "audit":
+        print(json.dumps(audit_log(), ensure_ascii=False))
+    elif args.cmd == "audit-verify":
+        print(json.dumps(verify_audit_log(), ensure_ascii=False))
     return 0
 
 

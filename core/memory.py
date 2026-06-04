@@ -140,6 +140,24 @@ _TOMBSTONE_DDL = """
     )
 """
 
+# ─── AUDIT LOG: tamper-evident hash chain of compliance events (Art. 5(2)/24/30) ─
+# Append-only ledger. Each row links to the previous via prev_hash and seals its
+# own content in entry_hash = sha256(seq|ts|event|fact_id|detail|prev_hash), so
+# editing, deleting or reordering any past entry is detectable (see core/audit).
+# signature is an optional per-entry HMAC when VELANTRIM_AUDIT_KEY is configured.
+_AUDIT_DDL = """
+    CREATE TABLE IF NOT EXISTS audit_log (
+        seq        INTEGER PRIMARY KEY,
+        ts         TEXT NOT NULL,
+        event      TEXT NOT NULL,
+        fact_id    TEXT,
+        detail     TEXT NOT NULL,
+        prev_hash  TEXT NOT NULL,
+        entry_hash TEXT NOT NULL,
+        signature  TEXT
+    )
+"""
+
 # ─── Migration: columns added after the first schema release ────────────────
 # CREATE TABLE IF NOT EXISTS does not touch an already existing DB, so old
 # velantrim_memory.db files must be brought up to date via ALTER TABLE ADD COLUMN (idempotent).
@@ -173,6 +191,7 @@ def _db():
     conn.execute(_DDL)
     conn.execute(_OUTBOX_DDL)
     conn.execute(_TOMBSTONE_DDL)
+    conn.execute(_AUDIT_DDL)
     _migrate(conn)
     conn.commit()
     try:

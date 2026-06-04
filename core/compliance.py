@@ -21,7 +21,7 @@ from typing import Dict, Any, List, Optional
 
 from core.memory import set_restricted, get_fact, get_all_facts, get_tombstones
 from core.l3_graph import get_l3_graph
-from core import crypto
+from core import crypto, audit
 
 
 def _now() -> str:
@@ -46,6 +46,7 @@ def restrict_processing(
     found = set_restricted(fact_id, True)
     if found:
         _sync_restriction(fact_id)
+        audit.append_event("restrict", fact_id, {"reason": reason, "actor": actor})
     return {"fact_id": fact_id, "restricted": True, "found": found,
             "reason": reason, "actor": actor, "at": _now()}
 
@@ -57,6 +58,7 @@ def unrestrict_processing(
     found = set_restricted(fact_id, False)
     if found:
         _sync_restriction(fact_id)
+        audit.append_event("unrestrict", fact_id, {"actor": actor})
     return {"fact_id": fact_id, "restricted": False, "found": found,
             "actor": actor, "at": _now()}
 
@@ -84,6 +86,7 @@ def record_of_processing(controller: Optional[str] = None) -> Dict[str, Any]:
     by_source_status = Counter(f.get("source_status", "UNKNOWN") for f in facts)
     restricted = [f["fact_id"] for f in facts if f.get("restricted")]
     erasures = get_tombstones()
+    audit_status = audit.verify_audit_log()
 
     l3 = os.environ.get("VELANTRIM_L3_BACKEND", "auto")
     embedder = os.environ.get("VELANTRIM_EMBEDDER", "auto")
@@ -113,6 +116,12 @@ def record_of_processing(controller: Optional[str] = None) -> Dict[str, Any]:
         "restricted_fact_ids": restricted,
         "erasure_count": len(erasures),
         "erasure_log": erasures,
+        "audit_log": {
+            "entries": audit_status["length"],
+            "tamper_evident": True,
+            "integrity_verified": audit_status["ok"],
+            "signed": audit_status["signed"],
+        },
         "data_subject_rights": {
             "access": "get_all_facts() / CLI report",
             "rectification": "update_fact / reconcile.supersede (Art. 16)",
@@ -125,6 +134,7 @@ def record_of_processing(controller: Optional[str] = None) -> Dict[str, Any]:
             "Ring Zero immutability (I6)",
             "validated ESM transitions",
             "content-free erasure tombstones",
+            "tamper-evident hash-chained audit log",
             "no telemetry; no outbound calls by default",
         ] + ([f"encryption at rest ({crypto.backend_name()}) on claim/metadata"]
              if crypto.is_enabled() else []),
