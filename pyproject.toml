@@ -4,13 +4,22 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "velantrim-exocortex-crystal"
-version = "0.1.0-mvp"
-description = "Long-term memory system for AI agents — MVP + full spec"
+version = "0.1.0"
+description = "Verifiable, local-first memory infrastructure for trustworthy AI systems"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [{ name = "Velantrian" }]
+keywords = ["memory", "knowledge-graph", "provenance", "gdpr", "ai", "local-first"]
 dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/velantrian/velantrim-exocortex-crystal"
+Repository = "https://github.com/velantrian/velantrim-exocortex-crystal"
+
+# The CLI entry point: `velantrim <command>` after `pip install .`.
+[project.scripts]
+velantrim = "core.cli:main"
 
 [project.optional-dependencies]
 dev = [
@@ -45,6 +54,14 @@ llm = [
 encryption = [
     "cryptography>=42.0.0",
 ]
+
+# Explicit package surface — the runtime is the `core` package plus the
+# top-level `epigenetic_adaptation_module` it imports. Declaring them keeps the
+# flat-layout build reproducible (no auto-discovery ambiguity over prototypes/
+# utils/docs, which are not part of the installable runtime).
+[tool.setuptools]
+packages = ["core"]
+py-modules = ["epigenetic_adaptation_module"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

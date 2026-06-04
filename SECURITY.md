@@ -48,7 +48,9 @@ assets and threats:
 - **Encryption at rest** — *available* as an opt-in: when
   `VELANTRIM_ENCRYPTION_KEY` is set, the personal-data fields (claim, metadata)
   of the L1 SQLite store are encrypted (`core/crypto.py`). On-disk L3 backends
-  are not yet covered — use full-disk/filesystem encryption on the host for those.
+  (the `sqlite` L3 canon, LadybugDB) store claims in plaintext and are **not yet**
+  covered by field-level encryption — use full-disk/filesystem encryption on the
+  host for those, or erase via the Art. 17 path (`erase_fact` purges the L3 node).
 - **Untrusted optional backends** — enabling the optional Claude generator or a
   remote Neo4j backend extends the trust boundary to those services (see
   [PRIVACY.md](./PRIVACY.md)).
@@ -71,7 +73,7 @@ assets and threats:
   dependency-free HMAC-SHA256 keystream (CTR) with encrypt-then-MAC. Tokens are
   tamper-evident — a wrong key or modified ciphertext fails authentication.
   Disabled by default (identity), so the default runtime stays stdlib-only.
-- Test suite of 364 passing tests at ~99% coverage guards the invariants above
+- Test suite of 384 passing tests at ~99% coverage guards the invariants above
   (see [TEST_REPORT.md](./TEST_REPORT.md)).
 
 ## Dependencies

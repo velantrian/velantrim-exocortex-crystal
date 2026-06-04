@@ -173,14 +173,29 @@ def test_factory_unknown_backend_raises():
         get_l3_graph(backend="sqlite3")
 
 
-def test_auto_falls_back_to_mock_when_ladybug_unavailable(monkeypatch):
+def test_auto_falls_back_to_sqlite_when_ladybug_unavailable(monkeypatch, tmp_path):
+    import core.l3_graph as l3
+    from core.l3_graph import SqliteL3Graph
+    reset_l3_graph()
+    monkeypatch.setenv("VELANTRIM_L3_PATH", str(tmp_path / "auto_l3.db"))
+
+    def boom(*a, **k):
+        raise RuntimeError("LadybugDB not available")
+
+    # LadybugDB missing → auto must pick the dependency-free persistent backend.
+    monkeypatch.setattr(l3, "LadybugL3Graph", boom)
+    assert isinstance(l3._make("auto"), SqliteL3Graph)
+
+
+def test_auto_falls_back_to_mock_when_sqlite_also_unavailable(monkeypatch):
     import core.l3_graph as l3
     reset_l3_graph()
 
-    def boom():
-        raise RuntimeError("LadybugDB not available")
+    def boom(*a, **k):
+        raise RuntimeError("backend not available")
 
     monkeypatch.setattr(l3, "LadybugL3Graph", boom)
+    monkeypatch.setattr(l3, "SqliteL3Graph", boom)
     assert isinstance(l3._make("auto"), MockL3Graph)
 
 
