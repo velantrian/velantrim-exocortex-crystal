@@ -2,9 +2,9 @@
 # Velantrim ExoCortex — lightweight in-process metrics
 # v8.8.0-sprint2
 #
-# Счётчики операций памяти (запросы, ingest, врата) — наблюдаемость без внешних
-# зависимостей. Структура простая (name → count), легко экспортируется в
-# Prometheus позже. Потокобезопасность для MVP не требуется (sync-пайплайн).
+# Counters for memory operations (queries, ingest, gates) — observability without external
+# dependencies. The structure is simple (name → count), easily exported to
+# Prometheus later. Thread safety is not required for the MVP (sync pipeline).
 
 from typing import Dict
 
@@ -12,20 +12,20 @@ _COUNTERS: Dict[str, int] = {}
 
 
 def incr(name: str, n: int = 1) -> None:
-    """Увеличить счётчик `name` на n."""
+    """Increment counter `name` by n."""
     _COUNTERS[name] = _COUNTERS.get(name, 0) + n
 
 
 def value(name: str) -> int:
-    """Текущее значение счётчика (0, если не было)."""
+    """Current value of the counter (0 if it has not been set)."""
     return _COUNTERS.get(name, 0)
 
 
 def snapshot() -> Dict[str, int]:
-    """Копия всех счётчиков."""
+    """A copy of all counters."""
     return dict(_COUNTERS)
 
 
 def reset() -> None:
-    """Обнулить все счётчики (для тестов / нового окна наблюдения)."""
+    """Zero out all counters (for tests / a new observation window)."""
     _COUNTERS.clear()

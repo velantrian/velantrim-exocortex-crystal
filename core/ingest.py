@@ -2,14 +2,14 @@
 # Velantrim ExoCortex — Ingestion Layer
 # v8.4.0-sprint2
 #
-# Назначение: превратить реплику пользователя в факт с правильной модальностью
-# (claim_type) и происхождением (source_status), провести через те же врата
-# (Guardian → TruthGate) и записать в канон L3. Это «оживляет» субъективный путь:
-# теперь EMOTION / OPINION / GOAL рождаются из живого ввода, а не только из корпуса.
+# Purpose: turn a user's utterance into a fact with the right modality
+# (claim_type) and origin (source_status), run it through the same gates
+# (Guardian → TruthGate) and write it into the L3 canon. This "brings to life" the subjective path:
+# now EMOTION / OPINION / GOAL are born from live input, not only from the corpus.
 #
-# Классификатор — эвристический (без LLM-зависимости): ловит маркеры чувства,
-# мнения, цели, предпочтения, предположения; иначе — утверждение о мире.
-# Замена на LLM-классификатор — отдельный шаг (см. core/generation.py паттерн).
+# The classifier is heuristic (no LLM dependency): it catches markers of feeling,
+# opinion, goal, preference, conjecture; otherwise — a claim about the world.
+# Replacing it with an LLM classifier is a separate step (see the core/generation.py pattern).
 
 import hashlib
 import re
@@ -22,7 +22,7 @@ from core.pipeline import guardian, truth_gate, _truth_status_for, _l3_payload
 from core.reconcile import reinforce, find_conflicts
 from core import metrics, adaptation
 
-# Маркеры модальности (RU + EN). Порядок важен: проверяем от частного к общему.
+# Modality markers (RU + EN). Order matters: we check from specific to general.
 _CLAIM_MARKERS = [
     ("EMOTION", [
         r"\bi\s+feel\b", r"\bi\s+felt\b", r"\bfeel(s|ing)?\b", r"\bafraid\b",
@@ -52,9 +52,9 @@ _CLAIM_MARKERS = [
 
 def classify_claim(utterance: str) -> tuple[str, str]:
     """
-    (claim_type, source_status) для реплики пользователя.
-    Реплика всегда USER_REPORTED; тип — по лингвистическим маркерам,
-    иначе WORLD_FACT (утверждение о мире).
+    (claim_type, source_status) for a user's utterance.
+    An utterance is always USER_REPORTED; the type — by linguistic markers,
+    otherwise WORLD_FACT (a claim about the world).
     """
     text = utterance.lower()
     for claim_type, patterns in _CLAIM_MARKERS:
@@ -78,17 +78,17 @@ def ingest(
     episode: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
-    Принять реплику, классифицировать, провести через врата, записать в L3.
+    Accept an utterance, classify it, run it through the gates, write it to L3.
 
-    Возвращает результат: {accepted, fact, reason?}.
-    - accepted=True  → факт прошёл TruthGate, переведён в Validated, MERGE в L3.
-    - accepted=False → заблокирован (reason). В SQLite он остаётся как Observed.
+    Returns a result: {accepted, fact, reason?}.
+    - accepted=True  → the fact passed the TruthGate, transitioned to Validated, MERGE into L3.
+    - accepted=False → blocked (reason). In SQLite it remains as Observed.
 
-    claim_type можно задать явно (минуя классификатор); source_status всегда
-    USER_REPORTED — это сообщение пользователя.
+    claim_type can be set explicitly (bypassing the classifier); source_status is always
+    USER_REPORTED — this is the user's message.
     """
     if not utterance or not utterance.strip():
-        raise ValueError("ingest: пустая реплика")
+        raise ValueError("ingest: empty utterance")
 
     ct, source_status = classify_claim(utterance)
     if claim_type is not None:
@@ -96,8 +96,8 @@ def ingest(
 
     fid = fact_id or _fact_id(utterance)
 
-    # Точный повтор уже принятого факта (тот же content-hash id, Validated) —
-    # это независимое свидетельство: подкрепляем confidence, а не плодим дубль.
+    # An exact repeat of an already accepted fact (same content-hash id, Validated) —
+    # this is independent evidence: we reinforce confidence rather than create a duplicate.
     metrics.incr("ingest.total")
     prior = get_fact(fid)
     if prior is not None and prior.get("epistemic_state") == "Validated":
@@ -117,7 +117,7 @@ def ingest(
         "truth_status": "UNVERIFIED",
     }
 
-    # L0/L1: сохраняем как сырой опыт (pending), даже если врата не пропустят.
+    # L0/L1: store as raw experience (pending), even if the gates reject it.
     store_fact(fact)
 
     facts_pack = {"facts": [fact], "query": utterance, "total": 1}
@@ -134,7 +134,7 @@ def ingest(
         adaptation.record_block()
         return {"accepted": False, "reason": reason, "fact": fact}
 
-    # Прошёл врата → Validated, truth_status по модальности, MERGE в канон L3.
+    # Passed the gates → Validated, truth_status by modality, MERGE into the L3 canon.
     transition_esm(fid, "Validated")
     updated = get_fact(fid)
     if updated:
@@ -142,17 +142,17 @@ def ingest(
     fact["truth_status"] = _truth_status_for(ct)
 
     graph = get_l3_graph()
-    # Защита от смешивания эмбеддеров: merge кладёт вектор claim'а в стор.
+    # Guard against mixing embedders: merge puts the claim's vector into the store.
     assert_compatible_embedder(graph)
-    # Мержим персистентную запись (created_at/metadata) — иначе SleepCycle не
-    # найдёт опорную метку времени для спада (см. pipeline._l3_payload).
+    # We merge the persistent record (created_at/metadata) — otherwise SleepCycle
+    # will not find a reference timestamp for decay (see pipeline._l3_payload).
     graph.merge_fact(_l3_payload(fact))
 
     metrics.incr("ingest.accepted")
     adaptation.record_success()
     result = {"accepted": True, "fact": fact}
-    # Immune-сигнал: для фактов о мире выявляем кандидатов на конфликт с каноном
-    # (близкие, но другие). Не действуем автоматически — отдаём на решение.
+    # Immune signal: for facts about the world we identify candidates conflicting with the canon
+    # (close, but different). We do not act automatically — we hand it off for a decision.
     if ct == "WORLD_FACT":
         conflicts = find_conflicts(utterance, fact_id=fid)
         if conflicts:

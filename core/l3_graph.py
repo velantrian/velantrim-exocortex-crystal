@@ -1,20 +1,20 @@
 # core/l3_graph.py
-# Velantrim ExoCortex — L3 Canonical Graph (адаптер)
+# Velantrim ExoCortex — L3 Canonical Graph (adapter)
 # v8.2.0-sprint2
 #
-# Принцип: Graph = Truth. L3 — единственный источник канонической истины.
-# Единственный вход в L3 — через TruthGate (см. pipeline.run). Прямой MERGE
-# в граф минуя TruthGate — архитектурный баг.
+# Principle: Graph = Truth. L3 is the single source of canonical truth.
+# The only entry into L3 is via the TruthGate (see pipeline.run). A direct MERGE
+# into the graph bypassing the TruthGate is an architectural bug.
 #
-# Слои памяти (физически разные ткани):
-#   SQLite (core/memory.py) — L0/L1 + L2-pending: быстрая рабочая память «сейчас»,
-#                             стадии ESM Observed/Hypothesized до врат.
-#   L3 граф (этот модуль)   — канон после врат: узлы + рёбра (связи, эпизоды, схемы).
+# Memory layers (physically distinct fabrics):
+#   SQLite (core/memory.py) — L0/L1 + L2-pending: fast working memory of "now",
+#                             ESM stages Observed/Hypothesized before the gate.
+#   L3 graph (this module)  — canon after the gate: nodes + edges (links, episodes, schemas).
 #
-# Backend сменный. Дефолт — MockL3Graph (in-memory, без зависимостей).
-# Прод-цель — LadybugDB: преемник Kuzu (Kuzu заморожен в окт. 2025 после
-# поглощения Apple). LadybugDB — embedded, Cypher-совместимый, с vector index
-# и full-text search. Cypher стандартный → backend остаётся переносимым.
+# Pluggable backend. Default — MockL3Graph (in-memory, dependency-free).
+# Prod target — LadybugDB: successor to Kuzu (Kuzu was frozen in Oct. 2025 after
+# the Apple acquisition). LadybugDB is embedded, Cypher-compatible, with a vector index
+# and full-text search. Standard Cypher → the backend stays portable.
 
 import logging
 from abc import ABC, abstractmethod
@@ -24,14 +24,14 @@ from core._registry import BackendRegistry
 
 logger = logging.getLogger(__name__)
 
-# Вклад значимости (salience) в ранжирование vector_search: итоговый скор =
-# близость × (1 + W × significance). Релевантность доминирует, значимость
-# поднимает важные воспоминания при близких косинусах. significance ≠ truth.
+# Contribution of salience to vector_search ranking: final score =
+# similarity × (1 + W × significance). Relevance dominates, significance
+# lifts important memories when cosines are close. significance ≠ truth.
 _SIGNIFICANCE_WEIGHT = 0.5
 
 
 def _salience_score(similarity: float, significance: Any) -> float:
-    """Близость, усиленная значимостью узла (по умолчанию significance=0.5)."""
+    """Similarity boosted by the node's significance (default significance=0.5)."""
     try:
         sig = float(significance)
     except (TypeError, ValueError):
@@ -39,71 +39,71 @@ def _salience_score(similarity: float, significance: Any) -> float:
     return similarity * (1.0 + _SIGNIFICANCE_WEIGHT * sig)
 
 
-# ─── ИНТЕРФЕЙС BACKEND ────────────────────────────────────────────────────────
+# ─── BACKEND INTERFACE ────────────────────────────────────────────────────────
 
 class L3GraphBackend(ABC):
     """
-    Минимальный контракт канонического графа L3.
-    Все реализации (mock / LadybugDB) обязаны его соблюдать,
-    чтобы backend можно было менять, не трогая pipeline.
+    Minimal contract of the L3 canonical graph.
+    All implementations (mock / LadybugDB) must honor it,
+    so the backend can be swapped without touching the pipeline.
     """
 
-    # ─── Отпечаток эмбеддера (защита от смешивания векторов) ───────────────────
-    # Конкретные методы (не abstract): хранят id эмбеддера, которым построены
-    # векторы стора, чтобы embedding.assert_compatible_embedder ловил смену
-    # эмбеддера. Дефолт — in-process атрибут; этого достаточно для mock и для
-    # обнаружения смены в рамках сессии. Кросс-рестарт-персист отпечатка на
-    # LadybugDB/Neo4j (строка metadata) — опциональный шаг, см. FUTURE.md §2.2.
+    # ─── Embedder fingerprint (guard against mixing vectors) ───────────────────
+    # Concrete methods (not abstract): they store the id of the embedder the
+    # store's vectors were built with, so embedding.assert_compatible_embedder
+    # catches an embedder swap. Default — an in-process attribute; that is enough
+    # for the mock and for detecting a swap within a session. Cross-restart persistence
+    # of the fingerprint on LadybugDB/Neo4j (a metadata row) is an optional step, see FUTURE.md §2.2.
     def embedder_fingerprint(self) -> Optional[str]:
-        """id эмбеддера, которым построены векторы стора (None до первой записи)."""
+        """id of the embedder the store's vectors were built with (None before the first write)."""
         return getattr(self, "_embedder_fp", None)
 
     def set_embedder_fingerprint(self, fingerprint: str) -> None:
-        """Зафиксировать id эмбеддера для этого стора."""
+        """Record the embedder id for this store."""
         self._embedder_fp = fingerprint
 
     @abstractmethod
     def merge_fact(self, fact: Dict[str, Any]) -> None:
-        """Upsert канонического узла по fact_id. Идемпотентно."""
+        """Upsert a canonical node by fact_id. Idempotent."""
 
     @abstractmethod
     def get_fact(self, fact_id: str) -> Optional[Dict[str, Any]]:
-        """Вернуть канонический узел по fact_id или None."""
+        """Return the canonical node by fact_id or None."""
 
     @abstractmethod
     def erase_fact(self, fact_id: str) -> bool:
         """
-        Физически удалить узел факта из канона вместе со ВСЕМИ его рёбрами
-        (исходящими и входящими), его вектором и mentions-связями.
-        GDPR Art. 17 (право на забвение). Идемпотентно: True, если узел
-        существовал и был удалён, иначе False.
+        Physically delete a fact node from the canon together with ALL its edges
+        (outgoing and incoming), its vector and mentions links.
+        GDPR Art. 17 (right to be forgotten). Idempotent: True if the node
+        existed and was deleted, otherwise False.
         """
 
     @abstractmethod
     def all_facts(self) -> List[Dict[str, Any]]:
-        """Все канонические узлы графа."""
+        """All canonical nodes of the graph."""
 
     @abstractmethod
     def add_edge(
         self, src_id: str, rel_type: str, dst_id: str,
         props: Optional[Dict[str, Any]] = None,
     ) -> None:
-        """Добавить направленное ребро src -[rel_type]-> dst."""
+        """Add a directed edge src -[rel_type]-> dst."""
 
     @abstractmethod
     def neighbors(
         self, fact_id: str, rel_type: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
-        """Соседние узлы по исходящим рёбрам (опционально фильтр по типу)."""
+        """Neighboring nodes via outgoing edges (optionally filtered by type)."""
 
     @abstractmethod
     def get_edges(
         self, fact_id: str, rel_type: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """
-        Исходящие рёбра факта вместе с их props (в отличие от neighbors,
-        который отдаёт только узлы). Элемент: {rel_type, target, props}.
-        Нужен, чтобы читать эпизодический контекст who/where/when из рёбер.
+        A fact's outgoing edges together with their props (unlike neighbors,
+        which returns only nodes). Element: {rel_type, target, props}.
+        Needed to read the episodic who/where/when context from edges.
         """
 
     @abstractmethod
@@ -111,9 +111,9 @@ class L3GraphBackend(ABC):
         self, fact_id: str, rel_type: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """
-        Входящие рёбра факта (зеркало get_edges). Элемент: {rel_type, source,
-        props}. Нужен для обратных запросов: чем факт заменён / что его
-        опровергает / что на него ссылается.
+        A fact's incoming edges (mirror of get_edges). Element: {rel_type, source,
+        props}. Needed for reverse queries: what replaced the fact / what
+        refutes it / what references it.
         """
 
     @abstractmethod
@@ -121,46 +121,46 @@ class L3GraphBackend(ABC):
         self, query_vector: List[float], k: int = 5,
     ) -> List[Dict[str, Any]]:
         """
-        Семантический поиск по эмбеддингам узлов.
-        Возвращает до k фактов, отсортированных по убыванию близости;
-        каждый дополнен полем '_score' (косинусная близость).
+        Semantic search over node embeddings.
+        Returns up to k facts, sorted by descending similarity;
+        each augmented with a '_score' field (cosine similarity).
         """
 
-    # ─── Эпизодические entity-узлы (Person/Place/Time как первоклассные узлы) ──
+    # ─── Episodic entity nodes (Person/Place/Time as first-class nodes) ──
     @abstractmethod
     def merge_entity(self, entity_id: str, kind: str, label: str) -> None:
-        """Upsert entity-узла (kind: person/place/time). Идемпотентно."""
+        """Upsert an entity node (kind: person/place/time). Idempotent."""
 
     @abstractmethod
     def link_fact_to_entity(
         self, fact_id: str, entity_id: str, rel: str = "MENTIONS",
     ) -> None:
-        """Связать факт с entity-узлом (факт упоминает сущность)."""
+        """Link a fact to an entity node (the fact mentions the entity)."""
 
     @abstractmethod
     def facts_for_entity(self, entity_id: str) -> List[Dict[str, Any]]:
-        """Факты, связанные с entity-узлом (обратный обход MENTIONS)."""
+        """Facts linked to an entity node (reverse MENTIONS traversal)."""
 
 
-# ─── MOCK BACKEND (in-memory, дефолт) ─────────────────────────────────────────
+# ─── MOCK BACKEND (in-memory, default) ─────────────────────────────────────────
 
 class MockL3Graph(L3GraphBackend):
     """
-    In-memory реализация L3 без внешних зависимостей.
-    Достаточна для тестов и MVP-пайплайна; повторяет семантику будущего
-    LadybugDB (MERGE-узел, направленные рёбра), но без персистентности.
+    In-memory implementation of L3 without external dependencies.
+    Sufficient for tests and the MVP pipeline; replicates the semantics of the future
+    LadybugDB (MERGE node, directed edges), but without persistence.
     """
 
     def __init__(self) -> None:
         self._nodes: Dict[str, Dict[str, Any]] = {}
-        # ребро: (src_id, rel_type, dst_id, props)
+        # edge: (src_id, rel_type, dst_id, props)
         self._edges: List[tuple] = []
-        # эмбеддинги узлов для vector_search (отдельно от данных узла)
+        # node embeddings for vector_search (separate from node data)
         self._vectors: Dict[str, List[float]] = {}
-        # entity-узлы и связи факт→сущность (отдельно от Fact-пространства)
+        # entity nodes and fact→entity links (separate from the Fact space)
         self._entities: Dict[str, Dict[str, Any]] = {}
         self._mentions: List[tuple] = []  # (fact_id, entity_id, rel)
-        self._embedder_fp: Optional[str] = None  # отпечаток эмбеддера стора
+        self._embedder_fp: Optional[str] = None  # store's embedder fingerprint
 
     def merge_entity(self, entity_id: str, kind: str, label: str) -> None:
         self._entities[entity_id] = {
@@ -178,12 +178,12 @@ class MockL3Graph(L3GraphBackend):
     def merge_fact(self, fact: Dict[str, Any]) -> None:
         fact_id = fact.get("fact_id")
         if not fact_id:
-            raise ValueError("merge_fact: fact_id обязателен")
-        # MERGE: обновляем существующий узел, не плодим дубли.
+            raise ValueError("merge_fact: fact_id is required")
+        # MERGE: update the existing node, do not create duplicates.
         node = self._nodes.get(fact_id, {})
         node.update(fact)
         self._nodes[fact_id] = node
-        # Эмбеддинг claim'а для семантического поиска.
+        # Embedding of the claim for semantic search.
         claim = node.get("claim")
         if claim:
             from core.embedding import get_embedder
@@ -200,7 +200,7 @@ class MockL3Graph(L3GraphBackend):
         existed = fact_id in self._nodes
         self._nodes.pop(fact_id, None)
         self._vectors.pop(fact_id, None)
-        # Удаляем все рёбра, где факт — источник ИЛИ цель (без висячих ссылок).
+        # Remove all edges where the fact is the source OR the target (no dangling refs).
         self._edges = [e for e in self._edges
                        if e[0] != fact_id and e[2] != fact_id]
         self._mentions = [m for m in self._mentions if m[0] != fact_id]
@@ -269,7 +269,7 @@ class MockL3Graph(L3GraphBackend):
         return out
 
     def clear(self) -> None:
-        """Сброс состояния (для тестов)."""
+        """Reset state (for tests)."""
         self._nodes.clear()
         self._edges.clear()
         self._vectors.clear()
@@ -278,23 +278,23 @@ class MockL3Graph(L3GraphBackend):
         self._embedder_fp = None
 
 
-# ─── LADYBUGDB BACKEND (слот под спайк) ───────────────────────────────────────
+# ─── LADYBUGDB BACKEND (slot for the spike) ───────────────────────────────────────
 
 class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
     """
-    Backend на LadybugDB — embedded, Cypher-совместимый преемник Kuzu
-    (Kuzu заморожен окт.2025). Узлы Fact + обобщённые рёбра EDGE с типом-свойством.
+    Backend on LadybugDB — an embedded, Cypher-compatible successor to Kuzu
+    (Kuzu frozen Oct.2025). Fact nodes + generalized EDGE edges with a type property.
 
-    API верифицирован спайком (v0.17.0): Database/Connection, MERGE-upsert по
-    PRIMARY KEY, REL-таблицы, vector index (INSTALL vector / CREATE_VECTOR_INDEX).
+    API verified by a spike (v0.17.0): Database/Connection, MERGE-upsert by
+    PRIMARY KEY, REL tables, vector index (INSTALL vector / CREATE_VECTOR_INDEX).
 
-    `ladybug` — опциональная зависимость (нативный пакет + numpy). Импорт ленивый;
-    при отсутствии — понятный ImportError. Дефолтный backend остаётся 'mock', а
-    эти методы исключены из coverage-гейта (pragma), т.к. CI не ставит ladybug;
-    поведение проверяется локально тестами под pytest.importorskip('ladybug').
+    `ladybug` — optional dependency (native package + numpy). Lazy import;
+    if missing — a clear ImportError. The default backend stays 'mock', and
+    these methods are excluded from the coverage gate (pragma), since CI does not install ladybug;
+    behavior is verified locally by tests under pytest.importorskip('ladybug').
     """
 
-    # Колонки узла Fact, которые персистим (остальное — в metadata JSON).
+    # Columns of the Fact node that we persist (the rest — in metadata JSON).
     _COLS = [
         "fact_id", "claim", "source", "confidence", "epistemic_state",
         "claim_type", "source_status", "significance", "truth_status", "metadata",
@@ -302,16 +302,16 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
 
     def __init__(self, db_path: Optional[str] = None) -> None:
         import os
-        # Путь персистентной БД настраивается через VELANTRIM_L3_PATH; БД
-        # переживает перезапуски (в отличие от in-memory mock-дефолта).
+        # The persistent DB path is configured via VELANTRIM_L3_PATH; the DB
+        # survives restarts (unlike the in-memory mock default).
         if db_path is None:
             db_path = os.environ.get("VELANTRIM_L3_PATH", "./data/velantrim_l3.lbug")
         try:
             import ladybug as lb
         except ImportError as e:
             raise ImportError(
-                "LadybugDB backend требует пакет 'ladybug' (опциональная "
-                "зависимость): pip install ladybug. Дефолт — backend='mock'."
+                "LadybugDB backend requires the 'ladybug' package (optional "
+                "dependency): pip install ladybug. Default — backend='mock'."
             ) from e
         self._lb = lb
         self._db = lb.Database(db_path)
@@ -323,7 +323,7 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
         try:
             self._conn.execute("INSTALL vector; LOAD vector;")
         except Exception:
-            pass  # расширение уже установлено/загружено
+            pass  # extension already installed/loaded
         for ddl in (
             f"CREATE NODE TABLE Fact(fact_id STRING PRIMARY KEY, claim STRING, "
             f"source STRING, confidence DOUBLE, epistemic_state STRING, "
@@ -336,12 +336,12 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
             try:
                 self._conn.execute(ddl)
             except Exception:
-                pass  # таблица уже существует — схема идемпотентна
+                pass  # table already exists — the schema is idempotent
 
     @staticmethod
     def _serialize(fact: Dict[str, Any]) -> Dict[str, Any]:
-        # metadata кодируется base64: LadybugDB авто-парсит STRING вида {..}/[..]
-        # как map/list и теряет JSON-кавычки, поэтому JSON прячем за base64.
+        # metadata is base64-encoded: LadybugDB auto-parses a STRING like {..}/[..]
+        # as a map/list and loses JSON quotes, so we hide JSON behind base64.
         import json, base64
         out = {}
         for col in LadybugL3Graph._COLS:
@@ -366,10 +366,10 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
     def merge_fact(self, fact: Dict[str, Any]) -> None:
         fact_id = fact.get("fact_id")
         if not fact_id:
-            raise ValueError("merge_fact: fact_id обязателен")
+            raise ValueError("merge_fact: fact_id is required")
         params = self._serialize(fact)
         sets = [f"f.{c} = ${c}" for c in params if c != "fact_id"]
-        # Эмбеддинг claim'а в FLOAT[]-колонку для нативного vector index.
+        # Embedding of the claim into a FLOAT[] column for the native vector index.
         claim = fact.get("claim")
         if claim:
             from core.embedding import get_embedder
@@ -391,8 +391,8 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
 
     def erase_fact(self, fact_id: str) -> bool:
         existed = self.get_fact(fact_id) is not None
-        # DETACH DELETE снимает узел вместе со всеми инцидентными рёбрами
-        # (EDGE + MENTIONS) — висячих ссылок не остаётся.
+        # DETACH DELETE removes the node together with all incident edges
+        # (EDGE + MENTIONS) — no dangling references remain.
         self._conn.execute(
             "MATCH (f:Fact {fact_id: $id}) DETACH DELETE f", {"id": fact_id})
         return existed
@@ -411,7 +411,7 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
         props: Optional[Dict[str, Any]] = None,
     ) -> None:
         import json, base64
-        # props в base64 по той же причине, что и metadata (см. _serialize).
+        # props in base64 for the same reason as metadata (see _serialize).
         payload = base64.b64encode(json.dumps(props or {}).encode("utf-8")).decode("ascii")
         self._conn.execute(
             "MATCH (a:Fact {fact_id: $s}), (b:Fact {fact_id: $d}) "
@@ -501,29 +501,29 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
     def vector_search(
         self, query_vector: List[float], k: int = 5,
     ) -> List[Dict[str, Any]]:
-        # Индекс создаём один раз: спайк подтвердил, что строки, добавленные
-        # ПОСЛЕ создания, видны поиску — дорогой DROP+CREATE на каждый запрос не
-        # нужен. Повторный CREATE → "already exists" → глотаем.
+        # We create the index once: the spike confirmed that rows added
+        # AFTER creation are visible to search — an expensive DROP+CREATE on every query
+        # is not needed. A repeated CREATE → "already exists" → swallow it.
         try:
             self._conn.execute("CALL CREATE_VECTOR_INDEX('Fact', 'fact_vec', 'embedding')")
         except Exception:
-            pass  # индекс уже есть, либо строк с эмбеддингом ещё нет
-        # Берём с запасом (k*3), затем пере-ранжируем по значимости, чтобы
-        # salient-воспоминание не выпало из top-k при близких косинусах.
-        # distance — косинусное расстояние (0 = точно).
+            pass  # index already exists, or there are no rows with an embedding yet
+        # Fetch with a margin (k*3), then re-rank by significance so that
+        # a salient memory does not drop out of top-k when cosines are close.
+        # distance — cosine distance (0 = exact).
         try:
             res = self._conn.execute(
                 "CALL QUERY_VECTOR_INDEX('Fact', 'fact_vec', $q, $k) "
                 "RETURN node.fact_id, distance",
                 {"q": query_vector, "k": max(k * 3, k)})
         except Exception:
-            return []  # индекса нет (пустой граф) — искать не по чему
+            return []  # no index (empty graph) — nothing to search
         out = []
         while res.has_next():
             fact_id, distance = res.get_next()
             node = self.get_fact(fact_id)
             if node is not None:
-                sim = 1.0 - distance  # близость ≈ 1 - косинусное расстояние
+                sim = 1.0 - distance  # similarity ≈ 1 - cosine distance
                 node["_relevance"] = round(sim, 6)
                 node["_score"] = round(_salience_score(sim, node.get("significance", 0.5)), 6)
                 out.append(node)
@@ -531,21 +531,21 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
         return out[:k]
 
 
-# ─── NEO4J BACKEND (опциональная альтернатива) ────────────────────────────────
+# ─── NEO4J BACKEND (optional alternative) ────────────────────────────────
 
 class Neo4jL3Graph(L3GraphBackend):  # pragma: no cover
     """
-    Backend на Neo4j (опциональная альтернатива LadybugDB). Стандартный Cypher
-    через neo4j-драйвер; конфиг — NEO4J_URI / NEO4J_USER / NEO4J_PASSWORD /
-    NEO4J_DATABASE. metadata и props рёбер хранятся JSON-строкой (Neo4j не
-    допускает вложенных map в свойствах); embedding — массив float.
+    Backend on Neo4j (optional alternative to LadybugDB). Standard Cypher
+    via the neo4j driver; config — NEO4J_URI / NEO4J_USER / NEO4J_PASSWORD /
+    NEO4J_DATABASE. metadata and edge props are stored as a JSON string (Neo4j does
+    not allow nested maps in properties); embedding — a float array.
 
-    `neo4j` — опциональная зависимость (ленивый импорт). vector_search считает
-    косинус на стороне Python (версионно-независимо, без vector-index Neo4j).
+    `neo4j` — optional dependency (lazy import). vector_search computes
+    cosine on the Python side (version-independent, without Neo4j's vector index).
 
-    Сетевой бэкенд: требует запущенного сервера Neo4j. В этом окружении сервера
-    нет, поэтому класс исключён из coverage-гейта; Cypher повторяет проверенный
-    в спайке LadybugL3Graph (MERGE/MATCH-семантика идентична).
+    Network backend: requires a running Neo4j server. There is no server in this
+    environment, so the class is excluded from the coverage gate; the Cypher mirrors the
+    LadybugL3Graph verified in the spike (MERGE/MATCH semantics are identical).
     """
 
     def __init__(self) -> None:
@@ -554,8 +554,8 @@ class Neo4jL3Graph(L3GraphBackend):  # pragma: no cover
             from neo4j import GraphDatabase
         except ImportError as e:
             raise ImportError(
-                "Neo4j backend требует пакет 'neo4j' (опциональная зависимость): "
-                "pip install neo4j. Дефолт — backend='auto' (LadybugDB/mock)."
+                "Neo4j backend requires the 'neo4j' package (optional dependency): "
+                "pip install neo4j. Default — backend='auto' (LadybugDB/mock)."
             ) from e
         uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
         user = os.environ.get("NEO4J_USER", "neo4j")
@@ -596,7 +596,7 @@ class Neo4jL3Graph(L3GraphBackend):  # pragma: no cover
 
     def merge_fact(self, fact: Dict[str, Any]) -> None:
         if not fact.get("fact_id"):
-            raise ValueError("merge_fact: fact_id обязателен")
+            raise ValueError("merge_fact: fact_id is required")
         props = self._props(fact)
         if fact.get("claim"):
             from core.embedding import get_embedder
@@ -611,7 +611,7 @@ class Neo4jL3Graph(L3GraphBackend):  # pragma: no cover
 
     def erase_fact(self, fact_id: str) -> bool:
         existed = self.get_fact(fact_id) is not None
-        # DETACH DELETE снимает узел со всеми инцидентными рёбрами (EDGE/MENTIONS).
+        # DETACH DELETE removes the node with all incident edges (EDGE/MENTIONS).
         self._run("MATCH (f:Fact {fact_id: $id}) DETACH DELETE f", id=fact_id)
         return existed
 
@@ -707,30 +707,30 @@ class Neo4jL3Graph(L3GraphBackend):  # pragma: no cover
         return scored[:k]
 
 
-# ─── ФАБРИКА / SINGLETON ──────────────────────────────────────────────────────
+# ─── FACTORY / SINGLETON ──────────────────────────────────────────────────────
 
 _BACKENDS = {
-    "mock": MockL3Graph,        # in-memory, без зависимостей (dev / CI)
-    "ladybug": LadybugL3Graph,  # рекомендуемый прод-дефолт (преемник Kuzu)
-    "neo4j": Neo4jL3Graph,      # опциональная альтернатива (нужен сервер)
+    "mock": MockL3Graph,        # in-memory, dependency-free (dev / CI)
+    "ladybug": LadybugL3Graph,  # recommended prod default (successor to Kuzu)
+    "neo4j": Neo4jL3Graph,      # optional alternative (server required)
 }
 
 
 def _make(name: str) -> L3GraphBackend:
     if name == "auto":
-        # Прод-дефолт: LadybugDB, если доступен; иначе — mock (CI / без зависимостей).
+        # Prod default: LadybugDB if available; otherwise — mock (CI / dependency-free).
         try:
             return LadybugL3Graph()
-        except Exception as e:  # noqa: BLE001 — любой сбой инициализации → откат
+        except Exception as e:  # noqa: BLE001 — any init failure → fallback
             logger.warning(
-                "auto L3: LadybugDB недоступен (%s), откат на in-memory mock",
+                "auto L3: LadybugDB unavailable (%s), falling back to in-memory mock",
                 type(e).__name__,
             )
             return MockL3Graph()
     if name not in _BACKENDS:
         raise ValueError(
-            f"get_l3_graph: неизвестный backend '{name}'. "
-            f"Доступно: {sorted(_BACKENDS) + ['auto']}"
+            f"get_l3_graph: unknown backend '{name}'. "
+            f"Available: {sorted(_BACKENDS) + ['auto']}"
         )
     return _BACKENDS[name]()
 
@@ -740,18 +740,18 @@ _REGISTRY = BackendRegistry("VELANTRIM_L3_BACKEND", "auto", _make)
 
 def get_l3_graph(backend: Optional[str] = None) -> L3GraphBackend:
     """
-    Вернуть singleton L3-графа. Backend — аргументом или VELANTRIM_L3_BACKEND.
+    Return the L3 graph singleton. Backend — via argument or VELANTRIM_L3_BACKEND.
 
-    Режимы:
-      'auto' (дефолт) — LadybugDB, если установлен (рекомендуемый прод-движок,
-                        преемник Kuzu); иначе in-memory mock без зависимостей.
-      'ladybug'       — всегда LadybugDB (ImportError, если пакета нет).
-      'neo4j'         — опциональная альтернатива (нужен запущенный сервер).
-      'mock'          — всегда in-memory (dev / CI).
+    Modes:
+      'auto' (default) — LadybugDB, if installed (the recommended prod engine,
+                        successor to Kuzu); otherwise in-memory mock, dependency-free.
+      'ladybug'       — always LadybugDB (ImportError if the package is missing).
+      'neo4j'         — optional alternative (a running server is required).
+      'mock'          — always in-memory (dev / CI).
     """
     return _REGISTRY.get(backend)
 
 
 def reset_l3_graph() -> None:
-    """Сбросить singleton (для тестов)."""
+    """Reset the singleton (for tests)."""
     _REGISTRY.reset()

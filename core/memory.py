@@ -2,12 +2,12 @@
 # Velantrim ExoCortex — Memory Layer
 # v8.7.0-sprint2
 #
-# Уровни памяти:
+# Memory levels:
 #   L0: LRU in-memory cache (CAP=5, OrderedDict)
-#   L1: SQLite (краткосрочная, персистентная между запусками)
+#   L1: SQLite (short-term, persistent across runs)
 #
-# Полная архитектура L0–L6: docs/Velantrim_V8_Crystal_Sprint1_toc.md
-# ESM (Epistemic State Machine): 8 состояний жизненного цикла факта.
+# Full L0–L6 architecture: docs/Velantrim_V8_Crystal_Sprint1_toc.md
+# ESM (Epistemic State Machine): 8 states of a fact's lifecycle.
 
 import os
 import sqlite3
@@ -17,23 +17,23 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import Dict, Optional
 
-# ─── ESM: допустимые состояния факта ──────────────────────────────────────────
+# ─── ESM: valid fact states ──────────────────────────────────────────
 # Observed → Hypothesized → Supported → Validated → ImmutableCore
 #                                    ↘ Contradicted → Deprecated → Collapsed
 ESM_STATES = {
-    "Observed",       # сырой вход, до классификации
-    "Hypothesized",   # принят, ещё не подтверждён
-    "Supported",      # есть доказательства
-    "Validated",      # проверен TruthGate
-    "Contradicted",   # конфликт с другим фактом
-    "Deprecated",     # устарел
-    "Collapsed",      # удалён логически
-    "ImmutableCore",  # неизменяем (Ring Zero)
+    "Observed",       # raw input, before classification
+    "Hypothesized",   # accepted, not yet confirmed
+    "Supported",      # there is evidence
+    "Validated",      # verified by the TruthGate
+    "Contradicted",   # conflict with another fact
+    "Deprecated",     # obsolete
+    "Collapsed",      # logically removed
+    "ImmutableCore",  # immutable (Ring Zero)
 }
 
-# ─── ESM: матрица допустимых переходов ────────────────────────────────────────
-# MVP fast-path: Observed → Validated разрешён напрямую для демо-пайплайна.
-# I6: VALUES_CORE / RING_ZERO защищены в transition_esm, не через матрицу.
+# ─── ESM: matrix of valid transitions ────────────────────────────────────────
+# MVP fast-path: Observed → Validated is allowed directly for the demo pipeline.
+# I6: VALUES_CORE / RING_ZERO are protected in transition_esm, not via the matrix.
 ESM_TRANSITIONS: Dict[str, set] = {
     "Observed":      {"Hypothesized", "Supported", "Validated", "Collapsed"},
     "Hypothesized":  {"Supported", "Validated", "Collapsed"},
@@ -45,40 +45,40 @@ ESM_TRANSITIONS: Dict[str, set] = {
     "ImmutableCore": set(),
 }
 
-# ─── CLAIM TYPE: модальность утверждения (ось, ортогональная ESM) ─────────────
-# ESM отвечает на «насколько проверено», claim_type — на «что это за утверждение».
-# WORLD_FACT отделён от FACT намеренно: «факт о внешнем мире», а не «проверено».
-# Чувство реально как чувство — EMOTION может стать Validated, но НЕ WORLD_FACT.
+# ─── CLAIM TYPE: claim modality (axis orthogonal to ESM) ─────────────
+# ESM answers "how verified", claim_type — "what kind of claim it is".
+# WORLD_FACT is separated from FACT on purpose: "a fact about the external world", not "verified".
+# A feeling is real as a feeling — EMOTION may become Validated, but NOT WORLD_FACT.
 CLAIM_TYPES = {
-    "WORLD_FACT",       # утверждение о внешнем мире (требует доказательств)
-    "USER_EXPERIENCE",  # событие, как его пережил пользователь
-    "EMOTION",          # внутреннее состояние / чувство
-    "INTERPRETATION",   # вывод / объяснение (гипотеза)
-    "OPINION",          # мнение пользователя
-    "GOAL",             # цель
-    "PREFERENCE",       # предпочтение
+    "WORLD_FACT",       # claim about the external world (requires evidence)
+    "USER_EXPERIENCE",  # an event as the user experienced it
+    "EMOTION",          # internal state / feeling
+    "INTERPRETATION",   # inference / explanation (hypothesis)
+    "OPINION",          # the user's opinion
+    "GOAL",             # goal
+    "PREFERENCE",       # preference
 }
 DEFAULT_CLAIM_TYPE = "WORLD_FACT"
 
-# ─── SOURCE STATUS: происхождение утверждения (source monitoring) ─────────────
-# Защита от source-confusion: путаницы «видел / вообразил / услышал / додумал».
+# ─── SOURCE STATUS: origin of the claim (source monitoring) ─────────────
+# Guard against source confusion: mixing up "saw / imagined / heard / inferred".
 SOURCE_STATUSES = {
-    "USER_REPORTED",  # сообщил пользователь
-    "OBSERVED",       # наблюдалось системой
-    "DERIVED",        # выведено из других фактов
-    "EXTERNAL",       # внешний источник / retrieval
-    "LLM_OUTPUT",     # ответ модели — сам по себе НЕ факт о мире
+    "USER_REPORTED",  # reported by the user
+    "OBSERVED",       # observed by the system
+    "DERIVED",        # derived from other facts
+    "EXTERNAL",       # external source / retrieval
+    "LLM_OUTPUT",     # the model's answer — by itself NOT a fact about the world
     "UNKNOWN",
 }
 DEFAULT_SOURCE_STATUS = "UNKNOWN"
 
-# claim_type, для которых TruthGate НЕ требует доказательной планки:
-# они валидны как субъективный опыт, но не как факт о мире.
+# claim_type for which the TruthGate does NOT require an evidentiary bar:
+# they are valid as subjective experience, but not as a fact about the world.
 SUBJECTIVE_CLAIM_TYPES = {
     "USER_EXPERIENCE", "EMOTION", "OPINION", "PREFERENCE", "GOAL",
 }
 
-# ─── RING ZERO / VALUES CORE: неизменяемые факты (I6) ─────────────────────────
+# ─── RING ZERO / VALUES CORE: immutable facts (I6) ─────────────────────────
 IMMUTABLE_FACT_IDS = {"VALUES_CORE", "RING_ZERO"}
 
 
@@ -87,11 +87,11 @@ class ImmutableStateError(Exception):
     pass
 
 
-# ─── L0: LRU cache (in-memory, живёт только в сессии) ─────────────────────────
+# ─── L0: LRU cache (in-memory, lives only within the session) ─────────────────────────
 L0_CAP = 5
 _L0: OrderedDict = OrderedDict()
 
-# ─── L1: SQLite путь ──────────────────────────────────────────────────────────
+# ─── L1: SQLite path ──────────────────────────────────────────────────────────
 SQLITE_PATH = "./data/velantrim_memory.db"
 
 _DDL = """
@@ -111,11 +111,11 @@ _DDL = """
     )
 """
 
-# ─── L3 OUTBOX: персистентная очередь до-мержа в канон ────────────────────────
-# L3 (канон) и SQLite (pending) не делят транзакцию. Если merge в L3 упал (бэкенд
-# недоступен), факт остаётся Validated в SQLite без узла в графе. Outbox делает
-# это самовосстанавливающимся: упавший факт ставится в очередь и идемпотентно
-# до-мержится при следующем обращении (drain), а не ждёт повтора того же запроса.
+# ─── L3 OUTBOX: persistent queue for re-merging into the canon ────────────────────────
+# L3 (canon) and SQLite (pending) do not share a transaction. If a merge into L3 fails
+# (backend unavailable), the fact stays Validated in SQLite without a node in the graph. The outbox
+# makes this self-healing: the failed fact is enqueued and idempotently
+# re-merged on the next access (drain), instead of waiting for a retry of the same request.
 _OUTBOX_DDL = """
     CREATE TABLE IF NOT EXISTS l3_outbox (
         fact_id     TEXT PRIMARY KEY,
@@ -123,11 +123,11 @@ _OUTBOX_DDL = """
     )
 """
 
-# ─── ERASURE LOG: tombstone'ы физического удаления (GDPR Art. 17 / Art. 30) ────
-# Содержит ДОКАЗАТЕЛЬСТВО факта удаления без самих персональных данных: claim
-# не хранится, только его sha256-хэш. Так удаление остаётся подотчётным
-# (record of processing, Art. 30), не воссоздавая стёртое (right to erasure,
-# Art. 17). Запись tombstone иммутабельна: первое удаление фиксируется навсегда.
+# ─── ERASURE LOG: tombstones of physical deletion (GDPR Art. 17 / Art. 30) ────
+# Contains PROOF of the deletion without the personal data itself: the claim
+# is not stored, only its sha256 hash. This way deletion stays accountable
+# (record of processing, Art. 30) without recreating what was erased (right to erasure,
+# Art. 17). A tombstone record is immutable: the first deletion is recorded forever.
 _TOMBSTONE_DDL = """
     CREATE TABLE IF NOT EXISTS erasure_log (
         fact_id      TEXT PRIMARY KEY,
@@ -138,9 +138,9 @@ _TOMBSTONE_DDL = """
     )
 """
 
-# ─── Миграция: колонки, добавленные после первого релиза схемы ────────────────
-# CREATE TABLE IF NOT EXISTS не трогает уже существующую БД, поэтому старые файлы
-# velantrim_memory.db нужно догнать через ALTER TABLE ADD COLUMN (idempotent).
+# ─── Migration: columns added after the first schema release ────────────────
+# CREATE TABLE IF NOT EXISTS does not touch an already existing DB, so old
+# velantrim_memory.db files must be brought up to date via ALTER TABLE ADD COLUMN (idempotent).
 _MIGRATIONS = [
     ("claim_type",    "TEXT DEFAULT 'WORLD_FACT'"),
     ("source_status", "TEXT DEFAULT 'UNKNOWN'"),
@@ -150,7 +150,7 @@ _MIGRATIONS = [
 
 
 def _migrate(conn) -> None:
-    """Добавить недостающие колонки в существующую таблицу facts (idempotent)."""
+    """Add missing columns to the existing facts table (idempotent)."""
     existing = {row["name"] for row in conn.execute("PRAGMA table_info(facts)")}
     for column, ddl in _MIGRATIONS:
         if column not in existing:
@@ -165,8 +165,8 @@ def _db():
         os.makedirs(db_dir, exist_ok=True)
     conn = sqlite3.connect(SQLITE_PATH)
     conn.row_factory = sqlite3.Row
-    # WAL: writer не блокирует readers (лучше параллелизм для evidence/audit).
-    # Свойство файла БД — ставится один раз и сохраняется; повтор безвреден.
+    # WAL: the writer does not block readers (better concurrency for evidence/audit).
+    # It is a property of the DB file — set once and persisted; repeating it is harmless.
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute(_DDL)
     conn.execute(_OUTBOX_DDL)
@@ -206,27 +206,27 @@ def _l0_get(fact_id: str) -> Optional[Dict]:
 
 def store_fact(fact: Dict) -> None:
     """
-    Сохранить факт в L0 (LRU RAM) и L1 (SQLite).
-    Начальное состояние ESM: Observed.
-    Прямая запись в L3 граф — только через TruthGate (не здесь).
+    Store a fact in L0 (LRU RAM) and L1 (SQLite).
+    Initial ESM state: Observed.
+    A direct write to the L3 graph — only via the TruthGate (not here).
     """
     fact_id = fact.get("fact_id")
     if not fact_id:
-        raise ValueError("store_fact: fact_id обязателен")
+        raise ValueError("store_fact: fact_id is required")
 
     now = datetime.now(timezone.utc).isoformat()
     epistemic_state = fact.get("epistemic_state", "Observed")
 
     if epistemic_state not in ESM_STATES:
-        raise ValueError(f"store_fact: недопустимое ESM-состояние '{epistemic_state}'")
+        raise ValueError(f"store_fact: invalid ESM state '{epistemic_state}'")
 
     claim_type = fact.get("claim_type", DEFAULT_CLAIM_TYPE)
     if claim_type not in CLAIM_TYPES:
-        raise ValueError(f"store_fact: недопустимый claim_type '{claim_type}'")
+        raise ValueError(f"store_fact: invalid claim_type '{claim_type}'")
 
     source_status = fact.get("source_status", DEFAULT_SOURCE_STATUS)
     if source_status not in SOURCE_STATUSES:
-        raise ValueError(f"store_fact: недопустимый source_status '{source_status}'")
+        raise ValueError(f"store_fact: invalid source_status '{source_status}'")
 
     metadata_dict = fact.get("metadata", {})
 
@@ -271,7 +271,7 @@ def store_fact(fact: Dict) -> None:
 
 
 def get_fact(fact_id: str) -> Optional[Dict]:
-    """Получить факт: сначала L0 (LRU), потом L1."""
+    """Get a fact: first L0 (LRU), then L1."""
     cached = _l0_get(fact_id)
     if cached is not None:
         return cached
@@ -287,16 +287,16 @@ def get_fact(fact_id: str) -> Optional[Dict]:
     return None
 
 
-# ─── Колонки, которые можно точечно обновлять без смены ESM-состояния ─────────
+# ─── Columns that can be updated individually without changing the ESM state ─────────
 _UPDATABLE = {"claim", "source", "confidence", "significance",
               "claim_type", "source_status", "metadata"}
 
 
 def update_fact(fact_id: str, **fields) -> bool:
     """
-    Точечно обновить поля факта, НЕ трогая epistemic_state.
-    Смена ESM-состояния — только через transition_esm. Возвращает True, если
-    факт найден и обновлён.
+    Update individual fields of a fact WITHOUT touching epistemic_state.
+    Changing the ESM state — only via transition_esm. Returns True if the
+    fact is found and updated.
     """
     fields = {k: v for k, v in fields.items() if k in _UPDATABLE}
     existing = get_fact(fact_id)
@@ -323,16 +323,16 @@ def update_fact(fact_id: str, **fields) -> bool:
 
 def transition_esm(fact_id: str, new_state: str) -> bool:
     """
-    Перевести факт в новое ESM-состояние.
-    Прямой SET epistemic_state минуя эту функцию — архитектурный баг.
+    Transition a fact to a new ESM state.
+    A direct SET of epistemic_state bypassing this function is an architectural bug.
     """
     if new_state not in ESM_STATES:
-        raise ValueError(f"transition_esm: недопустимое состояние '{new_state}'")
+        raise ValueError(f"transition_esm: invalid state '{new_state}'")
 
     if fact_id in IMMUTABLE_FACT_IDS:
         raise ImmutableStateError(
-            f"transition_esm: факт '{fact_id}' защищён Ring Zero (I6), "
-            f"переход в '{new_state}' запрещён"
+            f"transition_esm: fact '{fact_id}' is protected by Ring Zero (I6), "
+            f"the transition to '{new_state}' is forbidden"
         )
 
     fact = get_fact(fact_id)
@@ -343,7 +343,7 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
     allowed = ESM_TRANSITIONS.get(current_state)
     if allowed is not None and new_state not in allowed:
         raise ValueError(
-            f"transition_esm: переход '{current_state}' → '{new_state}' недопустим"
+            f"transition_esm: transition '{current_state}' → '{new_state}' is not allowed"
         )
 
     now = datetime.now(timezone.utc).isoformat()
@@ -360,7 +360,7 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
 
 
 def get_all_facts(epistemic_state: Optional[str] = None) -> list:
-    """Получить все факты из L1. Опционально — фильтр по ESM-состоянию."""
+    """Get all facts from L1. Optionally — filtered by ESM state."""
     with _db() as conn:
         if epistemic_state:
             rows = conn.execute(
@@ -380,7 +380,7 @@ def get_all_facts(epistemic_state: Optional[str] = None) -> list:
 # ─── L3 OUTBOX API ────────────────────────────────────────────────────────────
 
 def enqueue_l3_write(fact_id: str) -> None:
-    """Поставить факт в очередь до-мержа в L3 (idempotent: upsert по fact_id)."""
+    """Enqueue a fact for re-merge into L3 (idempotent: upsert by fact_id)."""
     now = datetime.now(timezone.utc).isoformat()
     with _db() as conn:
         conn.execute(
@@ -391,28 +391,28 @@ def enqueue_l3_write(fact_id: str) -> None:
 
 
 def pending_l3_writes() -> list:
-    """fact_id'ы, ожидающие до-мержа в L3 (в порядке постановки)."""
+    """fact_ids awaiting re-merge into L3 (in enqueue order)."""
     with _db() as conn:
         return [row["fact_id"] for row in conn.execute(
             "SELECT fact_id FROM l3_outbox ORDER BY enqueued_at, fact_id")]
 
 
 def clear_l3_write(fact_id: str) -> None:
-    """Убрать факт из очереди (после успешного мержа или если он больше не нужен)."""
+    """Remove a fact from the queue (after a successful merge or if it is no longer needed)."""
     with _db() as conn:
         conn.execute("DELETE FROM l3_outbox WHERE fact_id = ?", (fact_id,))
 
 
-# ─── ОГРАНИЧЕНИЕ ОБРАБОТКИ (GDPR Art. 18) ─────────────────────────────────────
-# restricted=1 означает «факт хранится, но исключён из активной обработки»
-# (recall/ответы). Это НЕ удаление и НЕ смена ESM-состояния: факт остаётся
-# валидным, но временно «заморожен». Обратимо. Оркестрация синка в L3 —
-# в core/compliance.py (memory.py не импортирует l3_graph, чтобы не плодить цикл).
+# ─── PROCESSING RESTRICTION (GDPR Art. 18) ─────────────────────────────────────
+# restricted=1 means "the fact is stored but excluded from active processing"
+# (recall/answers). This is NOT deletion and NOT an ESM state change: the fact stays
+# valid but is temporarily "frozen". Reversible. Orchestration of the sync to L3 —
+# in core/compliance.py (memory.py does not import l3_graph, to avoid a cycle).
 
 def set_restricted(fact_id: str, restricted: bool) -> bool:
     """
-    Пометить/снять ограничение обработки факта (L0 + L1). Возвращает True, если
-    факт найден. Не трогает ESM-состояние. Синк в L3 — на вызывающей стороне.
+    Set/clear the processing restriction on a fact (L0 + L1). Returns True if the
+    fact is found. Does not touch the ESM state. Sync to L3 — on the caller's side.
     """
     existing = get_fact(fact_id)
     if existing is None:
@@ -428,15 +428,15 @@ def set_restricted(fact_id: str, restricted: bool) -> bool:
     return True
 
 
-# ─── ФИЗИЧЕСКОЕ УДАЛЕНИЕ (GDPR Art. 17) ───────────────────────────────────────
-# Низкоуровневые примитивы. Полное удаление по всем тканям (L0/L1/L3/outbox) +
-# tombstone оркеструется в core/erasure.py — не вызывайте delete_fact_l1 напрямую
-# для GDPR-удаления, иначе останется узел в L3 и не будет tombstone.
+# ─── PHYSICAL DELETION (GDPR Art. 17) ───────────────────────────────────────
+# Low-level primitives. Full deletion across all fabrics (L0/L1/L3/outbox) +
+# tombstone is orchestrated in core/erasure.py — do not call delete_fact_l1 directly
+# for GDPR deletion, otherwise a node will remain in L3 and there will be no tombstone.
 
 def delete_fact_l1(fact_id: str) -> bool:
     """
-    Физически удалить факт из L0 (LRU) и L1 (SQLite). Не трогает L3 и tombstone.
-    Возвращает True, если строка в SQLite реально была удалена.
+    Physically delete a fact from L0 (LRU) and L1 (SQLite). Does not touch L3 or the tombstone.
+    Returns True if the row in SQLite was actually deleted.
     """
     _L0.pop(fact_id, None)
     with _db() as conn:
@@ -448,9 +448,9 @@ def write_tombstone(
     fact_id: str, *, reason: str, actor: str, content_hash: Optional[str] = None
 ) -> None:
     """
-    Записать tombstone удаления (idempotent, иммутабельно: первое удаление
-    фиксируется навсегда). Повторный вызов не перезаписывает исходную запись —
-    событие удаления одно. Персональные данные НЕ сохраняются (только хэш).
+    Write a deletion tombstone (idempotent, immutable: the first deletion
+    is recorded forever). A repeated call does not overwrite the original record —
+    there is a single deletion event. Personal data is NOT stored (only the hash).
     """
     now = datetime.now(timezone.utc).isoformat()
     with _db() as conn:
@@ -462,7 +462,7 @@ def write_tombstone(
 
 
 def get_tombstone(fact_id: str) -> Optional[Dict]:
-    """Вернуть tombstone удаления по fact_id или None."""
+    """Return the deletion tombstone by fact_id or None."""
     with _db() as conn:
         row = conn.execute(
             "SELECT * FROM erasure_log WHERE fact_id = ?", (fact_id,)
@@ -471,7 +471,7 @@ def get_tombstone(fact_id: str) -> Optional[Dict]:
 
 
 def get_tombstones() -> list:
-    """Все tombstone'ы удаления (журнал, Art. 30). Без персональных данных."""
+    """All deletion tombstones (the log, Art. 30). Without personal data."""
     with _db() as conn:
         return [dict(r) for r in conn.execute(
             "SELECT * FROM erasure_log ORDER BY erased_at, fact_id")]

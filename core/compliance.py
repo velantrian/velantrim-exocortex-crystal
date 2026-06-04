@@ -2,17 +2,17 @@
 # Velantrim ExoCortex — GDPR Compliance Operations
 # v8.9.0-sprint2
 #
-# Две операции подотчётности, не относящиеся к удалению (Art. 17 → erasure.py):
+# Two accountability operations not related to deletion (Art. 17 → erasure.py):
 #
-#   Art. 18 — ограничение обработки. restrict_processing() «замораживает» факт:
-#     он хранится, но исключается из активной обработки (recall/ответы; см.
-#     pipeline.retrieve, фильтр по node['restricted']). Обратимо через
-#     unrestrict_processing(). Не удаление и не смена ESM-состояния.
+#   Art. 18 — restriction of processing. restrict_processing() "freezes" a fact:
+#     it is stored, but excluded from active processing (recall/answers; see
+#     pipeline.retrieve, the node['restricted'] filter). Reversible via
+#     unrestrict_processing(). Not a deletion and not an ESM state change.
 #
-#   Art. 30 — record of processing. record_of_processing() собирает агрегатный,
-#     content-free отчёт об обработке: счётчики по категориям, ограничения,
-#     удаления, бэкенды, расположение данных. Персональные данные (claim) НЕ
-#     включаются — только метаданные и идентификаторы.
+#   Art. 30 — record of processing. record_of_processing() builds an aggregate,
+#     content-free processing report: counters by category, restrictions,
+#     deletions, backends, data location. Personal data (claim) is NOT
+#     included — only metadata and identifiers.
 
 import os
 from collections import Counter
@@ -28,7 +28,7 @@ def _now() -> str:
 
 
 def _sync_restriction(fact_id: str) -> None:
-    """Перенести флаг restricted в L3-узел, чтобы recall его видел."""
+    """Propagate the restricted flag to the L3 node so recall sees it."""
     fact = get_fact(fact_id)
     if fact is not None:
         get_l3_graph().merge_fact(fact)
@@ -38,9 +38,9 @@ def restrict_processing(
     fact_id: str, *, reason: str = "data_subject_request", actor: str = "operator"
 ) -> Dict[str, Any]:
     """
-    Ограничить обработку факта (GDPR Art. 18): факт остаётся в памяти, но
-    исключается из recall/ответов. Возвращает квитанцию; found=False, если
-    факта нет.
+    Restrict processing of a fact (GDPR Art. 18): the fact stays in memory, but
+    is excluded from recall/answers. Returns a receipt; found=False if the
+    fact does not exist.
     """
     found = set_restricted(fact_id, True)
     if found:
@@ -52,7 +52,7 @@ def restrict_processing(
 def unrestrict_processing(
     fact_id: str, *, actor: str = "operator"
 ) -> Dict[str, Any]:
-    """Снять ограничение обработки (Art. 18): факт снова участвует в recall."""
+    """Lift the processing restriction (Art. 18): the fact takes part in recall again."""
     found = set_restricted(fact_id, False)
     if found:
         _sync_restriction(fact_id)
@@ -61,21 +61,21 @@ def unrestrict_processing(
 
 
 def is_restricted(fact_id: str) -> bool:
-    """True, если обработка факта ограничена (Art. 18)."""
+    """True if processing of the fact is restricted (Art. 18)."""
     fact = get_fact(fact_id)
     return bool(fact and fact.get("restricted"))
 
 
 def restricted_facts() -> List[str]:
-    """fact_id'ы всех фактов с ограничением обработки."""
+    """fact_ids of all facts with a processing restriction."""
     return [f["fact_id"] for f in get_all_facts() if f.get("restricted")]
 
 
 def record_of_processing(controller: Optional[str] = None) -> Dict[str, Any]:
     """
-    Сформировать record of processing (GDPR Art. 30): агрегатный content-free
-    отчёт об обработке. Не содержит персональных данных (claim) — только
-    счётчики, идентификаторы и конфигурацию.
+    Build a record of processing (GDPR Art. 30): an aggregate content-free
+    processing report. Contains no personal data (claim) — only
+    counters, identifiers and configuration.
     """
     facts = get_all_facts()
     by_claim_type = Counter(f.get("claim_type", "UNKNOWN") for f in facts)

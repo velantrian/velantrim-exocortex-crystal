@@ -33,7 +33,7 @@ def test_promote_trace_mutates_in_place():
 
 def test_promote_trace_rejects_invalid_state():
     trace = build_trace([{"id": "f1", "source": "s"}])
-    with pytest.raises(ValueError, match="недопустимое ESM"):
+    with pytest.raises(ValueError, match="invalid ESM"):
         promote_trace(trace, "Bogus")
 
 

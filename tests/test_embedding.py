@@ -60,7 +60,7 @@ def test_factory_explicit_backend_not_cached():
 
 
 def test_factory_unknown_backend_raises():
-    with pytest.raises(ValueError, match="неизвестный backend"):
+    with pytest.raises(ValueError, match="unknown backend"):
         get_embedder(backend="word2vec")
 
 

@@ -1,9 +1,10 @@
 # core/_registry.py
-# Velantrim ExoCortex — общий реестр сменных backend'ов.
+# Velantrim ExoCortex — shared registry of pluggable backends.
 #
-# Убирает тройное дублирование singleton-фабрик (L3-граф, эмбеддер, генератор):
-# каждый модуль задаёт имя env-переменной, дефолт и функцию создания, а кэш
-# singleton'а, выбор по env и сброс для тестов живут здесь — в одном месте.
+# Removes the triple duplication of singleton factories (L3 graph, embedder,
+# generator): each module supplies an env-variable name, a default and a creation
+# function, while the singleton cache, env-based selection and reset-for-tests
+# logic live here — in one place.
 
 import os
 from typing import Any, Callable, Optional
@@ -11,11 +12,11 @@ from typing import Any, Callable, Optional
 
 class BackendRegistry:
     """
-    Singleton-реестр одного семейства backend'ов.
+    Singleton registry for a single family of backends.
 
-    factory(name) -> экземпляр; должна сама бросать ValueError на неизвестное имя.
-    get(backend=None): backend=None → имя из env (или дефолт) и кэшируемый
-    singleton; явный backend → свежий экземпляр без кэширования.
+    factory(name) -> instance; it must raise ValueError itself on an unknown name.
+    get(backend=None): backend=None → name from env (or default) and a cached
+    singleton; an explicit backend → a fresh instance without caching.
     """
 
     def __init__(
@@ -39,5 +40,5 @@ class BackendRegistry:
         return instance
 
     def reset(self) -> None:
-        """Сбросить singleton (для тестов)."""
+        """Reset the singleton (for tests)."""
         self._instance = None

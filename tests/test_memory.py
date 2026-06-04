@@ -62,7 +62,7 @@ def test_metadata_round_trips_through_l1():
 
 def test_transition_esm_rejects_unknown_state():
     store_fact({"fact_id": "tr1", "claim": "c", "source": "s", "confidence": 0.5})
-    with pytest.raises(ValueError, match="недопустимое состояние"):
+    with pytest.raises(ValueError, match="invalid state"):
         transition_esm("tr1", "Imaginary")
 
 

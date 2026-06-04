@@ -2,19 +2,19 @@
 # Velantrim ExoCortex — Right to Erasure (GDPR Art. 17)
 # v8.9.0-sprint2
 #
-# Физическое удаление факта по всем тканям памяти + подотчётность.
+# Physical deletion of a fact across all memory fabrics + accountability.
 #
-# Принцип: удаление обязано быть ПОЛНЫМ и ДОКАЗУЕМЫМ одновременно.
-#   Полным  — узел исчезает из L0 (кэш), L1 (SQLite), L3 (канон: узел + рёбра +
-#             mentions) и из L3-outbox (очередь до-мержа). Нигде не остаётся
-#             персональных данных и висячих ссылок.
-#   Доказуемым — в erasure_log пишется content-free tombstone: fact_id, время,
-#             причина, актор и sha256-хэш стёртого claim (не сам claim). Это
-#             record of processing (Art. 30): можно доказать, ЧТО и КОГДА было
-#             удалено, не воссоздавая стёртое (Art. 17).
+# Principle: deletion must be COMPLETE and PROVABLE at the same time.
+#   Complete — the node disappears from L0 (cache), L1 (SQLite), L3 (canon: node + edges +
+#             mentions) and from the L3 outbox (re-merge queue). No
+#             personal data or dangling references remain anywhere.
+#   Provable — a content-free tombstone is written to erasure_log: fact_id, time,
+#             reason, actor and the sha256 hash of the erased claim (not the claim itself). This is a
+#             record of processing (Art. 30): one can prove WHAT and WHEN was
+#             deleted without recreating what was erased (Art. 17).
 #
-# Ring Zero / VALUES_CORE НЕ удаляются (инвариант I6): это системные ценности,
-# а не персональные данные; их удаление сломало бы систему.
+# Ring Zero / VALUES_CORE are NOT deleted (invariant I6): these are system values,
+# not personal data; deleting them would break the system.
 
 import hashlib
 from datetime import datetime, timezone
@@ -32,9 +32,9 @@ from core.memory import (
 )
 from core.l3_graph import get_l3_graph
 
-# Ребро провенанса: derived -DERIVED_FROM-> source. Помечает, что факт выведен
-# из другого. Используется cascade-удалением: стирая источник, можно стереть и
-# всё, что из него выведено (GDPR Art. 17 — производные персональные данные).
+# Provenance edge: derived -DERIVED_FROM-> source. Marks that a fact is derived
+# from another. Used by cascade deletion: erasing the source can also erase
+# everything derived from it (GDPR Art. 17 — derived personal data).
 REL_DERIVED_FROM = "DERIVED_FROM"
 
 
@@ -43,14 +43,14 @@ def _now() -> str:
 
 
 def _hash_claim(claim: str) -> str:
-    """Хэш стёртого утверждения — доказательство без хранения содержимого."""
+    """Hash of the erased claim — proof without storing the content."""
     return "sha256:" + hashlib.sha256(claim.encode("utf-8")).hexdigest()
 
 
 def record_derivation(derived_id: str, source_id: str) -> None:
     """
-    Зафиксировать, что факт derived_id выведен из source_id (ребро DERIVED_FROM).
-    Тогда cascade-удаление source_id сможет стереть и derived_id.
+    Record that fact derived_id is derived from source_id (a DERIVED_FROM edge).
+    Then a cascade deletion of source_id can also erase derived_id.
     """
     get_l3_graph().add_edge(
         derived_id, REL_DERIVED_FROM, source_id, {"at": _now()})
@@ -65,25 +65,25 @@ def erase_fact(
     _visited: Optional[set] = None,
 ) -> Dict[str, Any]:
     """
-    Физически и безвозвратно удалить факт (GDPR Art. 17, право на забвение).
+    Physically and irreversibly delete a fact (GDPR Art. 17, right to be forgotten).
 
-    Снимает факт из L0, L1, канонического графа L3 (узел + все рёбра + mentions)
-    и из L3-outbox, затем пишет content-free tombstone в erasure_log.
+    Removes the fact from L0, L1, the L3 canonical graph (node + all edges + mentions)
+    and from the L3 outbox, then writes a content-free tombstone to erasure_log.
 
-    cascade=True: помимо самого факта стирает и всё, что из него выведено —
-    факты с ребром DERIVED_FROM на него (рекурсивно, с защитой от циклов). Так
-    производные персональные данные не переживают удаление источника.
+    cascade=True: besides the fact itself, also erases everything derived from it —
+    facts with a DERIVED_FROM edge to it (recursively, with cycle protection). This way
+    derived personal data does not survive the deletion of the source.
 
-    Ring Zero / VALUES_CORE неудаляемы (I6) → ImmutableStateError.
+    Ring Zero / VALUES_CORE are non-deletable (I6) → ImmutableStateError.
 
-    Идемпотентно: повторное удаление уже стёртого факта возвращает
-    erased_now=False, tombstone не дублируется (фиксируется первое удаление).
+    Idempotent: a repeated deletion of an already erased fact returns
+    erased_now=False, the tombstone is not duplicated (the first deletion is recorded).
 
-    Возвращает квитанцию (receipt) с деталями операции.
+    Returns a receipt with the details of the operation.
     """
     if fact_id in IMMUTABLE_FACT_IDS:
         raise ImmutableStateError(
-            f"erase_fact: '{fact_id}' защищён Ring Zero (I6) и не подлежит удалению"
+            f"erase_fact: '{fact_id}' is protected by Ring Zero (I6) and cannot be deleted"
         )
 
     visited = _visited if _visited is not None else set()
@@ -93,20 +93,20 @@ def erase_fact(
     fact = get_fact(fact_id)
     content_hash = _hash_claim(fact["claim"]) if fact and fact.get("claim") else None
 
-    # Кого стирать каскадом — собираем ДО удаления (удаление снимет рёбра).
+    # Who to cascade-erase — collected BEFORE deletion (deletion removes the edges).
     derived_ids: List[str] = []
     if cascade:
         derived_ids = [e["source"]
                        for e in graph.incoming_edges(fact_id, REL_DERIVED_FROM)]
 
-    # Удаление по всем тканям. Каждый шаг идемпотентен и независим.
+    # Deletion across all fabrics. Each step is idempotent and independent.
     l1_removed = delete_fact_l1(fact_id)
     l3_removed = graph.erase_fact(fact_id)
-    clear_l3_write(fact_id)  # снять возможную запись из очереди до-мержа
+    clear_l3_write(fact_id)  # remove any possible entry from the re-merge queue
 
     erased_now = l1_removed or l3_removed
 
-    # Tombstone иммутабелен: при повторном удалении сохраняется исходный хэш.
+    # The tombstone is immutable: on a repeated deletion the original hash is preserved.
     write_tombstone(fact_id, reason=reason, actor=actor, content_hash=content_hash)
     tombstone = get_tombstone(fact_id)
 
@@ -134,13 +134,13 @@ def erase_fact(
 
 
 def is_erased(fact_id: str) -> bool:
-    """True, если для факта существует tombstone (он был стёрт)."""
+    """True if a tombstone exists for the fact (it was erased)."""
     return get_tombstone(fact_id) is not None
 
 
 def erasure_log() -> List[Dict[str, Any]]:
     """
-    Журнал всех удалений (Art. 30, record of processing). Content-free:
-    содержит fact_id / время / причину / актора / хэш, но не персональные данные.
+    Log of all deletions (Art. 30, record of processing). Content-free:
+    contains fact_id / time / reason / actor / hash, but no personal data.
     """
     return get_tombstones()
