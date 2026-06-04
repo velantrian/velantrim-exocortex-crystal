@@ -7,11 +7,11 @@ numbers: run `pytest` yourself and you will get the figures below.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **364** |
+| **Tests passing** | **384** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **~99%** (gate enforced at 95%) |
-| Test files | 28 (`tests/test_*.py`) |
+| Test files | 30 (`tests/test_*.py`) |
 | Python | 3.11 (3.10+ supported) |
 | Runtime dependencies | standard library only |
 
@@ -24,7 +24,7 @@ Neo4j, Anthropic) that are not installed in the default environment.
 
 ```bash
 pip install -r requirements.txt
-pytest                 # 364 passed, 12 skipped
+pytest                 # 384 passed, 12 skipped
 ```
 
 ## Coverage by module (core/)
@@ -43,7 +43,7 @@ pytest                 # 364 passed, 12 skipped
 | `core/erasure.py`      | 42  | 100% |
 | `core/generation.py`   | 41  | 100% |
 | `core/ingest.py`       | 75  | 100% |
-| `core/l3_graph.py`     | 150 | 99%  |
+| `core/l3_graph.py`     | 259 | 99%  |
 | `core/memory.py`       | 183 | 100% |
 | `core/metrics.py`      | 10  | 100% |
 | `core/observe.py`      | 35  | 100% |
@@ -52,7 +52,7 @@ pytest                 # 364 passed, 12 skipped
 | `core/provenance.py`   | 68  | 100% |
 | `core/reconcile.py`    | 80  | 96%  |
 | `core/trace.py`        | 26  | 100% |
-| **Total (repo-wide)**  | **2217** | **~99%** |
+| **Total (repo-wide)**  | **2326** | **~99%** |
 
 ## What the tests cover
 
@@ -61,6 +61,8 @@ pytest                 # 364 passed, 12 skipped
 | Memory layers (L0/L1), ESM transitions, Ring Zero (I6) | `test_memory.py`, `test_esm.py` |
 | End-to-end pipeline (retrieve → gate → L3 → answer) | `test_pipeline.py` |
 | L3 canonical graph adapter & backends | `test_l3_graph.py` |
+| On-disk SQLite L3 backend (persistence, erase, vectors, entities) | `test_l3_sqlite.py` |
+| Packaging contract (entry point, version, package surface) | `test_packaging.py` |
 | Embeddings (hashing + optional sbert) | `test_embedding.py` |
 | Answer generation (extractive + optional Claude) | `test_generation.py` |
 | Ingestion & claim-type classification | `test_ingest.py` |

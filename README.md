@@ -51,7 +51,7 @@ content-free audit tombstone), and full auditability of provenance. See
 |-----------------------|--------|-----------------------------------------------------------------------------|
 | `core/memory.py`      | ✅ | L0 (in-memory LRU) + L1 (SQLite, WAL) + ESM (8 states) + `update_fact`      |
 | `core/pipeline.py`    | ✅ | Retrieve (vector + L3 recall) → FactsPack → Guardian → TruthGate → L3 → Answer; episodic linking + `recall_episode`/`recall_by_entity` |
-| `core/l3_graph.py`    | ✅ | Swappable L3 canonical graph: `auto`→LadybugDB / `mock` / `neo4j`; nodes, edges, `vector_search` |
+| `core/l3_graph.py`    | ✅ | Swappable L3 canonical graph: `auto`→LadybugDB / **`sqlite` (on-disk, dependency-free)** / `mock` / `neo4j`; nodes, edges, `vector_search`, persistence |
 | `core/embedding.py`   | ✅ | Swappable embedder: `auto`→sentence-transformers / dependency-free hashing  |
 | `core/generation.py`  | ✅ | Swappable answer generator: extractive (default, local) / Claude LLM (opt-in) |
 | `core/ingest.py`      | ✅ | Utterance → claim_type classification → gate → L3                           |
@@ -69,7 +69,7 @@ content-free audit tombstone), and full auditability of provenance. See
 | `core/observe.py`     | ✅ | Memory observability report over the L3 canonical graph                     |
 | `core/metrics.py`     | ✅ | Lightweight in-process counters (query / ingest / gate)                     |
 | `core/cli.py`         | ✅ | CLI: `ingest`/`ask`/`history`/`report`/`erase`/`erasures`/`restrict`/`unrestrict`/`ropa`/`audit`/`audit-verify`/`redact`/`receipt`/`verify-receipt`/`conflicts` |
-| `tests/`              | ✅ | **364 passing**, 12 skipped, **99% coverage** (gate: 95%) — see [TEST_REPORT.md](./TEST_REPORT.md) |
+| `tests/`              | ✅ | **384 passing**, 12 skipped, **99% coverage** (gate: 95%) — see [TEST_REPORT.md](./TEST_REPORT.md) |
 | `docs/Velantrim_V8_Crystal_Sprint1.jsonl` | 📜 Spec | Full system design (63 chunks) |
 
 **Current status**: the full fact lifecycle runs end-to-end — ingest → classify
@@ -81,9 +81,18 @@ contradict / decay. Swappable backends, zero-dependency defaults.
 ```bash
 git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
-pip install -r requirements.txt        # stdlib-only runtime; deps are for tests/optional backends
+pip install .                          # stdlib-only runtime; installs the `velantrim` CLI
 python -m core.pipeline                # runs the end-to-end demo, fully local
-pytest                                 # 364 passing, 99% coverage
+pytest                                 # 384 passing, 99% coverage  (pip install -e '.[dev]')
+```
+
+After install the CLI is on your PATH:
+
+```bash
+velantrim ingest "Water boils at 100C at sea level"
+velantrim ask    "how does water behave"
+# Dependency-free, on-disk canon that survives restarts:
+VELANTRIM_L3_BACKEND=sqlite VELANTRIM_L3_PATH=./data/canon.db velantrim ask "..."
 ```
 
 No data leaves your machine. See [DEMO.md](./DEMO.md) for a walkthrough of the
@@ -128,8 +137,11 @@ for the full breakdown and honest implemented-vs-designed split):
    (Art. 32), a **tamper-evident audit log** (Art. 5(2)/24), and **PII redaction
    at ingest** (Art. 5 data minimisation). *(implemented: `core/erasure.py`,
    `core/compliance.py`, `core/crypto.py`, `core/audit.py`, `core/pii.py`)*
-3. **Local-first persistence & packaging** — reproducible, dependency-free
-   deployment; embedded graph backend (LadybugDB) with on-disk persistence.
+3. **Local-first persistence & packaging** — a **dependency-free, on-disk SQLite
+   L3 backend** (`VELANTRIM_L3_BACKEND=sqlite`, the `auto` fallback when LadybugDB
+   is absent) keeps the canon across restarts with zero external deps; `pip install .`
+   ships the `velantrim` console script. Embedded LadybugDB remains the scale
+   option. *(implemented: `core/l3_graph.py` `SqliteL3Graph`, `pyproject.toml`)*
 4. **Conflict / hallucination detection** — a deterministic, dependency-free
    contradiction classifier (`core/contradiction.py`) labels each `find_conflicts`
    candidate as CONTRADICTION / REFINEMENT / RELATED via negation, antonym and

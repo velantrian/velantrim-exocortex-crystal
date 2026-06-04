@@ -10,8 +10,13 @@ This document is the **honest truth** about what's implemented vs designed.
 - Claim-modality axis (`claim_type` / `source_status` / `significance`),
   orthogonal to ESM; **type-aware TruthGate** (subjective ≠ world-fact)
 - Vector/semantic retrieval (cosine) over a seed corpus **+ recall from L3**
-- L3 canonical graph adapter — swappable backend `auto`→**LadybugDB** / `mock` /
-  `neo4j`; nodes, edges, `vector_search`, persistence (`VELANTRIM_L3_PATH`)
+- L3 canonical graph adapter — swappable backend `auto`→**LadybugDB** / `sqlite` /
+  `mock` / `neo4j`; nodes, edges, `vector_search`, persistence (`VELANTRIM_L3_PATH`)
+- Dependency-free on-disk persistence (`core/l3_graph.py` `SqliteL3Graph`): the
+  L3 canon survives restarts on the Python-stdlib SQLite backend (no native deps);
+  it is the `auto` fallback when LadybugDB is absent, and persists the embedder
+  fingerprint across restarts. Reproducible packaging: `pip install .` exposes the
+  `velantrim` console script (`pyproject.toml`, PEP 440 version, explicit package surface)
 - Swappable embedder (`auto`→sentence-transformers / hashing) and answer
   generator (extractive / Claude LLM)
 - Ingestion (`core/ingest.py`): utterance → claim_type → gate → L3

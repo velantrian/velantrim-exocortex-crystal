@@ -16,7 +16,10 @@
 # the Apple acquisition). LadybugDB is embedded, Cypher-compatible, with a vector index
 # and full-text search. Standard Cypher → the backend stays portable.
 
+import json
 import logging
+import os
+import sqlite3
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Any
 
@@ -276,6 +279,222 @@ class MockL3Graph(L3GraphBackend):
         self._entities.clear()
         self._mentions.clear()
         self._embedder_fp = None
+
+
+# ─── SQLITE BACKEND (on-disk, dependency-free) ─────────────────────────────────
+
+class SqliteL3Graph(L3GraphBackend):
+    """
+    On-disk L3 canon backed by SQLite (Python standard library — no external
+    dependency). Same MERGE/edge/vector semantics as MockL3Graph, but the canon
+    SURVIVES restarts: this is the local-first, dependency-free persistence
+    target. Selected with VELANTRIM_L3_BACKEND=sqlite (and is the 'auto' fallback
+    when LadybugDB is not installed). The DB file path is VELANTRIM_L3_PATH
+    (default ./data/velantrim_l3.db); ':memory:' gives an ephemeral instance.
+
+    Node payloads are stored as JSON; vectors as a JSON array of floats. Vector
+    search is a linear cosine scan (fine for the MVP working-set; the LadybugDB
+    backend adds a real vector index for scale). The embedder fingerprint is
+    persisted in a meta row, so an embedder swap is detected across restarts too.
+    """
+
+    def __init__(self, db_path: Optional[str] = None) -> None:
+        if db_path is None:
+            db_path = os.environ.get("VELANTRIM_L3_PATH", "./data/velantrim_l3.db")
+        if db_path not in (":memory:", "") and os.path.dirname(db_path):
+            os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        self._conn = sqlite3.connect(db_path)
+        self._conn.row_factory = sqlite3.Row
+        self._conn.execute("PRAGMA journal_mode=WAL")
+        self._ensure_schema()
+
+    def _ensure_schema(self) -> None:
+        with self._conn:
+            self._conn.executescript(
+                """
+                CREATE TABLE IF NOT EXISTS nodes (
+                    fact_id TEXT PRIMARY KEY,
+                    data    TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS vectors (
+                    fact_id TEXT PRIMARY KEY,
+                    vec     TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS edges (
+                    src      TEXT NOT NULL,
+                    rel_type TEXT NOT NULL,
+                    dst      TEXT NOT NULL,
+                    props    TEXT NOT NULL DEFAULT '{}',
+                    UNIQUE(src, rel_type, dst, props)
+                );
+                CREATE INDEX IF NOT EXISTS idx_edges_src ON edges(src);
+                CREATE INDEX IF NOT EXISTS idx_edges_dst ON edges(dst);
+                CREATE TABLE IF NOT EXISTS entities (
+                    entity_id TEXT PRIMARY KEY,
+                    kind      TEXT,
+                    label     TEXT
+                );
+                CREATE TABLE IF NOT EXISTS mentions (
+                    fact_id   TEXT NOT NULL,
+                    entity_id TEXT NOT NULL,
+                    rel       TEXT NOT NULL,
+                    UNIQUE(fact_id, entity_id, rel)
+                );
+                CREATE TABLE IF NOT EXISTS meta (
+                    key   TEXT PRIMARY KEY,
+                    value TEXT
+                );
+                """
+            )
+
+    # ─── embedder fingerprint (persisted across restarts) ──────────────────────
+    def embedder_fingerprint(self) -> Optional[str]:
+        row = self._conn.execute(
+            "SELECT value FROM meta WHERE key = 'embedder_fp'").fetchone()
+        return row["value"] if row else None
+
+    def set_embedder_fingerprint(self, fingerprint: str) -> None:
+        with self._conn:
+            self._conn.execute(
+                "INSERT INTO meta(key, value) VALUES('embedder_fp', ?) "
+                "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+                (fingerprint,))
+
+    # ─── facts ─────────────────────────────────────────────────────────────────
+    def merge_fact(self, fact: Dict[str, Any]) -> None:
+        fact_id = fact.get("fact_id")
+        if not fact_id:
+            raise ValueError("merge_fact: fact_id is required")
+        node = self.get_fact(fact_id) or {}
+        node.update(fact)
+        with self._conn:
+            self._conn.execute(
+                "INSERT INTO nodes(fact_id, data) VALUES(?, ?) "
+                "ON CONFLICT(fact_id) DO UPDATE SET data = excluded.data",
+                (fact_id, json.dumps(node)))
+            claim = node.get("claim")
+            if claim:
+                from core.embedding import get_embedder
+                vec = get_embedder().embed(claim)
+                self._conn.execute(
+                    "INSERT INTO vectors(fact_id, vec) VALUES(?, ?) "
+                    "ON CONFLICT(fact_id) DO UPDATE SET vec = excluded.vec",
+                    (fact_id, json.dumps(vec)))
+
+    def get_fact(self, fact_id: str) -> Optional[Dict[str, Any]]:
+        row = self._conn.execute(
+            "SELECT data FROM nodes WHERE fact_id = ?", (fact_id,)).fetchone()
+        return json.loads(row["data"]) if row else None
+
+    def all_facts(self) -> List[Dict[str, Any]]:
+        return [json.loads(r["data"])
+                for r in self._conn.execute("SELECT data FROM nodes")]
+
+    def erase_fact(self, fact_id: str) -> bool:
+        with self._conn:
+            cur = self._conn.execute(
+                "DELETE FROM nodes WHERE fact_id = ?", (fact_id,))
+            existed = cur.rowcount > 0
+            self._conn.execute("DELETE FROM vectors WHERE fact_id = ?", (fact_id,))
+            self._conn.execute(
+                "DELETE FROM edges WHERE src = ? OR dst = ?", (fact_id, fact_id))
+            self._conn.execute("DELETE FROM mentions WHERE fact_id = ?", (fact_id,))
+        return existed
+
+    # ─── edges ─────────────────────────────────────────────────────────────────
+    def add_edge(
+        self, src_id: str, rel_type: str, dst_id: str,
+        props: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        with self._conn:
+            self._conn.execute(
+                "INSERT OR IGNORE INTO edges(src, rel_type, dst, props) "
+                "VALUES(?, ?, ?, ?)",
+                (src_id, rel_type, dst_id, json.dumps(props or {}, sort_keys=True)))
+
+    def neighbors(
+        self, fact_id: str, rel_type: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        out = []
+        for edge in self.get_edges(fact_id, rel_type):
+            node = self.get_fact(edge["target"])
+            if node is not None:
+                out.append(node)
+        return out
+
+    def get_edges(
+        self, fact_id: str, rel_type: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        q = "SELECT rel_type, dst, props FROM edges WHERE src = ?"
+        params: List[Any] = [fact_id]
+        if rel_type is not None:
+            q += " AND rel_type = ?"
+            params.append(rel_type)
+        return [{"rel_type": r["rel_type"], "target": r["dst"],
+                 "props": json.loads(r["props"])}
+                for r in self._conn.execute(q, params)]
+
+    def incoming_edges(
+        self, fact_id: str, rel_type: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        q = "SELECT rel_type, src, props FROM edges WHERE dst = ?"
+        params: List[Any] = [fact_id]
+        if rel_type is not None:
+            q += " AND rel_type = ?"
+            params.append(rel_type)
+        return [{"rel_type": r["rel_type"], "source": r["src"],
+                 "props": json.loads(r["props"])}
+                for r in self._conn.execute(q, params)]
+
+    # ─── vectors ───────────────────────────────────────────────────────────────
+    def vector_search(
+        self, query_vector: List[float], k: int = 5,
+    ) -> List[Dict[str, Any]]:
+        from core.embedding import cosine
+        scored = []
+        for r in self._conn.execute("SELECT fact_id, vec FROM vectors"):
+            sim = cosine(query_vector, json.loads(r["vec"]))
+            if sim <= 0.0:
+                continue
+            node = self.get_fact(r["fact_id"])
+            if node is None:
+                continue
+            node["_relevance"] = round(sim, 6)
+            node["_score"] = round(_salience_score(sim, node.get("significance", 0.5)), 6)
+            scored.append(node)
+        scored.sort(key=lambda n: n["_score"], reverse=True)
+        return scored[:k]
+
+    # ─── entities ──────────────────────────────────────────────────────────────
+    def merge_entity(self, entity_id: str, kind: str, label: str) -> None:
+        with self._conn:
+            self._conn.execute(
+                "INSERT INTO entities(entity_id, kind, label) VALUES(?, ?, ?) "
+                "ON CONFLICT(entity_id) DO UPDATE SET kind = excluded.kind, "
+                "label = excluded.label",
+                (entity_id, kind, label))
+
+    def link_fact_to_entity(self, fact_id, entity_id, rel="MENTIONS") -> None:
+        with self._conn:
+            self._conn.execute(
+                "INSERT OR IGNORE INTO mentions(fact_id, entity_id, rel) "
+                "VALUES(?, ?, ?)", (fact_id, entity_id, rel))
+
+    def facts_for_entity(self, entity_id: str) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT fact_id FROM mentions WHERE entity_id = ?", (entity_id,))
+        out = []
+        for r in rows:
+            node = self.get_fact(r["fact_id"])
+            if node is not None:
+                out.append(node)
+        return out
+
+    def clear(self) -> None:
+        """Reset all state (for tests)."""
+        with self._conn:
+            for tbl in ("nodes", "vectors", "edges", "entities", "mentions", "meta"):
+                self._conn.execute(f"DELETE FROM {tbl}")
 
 
 # ─── LADYBUGDB BACKEND (slot for the spike) ───────────────────────────────────────
@@ -711,6 +930,7 @@ class Neo4jL3Graph(L3GraphBackend):  # pragma: no cover
 
 _BACKENDS = {
     "mock": MockL3Graph,        # in-memory, dependency-free (dev / CI)
+    "sqlite": SqliteL3Graph,    # on-disk, dependency-free (local-first persistence)
     "ladybug": LadybugL3Graph,  # recommended prod default (successor to Kuzu)
     "neo4j": Neo4jL3Graph,      # optional alternative (server required)
 }
@@ -718,12 +938,21 @@ _BACKENDS = {
 
 def _make(name: str) -> L3GraphBackend:
     if name == "auto":
-        # Prod default: LadybugDB if available; otherwise — mock (CI / dependency-free).
+        # Prod default: LadybugDB if available (vector index, scale); otherwise the
+        # dependency-free on-disk SQLite backend (local-first persistence). The
+        # in-memory mock is the last-resort fallback if even SQLite cannot open.
         try:
             return LadybugL3Graph()
         except Exception as e:  # noqa: BLE001 — any init failure → fallback
             logger.warning(
-                "auto L3: LadybugDB unavailable (%s), falling back to in-memory mock",
+                "auto L3: LadybugDB unavailable (%s), falling back to on-disk SQLite",
+                type(e).__name__,
+            )
+        try:
+            return SqliteL3Graph()
+        except Exception as e:  # noqa: BLE001 — disk/permission issue → in-memory
+            logger.warning(
+                "auto L3: SQLite unavailable (%s), falling back to in-memory mock",
                 type(e).__name__,
             )
             return MockL3Graph()
