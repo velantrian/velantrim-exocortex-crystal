@@ -16,7 +16,7 @@ from typing import Optional, List
 
 from core.ingest import ingest
 from core.pipeline import run
-from core.reconcile import fact_history
+from core.reconcile import fact_history, find_conflicts
 from core.observe import memory_report, format_report
 from core.erasure import erase_fact, erasure_log
 from core.compliance import (
@@ -67,6 +67,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_verify.add_argument(
         "file", nargs="?", default="-",
         help="receipt JSON file, or '-'/omitted to read from stdin")
+    p_conf = sub.add_parser(
+        "conflicts", help="find & classify canon facts conflicting with a claim")
+    p_conf.add_argument("claim")
 
     args = parser.parse_args(argv)
 
@@ -118,6 +121,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         import sys
         raw = sys.stdin.read() if args.file == "-" else open(args.file, encoding="utf-8").read()
         print(json.dumps(provenance.verify_receipt(json.loads(raw)), ensure_ascii=False))
+    elif args.cmd == "conflicts":
+        print(json.dumps(find_conflicts(args.claim), ensure_ascii=False))
     return 0
 
 

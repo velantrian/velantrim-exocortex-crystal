@@ -56,6 +56,7 @@ content-free audit tombstone), and full auditability of provenance. See
 | `core/generation.py`  | ✅ | Swappable answer generator: extractive (default, local) / Claude LLM (opt-in) |
 | `core/ingest.py`      | ✅ | Utterance → claim_type classification → gate → L3                           |
 | `core/reconcile.py`   | ✅ | Truth maintenance: reinforce / supersede / contradict / find_conflicts      |
+| `core/contradiction.py`| ✅ | Deterministic contradiction classifier (negation / antonym / numeric); high-precision immune signal |
 | `core/consolidate.py` | ✅ | SleepCycle: significance-weighted confidence decay (FSRS-style)             |
 | `core/trace.py`       | ✅ | Provenance chain for every fact                                             |
 | `core/provenance.py`  | ✅ | Tamper-evident, replayable answer receipts — re-verify any answer against the canon (detects later erase/restrict/modify/contradict) |
@@ -67,8 +68,8 @@ content-free audit tombstone), and full auditability of provenance. See
 | `core/adaptation.py`  | ✅ | Adaptive TruthGate threshold (RFC0071): stress ↑ → stricter; healthy → relaxes |
 | `core/observe.py`     | ✅ | Memory observability report over the L3 canonical graph                     |
 | `core/metrics.py`     | ✅ | Lightweight in-process counters (query / ingest / gate)                     |
-| `core/cli.py`         | ✅ | CLI: `ingest`/`ask`/`history`/`report`/`erase`/`erasures`/`restrict`/`unrestrict`/`ropa`/`audit`/`audit-verify`/`redact`/`receipt`/`verify-receipt` |
-| `tests/`              | ✅ | **349 passing**, 12 skipped, **99% coverage** (gate: 95%) — see [TEST_REPORT.md](./TEST_REPORT.md) |
+| `core/cli.py`         | ✅ | CLI: `ingest`/`ask`/`history`/`report`/`erase`/`erasures`/`restrict`/`unrestrict`/`ropa`/`audit`/`audit-verify`/`redact`/`receipt`/`verify-receipt`/`conflicts` |
+| `tests/`              | ✅ | **364 passing**, 12 skipped, **99% coverage** (gate: 95%) — see [TEST_REPORT.md](./TEST_REPORT.md) |
 | `docs/Velantrim_V8_Crystal_Sprint1.jsonl` | 📜 Spec | Full system design (63 chunks) |
 
 **Current status**: the full fact lifecycle runs end-to-end — ingest → classify
@@ -82,7 +83,7 @@ git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
 pip install -r requirements.txt        # stdlib-only runtime; deps are for tests/optional backends
 python -m core.pipeline                # runs the end-to-end demo, fully local
-pytest                                 # 349 passing, 99% coverage
+pytest                                 # 364 passing, 99% coverage
 ```
 
 No data leaves your machine. See [DEMO.md](./DEMO.md) for a walkthrough of the
@@ -129,8 +130,11 @@ for the full breakdown and honest implemented-vs-designed split):
    `core/compliance.py`, `core/crypto.py`, `core/audit.py`, `core/pii.py`)*
 3. **Local-first persistence & packaging** — reproducible, dependency-free
    deployment; embedded graph backend (LadybugDB) with on-disk persistence.
-4. **Conflict / hallucination detection** — promote `find_conflicts` candidate
-   detection to automatic NLI-based contradiction blocking.
+4. **Conflict / hallucination detection** — a deterministic, dependency-free
+   contradiction classifier (`core/contradiction.py`) labels each `find_conflicts`
+   candidate as CONTRADICTION / REFINEMENT / RELATED via negation, antonym and
+   numeric signals; opt-in auto-linking of detected contradictions at ingest
+   (`VELANTRIM_AUTO_CONTRADICT`). *(implemented; NLI-model upgrade is future work)*
 5. **Documentation, security audit & CI** — sustained test coverage, security
    review (see [SECURITY.md](./SECURITY.md)), and reproducible CI.
 

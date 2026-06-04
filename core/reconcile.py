@@ -23,6 +23,7 @@ from typing import Dict, Any, Optional, List
 from core.memory import get_fact, store_fact, transition_esm, update_fact
 from core.l3_graph import get_l3_graph
 from core.embedding import get_embedder
+from core import contradiction
 
 REL_SUPERSEDED_BY = "SUPERSEDED_BY"
 REL_CONTRADICTS = "CONTRADICTS"
@@ -145,9 +146,12 @@ def find_conflicts(
     Identify conflict CANDIDATES: canonical WORLD_FACTs semantically
     close to claim (≥ threshold), but a different fact and not a verbatim repeat.
 
-    Intentionally does NOT mark anything automatically — embedding similarity does not
-    distinguish a "refinement" from a "contradiction". The decision is made by the caller
-    via supersede()/contradict(). This is a signal for review, not a verdict.
+    Each candidate is classified (core/contradiction.py) into kind ∈
+    {CONTRADICTION, REFINEMENT, RELATED} with the deciding signal, so the caller
+    can tell an opposing claim from a refinement. Still does NOT mark anything
+    automatically — embedding similarity is a candidate filter, the classifier a
+    high-precision signal; the decision (supersede/contradict) stays with the
+    caller. A signal for review, not a verdict.
     """
     graph = get_l3_graph()
     q_vec = get_embedder().embed(claim)
@@ -160,13 +164,18 @@ def find_conflicts(
             continue
         if node.get("epistemic_state") != "Validated":
             continue
-        if node.get("claim", "").strip().lower() == claim_norm:
+        node_claim = node.get("claim", "")
+        if node_claim.strip().lower() == claim_norm:
             continue  # a verbatim repeat is a reinforce, not a conflict
-        if node.get("_relevance", 0.0) < threshold:
+        sim = node.get("_relevance", 0.0)
+        if sim < threshold:
             continue
+        verdict = contradiction.classify(claim, node_claim, similarity=sim)
         out.append({
             "fact_id": node["fact_id"],
-            "claim": node.get("claim", ""),
-            "similarity": node.get("_relevance", 0.0),
+            "claim": node_claim,
+            "similarity": sim,
+            "kind": verdict["kind"],
+            "signal": verdict["signal"],
         })
     return out
