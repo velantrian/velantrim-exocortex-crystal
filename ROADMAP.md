@@ -31,6 +31,10 @@ This document is the **honest truth** about what's implemented vs designed.
   field-level encryption of claim/metadata in L1 SQLite (`VELANTRIM_ENCRYPTION_KEY`);
   Fernet/AES when `cryptography` is installed, dependency-free HMAC-SHA256 otherwise;
   off by default (runtime stays stdlib-only)
+- Tamper-evident audit log (`core/audit.py`, Art. 5(2)/24/30): append-only hash
+  chain of erase/restrict/unrestrict events; `verify_audit_log` detects any edit,
+  deletion or reordering; optional HMAC signing (`VELANTRIM_AUDIT_KEY`); CLI
+  `audit` / `audit-verify`
 
 ## ✅ Implemented (metadata tooling, not runtime)
 

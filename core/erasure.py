@@ -31,6 +31,7 @@ from core.memory import (
     ImmutableStateError,
 )
 from core.l3_graph import get_l3_graph
+from core import audit
 
 # Provenance edge: derived -DERIVED_FROM-> source. Marks that a fact is derived
 # from another. Used by cascade deletion: erasing the source can also erase
@@ -109,6 +110,11 @@ def erase_fact(
     # The tombstone is immutable: on a repeated deletion the original hash is preserved.
     write_tombstone(fact_id, reason=reason, actor=actor, content_hash=content_hash)
     tombstone = get_tombstone(fact_id)
+
+    # Record the event in the tamper-evident audit chain (Art. 5(2)/24/30). Content-free.
+    audit.append_event("erase", fact_id, {
+        "reason": reason, "actor": actor,
+        "content_hash": content_hash, "erased_now": erased_now})
 
     receipt: Dict[str, Any] = {
         "fact_id": fact_id,

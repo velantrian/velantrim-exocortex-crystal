@@ -57,6 +57,13 @@ legal advice — operators remain responsible for compliant deployment.
   is a content-free record of every Art. 17 deletion — `fact_id`, timestamp,
   reason, actor, and a SHA-256 hash of the erased claim — proving *what* and
   *when* was erased **without retaining the personal data itself**.
+- ✅ **Tamper-evident audit log** (`core/audit.py`; CLI `audit` / `audit-verify`):
+  an append-only hash chain of compliance events (erase / restrict / unrestrict).
+  Each entry seals its content and links to the previous one, so any later edit,
+  deletion or reordering is detectable by `verify_audit_log()` — demonstrating
+  integrity and accountability (Art. 5(2)(f), Art. 5(2), Art. 24). Optional
+  per-entry HMAC signing (`VELANTRIM_AUDIT_KEY`) makes it tamper-*proof* against
+  anyone without the key.
 - Security measures appropriate to a local single-user library are described in
   [SECURITY.md](./SECURITY.md). ✅ **Application-level encryption at rest**
   (`core/crypto.py`) encrypts the personal-data fields (claim, metadata) of the
@@ -81,7 +88,7 @@ These are explicit, fundable deliverables (see [ROADMAP.md](./ROADMAP.md)):
 2. ✅ **Per-fact processing-restriction** (Art. 18) — `core/compliance.py`.
 3. ✅ **Exportable record-of-processing** (Art. 30) — `record_of_processing()`.
 4. ✅ **Application-level encryption at rest** (Art. 32) — `core/crypto.py`.
-5. **Signed / tamper-evident audit log** for the erasure & restriction registers.
+5. ✅ **Signed / tamper-evident audit log** (Art. 5(2)/24/30) — `core/audit.py`.
 
 ## Contact
 

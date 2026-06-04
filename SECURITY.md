@@ -60,13 +60,18 @@ assets and threats:
   repository (enforced by `.gitignore`; verified clean).
 - All untrusted input flows through validation (`store_fact` rejects unknown
   ESM states, claim types, and source statuses).
+- **Tamper-evident audit log (GDPR Art. 5(2)/24/30)** — `core/audit.py` keeps an
+  append-only hash chain of compliance events (erase / restrict / unrestrict).
+  Editing, deleting or reordering any past entry breaks the chain and is caught
+  by `verify_audit_log()` (CLI `audit-verify`). Optional per-entry HMAC signing
+  (`VELANTRIM_AUDIT_KEY`) adds forgery resistance.
 - **Encryption at rest (opt-in, GDPR Art. 32)** — `core/crypto.py` provides
   authenticated, field-level encryption of the personal-data columns. With
   `cryptography` installed it uses Fernet (AES-128-CBC + HMAC); otherwise a
   dependency-free HMAC-SHA256 keystream (CTR) with encrypt-then-MAC. Tokens are
   tamper-evident — a wrong key or modified ciphertext fails authentication.
   Disabled by default (identity), so the default runtime stays stdlib-only.
-- Test suite of 300 passing tests at ~99% coverage guards the invariants above
+- Test suite of 315 passing tests at ~99% coverage guards the invariants above
   (see [TEST_REPORT.md](./TEST_REPORT.md)).
 
 ## Dependencies
