@@ -35,6 +35,9 @@ This document is the **honest truth** about what's implemented vs designed.
   chain of erase/restrict/unrestrict events; `verify_audit_log` detects any edit,
   deletion or reordering; optional HMAC signing (`VELANTRIM_AUDIT_KEY`); CLI
   `audit` / `audit-verify`
+- PII detection & redaction (`core/pii.py`, Art. 5 data minimisation): overlap-safe
+  detection of email/phone/credit-card(Luhn)/IPv4/IBAN; opt-in redaction at ingest
+  (`VELANTRIM_REDACT_PII`); CLI `redact`
 
 ## ✅ Implemented (metadata tooling, not runtime)
 

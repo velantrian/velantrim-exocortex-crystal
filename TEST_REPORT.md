@@ -7,11 +7,11 @@ numbers: run `pytest` yourself and you will get the figures below.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **315** |
+| **Tests passing** | **332** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **~99%** (gate enforced at 95%) |
-| Test files | 25 (`tests/test_*.py`) |
+| Test files | 26 (`tests/test_*.py`) |
 | Python | 3.11 (3.10+ supported) |
 | Runtime dependencies | standard library only |
 
@@ -24,7 +24,7 @@ Neo4j, Anthropic) that are not installed in the default environment.
 
 ```bash
 pip install -r requirements.txt
-pytest                 # 315 passed, 12 skipped
+pytest                 # 332 passed, 12 skipped
 ```
 
 ## Coverage by module (core/)
@@ -34,22 +34,23 @@ pytest                 # 315 passed, 12 skipped
 | `core/_registry.py`    | 18  | 100% |
 | `core/adaptation.py`   | 22  | 100% |
 | `core/audit.py`        | 69  | 100% |
-| `core/cli.py`          | 59  | 100% |
+| `core/cli.py`          | 65  | 100% |
 | `core/compliance.py`   | 43  | 100% |
 | `core/consolidate.py`  | 38  | 95%  |
 | `core/crypto.py`       | 62  | 100% |
 | `core/embedding.py`    | 76  | 100% |
 | `core/erasure.py`      | 42  | 100% |
 | `core/generation.py`   | 41  | 100% |
-| `core/ingest.py`       | 58  | 100% |
+| `core/ingest.py`       | 65  | 100% |
 | `core/l3_graph.py`     | 150 | 99%  |
 | `core/memory.py`       | 183 | 100% |
 | `core/metrics.py`      | 10  | 100% |
 | `core/observe.py`      | 35  | 100% |
+| `core/pii.py`          | 56  | 100% |
 | `core/pipeline.py`     | 241 | 98%  |
 | `core/reconcile.py`    | 76  | 96%  |
 | `core/trace.py`        | 26  | 100% |
-| **Total (repo-wide)**  | **1995** | **~99%** |
+| **Total (repo-wide)**  | **2064** | **~99%** |
 
 ## What the tests cover
 
@@ -68,6 +69,7 @@ pytest                 # 315 passed, 12 skipped
 | GDPR Art. 18 restriction & Art. 30 record-of-processing | `test_compliance.py` |
 | GDPR Art. 32 encryption at rest (round-trip, tamper, at-rest ciphertext) | `test_crypto.py` |
 | Tamper-evident audit log (hash chain, tamper detection, HMAC signing) | `test_audit.py` |
+| PII detection & redaction (email/phone/card/IPv4/IBAN, Luhn, overlap) | `test_pii.py` |
 | Adaptive TruthGate threshold | `test_adaptation.py` |
 | Observability & metrics | `test_observe.py`, `test_metrics.py` |
 | Migration tooling & rollback | `test_migration.py`, `test_migration_extra.py` |
