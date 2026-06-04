@@ -23,7 +23,7 @@ from core.compliance import (
     restrict_processing, unrestrict_processing, record_of_processing,
 )
 from core.audit import audit_log, verify_audit_log
-from core import pii
+from core import pii, provenance
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -59,6 +59,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     sub.add_parser("audit-verify", help="verify audit-log integrity (hash chain + signatures)")
     p_redact = sub.add_parser("redact", help="detect & redact PII in text (GDPR Art. 5)")
     p_redact.add_argument("text")
+    p_receipt = sub.add_parser(
+        "receipt", help="ask, then emit a tamper-evident provenance receipt (JSON)")
+    p_receipt.add_argument("query")
+    p_verify = sub.add_parser(
+        "verify-receipt", help="replay a provenance receipt against the canon")
+    p_verify.add_argument(
+        "file", nargs="?", default="-",
+        help="receipt JSON file, or '-'/omitted to read from stdin")
 
     args = parser.parse_args(argv)
 
@@ -100,6 +108,16 @@ def main(argv: Optional[List[str]] = None) -> int:
         redacted, found = pii.redact(args.text)
         print(json.dumps({"redacted": redacted, "found": pii.summary(found)},
                          ensure_ascii=False))
+    elif args.cmd == "receipt":
+        res = run(args.query)
+        if res.get("answer") is None:
+            print(json.dumps({"error": res.get("error")}, ensure_ascii=False))
+            return 1
+        print(json.dumps(provenance.build_receipt(res), ensure_ascii=False, indent=2))
+    elif args.cmd == "verify-receipt":
+        import sys
+        raw = sys.stdin.read() if args.file == "-" else open(args.file, encoding="utf-8").read()
+        print(json.dumps(provenance.verify_receipt(json.loads(raw)), ensure_ascii=False))
     return 0
 
 

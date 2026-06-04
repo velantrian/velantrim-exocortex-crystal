@@ -20,6 +20,11 @@ This document is the **honest truth** about what's implemented vs designed.
 - SleepCycle (`core/consolidate.py`): significance-weighted confidence decay (FSRS-style)
 - Episodic linking + `recall_episode` / `recall_by_entity`
 - Guardian (structural check), provenance trace (`core/trace.py`)
+- Verifiable answer provenance (`core/provenance.py`): `build_receipt` seals an
+  answer + query + the exact cited facts under a SHA-256 digest (optional
+  HMAC via `VELANTRIM_PROVENANCE_KEY`); `verify_receipt` replays each citation
+  against the canon and flags facts later erased / restricted / modified /
+  contradicted; CLI `receipt` / `verify-receipt`
 - GDPR Art. 17 physical erasure (`core/erasure.py`): `erase_fact` purges a fact
   across L0/L1/L3 + outbox and writes a content-free audit tombstone
   (`erasure_log`); `--cascade` erases derived facts (`DERIVED_FROM`)

@@ -382,6 +382,7 @@ def generate_answer(
 
     return {
         "answer":       answer,
+        "query":        facts_pack.get("query", ""),
         "facts":        _public_facts(validated_facts),
         "trace":        trace,
         "trace_fmt":    format_trace(trace),

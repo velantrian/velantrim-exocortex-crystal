@@ -7,11 +7,11 @@ numbers: run `pytest` yourself and you will get the figures below.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **332** |
+| **Tests passing** | **349** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **~99%** (gate enforced at 95%) |
-| Test files | 26 (`tests/test_*.py`) |
+| Test files | 27 (`tests/test_*.py`) |
 | Python | 3.11 (3.10+ supported) |
 | Runtime dependencies | standard library only |
 
@@ -24,7 +24,7 @@ Neo4j, Anthropic) that are not installed in the default environment.
 
 ```bash
 pip install -r requirements.txt
-pytest                 # 332 passed, 12 skipped
+pytest                 # 349 passed, 12 skipped
 ```
 
 ## Coverage by module (core/)
@@ -34,7 +34,7 @@ pytest                 # 332 passed, 12 skipped
 | `core/_registry.py`    | 18  | 100% |
 | `core/adaptation.py`   | 22  | 100% |
 | `core/audit.py`        | 69  | 100% |
-| `core/cli.py`          | 65  | 100% |
+| `core/cli.py`          | 79  | 100% |
 | `core/compliance.py`   | 43  | 100% |
 | `core/consolidate.py`  | 38  | 95%  |
 | `core/crypto.py`       | 62  | 100% |
@@ -48,9 +48,10 @@ pytest                 # 332 passed, 12 skipped
 | `core/observe.py`      | 35  | 100% |
 | `core/pii.py`          | 56  | 100% |
 | `core/pipeline.py`     | 241 | 98%  |
+| `core/provenance.py`   | 68  | 100% |
 | `core/reconcile.py`    | 76  | 96%  |
 | `core/trace.py`        | 26  | 100% |
-| **Total (repo-wide)**  | **2064** | **~99%** |
+| **Total (repo-wide)**  | **2146** | **~99%** |
 
 ## What the tests cover
 
@@ -65,6 +66,7 @@ pytest                 # 332 passed, 12 skipped
 | Truth maintenance (reinforce/supersede/contradict) | `test_reconcile.py` |
 | Consolidation / FSRS-style decay | `test_consolidate.py` |
 | Provenance trace | `test_trace.py` |
+| Verifiable answer receipts (digest, HMAC, replay/drift detection) | `test_provenance.py` |
 | GDPR Art. 17 physical erasure, cascade & tombstones | `test_erasure.py` |
 | GDPR Art. 18 restriction & Art. 30 record-of-processing | `test_compliance.py` |
 | GDPR Art. 32 encryption at rest (round-trip, tamper, at-rest ciphertext) | `test_crypto.py` |

@@ -51,9 +51,13 @@ def test_ciphertext_is_nondeterministic(enc):
 
 def test_tamper_is_detected(enc):
     token = crypto.encrypt("trustworthy")
-    # Flip a character in the base64 body → authentication must fail.
+    # Flip the first char of the base64 body (right after the "enc:xx:" prefix).
+    # This position carries full-information nonce bits, so the flip always
+    # changes the decoded bytes — unlike the padding-adjacent tail, where base64
+    # redundancy can absorb a single-char change and mask the tamper.
+    prefix_len = token.index(":", 4) + 1  # end of the "enc:f1:" / "enc:h1:" marker
     body = list(token)
-    body[-2] = "A" if body[-2] != "A" else "B"
+    body[prefix_len] = "A" if body[prefix_len] != "A" else "B"
     tampered = "".join(body)
     with pytest.raises(ValueError, match="authentication failed"):
         crypto.decrypt(tampered)

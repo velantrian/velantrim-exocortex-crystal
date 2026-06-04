@@ -58,6 +58,7 @@ content-free audit tombstone), and full auditability of provenance. See
 | `core/reconcile.py`   | ✅ | Truth maintenance: reinforce / supersede / contradict / find_conflicts      |
 | `core/consolidate.py` | ✅ | SleepCycle: significance-weighted confidence decay (FSRS-style)             |
 | `core/trace.py`       | ✅ | Provenance chain for every fact                                             |
+| `core/provenance.py`  | ✅ | Tamper-evident, replayable answer receipts — re-verify any answer against the canon (detects later erase/restrict/modify/contradict) |
 | `core/erasure.py`     | ✅ | GDPR Art. 17 physical erasure across L0/L1/L3 + content-free tombstone; cascade to derived facts |
 | `core/compliance.py`  | ✅ | GDPR Art. 18 processing restriction + Art. 30 record-of-processing export |
 | `core/crypto.py`      | ✅ | GDPR Art. 32 opt-in encryption at rest for claim/metadata (Fernet/AES or stdlib HMAC) |
@@ -66,8 +67,8 @@ content-free audit tombstone), and full auditability of provenance. See
 | `core/adaptation.py`  | ✅ | Adaptive TruthGate threshold (RFC0071): stress ↑ → stricter; healthy → relaxes |
 | `core/observe.py`     | ✅ | Memory observability report over the L3 canonical graph                     |
 | `core/metrics.py`     | ✅ | Lightweight in-process counters (query / ingest / gate)                     |
-| `core/cli.py`         | ✅ | CLI: `ingest`/`ask`/`history`/`report`/`erase`/`erasures`/`restrict`/`unrestrict`/`ropa`/`audit`/`audit-verify`/`redact` |
-| `tests/`              | ✅ | **332 passing**, 12 skipped, **99% coverage** (gate: 95%) — see [TEST_REPORT.md](./TEST_REPORT.md) |
+| `core/cli.py`         | ✅ | CLI: `ingest`/`ask`/`history`/`report`/`erase`/`erasures`/`restrict`/`unrestrict`/`ropa`/`audit`/`audit-verify`/`redact`/`receipt`/`verify-receipt` |
+| `tests/`              | ✅ | **349 passing**, 12 skipped, **99% coverage** (gate: 95%) — see [TEST_REPORT.md](./TEST_REPORT.md) |
 | `docs/Velantrim_V8_Crystal_Sprint1.jsonl` | 📜 Spec | Full system design (63 chunks) |
 
 **Current status**: the full fact lifecycle runs end-to-end — ingest → classify
@@ -81,7 +82,7 @@ git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
 pip install -r requirements.txt        # stdlib-only runtime; deps are for tests/optional backends
 python -m core.pipeline                # runs the end-to-end demo, fully local
-pytest                                 # 332 passing, 99% coverage
+pytest                                 # 349 passing, 99% coverage
 ```
 
 No data leaves your machine. See [DEMO.md](./DEMO.md) for a walkthrough of the
@@ -115,8 +116,11 @@ laundering subjective input into objective truth.
 Three to five fundable, verifiable deliverables (see [ROADMAP.md](./ROADMAP.md)
 for the full breakdown and honest implemented-vs-designed split):
 
-1. **Verifiable provenance & audit trail** — complete the trace chain so any
-   answer can be replayed back to its sources. *(foundation in place)*
+1. **Verifiable provenance & audit trail** — any answer can be replayed back to
+   its sources: `core/provenance.py` seals each answer into a tamper-evident,
+   optionally HMAC-signed **receipt** and re-verifies it against the canon,
+   detecting facts later erased / restricted / modified / contradicted.
+   *(implemented: `core/trace.py`, `core/provenance.py`)*
 2. **GDPR data-subject operations** — rectification, **physical erasure**
    (cascade + content-free tombstone), **processing restriction**, an
    **Art. 30 record-of-processing** export, **opt-in encryption at rest**
