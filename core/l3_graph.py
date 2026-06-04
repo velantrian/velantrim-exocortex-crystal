@@ -71,6 +71,15 @@ class L3GraphBackend(ABC):
         """Вернуть канонический узел по fact_id или None."""
 
     @abstractmethod
+    def erase_fact(self, fact_id: str) -> bool:
+        """
+        Физически удалить узел факта из канона вместе со ВСЕМИ его рёбрами
+        (исходящими и входящими), его вектором и mentions-связями.
+        GDPR Art. 17 (право на забвение). Идемпотентно: True, если узел
+        существовал и был удалён, иначе False.
+        """
+
+    @abstractmethod
     def all_facts(self) -> List[Dict[str, Any]]:
         """Все канонические узлы графа."""
 
@@ -186,6 +195,16 @@ class MockL3Graph(L3GraphBackend):
 
     def all_facts(self) -> List[Dict[str, Any]]:
         return [dict(n) for n in self._nodes.values()]
+
+    def erase_fact(self, fact_id: str) -> bool:
+        existed = fact_id in self._nodes
+        self._nodes.pop(fact_id, None)
+        self._vectors.pop(fact_id, None)
+        # Удаляем все рёбра, где факт — источник ИЛИ цель (без висячих ссылок).
+        self._edges = [e for e in self._edges
+                       if e[0] != fact_id and e[2] != fact_id]
+        self._mentions = [m for m in self._mentions if m[0] != fact_id]
+        return existed
 
     def add_edge(
         self, src_id: str, rel_type: str, dst_id: str,
@@ -369,6 +388,14 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
         if not res.has_next():
             return None
         return self._row_to_fact(res.get_next(), cols)
+
+    def erase_fact(self, fact_id: str) -> bool:
+        existed = self.get_fact(fact_id) is not None
+        # DETACH DELETE снимает узел вместе со всеми инцидентными рёбрами
+        # (EDGE + MENTIONS) — висячих ссылок не остаётся.
+        self._conn.execute(
+            "MATCH (f:Fact {fact_id: $id}) DETACH DELETE f", {"id": fact_id})
+        return existed
 
     def all_facts(self) -> List[Dict[str, Any]]:
         cols = self._COLS
@@ -581,6 +608,12 @@ class Neo4jL3Graph(L3GraphBackend):  # pragma: no cover
         rows = self._run(
             "MATCH (f:Fact {fact_id: $id}) RETURN properties(f) AS p", id=fact_id)
         return self._node(rows[0]["p"]) if rows else None
+
+    def erase_fact(self, fact_id: str) -> bool:
+        existed = self.get_fact(fact_id) is not None
+        # DETACH DELETE снимает узел со всеми инцидентными рёбрами (EDGE/MENTIONS).
+        self._run("MATCH (f:Fact {fact_id: $id}) DETACH DELETE f", id=fact_id)
+        return existed
 
     def all_facts(self) -> List[Dict[str, Any]]:
         rows = self._run("MATCH (f:Fact) RETURN properties(f) AS p")

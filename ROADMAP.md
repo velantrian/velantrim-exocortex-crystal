@@ -20,6 +20,13 @@ This document is the **honest truth** about what's implemented vs designed.
 - SleepCycle (`core/consolidate.py`): significance-weighted confidence decay (FSRS-style)
 - Episodic linking + `recall_episode` / `recall_by_entity`
 - Guardian (structural check), provenance trace (`core/trace.py`)
+- GDPR Art. 17 physical erasure (`core/erasure.py`): `erase_fact` purges a fact
+  across L0/L1/L3 + outbox and writes a content-free audit tombstone
+  (`erasure_log`); `--cascade` erases derived facts (`DERIVED_FROM`)
+- GDPR Art. 18 processing restriction + Art. 30 record-of-processing
+  (`core/compliance.py`): `restrict_processing` excludes a fact from recall
+  without deletion; `record_of_processing` exports an aggregate content-free
+  RoPA; CLI `restrict` / `unrestrict` / `ropa`
 
 ## ✅ Implemented (metadata tooling, not runtime)
 

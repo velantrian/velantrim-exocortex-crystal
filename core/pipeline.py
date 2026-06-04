@@ -123,6 +123,8 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
         sim = node.get("_relevance", 0.0)
         if sim < _RETRIEVAL_MIN_SIM:
             continue
+        if node.get("restricted"):
+            continue  # GDPR Art. 18: ограниченные факты не участвуют в обработке
         _offer(_from_node(node, sim * node.get("confidence", 1.0), "memory"))
         vector_hits.append(node)
 
@@ -158,6 +160,8 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
                 node = graph.get_fact(edge["target"])
                 if node is None or node.get("epistemic_state") != "Validated":
                     continue
+                if node.get("restricted"):
+                    continue  # GDPR Art. 18: не распространяем активацию на ограниченные
                 targets.append((node, weight))
             total_weight = sum(w for _, w in targets)
             if total_weight <= 0.0:

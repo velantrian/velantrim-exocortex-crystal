@@ -106,7 +106,8 @@ _DDL = """
         significance   REAL DEFAULT 0.5,
         created_at     TEXT NOT NULL,
         updated_at     TEXT NOT NULL,
-        metadata       TEXT DEFAULT '{}'
+        metadata       TEXT DEFAULT '{}',
+        restricted     INTEGER DEFAULT 0
     )
 """
 
@@ -122,6 +123,21 @@ _OUTBOX_DDL = """
     )
 """
 
+# ─── ERASURE LOG: tombstone'ы физического удаления (GDPR Art. 17 / Art. 30) ────
+# Содержит ДОКАЗАТЕЛЬСТВО факта удаления без самих персональных данных: claim
+# не хранится, только его sha256-хэш. Так удаление остаётся подотчётным
+# (record of processing, Art. 30), не воссоздавая стёртое (right to erasure,
+# Art. 17). Запись tombstone иммутабельна: первое удаление фиксируется навсегда.
+_TOMBSTONE_DDL = """
+    CREATE TABLE IF NOT EXISTS erasure_log (
+        fact_id      TEXT PRIMARY KEY,
+        erased_at    TEXT NOT NULL,
+        reason       TEXT NOT NULL,
+        actor        TEXT NOT NULL,
+        content_hash TEXT
+    )
+"""
+
 # ─── Миграция: колонки, добавленные после первого релиза схемы ────────────────
 # CREATE TABLE IF NOT EXISTS не трогает уже существующую БД, поэтому старые файлы
 # velantrim_memory.db нужно догнать через ALTER TABLE ADD COLUMN (idempotent).
@@ -129,6 +145,7 @@ _MIGRATIONS = [
     ("claim_type",    "TEXT DEFAULT 'WORLD_FACT'"),
     ("source_status", "TEXT DEFAULT 'UNKNOWN'"),
     ("significance",  "REAL DEFAULT 0.5"),
+    ("restricted",    "INTEGER DEFAULT 0"),  # GDPR Art. 18 (processing restriction)
 ]
 
 
@@ -153,6 +170,7 @@ def _db():
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute(_DDL)
     conn.execute(_OUTBOX_DDL)
+    conn.execute(_TOMBSTONE_DDL)
     _migrate(conn)
     conn.commit()
     try:
@@ -383,3 +401,77 @@ def clear_l3_write(fact_id: str) -> None:
     """Убрать факт из очереди (после успешного мержа или если он больше не нужен)."""
     with _db() as conn:
         conn.execute("DELETE FROM l3_outbox WHERE fact_id = ?", (fact_id,))
+
+
+# ─── ОГРАНИЧЕНИЕ ОБРАБОТКИ (GDPR Art. 18) ─────────────────────────────────────
+# restricted=1 означает «факт хранится, но исключён из активной обработки»
+# (recall/ответы). Это НЕ удаление и НЕ смена ESM-состояния: факт остаётся
+# валидным, но временно «заморожен». Обратимо. Оркестрация синка в L3 —
+# в core/compliance.py (memory.py не импортирует l3_graph, чтобы не плодить цикл).
+
+def set_restricted(fact_id: str, restricted: bool) -> bool:
+    """
+    Пометить/снять ограничение обработки факта (L0 + L1). Возвращает True, если
+    факт найден. Не трогает ESM-состояние. Синк в L3 — на вызывающей стороне.
+    """
+    existing = get_fact(fact_id)
+    if existing is None:
+        return False
+    val = int(bool(restricted))
+    now = datetime.now(timezone.utc).isoformat()
+    with _db() as conn:
+        conn.execute(
+            "UPDATE facts SET restricted = ?, updated_at = ? WHERE fact_id = ?",
+            (val, now, fact_id),
+        )
+    _l0_put(fact_id, {**existing, "restricted": val, "updated_at": now})
+    return True
+
+
+# ─── ФИЗИЧЕСКОЕ УДАЛЕНИЕ (GDPR Art. 17) ───────────────────────────────────────
+# Низкоуровневые примитивы. Полное удаление по всем тканям (L0/L1/L3/outbox) +
+# tombstone оркеструется в core/erasure.py — не вызывайте delete_fact_l1 напрямую
+# для GDPR-удаления, иначе останется узел в L3 и не будет tombstone.
+
+def delete_fact_l1(fact_id: str) -> bool:
+    """
+    Физически удалить факт из L0 (LRU) и L1 (SQLite). Не трогает L3 и tombstone.
+    Возвращает True, если строка в SQLite реально была удалена.
+    """
+    _L0.pop(fact_id, None)
+    with _db() as conn:
+        cur = conn.execute("DELETE FROM facts WHERE fact_id = ?", (fact_id,))
+        return cur.rowcount > 0
+
+
+def write_tombstone(
+    fact_id: str, *, reason: str, actor: str, content_hash: Optional[str] = None
+) -> None:
+    """
+    Записать tombstone удаления (idempotent, иммутабельно: первое удаление
+    фиксируется навсегда). Повторный вызов не перезаписывает исходную запись —
+    событие удаления одно. Персональные данные НЕ сохраняются (только хэш).
+    """
+    now = datetime.now(timezone.utc).isoformat()
+    with _db() as conn:
+        conn.execute(
+            "INSERT INTO erasure_log (fact_id, erased_at, reason, actor, content_hash) "
+            "VALUES (?, ?, ?, ?, ?) ON CONFLICT(fact_id) DO NOTHING",
+            (fact_id, now, reason, actor, content_hash),
+        )
+
+
+def get_tombstone(fact_id: str) -> Optional[Dict]:
+    """Вернуть tombstone удаления по fact_id или None."""
+    with _db() as conn:
+        row = conn.execute(
+            "SELECT * FROM erasure_log WHERE fact_id = ?", (fact_id,)
+        ).fetchone()
+        return dict(row) if row else None
+
+
+def get_tombstones() -> list:
+    """Все tombstone'ы удаления (журнал, Art. 30). Без персональных данных."""
+    with _db() as conn:
+        return [dict(r) for r in conn.execute(
+            "SELECT * FROM erasure_log ORDER BY erased_at, fact_id")]

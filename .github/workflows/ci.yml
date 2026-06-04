@@ -37,7 +37,7 @@ jobs:
         run: |
           python -c "
           import json
-          with open('Velantrim_V8_Crystal_Sprint1.jsonl') as f:
+          with open('docs/Velantrim_V8_Crystal_Sprint1.jsonl') as f:
               for i, line in enumerate(f, 1):
                   if line.strip():
                       json.loads(line)
