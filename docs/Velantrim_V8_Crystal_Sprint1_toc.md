@@ -1,3 +1,19 @@
+<!--
+  NOTE (English) — historical design specification.
+
+  This is the ORIGINAL Velantrim V8 design spec, written in Russian. It is kept
+  for provenance and reference as an in-depth design document; it is NOT the
+  canonical project documentation. For the current English project docs see:
+    - ../README.md        (overview)
+    - ../GDPR.md          (data-protection mapping)
+    - ../ROADMAP.md       (implemented vs. designed)
+    - ../SECURITY.md, ../PRIVACY.md
+
+  The spec below describes the fractal graph-memory architecture (L0–L6), the
+  Epistemic State Machine (ESM), the TruthGate, and the RFC series on which the
+  implemented `core/` modules are based.
+-->
+
 # 💠 Velantrim V8 Crystal — Full Edition + Sprint 1
 ## Спецификация: Фрактальная Графовая Память для Автономного AI Агента
 ### (v8.0.2-sprint1 · Полный аудит · P0–P4 + Sprint 1+1.1 патчи применены · Апрель 2026)
