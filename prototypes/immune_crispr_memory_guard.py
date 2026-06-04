@@ -1,5 +1,5 @@
 # RFC0072 — Immune / CRISPR Memory Guard (v0.1)
-# Защита от галлюцинаций и вредных паттернов (аналогия CRISPR у бактерий)
+# Protection against hallucinations and harmful patterns (analogy to bacterial CRISPR)
 
 from typing import List, Dict
 
@@ -8,12 +8,12 @@ import time
 
 class ImmuneCRISPRMemoryGuard:
     def __init__(self, max_memory: int = 1000):
-        self.crispr_memory: List[Dict] = []  # Хранит записанные "вирусы" (error patterns)
+        self.crispr_memory: List[Dict] = []  # Stores recorded "viruses" (error patterns)
         self.max_memory = max_memory
         self.blocked_patterns: set = set()
 
     def record_threat(self, threat_type: str, pattern: str, severity: float = 1.0):
-        """ Записывает новую угрозу (галлюцинация, противоречие, вредный паттерн) """
+        """ Record a new threat (hallucination, contradiction, harmful pattern). """
         entry = {
             "timestamp": time.time(),
             "type": threat_type,
@@ -27,7 +27,7 @@ class ImmuneCRISPRMemoryGuard:
         print(f"🚨 Threat recorded: {threat_type} | Severity: {severity}")
 
     def check_and_block(self, input_text: str) -> bool:
-        """ Проверяет вход на наличие заблокированных паттернов. Возвращает True, если блокирован. """
+        """ Check the input for blocked patterns. Returns True if blocked. """
         for blocked in self.blocked_patterns:
             if blocked.lower() in input_text.lower():
                 print(f"🔒 Blocked by CRISPR guard: {blocked}")

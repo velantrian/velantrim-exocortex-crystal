@@ -55,7 +55,7 @@ print("Child system created successfully")
 ## Expected Output (example)
 
 ```
-🌿🧠 HybridBiologicalMemory 'Velantrim-Hybrid' инициализирована (4 биологических слоя)
+🌿🧠 HybridBiologicalMemory 'Velantrim-Hybrid' initialized (4 biological layers)
 Adapted verification strength: 0.65
 🔒 Blocked by CRISPR guard: capital of france is berlin
 Contradiction blocked: True
