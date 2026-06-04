@@ -16,7 +16,7 @@ legal advice — operators remain responsible for compliant deployment.
 |-----------|---------------------------|
 | **Lawfulness, fairness, transparency** | Every fact carries explicit `source` and `source_status`; the provenance trace (`core/trace.py`) makes processing transparent and auditable. |
 | **Purpose limitation** | `claim_type` records the nature/purpose of each stored claim; subjective claims are kept separate from world-facts. |
-| **Data minimisation** | Stdlib-only local runtime; no telemetry, no analytics, no background collection. The store contains only facts the operator writes. |
+| **Data minimisation** | Stdlib-only local runtime; no telemetry, no analytics, no background collection. The store contains only facts the operator writes. Optional **PII redaction at ingest** (`core/pii.py`, `VELANTRIM_REDACT_PII`) strips emails/phones/cards/IPs/IBANs before storage (Art. 5(1)(c)). |
 | **Accuracy** | The TruthGate, ESM verification states, and `reconcile.py` (supersede / contradict / find_conflicts) exist specifically to keep stored facts accurate and to flag conflicts. |
 | **Storage limitation** | FSRS-style confidence decay (`core/consolidate.py`) and logical collapse support time-bounded retention. |
 | **Integrity & confidentiality** | Single-entry TruthGate, Ring Zero immutability (I6), validated ESM transitions, and the self-healing L3 outbox. See [SECURITY.md](./SECURITY.md). |

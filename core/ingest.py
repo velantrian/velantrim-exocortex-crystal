@@ -20,7 +20,7 @@ from core.l3_graph import get_l3_graph
 from core.embedding import assert_compatible_embedder
 from core.pipeline import guardian, truth_gate, _truth_status_for, _l3_payload
 from core.reconcile import reinforce, find_conflicts
-from core import metrics, adaptation
+from core import metrics, adaptation, pii
 
 # Modality markers (RU + EN). Order matters: we check from specific to general.
 _CLAIM_MARKERS = [
@@ -90,6 +90,15 @@ def ingest(
     if not utterance or not utterance.strip():
         raise ValueError("ingest: empty utterance")
 
+    # Data minimisation (GDPR Art. 5): optionally strip PII before anything is
+    # stored. Off by default; enabled via VELANTRIM_REDACT_PII. The content-free
+    # summary (types/counts, no values) is kept in metadata for accountability.
+    pii_redacted = None
+    if pii.redaction_enabled():
+        utterance, _found = pii.redact(utterance)
+        if _found:
+            pii_redacted = pii.summary(_found)
+
     ct, source_status = classify_claim(utterance)
     if claim_type is not None:
         ct = claim_type
@@ -116,6 +125,8 @@ def ingest(
         "significance": significance,
         "truth_status": "UNVERIFIED",
     }
+    if pii_redacted:
+        fact["metadata"] = {"pii_redacted": pii_redacted}
 
     # L0/L1: store as raw experience (pending), even if the gates reject it.
     store_fact(fact)

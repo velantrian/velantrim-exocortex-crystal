@@ -23,6 +23,7 @@ from core.compliance import (
     restrict_processing, unrestrict_processing, record_of_processing,
 )
 from core.audit import audit_log, verify_audit_log
+from core import pii
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -56,6 +57,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     sub.add_parser("ropa", help="record of processing (GDPR Art. 30)")
     sub.add_parser("audit", help="tamper-evident audit log (erase/restrict events)")
     sub.add_parser("audit-verify", help="verify audit-log integrity (hash chain + signatures)")
+    p_redact = sub.add_parser("redact", help="detect & redact PII in text (GDPR Art. 5)")
+    p_redact.add_argument("text")
 
     args = parser.parse_args(argv)
 
@@ -93,6 +96,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(json.dumps(audit_log(), ensure_ascii=False))
     elif args.cmd == "audit-verify":
         print(json.dumps(verify_audit_log(), ensure_ascii=False))
+    elif args.cmd == "redact":
+        redacted, found = pii.redact(args.text)
+        print(json.dumps({"redacted": redacted, "found": pii.summary(found)},
+                         ensure_ascii=False))
     return 0
 
 

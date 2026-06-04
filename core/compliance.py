@@ -21,7 +21,7 @@ from typing import Dict, Any, List, Optional
 
 from core.memory import set_restricted, get_fact, get_all_facts, get_tombstones
 from core.l3_graph import get_l3_graph
-from core import crypto, audit
+from core import crypto, audit, pii
 
 
 def _now() -> str:
@@ -108,6 +108,7 @@ def record_of_processing(controller: Optional[str] = None) -> Dict[str, Any]:
         "international_transfer": transfers,
         "encryption_at_rest": crypto.is_enabled(),
         "encryption_backend": crypto.backend_name(),
+        "pii_redaction_at_ingest": pii.redaction_enabled(),
         "fact_count": len(facts),
         "categories_of_data": dict(by_claim_type),
         "by_epistemic_state": dict(by_state),
@@ -128,6 +129,7 @@ def record_of_processing(controller: Optional[str] = None) -> Dict[str, Any]:
             "erasure": "erasure.erase_fact (Art. 17)",
             "restriction": "compliance.restrict_processing (Art. 18)",
             "portability": "SQLite + JSON export (Art. 20)",
+            "data_minimisation": "pii.redact at ingest (Art. 5(1)(c))",
         },
         "security_measures": [
             "single-entry TruthGate (Graph = Truth, I1)",
