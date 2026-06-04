@@ -49,8 +49,7 @@ Fix critical metadata issues in Velantrim V8 knowledge base (63 chunks, ~948KB) 
 - Dependency graph completeness: 50+ entries added
 
 **Files Modified**:
-- `Velantrim_V8_Crystal_Sprint1.jsonl` - Main data file (fixed)
-- `METADATA_FIX_REPORT.md` - Detailed before/after analysis
+- `docs/Velantrim_V8_Crystal_Sprint1.jsonl` - Main data file (fixed)
 
 ---
 
@@ -96,6 +95,7 @@ Fix critical metadata issues in Velantrim V8 knowledge base (63 chunks, ~948KB) 
 - Semantic-aware slug generation
 - Non-blocking validation (warnings to JSON)
 - Atomic writes (temp file + rename)
+- See the tool's `--help` for usage and options
 
 **Features**:
 - Transliterates Cyrillic IDs to ASCII-safe format
@@ -118,8 +118,6 @@ python3 velantrim_migrate_v3_1.py migrate input.jsonl
 # - input_diff.json (complete change summary)
 # - input_backup_TIMESTAMP.jsonl (rollback backup)
 ```
-
-**File**: `MIGRATION_GUIDE_V3_1.md` - Complete documentation with examples
 
 ---
 
@@ -186,12 +184,10 @@ python3 velantrim_migrate_v3_1.py migrate input.jsonl
 
 ### Generated Reports
 
-1. **METADATA_FIX_REPORT.md** - Before/after analysis with statistics
-2. **audit_issues.json** - Detailed issues broken down by category
-3. **SPRINT_A_V2_ADDITIONAL_PATCHES.md** - Production hardening details
-4. **MIGRATION_GUIDE_V3_1.md** - Complete migration documentation
-5. **velantrim_migration.log** - Execution log (generated on migration)
-6. **migration_dependency_report.json** - Dependency analysis (generated on migration)
+1. **audit_issues.json** - Detailed issues broken down by category
+2. **SPRINT_A_V2_ADDITIONAL_PATCHES.md** - Production hardening details
+3. **velantrim_migration.log** - Execution log (generated on migration)
+4. **migration_dependency_report.json** - Dependency analysis (generated on migration)
 
 ---
 
@@ -237,9 +233,7 @@ python3 velantrim_migrate_v3_1.py migrate input.jsonl
 - `check_rfc_duplicates.py` - Duplicate analysis
 
 ### Documentation
-- `METADATA_FIX_REPORT.md` - Detailed before/after analysis
 - `SPRINT_A_V2_ADDITIONAL_PATCHES.md` - Hardening patches (full code)
-- `MIGRATION_GUIDE_V3_1.md` - Complete migration documentation
 - `WORK_SUMMARY.md` - This file
 
 ### Configuration
@@ -294,9 +288,8 @@ python3 velantrim_migrate_v3_1.py migrate input.jsonl
 4. **Re-analyze**: Run audit tools on rolled-back data
 
 ### Questions About Fixes
-- See `METADATA_FIX_REPORT.md` for detailed before/after
-- See `MIGRATION_GUIDE_V3_1.md` for migration specifics
 - See `SPRINT_A_V2_ADDITIONAL_PATCHES.md` for production safety
+- Run `python3 velantrim_migrate_v3_1.py --help` for migration specifics
 
 ---
 
