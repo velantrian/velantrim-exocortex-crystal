@@ -19,8 +19,8 @@ from core.memory import store_fact, get_fact, transition_esm
 from core.l3_graph import get_l3_graph
 from core.embedding import assert_compatible_embedder
 from core.pipeline import guardian, truth_gate, _truth_status_for, _l3_payload
-from core.reconcile import reinforce, find_conflicts
-from core import metrics, adaptation, pii
+from core.reconcile import reinforce, find_conflicts, REL_CONTRADICTS, _now
+from core import metrics, adaptation, pii, contradiction
 
 # Modality markers (RU + EN). Order matters: we check from specific to general.
 _CLAIM_MARKERS = [
@@ -162,10 +162,30 @@ def ingest(
     metrics.incr("ingest.accepted")
     adaptation.record_success()
     result = {"accepted": True, "fact": fact}
-    # Immune signal: for facts about the world we identify candidates conflicting with the canon
-    # (close, but different). We do not act automatically — we hand it off for a decision.
+    # Immune signal: for facts about the world we identify canon candidates that
+    # are close-but-different, now classified (CONTRADICTION/REFINEMENT/RELATED).
+    # By default we only hand it off for a decision. With VELANTRIM_AUTO_CONTRADICT
+    # set, a high-precision CONTRADICTION is also recorded as a CONTRADICTS edge
+    # (new → prior) so the clash is queryable via fact_history — we LINK, we do
+    # not deprecate either side (a heuristic must not silently overwrite canon).
     if ct == "WORLD_FACT":
         conflicts = find_conflicts(utterance, fact_id=fid)
         if conflicts:
             result["conflicts"] = conflicts
+            contradictions = [c for c in conflicts
+                              if c["kind"] == contradiction.CONTRADICTION]
+            if contradictions and _auto_contradict_enabled():
+                graph_ = get_l3_graph()
+                for c in contradictions:
+                    graph_.add_edge(fid, REL_CONTRADICTS, c["fact_id"],
+                                    {"at": _now(), "signal": c["signal"], "auto": True})
+                result["auto_contradicted"] = [c["fact_id"] for c in contradictions]
+                metrics.incr("ingest.contradiction_detected")
     return result
+
+
+def _auto_contradict_enabled() -> bool:
+    """True if VELANTRIM_AUTO_CONTRADICT turns on automatic CONTRADICTS linking."""
+    import os
+    return os.environ.get("VELANTRIM_AUTO_CONTRADICT", "").lower() in (
+        "1", "true", "yes", "on")

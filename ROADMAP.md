@@ -17,6 +17,11 @@ This document is the **honest truth** about what's implemented vs designed.
 - Ingestion (`core/ingest.py`): utterance → claim_type → gate → L3
 - Truth maintenance (`core/reconcile.py`): reinforce / supersede / contradict /
   find_conflicts (immune candidate detection)
+- Contradiction detection (`core/contradiction.py`): deterministic, dependency-free
+  classifier labelling a candidate CONTRADICTION / REFINEMENT / RELATED via negation,
+  antonym and numeric signals behind a same-subject gate (high precision); enriches
+  `find_conflicts`; opt-in auto CONTRADICTS-linking at ingest
+  (`VELANTRIM_AUTO_CONTRADICT`); CLI `conflicts`
 - SleepCycle (`core/consolidate.py`): significance-weighted confidence decay (FSRS-style)
 - Episodic linking + `recall_episode` / `recall_by_entity`
 - Guardian (structural check), provenance trace (`core/trace.py`)

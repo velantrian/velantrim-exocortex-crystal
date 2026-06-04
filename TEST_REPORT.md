@@ -7,11 +7,11 @@ numbers: run `pytest` yourself and you will get the figures below.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **349** |
+| **Tests passing** | **364** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **~99%** (gate enforced at 95%) |
-| Test files | 27 (`tests/test_*.py`) |
+| Test files | 28 (`tests/test_*.py`) |
 | Python | 3.11 (3.10+ supported) |
 | Runtime dependencies | standard library only |
 
@@ -24,7 +24,7 @@ Neo4j, Anthropic) that are not installed in the default environment.
 
 ```bash
 pip install -r requirements.txt
-pytest                 # 349 passed, 12 skipped
+pytest                 # 364 passed, 12 skipped
 ```
 
 ## Coverage by module (core/)
@@ -34,14 +34,15 @@ pytest                 # 349 passed, 12 skipped
 | `core/_registry.py`    | 18  | 100% |
 | `core/adaptation.py`   | 22  | 100% |
 | `core/audit.py`        | 69  | 100% |
-| `core/cli.py`          | 79  | 100% |
+| `core/cli.py`          | 83  | 100% |
 | `core/compliance.py`   | 43  | 100% |
 | `core/consolidate.py`  | 38  | 95%  |
+| `core/contradiction.py`| 53  | 100% |
 | `core/crypto.py`       | 62  | 100% |
 | `core/embedding.py`    | 76  | 100% |
 | `core/erasure.py`      | 42  | 100% |
 | `core/generation.py`   | 41  | 100% |
-| `core/ingest.py`       | 65  | 100% |
+| `core/ingest.py`       | 75  | 100% |
 | `core/l3_graph.py`     | 150 | 99%  |
 | `core/memory.py`       | 183 | 100% |
 | `core/metrics.py`      | 10  | 100% |
@@ -49,9 +50,9 @@ pytest                 # 349 passed, 12 skipped
 | `core/pii.py`          | 56  | 100% |
 | `core/pipeline.py`     | 241 | 98%  |
 | `core/provenance.py`   | 68  | 100% |
-| `core/reconcile.py`    | 76  | 96%  |
+| `core/reconcile.py`    | 80  | 96%  |
 | `core/trace.py`        | 26  | 100% |
-| **Total (repo-wide)**  | **2146** | **~99%** |
+| **Total (repo-wide)**  | **2217** | **~99%** |
 
 ## What the tests cover
 
@@ -64,6 +65,7 @@ pytest                 # 349 passed, 12 skipped
 | Answer generation (extractive + optional Claude) | `test_generation.py` |
 | Ingestion & claim-type classification | `test_ingest.py` |
 | Truth maintenance (reinforce/supersede/contradict) | `test_reconcile.py` |
+| Contradiction classifier (negation/antonym/numeric, auto-contradict) | `test_contradiction.py` |
 | Consolidation / FSRS-style decay | `test_consolidate.py` |
 | Provenance trace | `test_trace.py` |
 | Verifiable answer receipts (digest, HMAC, replay/drift detection) | `test_provenance.py` |
