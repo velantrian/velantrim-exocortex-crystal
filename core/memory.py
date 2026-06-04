@@ -17,6 +17,8 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import Dict, Optional
 
+from core import crypto  # field-level encryption at rest (GDPR Art. 32; off by default)
+
 # ─── ESM: valid fact states ──────────────────────────────────────────
 # Observed → Hypothesized → Supported → Validated → ImmutableCore
 #                                    ↘ Contradicted → Deprecated → Collapsed
@@ -246,7 +248,13 @@ def store_fact(fact: Dict) -> None:
 
     _l0_put(fact_id, record)
 
-    l1_record = {**record, "metadata": json.dumps(metadata_dict)}
+    # Encrypt personal-data fields (claim, metadata) before they touch disk.
+    # L0 keeps the plaintext record; only the L1/SQLite copy is encrypted at rest.
+    l1_record = {
+        **record,
+        "claim":    crypto.encrypt(record["claim"]),
+        "metadata": crypto.encrypt(json.dumps(metadata_dict)),
+    }
     with _db() as conn:
         conn.execute("""
             INSERT INTO facts
@@ -281,7 +289,8 @@ def get_fact(fact_id: str) -> Optional[Dict]:
         ).fetchone()
         if row:
             result = dict(row)
-            result["metadata"] = json.loads(result["metadata"])
+            result["claim"] = crypto.decrypt(result["claim"])
+            result["metadata"] = json.loads(crypto.decrypt(result["metadata"]))
             _l0_put(fact_id, result)
             return result
     return None
@@ -307,7 +316,12 @@ def update_fact(fact_id: str, **fields) -> bool:
     sets, params = [], {"fact_id": fact_id, "updated_at": now}
     for key, value in fields.items():
         sets.append(f"{key} = :{key}")
-        params[key] = json.dumps(value) if key == "metadata" else value
+        if key == "metadata":
+            params[key] = crypto.encrypt(json.dumps(value))  # encrypt at rest
+        elif key == "claim":
+            params[key] = crypto.encrypt(value)              # encrypt at rest
+        else:
+            params[key] = value
 
     with _db() as conn:
         conn.execute(
@@ -372,7 +386,8 @@ def get_all_facts(epistemic_state: Optional[str] = None) -> list:
         result = []
         for row in rows:
             r = dict(row)
-            r["metadata"] = json.loads(r["metadata"])
+            r["claim"] = crypto.decrypt(r["claim"])
+            r["metadata"] = json.loads(crypto.decrypt(r["metadata"]))
             result.append(r)
         return result
 

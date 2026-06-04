@@ -13,6 +13,11 @@ pytest-cov>=4.1.0
 # (LadybugDB persists to disk across restarts; the mock backend is in-memory.)
 # ladybug>=0.17.0
 
+# Optional: encryption at rest (GDPR Art. 32). Enables the Fernet/AES backend
+# for core/crypto.py when VELANTRIM_ENCRYPTION_KEY is set. Without it, a
+# dependency-free HMAC-SHA256 backend is used instead.
+# cryptography>=42.0.0
+
 # Future Sprint 2+ dependencies (commented — do not install yet):
 # neo4j>=5.15.0
 # redis>=5.0.0

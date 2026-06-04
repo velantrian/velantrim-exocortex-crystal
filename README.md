@@ -60,11 +60,12 @@ content-free audit tombstone), and full auditability of provenance. See
 | `core/trace.py`       | ✅ | Provenance chain for every fact                                             |
 | `core/erasure.py`     | ✅ | GDPR Art. 17 physical erasure across L0/L1/L3 + content-free tombstone; cascade to derived facts |
 | `core/compliance.py`  | ✅ | GDPR Art. 18 processing restriction + Art. 30 record-of-processing export |
+| `core/crypto.py`      | ✅ | GDPR Art. 32 opt-in encryption at rest for claim/metadata (Fernet/AES or stdlib HMAC) |
 | `core/adaptation.py`  | ✅ | Adaptive TruthGate threshold (RFC0071): stress ↑ → stricter; healthy → relaxes |
 | `core/observe.py`     | ✅ | Memory observability report over the L3 canonical graph                     |
 | `core/metrics.py`     | ✅ | Lightweight in-process counters (query / ingest / gate)                     |
 | `core/cli.py`         | ✅ | CLI: `ingest`/`ask`/`history`/`report`/`erase`/`erasures`/`restrict`/`unrestrict`/`ropa` |
-| `tests/`              | ✅ | **286 passing**, 12 skipped, **99% coverage** (gate: 95%) — see [TEST_REPORT.md](./TEST_REPORT.md) |
+| `tests/`              | ✅ | **300 passing**, 12 skipped, **99% coverage** (gate: 95%) — see [TEST_REPORT.md](./TEST_REPORT.md) |
 | `docs/Velantrim_V8_Crystal_Sprint1.jsonl` | 📜 Spec | Full system design (63 chunks) |
 
 **Current status**: the full fact lifecycle runs end-to-end — ingest → classify
@@ -78,7 +79,7 @@ git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
 pip install -r requirements.txt        # stdlib-only runtime; deps are for tests/optional backends
 python -m core.pipeline                # runs the end-to-end demo, fully local
-pytest                                 # 286 passing, 99% coverage
+pytest                                 # 300 passing, 99% coverage
 ```
 
 No data leaves your machine. See [DEMO.md](./DEMO.md) for a walkthrough of the
@@ -115,9 +116,10 @@ for the full breakdown and honest implemented-vs-designed split):
 1. **Verifiable provenance & audit trail** — complete the trace chain so any
    answer can be replayed back to its sources. *(foundation in place)*
 2. **GDPR data-subject operations** — rectification, **physical erasure**
-   (with cascade + content-free tombstone), **processing restriction**, and an
-   **Art. 30 record-of-processing** export. *(implemented: `core/erasure.py`,
-   `core/compliance.py`; encryption at rest & signed audit log next)*
+   (with cascade + content-free tombstone), **processing restriction**, an
+   **Art. 30 record-of-processing** export, and **opt-in encryption at rest**
+   (Art. 32). *(implemented: `core/erasure.py`, `core/compliance.py`,
+   `core/crypto.py`; signed/tamper-evident audit log next)*
 3. **Local-first persistence & packaging** — reproducible, dependency-free
    deployment; embedded graph backend (LadybugDB) with on-disk persistence.
 4. **Conflict / hallucination detection** — promote `find_conflicts` candidate

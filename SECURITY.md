@@ -45,8 +45,10 @@ assets and threats:
 - **Authentication / multi-tenant access control** — Velantrim is currently a
   single-user, local library; there is no auth layer. Do not expose it as a
   network service without adding one.
-- **Encryption at rest** — the SQLite store is not encrypted by Velantrim; use
-  full-disk or filesystem encryption on the host.
+- **Encryption at rest** — *available* as an opt-in: when
+  `VELANTRIM_ENCRYPTION_KEY` is set, the personal-data fields (claim, metadata)
+  of the L1 SQLite store are encrypted (`core/crypto.py`). On-disk L3 backends
+  are not yet covered — use full-disk/filesystem encryption on the host for those.
 - **Untrusted optional backends** — enabling the optional Claude generator or a
   remote Neo4j backend extends the trust boundary to those services (see
   [PRIVACY.md](./PRIVACY.md)).
@@ -58,7 +60,13 @@ assets and threats:
   repository (enforced by `.gitignore`; verified clean).
 - All untrusted input flows through validation (`store_fact` rejects unknown
   ESM states, claim types, and source statuses).
-- Test suite of 265 passing tests at 99% coverage guards the invariants above
+- **Encryption at rest (opt-in, GDPR Art. 32)** — `core/crypto.py` provides
+  authenticated, field-level encryption of the personal-data columns. With
+  `cryptography` installed it uses Fernet (AES-128-CBC + HMAC); otherwise a
+  dependency-free HMAC-SHA256 keystream (CTR) with encrypt-then-MAC. Tokens are
+  tamper-evident — a wrong key or modified ciphertext fails authentication.
+  Disabled by default (identity), so the default runtime stays stdlib-only.
+- Test suite of 300 passing tests at ~99% coverage guards the invariants above
   (see [TEST_REPORT.md](./TEST_REPORT.md)).
 
 ## Dependencies

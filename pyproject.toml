@@ -39,6 +39,12 @@ embeddings = [
 llm = [
     "anthropic>=0.40.0",
 ]
+# Encryption at rest (GDPR Art. 32). Enables the Fernet (AES) backend for
+# core/crypto.py when VELANTRIM_ENCRYPTION_KEY is set. Optional: without it, a
+# dependency-free authenticated HMAC-SHA256 backend is used instead.
+encryption = [
+    "cryptography>=42.0.0",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

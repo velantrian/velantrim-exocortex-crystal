@@ -27,6 +27,10 @@ This document is the **honest truth** about what's implemented vs designed.
   (`core/compliance.py`): `restrict_processing` excludes a fact from recall
   without deletion; `record_of_processing` exports an aggregate content-free
   RoPA; CLI `restrict` / `unrestrict` / `ropa`
+- GDPR Art. 32 encryption at rest (`core/crypto.py`): opt-in, authenticated
+  field-level encryption of claim/metadata in L1 SQLite (`VELANTRIM_ENCRYPTION_KEY`);
+  Fernet/AES when `cryptography` is installed, dependency-free HMAC-SHA256 otherwise;
+  off by default (runtime stays stdlib-only)
 
 ## ✅ Implemented (metadata tooling, not runtime)
 
