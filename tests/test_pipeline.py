@@ -449,7 +449,7 @@ def test_truth_gate_rejects_below_threshold():
     assert ok is False and "threshold" in reason
 
 
-# ─── type-aware truth_gate (ось модальности) ──────────────────────────────────
+# ─── type-aware truth_gate (modality axis) ──────────────────────────────────
 
 def test_truth_gate_passes_subjective_without_confidence_threshold():
     """A feeling is real as a feeling: EMOTION passes even at low confidence."""

@@ -76,8 +76,8 @@ cp Velantrim_V8_Crystal_Sprint1_backup_20260419_153045.jsonl Velantrim_V8_Crysta
 
 **Content**: All RFC references in `content` field are updated
 ```diff
-- RFC0063 связан с velantrim_v8_028_...
-+ RFC0063 связан с vel_knowledge_ingestion_c4d92e7f
+- RFC0063 related to velantrim_v8_028_...
++ RFC0063 related to vel_knowledge_ingestion_c4d92e7f
 ```
 
 ## Safety Features

@@ -125,7 +125,7 @@ def test_get_all_facts_unfiltered_and_filtered():
     assert {f["fact_id"] for f in validated} == {"a2"}
 
 
-# ─── claim_type / source_status / significance (ось модальности) ──────────────
+# ─── claim_type / source_status / significance (modality axis) ──────────────
 
 def test_new_fields_default_when_omitted():
     """store_fact must apply sane defaults for the orthogonal modality axis."""
