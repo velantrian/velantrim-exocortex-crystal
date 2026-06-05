@@ -1,9 +1,10 @@
 <!--
   NOTE (English) — historical design specification.
 
-  This is the ORIGINAL Velantrim V8 design spec, written in Russian. It is kept
-  for provenance and reference as an in-depth design document; it is NOT the
-  canonical project documentation. For the current English project docs see:
+  This is the Velantrim V8 design spec — an English translation of the original
+  Russian document. It is kept for provenance and reference as an in-depth design
+  document; it is NOT the canonical project documentation. For the current English
+  project docs see:
     - ../README.md        (overview)
     - ../GDPR.md          (data-protection mapping)
     - ../ROADMAP.md       (implemented vs. designed)
@@ -15,281 +16,260 @@
 -->
 
 # 💠 Velantrim V8 Crystal — Full Edition + Sprint 1
-## Спецификация: Фрактальная Графовая Память для Автономного AI Агента
-### (v8.0.2-sprint1 · Полный аудит · P0–P4 + Sprint 1+1.1 патчи применены · Апрель 2026)
+## Specification: Fractal Graph Memory for an Autonomous AI Agent
+### (v8.0.2-sprint1 · Full audit · P0–P4 + Sprint 1+1.1 patches applied · April 2026)
 
-> **Версия**: 8.0.2-sprint1 "Crystal Full" · **Дата**: Апрель 2026 · **Проект**: Velantrim ExoCortex
+> **Version**: 8.0.2-sprint1 "Crystal Full" · **Date**: April 2026 · **Project**: Velantrim ExoCortex
 >
-> **Статус патча**: P0 (8/8) · P1 (10/10) · P2 (6/6) · P3 (7/7) · P4 (6/6) · Sprint 1+1.1 (8/8) — все применены
+> **Patch status**: P0 (8/8) · P1 (10/10) · P2 (6/6) · P3 (7/7) · P4 (6/6) · Sprint 1+1.1 (8/8) — all applied
 >
-> Основана на: HYPERIA FractalMemory Core · ACT-R · Graphiti
+> Based on: HYPERIA FractalMemory Core · ACT-R · Graphiti
 >
-> Принцип: `Graph = Truth · LLM = Language · Memory = Physiology · Volition = Agency · Emergence = Life · Creativity = Structured Analogy · Knowledge = Ingested Wisdom · Tests = Proof`
+> Principle: `Graph = Truth · LLM = Language · Memory = Physiology · Volition = Agency · Emergence = Life · Creativity = Structured Analogy · Knowledge = Ingested Wisdom · Tests = Proof`
 
 ---
 
-## 📋 Содержание
+## 📋 Table of Contents
 
-> Навигация по документу. Кликни на раздел → перейдёшь к нему.
-
-**Введение и обзор**
-- [🌍 Суть проекта — читай это первым](#суть-проекта-читай-это-первым)
-- [✨ Три новых измерения — RFC0065–0067](#три-новых-измерения-читай-это-прежде-чем-идти-в-rfc00650067)
-- [🗺️ Карта системы — беглый обзор за 2 минуты](#карта-системы-беглый-обзор-за-2-минуты)
-- [🎯 Цель проекта](#цель-проекта)
-- [📊 Ключевые метрики успеха](#ключевые-метрики-успеха)
-
-**Архитектура**
-- [🏗️ Архитектура системы · Dual-Process · Слои L0–L6](#архитектура-системы)
-- [📐 Токен-контракт и Протокол Promote/Demote](#токен-контракт-и-протокол-promotedemote)
-- [🔄 Полная интеграция: Главный агент](#полная-интеграция-главный-агент)
+- [🌍 The essence of the project — read this first](#the-essence-of-the-project-read-this-first)
+- [✨ Three new dimensions — read this before going to RFC0065–0067](#three-new-dimensions-read-this-before-going-to-rfc00650067)
+- [🗺️ System map — a quick overview in 2 minutes](#system-map-a-quick-overview-in-2-minutes)
+- [🎯 Project goal](#project-goal)
+- [📊 Key success metrics](#key-success-metrics)
+- [🏗️ System Architecture](#system-architecture)
+- [RFC0066: Concept Emergence — Organic Birth of Concepts](#rfc0066-concept-emergence-organic-birth-of-concepts)
+- [RFC0065: Memory-as-Volition — Conscious Will to Remember](#rfc0065-memory-as-volition-conscious-will-to-remember)
+- [🔧 Technology Stack](#technology-stack)
+- [📦 Key Components and Their Implementation](#key-components-and-their-implementation)
+- [🧬 Integrated Components (from HYPERIA v5.20)](#integrated-components-from-hyperia-v520)
+- [📐 Token Contract and Promote/Demote Protocol](#token-contract-and-promotedemote-protocol)
+- [🔄 Full Integration: Main Agent](#full-integration-main-agent)
+- [🔍 Production-Ready Components](#production-ready-components)
+- [📈 Monitoring and Metrics](#monitoring-and-metrics)
+- [📐 SLO Contract (Service Level Objectives)](#slo-contract-service-level-objectives)
+- [🔌 MCP Server — Connecting to External Clients](#mcp-server-connecting-to-external-clients)
+- [🔍 Audit Layer — Verifiability Layer (Phase 1+)](#audit-layer-verifiability-layer-phase-1)
+- [🛡️ Memory Guardian — Protection Against Memory Poisoning](#memory-guardian-protection-against-memory-poisoning)
+- [🗃️ Immutable Raw Memory — Protection Against Semantic Drift](#immutable-raw-memory-protection-against-semantic-drift)
+- [🔗 CausalGraph — Cause-and-Effect Layer](#causalgraph-cause-and-effect-layer)
+- [🧬 Knowledge Distillation Engine — Populating L3](#knowledge-distillation-engine-populating-l3)
+- [📜 Formal System Invariants (RFC0001–RFC0005)](#formal-system-invariants-rfc0001rfc0005)
+- [📦 Evidence Builder and Truth Gate (RFC0004)](#evidence-builder-and-truth-gate-rfc0004)
+- [📜 Canonical Memory Protocol v1](#canonical-memory-protocol-v1)
+- [RFC0067 v2.0: Creative Intelligence Layer](#rfc0067-v20-creative-intelligence-layer)
+- [RFC0063: Knowledge Ingestion Pipeline — Absorbing External Knowledge](#rfc0063-knowledge-ingestion-pipeline-absorbing-external-knowledge)
+- [🧬 Epistemic State Machine (ESM) — Fact Lifecycle](#epistemic-state-machine-esm-fact-lifecycle)
+- [⚙️ Runtime Invariant Checker](#runtime-invariant-checker)
+- [🎭 Cognitive Modes — Three Modes of Operation](#cognitive-modes-three-modes-of-operation)
+- [💰 Memory Budget Planner](#memory-budget-planner)
+- [🔐 PII Redaction](#pii-redaction)
+- [📋 RFC0014 — L2.5 Staging Layer](#rfc0014-l25-staging-layer)
+- [📋 RFC0013 — L2 CORE (Canonical Contract)](#rfc0013-l2-core-canonical-contract)
+- [💓 Meta-Supervisor — Apex Controller](#meta-supervisor-apex-controller)
+- [📊 Memory Health Index (MHI) — Phase 2](#memory-health-index-mhi-phase-2)
+- [🚀 Implementation Roadmap](#implementation-roadmap)
+- [⚠️ Important warnings](#important-warnings)
 - [🔱 L3.5 — Etir (Velantrim Synaptic Activation Layer)](#l35-etir-velantrim-synaptic-activation-layer)
-
-**RFC — Ключевые механизмы**
-- [RFC0063 — Knowledge Ingestion Pipeline](#rfc0063-knowledge-ingestion-pipeline-поглощение-внешних-знаний)
-- [RFC0065 — Memory-as-Volition · осознанная воля к памяти](#rfc0065-memory-as-volition-осознанная-воля-к-памяти)
-- [RFC0066 — Concept Emergence · органическое рождение концептов · Sprint 1+1.1](#rfc0066-concept-emergence-органическое-рождение-концептов)
-- [RFC0067 v2.0 — Creative Intelligence Layer](#rfc0067-v20-creative-intelligence-layer)
-- [RFC0068 — NeuroCore · Plastic Memory Layer](#rfc0068-neurocore-plastic-memory-layer)
-- [RFC0062 — TZ-Fix Integration Patch](#rfc0062-tz-fix-integration-patch)
-
-**RFC — Контракты и протоколы**
 - [📜 RFC0004 — Truth Gate Contract](#rfc0004-truth-gate-contract)
 - [📜 RFC0011 — Etir Spreading Activation Engine](#rfc0011-etir-spreading-activation-engine)
 - [📜 RFC0012 — Taxonomy/Domain Hierarchy](#rfc0012-taxonomydomain-hierarchy)
-- [📜 RFC0013 — L2 Medium-Term Memory CORE](#rfc0013-l2-medium-term-memory-core)
-- [📜 RFC0014 — L2.5 Staging Layer](#rfc0014-l25-staging-layer)
 - [📜 RFC0015 — TruthGateWithESM](#rfc0015-truthgatewithesm)
 - [📜 RFC0016 — L1.5 Velum](#rfc0016-l15-velum)
 - [📜 RFC0017 — Weighted Semantic Decay](#rfc0017-weighted-semantic-decay)
-- [📜 RFC0036–RFC0051 · сводный блок](#rfc0036rfc0051)
-- [📜 RFC0043 — Hardware Profile Selector](#rfc0043-hardware-profile-selector)
-- [📜 RFC0044 — LLM_MODE: Offline-режим](#rfc0044-llm_mode-offline-режим)
-- [📜 RFC0045 — LensEngine: Детерминированные Линзы L4/L5](#rfc0045-lensengine-детерминированные-линзы-l4l5)
-- [📜 Canonical Memory Protocol v1](#canonical-memory-protocol-v1)
-- [📜 Формальные инварианты (RFC0001–RFC0005)](#формальные-инварианты-системы-rfc0001rfc0005)
-- [📦 Evidence Builder и Truth Gate (RFC0004)](#evidence-builder-и-truth-gate-rfc0004)
-
-**Компоненты и реализация**
-- [🔧 Технологический стек](#технологический-стек)
-- [📦 Ключевые компоненты и их реализация](#ключевые-компоненты-и-их-реализация)
-- [🧬 Интегрированные компоненты (из HYPERIA v5.20)](#интегрированные-компоненты-из-hyperia-v520)
-- [🔍 Production-Ready Компоненты](#production-ready-компоненты)
-- [🔌 MCP Server — Подключение к внешним клиентам](#mcp-server-подключение-к-внешним-клиентам)
-- [🎭 Cognitive Modes — Три Режима Работы](#cognitive-modes-три-режима-работы)
-- [💰 Memory Budget Planner](#memory-budget-planner)
-- [🔐 PII Redaction](#pii-redaction)
-- [💓 Meta-Supervisor — Apex Controller](#meta-supervisor-apex-controller)
 - [📐 Fractal Similarity Monitor](#fractal-similarity-monitor)
-- [🗺️ Технологическая карта · Опциональный стек](#технологическая-карта-опциональный-стек)
-
-**Эпистемика и инварианты**
-- [🧬 Epistemic State Machine (ESM) — Жизненный цикл фактов](#epistemic-state-machine-esm-жизненный-цикл-фактов)
-- [⚙️ Runtime Invariant Checker](#runtime-invariant-checker)
-- [🔒 Инварианты системы (дополнение к I7, I8)](#инварианты-системы-дополнение-к-i7-i8)
-
-**Защита и безопасность**
-- [🛡️ Memory Guardian — Защита от отравления памяти](#memory-guardian-защита-от-отравления-памяти)
-- [🗃️ Immutable Raw Memory — Защита от Semantic Drift](#immutable-raw-memory-защита-от-semantic-drift)
-- [🔍 Audit Layer — Слой проверяемости (Phase 1+)](#audit-layer-слой-проверяемости-phase-1)
-
-**Знания и данные**
-- [🔗 CausalGraph — Слой причинно-следственных связей](#causalgraph-слой-причинно-следственных-связей)
-- [🧬 Knowledge Distillation Engine — Наполнение L3](#knowledge-distillation-engine-наполнение-l3)
-- [🗄️ Storage Ecosystem — Полная карта хранилищ](#storage-ecosystem-полная-карта-хранилищ)
-
-**Мониторинг и операции**
-- [📈 Мониторинг и метрики](#мониторинг-и-метрики)
-- [📐 SLO Contract (Service Level Objectives)](#slo-contract-service-level-objectives)
-- [📊 Memory Health Index (MHI) — Phase 2](#memory-health-index-mhi-phase-2)
-- [🔧 Обслуживание системы](#обслуживание-системы)
-- [🤖 Актуальный LLM и Embedding стек (март 2026)](#актуальный-llm-и-embedding-стек-март-2026)
-
-**Разное**
-- [📖 Как использовать модули (инструкция)](#как-использовать-модули-инструкция)
-- [🚀 Roadmap реализации](#roadmap-реализации)
-- [⚠️ Важные предупреждения](#важные-предупреждения)
-- [📚 Дополнительные ресурсы](#дополнительные-ресурсы)
-- [🎓 Заключение](#заключение)
+- [🗄️ Storage Ecosystem — A Complete Map of Stores](#storage-ecosystem-a-complete-map-of-stores)
+- [🤖 Current LLM and Embedding Stack (March 2026)](#current-llm-and-embedding-stack-march-2026)
+- [🔧 System Maintenance](#system-maintenance)
+- [📚 Additional Resources](#additional-resources)
+- [🎓 Conclusion](#conclusion)
+- [🗺️ Technology Map · Optional Stack](#technology-map-optional-stack)
+- [📜 RFC0036–RFC0051](#rfc0036rfc0051)
+- [📜 RFC0043 — Hardware Profile Selector](#rfc0043-hardware-profile-selector)
+- [📜 RFC0044 — LLM_MODE: Offline Mode](#rfc0044-llm_mode-offline-mode)
+- [📜 RFC0045 — LensEngine: Deterministic Lenses L4/L5](#rfc0045-lensengine-deterministic-lenses-l4l5)
+- [🔒 System Invariants (addendum to I7, I8)](#system-invariants-addendum-to-i7-i8)
+- [📖 How to use the modules (instructions)](#how-to-use-the-modules-instructions)
+- [🔧 RFC0062 — TZ-Fix Integration Patch](#rfc0062-tz-fix-integration-patch)
+- [🧠 RFC0068: NeuroCore — Plastic Memory Layer](#rfc0068-neurocore-plastic-memory-layer)
 - [📝 Changelog](#changelog)
 
 ---
 
-## 🌍 Суть проекта — читай это первым
+## 🌍 The essence of the project — read this first
 
-> Этот раздел для любого кто открывает документ впервые — разработчика, архитектора или нового члена команды. Прочитай его прежде чем идти в архитектуру и код. Он объяснит почему система устроена именно так, и тогда каждое решение в коде будет иметь смысл.
+> This section is for anyone opening the document for the first time — a developer, an architect, or a new team member. Read it before diving into the architecture and code. It will explain why the system is built the way it is, and then every decision in the code will make sense.
 
-Velantrim — это **система памяти для AI-агента**. Не просто база данных с поиском, и не просто обёртка над LLM с историей чатов. Это принципиально другое.
+Velantrim is a **memory system for an AI agent**. Not just a database with search, and not just a wrapper over an LLM with chat history. It is something fundamentally different.
 
-Обычный AI-агент живёт в одном разговоре. Каждый раз когда начинается новый чат — он не помнит ничего. Даже если у него есть «память», она устроена как плоский список заметок — без понимания связей между фактами, без знания что пользователю важно, без обучения на ошибках. И главное — он тратит токены на каждый ответ так, как будто встретился с тобой впервые.
+An ordinary AI agent lives within a single conversation. Every time a new chat begins, it remembers nothing. Even if it has "memory," that memory is structured as a flat list of notes — with no understanding of the connections between facts, no knowledge of what matters to the user, no learning from mistakes. And most importantly — it spends tokens on every response as if it were meeting you for the first time.
 
-Velantrim решает это через три фундаментальных принципа, и **каждый из них — это инженерное решение с последствиями для кода**:
+Velantrim solves this through three fundamental principles, and **each of them is an engineering decision with consequences for the code**:
 
-**Graph = Truth.** Единственный источник истины — это граф знаний. Не LLM, не кэш, не SQLite. LLM в этой системе — языковой интерфейс: он красиво говорит, но не решает что правда. Если где-то в коде LLM пишет факт напрямую в граф в обход Truth Gate — это баг, не фича.
+**Graph = Truth.** The single source of truth is the knowledge graph. Not the LLM, not the cache, not SQLite. The LLM in this system is a language interface: it speaks eloquently, but it does not decide what is true. If somewhere in the code the LLM writes a fact directly into the graph, bypassing the Truth Gate — that is a bug, not a feature.
 
-**Memory = Physiology.** Память устроена как биологическая память человека — с уровнями L0–L6, с FSRS decay (v8.0: power-law R = (1 + 19/81 × t/S)^(-0.5), заменивший Ebbinghaus), с синаптическим усилением важных воспоминаний и ночной консолидацией. Каждое архитектурное решение имеет аналог в нейробиологии — это не метафора, это инженерный выбор.
+**Memory = Physiology.** Memory is structured like the biological memory of a human being — with levels L0–L6, with FSRS decay (v8.0: power-law R = (1 + 19/81 × t/S)^(-0.5), which replaced Ebbinghaus), with synaptic reinforcement of important memories and nightly consolidation. Every architectural decision has an analog in neurobiology — this is not a metaphor, it is an engineering choice.
 
-**Dual-Process.** Всё что пользователь видит — Fast Path: ответ за миллисекунды, без блокировок. Всё что система делает для себя — Slow Path, асинхронный фон. Если компонент попадает в Fast Path когда должен быть в Slow Path — это критический архитектурный баг. Полная схема — см. раздел «Dual-Process Architecture» ниже.
+**Dual-Process.** Everything the user sees is the Fast Path: a response in milliseconds, without blocking. Everything the system does for itself is the Slow Path, an asynchronous background. If a component ends up in the Fast Path when it should be in the Slow Path — that is a critical architectural bug. For the full diagram, see the "Dual-Process Architecture" section below.
 
-> 🔱 **Если одним предложением:** Velantrim — твой личный цифровой разум который помнит, чувствует ритм, учится на ошибках и защищает истину. Всё это — на CPU, без GPU во время диалога, при минимальной нагрузке на железо.
-
----
-
-## ✨ Три новых измерения — читай это прежде чем идти в RFC0065–0067
-
-> Этот блок — для любого кто хочет понять **зачем** были добавлены три новых механизма, прежде чем читать их архитектуру и код.
-
-До RFC0065 система умела помнить, структурировать и защищать знания. Это уже выдающийся результат. Но оставалось три вещи, которые отличают **живую память** от **хорошо организованной базы данных**.
-
-**Первое — воля к памяти.** Представь человека который в середине разговора говорит себе: «Это важно, я хочу это запомнить». Он не ждёт пока память сама решит. Он **сознательно** делает выбор. В Velantrim до RFC0065 вся запись в память была пассивной — система решала за агента. Теперь агент может сам, через намеренный tool call, сказать: «Запиши это в мою долгосрочную память». Это не просто фича — это граница между инструментом и субъектом.
-
-**Второе — рождение концептов.** Ребёнок понимает слово «стол» не потому что ему дали определение. Он видел достаточно столов в разных контекстах и в какой-то момент в его голове возник концепт — сам, из опыта. В Velantrim до RFC0066 концепты рождались через LLM-экстракцию — дорогой, медленный, не органический процесс. Теперь Velum (L1.5) наблюдает за co-occurrence рёбер и в нужный момент **сам нащупывает**: «кажется, эти сущности всегда появляются вместе — это концепт». Без токенов, без LLM, как это делает нейронная сеть мозга.
-
-**Третье — творческий интеллект.** До RFC0067 v2.0 система не имела явной карты метафор и не умела строить семантические мосты между далёкими доменами. Теперь Analogy Graph хранит рёбра `[:METAPHOR_OF]` и `[:ANALOGOUS_TO]` извлечённые из качественных текстов, Semantic Bridge Engine предвычисляет мосты в фоне и кладёт в Redis, а CREATIVE режим даёт LLM динамическую температуру и доступ к этим ассоциациям. Ноль токенов на поиск. Чистая органика.
-
-> 🔱 **Если одним предложением:** RFC0065–0067 — это разница между системой которая помнит и системой которая **хочет** помнить, **сама** рождает смыслы и **творчески находит аналогии**.
+> 🔱 **If put in one sentence:** Velantrim is your personal digital mind that remembers, feels the rhythm, learns from mistakes, and protects the truth. All of this — on a CPU, with no GPU during the dialogue, and with minimal load on the hardware.
 
 ---
 
-## 🗺️ Карта системы — беглый обзор за 2 минуты
+## ✨ Three new dimensions — read this before going to RFC0065–0067
 
-> Если ты открываешь этот документ впервые или после перерыва — прочитай этот раздел. Здесь одним абзацем описан каждый крупный механизм. Дальше в документе — полная спецификация, код и тесты.
+> This block is for anyone who wants to understand **why** three new mechanisms were added, before reading their architecture and code.
 
-**Фрактальная иерархия памяти (L0–L6).** Память устроена как биологическая — семь слоёв. L0 — рефлексы (мгновенный кэш). L1 — эпизоды диалогов (RAM). L1.5 Velum — синаптический преграф, замечает какие сущности появляются вместе. L2 — среднесрочные темы (SQLite). L3 — долгосрочный граф знаний (Neo4j, единственный источник истины). L3.5 — ImmutableCore, неизменяемые снепшоты. L4 — ReasoningBank, паттерны рассуждения. L5 — антиципаторный интеллект, предвидит нужды пользователя до того как он спросит. L6 — Values Core, неизменяемые ценности.
-    │         P2-D FIX: L6 упомянут в обзоре без спецификации. Статус: pending RFC.
-    │         Реализован частично через Ring Zero механизм L3.5.
-    │         └─ L6 spec: Ring Zero узлы в L3 + SQLite дублирование.
-    │            Изменение только через human approval + dual-key confirmation.
-    │            Инвариант I6 (RingZeroImmutable). Отдельный RFC pending.
+Before RFC0065, the system could remember, structure, and protect knowledge. That is already an outstanding result. But three things remained that distinguish **living memory** from a **well-organized database**.
 
-**Dual-Process (Fast/Slow Path).** Полная схема с диаграммой — см. раздел «Dual-Process Architecture». Попасть в Fast Path когда должен быть в Slow Path — критический архитектурный баг.
+**First — the will to remember.** Imagine a person who, in the middle of a conversation, says to themselves: "This is important, I want to remember it." They don't wait for memory to decide on its own. They **consciously** make a choice. In Velantrim, before RFC0065, all writing to memory was passive — the system decided on the agent's behalf. Now the agent can, on its own, through an intentional tool call, say: "Write this into my long-term memory." This is not just a feature — it is the boundary between a tool and a subject.
 
-**Truth Gate + ESM.** Ни один факт не попадает в L3 граф без прохождения через Truth Gate. Каждый факт живёт в одном из **восьми** эпистемических состояний (ESM): **Observed** (сырой вход, до классификации) → Hypothesized → Supported → Validated → ImmutableCore или Contradicted → Deprecated → Collapsed. Переходы — только через ESM.transition(), прямой SET epistemic_state — баг.
-<!-- P9-FIX БАГ-13: добавлено состояние Observed (raw input перед Hypothesized). Присутствовало в valid_states (строка 9878) и Guardian (строка 3434), отсутствовало в lifecycle описании — вариант А. -->
+**Second — the birth of concepts.** A child understands the word "table" not because they were given a definition. They have seen enough tables in different contexts, and at some point a concept arose in their mind — on its own, out of experience. In Velantrim, before RFC0066, concepts were born through LLM extraction — an expensive, slow, non-organic process. Now Velum (L1.5) observes the co-occurrence of edges and, at the right moment, **senses on its own**: "it seems these entities always appear together — this is a concept." Without tokens, without an LLM, just as the neural network of the brain does it.
 
-**Thompson Sampling (ReasoningBank, L4).** Система обучается на собственных ошибках. Каждая стратегия рассуждения имеет счётчики успехов и провалов. Thompson Sampling выбирает стратегию с учётом неопределённости — не жадный выбор лучшего, а баланс exploration/exploitation.
+**Third — creative intelligence.** Before RFC0067 v2.0, the system had no explicit map of metaphors and could not build semantic bridges between distant domains. Now the Analogy Graph stores `[:METAPHOR_OF]` and `[:ANALOGOUS_TO]` edges extracted from high-quality texts, the Semantic Bridge Engine precomputes bridges in the background and places them in Redis, and the CREATIVE mode gives the LLM a dynamic temperature and access to these associations. Zero tokens spent on search. Pure organics.
 
-**Concept Emergence (RFC0066, L1.5).** Velum наблюдает за co-occurrence сущностей. Если три и более сущностей появляются вместе в разных сессиях — система **сама рождает** безымянный ProtoConcept. Ноль токенов. Имя даётся lazy — только когда нужно. Аналог Hebbian Learning в нейронных сетях.
-
-**Memory Volition (RFC0065, L4.5).** Агент получает право **осознанно** инициировать запись в долгосрочную память через tool call `memory.write_voluntary()`. Это не обход Truth Gate — это приоритетный вход в него. Разница между "я это где-то видел" и "я специально это записал".
-
-**Creative Intelligence (RFC0067 v2.0).** Три механизма: Analogy Graph — явная карта метафор `[:METAPHOR_OF]` и аналогий `[:ANALOGOUS_TO]` извлечённых из качественных текстов. Semantic Bridge Engine — находит семантические мосты между далёкими доменами, кладёт в Redis, Fast Path только читает кэш. Adaptive Decoder — CREATIVE режим с температурой 0.6→0.85, но FactsPack содержит только Validated факты. Творчество без компромисса с точностью.
-
-**Knowledge Ingestion (RFC0063).** Система умеет поглощать внешние знания — энциклопедии, учебники, PDF, научные статьи. Три параллельных потока: FactExtractor кладёт факты в L3 через Truth Gate, PatternExtractor кладёт паттерны рассуждения в ReasoningBank с байесовской инициализацией Thompson Sampling, SemanticIndexer строит векторный индекс без LLM вообще. EdgeSuggester находит неявные связи между концептами и предлагает аудитору — не пишет в граф сам. VintageDecayCalculator следит за тем чтобы знания из книги 2015 года по программированию устаревали быстрее чем законы физики.
-
-> **P2-4:** После извлечения факта, ПЕРЕД TruthGate — вызывается `atomic_split()`:
-> один смысл = один узел. Multi-proposition content разбивается на атомарные факты.
-> I91 (AtomicSplit): После atomic_split каждый элемент содержит ровно одну пропозицию.
-
-**Anticipatory Intelligence (L5).** SAE — Spreading Activation Engine: при активации узла возбуждение распространяется по рёбрам графа с затуханием. LSM — Liquid State Machine: предсказывает что пользователь спросит следующим. EGM — предлагает темы. XAI — объясняет почему такой ответ.
-
-**Observer++ / Безопасность.** Система защищает себя от атак, инъекций и деградации. ATK-Registry — база известных сценариев атак, CI/CD тестирует каждый перед деплоем. Write Protocol Gate — единственный путь записи в граф, прямой Cypher MERGE — исключение. 37+ исполняемых инвариантов (I1–I37 в тестах, I38–I65 pending) проверяются в `test_invariants.py` при каждом пуше.
+> 🔱 **If put in one sentence:** RFC0065–0067 is the difference between a system that remembers and a system that **wants** to remember, **gives birth** to meanings **on its own**, and **creatively finds analogies**.
 
 ---
 
-## 🎯 Цель проекта
+## 🗺️ System map — a quick overview in 2 minutes
 
-Создать систему памяти для AI агента, которая:
-- **Автоматически** сохраняет и консолидирует опыт без постоянных LLM-запросов
-- **Учится** на успехах и ошибках через механизм самообучения
-- **Минимизирует** расход токенов (целевое снижение: 90%+)
-- **Масштабируется** через фрактальную иерархию памяти
-- **Работает в реальном времени** с латентностью поиска <500ms
-- **Защищает истину** через иммунную систему (Observer++) и Write Protocol
+> If you are opening this document for the first time, or after a break — read this section. Here every major mechanism is described in a single paragraph. Further on in the document — the full specification, code, and tests.
+
+**Fractal memory hierarchy (L0–L6).** Memory is structured biologically — seven layers. L0 — reflexes (instant cache). L1 — dialogue episodes (RAM). L1.5 Velum — the synaptic pregraph, notices which entities appear together. L2 — mid-term topics (SQLite). L3 — the long-term knowledge graph (Neo4j, the single source of truth). L3.5 — ImmutableCore, immutable snapshots. L4 — ReasoningBank, reasoning patterns. L5 — anticipatory intelligence, foresees the user's needs before they ask. L6 — Values Core, immutable values.
+    │         P2-D FIX: L6 is mentioned in the overview without a specification. Status: pending RFC.
+    │         Partially implemented through the Ring Zero mechanism of L3.5.
+    │         └─ L6 spec: Ring Zero nodes in L3 + SQLite duplication.
+    │            Change only through human approval + dual-key confirmation.
+    │            Invariant I6 (RingZeroImmutable). Separate RFC pending.
+
+**Dual-Process (Fast/Slow Path).** For the full diagram, see the "Dual-Process Architecture" section. Ending up in the Fast Path when it should be in the Slow Path is a critical architectural bug.
+
+**Truth Gate + ESM.** No fact enters the L3 graph without passing through the Truth Gate. Every fact lives in one of **eight** epistemic states (ESM): **Observed** (raw input, before classification) → Hypothesized → Supported → Validated → ImmutableCore or Contradicted → Deprecated → Collapsed. Transitions — only through ESM.transition(); a direct SET epistemic_state is a bug.
+<!-- P9-FIX BUG-13: added the Observed state (raw input before Hypothesized). It was present in valid_states (line 9878) and Guardian (line 3434), but was missing from the lifecycle description — variant A. -->
+
+**Thompson Sampling (ReasoningBank, L4).** The system learns from its own mistakes. Every reasoning strategy has success and failure counters. Thompson Sampling chooses a strategy while accounting for uncertainty — not a greedy choice of the best, but a balance of exploration/exploitation.
+
+**Concept Emergence (RFC0066, L1.5).** Velum observes the co-occurrence of entities. If three or more entities appear together across different sessions, the system **gives birth on its own** to an unnamed ProtoConcept. Zero tokens. The name is given lazily — only when needed. An analog of Hebbian Learning in neural networks.
+
+**Memory Volition (RFC0065, L4.5).** The agent is granted the right to **consciously** initiate a write to long-term memory through the tool call `memory.write_voluntary()`. This is not a bypass of the Truth Gate — it is a priority entrance into it. The difference between "I saw it somewhere" and "I deliberately wrote it down."
+
+**Creative Intelligence (RFC0067 v2.0).** Three mechanisms: Analogy Graph — an explicit map of metaphors `[:METAPHOR_OF]` and analogies `[:ANALOGOUS_TO]` extracted from high-quality texts. Semantic Bridge Engine — finds semantic bridges between distant domains, places them in Redis, and the Fast Path only reads the cache. Adaptive Decoder — CREATIVE mode with a temperature of 0.6→0.85, but the FactsPack contains only Validated facts. Creativity without compromising accuracy.
+
+**Knowledge Ingestion (RFC0063).** The system is able to ingest external knowledge — encyclopedias, textbooks, PDFs, scientific papers. Three parallel streams: FactExtractor places facts into L3 through the Truth Gate, PatternExtractor places reasoning patterns into ReasoningBank with a Bayesian initialization of Thompson Sampling, and SemanticIndexer builds a vector index with no LLM at all. EdgeSuggester finds implicit connections between concepts and proposes them to the auditor — it does not write to the graph itself. VintageDecayCalculator ensures that knowledge from a 2015 programming book becomes outdated faster than the laws of physics.
+
+> **P2-4:** After a fact is extracted, BEFORE the TruthGate — `atomic_split()` is called:
+> one meaning = one node. Multi-proposition content is split into atomic facts.
+> I91 (AtomicSplit): After atomic_split, each element contains exactly one proposition.
+
+**Anticipatory Intelligence (L5).** SAE — Spreading Activation Engine: when a node is activated, excitation spreads across the graph's edges with decay. LSM — Liquid State Machine: predicts what the user will ask next. EGM — proposes topics. XAI — explains why such an answer was given.
+
+**Observer++ / Security.** The system protects itself from attacks, injections, and degradation. ATK-Registry — a database of known attack scenarios; CI/CD tests each one before deployment. Write Protocol Gate — the single path for writing to the graph; a direct Cypher MERGE is an exception. 37+ executable invariants (I1–I37 in tests, I38–I65 pending) are checked in `test_invariants.py` on every push.
 
 ---
 
-## 📊 Ключевые метрики успеха
+## 🎯 Project goal
 
-| Метрика | Целевое значение | Источник |
+Create a memory system for an AI agent that:
+- **Automatically** saves and consolidates experience without constant LLM queries
+- **Learns** from successes and failures through a self-learning mechanism
+- **Minimizes** token consumption (target reduction: 90%+)
+- **Scales** through a fractal memory hierarchy
+- **Works in real time** with a search latency of <500ms
+- **Protects the truth** through an immune system (Observer++) and the Write Protocol
+
+---
+
+## 📊 Key success metrics
+
+| Metric | Target value | Source |
 |---------|------------------|----------|
-| Снижение токенов (RECALL P95) | ≥ 85% | STM/MTM cache hit |
-| Снижение токенов (DEFINE) | 40–60% | Extractive summarization |
-| Снижение токенов (P50 база) | ≥ 65% | Агрегат всех типов |
-| Латентность поиска P95 | < 500ms | Hot Graph + Graphiti |
-| Hot Graph traversal | 1–3 мс | Cache-Aware L2/L3 |
-| Снижение задержки ответа | > 60% | Агентный роутинг |
-| Точность извлечения памяти | > 90% | Deep Memory Benchmark |
-| L5 prediction accuracy (месяц 3) | ~75% | Prediction Error learning |
-| Успешность задач (прирост) | +35–40% | ReasoningBank + Thompson Sampling |
+| Token reduction (RECALL P95) | ≥ 85% | STM/MTM cache hit |
+| Token reduction (DEFINE) | 40–60% | Extractive summarization |
+| Token reduction (P50 baseline) | ≥ 65% | Aggregate of all types |
+| Search latency P95 | < 500ms | Hot Graph + Graphiti |
+| Hot Graph traversal | 1–3 ms | Cache-Aware L2/L3 |
+| Response latency reduction | > 60% | Agentic routing |
+| Memory retrieval accuracy | > 90% | Deep Memory Benchmark |
+| L5 prediction accuracy (month 3) | ~75% | Prediction Error learning |
+| Task success (improvement) | +35–40% | ReasoningBank + Thompson Sampling |
 | contradiction_detection_rate | > 98% | ESM |
 | mean_time_to_resolution (MTTR) | < 24h | ESM + TruthGate |
 | unresolved_contradictions_7d | = 0 | Observer++ |
-| attack_sim_pass_rate | ≥ 95% на ATK-REGISTRY | CI/CD · RFC0060 |
-| attack_sim_new_scenario_ttl | ≤ 48h после инцидента | RFC0060 |
+| attack_sim_pass_rate | ≥ 95% on ATK-REGISTRY | CI/CD · RFC0060 |
+| attack_sim_new_scenario_ttl | ≤ 48h after an incident | RFC0060 |
 | invariant_test_coverage | 100% (I1–I37) · I38–I65 pending | test_invariants.py |
 
 ---
 
-<!-- P9-FIX БАГ-17: явный разделитель — ниже начинается roadmap инвариантов, не бизнес-метрики -->
-### 📅 Roadmap инвариантов I38–I65
-| Диапазон | Область | Статус |
+<!-- P9-FIX BUG-17: explicit separator — below begins the invariant roadmap, not business metrics -->
+### 📅 Invariant roadmap I38–I65
+| Range | Area | Status |
 |----------|------------------------------------|----------------|
-| I38–I45 | RFC0054 SAE инварианты | pending |
-| I46–I52 | RFC0055–0057 эпистемика | pending · I50/I50-b/I50-c ✅ Sprint 1 |
-| I53–I58 | RFC0058–0061 безопасность | pending |
+| I38–I45 | RFC0054 SAE invariants | pending |
+| I46–I52 | RFC0055–0057 epistemics | pending · I50/I50-b/I50-c ✅ Sprint 1 |
+| I53–I58 | RFC0058–0061 security | pending |
 | I59–I65 | RFC0063 Knowledge Ingestion | pending |
-| I66      | RFC0066 ProtoConcept только в памяти | ✅ Sprint 1 |
+| I66      | RFC0066 ProtoConcept in memory only | ✅ Sprint 1 |
 | I70      | RFC0066 MAX_ACTIVE_PROTOS cap | ✅ Sprint 1 |
 | I-K3     | RFC0066 Hebbian GC Guard (FIX-K3) | ✅ Sprint 1.1 |
-| Semantic drift detection | ✅ двойной | Semantic Drift Monitor |
-| Retrieval ESM-корректность | 100% | SafeFTSQuery |
+| Semantic drift detection | ✅ dual | Semantic Drift Monitor |
+| Retrieval ESM correctness | 100% | SafeFTSQuery |
 | epistemic_variance P95 | < 0.7 | RFC0047 |
-| Temporal-ESM sync lag | 0ms (синхронно) | RFC0049 |
-| offline_requests_total | растёт при LLM_MODE=offline | RFC0051 |
+| Temporal-ESM sync lag | 0ms (synchronous) | RFC0049 |
+| offline_requests_total | grows when LLM_MODE=offline | RFC0051 |
 | lens_precision (implicit) | > 0.80 | RFC0051 |
 | multi_component_ram_pressure | < 0.85 | RFC0048 |
-| dag_rollback_retry_total | < 5/час | RFC0050 |
+| dag_rollback_retry_total | < 5/hour | RFC0050 |
 | response_audit_importance_avg | > 0.5 | RFC0052 |
-| focus_vector_updates_total | растёт каждую сессию | RFC0053 |
-| response_audit_cache_invalid_total | < 3/день | RFC0052 |
-| sae_activations_total | растёт при активных диалогах | RFC0054 |
+| focus_vector_updates_total | grows every session | RFC0053 |
+| response_audit_cache_invalid_total | < 3/day | RFC0052 |
+| sae_activations_total | grows during active dialogues | RFC0054 |
 | epistemic_gap_accepted_rate | > 0.30 | RFC0055 |
-| authority_conflicts_resolved | < 10/день | RFC0057 |
-| xai_explanations_total | растёт = доверие пользователей | RFC0058 |
-| source_trust_degraded_total | < 2/день | RFC0059 |
-| policy_version_current | растёт при каждом изменении | RFC0061 |
-| evolution_rejected_total | растёт = система защищает себя | RFC0061 |
-| CPU в диалоге (LITE) | 10–15% 1 ядра | Event-Driven |
-| CPU в покое | ~0% | asyncio events |
-| RAM горячий граф (LITE) | 2–5 MB | Hot Graph |
+| authority_conflicts_resolved | < 10/day | RFC0057 |
+| xai_explanations_total | grows = user trust | RFC0058 |
+| source_trust_degraded_total | < 2/day | RFC0059 |
+| policy_version_current | grows with each change | RFC0061 |
+| evolution_rejected_total | grows = the system protects itself | RFC0061 |
+| CPU during dialogue (LITE) | 10–15% of 1 core | Event-Driven |
+| CPU at rest | ~0% | asyncio events |
+| RAM hot graph (LITE) | 2–5 MB | Hot Graph |
 | RAM LSM | 2–5 MB | Liquid State Machine |
-| dlq_permanent_failure_alert | обязательно · CRITICAL | EventBus |
-| vacuum_batch_size | 100 узлов / итерация | Rate limiting |
-| salience_boosts_total | растёт = система замечает важное | Salience Detector |
-| homeostatic_runs_total | раз в сутки | Homeostatic Balancer |
-| lsm_prediction_updates | растёт = LSM обучается | LSM |
-| fusion_consensus_rate | растёт = SAE+LSM сходятся | L5.5 |
-| prediction_accuracy_rolling_7d | растёт к месяцу 3 | Prediction Error |
-| `volition_validated_total` | растёт = агент осознанно помнит | RFC0065 |
-| `volition_rejected_total` | < 20% от calls = TruthGate работает | RFC0065 |
-| `proto_concepts_active` | растёт к месяцу 2 | RFC0066 |
-| `concept_emergence_zero_token` | > 70% от named = экономия токенов | RFC0066 |
-| `analogy_graph_edges_total` | растёт с каждым ингестом | RFC0067 v2.0 |
-| `sbe_cache_hits` | > 70% = SBE успевает предвычислять | RFC0067 v2.0 |
-| `analogy_resonance_score` | растёт к месяцу 2 = аналогии полезны | RFC0067 v2.0 |
-| `analogy_promoted_total` | растёт = SBE кристаллизует паттерны | RFC0067 v2.0 |
-| `creative_mode_responses_total` | растёт при активных диалогах | RFC0067 v2.0 |
-| `ingestion_facts_created_total` | растёт с каждой ингестией | RFC0063 |
-| `ingestion_contradictions_found_total` | < 5% = источник совместим с графом | RFC0063 |
-| `edge_suggestions_pending_total` | < 50 = аудит не отстаёт | RFC0063 |
-| `edge_hypothesized_activated_total` | растёт = скрытые связи подтверждаются | RFC0063 |
+| dlq_permanent_failure_alert | mandatory · CRITICAL | EventBus |
+| vacuum_batch_size | 100 nodes / iteration | Rate limiting |
+| salience_boosts_total | grows = the system notices what matters | Salience Detector |
+| homeostatic_runs_total | once a day | Homeostatic Balancer |
+| lsm_prediction_updates | grows = LSM is learning | LSM |
+| fusion_consensus_rate | grows = SAE+LSM converge | L5.5 |
+| prediction_accuracy_rolling_7d | grows toward month 3 | Prediction Error |
+| `volition_validated_total` | grows = the agent remembers consciously | RFC0065 |
+| `volition_rejected_total` | < 20% of calls = TruthGate is working | RFC0065 |
+| `proto_concepts_active` | grows toward month 2 | RFC0066 |
+| `concept_emergence_zero_token` | > 70% of named = token savings | RFC0066 |
+| `analogy_graph_edges_total` | grows with each ingest | RFC0067 v2.0 |
+| `sbe_cache_hits` | > 70% = SBE keeps up with precomputation | RFC0067 v2.0 |
+| `analogy_resonance_score` | grows toward month 2 = analogies are useful | RFC0067 v2.0 |
+| `analogy_promoted_total` | grows = SBE crystallizes patterns | RFC0067 v2.0 |
+| `creative_mode_responses_total` | grows during active dialogues | RFC0067 v2.0 |
+| `ingestion_facts_created_total` | grows with each ingestion | RFC0063 |
+| `ingestion_contradictions_found_total` | < 5% = the source is compatible with the graph | RFC0063 |
+| `edge_suggestions_pending_total` | < 50 = the audit is keeping up | RFC0063 |
+| `edge_hypothesized_activated_total` | grows = hidden connections are being confirmed | RFC0063 |
 
 ---
 
-## 🏗️ Архитектура системы
+## 🏗️ System Architecture
 
 ### Dual-Process Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │                        ⚡ FAST SYSTEM                             │
-│                  (Синхронное взаимодействие)                     │
+│                  (Synchronous interaction)                       │
 ├──────────────────────────────────────────────────────────────────┤
 │  User Query                                                      │
-│    → Salience Detector        (1–2 мс · L1.5 · CPU only)     │
+│    → Salience Detector        (1–2 ms · L1.5 · CPU only)     │
 │    → SafeFTSQuery                                                │
-│    → Hot Graph traversal      (1–3 мс · RAM first)           │
+│    → Hot Graph traversal      (1–3 ms · RAM first)           │
 │    → HybridRetrieval + L5.5 PredictiveFusion (SAE × LSM)     │
 │    → Context Builder → Facts Pack (Dual Mode)                    │
 │    → LLM Generation → Response                                   │
@@ -299,235 +279,235 @@ Velantrim решает это через три фундаментальных �
                                ↓
 ┌──────────────────────────────────────────────────────────────────┐
 │                        🌙 SLOW SYSTEM                            │
-│               (Асинхронная обработка в фоне)                    │
+│               (Asynchronous background processing)              │
 ├──────────────────────────────────────────────────────────────────┤
-│  Event Stream (asyncio EventBus · ~0% CPU в покое)            │
+│  Event Stream (asyncio EventBus · ~0% CPU at rest)           │
 │    → Observer++ → Extraction → Write Protocol Gate               │
 │    → Source Trust Check → ESM Transition                         │
-│    → Prediction Error Signal  (2–5 мс после ответа)          │
-│    → LSM Update               (5–15 мс после ответа)         │
-│    → FSRS Decay Worker        (раз в час · P0-1 · power-law)  │
-│    → Hot/Cold Graph Switch    (раз в час)                     │
+│    → Prediction Error Signal  (2–5 ms after response)        │
+│    → LSM Update               (5–15 ms after response)       │
+│    → FSRS Decay Worker        (hourly · P0-1 · power-law)    │
+│    → Hot/Cold Graph Switch    (hourly)                       │
 │    → Quality Gate (confidence × coverage × contradictions)  │
 │              ↓ FAST_PATH_SUFFICIENT → Response              │
 │              ↓ SLOW_PATH → Slow System reasoning            │
-│    → ResponseAuditWorker      (SLOW PATH только · I28)           │
+│    → ResponseAuditWorker      (SLOW PATH only · I28)             │
 │    → FocusEngine Update                                          │
 │    → Consolidation → Reflection → ESMChunkedInvalidator          │
 │    → Semantic Drift Monitor                                      │
 │    → Experience Replay → Strategy Update                         │
 │                                                                  │
-│  SleepTimeWorker (CPU < 30% · пользователь офлайн):              │
-│    → Homeostatic Balancer         (3:00 ночи · раз в сутки)  │
-│    → ReactivationEngine           (раз в час)                │
-│    → ImmutableCore Delta Snapshot                             │
-│    → ConceptEmergenceDetector.gc_expired()  (раз в сутки)    │  <- RFC0066
-│    → ResonanceTracker.decay_all()           (раз в сутки)    │  <- RFC0067
-│    → AnalogyGC (expired -> холодный граф)   (раз в неделю)   │  <- RFC0067
-│    ⚠️ SBEAsyncWorker — только через EventBus, не здесь        │
-│    (запускается из Slow Path через EventBus,                  │
-│    триггер — событие ANALOGY_CANDIDATE_READY,                 │
-│    не из SleepTimeWorker напрямую)                            │
-│    → Inverted HyDE Worker     (offline · P1-7 · I90)         │
-│         генерирует гипотетические запросы к важным эпизодам  │
-│         (importance >= 0.7), кладёт в индекс. Не в runtime.  │
-│    → Graph Health Checker     (раз в сутки · P2-2)           │
+│  SleepTimeWorker (CPU < 30% · user offline):                    │
+│    → Homeostatic Balancer         (3:00 at night · daily)   │
+│    → ReactivationEngine           (hourly)                   │
+│    → ImmutableCore Delta Snapshot                            │
+│    → ConceptEmergenceDetector.gc_expired()  (daily)         │  <- RFC0066
+│    → ResonanceTracker.decay_all()           (daily)         │  <- RFC0067
+│    → AnalogyGC (expired -> cold graph)      (weekly)        │  <- RFC0067
+│    ⚠️ SBEAsyncWorker — only via EventBus, not here            │
+│    (launched from the Slow Path via EventBus,                │
+│    trigger — the ANALOGY_CANDIDATE_READY event,             │
+│    not directly from SleepTimeWorker)                        │
+│    → Inverted HyDE Worker     (offline · P1-7 · I90)        │
+│         generates hypothetical queries for important episodes│
+│         (importance >= 0.7), puts them in the index. Not at runtime.│
+│    → Graph Health Checker     (daily · P2-2)                │
 │         orphans, dupes, fan-out violations → warning log      │
-│    → Curiosity Engine         (раз в сутки · P2-6 · I92)     │
-│         gap < 3 фактов → генерирует вопрос пользователю      │
+│    → Curiosity Engine         (daily · P2-6 · I92)          │
+│         gap < 3 facts → generates a question for the user    │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-### Фрактальная иерархия памяти
+### Fractal Memory Hierarchy
 
 ```
-L0: Рабочая память (Working Memory)
-    ├─ Текущий контекст диалога
-    ├─ Активные цели (Goal Stack — стек с приоритетами)
-    ├─ Capacity: 4±1 активных чанка (Cowan, 2001)
-    │   Примечание: Miller (1956) давал 7±2 для людей, но реальный
-    │   лимит агента ближе к 4±1 (Cowan). Chunking: связанные
-    │   факты объединяются в один семантический блок.
+L0: Working Memory
+    ├─ Current dialogue context
+    ├─ Active goals (Goal Stack — a priority stack)
+    ├─ Capacity: 4±1 active chunks (Cowan, 2001)
+    │   Note: Miller (1956) gave 7±2 for humans, but the real
+    │   agent limit is closer to 4±1 (Cowan). Chunking: related
+    │   facts are merged into a single semantic block.
     │
-    ├─ CoreMemoryBlocks — постоянный профиль пользователя
-    │   Назначение: агент знает пользователя с первого слова без поиска
-    │   по графу. ~500 токенов всегда в контексте как CRITICAL-блок.
-    │   Три неизменяемых чанка, никогда не вытесняются:
-    │     · user_profile   — имя, предпочтения, контекст, язык
-    │     · agent_persona  — роль агента, стиль общения, ограничения
-    │     · current_goals  — активные цели текущего периода (из Goal Stack)
-    │   Хранение: SQLite (персистентно между сессиями)
-    │   Обновление: только через явный tool call пользователя или
-    │     FocusEngine при значительном изменении паттерна запросов
-    │   Файл: memory/core_memory_blocks.py
-    │   ⚠️ ИНВАРИАНТ: CoreMemoryBlocks не перезаписывают друг друга —
-    │     каждый блок независим. Обновление одного не трогает остальные.
+    ├─ CoreMemoryBlocks — the user's persistent profile
+    │   Purpose: the agent knows the user from the first word without a graph
+    │   search. ~500 tokens always in context as a CRITICAL block.
+    │   Three immutable chunks, never evicted:
+    │     · user_profile   — name, preferences, context, language
+    │     · agent_persona  — the agent's role, communication style, constraints
+    │     · current_goals  — active goals of the current period (from the Goal Stack)
+    │   Storage: SQLite (persistent across sessions)
+    │   Update: only through an explicit user tool call or
+    │     FocusEngine on a significant change in the query pattern
+    │   File: memory/core_memory_blocks.py
+    │   ⚠️ INVARIANT: CoreMemoryBlocks do not overwrite each other —
+    │     each block is independent. Updating one does not touch the others.
     │
-    ├─ Attention Sinks — защита Ring Zero:
-    │   Первые токены контекста фиксируются жёстко:
-    │     · Ring Zero / VALUES CORE  → CRITICAL, никогда не вытесняется
-    │     · CoreMemoryBlocks         → CRITICAL, никогда не вытесняется
-    │     · Project State Card       → CRITICAL, никогда не вытесняется
-    │     · Активная цель (top of stack) → HIGH
-    │     · Текущий диалог           → MEDIUM
-    │     · Вспомогательный контекст → LOW (первый кандидат на eviction)
-    ├─ Priority Eviction — иерархия вытеснения:
+    ├─ Attention Sinks — Ring Zero protection:
+    │   The first context tokens are pinned hard:
+    │     · Ring Zero / VALUES CORE  → CRITICAL, never evicted
+    │     · CoreMemoryBlocks         → CRITICAL, never evicted
+    │     · Project State Card       → CRITICAL, never evicted
+    │     · Active goal (top of stack) → HIGH
+    │     · Current dialogue         → MEDIUM
+    │     · Auxiliary context        → LOW (first candidate for eviction)
+    ├─ Priority Eviction — eviction hierarchy:
     │   CRITICAL > HIGH > MEDIUM > LOW
-    │   При переполнении вытесняется самый низкоприоритетный чанк
-    │   в L1, не уничтожается.
-    └─ Decay: секунды (в пределах одного запроса)
+    │   On overflow, the lowest-priority chunk is evicted
+    │   into L1, not destroyed.
+    └─ Decay: seconds (within a single query)
 
-L1: Краткосрочная память (Short-Term Memory)
-    ├─ Episodic Buffer (Baddeley, 2000) — хронологический буфер
-    │   эпизодов текущей сессии. В отличие от L2, эпизоды не
-    │   кластеризованы, хранятся в порядке времени.
-    ├─ Session_ID Binding — каждый эпизод жёстко привязан к
-    │   session_id. При смене сессии (30 мин неактивности)
-    │   автоматически запускается триггер консолидации в L2.
-    ├─ Temporal Tagging — обязательные поля на каждом эпизоде:
-    │     · event_time   — когда произошло (время пользователя)
-    │     · created_at   — когда сохранено (время обработки)
-    │     · valid_from   — начало периода актуальности
-    │     · valid_until  — конец (NULL = актуален сейчас)
-    ├─ FTS5 Index — SQLite Full-Text Search для быстрого поиска
-    │   по тексту эпизодов без вызова LLM. Триггер при INSERT
-    │   автоматически индексирует новый эпизод.
-    │   ⚠️ ТОЛЬКО через SafeFTSQuery — прямой FTS5
-    │   обходит ESM-фильтры, что является ошибкой архитектуры.
-    ├─ Recency Bias — при извлечении более свежие эпизоды
-    │   получают приоритет над старыми той же сессии.
-    ├─ Velum Trigger — при каждом INSERT в L1 Episodic Buffer
-    │   вызывается цепочка в строгом порядке:
-    │     1. SalienceDetector.analyze(episode)        ← · ПЕРВЫМ
+L1: Short-Term Memory
+    ├─ Episodic Buffer (Baddeley, 2000) — a chronological buffer of
+    │   episodes from the current session. Unlike L2, episodes are not
+    │   clustered, they are stored in time order.
+    ├─ Session_ID Binding — each episode is hard-bound to a
+    │   session_id. On a session change (30 min of inactivity)
+    │   the L2 consolidation trigger fires automatically.
+    ├─ Temporal Tagging — mandatory fields on every episode:
+    │     · event_time   — when it happened (user time)
+    │     · created_at   — when it was saved (processing time)
+    │     · valid_from   — start of the validity period
+    │     · valid_until  — end (NULL = valid now)
+    ├─ FTS5 Index — SQLite Full-Text Search for fast search
+    │   over episode text without calling the LLM. A trigger on INSERT
+    │   automatically indexes the new episode.
+    │   ⚠️ ONLY through SafeFTSQuery — raw FTS5
+    │   bypasses the ESM filters, which is an architecture error.
+    ├─ Recency Bias — on retrieval, more recent episodes
+    │   get priority over older ones from the same session.
+    ├─ Velum Trigger — on every INSERT into the L1 Episodic Buffer
+    │   the chain is invoked in strict order:
+    │     1. SalienceDetector.analyze(episode)        ← · FIRST
     │     2. Velum.observe_episode(episode_id, entities)
-    │   При достижении VELUM_CO_OCCUR_THRESHOLD совместных появлений
-    │   → VelumSignal → ReactivationEngine + L2 ускоренный промоут.
-    │   Полная спецификация: RFC0016 / velum.py.
-    │   ⚠️ Порядок критичен: Salience должен выполниться до Velum,
-    │   чтобы salience_weight уже был обновлён при построении рёбер.
-    ├─ Извлеченные сущности и факты
-    ├─ Временной граф эпизода
-    └─ Decay: быстрый (минуты-часы)
+    │   On reaching VELUM_CO_OCCUR_THRESHOLD co-occurrences
+    │   → VelumSignal → ReactivationEngine + L2 accelerated promote.
+    │   Full spec: RFC0016 / velum.py.
+    │   ⚠️ Order is critical: Salience must run before Velum,
+    │   so that salience_weight is already updated when edges are built.
+    ├─ Extracted entities and facts
+    ├─ Temporal graph of the episode
+    └─ Decay: fast (minutes-to-hours)
 
 L1.5: Velum — Synaptic Pre-Graph Layer + Salience Detector   ← RFC0016
-    ├─ Назначение: детектор ранних связей между сущностями сессии.
-    │   Живёт между L1 (эпизоды) и L2 (кластеры).
-    │   НЕ хранит содержимое — только рёбра (co-occurrence + weight).
+    ├─ Purpose: a detector of early links between session entities.
+    │   Lives between L1 (episodes) and L2 (clusters).
+    │   Does NOT store content — only edges (co-occurrence + weight).
     │
-    ├─ Salience Detector — автоматический детектор значимости
-    │     Встроен в триггер L1 INSERT — вызывается ДО Velum.observe_episode.
-    │     Первый механизм который позволяет системе самостоятельно строить
-    │     модель приоритетов пользователя — без явных инструкций.
+    ├─ Salience Detector — automatic significance detector
+    │     Built into the L1 INSERT trigger — called BEFORE Velum.observe_episode.
+    │     The first mechanism that lets the system build a model of the
+    │     user's priorities on its own — without explicit instructions.
     │
-    │     Сигналы и их веса:
-    │       📢 КАПСЛОК (≥3 заглавных подряд)    → salience_weight × 1.5
-    │       ❗ Восклицательный знак              → salience_weight × 1.3
-    │       🔁 Тема повторяется 3+ дня подряд   → salience_weight × 2.0  ← сильнейший
-    │       💬 Слова «важно», «критично»,        → salience_weight × 1.4
-    │          «никогда», «всегда»
-    │       ⏱️ Возврат к теме после 24ч паузы   → salience_weight × 1.6
-    │       🔄 Пользователь переспросил/уточнил → salience_weight × 1.2
+    │     Signals and their weights:
+    │       📢 CAPS LOCK (≥3 capitals in a row)     → salience_weight × 1.5
+    │       ❗ Exclamation mark                      → salience_weight × 1.3
+    │       🔁 Topic repeats 3+ days in a row       → salience_weight × 2.0  ← strongest
+    │       💬 Words "important", "critical",        → salience_weight × 1.4
+    │          "never", "always"
+    │       ⏱️ Return to a topic after a 24h pause   → salience_weight × 1.6
+    │       🔄 User re-asked/clarified              → salience_weight × 1.2
     │
-    │     Результат: поднимает salience_weight соответствующих узлов в L3 графе.
-    │     Эффект на систему:
-    │       · Узлы с высоким salience_weight защищены от FSRS Decay (v8.0)
-    │       · Приоритетно попадают в Hot Graph (Cache-Aware L2/L3)
-    │       · Усиливают предсказания L5.5 PredictiveFusionLayer
-    │     Нагрузка: 1–2 мс · CPU only · 0 токенов LLM
-    │     Метрика: salience_boosts_total (Prometheus counter)
+    │     Result: raises salience_weight of the corresponding nodes in the L3 graph.
+    │     Effect on the system:
+    │       · Nodes with high salience_weight are protected from FSRS Decay (v8.0)
+    │       · They get priority into the Hot Graph (Cache-Aware L2/L3)
+    │       · They strengthen the L5.5 PredictiveFusionLayer predictions
+    │     Load: 1–2 ms · CPU only · 0 LLM tokens
+    │     Metric: salience_boosts_total (Prometheus counter)
     │
-    ├─ Механизм:
-    │     L1 INSERT → SalienceDetector.analyze(episode)  ← вызывается первым
+    ├─ Mechanism:
+    │     L1 INSERT → SalienceDetector.analyze(episode)  ← called first
     │              → observe_episode(entities)
-    │     → обновить вес рёбер в скользящем окне (VELUM_WINDOW_EPISODES = 5)
-    │     → если weight ≥ 0.6 AND count ≥ 3 → VelumSignal
-    │     → ReactivationEngine укрепляет связь
-    │     → L2 получает подсказку на ускоренный промоут кластера
-    ├─ Хранилище: in-memory dict[frozenset, VelumEdge] (не персистентно).
-    │   Опционально: топ-N рёбер → SQLite для seed следующей сессии.
-    ├─ Конец сессии (on_session_end()):
+    │     → update edge weights in a sliding window (VELUM_WINDOW_EPISODES = 5)
+    │     → if weight ≥ 0.6 AND count ≥ 3 → VelumSignal
+    │     → ReactivationEngine strengthens the link
+    │     → L2 gets a hint for an accelerated cluster promote
+    ├─ Storage: in-memory dict[frozenset, VelumEdge] (not persistent).
+    │   Optionally: top-N edges → SQLite to seed the next session.
+    ├─ End of session (on_session_end()):
     │     weight ≥ VELUM_PROMOTE_WEIGHT → VelumSignal "SESSION_END" → L2
     │     weight < VELUM_PROMOTE_WEIGHT → decay × VELUM_DECAY_PER_SESSION
-    ├─ get_neighbors(entity, min_weight) — используется:
-    │     · HybridRetriever: расширение контекста внутри сессии
-    │     · ReactivationEngine: подсказка что укреплять
-    ├─ GC при > VELUM_MAX_EDGES (1000): удалить 25% слабейших рёбер
+    ├─ get_neighbors(entity, min_weight) — used by:
+    │     · HybridRetriever: context expansion within a session
+    │     · ReactivationEngine: a hint about what to strengthen
+    ├─ GC when > VELUM_MAX_EDGES (1000): remove the weakest 25% of edges
     ├─ Velum Health Score GC:
-    │     GC удаляет по полезности, не только по объёму.
+    │     GC removes by usefulness, not just by volume.
     │     health_score = retrieval_bonus(0.4) + signal_bonus(0.3)
     │                  + emotional_bonus(0.2) + recency_bonus(0.1)
-    │     Инвариант: рёбра, участвовавшие в retrieval за последние
-    │     VELUM_PROTECT_WINDOW эпизодов — не удаляются никогда.
+    │     Invariant: edges that participated in retrieval within the last
+    │     VELUM_PROTECT_WINDOW episodes are never removed.
     ├─ RAM Guard — Graduated GC:
-    │     Вместо жёсткого "50% при >1000", используем градуированный подход:
+    │     Instead of a hard "50% at >1000", we use a graduated approach:
     │     
-    │     # порядок условий инвертирован — критический сначала
+    │     # the order of conditions is inverted — critical first
     │     if episode_count > 2000:
-    │         gc_percentage = 0.50  # критический порог
+    │         gc_percentage = 0.50  # critical threshold
     │         logger.error(f"Velum RAM CRITICAL: {episode_count} episodes, GC 50%")
     │     
     │     elif episode_count > 1500:
-    │         gc_percentage = 0.35  # средний порог
+    │         gc_percentage = 0.35  # medium threshold
     │         logger.warning(f"Velum: {episode_count} episodes, GC 35%")
     │     
     │     elif episode_count > 1000:
-    │         gc_percentage = 0.25  # первый порог — мягкая очистка
+    │         gc_percentage = 0.25  # first threshold — soft cleanup
     │         logger.warning(f"Velum: {episode_count} episodes, GC 25%")
     │     
-    │     Преимущества:
-    │     · Постепенная деградация вместо резкой потери данных
-    │     · Раннее предупреждение при 1000 эпизодов
-    │     · Сохранение важных связей при умеренной нагрузке
+    │     Advantages:
+    │     · Gradual degradation instead of an abrupt loss of data
+    │     · Early warning at 1000 episodes
+    │     · Preservation of important links under a moderate load
     │     
-    │     Защита: предотвращает RAM overflow на сессиях >1000 эпизодов
-    │     Метрика: velum_ram_guard_triggered_total (Prometheus counter)
-    │               velum_gc_percentage (Gauge — текущий процент)
-    ├─ LateralInhibition — защита от Hub Explosion: ← SYNAPSE-style (arXiv 2601.02744)
+    │     Protection: prevents RAM overflow on sessions with >1000 episodes
+    │     Metric: velum_ram_guard_triggered_total (Prometheus counter)
+    │               velum_gc_percentage (Gauge — current percentage)
+    ├─ LateralInhibition — protection against Hub Explosion: ← SYNAPSE-style (arXiv 2601.02744)
     │
-    │   Проблема: при постоянном усилении одного ребра (A→B) связанные слабые рёбра
-    │   (A→X, A→Y) никогда не чистятся → граф деградирует в "звезду" с одним хабом.
-    │   Это Hub Explosion — один концепт начинает доминировать над всем.
+    │   Problem: with constant strengthening of one edge (A→B), the related weak edges
+    │   (A→X, A→Y) are never cleaned → the graph degrades into a "star" with a single hub.
+    │   This is Hub Explosion — one concept starts to dominate everything.
     │
-    │   Механизм:
-    │   При усилении ребра (A, B) → ослабить все прочие рёбра A→X на × 0.95
-    │   Исключение: рёбра с weight ≥ 0.4 — защищены (уже достаточно сильные)
-    │   Гарантия: ни одно защищённое ребро не ослабляется через LateralInhibition
+    │   Mechanism:
+    │   When an edge (A, B) is strengthened → weaken all other edges A→X by × 0.95
+    │   Exception: edges with weight ≥ 0.4 are protected (already strong enough)
+    │   Guarantee: no protected edge is weakened by LateralInhibition
     │
-    │   Биологический аналог: латеральное торможение в нейронных сетях —
-    │   возбуждённый нейрон подавляет соседей, усиливая контраст сигнала.
+    │   Biological analog: lateral inhibition in neural networks —
+    │   an excited neuron suppresses its neighbors, enhancing the signal contrast.
     │
-    │   Результат: граф остаётся сбалансированным. Сильные связи выделяются
-    │   на фоне слабых, не тонут в равномерном шуме.
+    │   Result: the graph stays balanced. Strong links stand out
+    │   against the weak ones, instead of drowning in uniform noise.
     │
-    │   Инвариант I77:
+    │   Invariant I77:
     │
-    │   I77 (LateralInhibition): операция LateralInhibition выполняется ТОЛЬКО
-    │   под self._lock (asyncio.Lock Velum).
-    │   Нарушение: изменение весов рёбер при LateralInhibition без self._lock.
-    │   P0-E FIX: переименовано _edges_lock → _lock (совпадает с Velum.__init__).
-    │   Защищённые рёбра (weight ≥ 0.4) никогда не ослабляются.
+    │   I77 (LateralInhibition): the LateralInhibition operation runs ONLY
+    │   under self._lock (asyncio.Lock of Velum).
+    │   Violation: changing edge weights during LateralInhibition without self._lock.
+    │   P0-E FIX: renamed _edges_lock → _lock (matches Velum.__init__).
+    │   Protected edges (weight ≥ 0.4) are never weakened.
     │
-    │   Реализация (добавить в velum.py метод _strengthen_edge):
+    │   Implementation (add the _strengthen_edge method to velum.py):
 
 ```python
-import math  # модульный импорт — не под lock
+import math  # module-level import — not under the lock
 
 async def _strengthen_edge(self, a: str, b: str, factor: float = 1.1):
-    """Усилить ребро (a,b) + LateralInhibition для слабых соседей a.
-    P0-D/P0-E FIX: self._edges_lock → self._lock (Velum инициализирует self._lock, не self._edges_lock).
-    Ранее: AttributeError при каждом вызове LateralInhibition.
+    """Strengthen edge (a,b) + LateralInhibition for a's weak neighbors.
+    P0-D/P0-E FIX: self._edges_lock → self._lock (Velum initializes self._lock, not self._edges_lock).
+    Previously: AttributeError on every LateralInhibition call.
     """
-    async with self._lock:   # P0-E: исправлено с self._edges_lock
+    async with self._lock:   # P0-E: fixed from self._edges_lock
         key = frozenset([a, b])
         edge = self._edges.get(key)
         if edge:
-            # P2-1: ACT-R fan-effect dampening — чем больше связей у узла, тем слабее усиление
-            # _degree_cache: dict[str, int] — инкрементируется в _add_edge(), сбрасывается в gc_weak_edges()
-            # Заменяет O(N) list comprehension под lock → O(1) lookup
+            # P2-1: ACT-R fan-effect dampening — the more links a node has, the weaker the strengthening
+            # _degree_cache: dict[str, int] — incremented in _add_edge(), reset in gc_weak_edges()
+            # Replaces O(N) list comprehension under the lock → O(1) lookup
             degree = self._degree_cache.get(a, 1)
             fan_effect = 1.0 / math.log(degree + 1)
             edge.weight = min(1.0, edge.weight * factor * fan_effect)
-            # LateralInhibition: ослабить слабые соседи a
+            # LateralInhibition: weaken a's weak neighbors
             PROTECTION_THRESHOLD = 0.4
             INHIBITION_FACTOR    = 0.95
             for other_key, other_edge in self._edges.items():
@@ -536,89 +516,89 @@ async def _strengthen_edge(self, a: str, b: str, factor: float = 1.1):
                         other_edge.weight *= INHIBITION_FACTOR
 ```
 
-    ├─ Инварианты RFC0016:
-    │     Velum.I1: только рёбра, НЕ факты. Graph = Truth не нарушается.
-    │     Velum.I2: сильные рёбра при смене сессии → сигнал L2.
-    │     Velum.I3: слабые рёбра → decay, не промоут.
-    │     Velum.I4: не персистентен по умолчанию.
-    ├─ Аналог в нейробиологии: LTP (Long-Term Potentiation) —
-    │   синаптическое усиление до долгосрочного закрепления.
-    └─ Decay: сессионный (рёбра живут в пределах сессии + decay при смене)
+    ├─ RFC0016 invariants:
+    │     Velum.I1: only edges, NOT facts. Graph = Truth is not violated.
+    │     Velum.I2: strong edges on a session change → an L2 signal.
+    │     Velum.I3: weak edges → decay, not promote.
+    │     Velum.I4: not persistent by default.
+    ├─ Neuroscience analog: LTP (Long-Term Potentiation) —
+    │   synaptic strengthening up to long-term consolidation.
+    └─ Decay: session-based (edges live within a session + decay on a session change)
 
 ---
 
-## RFC0066: Concept Emergence — Органическое рождение концептов
+## RFC0066: Concept Emergence — Organic Birth of Concepts
 
-### 🌱 Читай это первым
+### 🌱 Read this first
 
-В оригинальном Velantrim концепты рождались через LLM. RFC0066 меняет это: Velum (L1.5) уже следит за co-occurrence — какие сущности появляются вместе. Если три или больше сущностей постоянно появляются вместе через разные сессии — система **сама нащупывает** возникающий концепт. Сначала безымянный ProtoConcept — ноль токенов. Имя даётся только по необходимости.
+In the original Velantrim, concepts were born through an LLM. RFC0066 changes this: Velum (L1.5) already tracks co-occurrence — which entities appear together. If three or more entities consistently appear together across different sessions, the system **discovers an emerging concept on its own**. At first it is a nameless ProtoConcept — zero tokens. A name is assigned only when necessary.
 
-**Аналог в нейробиологии:** Unsupervised Hebbian Learning — «neurons that fire together, wire together». RFC0066 — это Hebbian Learning для графа знаний.
+**Neuroscience analog:** Unsupervised Hebbian Learning — "neurons that fire together, wire together." RFC0066 is Hebbian Learning for the knowledge graph.
 
-**Почему не нарушает Graph = Truth:** Velum хранит только рёбра (I1). Concept Emergence не создаёт :Fact — он создаёт `:ProtoConcept`. Промоут в `:Concept` (L3) только через TruthGate (I50-b).
+**Why this does not violate Graph = Truth:** Velum stores only edges (I1). Concept Emergence does not create :Fact — it creates `:ProtoConcept`. Promotion to `:Concept` (L3) happens only through TruthGate (I50-b).
 
 ---
 
 ```
-L1.5 дополнение: Concept Emergence  <- RFC0066
+L1.5 addition: Concept Emergence  <- RFC0066
     |
-    +- Назначение: органическое рождение концептов из статистики рёбер Velum.
-    |   БЕЗ LLM-экстракции. БЕЗ явных инструкций. 0 токенов.
-    |   Аналог: Hebbian Learning.
+    +- Purpose: organic birth of concepts from Velum edge statistics.
+    |   WITHOUT LLM extraction. WITHOUT explicit instructions. 0 tokens.
+    |   Analog: Hebbian Learning.
     |
-    +- Механизм — три фазы:
-    |   Фаза 1 (Наблюдение): при каждом L1 INSERT вызывается
-    |     ConceptEmergenceDetector.observe(entities)  <- НОВЫЙ
-    |     Матрица: emergence_matrix[frozenset(entities)] += 1
+    +- Mechanism — three phases:
+    |   Phase 1 (Observation): on every L1 INSERT, the call
+    |     ConceptEmergenceDetector.observe(entities)  <- NEW
+    |     Matrix: emergence_matrix[frozenset(entities)] += 1
     |
-    |   Фаза 2 (Обнаружение): co_occur >= 5 AND cross_sessions >= 3 AND entities 3-7
+    |   Phase 2 (Detection): co_occur >= 5 AND cross_sessions >= 3 AND entities 3-7
     |     -> ProtoConcept {proto_id, entities, confidence: 0.0, name: None}
-    |     -> in-memory только (не в графе — ещё не факт)
-    |     -> Velum получает подсказку: усилить рёбра x1.3
+    |     -> in-memory only (not in the graph — not yet a fact)
+    |     -> Velum receives a hint: strengthen edges x1.3
     |
-    |   Фаза 3 (Именование lazy):
-    |     Триггер A: пользователь спрашивает о теме proto.entities
-    |     Триггер B: ProtoConcept.confidence > 0.7
-    |     Триггер C: Homeostatic Balancer (раз в сутки) — именует топ-5
-    |     if len(entities) <= 3: TF-IDF (0 токенов)
+    |   Phase 3 (Lazy naming):
+    |     Trigger A: user asks about the topic of proto.entities
+    |     Trigger B: ProtoConcept.confidence > 0.7
+    |     Trigger C: Homeostatic Balancer (once a day) — names the top 5
+    |     if len(entities) <= 3: TF-IDF (0 tokens)
     |     elif importance < 0.8: Qwen3-1.7B (tiny LLM)
-    |     else: flagship LLM (только критичные)
-    |     После -> промоут в :Concept (L3) через TruthGate (I50-b)
+    |     else: flagship LLM (critical ones only)
+    |     Then -> promotion to :Concept (L3) through TruthGate (I50-b)
     |
-    +- Инварианты:
-    |   I50:   не создаёт :Fact, не пишет в граф L3. Graph = Truth сохраняется.
-    |   I50-b: ProtoConcept -> :Concept только через TruthGate.
-    |   I50-c: emergence_matrix хранит только счётчики, не содержимое.
-    |   I66:   ProtoConcept живёт только в памяти (_protos dict). (Sprint 1)
-    |   I70:   активных proto ≤ MAX_ACTIVE_PROTOS=500. Eviction наименее уверенного. (Sprint 1)
-    |   I-K3:  gc_expired() не удаляет наблюдения моложе TTL_DAYS без proto. (Sprint 1.1 FIX-K3)
-    |           _matrix_last_seen — единственный источник даты. Без него нарушение.
+    +- Invariants:
+    |   I50:   does not create :Fact, does not write to the L3 graph. Graph = Truth is preserved.
+    |   I50-b: ProtoConcept -> :Concept only through TruthGate.
+    |   I50-c: emergence_matrix stores only counters, not content.
+    |   I66:   ProtoConcept lives only in memory (_protos dict). (Sprint 1)
+    |   I70:   active protos ≤ MAX_ACTIVE_PROTOS=500. Eviction of the least confident. (Sprint 1)
+    |   I-K3:  gc_expired() does not remove observations younger than TTL_DAYS without a proto. (Sprint 1.1 FIX-K3)
+    |           _matrix_last_seen — the single source of date. Without it, a violation.
     |
-    +- Метрики:
+    +- Metrics:
     |   proto_concepts_active / proto_concepts_promoted_total
     |   concept_emergence_zero_token / proto_concepts_expired_total
-    \- Decay: ProtoConcept -> expired через 30 дней без активности
+    \- Decay: ProtoConcept -> expired after 30 days of inactivity
 ```
 
-### Код [RFC0066]
+### Code [RFC0066]
 
 ```python
 # concept_emergence.py
 # RFC0066: Concept Emergence — v8.0.2 + Sprint 1 + Sprint 1.1
 #
-# I50:   не пишет в граф. Только ProtoConcept in-memory.
-# I50-b: промоут в L3 только через TruthGate.
-# I50-c: emergence_matrix хранит только счётчики, не содержимое.
-# I66:   ProtoConcept живёт только в памяти.       (Sprint 1)
-# I70:   активных proto ≤ MAX_ACTIVE_PROTOS.       (Sprint 1)
-# I-K3:  GC не удаляет наблюдения моложе TTL_DAYS. (Sprint 1.1 FIX-K3)
-import asyncio          # A2: Lock для защиты concurrent доступа
+# I50:   does not write to the graph. Only ProtoConcept in-memory.
+# I50-b: promotion to L3 only through TruthGate.
+# I50-c: emergence_matrix stores only counters, not content.
+# I66:   ProtoConcept lives only in memory.            (Sprint 1)
+# I70:   active protos ≤ MAX_ACTIVE_PROTOS.            (Sprint 1)
+# I-K3:  GC does not remove observations younger than TTL_DAYS. (Sprint 1.1 FIX-K3)
+import asyncio          # A2: Lock to protect against concurrent access
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timezone, timedelta
 from typing import Optional, FrozenSet, Dict
 from uuid import uuid4
-from velantrim_config import EMERGENCE   # P0-A FIX: EMERGENCE.MAX_ACTIVE_PROTOS (ранее NameError)
+from velantrim_config import EMERGENCE   # P0-A FIX: EMERGENCE.MAX_ACTIVE_PROTOS (previously NameError)
 
 logger = logging.getLogger(__name__)
 
@@ -629,47 +609,47 @@ class ProtoConcept:
     entities:       FrozenSet[str]
     co_occur_count: int      = 0
     cross_sessions: int      = 0
-    salience_boost: float    = 0.0   # P10-FIX: объявлен явно (daily_maintenance использовал getattr-fallback)
+    salience_boost: float    = 0.0   # P10-FIX: declared explicitly (daily_maintenance used a getattr fallback)
     first_seen:     datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     last_active:    datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    last_decay:     datetime = field(default_factory=lambda: datetime.now(timezone.utc))  # P10-FIX: явное поле
+    last_decay:     datetime = field(default_factory=lambda: datetime.now(timezone.utc))  # P10-FIX: explicit field
     name:           Optional[str] = None
     confidence:     float         = 0.0
     expired:        bool          = False
 
     def update_confidence(self):
-        # Консервативная формула + salience_boost (Hebbian LTP).
-        # Максимум без boost: co_occur=20 + cross=10 -> 0.83
+        # Conservative formula + salience_boost (Hebbian LTP).
+        # Maximum without boost: co_occur=20 + cross=10 -> 0.83
         base = (min(1.0, self.co_occur_count / 20.0) * 0.6 +
                 min(1.0, self.cross_sessions  / 10.0) * 0.4)
-        # P10-FIX: salience_boost усиливает уверенность (LTP-аналог), capped at 1.0
+        # P10-FIX: salience_boost strengthens confidence (LTP analog), capped at 1.0
         self.confidence = min(1.0, base * (1 + self.salience_boost))
 
 
 class ConceptEmergenceDetector:
     """
-    RFC0066: Органическое рождение концептов из статистики рёбер Velum.
-    Без LLM-экстракции. 0 токенов. Аналог: Hebbian Unsupervised Learning.
+    RFC0066: Organic birth of concepts from Velum edge statistics.
+    Without LLM extraction. 0 tokens. Analog: Hebbian Unsupervised Learning.
 
-    P2-A: class-level константы → EMERGENCE (velantrim_config). Единый источник истины.
-    A2:   asyncio.Lock — защита от race condition между observe() / daily_maintenance() / gc_expired().
-    A3:   l5_5 scaffold — сигнал PredictiveFusionLayer при достижении порога.
-    FIX-K3: _matrix_last_seen — GC не удаляет незрелые наблюдения до TTL_DAYS.
+    P2-A: class-level constants → EMERGENCE (velantrim_config). Single source of truth.
+    A2:   asyncio.Lock — protection against a race condition between observe() / daily_maintenance() / gc_expired().
+    A3:   l5_5 scaffold — signal to PredictiveFusionLayer when the threshold is reached.
+    FIX-K3: _matrix_last_seen — GC does not remove immature observations before TTL_DAYS.
     """
 
     def __init__(self, db, truth_gate=None, llm_client=None, l5_5=None):
         self.db         = db
         self.truth_gate = truth_gate
         self.llm_client = llm_client
-        # A3: ссылка на L5.5 PredictiveFusionLayer.
-        # None = scaffold неактивен. Передать при инициализации в Спринте 2.
+        # A3: reference to L5.5 PredictiveFusionLayer.
+        # None = scaffold inactive. Pass it during initialization in Sprint 2.
         self.l5_5 = l5_5
 
         if truth_gate is None:
             logger.warning(
                 "ConceptEmergenceDetector: truth_gate=None — ProtoConcept "
-                "никогда не будут промоутированы в L3. Передайте truth_gate= "
-                "при инициализации."
+                "will never be promoted to L3. Pass truth_gate= "
+                "during initialization."
             )
 
         self._matrix:           Dict[FrozenSet[str], int]      = {}
@@ -677,17 +657,17 @@ class ConceptEmergenceDetector:
         self._protos:           Dict[str, ProtoConcept]        = {}
         self._entity_to_protos: Dict[str, list]                = {}
 
-        # FIX-K3: дата последнего обновления счётчика для каждой комбинации.
-        # _gc_impl() удаляет ключ из _matrix ТОЛЬКО если нет живого proto И
-        # ключ не обновлялся дольше TTL_DAYS. До фикса: GC каждую ночь обнулял
-        # незрелые наблюдения (4 из 5 нужных → 0 → концепт никогда не рождался).
+        # FIX-K3: date of the last counter update for each combination.
+        # _gc_impl() removes a key from _matrix ONLY if there is no live proto AND
+        # the key has not been updated for longer than TTL_DAYS. Before the fix: GC zeroed out
+        # immature observations every night (4 of the 5 needed → 0 → the concept was never born).
         self._matrix_last_seen: Dict[FrozenSet[str], datetime] = {}
 
-        # A2: asyncio.Lock — защищает все внутренние структуры от race condition.
-        # ⚠️  asyncio.Lock НЕ реентрантен.
-        # Решение: _gc_impl() — внутренний метод без lock.
-        #          gc_expired() — публичный, захватывает lock сам.
-        #          daily_maintenance() — захватывает lock и вызывает _gc_impl() внутри.
+        # A2: asyncio.Lock — protects all internal structures from a race condition.
+        # ⚠️  asyncio.Lock is NOT reentrant.
+        # Solution: _gc_impl() — internal method without lock.
+        #          gc_expired() — public, acquires the lock itself.
+        #          daily_maintenance() — acquires the lock and calls _gc_impl() inside.
         self._lock = asyncio.Lock()
 
     async def observe(
@@ -697,13 +677,13 @@ class ConceptEmergenceDetector:
         salience_weight: float = 1.0,
     ) -> None:
         """
-        Phase 1 (Наблюдение): обновить co-occurrence матрицу.
-        Phase 2 (Рождение):   создать ProtoConcept при достижении порога.
+        Phase 1 (Observation): update the co-occurrence matrix.
+        Phase 2 (Birth):       create a ProtoConcept when the threshold is reached.
 
-        A2: метод теперь async. Все call sites должны использовать:
+        A2: the method is now async. All call sites must use:
             await detector.observe(entities, session_id)
-        FIX-K3: обновляет _matrix_last_seen при каждом изменении счётчика.
-        FIX-A3: _notify_l5_5 вызывается ТОЛЬКО при достижении порога (_threshold_hit).
+        FIX-K3: updates _matrix_last_seen on every change to a counter.
+        FIX-A3: _notify_l5_5 is called ONLY when the threshold is reached (_threshold_hit).
         """
         if len(entities) < EMERGENCE.MIN_ENTITIES:
             return
@@ -717,7 +697,7 @@ class ConceptEmergenceDetector:
                     self._matrix[key] = self._matrix.get(key, 0) + 1
                     self._matrix_last_seen[key] = datetime.now(timezone.utc)  # FIX-K3
                     self._sessions.setdefault(key, set()).add(session_id)
-                    # Обновить существующий proto если есть (LTP salience boost)
+                    # Update the existing proto if present (LTP salience boost)
                     for proto in self._protos.values():
                         if proto.entities == key and not proto.expired:
                             proto.salience_boost = max(proto.salience_boost, salience_weight - 1.0)
@@ -727,15 +707,15 @@ class ConceptEmergenceDetector:
                             len(self._sessions[key]) >= EMERGENCE.CROSS_SESSION):
                         self._maybe_create_proto(key)
                         _threshold_hit = True
-        # FIX-A3: уведомить L5.5 только если хотя бы одна комбинация достигла порога
+        # FIX-A3: notify L5.5 only if at least one combination reached the threshold
         if _threshold_hit and EMERGENCE.L5_5_INTEGRATION and self.l5_5 is not None:
             await self._notify_l5_5(entities, salience_weight)
 
     async def _notify_l5_5(self, entities: list[str], salience_weight: float) -> None:
         """
-        A3 scaffold: уведомить PredictiveFusionLayer о новом proto-кандидате.
-        FIX-A3: вызывается только при _threshold_hit=True в observe().
-        Реальная логика — Sprint 2 (B1): self.l5_5.register_proto_concept(...)
+        A3 scaffold: notify PredictiveFusionLayer of a new proto candidate.
+        FIX-A3: called only when _threshold_hit=True in observe().
+        The real logic — Sprint 2 (B1): self.l5_5.register_proto_concept(...)
         """
         logger.debug(
             f"_notify_l5_5 scaffold | threshold reached | "
@@ -754,8 +734,8 @@ class ConceptEmergenceDetector:
                 return
 
         # P0.5-4 FIX: enforce MAX_ACTIVE_PROTOS cap.
-        # Без этого _protos растёт бесконечно при горячих доменах → OOM за недели.
-        # Eviction: удаляем proto с наименьшим confidence (наименее зрелый концепт).
+        # Without this, _protos grows without bound in hot domains → OOM within weeks.
+        # Eviction: remove the proto with the lowest confidence (the least mature concept).
         active_protos = [p for p in self._protos.values() if not p.expired]
         if len(active_protos) >= EMERGENCE.MAX_ACTIVE_PROTOS:
             victim = min(active_protos, key=lambda p: p.confidence)
@@ -763,7 +743,7 @@ class ConceptEmergenceDetector:
                 f"ProtoConcept evicted (cap={EMERGENCE.MAX_ACTIVE_PROTOS}): "
                 f"{victim.proto_id} conf={victim.confidence:.2f}"
             )
-            # Удалить из _protos и _entity_to_protos
+            # Remove from _protos and _entity_to_protos
             del self._protos[victim.proto_id]
             for entity in victim.entities:
                 if entity in self._entity_to_protos:
@@ -791,7 +771,7 @@ class ConceptEmergenceDetector:
         ]
 
     async def promote_to_l3(self, proto: ProtoConcept) -> bool:
-        # I50-b: промоут только через TruthGate
+        # I50-b: promotion only through TruthGate
         if not self.truth_gate:
             logger.warning(f"Cannot promote {proto.proto_id}: truth_gate not configured")
             return False
@@ -804,10 +784,10 @@ class ConceptEmergenceDetector:
         return result.passed
 
     async def _common_token_name(self, proto: ProtoConcept) -> str:
-        # P3-G FIX: переименовано с _tfidf_name — реализация использует set-intersection,
-        # а не TF-IDF взвешивание. Ноль LLM-токенов. Простое пересечение токенов сущностей.
-        # Все вызовы _tfidf_name() → _common_token_name() в файле.
-        # Извлечение общего корня из имён сущностей — 0 токенов
+        # P3-G FIX: renamed from _tfidf_name — the implementation uses set-intersection,
+        # not TF-IDF weighting. Zero LLM tokens. Simple intersection of entity tokens.
+        # All calls to _tfidf_name() → _common_token_name() in the file.
+        # Extraction of a common root from entity names — 0 tokens
         entity_words = [e.lower().replace("_", " ").split() for e in proto.entities if e]
         if not entity_words:
             return "unnamed_concept"
@@ -819,13 +799,13 @@ class ConceptEmergenceDetector:
         first = [w[0] for w in entity_words[:2] if w]
         return "_".join(first) if first else "unnamed_concept"
 
-    # A1: decay_factor читается из EMERGENCE.HEBBIAN_DECAY_FACTOR (было хардкод 0.98)
-    # A2: весь обход _protos + GC — под одним lock (нет DEADLOCK: _gc_impl без lock)
+    # A1: decay_factor is read from EMERGENCE.HEBBIAN_DECAY_FACTOR (was hardcoded 0.98)
+    # A2: the entire _protos traversal + GC — under a single lock (no DEADLOCK: _gc_impl without lock)
     async def daily_maintenance(self) -> None:
         """
-        P4-B + A1 + A2: Ежедневный Hebbian Decay + GC.
-        Вызывать из SleepTimeWorker раз в сутки.
-        Метрика: concept_hebbian_decay_applied_total
+        P4-B + A1 + A2: Daily Hebbian Decay + GC.
+        Call from SleepTimeWorker once a day.
+        Metric: concept_hebbian_decay_applied_total
         """
         async with self._lock:
             decay_count = 0
@@ -833,7 +813,7 @@ class ConceptEmergenceDetector:
                 if not proto.expired:
                     days_since = (datetime.now(timezone.utc) - proto.last_decay).days
                     if days_since > 0:
-                        # A1: из конфига вместо хардкода 0.98
+                        # A1: from config instead of hardcoded 0.98
                         proto.confidence *= (EMERGENCE.HEBBIAN_DECAY_FACTOR ** days_since)
                         proto.last_decay = datetime.now(timezone.utc)
                         decay_count += 1
@@ -842,42 +822,42 @@ class ConceptEmergenceDetector:
                     f"🌙 Hebbian Decay: {decay_count} protos | "
                     f"factor={EMERGENCE.HEBBIAN_DECAY_FACTOR}"
                 )
-            # GC внутри того же lock — вызываем _gc_impl() (не gc_expired(), нет DEADLOCK)
+            # GC inside the same lock — we call _gc_impl() (not gc_expired(), no DEADLOCK)
             self._gc_impl()
 
     async def gc_expired(self) -> None:
         """
-        Публичный GC — захватывает lock самостоятельно.
-        Вызывать напрямую когда нужна очистка вне daily_maintenance().
-        A2: разделён на gc_expired() (public + lock) и _gc_impl() (private, без lock).
+        Public GC — acquires the lock itself.
+        Call directly when cleanup is needed outside daily_maintenance().
+        A2: split into gc_expired() (public + lock) and _gc_impl() (private, without lock).
         """
         async with self._lock:
             self._gc_impl()
 
     def _gc_impl(self) -> None:
         """
-        Внутренняя реализация GC — вызывается ВНУТРИ self._lock.
-        НЕ захватывает lock сам.
+        Internal GC implementation — called INSIDE self._lock.
+        Does NOT acquire the lock itself.
 
-        FIX-K3: двойной критерий удаления ключей _matrix:
-            (a) нет живого proto для этого ключа, И
-            (b) ключ не обновлялся дольше TTL_DAYS.
-        До фикса: любой ключ без proto удалялся каждую ночь →
-        медленно растущие концепты никогда не рождались.
+        FIX-K3: dual criterion for removing _matrix keys:
+            (a) there is no live proto for this key, AND
+            (b) the key has not been updated for longer than TTL_DAYS.
+        Before the fix: any key without a proto was removed every night →
+        slowly growing concepts were never born.
 
-        P0.5-5: orphan-ключи _sessions (есть в _sessions, нет в _matrix) тоже чистятся.
+        P0.5-5: orphan keys in _sessions (present in _sessions, absent from _matrix) are also cleaned.
         """
         now = datetime.now(timezone.utc)
         ttl = timedelta(days=EMERGENCE.TTL_DAYS)
 
-        # 1. Пометить истёкшие ProtoConcept
+        # 1. Mark expired ProtoConcepts
         expired_ids = []
         for proto in self._protos.values():
             if not proto.expired and (now - proto.last_active) > ttl:
                 proto.expired = True
                 expired_ids.append(proto.proto_id)
 
-        # 2. Очистить _entity_to_protos от expired proto_ids
+        # 2. Clean expired proto_ids from _entity_to_protos
         for entity, pids in list(self._entity_to_protos.items()):
             cleaned = [p for p in pids if p not in expired_ids]
             if cleaned:
@@ -885,7 +865,7 @@ class ConceptEmergenceDetector:
             else:
                 del self._entity_to_protos[entity]
 
-        # 3. FIX-K3: удалять ключ _matrix только по двойному критерию
+        # 3. FIX-K3: remove a _matrix key only by the dual criterion
         live_entity_sets = {
             proto.entities
             for proto in self._protos.values()
@@ -894,16 +874,16 @@ class ConceptEmergenceDetector:
         stale_cutoff = now - ttl
         for key in list(self._matrix.keys()):
             if key in live_entity_sets:
-                continue  # proto жив — не трогаем
+                continue  # proto is alive — don't touch
             last_seen = self._matrix_last_seen.get(key)
             if last_seen is None or last_seen < stale_cutoff:
-                # Нет proto И не обновлялся дольше TTL → удалить
+                # No proto AND not updated for longer than TTL → remove
                 del self._matrix[key]
                 self._matrix_last_seen.pop(key, None)
                 self._sessions.pop(key, None)
-            # Иначе: нет proto, но наблюдение свежее — оставляем расти (FIX-K3)
+            # Otherwise: no proto, but the observation is fresh — leave it to grow (FIX-K3)
 
-        # 4. P0.5-5 FIX: orphaned sessions (в _sessions но не в _matrix)
+        # 4. P0.5-5 FIX: orphaned sessions (in _sessions but not in _matrix)
         stale_sessions = [k for k in self._sessions if k not in self._matrix]
         for key in stale_sessions:
             del self._sessions[key]
@@ -915,13 +895,13 @@ class ConceptEmergenceDetector:
             )
 ```
 
-### Тесты [RFC0066 — Sprint 1]
+### Tests [RFC0066 — Sprint 1]
 
 ```python
 # tests/test_invariants.py + test_sprint1_additions.py
-# Файл: test_sprint1_additions.py (добавить в тест-сьют или запускать отдельно)
+# File: test_sprint1_additions.py (add to the test suite or run separately)
 #
-# Инварианты: I50, I50-b, I66 (FIX), I70, I-K3, A1, A2, A3
+# Invariants: I50, I50-b, I66 (FIX), I70, I-K3, A1, A2, A3
 
 import pytest
 import asyncio as _asyncio
@@ -930,14 +910,14 @@ from concept_emergence import ConceptEmergenceDetector, ProtoConcept
 
 
 class MockDB:
-    """Заглушка DB — детектор хранит, но не использует в текущей реализации."""
+    """DB stub — the detector stores it but does not use it in the current implementation."""
     pass
 
 
 class MockTruthGate:
     """
-    Мок TruthGate с счётчиком вызовов.
-    call_count == 0 после observe() → TruthGate не вызван → L3 не тронут.
+    Mock TruthGate with a call counter.
+    call_count == 0 after observe() → TruthGate not called → L3 untouched.
     """
     def __init__(self):
         self.call_count = 0
@@ -952,13 +932,13 @@ class MockTruthGate:
 # ── I50 ──────────────────────────────────────────────────────────────────────
 @pytest.mark.asyncio
 async def test_I50_concept_emergence_no_graph_writes():
-    """I50: observe() не пишет в L3. TruthGate не вызван ни разу."""
+    """I50: observe() does not write to L3. TruthGate is never called."""
     gate     = MockTruthGate()
     detector = ConceptEmergenceDetector(db=MockDB(), truth_gate=gate)
     for i in range(10):
         await detector.observe(["A", "B", "C"], session_id=f"s{i}")
     assert gate.call_count == 0, (
-        f"I50 VIOLATION: TruthGate вызван {gate.call_count} раз(а) во время observe()."
+        f"I50 VIOLATION: TruthGate called {gate.call_count} time(s) during observe()."
     )
     assert len(detector.get_protos_for_entity("A")) >= 1
 
@@ -966,7 +946,7 @@ async def test_I50_concept_emergence_no_graph_writes():
 # ── I50-b ────────────────────────────────────────────────────────────────────
 @pytest.mark.asyncio
 async def test_I50b_proto_promote_requires_truthgate():
-    """I50-b: promote_to_l3() обращается к TruthGate ровно 1 раз."""
+    """I50-b: promote_to_l3() calls TruthGate exactly once."""
     gate = MockTruthGate()
     d    = ConceptEmergenceDetector(db=MockDB(), truth_gate=gate)
     p    = ProtoConcept(
@@ -974,18 +954,18 @@ async def test_I50b_proto_promote_requires_truthgate():
         co_occur_count=7, cross_sessions=4, name="test", confidence=0.75,
     )
     await d.promote_to_l3(p)
-    assert gate.call_count >= 1, "I50-b VIOLATION: промоут без TruthGate"
+    assert gate.call_count >= 1, "I50-b VIOLATION: promotion without TruthGate"
 
 
 # ── I66 (FIX-I66) ────────────────────────────────────────────────────────────
 @pytest.mark.asyncio
 async def test_I66_proto_only_in_memory():
     """
-    I66: ProtoConcept живёт только в памяти — observe() не инициирует запись в L3.
+    I66: ProtoConcept lives only in memory — observe() does not initiate a write to L3.
 
-    FIX-I66: предыдущая версия создавала MockGraph() не связанный с детектором —
-    тест всегда проходил тривиально. Новая версия: gate.call_count == 0 доказывает,
-    что TruthGate (единственный вход в L3) не вызывался.
+    FIX-I66: the previous version created a MockGraph() unconnected to the detector —
+    the test always passed trivially. New version: gate.call_count == 0 proves
+    that TruthGate (the only entry to L3) was not called.
     """
     gate     = MockTruthGate()
     detector = ConceptEmergenceDetector(db=MockDB(), truth_gate=gate)
@@ -993,21 +973,21 @@ async def test_I66_proto_only_in_memory():
         session = f"s{i % (EMERGENCE.CROSS_SESSION + 1)}"
         await detector.observe(["Alpha", "Beta", "Gamma"], session_id=session)
     assert gate.call_count == 0, (
-        f"I66 VIOLATION: TruthGate вызван {gate.call_count} раз(а) во время observe(). "
-        f"ProtoConcept не должен промоутироваться автоматически при observe()."
+        f"I66 VIOLATION: TruthGate called {gate.call_count} time(s) during observe(). "
+        f"ProtoConcept must not be promoted automatically on observe()."
     )
     protos = detector.get_protos_for_entity("Alpha")
-    assert len(protos) >= 1, "I66: ProtoConcept не создан в памяти."
-    assert not protos[0].expired, "I66: свежий ProtoConcept помечен expired — баг."
-    assert protos[0].proto_id in detector._protos, "I66: proto_id не в _protos."
+    assert len(protos) >= 1, "I66: ProtoConcept not created in memory."
+    assert not protos[0].expired, "I66: a fresh ProtoConcept is marked expired — a bug."
+    assert protos[0].proto_id in detector._protos, "I66: proto_id not in _protos."
 
 
 # ── I70 ──────────────────────────────────────────────────────────────────────
 @pytest.mark.asyncio
 async def test_I70_max_active_protos_cap():
     """
-    I70: активных ProtoConcept ≤ MAX_ACTIVE_PROTOS. Eviction работает.
-    Инжектируем данные напрямую через _maybe_create_proto() для скорости.
+    I70: active ProtoConcepts ≤ MAX_ACTIVE_PROTOS. Eviction works.
+    We inject data directly via _maybe_create_proto() for speed.
     """
     detector = ConceptEmergenceDetector(db=MockDB(), truth_gate=None)
     overflow_count = 100
@@ -1020,10 +1000,10 @@ async def test_I70_max_active_protos_cap():
         detector._maybe_create_proto(key)
     active = [p for p in detector._protos.values() if not p.expired]
     assert len(active) <= EMERGENCE.MAX_ACTIVE_PROTOS, (
-        f"I70 VIOLATION: {len(active)} активных proto при лимите {EMERGENCE.MAX_ACTIVE_PROTOS}."
+        f"I70 VIOLATION: {len(active)} active protos at limit {EMERGENCE.MAX_ACTIVE_PROTOS}."
     )
     assert len(active) == EMERGENCE.MAX_ACTIVE_PROTOS, (
-        f"I70: ожидали ровно {EMERGENCE.MAX_ACTIVE_PROTOS} proto, получили {len(active)}."
+        f"I70: expected exactly {EMERGENCE.MAX_ACTIVE_PROTOS} protos, got {len(active)}."
     )
 
 
@@ -1031,54 +1011,54 @@ async def test_I70_max_active_protos_cap():
 @pytest.mark.asyncio
 async def test_K3_immature_observations_survive_gc():
     """
-    FIX-K3: незрелые наблюдения (без proto, ниже порога) НЕ удаляются GC.
-    Критично для медленно растущих концептов (раз в неделю → 5 недель до порога).
+    FIX-K3: immature observations (without a proto, below the threshold) are NOT removed by GC.
+    Critical for slowly growing concepts (once a week → 5 weeks to threshold).
     """
     detector = ConceptEmergenceDetector(db=MockDB(), truth_gate=None)
     for i in range(EMERGENCE.CO_OCCUR_MIN - 1):
         session = f"s{i % (EMERGENCE.CROSS_SESSION + 1)}"
         await detector.observe(["Slow", "Concept", "Growth"], session_id=session)
     key = frozenset(["Slow", "Concept", "Growth"])
-    assert key in detector._matrix, "Тест: наблюдение должно быть в _matrix до GC."
-    assert len(detector.get_protos_for_entity("Slow")) == 0, "Тест: proto не должен быть."
+    assert key in detector._matrix, "Test: the observation must be in _matrix before GC."
+    assert len(detector.get_protos_for_entity("Slow")) == 0, "Test: there must be no proto."
     count_before = detector._matrix[key]
     await detector.gc_expired()
     assert key in detector._matrix, (
-        f"FIX-K3 VIOLATION: gc_expired() удалил незрелые наблюдения "
-        f"(count={count_before}, порог={EMERGENCE.CO_OCCUR_MIN})."
+        f"FIX-K3 VIOLATION: gc_expired() removed immature observations "
+        f"(count={count_before}, threshold={EMERGENCE.CO_OCCUR_MIN})."
     )
-    assert detector._matrix[key] == count_before, "FIX-K3: счётчик изменился после GC."
+    assert detector._matrix[key] == count_before, "FIX-K3: the counter changed after GC."
 
 
-# ── A1: конфиг-константы присутствуют ────────────────────────────────────────
+# ── A1: config constants present ─────────────────────────────────────────────
 def test_A1_emergence_config_constants():
-    """A1: EmergenceConfig содержит все Sprint 1 константы с корректными типами."""
-    assert hasattr(EMERGENCE, "HEBBIAN_DECAY_FACTOR"), "A1: HEBBIAN_DECAY_FACTOR отсутствует."
-    assert hasattr(EMERGENCE, "SALIENCE_MULTIPLIER"),  "A1: SALIENCE_MULTIPLIER отсутствует."
-    assert hasattr(EMERGENCE, "L5_5_INTEGRATION"),     "A1: L5_5_INTEGRATION отсутствует."
-    assert isinstance(EMERGENCE.HEBBIAN_DECAY_FACTOR, float), "A1: HEBBIAN_DECAY_FACTOR должен быть float."
+    """A1: EmergenceConfig contains all Sprint 1 constants with correct types."""
+    assert hasattr(EMERGENCE, "HEBBIAN_DECAY_FACTOR"), "A1: HEBBIAN_DECAY_FACTOR missing."
+    assert hasattr(EMERGENCE, "SALIENCE_MULTIPLIER"),  "A1: SALIENCE_MULTIPLIER missing."
+    assert hasattr(EMERGENCE, "L5_5_INTEGRATION"),     "A1: L5_5_INTEGRATION missing."
+    assert isinstance(EMERGENCE.HEBBIAN_DECAY_FACTOR, float), "A1: HEBBIAN_DECAY_FACTOR must be float."
     assert 0.0 < EMERGENCE.HEBBIAN_DECAY_FACTOR <= 1.0, (
-        f"A1: HEBBIAN_DECAY_FACTOR={EMERGENCE.HEBBIAN_DECAY_FACTOR} вне диапазона (0, 1]."
+        f"A1: HEBBIAN_DECAY_FACTOR={EMERGENCE.HEBBIAN_DECAY_FACTOR} out of range (0, 1]."
     )
-    assert isinstance(EMERGENCE.L5_5_INTEGRATION, bool), "A1: L5_5_INTEGRATION должен быть bool."
+    assert isinstance(EMERGENCE.L5_5_INTEGRATION, bool), "A1: L5_5_INTEGRATION must be bool."
 
 
-# ── A2: Lock инициализирован ──────────────────────────────────────────────────
+# ── A2: Lock initialized ──────────────────────────────────────────────────────
 def test_A2_lock_initialized():
-    """A2: detector имеет asyncio.Lock и _matrix_last_seen (FIX-K3)."""
+    """A2: detector has an asyncio.Lock and _matrix_last_seen (FIX-K3)."""
     detector = ConceptEmergenceDetector(db=MockDB())
-    assert hasattr(detector, "_lock"), "A2: _lock отсутствует."
-    assert isinstance(detector._lock, _asyncio.Lock), "A2: _lock должен быть asyncio.Lock."
-    assert hasattr(detector, "_matrix_last_seen"), "FIX-K3: _matrix_last_seen отсутствует."
-    assert isinstance(detector._matrix_last_seen, dict), "FIX-K3: _matrix_last_seen должен быть dict."
+    assert hasattr(detector, "_lock"), "A2: _lock missing."
+    assert isinstance(detector._lock, _asyncio.Lock), "A2: _lock must be an asyncio.Lock."
+    assert hasattr(detector, "_matrix_last_seen"), "FIX-K3: _matrix_last_seen missing."
+    assert isinstance(detector._matrix_last_seen, dict), "FIX-K3: _matrix_last_seen must be a dict."
 
 
-# ── A3: _notify_l5_5 срабатывает только на threshold ─────────────────────────
+# ── A3: _notify_l5_5 fires only on threshold ─────────────────────────────────
 @pytest.mark.asyncio
 async def test_A3_l5_5_scaffold_threshold_only():
     """
-    FIX-A3: _notify_l5_5 вызывается только при достижении порога,
-    не при каждом observe().
+    FIX-A3: _notify_l5_5 is called only when the threshold is reached,
+    not on every observe().
     """
     calls = []
 
@@ -1097,54 +1077,54 @@ async def test_A3_l5_5_scaffold_threshold_only():
         await detector.observe(["X", "Y", "Z"], session_id=session)
 
     assert len(calls) == 0, (
-        f"FIX-A3 VIOLATION: _notify_l5_5 вызван {len(calls)} раз(а) до порога."
+        f"FIX-A3 VIOLATION: _notify_l5_5 called {len(calls)} time(s) before the threshold."
     )
 ```
 
-### Добавить в velantrim_config.py
+### Add to velantrim_config.py
 
 ```python
 class EmergenceConfig:
     CO_OCCUR_MIN      = 5
-    CROSS_SESSION     = 3  # FIX: переименовано с CROSS_SESSION_MIN → CROSS_SESSION
-                           # чтобы совпадать с ConceptEmergenceDetector и не вызывать AttributeError
+    CROSS_SESSION     = 3  # FIX: renamed from CROSS_SESSION_MIN → CROSS_SESSION
+                           # to match ConceptEmergenceDetector and avoid AttributeError
     MIN_ENTITIES      = 3
     MAX_ENTITIES      = 7
     NAMING_THRESHOLD  = 0.7
-    TTL_DAYS          = 30  # P2-A: был хардкод в gc_expired() — теперь конфигурируемый
+    TTL_DAYS          = 30  # P2-A: was hardcoded in gc_expired() — now configurable
     MAX_ACTIVE_PROTOS = 500
-    # Sprint 1 (A1): были хардкодами в daily_maintenance() и observe()
+    # Sprint 1 (A1): were hardcoded in daily_maintenance() and observe()
     HEBBIAN_DECAY_FACTOR: float = 0.98   # confidence *= factor**days  (0,1]
-    SALIENCE_MULTIPLIER:  float = 1.0    # множитель для salience_boost расчёта
-    L5_5_INTEGRATION:     bool  = False  # A3: scaffold off by default; Sprint 2 включает
+    SALIENCE_MULTIPLIER:  float = 1.0    # multiplier for the salience_boost computation
+    L5_5_INTEGRATION:     bool  = False  # A3: scaffold off by default; Sprint 2 enables it
 
 EMERGENCE = EmergenceConfig()
 ```
 
 ---
 
-### P1-2: Когнитивная типизация памяти (новая ортогональная ось)
+### P1-2: Cognitive typing of memory (a new orthogonal axis)
 
 ```python
-# Новая ось поверх L0–L7 — ортогональна ESM и knowledge_type
+# A new axis on top of L0–L7 — orthogonal to ESM and knowledge_type
 from enum import Enum
 
 class MemoryType(str, Enum):
-    EPISODIC   = "episodic"    # конкретные события, диалоги
-    SEMANTIC   = "semantic"    # факты, концепции, определения
-    PROCEDURAL = "procedural"  # навыки, процедуры, workflows
+    EPISODIC   = "episodic"    # specific events, dialogues
+    SEMANTIC   = "semantic"    # facts, concepts, definitions
+    PROCEDURAL = "procedural"  # skills, procedures, workflows
 
-# Добавить поле в MemoryItem / :Fact / :Episode / :Theme:
+# Add a field to MemoryItem / :Fact / :Episode / :Theme:
 memory_type: MemoryType = MemoryType.EPISODIC
 
 def classify_memory_type(content: str, tags: list = None) -> MemoryType:
     tags = tags or []
     c = content.lower()
-    if any(w in c for w in ["шаг", "процедура", "workflow", "алгоритм", "как сделать"]):
+    if any(w in c for w in ["step", "procedure", "workflow", "algorithm", "how to do"]):
         return MemoryType.PROCEDURAL
     if any(t in tags for t in ["how-to", "process", "recipe", "workflow"]):
         return MemoryType.PROCEDURAL
-    if any(w in c for w in ["определение", "закон", "правило", "означает"]):
+    if any(w in c for w in ["definition", "law", "rule", "means"]):
         return MemoryType.SEMANTIC
     if any(t in tags for t in ["definition", "concept", "law", "rule"]):
         return MemoryType.SEMANTIC
@@ -1153,34 +1133,34 @@ def classify_memory_type(content: str, tags: list = None) -> MemoryType:
 
 ---
 
-L2: Среднесрочная память (Medium-Term Memory)           ← RFC0013
-    ├─ Хранилище: SQLite (WAL) таблица l2_memory + FTS5 на summary
-    │   НЕ список в RAM — персистентный слой, не теряется при перезапуске.
-    ├─ Узел :Theme в Neo4j — персистентный кластер с богатыми метаданными:
+L2: Medium-Term Memory                                  ← RFC0013
+    ├─ Storage: SQLite (WAL) table l2_memory + FTS5 on summary
+    │   NOT a list in RAM — a persistent layer, not lost on restart.
+    ├─ :Theme node in Neo4j — a persistent cluster with rich metadata:
     │     · theme_id, summary, summary_embedding
     │     · cluster_size, strength, confidence
     │     · emotional_salience, goal_alignment
     │     · access_count_7d, decay_lambda, is_active
     │     · schema_type: ["factual","procedural","emotional","strategic"]
     │     · first_seen, last_updated
-    │   ⚠️ УТОЧНЕНИЕ ТИПА emotional_salience:
+    │   ⚠️ TYPE CLARIFICATION FOR emotional_salience:
     │     :Theme.emotional_salience — FLOAT [0.0, 1.0]
-    │       0.0 = нейтральное событие
-    │       0.5 = заметное (частичный успех/неудача)
-    │       1.0 = критическое (сильный SUCCESS/FAILURE)
-    │     :Theme.emotional_label — STRING (опционально, для UI)
+    │       0.0 = neutral event
+    │       0.5 = notable (partial success/failure)
+    │       1.0 = critical (strong SUCCESS/FAILURE)
+    │     :Theme.emotional_label — STRING (optional, for the UI)
     │       "SUCCESS" | "FAILURE" | "NEUTRAL" | "CRITICAL"
-    │     В формуле strength:
-    │       emotional = 1.0 + emotional_salience × 1.3  → диапазон 1.0…2.3
+    │     In the strength formula:
+    │       emotional = 1.0 + emotional_salience × 1.3  → range 1.0…2.3
     │     Emotional Ring Zero (RFC0015):
-    │       emotional_salience > 0.85 → ESM.freeze() — иммунитет к decay
+    │       emotional_salience > 0.85 → ESM.freeze() — immunity to decay
     ├─ cluster_type: EPISODIC | STRATEGIC | CONCEPTUAL
-    │     · EPISODIC   → decay_rate=0.05 (быстрый) → ReasoningBank
-    │     · STRATEGIC  → decay_rate=0.02 (средний) → L3 + ReasoningBank
-    │     · CONCEPTUAL → decay_rate=0.01 (медленный) → L3 через Truth Gate
-    ├─ Формула strength (взвешенная сумма):
-    │     Устойчива к нулевым факторам — обнуление одного компонента
-    │     не обнуляет итоговую силу темы.
+    │     · EPISODIC   → decay_rate=0.05 (fast) → ReasoningBank
+    │     · STRATEGIC  → decay_rate=0.02 (medium) → L3 + ReasoningBank
+    │     · CONCEPTUAL → decay_rate=0.01 (slow) → L3 through Truth Gate
+    ├─ strength formula (weighted sum):
+    │     Robust against zero factors — zeroing one component
+    │     does not zero out the resulting theme strength.
     │
     │     strength = (
     │         w_base  × base_factor        +
@@ -1190,290 +1170,290 @@ L2: Среднесрочная память (Medium-Term Memory)           ← R
     │         w_stab  × stability_factor
     │     ) / (w_base + w_reinf + w_emot + w_goal + w_stab)
     │
-    │     Веса по умолчанию (velantrim_config.py):
+    │     Default weights (velantrim_config.py):
     │       w_base  = 1.0
     │       w_reinf = 1.0
-    │       w_emot  = 1.5   ← эмоциональная память важнее
+    │       w_emot  = 1.5   ← emotional memory matters more
     │       w_goal  = 1.2
     │       w_stab  = 0.8
     │
-    │     Компоненты:
-    │       base_factor          = 1.0 + log1p(cluster_size) × 0.45          # log1p(x) = log(1+x), см. np.log1p
+    │     Components:
+    │       base_factor          = 1.0 + log1p(cluster_size) × 0.45          # log1p(x) = log(1+x), see np.log1p
     │       reinforcement_factor = 1.0 + 0.15 × log1p(access_count_7d)
-    │       emotional_factor     = 1.0…2.3  (2.0 при SUCCESS/FAILURE)
+    │       emotional_factor     = 1.0…2.3  (2.0 on SUCCESS/FAILURE)
     │       goal_alignment       = cosine(theme_embedding, active_goal_embedding) ∈ [0,1]
-    │         Источник active_goal_embedding:
-    │           · A0 (Hot Focus) активен → эмбеддинг текущего запроса
-    │           · A1 (Day Focus) есть активная цель → goal_stack[0].embedding
-    │           · Оба пусты → last_user_query_embedding (cache)
-    │           · Fallback → 0.5 (нейтральное, не обнуляет формулу)
-    │           · ⚠️ 0.5 при w_goal=1.2 не нейтрально — активно занижает узлы без
-    │           · активной цели относительно узлов с целью (сила = 0.6 vs ~0.8).
-    │           · TODO: рассмотреть fallback=1.0 или флаг goal_context_absent
-    │           · чтобы w_goal вклад был явно нейтрализован при отсутствии цели.
+    │         Source of active_goal_embedding:
+    │           · A0 (Hot Focus) active → embedding of the current query
+    │           · A1 (Day Focus) has an active goal → goal_stack[0].embedding
+    │           · Both empty → last_user_query_embedding (cache)
+    │           · Fallback → 0.5 (neutral, does not zero out the formula)
+    │           · ⚠️ 0.5 at w_goal=1.2 is not neutral — it actively penalizes nodes without
+    │           · an active goal relative to nodes with a goal (strength = 0.6 vs ~0.8).
+    │           · TODO: consider fallback=1.0 or a goal_context_absent flag
+    │           · so that the w_goal contribution is explicitly neutralized when no goal is present.
     │       stability_factor     = 1 / (1 + days_since_update × λ₂)
     │
-    │     Разложение хранится в strength_components (JSON):
+    │     The decomposition is stored in strength_components (JSON):
     │       {"base": 1.2, "reinf": 1.1, "emot": 1.8, "goal": 0.6, "stab": 0.9}
-    │     Механизм передачи: A0/A1 → SessionContext → L2IngestionEngine
-    │     Refresh: обновляется при каждом новом запросе пользователя
-    │   Порог продвижения в L3: (strength > 4.5) ∧ (access_count > 10) ∧ (stability > 0.75)
-    ├─ TTL Manager (адаптивный):
-    │     TTL = 7 дней × 2^min(visits, 5) — max 224 дня
+    │     Delivery mechanism: A0/A1 → SessionContext → L2IngestionEngine
+    │     Refresh: updated on every new user query
+    │   Promotion threshold to L3: (strength > 4.5) ∧ (access_count > 10) ∧ (stability > 0.75)
+    ├─ TTL Manager (adaptive):
+    │     TTL = 7 days × 2^min(visits, 5) — max 224 days
     │     visits = access_count + reactivation_count
-    │     При истечении: важные → продлить, маловажные → soft delete → S3
-    ├─ ReactivationEngine («сон агента», Phase 1):
-    │     Фоновый asyncio.Task при CPU < 30%. Каждый час прокручивает
-    │     топ-N эпизодов по importance, укрепляет связи, продлевает TTL.
-    │     Аналог hippocampal replay в нейробиологии.
+    │     On expiry: important → extend, low-importance → soft delete → S3
+    ├─ ReactivationEngine ("agent's sleep", Phase 1):
+    │     A background asyncio.Task when CPU < 30%. Every hour it scrolls through
+    │     the top-N episodes by importance, strengthens connections, extends TTL.
+    │     Analogous to hippocampal replay in neuroscience.
     ├─ Cold Start Guard:
     │     if len(l2_items) < 50: skip_clustering()
-    │     Запуск кластеризации на < 50 эпизодах → микро-кластеры → баг.
-    ├─ I/O батчинг: L2MetricsBuffer (flush каждые 10 мин) — защита SSD
-    ├─ L3→L2 обратная связь: при ESM-переходе факта (Validated→Contradicted)
-    │     → найти :Theme, содержащие этот факт → снизить strength × epistemic_penalty
-    ├─ Связи в графе:
+    │     Running clustering on < 50 episodes → micro-clusters → a bug.
+    ├─ I/O batching: L2MetricsBuffer (flush every 10 min) — SSD protection
+    ├─ L3→L2 feedback: on an ESM transition of a fact (Validated→Contradicted)
+    │     → find the :Theme that contain this fact → reduce strength × epistemic_penalty
+    ├─ Connections in the graph:
     │     :Theme -[:CONTAINS {weight, since}]→ :Episode
     │     :Theme -[:SIMILAR_TO {cosine}]→ :Theme
-    │     :Theme -[:GENERALIZES_TO]→ :KnowledgeUnit  (в L3)
+    │     :Theme -[:GENERALIZES_TO]→ :KnowledgeUnit  (in L3)
     │     :Theme -[:EXEMPLIFIES]→ :Outcome
     │     :Theme -[:HAS_FACTS]→ :FactsPack
-    ├─ Паттерны успеха/неудач + anti-patterns → ReasoningBank
+    ├─ Success/failure patterns + anti-patterns → ReasoningBank
     │
-    │   ⚠️ РАЗГРАНИЧЕНИЕ L2 vs L4 (RFC0014):
-    │     L2 = опыт: кластеры, паттерны, темы — НЕ факты, НЕ reasoning
-    │     L4 = reasoning: единственная точка логики и вывода
-    │     L2 даёт шаблон → L4 применяет → Graph даёт факты
-    │     L2 НЕ является источником фактов. FactsPack строится только из Graph.
+    │   ⚠️ DISTINCTION L2 vs L4 (RFC0014):
+    │     L2 = experience: clusters, patterns, themes — NOT facts, NOT reasoning
+    │     L4 = reasoning: the single point of logic and inference
+    │     L2 provides a template → L4 applies it → the Graph provides facts
+    │     L2 is NOT a source of facts. FactsPack is built only from the Graph.
     │
-    └─ Decay: FSRS power-law (v8.0 — заменяет Ebbinghaus экспоненту, P0-1)
+    └─ Decay: FSRS power-law (v8.0 — replaces the Ebbinghaus exponential, P0-1)
 
          R = (1 + 19/81 × t/S)^(-0.5)
-         # Точнее экспоненты Ebbinghaus на 20-30% (FadeMem paper, jan 2026)
-         # Fast Path читает закэшированное retrievability из индекса графа.
-         # FSRSState создаётся lazy — только в Slow Path (SleepTimeWorker/DecayWorker).
-         # Заменяет Ebbinghaus: R = e^(-t/S) согласно P0-1
-         R = retention (сколько осталось)
-         t = время с последнего подтверждения
-         S = strength (растёт с повторениями · умножается на salience_weight)
+         # More accurate than the Ebbinghaus exponential by 20-30% (FadeMem paper, jan 2026)
+         # The Fast Path reads cached retrievability from the graph index.
+         # FSRSState is created lazily — only in the Slow Path (SleepTimeWorker/DecayWorker).
+         # Replaces Ebbinghaus: R = e^(-t/S) per P0-1
+         R = retention (how much remains)
+         t = time since the last confirmation
+         S = strength (grows with repetitions · multiplied by salience_weight)
 
-         Факт упомянут 1 раз:
-           → через 1 день  confidence: 0.58
-           → через 7 дней  confidence: 0.21
-           → через 30 дней confidence: 0.05 → холодное хранилище
+         A fact mentioned once:
+           → after 1 day   confidence: 0.58
+           → after 7 days  confidence: 0.21
+           → after 30 days confidence: 0.05 → cold storage
 
-         Тот же факт упомянут 5 раз (S вырос):
-           → через 1 день  confidence: 0.91
-           → через 7 дней  confidence: 0.74
-           → через 30 дней confidence: 0.52 → всё ещё активен
+         The same fact mentioned 5 times (S grew):
+           → after 1 day   confidence: 0.91
+           → after 7 days  confidence: 0.74
+           → after 30 days confidence: 0.52 → still active
 
-         salience_weight умножает S: важные факты живут дольше обычных.
-         Worker: запускается раз в час через EventBus · CPU only · ~0 нагрузки
-         Emotional Ring Zero (RFC0015): emotional_salience > 0.85 → иммунитет к decay
+         salience_weight multiplies S: important facts live longer than ordinary ones.
+         Worker: runs once an hour via the EventBus · CPU only · ~0 load
+         Emotional Ring Zero (RFC0015): emotional_salience > 0.85 → immunity to decay
 
-    Cache-Aware Hot Graph — двухуровневый граф
-    ├─ По аналогии с виртуальной памятью ОС: всё делится на горячее и холодное.
+    Cache-Aware Hot Graph — a two-tier graph
+    ├─ By analogy with OS virtual memory: everything is divided into hot and cold.
     │
-    │   🔥 Горячий граф (живёт в RAM):
-    │     · Узлы активированные за последние 24 часа
-    │     · Узлы с salience_weight > 0.7  ← Salience Detector решает кто здесь
-    │     · LITE: ~500–2000 узлов · 2–5 MB RAM
-    │     · ONE:  ~10–50k узлов   · 50–100 MB RAM
+    │   🔥 Hot graph (lives in RAM):
+    │     · Nodes activated in the last 24 hours
+    │     · Nodes with salience_weight > 0.7  ← the Salience Detector decides who belongs here
+    │     · LITE: ~500–2000 nodes · 2–5 MB RAM
+    │     · ONE:  ~10–50k nodes   · 50–100 MB RAM
     │
-    │   🧊 Холодный граф (SSD / Neo4j):
-    │     · Всё остальное
-    │     · Подгружается только если spreading activation достаточно сильная
+    │   🧊 Cold graph (SSD / Neo4j):
+    │     · Everything else
+    │     · Loaded only if spreading activation is strong enough
     │
-    │   Spreading activation сначала проходит горячий граф за 1–3 мс.
-    │   Холодные узлы — только по необходимости.
-    │   Ускорение системы: ×2–3 · без доп. CPU нагрузки.
-    │   Ребалансировка: раз в час через EventBus SleepTimeWorker.
-    │   Метрики:
-    │     hot_graph_size_nodes   — текущий размер горячего графа
-    │     hot_graph_hits_total   — сколько запросов обслужено из RAM
-    │     cold_graph_loads_total — сколько раз подгружался холодный граф
+    │   Spreading activation first traverses the hot graph in 1–3 ms.
+    │   Cold nodes — only as needed.
+    │   System speedup: ×2–3 · without additional CPU load.
+    │   Rebalancing: once an hour via the EventBus SleepTimeWorker.
+    │   Metrics:
+    │     hot_graph_size_nodes   — current size of the hot graph
+    │     hot_graph_hits_total   — how many requests were served from RAM
+    │     cold_graph_loads_total — how many times the cold graph was loaded
 
-L2.5: Staging Layer (RFC0014) — буфер перед L3
-    │   SQLite = временный буфер (staging), НИКОГДА не источник истины.
-    │   Graph = единственный L3. Принцип Graph = Truth не нарушается.
-    ├─ Назначение: асинхронная консолидация для слабого железа.
-    │     L0/L1/L2 пишут в SQLite → данные дозревают → в L3 только при ресурсах.
+L2.5: Staging Layer (RFC0014) — a buffer before L3
+    │   SQLite = a temporary buffer (staging), NEVER a source of truth.
+    │   Graph = the single L3. The Graph = Truth principle is not violated.
+    ├─ Purpose: asynchronous consolidation for weak hardware.
+    │     L0/L1/L2 write to SQLite → data matures → into L3 only when resources allow.
     ├─ Resource-Aware Scheduler:
-    │     Условия запуска: CPU < 35% AND RAM free > 25% AND user_idle
-    │     Если ПК занят — staging копит данные, граф не строится.
-    │     Принудительный flush: если ПК не idle > 24ч → 5-10% CPU фоново.
-    ├─ Fast-Track (обход очереди):
-    │     priority > 0.9 → немедленно → Truth Gate → L3
-    │     Примеры CRITICAL: аллергии, Ring Zero изменения, критические факты
-    ├─ Graph-Lite (для слабого ПК, RAM < 4GB):
-    │     Временный мини-граф внутри SQLite (таблицы nodes + edges).
-    │     При запросе: UNION из Graph-Lite (staging) + L3.
-    │     Это НЕ параллельная истина — та же логика L3, другой движок.
-    │     При переносе в Neo4j Graph-Lite очищается.
-    ├─ Правило чтения:
-    │     1. Сначала граф (L3) — канон
-    │     2. Если нет в графе, но есть в staging → использовать с confidence × 0.7
-    │        и пометкой "preliminary" (не истина, гипотеза)
-    ├─ Путь данных:
+    │     Launch conditions: CPU < 35% AND RAM free > 25% AND user_idle
+    │     If the PC is busy — staging accumulates data, the graph is not built.
+    │     Forced flush: if the PC is not idle for > 24h → 5-10% CPU in the background.
+    ├─ Fast-Track (queue bypass):
+    │     priority > 0.9 → immediately → Truth Gate → L3
+    │     CRITICAL examples: allergies, Ring Zero changes, critical facts
+    ├─ Graph-Lite (for a weak PC, RAM < 4GB):
+    │     A temporary mini-graph inside SQLite (nodes + edges tables).
+    │     On query: UNION of Graph-Lite (staging) + L3.
+    │     This is NOT a parallel truth — the same L3 logic, a different engine.
+    │     On transfer to Neo4j, Graph-Lite is cleared.
+    ├─ Reading rule:
+    │     1. The graph first (L3) — the canon
+    │     2. If not in the graph but present in staging → use it with confidence × 0.7
+    │        and a "preliminary" marker (not truth, a hypothesis)
+    ├─ Data path:
     │     L2 → staging_candidates → Priority Queue → Scheduler
     │         → Truth Gate → L3 (Graph)
-    │     FAST-TRACK: L2 → Truth Gate → L3 (минует очередь)
-    └─ Decay: staging_candidates TTL по priority_score, GC при > MAX_STAGING_SIZE
+    │     FAST-TRACK: L2 → Truth Gate → L3 (bypasses the queue)
+    └─ Decay: staging_candidates TTL by priority_score, GC when > MAX_STAGING_SIZE
 
 ---
 
 ### P0-1 NEW: memory/fsrs_state.py (RFC0069)
 
-Модуль вставляется в проект как отдельный файл. Полный код — в патче P0-1 файла VELANTRIM_TITAN_v8_CRYSTAL_PATCHES.md.
+The module is inserted into the project as a separate file. The full code is in patch P0-1 of the file VELANTRIM_TITAN_v8_CRYSTAL_PATCHES.md.
 
-Новые поля в MemoryItem / FactNode:
+New fields in MemoryItem / FactNode:
     difficulty: float = 5.0           # D in [1.0, 10.0]
-    stability: float = 1.0            # S — стабильность
-    retrievability: float = 1.0       # R — текущая извлекаемость
-    fsrs_last_review: datetime = None  # время последнего обращения
+    stability: float = 1.0            # S — stability
+    retrievability: float = 1.0       # R — current retrievability
+    fsrs_last_review: datetime = None  # time of the last access
 
-Конфиг (velantrim_config.py):
+Config (velantrim_config.py):
     FSRS_ENABLED = True
     FSRS_PLASTICITY_W = 0.6
     FSRS_MIN_STABILITY = 0.1
     FSRS_REFRESH_THRESHOLD = 0.3
 
-I84 (FSRSIsolation): FSRS decay меняет ТОЛЬКО retrievability и attention_weight.
-    truth_status, epistemic_state и confidence — неприкосновенны.
-    FSRSState создаётся только в Slow Path. Fast Path читает кэш.
+I84 (FSRSIsolation): FSRS decay changes ONLY retrievability and attention_weight.
+    truth_status, epistemic_state and confidence — inviolable.
+    FSRSState is created only in the Slow Path. The Fast Path reads the cache.
 
 ---
 
-L3: Долгосрочная память (Long-Term Memory)
-    ├─ Семантические концепции
-    ├─ Мета-стратегии
-    ├─ Личность агента и предпочтения пользователя
-    ├─ Write Protocol — единственные разрешённые пути записи:
+L3: Long-Term Memory
+    ├─ Semantic concepts
+    ├─ Meta-strategies
+    ├─ The agent's personality and the user's preferences
+    ├─ Write Protocol — the only permitted write paths:
     │     ✅ TruthGate (validated pipeline)
     │     ✅ Human approval (trust_score = 0.95)
     │     ✅ Trusted import (trust_score ≥ 0.80)
-    │     ❌ LLM напрямую / L1 / L2 / Free Mode / Observer
-    │     Нарушение → WriteProtocolViolation + лог + Observer alert
-    ├─ Source Trust Layer — поле на каждом факте:
+    │     ❌ LLM directly / L1 / L2 / Free Mode / Observer
+    │     Violation → WriteProtocolViolation + log + Observer alert
+    ├─ Source Trust Layer — a field on every fact:
     │     source_type: "user_input" | "llm_output" | "import" | "manual"
     │     trust_score: 0.0 – 1.0
     │     validation_status: "verified" | "pending" | "flagged"
-    │     TruthGate принимает факт только если trust_score ≥ TRUST_THRESHOLD
-    │     Защита от "validated hallucination" — галлюцинации прошедшей проверку
-    ├─ P1-3: knowledge_type на :Fact
+    │     TruthGate accepts a fact only if trust_score ≥ TRUST_THRESHOLD
+    │     Protection against "validated hallucination" — a hallucination that passed validation
+    ├─ P1-3: knowledge_type on :Fact
     │     class KnowledgeType(str, Enum):
-    │       TERM       = "term"        # определение термина
-    │       FACT       = "fact"        # конкретный факт
-    │       LAW        = "law"         # закон, правило, инвариант
-    │       MODEL      = "model"       # модель, теория
-    │       METHOD     = "method"      # метод, алгоритм
-    │       CONSTRAINT = "constraint"  # ограничение
-    │       OPINION    = "opinion"     # мнение
-    │     На :Fact узле: knowledge_type: str = "fact"  # default
-    │     I87 (KnowledgeTypeImmutable): knowledge_type — read-only после Validated.
-    │     Изменение типа у Validated факта = создание нового факта.
+    │       TERM       = "term"        # term definition
+    │       FACT       = "fact"        # a specific fact
+    │       LAW        = "law"         # a law, rule, invariant
+    │       MODEL      = "model"       # a model, theory
+    │       METHOD     = "method"      # a method, algorithm
+    │       CONSTRAINT = "constraint"  # a constraint
+    │       OPINION    = "opinion"     # an opinion
+    │     On the :Fact node: knowledge_type: str = "fact"  # default
+    │     I87 (KnowledgeTypeImmutable): knowledge_type — read-only after Validated.
+    │     Changing the type of a Validated fact = creating a new fact.
     │
     ├─ P1-5: Provenance Chain:
-    │     Вместо одного source_type — массив провенанса:
+    │     Instead of a single source_type — a provenance array:
     │     provenance_chain: List[Dict] = [
     │       {"source_type": "user_input", "timestamp": "...", "content_hash": "..."},
     │       {"verified_by": "truth_gate", "confidence": 0.85},
     │       {"promoted_by": "esm_transition", "from": "Supported", "to": "Validated"}
     │     ]
-    │     Append-only: удаление записей из цепочки запрещено.
+    │     Append-only: removing entries from the chain is forbidden.
     │     I89 (ProvenanceAppendOnly): provenance_chain — append-only.
     │
     ├─ Fan-out Limit + Meta-Nodes:
-    │     FAN_OUT_LIMIT = 500 связей одного типа на узел
-    │     При превышении → агрегация в мета-узел (не новое ребро)
-    │     Защита Neo4j от деградации при "толстых" узлах
+    │     FAN_OUT_LIMIT = 500 connections of one type per node
+    │     On overflow → aggregation into a meta-node (not a new edge)
+    │     Protects Neo4j from degradation on "fat" nodes
     ├─ P1-1: Multi-Graph Decomposition (MAGMA-style):
-    │     Рёбра разделены на 4 ортогональных типа:
-    │     · [:SEMANTIC_REL]  — смысловые связи (is-a, part-of, similar)
-    │     · [:TEMPORAL_REL]  — временные связи (before, after, during)
-    │     · [:CAUSAL_REL]    — причинные связи (causes, prevents, enables)
-    │     · [:ENTITY_REL]    — сущностные связи (owns, works-at, located-in)
-    │     IntentRouter (memory/intent_router.py) определяет тип запроса →
-    │     HybridRetriever обходит только нужные рёбра.
-    │     "Why/почему" → CAUSAL_REL. "When/когда" → TEMPORAL_REL.
-    │     "What is" → SEMANTIC_REL. Default → все типы.
-    │     I86 (IntentRouter): вызывается ТОЛЬКО из HybridRetriever.retrieve().
+    │     Edges are split into 4 orthogonal types:
+    │     · [:SEMANTIC_REL]  — semantic relations (is-a, part-of, similar)
+    │     · [:TEMPORAL_REL]  — temporal relations (before, after, during)
+    │     · [:CAUSAL_REL]    — causal relations (causes, prevents, enables)
+    │     · [:ENTITY_REL]    — entity relations (owns, works-at, located-in)
+    │     IntentRouter (memory/intent_router.py) determines the query type →
+    │     HybridRetriever traverses only the needed edges.
+    │     "Why" → CAUSAL_REL. "When" → TEMPORAL_REL.
+    │     "What is" → SEMANTIC_REL. Default → all types.
+    │     I86 (IntentRouter): called ONLY from HybridRetriever.retrieve().
     │
-    ├─ Decay: медленный (месяцы-годы)
-    ├─ Homeostatic Balancer — иммунитет графа
-    │     Фоновый процесс · запускается SleepTimeWorker в 3:00 ночи при user_idle.
-    │     Аналог: synaptic homeostasis во время глубокого сна у людей.
+    ├─ Decay: slow (months-years)
+    ├─ Homeostatic Balancer — graph immunity
+    │     A background process · launched by SleepTimeWorker at 3:00 AM when user_idle.
+    │     Analog: synaptic homeostasis during deep sleep in humans.
     │
-    │     Проблема которую решает: граф накапливает перекос — тысячи сильных
-    │     связей в одной области (например, всё о Velantrim) и мёртвые зоны
-    │     в других. Через год система начинает «думать» только об одном.
+    │     The problem it solves: the graph accumulates a skew — thousands of strong
+    │     connections in one area (for example, everything about Velantrim) and dead zones
+    │     in others. Within a year the system starts to "think" about only one thing.
     │
-    │     Алгоритм:
-    │       1. Собрать распределение весов по всем доменам графа
-    │       2. Если domain_weight > OVERLOAD_THRESHOLD (0.8):
-    │            → мягкая нормализация: multiply weights × 0.85
-    │       3. Если domain.last_active < now - 30 дней:
-    │            → поднять базовый вес × 1.2 (знания не «умирают» полностью)
-    │       4. Записать homeostatic_run в метрики
+    │     Algorithm:
+    │       1. Collect the weight distribution across all graph domains
+    │       2. If domain_weight > OVERLOAD_THRESHOLD (0.8):
+    │            → soft normalization: multiply weights × 0.85
+    │       3. If domain.last_active < now - 30 days:
+    │            → raise the base weight × 1.2 (knowledge does not "die" entirely)
+    │       4. Record homeostatic_run in the metrics
     │
-    │     Нагрузка: 30–60 сек · раз в сутки · CPU only
-    │     Метрика: homeostatic_runs_total · homeostatic_normalized_domains
+    │     Load: 30–60 sec · once a day · CPU only
+    │     Metric: homeostatic_runs_total · homeostatic_normalized_domains
 
     ### ESM State Transitions — Epistemic State Machine
 
          Observed → Hypothesized → Supported → Validated
                         ↑                          │
                         │ rollback                 ├─────────────────────┐
-                        │ Evidence отозван         ▼                     ▼
-                        └────────────── Contradicted         (остаётся Validated)
-                                                   │ 3+ конфликта
+                        │ Evidence withdrawn       ▼                     ▼
+                        └────────────── Contradicted         (remains Validated)
+                                                   │ 3+ conflicts
                                                    ▼
                                              Deprecated
                                                    │ importance < 0.1
                                                    ▼
                                               Collapsed
-                                    (→ Immutable Raw Memory, не уничтожается)
-       Правила переходов:
-         · Observed     → Hypothesized : первое появление (авто)
-         · Hypothesized → Observed     : Evidence отозван — rollback
+                                    (→ Immutable Raw Memory, not destroyed)
+       Transition rules:
+         · Observed     → Hypothesized : first appearance (auto)
+         · Hypothesized → Observed     : Evidence withdrawn — rollback
          · Hypothesized → Supported    : Evidence ≥ 2
-         · Supported    → Validated    : MGL + Truth Gate пройден
-         · Validated    → Contradicted : 1+ сильный [:CONTRADICTS]
+         · Supported    → Validated    : MGL + Truth Gate passed
+         · Validated    → Contradicted : 1+ strong [:CONTRADICTS]
          · Contradicted → Deprecated   : importance -= weighted_penalty × 3+
-         · Deprecated   → Collapsed    : importance < 0.1 при GC
+         · Deprecated   → Collapsed    : importance < 0.1 at GC
 
     ├─ P1-4: Per-node Versioning (OCC):
-    │     Каждый :Fact имеет _version_: int (начинается с 1).
-    │     ESM-переходы используют Optimistic Concurrency Control:
+    │     Each :Fact has a _version_: int (starts at 1).
+    │     ESM transitions use Optimistic Concurrency Control:
     │       MATCH (f:Fact {id: $id, _version_: $expected})
     │       SET f.epistemic_state = $new, f._version_ = f._version_ + 1
-    │     Если _version_ не совпала — retry через очередь.
-    │     I88 (VersionOCC): _version_ инкрементируется ТОЛЬКО атомарно через OCC Cypher.
-    │     Прямой SET _version_ без проверки expected — баг.
+    │     If _version_ does not match — retry via the queue.
+    │     I88 (VersionOCC): _version_ is incremented ONLY atomically via OCC Cypher.
+    │     A direct SET _version_ without checking expected — a bug.
 
-L3.5: Immutable Core — Вечная основа памяти          ← RFC0017
-    ├─ Назначение: append-only ledger, защита от катастрофического забывания.
-    │   Это НЕ operational слой — это аудит и восстановление.
-    ├─ Механизм:
-    │     Каждые 24 часа → snapshot L3 графа → hash SHA-256 + timestamp
-    │     → запись в Neo4j :ImmutableCore узел (append-only, no UPDATE/DELETE)
-    │     → параллельно Parquet file → S3 для долгосрочного хранения
-    │     Delta Snapshots (дифференциальное хранение):
-    │       · Day 1: FULL snapshot (все узлы + рёбра)
-    │       · Day 2+: DELTA snapshot (только изменённые/новые/удалённые)
-    │       · Формат delta: {added: [...], modified: [...], deleted: [...]}
-    │       · Восстановление: full_snapshot + apply(delta_1) + ... + apply(delta_N)
-    │       · FULL snapshot каждые 7 дней (для быстрого восстановления)
-    │     Экономия storage: ~80-90% (вместо 365 полных снапшотов → 52 полных + 313 delta)
-    ├─ Хранилище: 
-    │     · Neo4j: узел :ImmutableCore {timestamp, hash, node_count, edge_count, snapshot_type}
-    │     · S3/MinIO: graph_snapshot_{timestamp}.parquet (полный дамп)
-    │     · S3/MinIO: graph_delta_{timestamp}.parquet (дифференциальный)
+L3.5: Immutable Core — The eternal foundation of memory   ← RFC0017
+    ├─ Purpose: an append-only ledger, protection against catastrophic forgetting.
+    │   This is NOT an operational layer — it is audit and recovery.
+    ├─ Mechanism:
+    │     Every 24 hours → snapshot of the L3 graph → SHA-256 hash + timestamp
+    │     → write to a Neo4j :ImmutableCore node (append-only, no UPDATE/DELETE)
+    │     → in parallel a Parquet file → S3 for long-term storage
+    │     Delta Snapshots (differential storage):
+    │       · Day 1: FULL snapshot (all nodes + edges)
+    │       · Day 2+: DELTA snapshot (only changed/new/deleted)
+    │       · Delta format: {added: [...], modified: [...], deleted: [...]}
+    │       · Recovery: full_snapshot + apply(delta_1) + ... + apply(delta_N)
+    │       · FULL snapshot every 7 days (for fast recovery)
+    │     Storage savings: ~80-90% (instead of 365 full snapshots → 52 full + 313 delta)
+    ├─ Storage:
+    │     · Neo4j: node :ImmutableCore {timestamp, hash, node_count, edge_count, snapshot_type}
+    │     · S3/MinIO: graph_snapshot_{timestamp}.parquet (full dump)
+    │     · S3/MinIO: graph_delta_{timestamp}.parquet (differential)
     │     · SQLite: metadata (fractal_similarity_score, alert_triggered)
     ├─ Drift Detection:
     │
-    │     knowledge graph snapshots — метрика из теории динамических систем,
-    │     не валидирована для графов. Заменена на структурные дельта-метрики:
+    │     knowledge graph snapshots — a metric from dynamical systems theory,
+    │     not validated for graphs. Replaced with structural delta metrics:
     │     
     │     drift_score = {
     │         "node_delta":      abs(new_count  - old_count)  / old_count,
@@ -1484,254 +1464,254 @@ L3.5: Immutable Core — Вечная основа памяти          ← RFC
     │     if any(delta > 0.2 for delta in drift_score.values()):
     │         alert("Memory structural drift detected!")
     │     
-    │     Порог 0.2 = 20% изменение за сутки → аномалия.
-    ├─ Semantic Drift Monitor — смысловой дрейф:
-    │     Поверх структурного — независимый второй монитор.
-    │     Компоненты: ESM-distribution + PageRank top-10 + domain shifts
+    │     The 0.2 threshold = a 20% change over a day → an anomaly.
+    ├─ Semantic Drift Monitor — semantic drift:
+    │     On top of the structural one — an independent second monitor.
+    │     Components: ESM-distribution + PageRank top-10 + domain shifts
     │     semantic_score = esm_drift*0.5 + centrality_drift*0.3 + domain_drift*0.2
-    │     Два НЕЗАВИСИМЫХ алерта (не смешивать):
-    │       · structural_drift → граф изменился по форме
-    │       · semantic_drift   → граф изменился по смыслу
-    │     Можно: структурно стабильный граф с высоким semantic drift.
-    ├─ ESMChunkedInvalidator — батчевый откат:
-    │     Заменяет прямой каскад [:CONTRADICTS] (риск deadlock Neo4j).
-    │     Порции по 50 узлов + asyncio.sleep(100ms) между батчами.
-    │     Обязательный индекс: CREATE INDEX pending_inv_idx FOR (f:Fact)
+    │     Two INDEPENDENT alerts (do not mix):
+    │       · structural_drift → the graph changed in form
+    │       · semantic_drift   → the graph changed in meaning
+    │     Possible: a structurally stable graph with high semantic drift.
+    ├─ ESMChunkedInvalidator — batched rollback:
+    │     Replaces the direct [:CONTRADICTS] cascade (risk of a Neo4j deadlock).
+    │     Batches of 50 nodes + asyncio.sleep(100ms) between batches.
+    │     Required index: CREATE INDEX pending_inv_idx FOR (f:Fact)
     │                           ON (f.pending_invalidation)
-    │     Safe Mode check: при SAFE_MODE → процесс приостанавливается.
-    ├─ Использование:
-    │     · Audit: GET /memory/audit/drift?since=... → показать snapshots + similarity
-    │     · Rollback: при катастрофе → восстановить L3 из snapshot_{t-N}
-    │     · Verification: ReactivationEngine проверяет Ring Zero узлы по snapshot
-    ├─ Инварианты:
-    │     ImmutableCore.I1: ТОЛЬКО append, НИКОГДА не UPDATE/DELETE узлов :ImmutableCore
-    │     ImmutableCore.I2: Snapshot создаётся ПОСЛЕ успешной консолидации (не в middle)
-    │     ImmutableCore.I3: Hash проверяется при чтении — защита от bit rot
-    │     ImmutableCore.I4: Ring Zero узлы присутствуют в КАЖДОМ snapshot (иначе alert)
-    ├─ GC правила:
-    │     Snapshots старше 90 дней → только S3 (из Neo4j удалить метаданные)
-    │     Snapshots старше 1 года → cold storage (Glacier/Deep Archive)
-    │     Ring Zero snapshots → НИКОГДА не удалять (вечное хранение)
-    └─ Decay: отсутствует (immutable навсегда)
+    │     Safe Mode check: under SAFE_MODE → the process is paused.
+    ├─ Usage:
+    │     · Audit: GET /memory/audit/drift?since=... → show snapshots + similarity
+    │     · Rollback: on catastrophe → restore L3 from snapshot_{t-N}
+    │     · Verification: ReactivationEngine verifies Ring Zero nodes against the snapshot
+    ├─ Invariants:
+    │     ImmutableCore.I1: ONLY append, NEVER UPDATE/DELETE of :ImmutableCore nodes
+    │     ImmutableCore.I2: A snapshot is created AFTER a successful consolidation (not in the middle)
+    │     ImmutableCore.I3: The hash is verified on read — protection against bit rot
+    │     ImmutableCore.I4: Ring Zero nodes are present in EVERY snapshot (otherwise an alert)
+    ├─ GC rules:
+    │     Snapshots older than 90 days → S3 only (remove metadata from Neo4j)
+    │     Snapshots older than 1 year → cold storage (Glacier/Deep Archive)
+    │     Ring Zero snapshots → NEVER delete (eternal storage)
+    └─ Decay: none (immutable forever)
 
-L4: Reasoning Layer — Самообучение на опыте          
-    ├─ Назначение: извлечение стратегий из опыта, самообучение, Thompson Sampling selection
-    │   Это НЕ факты (L3) — это мета-знания: "как решать задачи"
+L4: Reasoning Layer — Self-learning from experience
+    ├─ Purpose: extracting strategies from experience, self-learning, Thompson Sampling selection
+    │   This is NOT facts (L3) — it is meta-knowledge: "how to solve problems"
     ├─ Closed Loop Self-Evaluation:
     │     Query → Retrieval → L4 → Answer → EVALUATE → ADJUST
-    │     Метрики: faithfulness / trace_coverage / contradiction_rate / confidence
-    │     Результат → ReasoningBank (обучение) + Observer (алерт при низком качестве)
-    ├─ Компоненты:
+    │     Metrics: faithfulness / trace_coverage / contradiction_rate / confidence
+    │     Result → ReasoningBank (learning) + Observer (alert on low quality)
+    ├─ Components:
     │   ┌─ ReasoningBank Engine:
-    │   │  · Experience Buffer (RAM) — накопление опыта до distillation
-    │   │  · Strategy Repository (Neo4j :Strategy) — долгосрочное хранение
-    │   │  · Thompson Sampling — баланс exploration/exploitation (RFC0039)
-    │   │  · Negative Reinforcement — избежание повторных ошибок
-    │   └─ Полная реализация: См. RFC0019
-    ├─ Структура данных:
+    │   │  · Experience Buffer (RAM) — accumulation of experience before distillation
+    │   │  · Strategy Repository (Neo4j :Strategy) — long-term storage
+    │   │  · Thompson Sampling — exploration/exploitation balance (RFC0039)
+    │   │  · Negative Reinforcement — avoiding repeated errors
+    │   └─ Full implementation: See RFC0019
+    ├─ Data structures:
     │   · Experience {task, context, action, outcome, reasoning, timestamp}
     │   · Strategy {strategy_id, description, contexts[], success_count, 
     │                failure_count, confidence, failure_penalty, embedding}
-    ├─ Механизм самообучения:
+    ├─ Self-learning mechanism:
     │   [1] FAST PATH: User Query → retrieve_strategies() → Thompson Sampling selection
     │   [2] SLOW PATH: Task Complete → log_experience() → buffer
-    │   [3] Buffer full (20 exp) → distill_strategies() → :Strategy узлы
+    │   [3] Buffer full (20 exp) → distill_strategies() → :Strategy nodes
     │   [4] update_strategy_feedback() → negative reinforcement
-    ├─ Thompson Sampling (RFC0039 — заменяет UCB1 RFC0025):
-    │   Стохастический выбор стратегий через Beta-распределение.
-    │   Легче UCB1 по CPU (O(1) vs O(k)), лучше при delayed feedback.
-    │   Результат: +8% cumulative reward на production-задачах.
+    ├─ Thompson Sampling (RFC0039 — replaces UCB1 RFC0025):
+    │   Stochastic strategy selection via a Beta distribution.
+    │   Lighter than UCB1 on CPU (O(1) vs O(k)), better with delayed feedback.
+    │   Result: +8% cumulative reward on production tasks.
     │   
-    │   Шаг 1 — TF-IDF pre-filter (сохранён из RFC0025):
-    │     if cosine(strategy_embedding, context) < 0.3 → skip (нерелевантно)
-    │   Шаг 2 — Thompson Sampling (только для прошедших фильтр):
-    │     rng = numpy.random.default_rng(session_id_hash)  # per-instance, потокобезопасен
+    │   Step 1 — TF-IDF pre-filter (kept from RFC0025):
+    │     if cosine(strategy_embedding, context) < 0.3 → skip (irrelevant)
+    │   Step 2 — Thompson Sampling (only for those passing the filter):
+    │     rng = numpy.random.default_rng(session_id_hash)  # per-instance, thread-safe
     │     score = rng.beta(success_count + 1, failure_count + 1)
-    │     где success_count и failure_count — история стратегии
-    │   Rationale: Beta(α,β) естественно балансирует exploration/exploitation.
-    │     При малом числе опытов — высокая дисперсия → exploration.
-    │     При большом числе опытов — низкая дисперсия → exploitation.
-    │   Воспроизводимость: numpy.random.default_rng(session_id_hash) перед вызовом
-    │     для детерминированного replay в аудите (Инвариант I13).
-    │     ⚠️ НЕ использовать numpy.random.seed() — глобальный PRNG, race condition
-    │     в asyncio при конкурентных сессиях. default_rng создаёт изолированный
-    │     per-instance генератор: тот же seed → те же числа, никакого shared state.
-    │   Баланс: адаптивный — автоматически сдвигается к exploitation
-    │     по мере накопления данных (нет фиксированного 10%)
-    ├─ Extractive Summarization (БЕЗ LLM):
-    │   if importance < 0.5: TF-IDF extractive (0 токенов)
-    │   elif importance < 0.8: GPT-4o-mini (дешево)
-    │   else: GPT-4 (только критичное)
-    │   Экономия токенов: 40-60%
-    ├─ L4 Worker (фоновый):
-    │   · Периодический review стратегий (раз в неделю)
-    │   · Удаление низкоэффективных (success_rate < 0.2)
-    │   · Cross-validation метрики
+    │     where success_count and failure_count — the strategy's history
+    │   Rationale: Beta(α,β) naturally balances exploration/exploitation.
+    │     With few experiences — high variance → exploration.
+    │     With many experiences — low variance → exploitation.
+    │   Reproducibility: numpy.random.default_rng(session_id_hash) before the call
+    │     for deterministic replay in audits (Invariant I13).
+    │     ⚠️ Do NOT use numpy.random.seed() — the global PRNG, a race condition
+    │     in asyncio with concurrent sessions. default_rng creates an isolated
+    │     per-instance generator: the same seed → the same numbers, no shared state.
+    │   Balance: adaptive — automatically shifts toward exploitation
+    │     as data accumulates (no fixed 10%)
+    ├─ Extractive Summarization (WITHOUT LLM):
+    │   if importance < 0.5: TF-IDF extractive (0 tokens)
+    │   elif importance < 0.8: GPT-4o-mini (cheap)
+    │   else: GPT-4 (critical only)
+    │   Token savings: 40-60%
+    ├─ L4 Worker (background):
+    │   · Periodic review of strategies (once a week)
+    │   · Removal of low-effectiveness ones (success_rate < 0.2)
+    │   · Cross-validation metrics
     ├─ Neo4j Schema:
     │   CREATE (:Strategy {strategy_id, description, applicable_contexts,
     │                       success_count, failure_count, confidence, embedding})
     │   CREATE INDEX strategy_embeddings FOR (s:Strategy) ON (s.embedding)
     │   CREATE (:Theme)-[:DERIVED_FROM]->(:Strategy)
-    ├─ Интеграция с ContextBuilder:
-    │   Промпт = [СТРАТЕГИИ: ...] + [ФАКТЫ: ...] + [ЗАПРОС: ...]
-    │   Strategies идут ПЕРЕД фактами в контексте
-    ├─ Метрики:
-    │   · reasoning_bank_experiences_total — всего опыта записано
-    │   · reasoning_bank_strategies_created — стратегий создано
-    │   · reasoning_bank_ts_score — Thompson Sampling score по стратегии
-    │   · reasoning_bank_exploration_rate — exploration vs exploitation (адаптивный)
-    ├─ Результаты (доказано ReasoningBank paper):
-    │   · +30-35% успешность задач (через обучение на опыте)
-    │   · 40-60% снижение расхода токенов (extractive без LLM)
-    │   · Избежание повторных ошибок (negative reinforcement)
-    └─ Decay: стратегии с success_rate < 0.2 удаляются через 30 дней
+    ├─ Integration with ContextBuilder:
+    │   Prompt = [STRATEGIES: ...] + [FACTS: ...] + [QUERY: ...]
+    │   Strategies come BEFORE facts in the context
+    ├─ Metrics:
+    │   · reasoning_bank_experiences_total — total experiences recorded
+    │   · reasoning_bank_strategies_created — strategies created
+    │   · reasoning_bank_ts_score — Thompson Sampling score per strategy
+    │   · reasoning_bank_exploration_rate — exploration vs exploitation (adaptive)
+    ├─ Results (proven by the ReasoningBank paper):
+    │   · +30-35% task success rate (through learning from experience)
+    │   · 40-60% reduction in token consumption (extractive without LLM)
+    │   · Avoidance of repeated errors (negative reinforcement)
+    └─ Decay: strategies with success_rate < 0.2 are removed after 30 days
 
-L4.5: ResponseAudit & FocusEngine — Мета-слой осознанности ← RFC0052, RFC0053
-    ├─ Назначение: мета-память о диалогах + живой фокус внимания на пользователя.
-    │   Это НЕ факты (L3) и НЕ стратегии (L4) — это осознание системой своих ответов
-    │   и непрерывное понимание того, что нужно человеку прямо сейчас.
-    │   ⚠️ УТОЧНЕНИЕ: L4.5 объединяет три RFC на одном слое:
-    │     · RFC0052 — ResponseAuditWorker (аудит ответов)
-    │     · RFC0053 — FocusEngine (фокус внимания)
-    │     · RFC0065 — MemoryVolitionWorker (осознанная воля к памяти)
-    │   Все три компонента работают в Slow Path через EventBus.
+L4.5: ResponseAudit & FocusEngine — Meta-layer of awareness ← RFC0052, RFC0053
+    ├─ Purpose: meta-memory about dialogues + a live focus of attention on the user.
+    │   This is NOT facts (L3) and NOT strategies (L4) — it is the system's awareness of its own responses
+    │   and a continuous understanding of what the person needs right now.
+    │   ⚠️ CLARIFICATION: L4.5 combines three RFCs in one layer:
+    │     · RFC0052 — ResponseAuditWorker (response audit)
+    │     · RFC0053 — FocusEngine (focus of attention)
+    │     · RFC0065 — MemoryVolitionWorker (conscious will to remember)
+    │   All three components work in the Slow Path via the EventBus.
     │
-    ├─ [RFC0052] ResponseAuditWorker — Lazy двухфазный аудит ответов:
-    │   FAST PATH: LLM → ответ пользователю (без задержки)
+    ├─ [RFC0052] ResponseAuditWorker — Lazy two-phase response audit:
+    │   FAST PATH: LLM → response to the user (no delay)
     │              → EventBus: RESPONSE_GENERATED (fire-and-forget)
-    │   SLOW PATH: AuditWorker подписан на шину:
-    │     Фаза 1+2: SLM/TF-IDF → human_summary + tags + importance_score (0 тяж. токенов)
-    │     Фаза 3:   ТОЛЬКО если importance_score > 0.85 → flagship LLM → precomputed:
-    │               { "суть", "критика", "уязвимости", "долгосрочно", "цель", "предложение" }
-    │     Хранение: importance > 0.85 → SQLite + :DialogueSummary (Neo4j)
-    │               importance < 0.85 → только SQLite (сессия)
-    │               сессия ARCHIVED  → VacuumWorker: DELETE WHERE importance < 0.5
+    │   SLOW PATH: AuditWorker subscribed to the bus:
+    │     Phase 1+2: SLM/TF-IDF → human_summary + tags + importance_score (0 heavy tokens)
+    │     Phase 3:   ONLY if importance_score > 0.85 → flagship LLM → precomputed:
+    │               { "essence", "critique", "vulnerabilities", "long-term", "goal", "proposal" }
+    │     Storage: importance > 0.85 → SQLite + :DialogueSummary (Neo4j)
+    │               importance < 0.85 → SQLite only (session)
+    │               session ARCHIVED  → VacuumWorker: DELETE WHERE importance < 0.5
     │   ⚠️ Stale Cache Protection:
-    │     dependency_hashes: List[fact_id] — IDs фактов из L3 использованных в ответе
+    │     dependency_hashes: List[fact_id] — IDs of L3 facts used in the response
     │     get_explanation() → _verify_dependencies() → TruthGate.check_facts_status()
-    │     Если факт стал Contradicted → audit.precomputed.clear() → lazy regenerate
-    │   ⚠️ Превентивная инвалидация:
-    │     TruthGate при ESM-переходе → EventBus: CACHE_INVALIDATED {fact_ids}
-    │     AuditWorker ловит → очищает precomputed у всех связанных аудитов немедленно
-    │   Структура данных:
+    │     If a fact became Contradicted → audit.precomputed.clear() → lazy regenerate
+    │   ⚠️ Preventive invalidation:
+    │     TruthGate on an ESM transition → EventBus: CACHE_INVALIDATED {fact_ids}
+    │     AuditWorker catches it → clears precomputed on all related audits immediately
+    │   Data structure:
     │     @dataclass ResponseAudit:
     │       conversation_id, response_id, timestamp, status (NEW/ACTIVE/RESOLVED/BLOCKED)
     │       importance_score: float          # 0.0–1.0
-    │       dependencies: List[str]          # fact_ids для инвалидации
-    │       human_summary: str               # Фаза 2 (SLM)
-    │       tags: List[str]                  # критика / уязвимость / долгосрочно / ...
-    │       precomputed: Dict[str, str]      # Фаза 3 (Lazy, только importance > 0.85)
+    │       dependencies: List[str]          # fact_ids for invalidation
+    │       human_summary: str               # Phase 2 (SLM)
+    │       tags: List[str]                  # critique / vulnerability / long-term / ...
+    │       precomputed: Dict[str, str]      # Phase 3 (Lazy, only importance > 0.85)
     │   Neo4j Schema:
     │     (:DialogueSummary {summary_id, human_summary, importance, tags, embedding})
     │     (:DialogueSummary)-[:HAS_TAG]→(:DialogueTag)
     │     (:DialogueSummary)-[:REFERS_TO]→(:Fact)
     │     (:DialogueSummary)-[:USES_STRATEGY]→(:Strategy)
-    │   ⚠️ ИНВАРИАНТ I28: ResponseAuditWorker НИКОГДА не выполняется в Fast Path.
-    │     Аудит строго в SLOW PATH через EventBus. Нарушение = блокировка ответа = баг.
+    │   ⚠️ INVARIANT I28: ResponseAuditWorker is NEVER executed in the Fast Path.
+    │     The audit is strictly in the SLOW PATH via the EventBus. A violation = blocking the response = a bug.
     │
-    ├─ [RFC0053] FocusEngine — Живой фокус внимания (синаптический портрет):
-    │   Назначение: система непрерывно "чувствует" что нужно пользователю,
-    │   читая граф — без LLM-вызовов (0 токенов).
-    │   Компоненты FocusVector (обновляется каждым диалогом):
-    │     · goal_alignment      — что пользователь хочет (A0/A1/A2)
-    │     · emotional_salience  — что его задело (из :Theme)
-    │     · pattern_of_ask      — как он спрашивает (тип запросов)
-    │     · domain_drift        — куда движется его интерес (из Semantic Drift)
-    │   Механизм:
-    │     L1 INSERT → FocusEngine.update(episode) → обновить FocusVector
-    │     ContextBuilder читает FocusVector → корректирует приоритет фактов
-    │     BAE (Behaviour Anticipation Engine) читает FocusVector → подбирает style_profile автоматически
-    │     AuditWorker пишет в FocusVector (importance, domain, тип вопроса)
-    │   Хранение: in-memory (быстрый доступ) + SQLite snapshot каждые 15 мин
-    │   Баланс: FocusVector использует exploration_rate (как Thompson Sampling в L4)
-    │     чтобы система не "привыкала" и продолжала удивлять пользователя.
-    │   ⚠️ ИНВАРИАНТ I29: FocusVector читается только через граф и SQLite.
-    │     Прямые LLM-вызовы для определения фокуса — запрещены. Graph = Truth.
+    ├─ [RFC0053] FocusEngine — Live focus of attention (a synaptic portrait):
+    │   Purpose: the system continuously "senses" what the user needs,
+    │   reading the graph — without LLM calls (0 tokens).
+    │   FocusVector components (updated by every dialogue):
+    │     · goal_alignment      — what the user wants (A0/A1/A2)
+    │     · emotional_salience  — what affected them (from :Theme)
+    │     · pattern_of_ask      — how they ask (the type of queries)
+    │     · domain_drift        — where their interest is moving (from Semantic Drift)
+    │   Mechanism:
+    │     L1 INSERT → FocusEngine.update(episode) → update FocusVector
+    │     ContextBuilder reads FocusVector → adjusts the priority of facts
+    │     BAE (Behaviour Anticipation Engine) reads FocusVector → selects a style_profile automatically
+    │     AuditWorker writes to FocusVector (importance, domain, question type)
+    │   Storage: in-memory (fast access) + a SQLite snapshot every 15 min
+    │   Balance: FocusVector uses an exploration_rate (like Thompson Sampling in L4)
+    │     so the system does not "get used to it" and keeps surprising the user.
+    │   ⚠️ INVARIANT I29: FocusVector is read only via the graph and SQLite.
+    │     Direct LLM calls to determine focus are forbidden. Graph = Truth.
     │
-    ├─ Метрики:
-    │   · response_audit_total              — всего аудитов создано
-    │   · response_audit_persisted_total    — сохранено в SQLite + Neo4j
-    │   · response_audit_importance_avg     — средняя важность диалогов
-    │   · response_audit_faithfulness_avg   — средний faithfulness score
-    │   · response_audit_cache_invalid_total — инвалидаций кэша (Stale protection)
-    │   · focus_vector_updates_total        — обновлений FocusVector за сессию
-    └─ Decay: :DialogueSummary → decay каждые 48 часов (отдельный процесс)
-              importance < 0.3 → soft delete при следующем GC
+    ├─ Metrics:
+    │   · response_audit_total              — total audits created
+    │   · response_audit_persisted_total    — saved to SQLite + Neo4j
+    │   · response_audit_importance_avg     — average importance of dialogues
+    │   · response_audit_faithfulness_avg   — average faithfulness score
+    │   · response_audit_cache_invalid_total — cache invalidations (Stale protection)
+    │   · focus_vector_updates_total        — FocusVector updates per session
+    └─ Decay: :DialogueSummary → decay every 48 hours (a separate process)
+              importance < 0.3 → soft delete at the next GC
 ```
 
 ---
 
-## RFC0065: Memory-as-Volition — Осознанная воля к памяти
+## RFC0065: Memory-as-Volition — Conscious Will to Remember
 
-### 🌱 Читай это первым
+### 🌱 Read this first
 
-Все предыдущие слои памяти работают **пассивно**: система наблюдает и решает что запомнить. RFC0065 добавляет агенту **право голоса в собственной памяти**: через tool call `memory.write_voluntary()` агент принимает осознанное решение записать факт в L3 — без ожидания пассивной консолидации.
+All previous memory layers work **passively**: the system observes and decides what to remember. RFC0065 grants the agent a **voice in its own memory**: through the tool call `memory.write_voluntary()`, the agent makes a conscious decision to write a fact into L3 — without waiting for passive consolidation.
 
     ├─ P2-5: ReasonGraph DAG:
-    │     При сложном запросе (Slow Path) строить мини-DAG рассуждения:
-    │     1. Собрать факты-кандидаты из retrieval
-    │     2. Построить DAG: каждый факт = узел, рёбра = [:SUPPORTS] / [:CONTRADICTS]
-    │     3. Оценить каждый узел по relevance × confidence × recency
-    │     4. Отсечь ветки с score < 0.3
-    │     5. Передать LLM только выверенный путь
-    │     I95 (ReasonGraphDAG): DAG строится только в Slow Path при use_slow_path=True.
+    │     On a complex query (Slow Path), build a mini reasoning DAG:
+    │     1. Gather candidate facts from retrieval
+    │     2. Build the DAG: each fact = node, edges = [:SUPPORTS] / [:CONTRADICTS]
+    │     3. Score each node by relevance × confidence × recency
+    │     4. Prune branches with score < 0.3
+    │     5. Pass only the verified path to the LLM
+    │     I95 (ReasonGraphDAG): the DAG is built only in Slow Path when use_slow_path=True.
     │
     ├─ P2-6: Curiosity Engine:
-    │     Система не только реагирует, но сама инициирует вопросы:
-    │     1. Обнаружить gap в графе (область с < 3 фактами)
-    │     2. Сгенерировать вопрос: "что я не знаю о X?"
-    │     3. Предложить пользователю или передать Active Evidence Worker
-    │     Запуск: раз в сутки через SleepTimeWorker.
-    │     I92 (CuriositySlowOnly): Curiosity Engine — ТОЛЬКО Slow Path.
+    │     The system does not merely react — it initiates questions of its own:
+    │     1. Detect a gap in the graph (a region with < 3 facts)
+    │     2. Generate a question: "what don't I know about X?"
+    │     3. Offer it to the user or hand it to the Active Evidence Worker
+    │     Trigger: once per day via SleepTimeWorker.
+    │     I92 (CuriositySlowOnly): Curiosity Engine — Slow Path ONLY.
     │
     ├─ P2-7: Trace Examples:
-    │     Не просто аудит ответа, а эталон мышления:
+    │     Not merely a response audit, but a reference standard of thinking:
     │     intent → evidence → truth_class → policy → action
-    │     Хранятся как :TraceExample узлы в графе.
-    │     Используются для калибровки Guardian и Quality Gate.
-    │     I93 (TraceExampleReadOnly): Trace Examples read-only из Guardian/QualityGate.
+    │     Stored as :TraceExample nodes in the graph.
+    │     Used for calibrating the Guardian and Quality Gate.
+    │     I93 (TraceExampleReadOnly): Trace Examples are read-only from Guardian/QualityGate.
 
-**Почему не нарушает Graph = Truth?** Волевая запись проходит через TruthGate — полностью, без исключений. Воля агента означает только то, что он сам инициировал процесс.
+**Why doesn't this violate Graph = Truth?** A voluntary write passes through TruthGate — fully, without exception. The agent's volition means only that it itself initiated the process.
 
-**Нейробиологический аналог:** Гиппокамп имеет механизм **intentional encoding** — при явном намерении запомнить активируется другой нейронный путь и долгосрочная консолидация происходит быстрее.
+**Neurobiological analogy:** The hippocampus has an **intentional encoding** mechanism — when there is an explicit intention to remember, a different neural pathway is activated and long-term consolidation occurs faster.
 
 ---
 
 ```
-L4.5 дополнение: MemoryVolitionWorker  <- RFC0065
+L4.5 addition: MemoryVolitionWorker  <- RFC0065
     |
-    +- Назначение: агент инициирует запись в L3 сам. НЕ обход TruthGate.
+    +- Purpose: the agent initiates a write into L3 itself. NOT a bypass of TruthGate.
     |
-    +- Режим 1 (Tool Call): агент вызывает memory.write_voluntary()
-    |   -> VolitionEvent в EventBus (fire-and-forget)
+    +- Mode 1 (Tool Call): the agent calls memory.write_voluntary()
+    |   -> VolitionEvent into EventBus (fire-and-forget)
     |   -> MemoryVolitionWorker (Slow Path) -> Fast-Track Staging -> TruthGate -> L3
-    |   -> Запись в VolitionLog {session_id, content_hash, reason, outcome}
+    |   -> Write into VolitionLog {session_id, content_hash, reason, outcome}
     |
-    +- Режим 2 (Auto-Detect): importance > 0.9 AND emotional > 0.8
-    |   -> FocusEngine генерирует VolitionSignal (тот же путь)
-    |   I49-b: Auto-Detect не подавляет явный tool call агента
+    +- Mode 2 (Auto-Detect): importance > 0.9 AND emotional > 0.8
+    |   -> FocusEngine generates a VolitionSignal (the same path)
+    |   I49-b: Auto-Detect does not suppress the agent's explicit tool call
     |
-    +- Fast-Track: voluntary=True обходит CPU-порог в Staging (I49-c)
-    |   Лимит: не более 10 voluntary вызовов за сессию
+    +- Fast-Track: voluntary=True bypasses the CPU threshold in Staging (I49-c)
+    |   Limit: no more than 10 voluntary calls per session
     |
-    +- Инварианты:
-    |   I49:   write_voluntary() ВСЕГДА через TruthGate. Обход = баг.
-    |   I49-b: Auto-Detect не вытесняет явный tool call агента.
-    |   I49-c: Voluntary Fast-Track обходит CPU-порог, но не TruthGate.
-    |   I49-d: Каждая voluntary запись обязана иметь запись в VolitionLog.
+    +- Invariants:
+    |   I49:   write_voluntary() ALWAYS through TruthGate. Bypass = bug.
+    |   I49-b: Auto-Detect does not displace the agent's explicit tool call.
+    |   I49-c: Voluntary Fast-Track bypasses the CPU threshold, but not TruthGate.
+    |   I49-d: Every voluntary write must have an entry in VolitionLog.
     |
-    +- Метрики:
+    +- Metrics:
     |   volition_calls_total / volition_validated_total / volition_rejected_total
     |   volition_autodetect_total / volition_limit_exceeded_total
-    \- Decay: :VolitionLog -> архивация через 90 дней
+    \- Decay: :VolitionLog -> archived after 90 days
 ```
 
-### Код [RFC0065]
+### Code [RFC0065]
 
 ```python
 # memory_volition.py
 # RFC0065: Memory-as-Volition
-# I49: voluntary запись ВСЕГДА через TruthGate — обход запрещён.
+# I49: voluntary write ALWAYS through TruthGate — bypass forbidden.
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -1742,8 +1722,8 @@ logger = logging.getLogger(__name__)
 
 
 class VolitionOutcome(str, Enum):
-    # QUEUED отделён от VALIDATED
-    # write_voluntary() возвращает QUEUED — реальный outcome появится в VolitionLog
+    # QUEUED is separated from VALIDATED
+    # write_voluntary() returns QUEUED — the real outcome will appear in VolitionLog
     QUEUED           = "queued_for_processing"
     VALIDATED        = "validated"
     REJECTED_BY_GATE = "rejected_by_truthgate"
@@ -1757,9 +1737,9 @@ class VolitionEvent:
     agent_id:        str
     content:         str
     reason:          str
-    importance_hint: float    = 0.8   # P3-F FIX: НЕ передаётся в TruthGate как confidence (P0.5-3).
-                                       # Только для internal logging/prioritization.
-                                       # TruthGate всегда получает confidence=0.5 (нейтральный prior).
+    importance_hint: float    = 0.8   # P3-F FIX: NOT passed to TruthGate as confidence (P0.5-3).
+                                       # Only for internal logging/prioritization.
+                                       # TruthGate always receives confidence=0.5 (neutral prior).
     source:          str      = "agent"
     timestamp:       datetime = field(
         default_factory=lambda: datetime.now(timezone.utc)
@@ -1782,20 +1762,20 @@ class MemoryVolitionWorker:
         self.graph      = graph
         self.event_bus  = event_bus
         self.db         = db
-        # _session_counts персистируется через SQLite.
-        # _load_session_counts() вызывается при старте воркера
-        # чтобы не потерять счётчики лимита при перезапуске.
+        # _session_counts is persisted via SQLite.
+        # _load_session_counts() is called at worker startup
+        # so the limit counters are not lost on restart.
         self._session_counts: dict[str, int] = {}
-        self._initialized: bool = False  # ← B4 FIX: guard против вызова до start()
+        self._initialized: bool = False  # ← B4 FIX: guard against being called before start()
 
     async def start(self):
-        """Инициализация воркера — вызывать до первого process_event().
-        FIX: _load_session_counts перенесён в явный start() метод.
-        Без этого вызова счётчики лимита per-session сбрасывались при рестарте
-        и ограничение 10 voluntary записей за сессию не работало.
+        """Worker initialization — call before the first process_event().
+        FIX: _load_session_counts moved into an explicit start() method.
+        Without this call, the per-session limit counters were reset on restart
+        and the limit of 10 voluntary writes per session did not work.
         """
         await self._load_session_counts()
-        self._initialized = True  # ← B4 FIX: помечаем что инициализация завершена
+        self._initialized = True  # ← B4 FIX: mark that initialization is complete
 
     async def _load_session_counts(self):
         async with self.db.connect() as conn:
@@ -1808,7 +1788,7 @@ class MemoryVolitionWorker:
 
     async def write_voluntary(self, session_id, agent_id,
                               content, reason, importance_hint=0.8):
-        # B4 FIX: guard — если start() не вызван, лимит не работает
+        # B4 FIX: guard — if start() was not called, the limit does not work
         if not self._initialized:
             raise RuntimeError(
                 "MemoryVolitionWorker.start() must be called before write_voluntary(). "
@@ -1820,7 +1800,7 @@ class MemoryVolitionWorker:
             importance_hint=min(1.0, max(0.0, importance_hint)),
         )
         await self.event_bus.publish_volition(event)
-        # QUEUED — не VALIDATED. Реальный outcome появится в VolitionLog.
+        # QUEUED — not VALIDATED. The real outcome will appear in VolitionLog.
         return VolitionResult(outcome=VolitionOutcome.QUEUED,
                               reason="queued_for_processing")
 
@@ -1838,21 +1818,21 @@ class MemoryVolitionWorker:
 
         staged = await self.staging.fast_track(
             content=event.content, importance_hint=event.importance_hint,
-            voluntary=True,  # I49-c: обходит CPU-порог, но не TruthGate
+            voluntary=True,  # I49-c: bypasses the CPU threshold, but not TruthGate
             source="volition",
         )
 
-        # I49: TruthGate ОБЯЗАТЕЛЕН. Обхода нет.
+        # I49: TruthGate is MANDATORY. There is no bypass.
         # P0.5-3 FIX: importance_hint ≠ confidence.
-        # importance — субъективная важность для агента (насколько "хочется запомнить").
-        # confidence — эпистемическая достоверность факта (насколько "это правда").
-        # Было: "confidence": event.importance_hint — ложь с importance=0.9 проходила Gate.
-        # Стало: confidence всегда 0.5 (нейтральный prior) для voluntary записей.
-        # importance_hint передаётся отдельно как метаданные приоритета в графе.
+        # importance — subjective importance to the agent (how much it "wants to remember").
+        # confidence — epistemic reliability of the fact (how much "this is true").
+        # Was: "confidence": event.importance_hint — a falsehood with importance=0.9 passed the Gate.
+        # Now: confidence is always 0.5 (neutral prior) for voluntary writes.
+        # importance_hint is passed separately as priority metadata in the graph.
         gate = await self.truth_gate.validate_and_transition({
             "id": staged.id, "content": event.content,
-            "confidence": 0.5,  # нейтральный prior — TruthGate оценивает факт, не желание
-            "importance":  event.importance_hint,  # влияет на приоритет в графе, не на Gate
+            "confidence": 0.5,  # neutral prior — TruthGate evaluates the fact, not the desire
+            "importance":  event.importance_hint,  # affects priority in the graph, not the Gate
             "emotional_salience": 0.0,
             "source": "agent_volition",
         })
@@ -1884,7 +1864,7 @@ class MemoryVolitionWorker:
         return row is not None
 
     async def _log(self, event: VolitionEvent, result: VolitionResult):
-        # I49-d: КАЖДАЯ voluntary запись обязана иметь запись в VolitionLog
+        # I49-d: EVERY voluntary write must have an entry in VolitionLog
         async with self.db.connect() as conn:
             await conn.execute(
                 "INSERT INTO volition_log "
@@ -1898,12 +1878,12 @@ class MemoryVolitionWorker:
             await conn.commit()
 ```
 
-### Тест [I49, I49-d]
+### Test [I49, I49-d]
 
 ```python
-# tests/test_invariants.py -- добавить
+# tests/test_invariants.py -- add
 
-# I49: Voluntary запись ВСЕГДА через TruthGate
+# I49: Voluntary write ALWAYS through TruthGate
 async def test_I49_voluntary_always_through_truth_gate():
     gate = MockTruthGate()
     w    = MemoryVolitionWorker(
@@ -1912,9 +1892,9 @@ async def test_I49_voluntary_always_through_truth_gate():
     await w.process_event(VolitionEvent(
         session_id="s", agent_id="a", content="fact", reason="test",
         importance_hint=0.9))
-    assert gate.call_count >= 1, "I49 VIOLATION: обход TruthGate"
+    assert gate.call_count >= 1, "I49 VIOLATION: TruthGate bypass"
 
-# I49-d: VolitionLog обязателен
+# I49-d: VolitionLog is mandatory
 async def test_I49d_volition_log_always_written():
     db = MockDB()
     w  = MemoryVolitionWorker(
@@ -1925,7 +1905,7 @@ async def test_I49d_volition_log_always_written():
     assert db.insert_count("volition_log") >= 1, "I49-d VIOLATION"
 ```
 
-### Добавить в velantrim_config.py
+### Add to velantrim_config.py
 
 ```python
 class VolitionConfig:
@@ -1938,170 +1918,170 @@ class VolitionConfig:
 VOLITION = VolitionConfig()
 ```
 
-L5: Anticipatory Intelligence — Проактивный интеллект  ← RFC0054–0058
-    ├─ Назначение: система не только помнит и отвечает — она предвидит,
-    │   предлагает и объясняет себя. Переход от реактивного к антиципаторному агенту.
+L5: Anticipatory Intelligence — Proactive Intelligence  ← RFC0054–0058
+    ├─ Purpose: the system not only remembers and answers — it anticipates,
+    │   suggests, and explains itself. A transition from a reactive to an anticipatory agent.
     │
     ├─ [RFC0054] Spreading Activation Engine (SAE):
-    │   Расширение Velum (L1.5) — затухающее возбуждение по рёбрам графа.
-    │   При активации узла A → возбуждение распространяется на смежные узлы
-    │   с весом: activation(B) = weight(A→B) × activation(A) × decay_factor
-    │   Затухание: каждый хоп умножает сигнал на DECAY_FACTOR (default 0.6)
-    │   Порог активации: SAE_THRESHOLD = 0.3 — ниже не учитывается
-    │   Результат: HybridRetriever получает расширенный контекст ДО запроса пользователя.
-    │   Это "синаптическое чувствование" — система предугадывает связанные темы.
-    │   ⚠️ ИНВАРИАНТ I30: SAE работает только по существующим рёбрам графа.
-    │     Новые рёбра SAE не создаёт — только читает. Graph = Truth не нарушается.
+    │   An extension of Velum (L1.5) — decaying excitation along the graph edges.
+    │   When a node A is activated → excitation spreads to adjacent nodes
+    │   with weight: activation(B) = weight(A→B) × activation(A) × decay_factor
+    │   Decay: each hop multiplies the signal by DECAY_FACTOR (default 0.6)
+    │   Activation threshold: SAE_THRESHOLD = 0.3 — anything below is ignored
+    │   Result: HybridRetriever receives expanded context BEFORE the user's query.
+    │   This is "synaptic sensing" — the system anticipates related topics.
+    │   ⚠️ INVARIANT I30: SAE works only over existing graph edges.
+    │     SAE creates no new edges — it only reads. Graph = Truth is not violated.
     │
     ├─ [RFC0055] Epistemic Gap Model (EGM):
-    │   Граф знает не только что пользователь знает — но что он НЕ знает.
-    │   Механизм: анализ доменных узлов L3 → найти кластеры, которые
-    │   пользователь никогда не активировал → gap_score по важности домена.
-    │   Проактивное предложение при gap_score > EGM_THRESHOLD (default 0.7):
-    │     → FocusEngine генерирует suggestion: "Ты никогда не спрашивал о X"
-    │     → BAE формирует мягкое предложение, не навязчивое
-    │   Хранение: :EpistemicGap {topic_id, gap_score, last_suggested, suppressed}
-    │   Защита: если пользователь отклонил suggestion → suppressed=True на 7 дней.
-    │   ⚠️ ИНВАРИАНТ I31: EGM не навязывает — только предлагает один раз.
-    │     Повторное предложение той же темы раньше 7 дней — запрещено.
+    │   The graph knows not only what the user knows — but what they do NOT know.
+    │   Mechanism: analyze L3 domain nodes → find clusters that the
+    │   user has never activated → gap_score by the importance of the domain.
+    │   Proactive suggestion when gap_score > EGM_THRESHOLD (default 0.7):
+    │     → FocusEngine generates a suggestion: "You have never asked about X"
+    │     → BAE forms a soft suggestion, not an intrusive one
+    │   Storage: :EpistemicGap {topic_id, gap_score, last_suggested, suppressed}
+    │   Protection: if the user rejected the suggestion → suppressed=True for 7 days.
+    │   ⚠️ INVARIANT I31: EGM does not impose — it only suggests once.
+    │     Re-suggesting the same topic sooner than 7 days is forbidden.
     │
     ├─ [RFC0056] Domain Seed Protocol (DSP):
-    │   Устраняет холодный старт для новых пользователей и организаций.
-    │   При старте системы: загрузить domain_seed.json
+    │   Eliminates the cold start for new users and organizations.
+    │   At system startup: load domain_seed.json
     │     {domain, terminology[], key_processes[], values[], authority_map{}}
-    │   → автоматически создаются ~100–500 :KnowledgeUnit узлов в L3
-    │   → L2 Cold Start Guard обходится (seed считается за эпизоды)
-    │   → система ведёт себя как "опытный сотрудник" с первого диалога
-    │   Форматы: JSON / YAML / PDF (через offline_extractor.py)
-    │   ⚠️ ИНВАРИАНТ I32: Seed-узлы помечены {source_type: "domain_seed"}.
-    │     TruthGate применяет к ним trust_score = 0.7 (не 1.0) — требуют подтверждения.
+    │   → ~100–500 :KnowledgeUnit nodes are automatically created in L3
+    │   → the L2 Cold Start Guard is bypassed (the seed counts as episodes)
+    │   → the system behaves like an "experienced employee" from the first dialogue
+    │   Formats: JSON / YAML / PDF (via offline_extractor.py)
+    │   ⚠️ INVARIANT I32: Seed nodes are marked {source_type: "domain_seed"}.
+    │     TruthGate applies trust_score = 0.7 to them (not 1.0) — they require confirmation.
     │
     ├─ [RFC0057] Multi-User Authority Graph:
-    │   Для организаций — у каждого пользователя домен авторитетности.
-    │   Схема: :User {user_id, role, authority_domain[], trust_level: 0.0–1.0}
-    │   При конфликте фактов от разных пользователей:
-    │     TruthGate проверяет authority_domain обоих источников
-    │     Побеждает тот, у кого выше trust_level в данном домене
-    │     Если домены равны → факт переходит в ESM: Hypothesized (спор)
-    │     → уведомление обоим пользователям для разрешения конфликта
-    │   Пример: финансист достоверен в финансовых фактах > разработчика.
-    │   ⚠️ ИНВАРИАНТ I33: authority_domain не может быть пустым.
-    │     Пользователь без домена имеет trust_level = 0.5 по умолчанию (нейтральный).
+    │   For organizations — each user has a domain of authority.
+    │   Schema: :User {user_id, role, authority_domain[], trust_level: 0.0–1.0}
+    │   On a conflict of facts from different users:
+    │     TruthGate checks the authority_domain of both sources
+    │     The one with the higher trust_level in the given domain wins
+    │     If domains are equal → the fact transitions in ESM: Hypothesized (dispute)
+    │     → notification to both users to resolve the conflict
+    │   Example: a financier is reliable on financial facts > a developer.
+    │   ⚠️ INVARIANT I33: authority_domain cannot be empty.
+    │     A user without a domain has trust_level = 0.5 by default (neutral).
     │
     ├─ [RFC0058] Explainability Layer (XAI):
-    │   Пользователь может спросить "Почему такой ответ?" → система объясняет.
-    │   Механизм: TRACE из ResponseAudit (RFC0052) → XAI форматирует для человека:
-    │     "Этот ответ основан на:
-    │      · 3 фактах из твоих диалогов (5, 12, 18 дней назад)
-    │      · Стратегии, выработанной 3 дня назад
-    │      · Теме [архитектура] с силой 4.2"
-    │   Уровни детализации: brief / detailed / full_trace (по запросу)
-    │   Хранение: XAI-объяснения кэшируются в ResponseAudit.precomputed["почему"]
-    │   ⚠️ ИНВАРИАНТ I34: XAI показывает только реальные TRACE-пути.
-    │     Генерация объяснений LLM без TRACE — запрещена. Только граф.
+    │   The user can ask "Why this answer?" → the system explains.
+    │   Mechanism: the TRACE from ResponseAudit (RFC0052) → XAI formats it for a human:
+    │     "This answer is based on:
+    │      · 3 facts from your dialogues (5, 12, 18 days ago)
+    │      · A strategy developed 3 days ago
+    │      · The topic [architecture] with strength 4.2"
+    │   Levels of detail: brief / detailed / full_trace (on request)
+    │   Storage: XAI explanations are cached in ResponseAudit.precomputed["why"]
+    │   ⚠️ INVARIANT I34: XAI shows only real TRACE paths.
+    │     Generating explanations with an LLM without a TRACE is forbidden. Only the graph.
     │
-    ├─ Prediction Error Signal — обучение L5 на ошибках предсказания
-    │   Принцип Фристона: мозг обучается именно на ошибке предсказания, не на успехе.
-    │   L5 уже предсказывал следующий вопрос — но ошибки терялись. Теперь нет.
+    ├─ Prediction Error Signal — training L5 on prediction errors
+    │   Friston's principle: the brain learns precisely from prediction error, not from success.
+    │   L5 already predicted the next question — but the errors were lost. No longer.
     │
-    │   Механизм (запускается через EventBus после каждого ответа · 2–5 мс):
-    │     1. Взять что L5/SAE предсказал перед вопросом пользователя
-    │     2. Сравнить с тем что реально спросили
-    │     3. Если ошибка > PREDICTION_ERROR_THRESHOLD (0.4):
-    │          → усилить рёбра ведущие к правильному ответу × (1 + error_magnitude)
-    │          → ослабить неверные пути × (1 - error_magnitude × 0.5)
-    │     4. Передать error_signal в L5.5 PredictiveFusionLayer
-    │          → скорректировать веса w_sae / w_lsm
+    │   Mechanism (triggered via EventBus after each answer · 2–5 ms):
+    │     1. Take what L5/SAE predicted before the user's question
+    │     2. Compare with what was actually asked
+    │     3. If the error > PREDICTION_ERROR_THRESHOLD (0.4):
+    │          → strengthen the edges leading to the correct answer × (1 + error_magnitude)
+    │          → weaken the incorrect paths × (1 - error_magnitude × 0.5)
+    │     4. Pass the error_signal to the L5.5 PredictiveFusionLayer
+    │          → adjust the w_sae / w_lsm weights
     │
-    │   Эффект со временем:
-    │     Неделя 1  → L5 угадывает ~30% следующих вопросов
-    │     Месяц 1   → ~55%
-    │     Месяц 3   → ~75% для типичных тем пользователя
+    │   Effect over time:
+    │     Week 1   → L5 guesses ~30% of the next questions
+    │     Month 1  → ~55%
+    │     Month 3  → ~75% for the user's typical topics
     │
-    │   ⚠️ ИНВАРИАНТ I36: Prediction Error только ослабляет/усиливает рёбра.
-    │     Новые рёбра не создаёт. Graph = Truth не нарушается.
-    │   Нагрузка: 2–5 мс · CPU only · после каждого сообщения
-    │   Метрика: prediction_error_total · prediction_accuracy_rolling_7d
+    │   ⚠️ INVARIANT I36: Prediction Error only weakens/strengthens edges.
+    │     It creates no new edges. Graph = Truth is not violated.
+    │   Load: 2–5 ms · CPU only · after each message
+    │   Metric: prediction_error_total · prediction_accuracy_rolling_7d
     │
-    ├─ Liquid State Machine (LSM) — темпоральная память ритма
-    │   Дополняет SAE: SAE знает ЧТО ты спросишь (семантика графа).
-    │   LSM знает КОГДА и в КАКОМ РИТМЕ (динамическое состояние последовательности).
+    ├─ Liquid State Machine (LSM) — temporal memory of rhythm
+    │   Complements SAE: SAE knows WHAT you will ask (graph semantics).
+    │   LSM knows WHEN and in WHAT RHYTHM (the dynamic state of the sequence).
     │
-    │   Архитектура резервуарных вычислений (Reservoir Computing):
-    │     · Резервуар: ~200–500 простых нейронов с фиксированными случайными весами
-    │     · Главный принцип: веса резервуара НЕ обучаются никогда
-    │     · Обучается только простой линейный выходной слой
-    │     · Это означает: никакого GPU, никакого backprop, 2–5 MB RAM
+    │   Reservoir Computing architecture:
+    │     · Reservoir: ~200–500 simple neurons with fixed random weights
+    │     · Main principle: the reservoir weights are NEVER trained
+    │     · Only a simple linear output layer is trained
+    │     · This means: no GPU, no backprop, 2–5 MB RAM
     │
-    │   Что LSM запоминает как «живое эхо-состояние»:
-    │     · В какое время дня задаются технические вопросы
-    │     · Как быстро пользователь переключается между темами
-    │     · Когда он уходит в философские размышления
-    │     · Паузы между сообщениями как ритмический сигнал
+    │   What LSM remembers as a "living echo state":
+    │     · At what time of day technical questions are asked
+    │     · How quickly the user switches between topics
+    │     · When they drift into philosophical reflection
+    │     · Pauses between messages as a rhythmic signal
     │
-    │   Обновление: через EventBus после каждого L1 INSERT · 5–15 мс · CPU only
-    │   Хранение: in-memory резервуар + SQLite snapshot состояния раз в 15 мин
-    │   Вывод: lsm_prediction передаётся в L5.5 PredictiveFusionLayer
-    │   ⚠️ ИНВАРИАНТ I37: LSM не пишет в граф. Только читает историю запросов.
-    │   Метрики: lsm_prediction_updates · lsm_rhythm_stability_score
+    │   Update: via EventBus after each L1 INSERT · 5–15 ms · CPU only
+    │   Storage: in-memory reservoir + SQLite state snapshot every 15 min
+    │   Output: lsm_prediction is passed to the L5.5 PredictiveFusionLayer
+    │   ⚠️ INVARIANT I37: LSM does not write to the graph. It only reads the query history.
+    │   Metrics: lsm_prediction_updates · lsm_rhythm_stability_score
     │
-    ├─ Метрики:
-    │   · sae_activations_total          — узлов активировано через SAE
-    │   · epistemic_gap_suggestions_total — предложений сделано EGM
-    │   · epistemic_gap_accepted_rate    — % принятых предложений
-    │   · domain_seed_nodes_created      — узлов создано через DSP
-    │   · authority_conflicts_resolved   — конфликтов разрешено авторитетом
-    │   · xai_explanations_total         — объяснений выдано пользователям
-    │   · prediction_error_total         — ошибок предсказания обработано
-    │   · prediction_accuracy_rolling_7d — точность предсказания за 7 дней
-    │   · lsm_prediction_updates         — обновлений LSM состояния
-    │   · lsm_rhythm_stability_score     — стабильность ритма пользователя
-    └─ Decay: :EpistemicGap → пересчитывается раз в неделю по активности домена
+    ├─ Metrics:
+    │   · sae_activations_total          — nodes activated via SAE
+    │   · epistemic_gap_suggestions_total — suggestions made by EGM
+    │   · epistemic_gap_accepted_rate    — % of accepted suggestions
+    │   · domain_seed_nodes_created      — nodes created via DSP
+    │   · authority_conflicts_resolved   — conflicts resolved by authority
+    │   · xai_explanations_total         — explanations issued to users
+    │   · prediction_error_total         — prediction errors processed
+    │   · prediction_accuracy_rolling_7d — prediction accuracy over 7 days
+    │   · lsm_prediction_updates         — LSM state updates
+    │   · lsm_rhythm_stability_score     — stability of the user's rhythm
+    └─ Decay: :EpistemicGap → recomputed once a week based on domain activity
 
-L5.5: Predictive Fusion Layer — арбитр SAE и LSM
-    ├─ Назначение: SAE (семантика) и LSM (ритм) измеряют разные измерения реальности.
-    │   Выбирать одно вместо другого — как выбирать между картой и компасом.
-    │   L5.5 использует оба и адаптивно решает кому доверять в данной ситуации.
+L5.5: Predictive Fusion Layer — arbiter of SAE and LSM
+    ├─ Purpose: SAE (semantics) and LSM (rhythm) measure different dimensions of reality.
+    │   Choosing one instead of the other is like choosing between a map and a compass.
+    │   L5.5 uses both and adaptively decides whom to trust in a given situation.
     │
-    │   Продолжает архитектурную логику промежуточных слоёв:
+    │   It continues the architectural logic of the intermediate layers:
     │   L1.5 (Velum) · L2.5 (Staging) · L4.5 (Audit+Focus) · L5.5 (Fusion)
     │
-    ├─ Два режима выхода:
+    ├─ Two output modes:
     │
-    │   🤝 Консенсус (оба предсказали одну тему):
+    │   🤝 Consensus (both predicted the same topic):
     │     combined_confidence = sae_conf^w_sae × lsm_conf^w_lsm
-    │     → высокая уверенность → система действует проактивно
-    │     → готовит контекст ещё до вопроса пользователя
+    │     → high confidence → the system acts proactively
+    │     → prepares context even before the user's question
     │
-    │   ⚡ Расхождение (разные темы):
-    │     → оба кандидата передаются в FocusEngine с весами
-    │     → штраф уверенности: × 0.6
-    │     → сигнал для системы: пользователь в переходном состоянии
-    │     → FocusEngine выбирает осторожнее, не навязывает
+    │   ⚡ Divergence (different topics):
+    │     → both candidates are passed to FocusEngine with weights
+    │     → confidence penalty: × 0.6
+    │     → signal to the system: the user is in a transitional state
+    │     → FocusEngine chooses more cautiously, does not impose
     │
-    ├─ Динамические веса (адаптируются через Prediction Error):
-    │     Начальные: w_sae = 0.6 · w_lsm = 0.4
-    │     Сдвиг по контексту:
+    ├─ Dynamic weights (adapted via Prediction Error):
+    │     Initial: w_sae = 0.6 · w_lsm = 0.4
+    │     Shift by context:
     │       if lsm_rhythm_stability > 0.7 → w_lsm += 0.15
     │       if sae_graph_density > 0.6    → w_sae += 0.15
-    │     Нормализация: w_sae + w_lsm = 1.0 всегда
-    │     Минимальный вес: 0.2 (ни один источник не вытесняется полностью)
+    │     Normalization: w_sae + w_lsm = 1.0 always
+    │     Minimum weight: 0.2 (no source is fully displaced)
     │
-    ├─ Обучение через Prediction Error (замкнутая петля):
-    │     SAE ошибся  → w_sae -= learning_rate(0.05) × error.magnitude
-    │     LSM ошибся  → w_lsm -= learning_rate(0.05) × error.magnitude
-    │     Медленное обучение = стабильность весов
+    ├─ Training via Prediction Error (closed loop):
+    │     SAE was wrong  → w_sae -= learning_rate(0.05) × error.magnitude
+    │     LSM was wrong  → w_lsm -= learning_rate(0.05) × error.magnitude
+    │     Slow learning = weight stability
     │
-    ├─ ⚠️ ИНВАРИАНТ I35: L5.5 не пишет в граф.
-    │     Только читает предсказания SAE и LSM · только возвращает FusedPrediction.
-    │     Graph = Truth не нарушается.
+    ├─ ⚠️ INVARIANT I35: L5.5 does not write to the graph.
+    │     It only reads the SAE and LSM predictions · only returns a FusedPrediction.
+    │     Graph = Truth is not violated.
     │
-    ├─ Метрики:
-    │   · fusion_consensus_rate      — % случаев когда SAE и LSM согласились
-    │   · fusion_divergence_rate     — % расхождений (сигнал о переходных состояниях)
-    │   · fusion_w_sae_current       — текущий вес SAE
-    │   · fusion_w_lsm_current       — текущий вес LSM
-    └─ Нагрузка: 2–5 мс · CPU only · 0 токенов LLM
+    ├─ Metrics:
+    │   · fusion_consensus_rate      — % of cases where SAE and LSM agreed
+    │   · fusion_divergence_rate     — % of divergences (a signal of transitional states)
+    │   · fusion_w_sae_current       — the current SAE weight
+    │   · fusion_w_lsm_current       — the current LSM weight
+    └─ Load: 2–5 ms · CPU only · 0 LLM tokens
 
 ```python
 # l5_5_predictive_fusion.py
@@ -2117,8 +2097,8 @@ class FusedPrediction:
     topic: Optional[str]
     confidence: float
     source: str                        # "consensus" | "divergent"
-    timing: Optional[dict] = None      # LSM темпоральный контекст
-    candidates: Optional[list] = None  # при divergent — список (prediction, weight)
+    timing: Optional[dict] = None      # LSM temporal context
+    candidates: Optional[list] = None  # on divergent — list of (prediction, weight)
 
 @dataclass
 class PredictionError:
@@ -2132,18 +2112,18 @@ class FusionContext:
 
 class PredictiveFusionLayer:
     """
-    L5.5: арбитр SAE (семантика) и LSM (ритм).
-    Комбинирует два предсказания с адаптивными весами.
-    Веса обновляются через Prediction Error Signal (L5).
+    L5.5: arbiter of SAE (semantics) and LSM (rhythm).
+    Combines two predictions with adaptive weights.
+    The weights are updated via the Prediction Error Signal (L5).
 
-    Инвариант I35: не пишет в граф — только читает и возвращает FusedPrediction.
+    Invariant I35: does not write to the graph — only reads and returns a FusedPrediction.
     """
 
     def __init__(self, w_sae: float = 0.6, w_lsm: float = 0.4):
         self.w_sae = w_sae
         self.w_lsm = w_lsm
         self._learning_rate = 0.05
-        self._w_min = 0.2  # ни один источник не вытесняется полностью
+        self._w_min = 0.2  # no source is fully displaced
 
     async def fuse(
         self,
@@ -2154,8 +2134,8 @@ class PredictiveFusionLayer:
         w_sae, w_lsm = self._dynamic_weights(context)
 
         if sae_prediction.get("topic") == lsm_prediction.get("topic"):
-            # Консенсус: умножаем уверенности (не складываем — это важно)
-            # Геометрическое среднее с весами даёт более консервативную оценку
+            # Consensus: multiply the confidences (do not add — this is important)
+            # The weighted geometric mean gives a more conservative estimate
             combined = (
                 sae_prediction["confidence"] ** w_sae *
                 lsm_prediction["confidence"] ** w_lsm
@@ -2168,8 +2148,8 @@ class PredictiveFusionLayer:
                 timing=lsm_prediction.get("timing")
             )
         else:
-            # Расхождение: возвращаем оба кандидата со штрафом
-            # Штраф × 0.6 — система становится осторожнее при неопределённости
+            # Divergence: return both candidates with a penalty
+            # Penalty × 0.6 — the system becomes more cautious under uncertainty
             logger.debug(
                 f"L5.5 divergent: SAE={sae_prediction.get('topic')} "
                 f"vs LSM={lsm_prediction.get('topic')}"
@@ -2186,32 +2166,32 @@ class PredictiveFusionLayer:
 
     def _dynamic_weights(self, ctx: FusionContext) -> tuple[float, float]:
         """
-        Динамически сдвигаем веса по контексту текущего запроса.
-        Стабильный ритм → больше доверия LSM.
-        Богатый семантический граф → больше доверия SAE.
+        Dynamically shift the weights by the context of the current query.
+        Stable rhythm → more trust in LSM.
+        Rich semantic graph → more trust in SAE.
         """
         w_s, w_l = self.w_sae, self.w_lsm
 
         if ctx.lsm_rhythm_stability > 0.7:
-            w_l += 0.15  # пользователь в стабильном ритме — LSM надёжен
+            w_l += 0.15  # the user is in a stable rhythm — LSM is reliable
         if ctx.sae_graph_density > 0.6:
-            w_s += 0.15  # тема хорошо представлена в графе — SAE надёжен
+            w_s += 0.15  # the topic is well represented in the graph — SAE is reliable
 
         total = w_s + w_l
         return w_s / total, w_l / total
 
     async def update_from_error(self, error: PredictionError):
         """
-        Prediction Error Signal корректирует веса.
-        Медленное обучение (lr=0.05) = стабильность.
-        Минимальный вес 0.2 = ни один источник не выключается.
+        The Prediction Error Signal adjusts the weights.
+        Slow learning (lr=0.05) = stability.
+        Minimum weight 0.2 = no source is switched off.
         """
         if error.source == "sae":
             self.w_sae = max(self._w_min, self.w_sae - self._learning_rate * error.magnitude)
         elif error.source == "lsm":
             self.w_lsm = max(self._w_min, self.w_lsm - self._learning_rate * error.magnitude)
 
-        # Ренормализация после каждого обновления
+        # Renormalize after each update
         total = self.w_sae + self.w_lsm
         self.w_sae /= total
         self.w_lsm /= total
@@ -2220,149 +2200,149 @@ class PredictiveFusionLayer:
 
 ---
 
-## 🔧 Технологический стек
+## 🔧 Technology Stack
 
-### Обязательные компоненты
+### Required Components
 
-| Компонент | Технология | Назначение |
+| Component | Technology | Purpose |
 |-----------|------------|------------|
-| **Graph DB (MVP)** | LadybugDB + Graphiti | Embedded граф для Phase 0 / слабого железа. LadybugDB — community-форк KuzuDB (MIT, Cypher, ACID, полная Kuzu API совместимость). I94. Переход на Neo4j в Phase 1+ |
-| **Graph DB (Production)** | Neo4j 5.26+ + Graphiti | Темпоральный граф знаний, основное хранилище Phase 1+ |
-| **Vector DB** | Qdrant / ChromaDB | Семантический поиск, эмбеддинги |
-| **Event Bus** | Redis Streams | Асинхронная обработка событий (Kafka убран — избыточен для Velantrim) |
-| **Scheduler** | APScheduler 3.10+ (AsyncIOScheduler) | Периодические Slow Path задачи: WeightedSemanticDecay, daily_maintenance · P9-FIX БАГ-18 |
-| **Cache** | Redis | Кэширование часто используемых паттернов |
-| **Embeddings (локально)** | multilingual-e5-large / deepvk/USER-bge-m3 | Векторизация, privacy-first, лучшие для RU |
-| **Embeddings (облако)** | Gemini Embedding 2 (март 2026) | Мультимодальный: текст + изображение + аудио + видео + PDF. Phase 2+ |
-| **LLM Flagship** | GPT-5.4 / Claude Sonnet 4.6 / Qwen3.5-Plus | Сложные задачи, reasoning · Qwen3.5-Plus = 397B-A17B, 1M ctx, нативный мультимодал |
-| **LLM Reasoning** | DeepSeek R1-0528 | Специализированный reasoning · R1: 671B-A37B, открытые CoT-токены, уровень o1 · ⚠️ DeepSeek V4 (Engram) — ожидается, не добавлять в стек до публичного релиза |
-| **LLM Fast** | o4-mini / Claude Haiku 4.5 / Qwen3.5-Flash | Рутина, 70% задач, дёшево |
+| **Graph DB (MVP)** | LadybugDB + Graphiti | Embedded graph for Phase 0 / low-end hardware. LadybugDB — community fork of KuzuDB (MIT, Cypher, ACID, full Kuzu API compatibility). I94. Migration to Neo4j in Phase 1+ |
+| **Graph DB (Production)** | Neo4j 5.26+ + Graphiti | Temporal knowledge graph, primary storage for Phase 1+ |
+| **Vector DB** | Qdrant / ChromaDB | Semantic search, embeddings |
+| **Event Bus** | Redis Streams | Asynchronous event processing (Kafka removed — redundant for Velantrim) |
+| **Scheduler** | APScheduler 3.10+ (AsyncIOScheduler) | Periodic Slow Path tasks: WeightedSemanticDecay, daily_maintenance · P9-FIX BUG-18 |
+| **Cache** | Redis | Caching of frequently used patterns |
+| **Embeddings (local)** | multilingual-e5-large / deepvk/USER-bge-m3 | Vectorization, privacy-first, best for RU |
+| **Embeddings (cloud)** | Gemini Embedding 2 (March 2026) | Multimodal: text + image + audio + video + PDF. Phase 2+ |
+| **LLM Flagship** | GPT-5.4 / Claude Sonnet 4.6 / Qwen3.5-Plus | Complex tasks, reasoning · Qwen3.5-Plus = 397B-A17B, 1M ctx, native multimodal |
+| **LLM Reasoning** | DeepSeek R1-0528 | Specialized reasoning · R1: 671B-A37B, open CoT tokens, o1-level · ⚠️ DeepSeek V4 (Engram) — expected, do not add to the stack until public release |
+| **LLM Fast** | o4-mini / Claude Haiku 4.5 / Qwen3.5-Flash | Routine, 70% of tasks, cheap |
 | **LLM Local (MoE)** | Qwen3.5-35B-A3B / DeepSeek V3.2 / Kimi K2 | Privacy-first · V3.2: 685B-A37B, DSA, context 163K, thinking+tool-use · Qwen3.5-Flash = hosted 35B-A3B |
-| **LLM Local (dense)** | Qwen3.5-27B / Qwen3.5-397B-A17B / Llama 4 Maverick | Если RAM > 32 GB · 397B-A17B = Qwen3.5-Plus open weights |
-| **LLM Tiny (offline)** | Qwen3-1.7B / OLMoE-1B-7B | LLM_MODE=lite · слабое железо · Memory Router SLM fallback |
-| **LSM (Liquid State Machine)** | Python · NumPy · ~300 нейронов | Темпоральная память ритма · 2–5 MB RAM · CPU only |
-| **Orchestration** | Custom Python / LangGraph v0.3+ | Управление агентом |
-| **Reranker** | ColBERTv2 / bge-reranker-large | Default reranker · ⚠️ Qwen3-Reranker: only opt-in с native Transformers (known issues в vLLM/llama.cpp) · файл: `memory/reranker.py` |
-| **Observability** | OpenTelemetry + Prometheus + Grafana | Мониторинг и трейсинг |
-| **Analytics** | DuckDB | Аналитика метрик, Parquet/CSV, агрегации (НЕ замена SQLite) |
-| **Operational DB** | SQLite | Логи, конфиги, навыки, сессии — встроенное надёжное хранилище |
+| **LLM Local (dense)** | Qwen3.5-27B / Qwen3.5-397B-A17B / Llama 4 Maverick | If RAM > 32 GB · 397B-A17B = Qwen3.5-Plus open weights |
+| **LLM Tiny (offline)** | Qwen3-1.7B / OLMoE-1B-7B | LLM_MODE=lite · low-end hardware · Memory Router SLM fallback |
+| **LSM (Liquid State Machine)** | Python · NumPy · ~300 neurons | Temporal rhythm memory · 2–5 MB RAM · CPU only |
+| **Orchestration** | Custom Python / LangGraph v0.3+ | Agent management |
+| **Reranker** | ColBERTv2 / bge-reranker-large | Default reranker · ⚠️ Qwen3-Reranker: only opt-in with native Transformers (known issues in vLLM/llama.cpp) · file: `memory/reranker.py` |
+| **Observability** | OpenTelemetry + Prometheus + Grafana | Monitoring and tracing |
+| **Analytics** | DuckDB | Metrics analytics, Parquet/CSV, aggregations (NOT a replacement for SQLite) |
+| **Operational DB** | SQLite | Logs, configs, skills, sessions — built-in reliable storage |
 
-### 🆕 Модели в стеке — справочник
+### 🆕 Models in the Stack — Reference
 
-> Краткая выжимка по каждой новой модели для быстрой ориентации. Подробности — в документации производителей.
+> A brief summary of each new model for quick orientation. For details, see the vendors' documentation.
 
-**DeepSeek V3.2** *(январь 2026 · MIT · MoE 685B-A37B)*
-- DeepSeek Sparse Attention (DSA) — сокращает compute на длинном контексте без потери качества
-- Thinking mode встроен прямо в tool-use (первый в линейке): можно рассуждать и использовать инструменты одновременно
-- Context window: 163,840 токенов · Производительность уровня GPT-5 · IMO/IOI 2025 — золото
-- Локально: требует ~8×H200 в full precision; GGUF-квантование — dual RTX 4090
+**DeepSeek V3.2** *(January 2026 · MIT · MoE 685B-A37B)*
+- DeepSeek Sparse Attention (DSA) — reduces compute on long context without loss of quality
+- Thinking mode built directly into tool-use (first in the lineup): you can reason and use tools simultaneously
+- Context window: 163,840 tokens · GPT-5-level performance · IMO/IOI 2025 — gold
+- Locally: requires ~8×H200 in full precision; GGUF quantization — dual RTX 4090
 
-**DeepSeek R1-0528** *(май 2025 · MIT · MoE 671B-A37B)*
-- Reasoning-специалист: открытые chain-of-thought токены (`<think>...</think>`), возможность дистилляции
-- Производительность уровня OpenAI o1/o3 · Context 164K токенов
-- Дистилляты: 1.5B / 7B / 8B / 14B / 32B / 70B — от телефона до сервера
-- Применение в Velantrim: стратегия для сложных multi-hop задач в ReasoningBank
+**DeepSeek R1-0528** *(May 2025 · MIT · MoE 671B-A37B)*
+- Reasoning specialist: open chain-of-thought tokens (`<think>...</think>`), distillation capability
+- OpenAI o1/o3-level performance · Context 164K tokens
+- Distillations: 1.5B / 7B / 8B / 14B / 32B / 70B — from phone to server
+- Use in Velantrim: strategy for complex multi-hop tasks in ReasoningBank
 
-**DeepSeek V4 + Engram** *(март 2026 · ⚠️ статус уточняется · MoE ~1T-A37B)*
-- **Engram** — архитектурный прорыв: условная память (conditional memory) отделяет статическое знание (O(1) hash lookup в DRAM) от динамического reasoning (MoE GPU). Needle-in-a-Haystack 97% при 1M токенов
-- Context: 1M+ токенов · Native multimodal (текст + изображение + видео)
-- V4 Lite появился на платформе 9 марта 2026; полный релиз — ожидается. Бенчмарки официально не верифицированы
-- ⚠️ Добавить в стек как только веса будут публично доступны
+**DeepSeek V4 + Engram** *(March 2026 · ⚠️ status being clarified · MoE ~1T-A37B)*
+- **Engram** — architectural breakthrough: conditional memory separates static knowledge (O(1) hash lookup in DRAM) from dynamic reasoning (MoE GPU). Needle-in-a-Haystack 97% at 1M tokens
+- Context: 1M+ tokens · Native multimodal (text + image + video)
+- V4 Lite appeared on the platform on March 9, 2026; full release — expected. Benchmarks not officially verified
+- ⚠️ Add to the stack as soon as the weights are publicly available
 
-**Qwen3.5-Plus / Qwen3.5-397B-A17B** *(февраль–март 2026 · Apache 2.0 · MoE 397B-A17B)*
-- Qwen3.5-Plus = hosted API; Qwen3.5-397B-A17B = open weights (то же самое)
-- Gated Delta Networks + sparse MoE: нативно мультимодальная архитектура (early fusion)
-- Context: 262K нативно, до 1M через API · 201 язык · Thinking mode по умолчанию
-- SWE-bench Verified: 76.4 · IFBench instruction-following: 76.5 (лучший среди открытых моделей)
-- Малые версии семьи: Qwen3.5-35B-A3B (= Flash), Qwen3.5-27B, 9B, 4B — для локального деплоя
+**Qwen3.5-Plus / Qwen3.5-397B-A17B** *(February–March 2026 · Apache 2.0 · MoE 397B-A17B)*
+- Qwen3.5-Plus = hosted API; Qwen3.5-397B-A17B = open weights (the same thing)
+- Gated Delta Networks + sparse MoE: natively multimodal architecture (early fusion)
+- Context: 262K natively, up to 1M via API · 201 languages · Thinking mode by default
+- SWE-bench Verified: 76.4 · IFBench instruction-following: 76.5 (best among open models)
+- Smaller family versions: Qwen3.5-35B-A3B (= Flash), Qwen3.5-27B, 9B, 4B — for local deployment
 
-### 🧠 MoE vs Dense — выбор LLM-архитектуры
+### 🧠 MoE vs Dense — Choosing the LLM Architecture
 
-> **MoE (Mixture of Experts)** — архитектура где внутренний Router активирует только 2–3 «эксперта» из N при каждом запросе. Остальные эксперты не считаются → меньше FLOPs, тот же результат.
+> **MoE (Mixture of Experts)** — an architecture where an internal Router activates only 2–3 "experts" out of N on each request. The remaining experts are not computed → fewer FLOPs, the same result.
 
 ```
-Пример: пользователь спрашивает "формулу воды"
-  Dense 30B:  считаются все 30B параметров каждый раз
-  MoE 30B-A3B: Router активирует 2 из 16 экспертов → считается 3B
-               Ответ того же качества, нагрузка CPU/GPU в 10× меньше
+Example: the user asks for "the formula for water"
+  Dense 30B:  all 30B parameters are computed every time
+  MoE 30B-A3B: Router activates 2 of 16 experts → 3B is computed
+               Same-quality answer, CPU/GPU load 10× lower
 ```
 
-| Архитектура | Параметры в RAM | Считается | CPU/GPU нагрузка | Рекомендация |
+| Architecture | Parameters in RAM | Computed | CPU/GPU load | Recommendation |
 |-------------|----------------|-----------|-----------------|--------------|
-| Dense 7B | 7B | 7B | 100% | weak/medium без GPU |
-| MoE 30B-A3B | 30B | ~3B | ~15% | medium/strong — лучший выбор |
+| Dense 7B | 7B | 7B | 100% | weak/medium without GPU |
+| MoE 30B-A3B | 30B | ~3B | ~15% | medium/strong — best choice |
 | Dense 70B | 70B | 70B | 100% | strong + GPU |
 | MoE 141B-A22B | 141B | ~22B | ~25% | strong + GPU flagship |
 
-> ⚠️ **Главная ловушка MoE**: снижает CPU/GPU нагрузку, но **НЕ экономит RAM** — все эксперты должны быть в памяти. Mixtral 8x7B требует ~30 GB RAM несмотря на то что считает как 12B.
+> ⚠️ **The main MoE pitfall**: it reduces CPU/GPU load, but does **NOT** save RAM — all experts must be in memory. Mixtral 8x7B requires ~30 GB RAM despite computing like 12B.
 
 ```python
-# velantrim_config.py — добавить при выборе LLM
+# velantrim_config.py — add when choosing the LLM
 LLM_ARCHITECTURE  = "moe"    # "moe" | "dense"
-LLM_ACTIVE_PARAMS = "3B"     # реально считается при инференсе
-LLM_TOTAL_PARAMS  = "30B"    # нужно в RAM — используй для HARDWARE_PROFILE проверки
+LLM_ACTIVE_PARAMS = "3B"     # actually computed at inference
+LLM_TOTAL_PARAMS  = "30B"    # needed in RAM — use for the HARDWARE_PROFILE check
 
-# Правило: если LLM_TOTAL_PARAMS > доступного RAM → переключиться на меньшую модель
-# MoE в формате GGUF (квантование) — оптимально для CPU-only инференса
+# Rule: if LLM_TOTAL_PARAMS > available RAM → switch to a smaller model
+# MoE in GGUF format (quantization) — optimal for CPU-only inference
 ```
-### Опциональные улучшения
+### Optional Enhancements
 
-- **Мониторинг**: ✅ Уже в обязательных (OpenTelemetry + Prometheus + Grafana). Добавить сюда расширенные дашборды Grafana если нужны отдельные алерты.
-- **Object Storage**: S3 / MinIO (для полных текстов и артефактов)
-- **Time-Series DB**: InfluxDB (для метрик и decay расчетов)
-- **Real-time Graph**: Memgraph (Phase 2+ для hot-path обновлений)
+- **Monitoring**: ✅ Already among the required ones (OpenTelemetry + Prometheus + Grafana). Add extended Grafana dashboards here if separate alerts are needed.
+- **Object Storage**: S3 / MinIO (for full texts and artifacts)
+- **Time-Series DB**: InfluxDB (for metrics and decay computations)
+- **Real-time Graph**: Memgraph (Phase 2+ for hot-path updates)
 
-### 🗄️ Конфигурации бэкендов (v8.0 Crystal)
+### 🗄️ Backend Configurations (v8.0 Crystal)
 
-| Конфигурация | Граф | Вектор | Для кого |
+| Configuration | Graph | Vector | For whom |
 |---|---|---|---|
-| **Minimal** | SQLite | FAISS | Разработка, первый запуск |
-| **Personal** | KuzuDB    | FAISS | Локальный ПК, офлайн, MIT · I94 · P0-H FIX |
-| **Startup** | FalkorDB | Qdrant | Продакшн, стартап |
-| **Enterprise** | Neo4j | Qdrant | Корпорации, RBAC, GDPR |
+| **Minimal** | SQLite | FAISS | Development, first launch |
+| **Personal** | KuzuDB    | FAISS | Local PC, offline, MIT · I94 · P0-H FIX |
+| **Startup** | FalkorDB | Qdrant | Production, startup |
+| **Enterprise** | Neo4j | Qdrant | Corporations, RBAC, GDPR |
 
 ```python
 # velantrim_config.py
-GRAPH_BACKEND = "kuzu"       # P0-H FIX: "ladybugdb" не существует → "kuzu" (KuzuDB, MIT, Cypher-совместим)
+GRAPH_BACKEND = "kuzu"       # P0-H FIX: "ladybugdb" does not exist → "kuzu" (KuzuDB, MIT, Cypher-compatible)
 # KuzuDB — https://kuzudb.com · MIT · Cypher · columnar · vector + full-text · ACID
-# I94 (KuzuDBCompat): KuzuDB backend совместим с Kuzu API. Миграция без потери данных.
+# I94 (KuzuDBCompat): the KuzuDB backend is compatible with the Kuzu API. Migration without data loss.
 ```
 
 
-### ⚰️ Компоненты, исключённые из стека
+### ⚰️ Components Excluded from the Stack
 
-> Список защищает от регрессий: при следующем LLM-аудите не будут повторно предлагаться удалённые компоненты.
+> The list protects against regressions: during the next LLM audit, removed components will not be proposed again.
 
-| Компонент | Причина исключения |
+| Component | Reason for exclusion |
 |-----------|-------------------|
-| **RedisGraph** | EOL январь 2025, проект закрыт Neo4j |
-| **Kafka** | Избыточен для Velantrim — заменён Redis Streams |
-| ~~**KuzuDB**~~ | ~~Куплен Apple в 2025~~ — **P9-FIX БАГ-2**: LadybugDB-форк не вышел. KuzuDB (MIT, Cypher-совместим) остаётся в Personal-конфиге. Строка убрана из исключённых. |
-| **SurrealDB** | ⚠️ Риск EOL, нестабильный API — перенесён в опциональные |
-| **NetworkX** | Слишком медленно на >1k узлов — только прототипирование |
+| **RedisGraph** | EOL January 2025, project shut down by Neo4j |
+| **Kafka** | Redundant for Velantrim — replaced by Redis Streams |
+| ~~**KuzuDB**~~ | ~~Acquired by Apple in 2025~~ — **P9-FIX BUG-2**: the LadybugDB fork did not ship. KuzuDB (MIT, Cypher-compatible) remains in the Personal config. Line removed from excluded. |
+| **SurrealDB** | ⚠️ EOL risk, unstable API — moved to optional |
+| **NetworkX** | Too slow on >1k nodes — prototyping only |
 
-### 🐳 Быстрый запуск инфраструктуры
+### 🐳 Quick Infrastructure Startup
 
-> Без docker-compose.yml разработчик не запустит систему. Это единственная команда которая нужна.
+> Without docker-compose.yml a developer cannot start the system. This is the only command needed.
 
 ```yaml
 # infra/docker-compose.yml
-# P3-E FIX: version: поле deprecated в Docker Compose v2+. Убрано.
+# P3-E FIX: the version: field is deprecated in Docker Compose v2+. Removed.
 services:
   neo4j:
-    image: neo4j:5.26-community  # community = без лицензии; enterprise = если есть
+    image: neo4j:5.26-community  # community = no license; enterprise = if available
     container_name: velantrim-neo4j
     restart: unless-stopped
     ports:
       - "7474:7474"   # Browser
       - "7687:7687"   # Bolt
     environment:
-      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:?NEO4J_PASSWORD not set}  # пароль из .env, не хардкод
-      - NEO4J_PLUGINS=["apoc"]  # apoc — официальный плагин Community Edition
-      # ⚠️ graph-data-science НЕ является официальным плагином Community 5.26.
-      # Phase 0: SAE реализуется через python-igraph (см. EtirConfig.BACKEND="igraph").
-      # Phase 1+: GDS устанавливается вручную через /plugins mount (JAR из Neo4j Labs).
-      # Phase 2: Neo4j Enterprise — GDS нативно через NEO4J_PLUGINS.
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:?NEO4J_PASSWORD not set}  # password from .env, not hardcoded
+      - NEO4J_PLUGINS=["apoc"]  # apoc — the official Community Edition plugin
+      # ⚠️ graph-data-science is NOT an official Community 5.26 plugin.
+      # Phase 0: SAE is implemented via python-igraph (see EtirConfig.BACKEND="igraph").
+      # Phase 1+: GDS is installed manually via the /plugins mount (JAR from Neo4j Labs).
+      # Phase 2: Neo4j Enterprise — GDS natively via NEO4J_PLUGINS.
       - NEO4J_dbms_memory_pagecache_size=2g
       - NEO4J_dbms_memory_heap_initial__size=2g
       - NEO4J_dbms_memory_heap_max__size=4g
@@ -2396,26 +2376,26 @@ volumes:
 ```
 
 ```bash
-  # сначала создай .env (не коммить в git!):
+  # first create .env (do not commit to git!):
 # cp .env.example .env && echo "NEO4J_PASSWORD=your_strong_password" >> .env
 
-# Запуск одной командой
+# Launch with a single command
 docker compose -f infra/docker-compose.yml up -d
 ```
 
 ---
 
-## 📦 Ключевые компоненты и их реализация
+## 📦 Key Components and Their Implementation
 
 ### 1. Event Bus & Ingestion Pipeline
 
-**Назначение**: Захват всех событий без блокировки основного потока
+**Purpose**: Capturing all events without blocking the main thread
 
 ```python
 # event_bus.py
 from dataclasses import dataclass
 from enum import Enum
-from datetime import datetime, timezone  # timezone нужен для datetime.now(timezone.utc)
+from datetime import datetime, timezone  # timezone needed for datetime.now(timezone.utc)
 import asyncio
 import redis.asyncio as redis
 import json
@@ -2427,7 +2407,7 @@ logger = logging.getLogger(__name__)
 class EventType(Enum):
     USER_MESSAGE = "user_message"
     AGENT_RESPONSE = "agent_response"
-    RESPONSE_GENERATED = "response_generated"  # используется AuditWorker (I28) и архитектурой SLOW SYSTEM
+    RESPONSE_GENERATED = "response_generated"  # used by AuditWorker (I28) and the SLOW SYSTEM architecture
     ACTION_EXECUTED = "action_executed"
     TASK_COMPLETED = "task_completed"
     TASK_STATUS_CHANGED = "task_status_changed"  # ConsolidationEngine: BLOCKED_AWAITING_DB
@@ -2443,7 +2423,7 @@ class AgentEvent:
 
 class SQLiteFallbackQueue:
     """
-    Персистентная fallback-очередь событий на SQLite (RFC0036).
+    Persistent SQLite-based fallback event queue (RFC0036).
     """
     def __init__(self, db_path: str = "fallback_events.db"):
         self.db_path = db_path
@@ -2475,7 +2455,7 @@ class SQLiteFallbackQueue:
         return True
 
     async def qsize(self) -> int:
-        """Возвращает количество событий в fallback-очереди (для health_check)."""
+        """Returns the number of events in the fallback queue (for health_check)."""
         import aiosqlite
         async with aiosqlite.connect(self.db_path) as db:
             cursor = await db.execute("SELECT COUNT(*) FROM event_fallback")
@@ -2509,24 +2489,24 @@ class SQLiteFallbackQueue:
 
 class RobustEventBus:
     """
-    Production-ready Event Bus с:
-    - Retry механизмом
+    Production-ready Event Bus with:
+    - Retry mechanism
     - Dead Letter Queue (DLQ)
-    - Fallback на локальную очередь
+    - Fallback to a local queue
     - Error tracking
     """
     def __init__(
         self,
         redis_url: str = "redis://localhost:6379",
         max_retries: int = 3,
-        config: dict = None,   # config может быть None при старте
+        config: dict = None,   # config may be None at startup
     ):
         self.redis = redis.from_url(redis_url, decode_responses=True)
         self.stream_key = "agent:events"
         self.dlq_key = "agent:events:dlq"
         self.max_retries = max_retries
 
-        # Fallback очередь когда Redis недоступен — персистентна (RFC0036)
+        # Fallback queue when Redis is unavailable — persistent (RFC0036)
         _cfg = config or {}
         self.fallback_queue = SQLiteFallbackQueue(
             db_path=_cfg.get("fallback_db", "fallback_events.db")
@@ -2535,8 +2515,8 @@ class RobustEventBus:
 
     async def publish(self, event: AgentEvent) -> bool:
         """
-        Публикация события с retry и fallback
-        Возвращает True если успешно, False если в fallback
+        Publish an event with retry and fallback
+        Returns True if successful, False if it went to fallback
         """
         event_data = {
             "type": event.event_type.value,
@@ -2546,7 +2526,7 @@ class RobustEventBus:
             "session_id": event.session_id
         }
         
-        # Попытка публикации с retry
+        # Attempt to publish with retry
         for attempt in range(self.max_retries):
             try:
                 await self.redis.xadd(self.stream_key, event_data,
@@ -2562,14 +2542,14 @@ class RobustEventBus:
                 if attempt < self.max_retries - 1:
                     await asyncio.sleep(2 ** attempt)  # Exponential backoff
                 else:
-                    # Все попытки исчерпаны → fallback
+                    # All attempts exhausted → fallback
                     self.redis_available = False
                     try:
-                        await self.fallback_queue.put(event_data)  # передаём dict, не AgentEvent
+                        await self.fallback_queue.put(event_data)  # pass a dict, not AgentEvent
                         logger.error(f"Event moved to fallback queue: {event.event_type}")
                     except Exception:
-                        # SQLiteFallbackQueue.put() никогда не бросает asyncio.QueueFull
-                        # (это aiosqlite-операция). Перехватываем любую ошибку → SQLite напрямую.
+                        # SQLiteFallbackQueue.put() never raises asyncio.QueueFull
+                        # (it's an aiosqlite operation). We catch any error → SQLite directly.
                         logger.warning(
                             f"Fallback queue error — persisting to SQLite: {event.event_type}"
                         )
@@ -2578,14 +2558,14 @@ class RobustEventBus:
 
     async def publish_volition(self, event) -> bool:
         """
-        P0.5-1 FIX: адаптер для MemoryVolitionWorker.write_voluntary().
-        VolitionEvent не является AgentEvent, поэтому сериализуем вручную
-        и делегируем в стандартный publish-путь через Redis → fallback.
+        P0.5-1 FIX: adapter for MemoryVolitionWorker.write_voluntary().
+        VolitionEvent is not an AgentEvent, so we serialize it manually
+        and delegate to the standard publish path via Redis → fallback.
 
-        Без этого метода: AttributeError при первом вызове write_voluntary().
+        Without this method: AttributeError on the first call to write_voluntary().
         """
         import dataclasses
-        # Оборачиваем VolitionEvent в совместимый с publish() формат
+        # Wrap VolitionEvent into a format compatible with publish()
         class _VolitionWrapper:
             def __init__(self, ev):
                 from enum import Enum
@@ -2594,8 +2574,8 @@ class RobustEventBus:
                     if not isinstance(getattr(ev, 'event_type', None), Enum)
                     else ev.event_type.value
                 })()
-                # P0-C FIX: utcnow() deprecated Python 3.12, возвращал naive datetime → silent data corruption.
-                # datetime.now(timezone.utc) возвращает timezone-aware datetime, совместим с Redis/SQLite.
+                # P0-C FIX: utcnow() deprecated in Python 3.12, returned a naive datetime → silent data corruption.
+                # datetime.now(timezone.utc) returns a timezone-aware datetime, compatible with Redis/SQLite.
                 from datetime import datetime as _dt, timezone as _tz
                 self.timestamp  = getattr(ev, 'timestamp', _dt.now(_tz.utc))
                 self.content    = {
@@ -2610,13 +2590,13 @@ class RobustEventBus:
 
     async def _persist_event_to_sqlite(self, event: AgentEvent):
         """
-        Последний рубеж: если Redis недоступен и fallback_queue.put() тоже упал.
-        добавлена ротация FALLBACK_MAX_ROWS=10_000 + PRAGMA WAL/NORMAL
-        для защиты от переполнения диска. Нет дублирования dict-сборки —
-        event_data формируется один раз и передаётся напрямую.
+        Last line of defense: if Redis is unavailable and fallback_queue.put() also failed.
+        Added FALLBACK_MAX_ROWS=10_000 rotation + PRAGMA WAL/NORMAL
+        to protect against disk overflow. No duplication of dict assembly —
+        event_data is formed once and passed directly.
         """
         import aiosqlite
-        FALLBACK_MAX_ROWS = 10_000  # лимит ротации — защита от переполнения диска
+        FALLBACK_MAX_ROWS = 10_000  # rotation limit — protection against disk overflow
         try:
             payload = {
                 "type":       event.event_type.value,
@@ -2629,10 +2609,10 @@ class RobustEventBus:
             async with aiosqlite.connect(db_path) as db:
                 await db.execute("PRAGMA journal_mode=WAL")
                 await db.execute("PRAGMA synchronous=NORMAL")
-                # P0.5-2 FIX: единый формат с SQLiteFallbackQueue.put() и drain().
-                # put() пишет zlib.compress(json.dumps(...)), drain() читает zlib.decompress().
-                # Было: json.dumps(payload) как plain string → drain() получал мусор при восстановлении.
-                # Стало: zlib.compress(json.dumps(payload)) — идентично основному fallback-пути.
+                # P0.5-2 FIX: unified format with SQLiteFallbackQueue.put() and drain().
+                # put() writes zlib.compress(json.dumps(...)), drain() reads zlib.decompress().
+                # Before: json.dumps(payload) as a plain string → drain() got garbage on recovery.
+                # Now: zlib.compress(json.dumps(payload)) — identical to the main fallback path.
                 import zlib as _zlib
                 compressed_payload = _zlib.compress(
                     json.dumps(payload).encode(), level=1
@@ -2641,7 +2621,7 @@ class RobustEventBus:
                     "INSERT INTO event_fallback (event_data, priority) VALUES (?, ?)",
                     (compressed_payload, "NORMAL")
                 )
-                # Ротация: удаляем старейшие записи при превышении лимита
+                # Rotation: delete the oldest records when the limit is exceeded
                 await db.execute(
                     """
                     DELETE FROM event_fallback
@@ -2666,9 +2646,9 @@ class RobustEventBus:
         consumer_name: str
     ) -> AsyncGenerator[Tuple[str, dict], None]:
         """
-        Асинхронное чтение событий с обработкой ошибок
+        Asynchronous reading of events with error handling
         """
-        # Создать consumer group если не существует
+        # Create the consumer group if it does not exist
         try:
             await self.redis.xgroup_create(
                 self.stream_key, consumer_group, id='0', mkstream=True
@@ -2681,7 +2661,7 @@ class RobustEventBus:
         
         while True:
             try:
-                # Читать новые события
+                # Read new events
                 messages = await self.redis.xreadgroup(
                     consumer_group, consumer_name,
                     {self.stream_key: '>'},
@@ -2689,27 +2669,27 @@ class RobustEventBus:
                     block=5000
                 )
                 
-                failed_count = 0  # Reset на успешное чтение
+                failed_count = 0  # Reset on successful read
                 
                 for stream_name, message_list in messages:
                     for message_id, data in message_list:
                         try:
                             yield message_id, data
                             
-                            # ACK после успешной обработки
+                            # ACK after successful processing
                             await self.redis.xack(
                                 self.stream_key, consumer_group, message_id
                             )
                             
                         except Exception as e:
-                            # Ошибка обработки → переместить в DLQ
+                            # Processing error → move to DLQ
                             logger.error(
                                 f"Event processing failed: {e}, "
                                 f"moving to DLQ: {message_id}"
                             )
                             await self._move_to_dlq(message_id, data, str(e))
                             
-                            # ACK чтобы не зависло
+                            # ACK so it doesn't hang
                             await self.redis.xack(
                                 self.stream_key, consumer_group, message_id
                             )
@@ -2719,37 +2699,37 @@ class RobustEventBus:
                 logger.error(f"Redis consume error ({failed_count}/{max_failures}): {e}")
 
                 if failed_count >= max_failures:
-                    # P0.5-6 FIX: вместо break → режим ожидания с периодическим ping.
-                    # break убивал генератор навсегда — весь Slow Path останавливался
-                    # до ручного рестарта агента (Gemini-аудит, ChatGPT-аудит).
-                    # Новый подход: consume() ждёт восстановления Redis и продолжает.
-                    # Caller (process_evaluation_queue и др.) не замечает паузы —
-                    # async for просто ждёт следующего yield.
+                    # P0.5-6 FIX: instead of break → a wait mode with periodic ping.
+                    # break killed the generator forever — the entire Slow Path stopped
+                    # until a manual agent restart (Gemini audit, ChatGPT audit).
+                    # New approach: consume() waits for Redis recovery and continues.
+                    # The caller (process_evaluation_queue, etc.) does not notice the pause —
+                    # async for simply waits for the next yield.
                     logger.critical(
                         f"Redis unavailable after {max_failures} attempts — "
                         f"entering recovery wait (Slow Path paused, not dead)"
                     )
-                    _recovery_interval = 30  # секунд между ping-попытками
+                    _recovery_interval = 30  # seconds between ping attempts
                     while True:
                         await asyncio.sleep(_recovery_interval)
                         try:
                             await self.redis.ping()
-                            # Redis вернулся — сбрасываем счётчик и продолжаем цикл
+                            # Redis is back — reset the counter and continue the loop
                             failed_count = 0
                             logger.info(
                                 "Redis recovered — resuming consume(). "
                                 "Slow Path active."
                             )
-                            break  # выходим из recovery-loop → продолжаем while True
+                            break  # exit the recovery loop → continue while True
                         except redis.RedisError:
                             logger.warning(
                                 f"Redis still unavailable, retry in {_recovery_interval}s"
                             )
-                            # увеличиваем интервал до max 5 минут
+                            # increase the interval up to a max of 5 minutes
                             _recovery_interval = min(300, _recovery_interval * 2)
-                    continue  # продолжаем основной while True после recovery
+                    continue  # continue the main while True after recovery
 
-                # Backoff перед retry
+                # Backoff before retry
                 await asyncio.sleep(min(60, 2 ** failed_count))
 
     async def _move_to_dlq(
@@ -2758,7 +2738,7 @@ class RobustEventBus:
         data: dict,
         error: str
     ):
-        """Переместить проблемное событие в Dead Letter Queue"""
+        """Move a problematic event to the Dead Letter Queue"""
         dlq_entry = {
             **data,
             "original_message_id": message_id,
@@ -2774,9 +2754,9 @@ class RobustEventBus:
 
     async def process_dlq(self):
         """
-        Периодическая обработка DLQ — reprocess или отправка в monitoring.
-        Метод должен быть зарегистрирован в планировщике.
-        Добавить в scheduler.py или main.py при старте:
+        Periodic DLQ processing — reprocess or send to monitoring.
+        The method should be registered in the scheduler.
+        Add to scheduler.py or main.py at startup:
         
             scheduler.add_job(
                 event_bus.process_dlq,
@@ -2802,19 +2782,19 @@ class RobustEventBus:
                         }
                         logger.info(f"Retrying DLQ message: {msg_id}")
                         await self.redis.xadd(self.stream_key, clean_data)
-                        await self.redis.xdel(self.dlq_key, msg_id)  # удалять ПОСЛЕ успешного reprocess
+                        await self.redis.xdel(self.dlq_key, msg_id)  # delete AFTER successful reprocess
                     else:
                         logger.error(f"Permanent DLQ failure: {msg_id}, data: {data}")
                         await self._send_permanent_failure_alert(msg_id, data, retry_count)
                         await self._archive_permanent_failure(msg_id, data)
-                        await self.redis.xdel(self.dlq_key, msg_id)  # удалять после архивирования
+                        await self.redis.xdel(self.dlq_key, msg_id)  # delete after archiving
         except Exception as e:
             logger.error(f"DLQ processing failed: {e}")
 
     async def _send_permanent_failure_alert(self, msg_id: str, data: dict, retries: int):
         """
-        Обязательный алерт при permanent DLQ failure.
-        Интеграция через EventBus → Observer++ поднимает severity = CRITICAL.
+        Mandatory alert on permanent DLQ failure.
+        Integration via EventBus → Observer++ raises severity = CRITICAL.
         """
         try:
             await self.redis.xadd("agent:alerts", {
@@ -2829,9 +2809,9 @@ class RobustEventBus:
             logger.error(f"Failed to send permanent failure alert: {e}")
 
     async def _archive_permanent_failure(self, msg_id: str, data: dict):
-        """Сохранить permanent failure в SQLite для последующего аудита."""
-        # orphaned except убран (SyntaxError — except без try),
-        # убран xdel отсюда (был в except, т.е. удалял только при ошибке архивирования — логика перевёрнута)
+        """Save the permanent failure to SQLite for later audit."""
+        # orphaned except removed (SyntaxError — except without try),
+        # xdel removed from here (it was in except, i.e. deleted only on archiving error — logic inverted)
         try:
             import aiosqlite
             db_path = getattr(self.fallback_queue, 'db_path', 'fallback_events.db')
@@ -2854,7 +2834,7 @@ class RobustEventBus:
 
 
     async def health_check(self) -> dict:
-        """Проверка здоровья Event Bus"""
+        """Event Bus health check"""
         try:
             await self.redis.ping()
             stream_info = await self.redis.xinfo_stream(self.stream_key)
@@ -2862,14 +2842,14 @@ class RobustEventBus:
                 dlq_info = await self.redis.xinfo_stream(self.dlq_key)
                 dlq_length = dlq_info.get("length", 0)
             except redis.ResponseError:
-                dlq_length = 0  # DLQ ещё не создан — это нормально
+                dlq_length = 0  # DLQ not created yet — this is normal
             
             return {
                 "status": "healthy",
                 "redis_available": True,
                 "main_stream_length": stream_info.get("length", 0),
                 "dlq_length": dlq_length,
-                "fallback_queue_size": await self.fallback_queue.qsize()  # async метод — await обязателен
+                "fallback_queue_size": await self.fallback_queue.qsize()  # async method — await is mandatory
             }
         except Exception as e:
             return {
@@ -2880,7 +2860,7 @@ class RobustEventBus:
             }
 ```
 
-**Интеграция в агент**:
+**Integration into the agent**:
 
 ```python
 # agent.py
@@ -2890,7 +2870,7 @@ class Agent:
         self.session_id = generate_session_id()
 
     async def chat(self, user_message: str):
-        # 1. Логируем входное сообщение (с retry/fallback)
+        # 1. Log the incoming message (with retry/fallback)
         publish_success = await self.event_bus.publish(AgentEvent(
             event_type=EventType.USER_MESSAGE,
             timestamp=datetime.now(timezone.utc),
@@ -2902,10 +2882,10 @@ class Agent:
         if not publish_success:
             logger.warning("Event published to fallback queue")
         
-        # 2. Обработка (retrieval + generation)
+        # 2. Processing (retrieval + generation)
         response = await self.process(user_message)
         
-        # 3. Логируем ответ
+        # 3. Log the response
         await self.event_bus.publish(AgentEvent(
             event_type=EventType.AGENT_RESPONSE,
             timestamp=datetime.now(timezone.utc),
@@ -2918,25 +2898,25 @@ class Agent:
 ```
 ---
 
-### 2. Graphiti + Neo4j: Основа памяти
+### 2. Graphiti + Neo4j: The Foundation of Memory
 
-**Назначение**: Темпоральный граф знаний с автоматической экстракцией
+**Purpose**: A temporal knowledge graph with automatic extraction
 
 ```python
 # memory_core.py
 from graphiti_core import Graphiti
-from datetime import datetime, timezone   # ← PATCH-4: добавлен timezone (ранее NameError в add_episode)
+from datetime import datetime, timezone   # ← PATCH-4: added timezone (previously NameError in add_episode)
 from typing import List, Optional
 
 class GraphMemory:
     def __init__(self, neo4j_uri: str, neo4j_user: str, neo4j_password: str,
-                 memory_guardian=None, raw_memory=None):   # ← PATCH-9: инъекция зависимостей (опциональная)
+                 memory_guardian=None, raw_memory=None):   # ← PATCH-9: dependency injection (optional)
         self.graphiti = Graphiti(
             neo4j_uri=neo4j_uri,
             neo4j_user=neo4j_user,
             neo4j_password=neo4j_password
         )
-        self.memory_guardian = memory_guardian  # None = старое поведение, обратная совместимость сохранена
+        self.memory_guardian = memory_guardian  # None = old behavior, backward compatibility preserved
         self.raw_memory = raw_memory
 
     async def add_episode(
@@ -2947,19 +2927,19 @@ class GraphMemory:
         timestamp: Optional[datetime] = None
     ):
         """
-        Добавить эпизод - автоматическая экстракция сущностей и связей
-        НЕ требует LLM-запроса от разработчика - Graphiti делает это внутри
+        Add an episode - automatic extraction of entities and relationships
+        Does NOT require an LLM request from the developer - Graphiti does this internally
 
-        PATCH-9 (Graph = Truth): порядок записи:
-          1. ImmutableRawMemory — сырой оригинал защищён до любой валидации
-          2. MemoryGuardian (Truth Gate) — если задан; None = старое поведение
-          3. graphiti.add_episode — только если прошли шаги 1-2
-        Обратная совместимость: memory_guardian=None → поведение идентично старому.
+        PATCH-9 (Graph = Truth): write order:
+          1. ImmutableRawMemory — the raw original is protected before any validation
+          2. MemoryGuardian (Truth Gate) — if set; None = old behavior
+          3. graphiti.add_episode — only if steps 1-2 passed
+        Backward compatibility: memory_guardian=None → behavior identical to the old one.
         """
         import asyncio as _asyncio
         ref_time = timestamp or datetime.now(timezone.utc)
 
-        # ШАГ 1: сырой оригинал — сохранить до любой валидации (Semantic Drift защита)
+        # STEP 1: the raw original — save before any validation (Semantic Drift protection)
         if self.raw_memory:
             await _asyncio.to_thread(
                 self.raw_memory.save_episode,
@@ -2967,18 +2947,18 @@ class GraphMemory:
                 content, source, session_id="",
             )
 
-        # ШАГ 2: Truth Gate — если guardian задан
+        # STEP 2: Truth Gate — if a guardian is set
         if self.memory_guardian:
             proposal = {
                 "content":    content,
                 "source":     source,
-                "evidence":   source,   # минимальный evidence = источник (Phase 0)
+                "evidence":   source,   # minimal evidence = source (Phase 0)
                 "confidence": 1.0 if source == "user_input" else 0.75,
             }
             if not await self.memory_guardian.validate_proposal(proposal):
-                return   # Guardian уже залогировал причину — граф не загрязняется
+                return   # Guardian has already logged the reason — the graph is not polluted
 
-        # ШАГ 3: запись в граф — только сюда
+        # STEP 3: write to the graph — only here
         await self.graphiti.add_episode(
             name=episode_name,
             episode_body=content,
@@ -2993,17 +2973,17 @@ class GraphMemory:
         time_filter: Optional[tuple] = None
     ) -> List[dict]:
         """
-        Гибридный поиск БЕЗ LLM-запросов:
-        - Векторный поиск по эмбеддингам
-        - BM25 полнотекстовый поиск
-        - Обход графа для контекста
+        Hybrid search WITHOUT LLM requests:
+        - Vector search over embeddings
+        - BM25 full-text search
+        - Graph traversal for context
         """
         results = await self.graphiti.search(
             query=query,
             num_results=num_results
         )
         
-        # Дополнительная фильтрация по времени если нужно
+        # Additional filtering by time if needed
         if time_filter:
             start_time, end_time = time_filter
             results = [
@@ -3019,13 +2999,13 @@ class GraphMemory:
         depth: int = 2
     ) -> dict:
         """
-        Получить контекст вокруг сущности через обход графа
+        Get the context around an entity via graph traversal
         """
-        # FIX из HYPERIA: whitelist вместо numeric clamp.
-        # max(1, min(int(depth), 5)) не защищает если depth — строка типа "3; DROP".
-        # Whitelist делает инъекцию невозможной архитектурно — только 1, 2 или 3.
+        # FIX from HYPERIA: whitelist instead of numeric clamp.
+        # max(1, min(int(depth), 5)) does not protect if depth is a string like "3; DROP".
+        # A whitelist makes injection architecturally impossible — only 1, 2 or 3.
         depth = depth if depth in (1, 2, 3) else 2
-        # path собирается до WITH, иначе выходит из scope и Neo4j бросает ошибку
+        # path is built before WITH, otherwise it goes out of scope and Neo4j throws an error
         query = f"""
         MATCH (e:Entity {{name: $entity_name}})
         OPTIONAL MATCH path = (e)-[:RELATED_TO|CAUSES|CONCEPT_OF|SUPPORTED_BY*1..{depth}]-(related)
@@ -3044,36 +3024,36 @@ class GraphMemory:
         return result
 ```
 
-**Схема графа**:
+**Graph schema**:
 
 ```cypher
-// Типы узлов
-// embedding_version: какой моделью создан вектор (для lazy re-indexing при смене модели)
-// is_active + valid_to: Soft Delete — узел не удаляется физически, а деактивируется
-// reindex_required: флаг для автоматической переиндексации при смене embedding-модели
+// Node types
+// embedding_version: which model created the vector (for lazy re-indexing when the model changes)
+// is_active + valid_to: Soft Delete — the node is not physically deleted, but deactivated
+// reindex_required: flag for automatic re-indexing when the embedding model changes
 (:Entity {
     name, type,
-    embedding, embedding_version,          // + версия модели: "multilingual-e5-large-v1"
+    embedding, embedding_version,          // + model version: "multilingual-e5-large-v1"
     importance_score, created_at, last_accessed,
-    is_active,                             // Soft Delete флаг (default: true)
-    valid_from, valid_to,                  // Temporal bounds для фактов
-    reindex_required                       // true = нужна переиндексация (false по умолчанию)
+    is_active,                             // Soft Delete flag (default: true)
+    valid_from, valid_to,                  // Temporal bounds for facts
+    reindex_required                       // true = re-indexing needed (false by default)
 })
 (:Episode {
     id, summary, timestamp, session_id, outcome,
     is_active, valid_to,
-    raw_episode_id                         // ссылка на ImmutableRawMemory (никогда не меняется)
-    // ⚠️ Episode ∉ Semantic Graph — эпизоды не смешиваются с фактами
-    // Phase 2: вынести в отдельную Vector DB (Qdrant)
+    raw_episode_id                         // reference to ImmutableRawMemory (never changes)
+    // ⚠️ Episode ∉ Semantic Graph — episodes are not mixed with facts
+    // Phase 2: move out into a separate Vector DB (Qdrant)
 })
-(:Domain {                                 // RFC0012: Domain как корень таксономии
+(:Domain {                                 // RFC0012: Domain as the root of the taxonomy
     id,                                    // "domain:physics"
     name,                                  // "Physics"
-    description,                           // краткое описание домена
-    parent_domain_id,                      // для вложенных доменов (physics → quantum_physics)
+    description,                           // brief description of the domain
+    parent_domain_id,                      // for nested domains (physics → quantum_physics)
     created_at
 })
-(:Concept {                                // RFC0002: Concept как отдельный узел
+(:Concept {                                // RFC0002: Concept as a separate node
     id,                                    // "concept:water"
     name,                                  // "Water"
     aliases,                               // ["H2O"]
@@ -3081,62 +3061,62 @@ class GraphMemory:
 })
 (:Fact {
     content, confidence,
-    relation, value, condition,            // для Knowledge Units: структурированные поля
-    valid_from, valid_to,                  // valid_time: когда факт был правдой
-    transaction_time,                      // transaction_time: когда был записан в граф (bi-temporal)
-    is_active,                             // Soft Delete вместо DETACH DELETE
-    override_flag,                         // true = ручное переопределение пользователем
-    is_knowledge_unit,                     // true = дистиллированный атомарный факт (JSON-тройка)
-    validated,                             // true = прошёл через MGL. ∀ fact ∈ Graph: validated = True
-    // ESM (Epistemic State Machine) поля
+    relation, value, condition,            // for Knowledge Units: structured fields
+    valid_from, valid_to,                  // valid_time: when the fact was true
+    transaction_time,                      // transaction_time: when it was written to the graph (bi-temporal)
+    is_active,                             // Soft Delete instead of DETACH DELETE
+    override_flag,                         // true = manual override by the user
+    is_knowledge_unit,                     // true = distilled atomic fact (JSON triple)
+    validated,                             // true = passed through MGL. ∀ fact ∈ Graph: validated = True
+    // ESM (Epistemic State Machine) fields
     epistemic_state,                       // Observed|Hypothesized|Supported|Validated|Contradicted|Deprecated|Collapsed
-    epistemic_score,                       // 0.0–1.0 сила эпистемической позиции факта
-    epistemic_variance,                    // 0.0–1.0 математическая неопределённость: 1.0=неизвестно, 0.0=уверен (RFC0046)
-    state_changed_at,                      // datetime последнего перехода ESM
-    transition_reason                      // причина перехода: "MGL_PASSED"|"CONTRADICTED"|"EVIDENCE_ADDED"|"GC"
+    epistemic_score,                       // 0.0–1.0 strength of the fact's epistemic position
+    epistemic_variance,                    // 0.0–1.0 mathematical uncertainty: 1.0=unknown, 0.0=confident (RFC0046)
+    state_changed_at,                      // datetime of the last ESM transition
+    transition_reason                      // transition reason: "MGL_PASSED"|"CONTRADICTED"|"EVIDENCE_ADDED"|"GC"
 })
-(:Evidence {                               // RFC0002: Evidence как отдельный узел — не строка
+(:Evidence {                               // RFC0002: Evidence as a separate node — not a string
     id,                                    // "evidence:physicsbook1"
     source,                                // "Physics Handbook"
     page,                                  // 42
-    quality,                               // 0.9 — надёжность источника
-    url,                                   // опционально
+    quality,                               // 0.9 — source reliability
+    url,                                   // optional
     created_at
 })
 (:Strategy {description, success_count, failure_count, context_type, is_active,
-            confidence})                   // confidence снижается при инвалидации зависимых :Fact
+            confidence})                   // confidence decreases when dependent :Fact nodes are invalidated
 (:Community {id, topic, size, last_updated})
-// Тип узла для Knowledge Distillation
+// Node type for Knowledge Distillation
 (:KnowledgeUnit {
     concept, relation, value, condition,
     confidence, timestamp,
     embedding, embedding_version
 })
 
-// Типы связей
+// Relationship types
 (:Entity)-[:MENTIONED_IN]->(:Episode)
-(:Entity)-[:RELATED_TO {strength, type, valid_from, valid_until}]->(:Entity)   // valid_until=null → актуально сейчас (RFC0046)
+(:Entity)-[:RELATED_TO {strength, type, valid_from, valid_until}]->(:Entity)   // valid_until=null → currently relevant (RFC0046)
 (:Episode)-[:PART_OF]->(:Community)
 (:Episode)-[:LED_TO {outcome}]->(:Episode)
 (:Strategy)-[:USED_IN]->(:Episode)
 (:Strategy)-[:SUCCEEDED_AT]->(:Task)
 (:Strategy)-[:FAILED_AT]->(:Task)
-(:Strategy)-[:DERIVED_FROM]->(:Fact)    // при инвалидации :Fact → снижать confidence :Strategy
-(:Strategy)-[:IMPROVES]->(:Strategy)   // RFC0002: цепочки улучшения стратегий
-// Конфликт фактов: новый факт явно противоречит старому
+(:Strategy)-[:DERIVED_FROM]->(:Fact)    // when a :Fact is invalidated → lower the :Strategy confidence
+(:Strategy)-[:IMPROVES]->(:Strategy)   // RFC0002: strategy improvement chains
+// Fact conflict: a new fact explicitly contradicts an old one
 (:Fact)-[:CONTRADICTS {reason, resolved_at}]->(:Fact)
-(:Fact)-[:CAUSES {valid_from, valid_until}]->(:Fact)                           // RFC0046: temporal на причинно-следственные связи
-(:Fact)-[:SUPPORTED_BY]->(:Evidence)   // RFC0002: ссылка на источник как узел
-(:Fact)-[:CONCEPT_OF]->(:Concept)     // RFC0002: факт принадлежит концепту
-(:Concept)-[:HAS_RELATION]->(:Fact)   // RFC0002: обратная связь концепта к фактам
-(:Concept)-[:BELONGS_TO]->(:Domain)   // RFC0012: концепт принадлежит домену
-(:Domain)-[:SUBDOMAIN_OF]->(:Domain)  // RFC0012: иерархия доменов (вложенность)
-(:Fact)-[:IN_DOMAIN]->(:Domain)       // RFC0012: факт явно привязан к домену (опционально, для быстрого поиска)
-// RFC0046: DAG рассуждений в L4 ReasoningBank
-(:ReasoningStep)-[:PRECEDES]->(:ReasoningStep)                                 // шаги рассуждения — направленный DAG
-(:ReasoningStep)-[:ROLLBACK_TO {reason, rolled_at, session_id}]->(:ReasoningStep) // тупиковая ветка → откат
+(:Fact)-[:CAUSES {valid_from, valid_until}]->(:Fact)                           // RFC0046: temporal on cause-and-effect relationships
+(:Fact)-[:SUPPORTED_BY]->(:Evidence)   // RFC0002: reference to the source as a node
+(:Fact)-[:CONCEPT_OF]->(:Concept)     // RFC0002: the fact belongs to a concept
+(:Concept)-[:HAS_RELATION]->(:Fact)   // RFC0002: back-reference from concept to facts
+(:Concept)-[:BELONGS_TO]->(:Domain)   // RFC0012: the concept belongs to a domain
+(:Domain)-[:SUBDOMAIN_OF]->(:Domain)  // RFC0012: domain hierarchy (nesting)
+(:Fact)-[:IN_DOMAIN]->(:Domain)       // RFC0012: the fact is explicitly bound to a domain (optional, for fast search)
+// RFC0046: reasoning DAG in L4 ReasoningBank
+(:ReasoningStep)-[:PRECEDES]->(:ReasoningStep)                                 // reasoning steps — a directed DAG
+(:ReasoningStep)-[:ROLLBACK_TO {reason, rolled_at, session_id}]->(:ReasoningStep) // dead-end branch → rollback
 
-// RFC0067 v2.0: Analogy Graph — только через Write Protocol Gate (I55)
+// RFC0067 v2.0: Analogy Graph — only through the Write Protocol Gate (I55)
 (:Entity)-[:METAPHOR_OF {
     source_domain: STRING, target_domain: STRING,
     essence: STRING, source_text: STRING,
@@ -3152,7 +3132,7 @@ class GraphMemory:
 ```
 
 ```cypher
-// RFC0067 v2.0: индексы Analogy Graph (добавить в neo4j_setup.py)
+// RFC0067 v2.0: Analogy Graph indexes (add to neo4j_setup.py)
 CREATE INDEX metaphor_source_domain IF NOT EXISTS
 FOR ()-[r:METAPHOR_OF]-() ON (r.source_domain);
 CREATE INDEX metaphor_resonance IF NOT EXISTS
@@ -3165,23 +3145,23 @@ CREATE FULLTEXT INDEX metaphor_essence_idx IF NOT EXISTS
 FOR ()-[r:METAPHOR_OF]-() ON EACH [r.essence];
 ```
 
-> ⚠️ **Soft Delete — обязательный паттерн**: НЕ используй `DETACH DELETE` для фактов и эпизодов в production. Устанавливай `is_active = false` и `valid_to = datetime()`. Физическое удаление — только в GC после успешной архивации в S3.
+> ⚠️ **Soft Delete — a mandatory pattern**: do NOT use `DETACH DELETE` for facts and episodes in production. Set `is_active = false` and `valid_to = datetime()`. Physical deletion — only in GC after successful archiving to S3.
 >
-> ⚠️ **Bi-temporal граф**: `valid_from/valid_to` = когда факт был правдой в реальном мире. `transaction_time` = когда был записан в систему. Оба нужны чтобы ответить "что мы знали на момент X".
+> ⚠️ **Bi-temporal graph**: `valid_from/valid_to` = when the fact was true in the real world. `transaction_time` = when it was written to the system. Both are needed to answer "what did we know at moment X".
 >
-> ⚠️ **Evidence как узел**: поле `evidence` в :Fact заменено на связь `[:SUPPORTED_BY]->(:Evidence)`. Это позволяет удалять ненадёжный источник вместе со всеми его фактами и оценивать quality источника отдельно.
+> ⚠️ **Evidence as a node**: the `evidence` field in :Fact has been replaced by the `[:SUPPORTED_BY]->(:Evidence)` relationship. This makes it possible to delete an unreliable source together with all of its facts and to assess the quality of the source separately.
 
-**КРИТИЧНО: Neo4j индексы (создать при инициализации!)**:
+**CRITICAL: Neo4j indexes (create at initialization!)**:
 
 ```python
 # neo4j_setup.py
 async def setup_neo4j_indexes(driver):
     """
-    Обязательные индексы для производительности
-    БЕЗ ЭТОГО система деградирует через 2-4 недели!
+    Mandatory indexes for performance
+    WITHOUT THIS the system degrades within 2-4 weeks!
     """
     async with driver.session() as session:
-        # 1. Индексы на часто используемые поля
+        # 1. Indexes on frequently used fields
         await session.run("""
             CREATE INDEX entity_name_idx IF NOT EXISTS
             FOR (e:Entity) ON (e.name)
@@ -3202,8 +3182,8 @@ async def setup_neo4j_indexes(driver):
             FOR (ep:Episode) ON (ep.session_id)
         """)
         
-        # 2. Векторный индекс для similarity search
-        # Размерность из config — не хардкод.
+        # 2. Vector index for similarity search
+        # Dimension from config — not hardcoded.
         # multilingual-e5-large = 1024, text-embedding-3-small = 1536, Gemini Embedding 2 = 3072
         embedding_dims = config.get("embedding", {}).get("dimensions", 1024)
         await session.run(f"""
@@ -3217,33 +3197,33 @@ async def setup_neo4j_indexes(driver):
             }}
         """)
         
-        # 3. Составной индекс для фильтрации по важности + времени
+        # 3. Composite index for filtering by importance + time
         await session.run("""
             CREATE INDEX entity_importance_time_idx IF NOT EXISTS
             FOR (e:Entity) ON (e.importance_score, e.last_accessed)
         """)
         
-        # 4. Индекс на embedding_version для lazy re-indexing
-        # Позволяет быстро найти все узлы с устаревшей embedding-моделью
+        # 4. Index on embedding_version for lazy re-indexing
+        # Allows quickly finding all nodes with an outdated embedding model
         await session.run("""
             CREATE INDEX entity_embedding_version_idx IF NOT EXISTS
             FOR (e:Entity) ON (e.embedding_version)
         """)
         
-        # 5. Индекс на is_active для Soft Delete фильтрации
+        # 5. Index on is_active for Soft Delete filtering
         await session.run("""
             CREATE INDEX entity_active_idx IF NOT EXISTS
             FOR (e:Entity) ON (e.is_active)
         """)
 
-        # 6. ✅ RFC0062: индекс для ConflictResolutionWorker._check_batch
+        # 6. ✅ RFC0062: index for ConflictResolutionWorker._check_batch
         await session.run("""
             CREATE INDEX fact_conflict_checked_idx IF NOT EXISTS
             FOR (f:Fact) ON (f.conflict_checked)
         """)
 ```
 
-**Query оптимизация (ВСЕГДА использовать LIMIT!)**:
+**Query optimization (ALWAYS use LIMIT!)**:
 
 ```python
 # graph_memory.py
@@ -3251,13 +3231,13 @@ async def get_context_for_entity(
     self,
     entity_name: str,
     depth: int = 2,
-    max_neighbors: int = 100  # КРИТИЧНО!
+    max_neighbors: int = 100  # CRITICAL!
 ) -> dict:
     """
-    Получить контекст вокруг сущности через обход графа
-    С ОГРАНИЧЕНИЕМ результатов для предотвращения взрыва памяти
+    Get the context around an entity via graph traversal
+    WITH A LIMIT on results to prevent memory explosion
     """
-    # FIX из HYPERIA: whitelist вместо numeric clamp — инъекция невозможна архитектурно.
+    # FIX from HYPERIA: whitelist instead of numeric clamp — injection is architecturally impossible.
     depth = depth if depth in (1, 2, 3) else 2
     query = f"""
     MATCH (e:Entity {{name: $entity_name}})
@@ -3276,7 +3256,7 @@ async def get_context_for_entity(
     return result
 ```
 
-**Архивация старых узлов**:
+**Archiving old nodes**:
 
 ```python
 # memory_archival.py
@@ -3296,10 +3276,10 @@ class MemoryArchival:
         importance_threshold: float = 0.3
     ):
         """
-        Архивировать эпизоды старше N дней с низкой важностью
-        Это критично для предотвращения бесконечного роста графа
+        Archive episodes older than N days with low importance
+        This is critical for preventing unbounded graph growth
         """
-        # 1. Найти кандидатов на архивацию
+        # 1. Find candidates for archiving
         query = """
         MATCH (ep:Episode)-[r]-(connected)
         WHERE ep.timestamp < datetime() - duration({days: $days})
@@ -3313,20 +3293,20 @@ class MemoryArchival:
             "threshold": importance_threshold
         })
         
-        # 2. Экспорт в S3
-        # Используем self._session из __init__ — не создаём новый Session() при каждом вызове (утечка соединений).
+        # 2. Export to S3
+        # We use self._session from __init__ — we do not create a new Session() on each call (connection leak).
         archived_count = 0
         async with self._session.client('s3') as s3:
           for episode_data in candidates:
             archive_key = f"archived_episodes/{episode_data['ep']['id']}.json"
             
-            await s3.put_object(  # теперь корректный await
+            await s3.put_object(  # now a correct await
                 Bucket=self.bucket,
                 Key=archive_key,
                 Body=json.dumps(episode_data)
             )
             
-            # Soft Delete: физическое удаление только через Vacuum Worker (GC)
+            # Soft Delete: physical deletion only via the Vacuum Worker (GC)
             await self.graph.execute_cypher("""
                 MATCH (ep:Episode {id: $id})
                 SET ep.is_active = false,
@@ -3343,21 +3323,21 @@ class MemoryArchival:
 
     async def vacuum_soft_deleted(self, min_age_days: int = 90):
         """
-        Vacuum Worker — физическое удаление после подтверждения S3.
-        Batched rate limiting — удаляет по 100 узлов за итерацию
-        с паузой 500ms между батчами. Не конкурирует с Fast Path.
+        Vacuum Worker — physical deletion after S3 confirmation.
+        Batched rate limiting — deletes 100 nodes per iteration
+        with a 500ms pause between batches. Does not compete with the Fast Path.
 
-        Протокол:
-        1. archived_to_s3 = true  (архивация подтверждена)
-        2. valid_to < now - 90 дней  (достаточно старый)
-        3. Только тогда — DETACH DELETE (батчами, не всё сразу)
+        Protocol:
+        1. archived_to_s3 = true  (archiving confirmed)
+        2. valid_to < now - 90 days  (old enough)
+        3. Only then — DETACH DELETE (in batches, not all at once)
 
-        Запускать: через MemoryGarbageCollector.run_full_gc() раз в неделю.
-        Не запускать на Fast Path — только Slow Path / фоновый GC.
+        Run: via MemoryGarbageCollector.run_full_gc() once a week.
+        Do not run on the Fast Path — only Slow Path / background GC.
         """
         total_deleted = 0
-        batch_size = 100          # лимит за одну итерацию
-        sleep_between = 0.5       # 500ms пауза — не блокируем Neo4j write lock
+        batch_size = 100          # limit per single iteration
+        sleep_between = 0.5       # 500ms pause — do not block the Neo4j write lock
 
         while True:
             deleted = await self.graph.execute_cypher("""
@@ -3374,29 +3354,29 @@ class MemoryArchival:
             total_deleted += count
 
             if count == 0:
-                break  # Нечего удалять — выходим
+                break  # Nothing to delete — exit
 
-            logger.info(f"Vacuum batch: удалено {count}, всего {total_deleted}")
-            await asyncio.sleep(sleep_between)  # Rate limiting — пауза между батчами
+            logger.info(f"Vacuum batch: deleted {count}, total {total_deleted}")
+            await asyncio.sleep(sleep_between)  # Rate limiting — pause between batches
 
-        logger.info(f"Vacuum завершён: физически удалено {total_deleted} узлов (age > {min_age_days}d)")
+        logger.info(f"Vacuum finished: physically deleted {total_deleted} nodes (age > {min_age_days}d)")
         return total_deleted
 
 
 class MemoryRestoreProtocol:
     """
-    5-шаговый протокол восстановления узла из S3 → Neo4j.
+    5-step protocol for restoring a node from S3 → Neo4j.
 
-    Нужен когда GC удалил что-то важное или пользователь запросил восстановление.
-    Отсутствовал в v5 — был только путь «туда» (архивация), но не «обратно».
+    Needed when GC deleted something important or the user requested a restore.
+    Was absent in v5 — there was only the "outbound" path (archiving), but not the "inbound" one.
 
-    Шаги:
-        1. Найти архив в S3 по node_id
-        2. MERGE узла обратно в Neo4j
+    Steps:
+        1. Find the archive in S3 by node_id
+        2. MERGE the node back into Neo4j
         3. SET is_active=true, clear valid_to
-        4. Stamp restored_at + restore_reason (аудит)
-        5. Re-enter ESM на Supported (не Validated — TruthGate нужен заново)
-           + проверить инварианты post-restore
+        4. Stamp restored_at + restore_reason (audit)
+        5. Re-enter ESM at Supported (not Validated — TruthGate is needed again)
+           + check invariants post-restore
 
     Usage:
         restore = MemoryRestoreProtocol(graph, s3_client, S3_BUCKET, esm, inv_checker)
@@ -3412,7 +3392,7 @@ class MemoryRestoreProtocol:
 
     async def restore(self, node_id: str, restore_reason: str,
                       requested_by: str = "system") -> dict:
-        """Возвращает {"success": bool, "node_id": ..., "reason": ..., "restored_at": ...}"""
+        """Returns {"success": bool, "node_id": ..., "reason": ..., "restored_at": ...}"""
         logger.info(f"MemoryRestoreProtocol: restore {node_id} ({restore_reason})")
 
         # 1. S3 lookup
@@ -3426,7 +3406,7 @@ class MemoryRestoreProtocol:
             logger.error(f"MemoryRestoreProtocol: S3 lookup failed: {e}")
             return {"success": False, "node_id": node_id, "reason": f"S3 failed: {e}"}
 
-        # 2. MERGE в Neo4j
+        # 2. MERGE into Neo4j
         try:
             props = {k: v for k, v in data.get("ep", {}).items()
                      if k not in ("is_active", "valid_to", "archived_to_s3")}
@@ -3438,7 +3418,7 @@ class MemoryRestoreProtocol:
             logger.error(f"MemoryRestoreProtocol: MERGE failed: {e}")
             return {"success": False, "node_id": node_id, "reason": f"MERGE failed: {e}"}
 
-        # 3+4. Активировать + аудит
+        # 3+4. Activate + audit
         now = datetime.now(timezone.utc).isoformat()
         await self.graph.execute_cypher(
             "MATCH (n {id: $id}) SET n.is_active = true, n.valid_to = null,"
@@ -3446,9 +3426,9 @@ class MemoryRestoreProtocol:
             {"id": node_id, "now": now, "r": restore_reason, "by": requested_by}
         )
 
-        # 5a. Re-enter ESM: стартуем с Hypothesized + evidence_count=2
-        #     ESM автоматически перейдёт в Supported (правило: Hypothesized→Supported при Evidence ≥ 2).
-        #     До Validated узел не поднимается — TruthGate нужен заново (не обходим).
+        # 5a. Re-enter ESM: start from Hypothesized + evidence_count=2
+        #     ESM will automatically transition to Supported (rule: Hypothesized→Supported when Evidence ≥ 2).
+        #     The node is not raised to Validated — TruthGate is needed again (we do not bypass it).
         try:
             await self.esm.transition(
                 node_id,
@@ -3459,7 +3439,7 @@ class MemoryRestoreProtocol:
         except Exception as e:
             logger.warning(f"MemoryRestoreProtocol: ESM transition soft-failed (non-fatal): {e}")
 
-        # 5b. Проверить инварианты post-restore
+        # 5b. Check invariants post-restore
         try:
             violations = await self.checker.check_all()
             criticals  = [v.invariant_id for v in violations if v.severity == "CRITICAL"]
@@ -3478,8 +3458,8 @@ class MemoryRestoreProtocol:
 # ============================================================================
 # HYPERIA COMPONENT 1: EmbeddingRegistry
 # ============================================================================
-# Назначение: Централизованный реестр размерностей embedding моделей
-# Предотвращает silent corruption индексов при смене модели
+# Purpose: Centralized registry of embedding model dimensions
+# Prevents silent corruption of indexes when the model changes
 
 # memory/embedding_registry.py
 import logging
@@ -3489,15 +3469,15 @@ logger = logging.getLogger(__name__)
 
 class EmbeddingRegistry:
     """
-    Централизованный реестр embedding моделей и их размерностей.
+    Centralized registry of embedding models and their dimensions.
 
-    Проблема: При смене модели с 1024 dim на 3072 dim Neo4j индексы
-    становятся несовместимыми, но ошибка проявляется только в runtime.
+    Problem: When changing the model from 1024 dim to 3072 dim, Neo4j indexes
+    become incompatible, but the error only manifests at runtime.
 
-    Решение: Валидация при старте + автоматическое обнаружение несоответствий.
+    Solution: Validation at startup + automatic detection of mismatches.
     """
 
-    # Известные модели и их размерности
+    # Known models and their dimensions
     KNOWN_MODELS: Dict[str, int] = {
         "paraphrase-multilingual-MiniLM-L12-v2": 384,
         "multilingual-e5-large": 1024,
@@ -3514,24 +3494,24 @@ class EmbeddingRegistry:
         logger.info(f"EmbeddingRegistry: {current_model} → {self.dimension}D")
 
     def _get_dimension(self, model_name: str) -> int:
-        """Получить размерность модели или вычислить автоматически"""
+        """Get the model dimension or compute it automatically"""
         if model_name in self.KNOWN_MODELS:
             return self.KNOWN_MODELS[model_name]
         
-        # Реальный вызов модели — не угадываем, не возвращаем 1024 молча
-        logger.warning(f"Модель {model_name} не в реестре. Пытаюсь определить реально...")
+        # Real model call — we do not guess, we do not silently return 1024
+        logger.warning(f"Model {model_name} is not in the registry. Attempting to determine it for real...")
         try:
             test_embedding = self._compute_test_embedding(model_name)
             actual_dim = len(test_embedding)
-            self.KNOWN_MODELS[model_name] = actual_dim  # кэшируем для следующих вызовов
+            self.KNOWN_MODELS[model_name] = actual_dim  # cache for subsequent calls
             logger.info(f"Auto-detected dimension for {model_name}: {actual_dim}D")
             return actual_dim
         except Exception as e:
-            # КРИТИЧНО: лучше упасть при старте чем тихо создать несовместимые индексы Neo4j
+            # CRITICAL: better to crash at startup than silently create incompatible Neo4j indexes
             logger.critical(
-                f"НЕВОЗМОЖНО определить размерность для {model_name}: {e}\n"
-                f"Добавьте модель в EmbeddingRegistry.KNOWN_MODELS вручную.\n"
-                f"Запуск без этого = silent corruption индексов Neo4j."
+                f"UNABLE to determine the dimension for {model_name}: {e}\n"
+                f"Add the model to EmbeddingRegistry.KNOWN_MODELS manually.\n"
+                f"Running without this = silent corruption of Neo4j indexes."
             )
             raise RuntimeError(
                 f"Unknown embedding model: {model_name}. "
@@ -3540,69 +3520,69 @@ class EmbeddingRegistry:
 
     def validate_index_dimension(self, index_dimension: int) -> bool:
         """
-        Проверить соответствие размерности индекса текущей модели.
-        Вызывается при старте GraphMemory.
+        Check that the index dimension matches the current model.
+        Called at GraphMemory startup.
         """
         if index_dimension != self.dimension:
             logger.error(
-                f"НЕСООТВЕТСТВИЕ РАЗМЕРНОСТЕЙ: "
-                f"индекс={index_dimension}D, модель={self.dimension}D. "
-                f"Требуется пересоздание индексов!"
+                f"DIMENSION MISMATCH: "
+                f"index={index_dimension}D, model={self.dimension}D. "
+                f"Index re-creation required!"
             )
             return False
         return True
 
     def get_dimension(self) -> int:
-        """Получить размерность текущей модели"""
+        """Get the dimension of the current model"""
         return self.dimension
 
-# Интеграция в GraphMemory:
-# В __init__:
+# Integration into GraphMemory:
+# In __init__:
 #   self.embedding_registry = EmbeddingRegistry(current_model=embedding_model_name)
-# При создании индекса:
+# When creating an index:
 #   dimension = self.embedding_registry.get_dimension()
-# При старте:
+# At startup:
 #   if not self.embedding_registry.validate_index_dimension(existing_index_dim):
 #       raise RuntimeError("Index dimension mismatch")
 
 ---
 
-## 🧬 Интегрированные компоненты (из HYPERIA v5.20)
+## 🧬 Integrated Components (from HYPERIA v5.20)
 
-> Компоненты интегрированы в Velantrim без изменения архитектуры.
-> Каждый компонент — отдельный файл. Подключаются через существующие точки.
+> Components are integrated into Velantrim without changing the architecture.
+> Each component is a separate file. They connect through existing points.
 
 ---
 
 ### HYPERIA-1: DAAD — Domain-Aware Attention & Decay
 
-> **Проблема**: DAAD domain-aware λ_eff в FSRS decay для всех узлов.
-> «Активный проект с дедлайном» и «вчера была хорошая погода» затухают одинаково.
-> **Решение**: `λ_eff = Σ(dᵢ × λᵢ)` — взвешенная сумма по доменам узла.
+> **Problem**: DAAD domain-aware λ_eff in FSRS decay for all nodes.
+> "An active project with a deadline" and "the weather was nice yesterday" decay identically.
+> **Solution**: `λ_eff = Σ(dᵢ × λᵢ)` — a weighted sum over the node's domains.
 
-#### Инвариант I66 (новый)
+#### Invariant I66 (new)
 ```
-I66: DAAD меняет ТОЛЬКО attention_weight и λ_eff.
-     truth_status, epistemic_state, epistemic_score — неприкосновенны.
-     domain_vector=NULL → fallback λ=0.05, не ошибка.
-     Нарушение = прямая запись в ESM из DomainResolver = баг.
+I66: DAAD changes ONLY attention_weight and λ_eff.
+     truth_status, epistemic_state, epistemic_score — inviolable.
+     domain_vector=NULL → fallback λ=0.05, not an error.
+     Violation = direct write to ESM from DomainResolver = bug.
 ```
 
-#### Таблица доменов
-| Домен | λ (затухание) | floor (минимум) | Смысл |
+#### Domain table
+| Domain | λ (decay) | floor (minimum) | Meaning |
 |---|---|---|---|
-| `active_project` | 0.001 | 0.85 | Живёт годами |
-| `personal_pref` | 0.004 | 0.60 | Медленно меняется |
-| `domain_knowledge` | 0.006 | 0.50 | Стабильные знания |
-| `completed_project` | 0.008 | 0.40 | Менее актуален |
-| `casual_chat` | 0.150 | 0.00 | Забывается за дни |
-| `general_question` | 0.200 | 0.00 | Быстро устаревает |
+| `active_project` | 0.001 | 0.85 | Lives for years |
+| `personal_pref` | 0.004 | 0.60 | Changes slowly |
+| `domain_knowledge` | 0.006 | 0.50 | Stable knowledge |
+| `completed_project` | 0.008 | 0.40 | Less relevant |
+| `casual_chat` | 0.150 | 0.00 | Forgotten within days |
+| `general_question` | 0.200 | 0.00 | Quickly becomes outdated |
 
 ```python
 # memory/domain_resolver.py
 # HYPERIA DAAD — Domain-Aware Attention & Decay
-# I66: меняет только attention_weight. ESM/truth_status — не трогает.
-# Slow Path, 0 токенов LLM.
+# I66: changes only attention_weight. ESM/truth_status — does not touch.
+# Slow Path, 0 LLM tokens.
 
 import logging
 from dataclasses import dataclass
@@ -3625,26 +3605,26 @@ FALLBACK_FLOOR  = 0.00
 
 @dataclass
 class DecayParams:
-    lambda_eff: float  # эффективная скорость затухания
-    floor_eff:  float  # минимальный уровень importance (не падает ниже)
+    lambda_eff: float  # effective decay rate
+    floor_eff:  float  # minimum importance level (does not fall below it)
 
 
 class DomainResolver:
     """
-    Вычисляет λ_eff и floor_eff для узла по его domain_vector.
-    domain_vector — нормализованное распределение по доменам (сумма = 1.0).
-    Пример: {"active_project": 0.7, "domain_knowledge": 0.3}
-    λ_eff = Σ(dᵢ × λᵢ)  — взвешенная сумма скоростей затухания
-    floor_eff = max(dᵢ × floorᵢ)  — максимальный гарантированный минимум
+    Computes λ_eff and floor_eff for a node from its domain_vector.
+    domain_vector — a normalized distribution over domains (sum = 1.0).
+    Example: {"active_project": 0.7, "domain_knowledge": 0.3}
+    λ_eff = Σ(dᵢ × λᵢ)  — a weighted sum of decay rates
+    floor_eff = max(dᵢ × floorᵢ)  — the maximum guaranteed minimum
 
-    Интеграция: вызывается из FSRSDecayWorker вместо фиксированного λ. (v8.0: заменяет EbbinghausDecayWorker)
+    Integration: called from FSRSDecayWorker instead of a fixed λ. (v8.0: replaces EbbinghausDecayWorker)
     """
 
     @staticmethod
     def resolve(domain_vector: Optional[Dict[str, float]]) -> DecayParams:
         """
-        Вычислить параметры затухания по domain_vector узла.
-        domain_vector=None или пустой → fallback (I66).
+        Compute the decay parameters from the node's domain_vector.
+        domain_vector=None or empty → fallback (I66).
         """
         if not domain_vector:
             logger.debug("DomainResolver: domain_vector=None → fallback λ=0.05")
@@ -3657,7 +3637,7 @@ class DomainResolver:
         if total_weight <= 0:
             return DecayParams(lambda_eff=FALLBACK_LAMBDA, floor_eff=FALLBACK_FLOOR)
 
-        # Нормализация на случай если веса не суммируются в 1.0
+        # Normalization in case the weights do not sum to 1.0
         for domain, weight in domain_vector.items():
             norm_weight = weight / total_weight
             cfg = DOMAIN_CONFIG.get(domain)
@@ -3667,62 +3647,62 @@ class DomainResolver:
             lambda_eff += norm_weight * cfg["lambda"]
             floor_eff   = max(floor_eff, norm_weight * cfg["floor"])
 
-        # Если все домены неизвестные — fallback
+        # If all domains are unknown — fallback
         if lambda_eff == 0.0:
             return DecayParams(lambda_eff=FALLBACK_LAMBDA, floor_eff=FALLBACK_FLOOR)
 
         return DecayParams(lambda_eff=lambda_eff, floor_eff=floor_eff)
 ```
 
-**Интеграция в FSRSDecayWorker** (v8.0: заменяет EbbinghausDecayWorker):
+**Integration into FSRSDecayWorker** (v8.0: replaces EbbinghausDecayWorker):
 ```python
-# В FSRSDecayWorker — DAAD domain-aware λ_eff:
+# In FSRSDecayWorker — DAAD domain-aware λ_eff:
 from memory.domain_resolver import DomainResolver
 
-# Было:
+# Before:
 # new_importance = current_importance * exp(-t / S)
 
-# Стало:
-domain_vector = node.get("domain_vector")  # из Neo4j :Entity.domain_vector
+# After:
+domain_vector = node.get("domain_vector")  # from Neo4j :Entity.domain_vector
 params = DomainResolver.resolve(domain_vector)
-# P9-FIX БАГ-11: FSRS power-law (P0-1 заменил Ebbinghaus везде, DAAD пример не обновился)
-# λ_eff используется вместо глобального λ через domain-aware stability
+# P9-FIX BUG-11: FSRS power-law (P0-1 replaced Ebbinghaus everywhere, the DAAD example was not updated)
+# λ_eff is used instead of the global λ via domain-aware stability
 S_eff = S / max(0.01, params.lambda_eff)              # domain-aware stability
 R = (1 + (19/81) * t / max(0.01, S_eff)) ** (-0.5)   # FSRS power-law R
 new_importance = max(params.floor_eff, current_importance * R)
-# floor_eff гарантирует что важный узел никогда не упадёт ниже порога
+# floor_eff guarantees that an important node never falls below the threshold
 ```
 
-**Добавить в Neo4j схему** (`:Entity`):
+**Add to the Neo4j schema** (`:Entity`):
 ```cypher
-// domain_vector: JSON-распределение по доменам, обновляется TagManager-ом
-// Пример: '{"active_project": 0.7, "domain_knowledge": 0.3}'
+// domain_vector: a JSON distribution over domains, updated by the TagManager
+// Example: '{"active_project": 0.7, "domain_knowledge": 0.3}'
 (:Entity { ..., domain_vector: STRING })  // JSON, NULL = fallback λ=0.05
 ```
 
-**Метрики**:
+**Metrics**:
 ```python
-daad_resolved_total     # счётчик узлов с domain-aware decay
-daad_fallback_total     # счётчик fallback (domain_vector=NULL)
-daad_floor_protected    # сколько раз floor предотвратил падение ниже минимума
+daad_resolved_total     # counter of nodes with domain-aware decay
+daad_fallback_total     # counter of fallbacks (domain_vector=NULL)
+daad_floor_protected    # how many times the floor prevented a drop below the minimum
 ```
 
 ---
 
-### HYPERIA-2: Guardian — Валидатор ответа
+### HYPERIA-2: Guardian — Response Validator
 
-> **Источник**: HYPERIA `core/guardian.py`
-> **Назначение**: Последний рубеж **после LLM** перед отправкой пользователю.
-> Velantrim имеет Truth Gate (до L3) и Observer++ (безопасность),
-> но нет проверки **качества ответа** после генерации.
-> **Место**: Fast Path, после LLM Generation, перед Response.
-> **Инвариант**: Guardian.validate() — синхронный, 0 токенов, <1 мс.
+> **Source**: HYPERIA `core/guardian.py`
+> **Purpose**: The last line of defense **after the LLM** before sending to the user.
+> Velantrim has a Truth Gate (before L3) and Observer++ (security),
+> but it lacks a check of the **response quality** after generation.
+> **Location**: Fast Path, after LLM Generation, before Response.
+> **Invariant**: Guardian.validate() — synchronous, 0 tokens, <1 ms.
 
 ```python
 # core/guardian.py
-# Guardian — последний рубеж перед ответом пользователю.
-# Место: Fast Path после LLM, перед return.
-# 0 токенов · <1 мс · синхронный.
+# Guardian — the last line of defense before the user's response.
+# Location: Fast Path after the LLM, before return.
+# 0 tokens · <1 ms · synchronous.
 
 from dataclasses import dataclass
 from typing import List, Optional
@@ -3738,7 +3718,7 @@ MIN_TRACE_LENGTH     = 1
 class GuardianDecision(str, Enum):
     APPROVE = "approve"
     REJECT  = "reject"
-    WARN    = "warn"    # ответ отдаётся, но с предупреждением
+    WARN    = "warn"    # the response is returned, but with a warning
 
 
 @dataclass
@@ -3746,15 +3726,15 @@ class GuardianResult:
     decision:   GuardianDecision
     reason:     str
     confidence: float
-    response:   Optional[str] = None  # финальный текст для пользователя
+    response:   Optional[str] = None  # the final text for the user
 
 
 class Guardian:
     """
-    Валидатор ответа агента.
-    REJECT  — при confidence < 0.6, пустом trace или только deprecated источниках.
-    WARN    — при majority hypothesis-источников.
-    APPROVE — все проверки пройдены.
+    Validator of the agent's response.
+    REJECT  — when confidence < 0.6, an empty trace, or only deprecated sources.
+    WARN    — when a majority of sources are hypotheses.
+    APPROVE — all checks passed.
     """
 
     def validate(
@@ -3773,7 +3753,7 @@ class Guardian:
                 pass
             return res
 
-        # Проверка 1: уверенность
+        # Check 1: confidence
         if confidence < CONFIDENCE_THRESHOLD:
             logger.info(f"Guardian: REJECT — low confidence ({confidence:.2f})")
             return _emit(GuardianResult(
@@ -3781,12 +3761,12 @@ class Guardian:
                 reason=f"confidence too low ({confidence:.2f})",
                 confidence=confidence,
                 response=(
-                    "Я не уверен в достаточной мере чтобы дать точный ответ. "
-                    "Могу поискать больше информации или уточнить детали."
+                    "I am not confident enough to give a precise answer. "
+                    "I can search for more information or clarify the details."
                 )
             ))
 
-        # Проверка 2: наличие обоснования (TRACE)
+        # Check 2: presence of a justification (TRACE)
         if not trace or len(trace) < MIN_TRACE_LENGTH:
             logger.info("Guardian: REJECT — empty trace")
             return _emit(GuardianResult(
@@ -3794,12 +3774,12 @@ class Guardian:
                 reason="no reasoning trace",
                 confidence=confidence,
                 response=(
-                    "У меня нет достаточно подтверждённых данных по этому вопросу. "
-                    "Расскажи подробнее — это поможет найти нужную информацию."
+                    "I do not have enough confirmed data on this question. "
+                    "Tell me more — that will help find the right information."
                 )
             ))
 
-        # Проверка 3: все источники deprecated?
+        # Check 3: are all sources deprecated?
         if sources:
             non_deprecated = [
                 s for s in sources
@@ -3812,12 +3792,12 @@ class Guardian:
                     reason="all memory sources are deprecated",
                     confidence=confidence,
                     response=(
-                        "Информация по этой теме в моей памяти устарела. "
-                        "Уточни актуальные данные — обновлю."
+                        "The information on this topic in my memory is outdated. "
+                        "Provide the current data — I will update it."
                     )
                 ))
 
-            # Предупреждение: majority hypothesis
+            # Warning: majority hypothesis
             hypothesis_count = sum(
                 1 for s in sources
                 if s.get("epistemic_state") in ("Hypothesized", "Observed")
@@ -3828,7 +3808,7 @@ class Guardian:
                     decision=GuardianDecision.WARN,
                     reason=f"{hypothesis_count}/{len(sources)} sources unconfirmed",
                     confidence=confidence,
-                    response=f"[Частично предположение] {response}"
+                    response=f"[Partly a hypothesis] {response}"
                 ))
 
         return _emit(GuardianResult(
@@ -3839,35 +3819,35 @@ class Guardian:
         ))
 ```
 
-**Интеграция** — добавить в конец Fast Path после LLM:
+**Integration** — add to the end of the Fast Path after the LLM:
 ```python
-# В agent.py / chat() — после LLM Generation, перед return response:
+# In agent.py / chat() — after LLM Generation, before return response:
 from core.guardian import Guardian, GuardianDecision
 
 guardian = Guardian()
 guard_result = guardian.validate(
     response=llm_response,
-    confidence=response_confidence,   # из ответа LLM или из ESM
-    trace=fact_trace,                 # list[fact_id] использованных фактов
-    sources=retrieved_facts,          # факты из L3 с epistemic_state
+    confidence=response_confidence,   # from the LLM response or from ESM
+    trace=fact_trace,                 # list[fact_id] of the facts used
+    sources=retrieved_facts,          # facts from L3 with epistemic_state
 )
 if guard_result.decision == GuardianDecision.REJECT:
     logger.warning(f"Guardian REJECT: {guard_result.reason}")
-return guard_result.response  # APPROVE→оригинал, WARN→с пометкой, REJECT→fallback
+return guard_result.response  # APPROVE→original, WARN→with a note, REJECT→fallback
 ```
 
-**Метрики**:
+**Metrics**:
 ```python
 guardian_decisions_total   # labels: approve/reject/warn
-guardian_confidence_dist   # histogram распределения confidence
+guardian_confidence_dist   # histogram of the confidence distribution
 ```
 
-### P0-2: Quality Gate (D-Mem style) — добавить в core/guardian.py
+### P0-2: Quality Gate (D-Mem style) — add to core/guardian.py
 
 ```python
-# P0-2: D-Mem Quality Gating — метод класса Guardian
-# I85: Quality Gate выполняется ПОСЛЕ LLM-генерации, ДО отправки ответа.
-#      Не изменяет facts_pack — только маршрутизирует.
+# P0-2: D-Mem Quality Gating — a method of the Guardian class
+# I85: Quality Gate runs AFTER LLM generation, BEFORE sending the response.
+#      Does not modify facts_pack — only routes.
 from dataclasses import dataclass
 
 @dataclass
@@ -3878,9 +3858,9 @@ class QualityGateResult:
     has_contradictions: bool
     reason: str
 
-# Добавить как метод класса Guardian (в core/guardian.py):
+# Add as a method of the Guardian class (in core/guardian.py):
 # class Guardian:
-#     ...существующие методы...
+#     ...existing methods...
 #
     def quality_gate(
         self,
@@ -3890,8 +3870,8 @@ class QualityGateResult:
     ) -> QualityGateResult:
         """
         D-Mem style quality gating.
-        Решает: достаточен ли Fast Path или нужен дорогой Slow Path.
-        Экономия: ~60% токенов без потери качества (D-Mem: 96.7% от full deliberation).
+        Decides: is the Fast Path sufficient, or is the expensive Slow Path needed.
+        Savings: ~60% of tokens without loss of quality (D-Mem: 96.7% of full deliberation).
         """
         confidence = self._estimate_confidence(response_draft, facts_pack)
         coverage = self._estimate_coverage(response_draft, facts_pack)
@@ -3924,7 +3904,7 @@ class QualityGateResult:
         return "Contradicted" in states
 ```
 
-Конфиг (velantrim_config.py):
+Config (velantrim_config.py):
 ```python
 QUALITY_GATING_ENABLED = True
 QUALITY_GATE_CONFIDENCE_THRESHOLD = 0.7
@@ -3932,28 +3912,28 @@ QUALITY_GATE_COVERAGE_THRESHOLD = 0.6
 ```
 
 ```
-I85 (QualityGate): Quality Gate выполняется ПОСЛЕ LLM-генерации, ДО отправки ответа.
-    Если use_slow_path=True, ответ НЕ отправляется пользователю до завершения Slow Path.
-    Quality Gate не изменяет facts_pack — только маршрутизирует.
+I85 (QualityGate): Quality Gate runs AFTER LLM generation, BEFORE sending the response.
+    If use_slow_path=True, the response is NOT sent to the user until the Slow Path completes.
+    Quality Gate does not modify facts_pack — only routes.
 ```
 
 ---
 
 ### HYPERIA-3: ACT-R Activation (feature-flag)
 
-> **Источник**: HYPERIA `fractal_memory.py` — `B = ln(Σ tᵢ^(-0.5))`
-> **Назначение**: Удержание воспоминаний по **истории обращений**, а не только по recency.
-> Узел к которому обращались 10 раз затухает медленнее чем узел с одним обращением.
-> **Флаг**: `ACT_R_ENABLED = True` в `velantrim_config.py` — включается опционально.
+> **Source**: HYPERIA `fractal_memory.py` — `B = ln(Σ tᵢ^(-0.5))`
+> **Purpose**: Retaining memories by **access history**, not by recency alone.
+> A node accessed 10 times decays slower than a node with a single access.
+> **Flag**: `ACT_R_ENABLED = True` in `velantrim_config.py` — enabled optionally.
 
 ```python
 # memory/actr_activation.py
-# ACT-R Activation — Anderson (1983): базовый уровень активации по истории обращений.
+# ACT-R Activation — Anderson (1983): base activation level from the access history.
 # B = ln(Σ tᵢ^(-0.5))
-# tᵢ — время в секундах от i-го обращения до сейчас
-# Чем больше обращений и чем они свежее — тем выше B.
-# Интеграция: ReactivationEngine + HybridRetriever (бонус к score).
-# Включение: ACT_R_ENABLED = True в velantrim_config.py
+# tᵢ — the time in seconds from the i-th access until now
+# The more accesses and the more recent they are — the higher B.
+# Integration: ReactivationEngine + HybridRetriever (a bonus to score).
+# Enabling: ACT_R_ENABLED = True in velantrim_config.py
 
 import math
 import logging
@@ -3966,20 +3946,20 @@ logger = logging.getLogger(__name__)
 def compute_actr_activation(
     access_times: List[datetime],
     now: datetime = None,
-    decay_exponent: float = 0.5,  # стандартный параметр ACT-R
+    decay_exponent: float = 0.5,  # standard ACT-R parameter
 ) -> float:
     """
-    Вычислить базовый уровень активации по Anderson ACT-R.
+    Compute the base activation level per Anderson ACT-R.
     B = ln(Σ tᵢ^(-decay_exponent))
 
     Args:
-        access_times: список datetime когда узел был активирован
-        now:          текущее время (UTC). None = datetime.now(timezone.utc)
-        decay_exponent: стандарт ACT-R = 0.5
+        access_times: a list of datetimes when the node was activated
+        now:          the current time (UTC). None = datetime.now(timezone.utc)
+        decay_exponent: ACT-R standard = 0.5
 
     Returns:
-        float: уровень активации (чем выше — тем важнее)
-        0.0 если access_times пуст
+        float: the activation level (the higher — the more important)
+        0.0 if access_times is empty
     """
     if not access_times:
         return 0.0
@@ -3992,7 +3972,7 @@ def compute_actr_activation(
             t = t.replace(tzinfo=timezone.utc)
         delta_sec = (now - t).total_seconds()
         if delta_sec <= 0:
-            delta_sec = 0.001  # защита от деления на ноль при одновременном доступе
+            delta_sec = 0.001  # protection against division by zero on simultaneous access
         total += delta_sec ** (-decay_exponent)
 
     if total <= 0:
@@ -4003,75 +3983,75 @@ def compute_actr_activation(
 def actr_score_boost(base_score: float, activation: float,
                      weight: float = 0.15) -> float:
     """
-    Добавить ACT-R бонус к retrieval score.
-    weight=0.15 — мягкое влияние, не доминирует над семантикой.
+    Add an ACT-R bonus to the retrieval score.
+    weight=0.15 — a soft influence, does not dominate over semantics.
     """
     return base_score + weight * max(0.0, activation)
 ```
 
-**Интеграция** (2 точки):
+**Integration** (2 points):
 ```python
-# 1. В HybridRetriever.retrieve() — бонус к score кандидата:
+# 1. In HybridRetriever.retrieve() — a bonus to the candidate's score:
 if ACT_R_ENABLED and node.get("access_history"):
     activation = compute_actr_activation(node["access_history"])
     candidate.score = actr_score_boost(candidate.score, activation)
 
-# 2. В ReactivationEngine — приоритизация узлов для укрепления:
+# 2. In ReactivationEngine — prioritization of nodes for strengthening:
 if ACT_R_ENABLED:
     activation = compute_actr_activation(node.access_times)
     priority = base_priority * (1.0 + 0.2 * max(0.0, activation))
 ```
 
-**Добавить в `velantrim_config.py`**:
+**Add to `velantrim_config.py`**:
 ```python
 ACT_R_ENABLED         = True   # feature-flag: ACT-R activation bonus
-ACT_R_DECAY_EXPONENT  = 0.5    # стандартный параметр ACT-R (Anderson 1983)
-ACT_R_RETRIEVAL_WEIGHT = 0.15  # вес бонуса в HybridRetriever
+ACT_R_DECAY_EXPONENT  = 0.5    # standard ACT-R parameter (Anderson 1983)
+ACT_R_RETRIEVAL_WEIGHT = 0.15  # weight of the bonus in HybridRetriever
 ```
 
 ---
 
 ### HYPERIA-4: Laplace Confidence
 
-> **Источник**: HYPERIA `core/truth_layer.py`
-> **Проблема**: Новые факты с 0 evidence имеют `confidence = 0/(0+0) = NaN` или 0.0
-> → TruthGate блокирует их навсегда. Система не обучается на новом.
-> **Решение**: Laplace smoothing `(pos+1)/(total+2)` — новый факт стартует с 0.5, не с 0.
+> **Source**: HYPERIA `core/truth_layer.py`
+> **Problem**: New facts with 0 evidence have `confidence = 0/(0+0) = NaN` or 0.0
+> → TruthGate blocks them forever. The system does not learn from anything new.
+> **Solution**: Laplace smoothing `(pos+1)/(total+2)` — a new fact starts at 0.5, not 0.
 
 ```python
-# В truth_gate.py — заменить raw ratio на Laplace:
+# In truth_gate.py — replace the raw ratio with Laplace:
 
 def laplace_confidence(positive_evidence: int, total_evidence: int) -> float:
     """
-    Laplace smoothing для confidence новых фактов.
+    Laplace smoothing for the confidence of new facts.
     (pos+1) / (total+2)
-    · новый факт (0/0) → 0.5 (нейтральный, не заблокирован)
-    · 1 подтверждение из 1 → 0.67 (осторожный оптимизм)
-    · 9 из 10 → 0.917 (высокая уверенность)
-    · Устраняет деление на ноль без искусственного clamp.
+    · a new fact (0/0) → 0.5 (neutral, not blocked)
+    · 1 confirmation out of 1 → 0.67 (cautious optimism)
+    · 9 out of 10 → 0.917 (high confidence)
+    · Eliminates division by zero without an artificial clamp.
     """
     return (positive_evidence + 1) / (total_evidence + 2)
 
-# Применять при вычислении confidence в TruthGate.validate_and_transition():
-# Было: confidence = evidence_count / max(1, total_checks)
-# Стало: confidence = laplace_confidence(evidence_count, total_checks)
+# Apply when computing confidence in TruthGate.validate_and_transition():
+# Before: confidence = evidence_count / max(1, total_checks)
+# After: confidence = laplace_confidence(evidence_count, total_checks)
 ```
 
 ---
 
-### HYPERIA-5: CognitiveModes — Маршрутизатор глубины retrieval
+### HYPERIA-5: CognitiveModes — Retrieval Depth Router
 
-> **Источник**: HYPERIA `core/cognitive_modes.py`
-> **Назначение**: Маршрутизирует глубину retrieval по типу запроса перед ContextBuilder.
-> PRECISION — максимальная точность (сложные factual задачи).
-> BALANCED — компромисс (стандарт).
-> EXPLORATION — широкое покрытие (творческие/исследовательские запросы).
+> **Source**: HYPERIA `core/cognitive_modes.py`
+> **Purpose**: Routes retrieval depth by query type before ContextBuilder.
+> PRECISION — maximum precision (complex factual tasks).
+> BALANCED — a compromise (the default).
+> EXPLORATION — broad coverage (creative/research queries).
 
 ```python
 # core/cognitive_modes.py
-# CognitiveModes — маршрутизатор глубины retrieval.
-# Место: Fast Path, перед ContextBuilder / HybridRetriever.
-# 0 токенов · ~0 мс.
+# CognitiveModes — a retrieval depth router.
+# Location: Fast Path, before ContextBuilder / HybridRetriever.
+# 0 tokens · ~0 ms.
 
 from dataclasses import dataclass
 from enum import Enum
@@ -4082,23 +4062,23 @@ logger = logging.getLogger(__name__)
 
 
 class CognitiveMode(str, Enum):
-    # P9-FIX БАГ-7: DEPRECATED — используй canonical CognitiveMode из cognitive_modes.py (строки 10002+)
-    # Этот блок содержит только 3 режима (без CREATIVE). Конфликт импортов при одновременном существовании.
-    # Оставлен ТОЛЬКО для RetrievalConfig ниже. CognitiveMode отсюда НЕ импортировать.
-    PRECISION   = "precision"    # точность > покрытие: factual, технические
-    BALANCED    = "balanced"     # стандарт: большинство запросов
-    EXPLORATION = "exploration"  # покрытие > точность: creative, research
-    # CREATIVE отсутствует — см. RFC0067 v2.0 canonical definition
+    # P9-FIX BUG-7: DEPRECATED — use the canonical CognitiveMode from cognitive_modes.py (lines 10002+)
+    # This block contains only 3 modes (without CREATIVE). Import conflict when both exist simultaneously.
+    # Kept ONLY for the RetrievalConfig below. Do NOT import CognitiveMode from here.
+    PRECISION   = "precision"    # precision > coverage: factual, technical
+    BALANCED    = "balanced"     # standard: most queries
+    EXPLORATION = "exploration"  # coverage > precision: creative, research
+    # CREATIVE is absent — see the RFC0067 v2.0 canonical definition
 
 
 @dataclass
 class RetrievalConfig:
     mode:             CognitiveMode
-    max_facts:        int    # сколько фактов из L3 в FactsPack
-    graph_depth:      int    # глубина traversal в Hot Graph
-    sae_threshold:    float  # порог SAE spreading activation
-    use_analogy:      bool   # использовать Analogy Graph (RFC0067)
-    temperature_hint: float  # подсказка для Adaptive Decoder
+    max_facts:        int    # how many facts from L3 in the FactsPack
+    graph_depth:      int    # traversal depth in the Hot Graph
+    sae_threshold:    float  # SAE spreading activation threshold
+    use_analogy:      bool   # whether to use the Analogy Graph (RFC0067)
+    temperature_hint: float  # hint for the Adaptive Decoder
 
 
 MODE_CONFIGS = {
@@ -4119,21 +4099,21 @@ MODE_CONFIGS = {
     ),
 }
 
-# Ключевые слова для автодетекта режима
-_PRECISION_SIGNALS   = {"точно", "конкретно", "факт", "дата", "число", "exactly", "precise", "fact"}
-_EXPLORATION_SIGNALS = {"придумай", "представь", "аналогия", "творчески", "explore", "imagine", "creative", "analogy"}
+# Keywords for auto-detecting the mode
+_PRECISION_SIGNALS   = {"exactly", "specifically", "fact", "date", "number", "precise"}
+_EXPLORATION_SIGNALS = {"invent", "imagine", "analogy", "creatively", "explore", "creative"}
 
 
 class CognitiveModeRouter:
     """
-    Определяет режим retrieval по запросу пользователя.
-    Вызывается в начале Fast Path — до HybridRetriever.
+    Determines the retrieval mode from the user's query.
+    Called at the start of the Fast Path — before HybridRetriever.
     """
 
     def route(self, query: str, override: Optional[CognitiveMode] = None) -> RetrievalConfig:
         """
-        Определить RetrievalConfig для запроса.
-        override — явный режим (например, из user settings или meta-команды).
+        Determine the RetrievalConfig for a query.
+        override — an explicit mode (e.g., from user settings or a meta-command).
         """
         if override:
             logger.debug(f"CognitiveModeRouter: override={override.value}")
@@ -4153,17 +4133,17 @@ class CognitiveModeRouter:
         return MODE_CONFIGS[mode]
 ```
 
-**Интеграция** — добавить в начало Fast Path:
+**Integration** — add at the start of the Fast Path:
 ```python
-# В agent.chat() — перед HybridRetrieval:
+# In agent.chat() — before HybridRetrieval:
 from core.cognitive_modes import CognitiveModeRouter
 
 router    = CognitiveModeRouter()
 ret_cfg   = router.route(user_query)
-# Передать ret_cfg в HybridRetriever и ContextBuilder:
+# Pass ret_cfg to HybridRetriever and ContextBuilder:
 facts     = await retriever.retrieve(query, max_facts=ret_cfg.max_facts,
                                      depth=ret_cfg.graph_depth)
-# Для CREATIVE режима RFC0067:
+# For the CREATIVE mode of RFC0067:
 if ret_cfg.use_analogy:
     analogies = await analogy_graph.get_bridges(query)
 ```
@@ -4172,17 +4152,17 @@ if ret_cfg.use_analogy:
 
 ### HYPERIA-6: OutputFaithfulnessChecker F6.5
 
-> **Источник**: HYPERIA `core/output_faithfulness_checker.py`
-> **Назначение**: Проверяет ПОСЛЕ генерации — соответствует ли ответ LLM фактам из L3.
-> Запускается в **Slow Path** (fire-and-forget через EventBus).
-> Результат пишется в ResponseAudit (RFC0052) как `faithfulness_score`.
-> **Инвариант**: F6.5 никогда не блокирует Fast Path. Только Slow Path.
+> **Source**: HYPERIA `core/output_faithfulness_checker.py`
+> **Purpose**: Checks AFTER generation whether the LLM's response matches the facts from L3.
+> Runs in the **Slow Path** (fire-and-forget via EventBus).
+> The result is written to ResponseAudit (RFC0052) as `faithfulness_score`.
+> **Invariant**: F6.5 never blocks the Fast Path. Slow Path only.
 
 ```python
 # core/output_faithfulness_checker.py
-# OutputFaithfulnessChecker F6.5 — пост-генерационная проверка фактов.
-# Slow Path только. Результат → ResponseAudit.faithfulness_score.
-# 0 токенов если use_llm=False (extractive mode).
+# OutputFaithfulnessChecker F6.5 — post-generation fact checking.
+# Slow Path only. Result → ResponseAudit.faithfulness_score.
+# 0 tokens if use_llm=False (extractive mode).
 
 import logging
 from dataclasses import dataclass
@@ -4194,33 +4174,33 @@ logger = logging.getLogger(__name__)
 @dataclass
 class FaithfulnessResult:
     score:            float          # 0.0–1.0
-    grounded_claims:  int            # сколько утверждений подтверждено фактами
-    total_claims:     int            # всего утверждений в ответе
-    unsupported:      List[str]      # утверждения без поддержки в графе
+    grounded_claims:  int            # how many claims are supported by facts
+    total_claims:     int            # total claims in the response
+    unsupported:      List[str]      # claims without support in the graph
     mode:             str            # "extractive" | "llm"
 
 
 class OutputFaithfulnessChecker:
     """
-    Проверяет соответствие ответа LLM фактам из L3 графа.
-    Extractive mode (default): TF-IDF overlap — 0 токенов.
-    LLM mode: только если importance_score > 0.85 (через ResponseAuditWorker).
+    Checks whether the LLM response matches the facts from the L3 graph.
+    Extractive mode (default): TF-IDF overlap — 0 tokens.
+    LLM mode: only if importance_score > 0.85 (via ResponseAuditWorker).
 
-    Интеграция:
-      Slow Path → AuditWorker слушает RESPONSE_GENERATED event →
-      вызывает check() → пишет faithfulness_score в :DialogueSummary.
+    Integration:
+      Slow Path → AuditWorker listens for the RESPONSE_GENERATED event →
+      calls check() → writes faithfulness_score into :DialogueSummary.
     """
 
     async def check(
         self,
         response:      str,
-        source_facts:  List[dict],     # факты из L3 использованные при генерации
+        source_facts:  List[dict],     # facts from L3 used during generation
         use_llm:       bool = False,
         llm_client     = None,
     ) -> FaithfulnessResult:
         """
-        Проверить faithfulness ответа против source_facts.
-        source_facts: список {"content": str, "epistemic_state": str}
+        Check the faithfulness of the response against source_facts.
+        source_facts: a list of {"content": str, "epistemic_state": str}
         """
         if not source_facts:
             return FaithfulnessResult(
@@ -4236,8 +4216,8 @@ class OutputFaithfulnessChecker:
         self, response: str, source_facts: List[dict]
     ) -> FaithfulnessResult:
         """
-        TF-IDF overlap между ответом и source_facts.
-        Быстро, 0 токенов, CPU only.
+        TF-IDF overlap between the response and source_facts.
+        Fast, 0 tokens, CPU only.
         """
         import re
 
@@ -4255,18 +4235,18 @@ class OutputFaithfulnessChecker:
             claim_tokens = _tokenize(claim)
             if not claim_tokens:
                 continue
-            # Проверяем overlap с хотя бы одним source_fact
+            # Check overlap with at least one source_fact
             matched = False
             for fact in source_facts:
                 fact_tokens = _tokenize(fact.get("content", ""))
                 overlap = len(claim_tokens & fact_tokens) / max(1, len(claim_tokens))
-                if overlap > 0.3:  # 30% токенов совпадают — считаем обоснованным
+                if overlap > 0.3:  # 30% of tokens match — considered grounded
                     matched = True
                     break
             if matched:
                 grounded += 1
             else:
-                unsupported.append(claim[:100])  # сохраняем первые 100 символов
+                unsupported.append(claim[:100])  # keep the first 100 characters
 
         total = max(1, len([c for c in claims if c.strip()]))
         score = grounded / total
@@ -4282,7 +4262,7 @@ class OutputFaithfulnessChecker:
     async def _llm_check(
         self, response: str, source_facts: List[dict], llm_client
     ) -> FaithfulnessResult:
-        """LLM-based проверка — только для critical responses (importance > 0.85)."""
+        """LLM-based check — only for critical responses (importance > 0.85)."""
         facts_text = "\n".join(
             f"- {f.get('content', '')[:200]}" for f in source_facts[:10]
         )
@@ -4306,9 +4286,9 @@ Return only JSON: {{"score": float, "unsupported_claims": [str]}}"""
             return self._extractive_check(response, source_facts)
 ```
 
-**Интеграция в ResponseAuditWorker** (Slow Path):
+**Integration into ResponseAuditWorker** (Slow Path):
 ```python
-# В response_audit_worker.py — добавить после Фазы 2:
+# In response_audit_worker.py — add after Phase 2:
 from core.output_faithfulness_checker import OutputFaithfulnessChecker
 
 checker = OutputFaithfulnessChecker()
@@ -4319,31 +4299,31 @@ faith_result = await checker.check(
     llm_client=llm_client,
 )
 audit.faithfulness_score = faith_result.score
-# Сохранить в :DialogueSummary.response_audit_faithfulness_avg
+# Save into :DialogueSummary.response_audit_faithfulness_avg
 ```
 
 ---
 
 ### HYPERIA-7: MemoryBudgetPlanner
 
-> **Источник**: HYPERIA `memory/memory_budget_planner.py`
-> **Назначение**: Hard limit 500k узлов + auto-GC при 85%.
-> Velantrim не имеет лимита — граф растёт бесконечно.
+> **Source**: HYPERIA `memory/memory_budget_planner.py`
+> **Purpose**: Hard limit of 500k nodes + auto-GC at 85%.
+> Velantrim has no limit — the graph grows unboundedly.
 
 ```python
 # memory/memory_budget_planner.py
-# MemoryBudgetPlanner — защита от неограниченного роста графа.
-# Hard limit: 500k узлов. Auto-GC при 85% (425k).
-# Slow Path: проверяется раз в час через SleepTimeWorker.
+# MemoryBudgetPlanner — protection against unbounded graph growth.
+# Hard limit: 500k nodes. Auto-GC at 85% (425k).
+# Slow Path: checked hourly via SleepTimeWorker.
 
 import logging
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
-NODE_LIMIT_HARD = 500_000   # абсолютный лимит
-NODE_LIMIT_GC   = 425_000   # 85% — триггер auto-GC
-NODE_LIMIT_WARN = 400_000   # 80% — предупреждение
+NODE_LIMIT_HARD = 500_000   # absolute limit
+NODE_LIMIT_GC   = 425_000   # 85% — auto-GC trigger
+NODE_LIMIT_WARN = 400_000   # 80% — warning
 
 
 @dataclass
@@ -4356,16 +4336,16 @@ class BudgetStatus:
 
 class MemoryBudgetPlanner:
     """
-    Следит за размером графа и триггерит GC при приближении к лимиту.
-    Интеграция: вызывается из SleepTimeWorker раз в час.
+    Watches the graph size and triggers GC as it approaches the limit.
+    Integration: called from SleepTimeWorker once an hour.
     """
 
     def __init__(self, graph, gc_runner=None):
         self.graph      = graph
-        self.gc_runner  = gc_runner  # MemoryGarbageCollector или аналог
+        self.gc_runner  = gc_runner  # MemoryGarbageCollector or equivalent
 
     async def check_and_act(self) -> BudgetStatus:
-        """Проверить текущий размер графа и принять меры при необходимости."""
+        """Check the current graph size and take action if necessary."""
         try:
             result = await self.graph.execute_cypher(
                 "MATCH (n) RETURN count(n) as total", {}
@@ -4410,7 +4390,7 @@ class MemoryBudgetPlanner:
                             utilization=utilization, action="ok")
 ```
 
-**Добавить в `velantrim_config.py`**:
+**Add to `velantrim_config.py`**:
 ```python
 class BudgetConfig:
     NODE_LIMIT_HARD = 500_000
@@ -4420,25 +4400,25 @@ class BudgetConfig:
 BUDGET = BudgetConfig()
 ```
 
-**Метрика**:
+**Metric**:
 ```python
 memory_budget_utilization   # gauge: node_count / NODE_LIMIT_HARD
-memory_budget_gc_triggered  # counter: сколько раз auto-GC сработал
+memory_budget_gc_triggered  # counter: how many times auto-GC fired
 ```
 
 ---
 
 ### HYPERIA-8: CircuitBreaker
 
-> **Источник**: HYPERIA `circuit_breaker.py`
-> **Назначение**: Защита Neo4j, Redis, LLM API от cascading failures.
+> **Source**: HYPERIA `circuit_breaker.py`
+> **Purpose**: Protects Neo4j, Redis, the LLM API from cascading failures.
 > CLOSED → OPEN (N failures) → HALF_OPEN (timeout) → CLOSED (M successes).
-> **Ключевое**: per-loop asyncio.Lock — без race condition в тестах.
+> **Key point**: per-loop asyncio.Lock — no race condition in tests.
 
 ```python
 # circuit_breaker.py
-# CircuitBreaker — защита от cascading failures (Neo4j, Redis, LLM API).
-# per-loop Lock: каждый event loop получает свой Lock — нет RuntimeError в тестах.
+# CircuitBreaker — protection against cascading failures (Neo4j, Redis, LLM API).
+# per-loop Lock: each event loop gets its own Lock — no RuntimeError in tests.
 
 import time
 import asyncio
@@ -4482,7 +4462,7 @@ class CircuitBreaker:
         loop_id = id(loop)
         if loop_id not in self._locks:
             self._locks[loop_id] = asyncio.Lock()
-            if len(self._locks) > 10:  # GC мёртвых loop-ов
+            if len(self._locks) > 10:  # GC of dead loops
                 dead = [k for k in self._locks if k != loop_id]
                 for k in dead:
                     del self._locks[k]
@@ -4539,15 +4519,15 @@ class CircuitBreaker:
         }
 ```
 
-**Применение**:
+**Usage**:
 ```python
-# В agent.py — обернуть критические вызовы:
+# In agent.py — wrap critical calls:
 from circuit_breaker import CircuitBreaker, CircuitBreakerOpenError
 
 cb_neo4j = CircuitBreaker("neo4j", failure_threshold=5, timeout=60)
 cb_redis  = CircuitBreaker("redis", failure_threshold=3, timeout=30)
 
-# При запросе к графу:
+# When querying the graph:
 try:
     result = await cb_neo4j.call(graph.execute_cypher, query, params)
 except CircuitBreakerOpenError:
@@ -4557,15 +4537,15 @@ except CircuitBreakerOpenError:
 
 ---
 
-### HYPERIA-9: SOARGoalNode — Иерархия целей
+### HYPERIA-9: SOARGoalNode — Goal Hierarchy
 
-> **Источник**: HYPERIA `memory/core_memory_blocks.py`
-> **Проблема**: L0 Goal Stack хранит цели как flat string.
-> **Решение**: `GoalNode(priority, parent_id)` — иерархическая структура.
-> Backwards compatible: `str(goal_node)` возвращает description.
+> **Source**: HYPERIA `memory/core_memory_blocks.py`
+> **Problem**: The L0 Goal Stack stores goals as a flat string.
+> **Solution**: `GoalNode(priority, parent_id)` — a hierarchical structure.
+> Backwards compatible: `str(goal_node)` returns the description.
 
 ```python
-# Добавить в memory/core_memory_blocks.py — расширение Goal Stack
+# Add to memory/core_memory_blocks.py — an extension of the Goal Stack
 
 from dataclasses import dataclass, field
 from typing import Optional, List
@@ -4575,20 +4555,20 @@ import uuid
 @dataclass
 class GoalNode:
     """
-    Иерархическая цель в Goal Stack (L0).
+    A hierarchical goal in the Goal Stack (L0).
     Backwards compatible: str(node) = description.
-    priority: 0.0–1.0 (1.0 = наивысший)
-    parent_id: None = корневая цель, иначе ссылка на родителя
+    priority: 0.0–1.0 (1.0 = highest)
+    parent_id: None = a root goal, otherwise a reference to the parent
     """
     description: str
     priority:    float         = 0.5
     goal_id:     str           = field(default_factory=lambda: uuid.uuid4().hex[:8])
     parent_id:   Optional[str] = None
-    children:    List[str]     = field(default_factory=list)  # goal_id дочерних целей
+    children:    List[str]     = field(default_factory=list)  # goal_ids of child goals
     status:      str           = "active"   # active | completed | suspended
 
     def __str__(self) -> str:
-        return self.description  # backwards compatible с flat string
+        return self.description  # backwards compatible with a flat string
 
     def __repr__(self) -> str:
         return f"GoalNode({self.goal_id}: {self.description!r} p={self.priority})"
@@ -4608,24 +4588,24 @@ class GoalNode:
 
 ---
 
-### HYPERIA-10: Каскадная инвалидация стратегий
+### HYPERIA-10: Cascading Strategy Invalidation
 
-> **Источник**: HYPERIA `memory_gc.py` — `_invalidate_stale_strategies()`
-> **Проблема**: Velantrim имеет связь `(:Strategy)-[:DERIVED_FROM]->(:Fact)` в схеме,
-> но нет логики реакции на инвалидацию факта. Зомби-стратегии накапливаются.
-> **Решение**: При `Fact → Deprecated/Collapsed` → все Strategy немедленно `valid=false`.
+> **Source**: HYPERIA `memory_gc.py` — `_invalidate_stale_strategies()`
+> **Problem**: Velantrim has the relationship `(:Strategy)-[:DERIVED_FROM]->(:Fact)` in the schema,
+> but no logic for reacting to a fact's invalidation. Zombie strategies accumulate.
+> **Solution**: On `Fact → Deprecated/Collapsed` → all Strategy nodes are immediately set `valid=false`.
 
 ```python
-# Добавить в L4 GC Worker (reasoning_bank.py или отдельный gc воркер)
-# Запускается из SleepTimeWorker раз в сутки.
+# Add to the L4 GC Worker (reasoning_bank.py or a separate gc worker)
+# Launched from SleepTimeWorker once a day.
 
 async def invalidate_stale_strategies(graph) -> int:
     """
-    Каскадная инвалидация стратегий при инвалидации зависимых фактов.
-    FIX: confidence × 0.5 создавал зомби-стратегии (0.95 → 0.475 → никогда не удалялась).
-    Новый подход: факт неактивен → стратегия НЕМЕДЛЕННО valid=false, confidence=0.0.
+    Cascading invalidation of strategies when their dependent facts are invalidated.
+    FIX: confidence × 0.5 created zombie strategies (0.95 → 0.475 → never removed).
+    New approach: a fact is inactive → the strategy is IMMEDIATELY valid=false, confidence=0.0.
     """
-    # Шаг 1: стратегии с deprecated/collapsed фактами
+    # Step 1: strategies with deprecated/collapsed facts
     result = await graph.execute_cypher("""
         MATCH (s:Strategy)-[:DERIVED_FROM]->(f:Fact)
         WHERE f.epistemic_state IN ['Deprecated', 'Collapsed']
@@ -4638,7 +4618,7 @@ async def invalidate_stale_strategies(graph) -> int:
     """)
     invalidated = result[0]["invalidated"] if result else 0
 
-    # Шаг 2: стратегии с confidence ниже порога (другие причины)
+    # Step 2: strategies with confidence below the threshold (other reasons)
     result2 = await graph.execute_cypher("""
         MATCH (s:Strategy)
         WHERE s.confidence < 0.2
@@ -4661,9 +4641,9 @@ async def invalidate_stale_strategies(graph) -> int:
 
 ---
 
-### 3. Фрактальная иерархия: Автоматическая консолидация
+### 3. Fractal Hierarchy: Automatic Consolidation
 
-**Назначение**: Перемещение информации между уровнями БЕЗ LLM-запросов
+**Purpose**: Moving information between levels WITHOUT LLM queries
 
 ```python
 # fractal_memory.py
@@ -4671,11 +4651,11 @@ async def invalidate_stale_strategies(graph) -> int:
 def fsrs_retention(t_hours: float, S: float) -> float:
     """P1-J FIX: FSRS power-law retention formula (v8.0 Crystal).
     R = (1 + 19/81 × t/S)^(-0.5)
-    Заменяет np.exp(-t/S) из Ebbinghaus — более точная модель долгосрочного удержания.
+    Replaces np.exp(-t/S) from Ebbinghaus — a more accurate model of long-term retention.
     Args:
-        t_hours: время с последнего повторения (в часах)
-        S: stability — стабильность памяти (в часах)
-    Returns: R — вероятность воспроизведения [0.0, 1.0]
+        t_hours: time since the last repetition (in hours)
+        S: stability — memory stability (in hours)
+    Returns: R — the probability of recall [0.0, 1.0]
     """
     if S <= 0:
         return 0.0
@@ -4689,18 +4669,18 @@ import numpy as np
 
 def fsrs_retention(t_hours: float, stability: float) -> float:
     """
-    FSRS power-law decay (v8.0 — заменяет Ebbinghaus экспоненту).
+    FSRS power-law decay (v8.0 — replaces the Ebbinghaus exponential).
     R = (1 + 19/81 × t/S)^(-0.5)
 
     Args:
-        t_hours: время с момента последнего доступа в часах
-        stability: сила памяти (importance × log(1 + access_count))
+        t_hours: time since the last access in hours
+        stability: memory strength (importance × log(1 + access_count))
 
     Returns:
-        Retention в [0.0, 1.0]
+        Retention in [0.0, 1.0]
 
-    Конфликт-1 FIX: заменяет np.exp(-t/S) во всех местах FractalMemory.
-    Источник: FadeMem paper, Jan 2026 — точнее Ebbinghaus на 20-30%.
+    Conflict-1 FIX: replaces np.exp(-t/S) everywhere in FractalMemory.
+    Source: FadeMem paper, Jan 2026 — more accurate than Ebbinghaus by 20-30%.
     """
     if stability <= 0:
         return 0.0
@@ -4718,7 +4698,7 @@ class MemoryItem:
     created_at: datetime
     level: int  # 0=STM, 1=MTM, 2=LTM
 
-# Кэш стоп-слов — инициализируется один раз при импорте модуля (не при каждой суммаризации)
+# Stop-words cache — initialized once on module import (not on every summarization)
 try:
     from nltk.corpus import stopwords as _nltk_sw
     _STOP_RU_CACHED = _nltk_sw.words('russian')
@@ -4728,31 +4708,31 @@ except Exception:
 class FractalMemory:
     def __init__(self, graph_memory: GraphMemory, llm_client=None):
         self.graph = graph_memory
-        self.llm_client = llm_client  # объявлен явно — устраняет AttributeError в _llm_summarize_cluster
+        self.llm_client = llm_client  # declared explicitly — eliminates AttributeError in _llm_summarize_cluster
 
-        # Настройки уровней
-        self.stm_capacity   = 5   # Cowan 4±1 — берём верхнюю границу диапазона
+        # Level settings
+        self.stm_capacity   = 5   # Cowan 4±1 — we take the upper bound of the range
         self.mtm_capacity   = 25
 
-        # Конфликт-3 FIX: явные единицы для decay rates.
-        # Все значения в единицах "за час" (совместимо с age_hours в формулах).
-        # При FSRS: stability = importance * (1 + log(access_count)) / decay_rate
-        # STM base unit:  1/0.1  = 10h  (кратковременная память)
-        # MTM base unit:  1/0.05 = 20h  (среднесрочная, с учётом rehearsal → ~168h)
-        # LTM base unit:  1/0.01 = 100h (долгосрочная, с учётом rehearsal → ~720h)
-        self.stm_decay_rate = 0.1   # за час; STM base window ≈ 10h
-        self.mtm_decay_rate = 0.05  # за час; MTM base window ≈ 20h (→ ~неделя с rehearsal)
-        self.ltm_decay_rate = 0.01  # за час; LTM base window ≈ 100h (→ ~месяц с rehearsal)
+        # Conflict-3 FIX: explicit units for decay rates.
+        # All values are in "per hour" units (compatible with age_hours in the formulas).
+        # With FSRS: stability = importance * (1 + log(access_count)) / decay_rate
+        # STM base unit:  1/0.1  = 10h  (short-term memory)
+        # MTM base unit:  1/0.05 = 20h  (medium-term, accounting for rehearsal → ~168h)
+        # LTM base unit:  1/0.01 = 100h (long-term, accounting for rehearsal → ~720h)
+        self.stm_decay_rate = 0.1   # per hour; STM base window ≈ 10h
+        self.mtm_decay_rate = 0.05  # per hour; MTM base window ≈ 20h (→ ~a week with rehearsal)
+        self.ltm_decay_rate = 0.01  # per hour; LTM base window ≈ 100h (→ ~a month with rehearsal)
 
-        # защита stm_cache и mtm_cache от race condition
+        # protection of stm_cache and mtm_cache from a race condition
         self._cache_lock = asyncio.Lock()
 
-        # In-memory кэши для STM/MTM
+        # In-memory caches for STM/MTM
         self.stm_cache: List[MemoryItem] = []
         self.mtm_cache: List[MemoryItem] = []
 
     async def add_to_stm(self, content: str, embedding: np.ndarray):
-        """Добавить в краткосрочную память. Защищён asyncio.Lock."""
+        """Add to short-term memory. Protected by asyncio.Lock."""
         item = MemoryItem(
             id=generate_id(),
             content=content,
@@ -4766,13 +4746,13 @@ class FractalMemory:
         async with self._cache_lock:
             self.stm_cache.append(item)
             needs_consolidation = len(self.stm_cache) > self.stm_capacity
-        # Lock не реентерабельный — consolidate вызываем ВНЕ lock
+        # The Lock is not reentrant — we call consolidate OUTSIDE the lock
         if needs_consolidation:
             await self.consolidate_stm_to_mtm()
 
     async def apply_decay(self) -> dict:
         """
-        FSRS retention decay (v8.0): R = (1 + 19/81 * t/S)^(-0.5)  # было: R = e^(-t/S)
+        FSRS retention decay (v8.0): R = (1 + 19/81 * t/S)^(-0.5)  # before: R = e^(-t/S)
             R  = retention fraction applied to importance
             t  = hours since last_accessed
             S  = importance × (1 + log1p(access_count))  — rehearsal effect
@@ -4799,7 +4779,7 @@ class FractalMemory:
                     continue
                 age_h    = (now - item.last_accessed).total_seconds() / 3600
                 strength = max(0.01, item.importance * (1.0 + np.log1p(item.access_count)))
-                # P1-J CONFIRMED: FSRS power-law применён корректно (Changelog v8.0.1 ✓)
+                # P1-J CONFIRMED: FSRS power-law applied correctly (Changelog v8.0.1 ✓)
                 retention = fsrs_retention(age_h, stability=strength * 24)
                 item.importance = float(np.clip(item.importance * retention, 0.0, 1.0))
                 stats["stm_decayed"] += 1
@@ -4816,7 +4796,7 @@ class FractalMemory:
                     continue
                 age_h    = (now - item.last_accessed).total_seconds() / 3600
                 strength = max(0.01, item.importance * (1.0 + np.log1p(item.access_count)))
-                # Конфликт-1 FIX: FSRS power-law вместо Ebbinghaus np.exp(-age_h/(strength*168))
+                # Conflict-1 FIX: FSRS power-law instead of Ebbinghaus np.exp(-age_h/(strength*168))
                 retention = fsrs_retention(age_h, stability=strength * 168)
                 item.importance = float(np.clip(item.importance * retention, 0.0, 1.0))
                 stats["mtm_decayed"] += 1
@@ -4834,11 +4814,11 @@ class FractalMemory:
 
     async def consolidate_stm_to_mtm(self):
         """
-        Консолидация STM → MTM (БЕЗ LLM).
-        asyncio.Lock защищает stm_cache.
-        Cold Start Guard (if len < 50) УДАЛЁН — он вызывал OOM
-          при stm_capacity=5: guard всегда срабатывал → STM рос бесконечно.
-          Cold Start Guard живёт только в L2 (consolidate_mtm_to_ltm).
+        Consolidation STM → MTM (WITHOUT LLM).
+        asyncio.Lock protects stm_cache.
+        Cold Start Guard (if len < 50) REMOVED — it caused OOM
+          at stm_capacity=5: the guard always fired → STM grew unboundedly.
+          The Cold Start Guard lives only in L2 (consolidate_mtm_to_ltm).
         """
         async with self._cache_lock:
             now        = datetime.now(timezone.utc)
@@ -4852,19 +4832,19 @@ class FractalMemory:
                     item.level      = 1
                     item.importance = importance_score
                     if len(self.mtm_cache) >= self.mtm_capacity:
-                        # ⚠️ ensure_future — НЕ await. Если изменить на await
-                        # здесь — deadlock на _cache_lock (non-reentrant).
+                        # ⚠️ ensure_future — NOT await. If changed to await
+                        # here — deadlock on _cache_lock (non-reentrant).
                         asyncio.ensure_future(self.consolidate_mtm_to_ltm())
                     self.mtm_cache.append(item)
                     to_promote.append(item)
                 elif importance_score < 0.3:
                     to_drop.append(item)
-                # grey zone [0.3..0.7] — ждёт следующего цикла
+                # grey zone [0.3..0.7] — waits for the next cycle
 
             for item in to_promote + to_drop:
                 self.stm_cache.remove(item)
 
-        # Запись в граф — вне lock (I/O операция)
+        # Writing to the graph — outside the lock (an I/O operation)
         if to_promote:
             await self.graph.add_episode(
                 episode_name=f"mtm_batch_{generate_id()}",
@@ -4878,85 +4858,85 @@ class FractalMemory:
         age_hours: float
     ) -> float:
         """
-        Улучшенный расчет важности с учетом:
-        - Temporal decay (FSRS power-law, v8.0 — заменяет Ebbinghaus)
-        - Reinforcement (частота доступа)
-        - Emotional salience (успех/провал важнее)
-        - Semantic clustering (часть паттерна → важнее)
-        - Weighted Semantic Decay по [:CONTRADICTS]
+        Improved importance calculation accounting for:
+        - Temporal decay (FSRS power-law, v8.0 — replaces Ebbinghaus)
+        - Reinforcement (access frequency)
+        - Emotional salience (success/failure matters more)
+        - Semantic clustering (part of a pattern → more important)
+        - Weighted Semantic Decay over [:CONTRADICTS]
 
-        Конфликт-1 FIX: temporal_decay теперь FSRS power-law, не np.exp().
+        Conflict-1 FIX: temporal_decay is now FSRS power-law, not np.exp().
         """
-        # 1. Базовый temporal decay — FSRS power-law (не Ebbinghaus)
+        # 1. Base temporal decay — FSRS power-law (not Ebbinghaus)
         # stm_decay_rate=0.1 → effective stability base = 1/0.1 = 10h
         stability = max(0.01, item.importance * (1.0 + np.log1p(item.access_count)))
         temporal_decay = fsrs_retention(age_hours, stability=stability / self.stm_decay_rate)
         
-        # 2. Reinforcement boost: чем чаще вспоминается → меньше decay
-        # log1p(x) = log(1+x) для сглаживания
+        # 2. Reinforcement boost: the more often it is recalled → the less decay
+        # log1p(x) = log(1+x) for smoothing
         reinforcement_factor = 1.0 + np.log1p(item.access_count) * 0.1
         
-        # 3. Emotional salience: успех/провал запоминается лучше
+        # 3. Emotional salience: success/failure is remembered better
         emotional_boost = 1.0
         if hasattr(item, 'outcome'):
             if item.outcome in ['success', 'failure']:
-                emotional_boost = 1.5  # 50% бонус к важности
-            # partial/neutral остаётся 1.0
+                emotional_boost = 1.5  # 50% bonus to importance
+            # partial/neutral stays 1.0
         
-        # 4. Semantic clustering: если память похожа на другие важные
-        # (упрощенная версия - можно улучшить с кластеризацией)
+        # 4. Semantic clustering: if the memory is similar to other important ones
+        # (a simplified version — can be improved with clustering)
         semantic_boost = 1.0
         if hasattr(item, 'cluster_size') and item.cluster_size > 1:
             semantic_boost = 1.0 + min(0.3, item.cluster_size * 0.05)
         
-        # 5. Weighted Semantic Decay по [:CONTRADICTS]
-        # Факты с противоречиями теряют важность пропорционально
-        # доверию к источнику противоречия (trust_score из Guardian)
-        # ИММУНИТЕТ: Ring Zero / VALUES CORE (pinned=CRITICAL) не затрагиваются
+        # 5. Weighted Semantic Decay over [:CONTRADICTS]
+        # Facts with contradictions lose importance proportionally to
+        # the trust in the source of the contradiction (trust_score from Guardian)
+        # IMMUNITY: Ring Zero / VALUES CORE (pinned=CRITICAL) are not affected
         epistemic_penalty = 0.0
         if hasattr(item, 'pinned') and item.pinned and \
            getattr(item, 'priority', None) == 'CRITICAL':
-            pass  # Ring Zero иммунен к Semantic Decay
+            pass  # Ring Zero is immune to Semantic Decay
         elif hasattr(item, 'contradictions') and item.contradictions:
             for contradiction in item.contradictions:
-                # trust_score: 1.0 = научная статья, 0.3 = пользователь, 0.1 = LLM
+                # trust_score: 1.0 = a scientific paper, 0.3 = the user, 0.1 = the LLM
                 trust = getattr(contradiction, 'trust_score', 0.3)
                 epistemic_penalty += 0.1 * trust
-            # Ограничиваем штраф — не убиваем факт одним противоречием
+            # Cap the penalty — do not kill a fact with a single contradiction
             epistemic_penalty = min(0.5, epistemic_penalty)
         
-        # Итоговый importance score
+        # Final importance score
         final_importance = (
             item.importance 
             * temporal_decay 
             * reinforcement_factor 
             * emotional_boost 
             * semantic_boost
-            - epistemic_penalty  # штраф за противоречия
+            - epistemic_penalty  # penalty for contradictions
         )
         
         return max(0.0, min(1.0, final_importance))  # Clamp [0, 1]
 
     async def consolidate_mtm_to_ltm(self):
         """
-        Консолидация MTM → LTM. ГИБРИДНЫЙ подход.
-        AgglomerativeClustering — CPU-bound (2–10с).
-          Snapshot берём ПОД lock (мгновенно), кластеризацию выполняем ВНЕ lock
-          через run_in_executor — event loop не блокируется.
-        передаём threshold=0.8 как второй аргумент.
+        Consolidation MTM → LTM. A HYBRID approach.
+        AgglomerativeClustering — CPU-bound (2–10s).
+          We take the snapshot UNDER the lock (instantly), and run clustering OUTSIDE the lock
+          via run_in_executor — the event loop is not blocked.
+        we pass threshold=0.8 as the second argument.
         """
-        # Шаг 1: snapshot ПОД lock — мгновенно
+        # Step 1: snapshot UNDER the lock — instant
         async with self._cache_lock:
             mtm_snapshot = list(self.mtm_cache)
 
-        # Шаг 2: кластеризация ВНЕ lock — CPU-bound
+        # Step 2: clustering OUTSIDE the lock — CPU-bound
         if len(mtm_snapshot) < 2:
             return
         clusters = await asyncio.get_running_loop().run_in_executor(
-            None, self._cluster_memories, mtm_snapshot, 0.8  # ✅ threshold передан
+            None, self._cluster_memories, mtm_snapshot, 0.8  # ✅ threshold passed
         )
 
-        # Шаг 3: запись в граф ВНЕ lock
+        # Step 3: writing to the graph OUTSIDE the lock
         episodes_to_remove = []
         for cluster in clusters:
             if len(cluster) >= 3:
@@ -4968,7 +4948,7 @@ class FractalMemory:
                     )
                     consolidation_quality = "high"
                 else:
-                    summary = await self._extractive_summarize(cluster)  # async метод — прямой await, не to_thread
+                    summary = await self._extractive_summarize(cluster)  # async method — a direct await, not to_thread
                     consolidation_quality = "extractive_only"
 
                 await self.graph.add_episode(
@@ -4984,7 +4964,7 @@ class FractalMemory:
                 )
                 episodes_to_remove.extend(cluster)
 
-        # Шаг 4: удаление из кэша ПОД lock
+        # Step 4: removal from the cache UNDER the lock
         async with self._cache_lock:
             for item in episodes_to_remove:
                 if item in self.mtm_cache:
@@ -4992,11 +4972,11 @@ class FractalMemory:
 
     async def _extractive_summarize(self, cluster: List[MemoryItem]) -> str:
         """
-        Extractive summarization БЕЗ LLM.
-        Использует TF-IDF для выделения ключевых предложений.
+        Extractive summarization WITHOUT an LLM.
+        Uses TF-IDF to extract the key sentences.
 
-        TfidfVectorizer вынесен в ThreadPoolExecutor —
-        sklearn синхронный (CPU-bound), нельзя вызывать из async напрямую.
+        TfidfVectorizer is moved to a ThreadPoolExecutor —
+        sklearn is synchronous (CPU-bound), it cannot be called from async directly.
         """
         from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -5010,8 +4990,8 @@ class FractalMemory:
             return '. '.join(all_sentences)
 
         def _tfidf_sync(sentences):
-            """Синхронная CPU-bound работа — в thread pool, не блокирует loop"""
-            # stopwords загружаются из модульного кэша — не при каждом вызове
+            """Synchronous CPU-bound work — in a thread pool, does not block the loop"""
+            # stopwords are loaded from the module-level cache — not on every call
             vectorizer = TfidfVectorizer(max_features=50, stop_words=_STOP_RU_CACHED)
             try:
                 tfidf_matrix = vectorizer.fit_transform(sentences)
@@ -5023,24 +5003,24 @@ class FractalMemory:
                 return '. '.join(sentences[:3]) + '.'
 
         loop = asyncio.get_running_loop()
-        # asyncio.to_thread предпочтительнее run_in_executor для Python 3.9+
-        # run_in_executor(None, fn, *args) — корректно, но to_thread чище и безопаснее
+        # asyncio.to_thread is preferable to run_in_executor for Python 3.9+
+        # run_in_executor(None, fn, *args) — correct, but to_thread is cleaner and safer
         return await asyncio.to_thread(_tfidf_sync, all_sentences)
 
     async def _llm_summarize_cluster(
         self,
         cluster: List[MemoryItem],
-        model: str = "o4-mini"  # ранее gpt-4o-mini
+        model: str = "o4-mini"  # previously gpt-4o-mini
     ) -> str:
         """
-        LLM-based суммаризация для важных кластеров (importance > 0.95, size > 15).
-        Принцип: LLM получает extractive-выжимку и только переформулирует,
-        не добавляя новых фактов («LLM как интерпретатор», Copilot RFC).
+        LLM-based summarization for important clusters (importance > 0.95, size > 15).
+        Principle: the LLM receives an extractive summary and only reformulates it,
+        without adding new facts ("LLM as an interpreter", Copilot RFC).
         """
-        # Сначала extractive для сжатия контекста (дешёвый путь)
+        # First extractive, to compress the context (the cheap path)
         extractive = await self._extractive_summarize(cluster)
 
-        # Затем LLM — только для переформулирования готовой выжимки
+        # Then the LLM — only to reformulate the ready summary
         prompt = f"""Summarize the following memory cluster into a concise, high-level pattern or insight.
         Focus on: what was learned, what patterns emerged, what strategies worked/failed.
         Do NOT add any facts not present in the input. Reformulate only.
@@ -5051,8 +5031,8 @@ class FractalMemory:
         High-level summary (max 200 words):"""
 
         if self.llm_client is None:
-            # Fallback: если LLM-клиент не настроен — возвращаем extractive
-            logger.warning("_llm_summarize_cluster: llm_client не настроен, возвращаем extractive")
+            # Fallback: if the LLM client is not configured — return extractive
+            logger.warning("_llm_summarize_cluster: llm_client is not configured, returning extractive")
             return extractive
 
         try:
@@ -5067,7 +5047,7 @@ class FractalMemory:
         memories: List[MemoryItem],
         threshold: float = 0.8
     ) -> List[List[MemoryItem]]:
-        """Кластеризация по косинусному сходству эмбеддингов"""
+        """Clustering by cosine similarity of embeddings"""
         from sklearn.cluster import AgglomerativeClustering
         
         if len(memories) < 2:
@@ -5084,7 +5064,7 @@ class FractalMemory:
         
         labels = clustering.fit_predict(embeddings)
         
-        # Группировать по labels
+        # Group by labels
         clusters = {}
         for item, label in zip(memories, labels):
             if label not in clusters:
@@ -5094,7 +5074,7 @@ class FractalMemory:
         return [c for c in clusters.values() if len(c) >= 3]
 ```
 
-**Фоновый процесс консолидации**:
+**Background consolidation process**:
 
 ```python
 # consolidation_worker.py
@@ -5102,10 +5082,10 @@ import asyncio
 
 class AdaptiveConsolidationWorker:
     """
-    Адаптивная консолидация вместо фиксированных интервалов.
-    asyncio.gather останавливал ВСЕ воркеры при сбое одного.
-    Решение: независимые create_task + _run_loop с авторестартом через 5с.
-    _consolidation_lock защищает от concurrent consolidation.
+    Adaptive consolidation instead of fixed intervals.
+    asyncio.gather used to stop ALL workers when one failed.
+    Solution: independent create_task + _run_loop with auto-restart after 5s.
+    _consolidation_lock protects against concurrent consolidation.
     """
     def __init__(self, fractal_memory: FractalMemory):
         self.memory               = fractal_memory
@@ -5116,9 +5096,9 @@ class AdaptiveConsolidationWorker:
         self.mtm_high_threshold   = 0.8
 
     async def start(self):
-        """Запустить фоновую консолидацию — независимые задачи."""
+        """Start background consolidation — independent tasks."""
         self.running = True
-        # сохраняем ссылки — без них GC может уничтожить задачи
+        # keep the references — without them, GC may destroy the tasks
         self._tasks = [
             asyncio.create_task(
                 self._run_loop("stm_consolidation", self._adaptive_stm_consolidation)
@@ -5133,7 +5113,7 @@ class AdaptiveConsolidationWorker:
         logger.info("ConsolidationWorker: all workers started independently")
 
     async def _run_loop(self, name: str, coro_fn):
-        """При сбое — логируем и перезапускаем через 5 секунд."""
+        """On failure — log and restart after 5 seconds."""
         while self.running:
             try:
                 await coro_fn()
@@ -5146,7 +5126,7 @@ class AdaptiveConsolidationWorker:
                 await asyncio.sleep(5)
 
     async def _adaptive_stm_consolidation(self):
-        """STM → MTM с динамическим интервалом. Защищён _consolidation_lock."""
+        """STM → MTM with a dynamic interval. Protected by _consolidation_lock."""
         while self.running:
             current_load = len(self.memory.stm_cache)
             capacity     = self.memory.stm_capacity
@@ -5171,7 +5151,7 @@ class AdaptiveConsolidationWorker:
                 await self.memory.consolidate_stm_to_mtm()
 
     async def _adaptive_mtm_consolidation(self):
-        """MTM → LTM с адаптивным интервалом. Защищён _consolidation_lock."""
+        """MTM → LTM with an adaptive interval. Protected by _consolidation_lock."""
         while self.running:
             current_size = len(self.memory.mtm_cache)
             capacity     = self.memory.mtm_capacity
@@ -5193,7 +5173,7 @@ class AdaptiveConsolidationWorker:
                 await self.memory.consolidate_mtm_to_ltm()
 
     async def _periodic_decay(self):
-        """Периодическое применение decay. Фиксированный интервал."""
+        """Periodic application of decay. Fixed interval."""
         while self.running:
             await asyncio.sleep(3600)
             await self.memory.apply_decay()
@@ -5208,9 +5188,9 @@ class AdaptiveConsolidationWorker:
 
 ---
 
-### 4. Гибридный Retrieval: Минимизация токенов
+### 4. Hybrid Retrieval: Token Minimization
 
-**Назначение**: Умный поиск релевантной информации с минимальным объемом
+**Purpose**: Smart search for relevant information with minimal volume
 
 ```python
 # hybrid_retrieval.py
@@ -5222,40 +5202,40 @@ class RetrievalResult:
     content:         str
     source:          str
     relevance_score: float
-    level:           int  # Уровень памяти
-    context:         Optional[List[str]] = None  # Связанная информация
-    embedding:       Optional[object]    = None  # MMR работает
+    level:           int  # Memory level
+    context:         Optional[List[str]] = None  # Related information
+    embedding:       Optional[object]    = None  # MMR works
     metadata:        Optional[dict]      = None
 
 
-# P1-2 FIX: явный Protocol-контракт для SLM классификатора.
-# Без Protocol — AttributeError только в runtime при первом вызове.
-# Любой slm_classifier должен реализовывать этот интерфейс.
+# P1-2 FIX: explicit Protocol contract for the SLM classifier.
+# Without Protocol — AttributeError only at runtime on the first call.
+# Any slm_classifier must implement this interface.
 from typing import Protocol, runtime_checkable
 
 @runtime_checkable
 class SLMClassifierProtocol(Protocol):
     """
-    Контракт для tiny LLM классификатора (Qwen3-1.7B / OLMoE-1B).
+    Contract for the tiny LLM classifier (Qwen3-1.7B / OLMoE-1B).
 
-    P1-2 FIX: явный Protocol вместо duck typing.
-    Без Protocol — AttributeError только в runtime при первом вызове.
+    P1-2 FIX: explicit Protocol instead of duck typing.
+    Without Protocol — AttributeError only at runtime on the first call.
     """
 
     def classify(self, text: str, labels: list) -> str:
         """
-        Классифицировать текст в один из labels.
+        Classify text into one of the labels.
 
         Args:
-            text: входной запрос
-            labels: список допустимых классов, например ["RECALL", "DEFINE", "POLICY", "TASK"]
+            text: input query
+            labels: list of allowed classes, e.g. ["RECALL", "DEFINE", "POLICY", "TASK"]
 
         Returns:
-            Один из элементов labels. Никогда не возвращает строку вне labels.
+            One of the label elements. Never returns a string outside labels.
 
         Raises:
-            ValueError: если labels пуст
-            RuntimeError: если модель не загружена
+            ValueError: if labels is empty
+            RuntimeError: if the model is not loaded
         """
         ...
 
@@ -5266,35 +5246,35 @@ class HybridRetriever:
         graph_memory: GraphMemory,
         fractal_memory: FractalMemory,
         token_budget: int = 2000,
-        hyde_enabled: bool = False,   # HyDE опционально, по умолчанию выключен
-        llm_fast = None,              # нужен только если hyde_enabled=True
-        slm_classifier = None         # P1-2 FIX: опциональный SLM классификатор
+        hyde_enabled: bool = False,   # HyDE optional, disabled by default
+        llm_fast = None,              # needed only if hyde_enabled=True
+        slm_classifier = None         # P1-2 FIX: optional SLM classifier
     ):
         self.graph = graph_memory
         self.fractal = fractal_memory
         self.token_budget = token_budget
         self.hyde_enabled = hyde_enabled
-        self.llm_fast = llm_fast      # o4-mini / Haiku — дешёвый вызов для генерации гипотезы
+        self.llm_fast = llm_fast      # o4-mini / Haiku — cheap call for generating the hypothesis
 
-        # P1-2 FIX: валидировать контракт при инициализации
+        # P1-2 FIX: validate the contract at initialization
         if slm_classifier is not None and not isinstance(slm_classifier, SLMClassifierProtocol):
             raise TypeError(
-                f"slm_classifier должен реализовывать SLMClassifierProtocol. "
-                f"Получен {type(slm_classifier).__name__}. "
-                f"Требуется метод classify(text: str, labels: list) -> str"
+                f"slm_classifier must implement SLMClassifierProtocol. "
+                f"Got {type(slm_classifier).__name__}. "
+                f"A classify(text: str, labels: list) -> str method is required"
             )
         self.slm_classifier = slm_classifier
 
     async def _get_embedding(self, text: str):
         """
-        Делегирует в fractal.graph (EmbeddingEngine через GraphMemory).
-        Fallback: если graph не поддерживает get_embedding — возвращает None
-        и _search_stm пропускает STM-поиск без падения.
+        Delegates to fractal.graph (EmbeddingEngine via GraphMemory).
+        Fallback: if graph does not support get_embedding — returns None
+        and _search_stm skips the STM search without crashing.
         """
         try:
             if hasattr(self.graph, 'get_embedding'):
                 return await self.graph.get_embedding(text)
-            # Fallback через graphiti если есть
+            # Fallback via graphiti if available
             if hasattr(self.graph, 'graphiti') and hasattr(self.graph.graphiti, 'get_embedding'):
                 return await self.graph.graphiti.get_embedding(text)
         except Exception as e:
@@ -5307,41 +5287,41 @@ class HybridRetriever:
         query_type: str = "general"
     ) -> List[RetrievalResult]:
         """
-        Гибридный retrieval с роутингом по типу запроса
+        Hybrid retrieval with routing by query type
         """
-        # 1. Роутинг: определить стратегию поиска
+        # 1. Routing: determine the search strategy
         strategy = self._route_query(query, query_type)
 
-        # 1.5. HyDE (Hypothetical Document Embeddings) — опционально
-        # Идея: вместо embedding вопроса использовать embedding гипотетического ответа.
-        # LLM генерирует «как мог бы выглядеть ответ» → его вектор ближе к реальным фактам.
-        # Даёт +15-20% точности на factoid-запросах. Цена: 1 дешёвый LLM-вызов.
-        # Выключен по умолчанию (hyde_enabled=False) — включай осознанно.
+        # 1.5. HyDE (Hypothetical Document Embeddings) — optional
+        # Idea: instead of the question's embedding, use the embedding of a hypothetical answer.
+        # The LLM generates "what the answer might look like" → its vector is closer to real facts.
+        # Gives +15-20% accuracy on factoid queries. Cost: 1 cheap LLM call.
+        # Disabled by default (hyde_enabled=False) — enable it deliberately.
         search_query = query
         if self.hyde_enabled and self.llm_fast is not None:
             search_query = await self._hyde_expand(query)
 
-        # 2. Многоэтапный поиск
+        # 2. Multi-stage search
         results = []
         
-        # Stage 1: Проверить STM (быстро, in-memory)
+        # Stage 1: Check STM (fast, in-memory)
         if strategy in ["conversation", "immediate", "RECALL", "TASK"]:
-            query_embedding = await self._get_embedding(query)  # инициализация до передачи в _search_stm
-            stm_results = await self._search_stm(query, query_embedding)  # STM всегда по оригинальному query
+            query_embedding = await self._get_embedding(query)  # initialize before passing to _search_stm
+            stm_results = await self._search_stm(query, query_embedding)  # STM always uses the original query
             results.extend(stm_results)
         
-        # Stage 2: Векторный поиск по графу (быстрый ANN)
+        # Stage 2: Vector search over the graph (fast ANN)
         graph_results = await self.graph.search(
-            query=search_query,  # HyDE: расширенный запрос или оригинальный
+            query=search_query,  # HyDE: expanded query or the original
             num_results=10
         )
         results.extend(self._convert_to_retrieval_results(
             graph_results, source="graph"
         ))
         
-        # Stage 3: Graph expansion для контекста
+        # Stage 3: Graph expansion for context
         if strategy in ["complex", "planning"]:
-            for result in graph_results[:3]:  # Топ-3
+            for result in graph_results[:3]:  # Top-3
                 expanded = await self._expand_context(result)
                 results.extend(self._convert_to_retrieval_results(
                     expanded, source="graph_expand"
@@ -5350,7 +5330,7 @@ class HybridRetriever:
         # 3. Reranking
         results = await self._rerank(query, results)
         
-        # 4. Token budgeting: выбрать топ-K в пределах бюджета
+        # 4. Token budgeting: select top-K within the budget
         results = self._apply_token_budget(results)
         
         return results
@@ -5359,68 +5339,68 @@ class HybridRetriever:
         """
         HyDE: Hypothetical Document Embeddings (Gao et al., 2022).
 
-        Генерирует гипотетический ответ на запрос с помощью быстрого LLM,
-        затем использует этот ответ как поисковый запрос вместо оригинального.
+        Generates a hypothetical answer to the query using a fast LLM,
+        then uses that answer as the search query instead of the original.
 
-        Почему это работает: embedding вопроса ("Что такое фотосинтез?") семантически
-        далеко от embedding ответа ("Фотосинтез — процесс..."). Гипотетический ответ
-        создаёт вектор в правильном смысловом пространстве.
+        Why it works: the embedding of a question ("What is photosynthesis?") is semantically
+        far from the embedding of an answer ("Photosynthesis is a process..."). The hypothetical answer
+        creates a vector in the right semantic space.
 
-        Когда включать: hyde_enabled=True при фактологических запросах (DEFINE/RECALL).
-        Когда НЕ нужен: TASK/POLICY запросы, диалог, уточнения — оригинальный query лучше.
+        When to enable: hyde_enabled=True for factual queries (DEFINE/RECALL).
+        When NOT needed: TASK/POLICY queries, dialogue, clarifications — the original query is better.
         """
         try:
             prompt = (
-                f"Сгенерируй короткий гипотетический ответ на вопрос (1-2 предложения, "
-                f"только факты, без вводных слов):\n{query}"
+                f"Generate a short hypothetical answer to the question (1-2 sentences, "
+                f"facts only, no introductory words):\n{query}"
             )
             hypothesis = await self.llm_fast.generate(prompt, max_tokens=100)
             return hypothesis.strip()
         except Exception as e:
             logger.warning(f"HyDE failed, fallback to original query: {e}")
-            return query  # graceful fallback — никогда не ломаем retrieval
+            return query  # graceful fallback — never break retrieval
 
     def _route_query(self, query: str, query_type: str) -> str:
         """
         Memory Router — bilingual (RU+EN) + confidence + SLM fallback.
-        RFC0003: Четыре строгих класса вместо размытых эвристик.
-        Поддержка EN паттернов + подсчёт уверенности + SLM fallback при низкой уверенности.
+        RFC0003: Four strict classes instead of fuzzy heuristics.
+        EN pattern support + confidence scoring + SLM fallback when confidence is low.
         """
         query_lower = query.lower()
 
         ROUTE_PATTERNS = {
             "RECALL": [
-                # RU
-                "как мы", "вчера", "ранее", "прошлый", "помнишь", "мы решали",
-                "ты говорил", "мы обсуждали", "в прошлый раз",
+                # RU (translated)
+                "how we", "yesterday", "earlier", "last", "do you remember", "we solved",
+                "you said", "we discussed", "last time",
                 # EN
                 "earlier", "last time", "remember", "we discussed",
                 "you said", "previously", "we talked about",
             ],
             "DEFINE": [
-                # RU
-                "что такое", "что значит", "определение", "объясни", "почему",
-                "как работает", "расскажи о",
+                # RU (translated)
+                "what is", "what does it mean", "definition", "explain", "why",
+                "how does it work", "tell me about",
                 # EN
                 "what is", "explain", "define", "how does", "what are",
                 "tell me about", "describe",
             ],
             "POLICY": [
-                # RU
-                "как реагировать", "правило", "стратегия", "подход", "политика",
+                # RU (translated)
+                "how to react", "rule", "strategy", "approach", "policy",
                 # EN
                 "how to handle", "rule", "strategy", "approach", "policy",
                 "best practice",
             ],
             "TASK": [
                 # RU
-                "сейчас", "текущий", "цель", "задача", "только что",
+                "now", "current", "goal", "task", "just now",
                 # EN
                 "current", "now", "goal", "task", "right now", "in progress",
             ],
         }
 
-        # Подсчёт совпадений для каждого маршрута
+        # Count matches for each route
         scores = {route: 0 for route in ROUTE_PATTERNS}
         for route, patterns in ROUTE_PATTERNS.items():
             for pattern in patterns:
@@ -5430,22 +5410,22 @@ class HybridRetriever:
         best_route = max(scores, key=scores.get)
         best_score = scores[best_route]
 
-        # Низкая уверенность (≤1 совпадение) → SLM fallback
-        # Qwen3-1.7B / OLMoE-1B — уже в стеке как LLM Tiny, 0 токенов flagship
+        # Low confidence (≤1 match) → SLM fallback
+        # Qwen3-1.7B / OLMoE-1B — already in the stack as LLM Tiny, 0 flagship tokens
         if best_score <= 1 and hasattr(self, 'slm_classifier') and self.slm_classifier is not None:
             return self._slm_classify(query)
 
-        # Нулевой score → TASK (операционный запрос вероятнее чем концептуальный)
+        # Zero score → TASK (an operational query is more likely than a conceptual one)
         return best_route if best_score > 0 else "TASK"
 
     def _slm_classify(self, query: str) -> str:
         """
-        SLM-fallback классификатор для неоднозначных запросов.
-        Вызывается когда pattern-matching дал ≤1 совпадения.
-        Контракт: slm_classifier реализует SLMClassifierProtocol.
-        Возвращает один из: RECALL | DEFINE | POLICY | TASK
+        SLM-fallback classifier for ambiguous queries.
+        Called when pattern-matching yielded ≤1 match.
+        Contract: slm_classifier implements SLMClassifierProtocol.
+        Returns one of: RECALL | DEFINE | POLICY | TASK
 
-        P1-2 FIX: добавлена валидация результата + явный fallback.
+        P1-2 FIX: added result validation + explicit fallback.
         """
         VALID_LABELS = ("RECALL", "DEFINE", "POLICY", "TASK")
         try:
@@ -5455,23 +5435,23 @@ class HybridRetriever:
             )
             if result in VALID_LABELS:
                 return result
-            # Если classifier вернул что-то вне labels — логируем и fallback
+            # If the classifier returned something outside labels — log it and fall back
             logger.warning(
                 f"_slm_classify: unexpected result '{result}' not in {VALID_LABELS}, "
                 f"falling back to TASK"
             )
         except Exception as e:
             logger.warning(f"_slm_classify failed: {e} — fallback to TASK")
-        return "TASK"  # безопасный fallback
+        return "TASK"  # safe fallback
 
     async def _search_stm(self, query: str, query_embedding=None) -> List[RetrievalResult]:
-        """Поиск в кэше STM"""
-        # Используем переданный embedding или вычисляем новый (один раз)
+        """Search in the STM cache"""
+        # Use the passed embedding or compute a new one (once)
         if query_embedding is None:
             query_embedding = await self._get_embedding(query)
         
         results = []
-        if query_embedding is None:  # embedding недоступен — пропускаем STM без падения
+        if query_embedding is None:  # embedding unavailable — skip STM without crashing
             return results
         
         for item in self.fractal.stm_cache:
@@ -5488,12 +5468,12 @@ class HybridRetriever:
 
     async def _expand_context(self, node: dict) -> List[str]:
         """
-        Обход графа для получения контекста
-        Ограничиваем depth чтобы не взорвать токены
+        Graph traversal to obtain context
+        Limit depth so we don't blow up the token count
         """
         context = await self.graph.get_context_for_entity(
             entity_name=node.get("entity_name"),
-            depth=1  # Только непосредственные соседи
+            depth=1  # Only immediate neighbors
         )
         
         return context.get("related_entities", [])
@@ -5505,8 +5485,8 @@ class HybridRetriever:
         level: int = 3
     ) -> List[RetrievalResult]:
         """
-        метод отсутствовал — AttributeError при каждом поиске по графу.
-        Конвертирует сырые результаты из graph.search() / graph_expand в RetrievalResult.
+        the method was missing — AttributeError on every graph search.
+        Converts raw results from graph.search() / graph_expand into RetrievalResult.
         """
         results = []
         for item in items:
@@ -5533,19 +5513,19 @@ class HybridRetriever:
         results: List[RetrievalResult]
     ) -> List[RetrievalResult]:
         """
-        Reranking с cross-encoder (дорого, но для малого k)
-        Альтернатива: простая эвристика на основе recency + relevance
+        Reranking with a cross-encoder (expensive, but for small k)
+        Alternative: a simple heuristic based on recency + relevance
         """
-        # Простой reranking БЕЗ cross-encoder
+        # Simple reranking WITHOUT a cross-encoder
         now = datetime.now(timezone.utc)
         
         for result in results:
-            # Учитываем свежесть и уровень памяти
-            level_penalty = 0.9 ** result.level  # Более глубокие уровни менее актуальны
+            # Factor in freshness and memory level
+            level_penalty = 0.9 ** result.level  # Deeper levels are less relevant
             
             result.relevance_score = result.relevance_score * level_penalty
         
-        # Сортировать по новому score
+        # Sort by the new score
         results.sort(key=lambda x: x.relevance_score, reverse=True)
         return results
 
@@ -5554,7 +5534,7 @@ class HybridRetriever:
         results: List[RetrievalResult]
     ) -> List[RetrievalResult]:
         """
-        Выбрать топ-K результатов в пределах token budget
+        Select the top-K results within the token budget
         """
         selected = []
         total_tokens = 0
@@ -5566,24 +5546,24 @@ class HybridRetriever:
                 selected.append(result)
                 total_tokens += result_tokens
             else:
-                break  # Бюджет исчерпан
+                break  # Budget exhausted
         
         return selected
 ```
 
-### P0-3: Reranker с fallback (`memory/reranker.py`)
+### P0-3: Reranker with fallback (`memory/reranker.py`)
 
 ```python
-# memory/reranker.py — фабрика с fallback
-# Default: ColBERTv2 или bge-reranker-large. Qwen3 — только opt-in с native Transformers.
+# memory/reranker.py — factory with fallback
+# Default: ColBERTv2 or bge-reranker-large. Qwen3 — opt-in only with native Transformers.
 import logging
 logger = logging.getLogger(__name__)
 
 def get_reranker(backend: str = None):
     backend = backend or config.RERANKER_BACKEND
     if backend == "qwen3":
-        logger.warning("Qwen3 Reranker: known issues в vLLM/llama.cpp. "
-                       "Используйте только с native Transformers.")
+        logger.warning("Qwen3 Reranker: known issues in vLLM/llama.cpp. "
+                       "Use only with native Transformers.")
         return Qwen3Reranker()
     elif backend == "colbertv2":
         return ColBERTv2Reranker()
@@ -5592,7 +5572,7 @@ def get_reranker(backend: str = None):
     return NoopReranker()
 ```
 
-Конфиг:
+Config:
 ```python
 RERANKER_BACKEND = "colbertv2"  # "colbertv2" | "bge-reranker-large" | "qwen3" | "none"
 ```
@@ -5603,16 +5583,16 @@ RERANKER_BACKEND = "colbertv2"  # "colbertv2" | "bge-reranker-large" | "qwen3" |
 
 ```python
 # memory/intent_router.py
-# I86: IntentRouter вызывается ТОЛЬКО из HybridRetriever.retrieve().
-# 0 токенов, rule-based, <1ms.
+# I86: IntentRouter is called ONLY from HybridRetriever.retrieve().
+# 0 tokens, rule-based, <1ms.
 
 def route_query_intent(query: str) -> list[str]:
     q = query.lower()
-    if any(w in q for w in ["почему", "из-за", "причина", "why", "because", "cause"]):
+    if any(w in q for w in ["why", "because of", "reason", "why", "because", "cause"]):
         return ["CAUSAL_REL", "CAUSES"]
-    elif any(w in q for w in ["когда", "после", "до", "when", "before", "after"]):
+    elif any(w in q for w in ["when", "after", "before", "when", "before", "after"]):
         return ["TEMPORAL_REL"]
-    elif any(w in q for w in ["что такое", "определение", "what is", "define"]):
+    elif any(w in q for w in ["what is", "definition", "what is", "define"]):
         return ["SEMANTIC_REL", "SIMILAR_TO"]
     return ["SEMANTIC_REL", "CAUSAL_REL", "TEMPORAL_REL", "ENTITY_REL"]
 ```
@@ -5621,9 +5601,9 @@ def route_query_intent(query: str) -> list[str]:
 
 ```python
 # memory/pagerank.py
-# HippoRAG-style: +7% на ассоциативных задачах, 0 LLM-вызовов
-# ⚠️ NetworkX исключён из стека (слишком медленно на >1k узлов).
-# Используем python-igraph (одобрен для Phase 0 SAE в EtirConfig).
+# HippoRAG-style: +7% on associative tasks, 0 LLM calls
+# ⚠️ NetworkX is excluded from the stack (too slow on >1k nodes).
+# We use python-igraph (approved for Phase 0 SAE in EtirConfig).
 
 def personalized_pagerank(
     graph_edges: list[tuple],
@@ -5633,7 +5613,7 @@ def personalized_pagerank(
 ) -> list[tuple[str, float]]:
     try:
         import igraph as ig
-        # Собираем все уникальные вершины
+        # Gather all unique vertices
         all_nodes = list({n for edge in graph_edges for n in edge})
         if not all_nodes:
             return []
@@ -5655,11 +5635,11 @@ def personalized_pagerank(
         result = [(all_nodes[i], pr_scores[i]) for i in range(len(all_nodes))]
         return sorted(result, key=lambda x: x[1], reverse=True)[:top_k]
     except ImportError:
-        # Fallback: простой degree-based score без PageRank
+        # Fallback: simple degree-based score without PageRank
         import logging
         logging.getLogger(__name__).warning(
-            "pagerank.py: igraph не установлен — fallback на degree score. "
-            "Установите: pip install igraph"
+            "pagerank.py: igraph not installed — falling back to degree score. "
+            "Install: pip install igraph"
         )
         degree: dict[str, float] = {}
         for a, b in graph_edges:
@@ -5674,55 +5654,55 @@ def personalized_pagerank(
 
 ### 🔍 HyDE — Hypothetical Document Embeddings (opt-in)
 
-**Конфиг-флаг**: `hyde_enabled: false` (в `velantrim_config.py`)
+**Config flag**: `hyde_enabled: false` (in `velantrim_config.py`)
 
-**Суть**: один LLM-вызов генерирует гипотетический ответ на вопрос пользователя.
-Embedding гипотетического ответа геометрически ближе к реальным фактам графа,
-чем embedding самого вопроса — потому что вопрос и ответ живут в разных
-семантических пространствах.
+**Essence**: a single LLM call generates a hypothetical answer to the user's question.
+The embedding of the hypothetical answer is geometrically closer to the real facts in the graph
+than the embedding of the question itself — because the question and the answer live in different
+semantic spaces.
 
-**Результат**: +15–20% точности извлечения на DEFINE/RECALL запросах
-по сравнению с прямым поиском по embedding вопроса.
+**Result**: +15–20% retrieval accuracy on DEFINE/RECALL queries
+compared to direct search over the question embedding.
 
-**Алгоритм при hyde_enabled=true**:
-1. `hypothetical = await llm.complete(f"Ответь кратко: {query}")` — 1 вызов
+**Algorithm when hyde_enabled=true**:
+1. `hypothetical = await llm.complete(f"Answer briefly: {query}")` — 1 call
 2. `hyp_embedding = embedder.encode(hypothetical)`
-3. Retrieval по `hyp_embedding` вместо `query_embedding`
-4. CORNER-дедупликация результатов если оба источника активны
+3. Retrieval over `hyp_embedding` instead of `query_embedding`
+4. CORNER deduplication of results if both sources are active
 
-**Когда включать**: только на DEFINE и RECALL типах запросов (FactRouter).
-На TASK и POLICY — не даёт прироста, добавляет задержку.
+**When to enable**: only on DEFINE and RECALL query types (FactRouter).
+On TASK and POLICY — it gives no gain and adds latency.
 
-**Инвариант**:
+**Invariant**:
 ```
-HyDE включается ТОЛЬКО через конфиг-флаг `hyde_enabled: true`.
-Активация через правку кода (не конфига) — нарушение.
-Недопустимо использовать HyDE на Fast Path без feature-flag.
+HyDE is enabled ONLY via the config flag `hyde_enabled: true`.
+Activation by editing code (not config) is a violation.
+Using HyDE on the Fast Path without the feature-flag is not permitted.
 ```
 
-**Добавить в `velantrim_config.py`**:
+**Add to `velantrim_config.py`**:
 ```python
-HYDE_ENABLED = False  # HyDE: гипотетический embedding для DEFINE/RECALL (+15-20% точности)
-# Включать только после тестирования латентности на целевом железе
+HYDE_ENABLED = False  # HyDE: hypothetical embedding for DEFINE/RECALL (+15-20% accuracy)
+# Enable only after testing latency on the target hardware
 ```
 
 ---
 
-### 🗺 TraversalPolicy — Стратегия обхода рёбер по типу запроса
+### 🗺 TraversalPolicy — Edge Traversal Strategy by Query Type
 
-**Источник**: MAGMA-style (arXiv 2601.03236) · **Эффект**: +10.6 F1 на multi-hop задачах
+**Source**: MAGMA-style (arXiv 2601.03236) · **Effect**: +10.6 F1 on multi-hop tasks
 
-**Принцип**: разные типы запросов требуют разных стратегий обхода рёбер графа.
-Не все рёбра одинаково релевантны для каждого типа задачи.
+**Principle**: different query types require different graph edge traversal strategies.
+Not all edges are equally relevant for each task type.
 
-| Тип запроса (FactRouter) | Стратегия обхода | Приоритетные типы рёбер |
+| Query type (FactRouter) | Traversal strategy | Priority edge types |
 |--------------------------|---------------------|----------------------------------------------|
 | `RECALL` | temporal | `[:MENTIONED_IN]`, `[:LED_TO]`, `valid_from` |
 | `DEFINE` | causal | `[:CAUSES]`, `[:CONCEPT_OF]`, `[:HAS_RELATION]` |
 | `POLICY` | influence | `[:DERIVED_FROM]`, `[:IMPROVES]`, `[:USED_IN]` |
-| `TASK` | all | все типы рёбер, глубина +1 |
+| `TASK` | all | all edge types, depth +1 |
 
-**Реализация** (добавить в `HybridRetriever.retrieve()`):
+**Implementation** (add to `HybridRetriever.retrieve()`):
 
 ```python
 # traversal_policy.py
@@ -5737,25 +5717,25 @@ def get_traversal_config(query_type: str) -> dict:
     return TRAVERSAL_STRATEGIES.get(query_type, TRAVERSAL_STRATEGIES["TASK"])
 ```
 
-**Инвариант I76**:
+**Invariant I76**:
 ```
-I76 (TraversalPolicy): TraversalPolicy.get_traversal_config() вызывается ТОЛЬКО
-из HybridRetriever.retrieve(), не из Fast Path напрямую.
-Нарушение: прямое применение traversal-фильтра в agent.chat() минуя retriever.
+I76 (TraversalPolicy): TraversalPolicy.get_traversal_config() is called ONLY
+from HybridRetriever.retrieve(), not from the Fast Path directly.
+Violation: applying the traversal filter directly in agent.chat() bypassing the retriever.
 ```
 
 ---
 
-### 5. ReasoningBank: Самообучение на опыте
+### 5. ReasoningBank: Self-Learning from Experience
 
-**Назначение**: Извлечение стратегий из успехов и неудач
+**Purpose**: Extracting strategies from successes and failures
 
 ```python
 # reasoning_bank.py
-import uuid  # для Strategy.id
+import uuid  # for Strategy.id
 from typing import List, Dict, Optional
 from dataclasses import dataclass
-from collections import deque  # deque для ограничения experience_buffer, field
+from collections import deque  # deque to bound experience_buffer, field
 from enum import Enum
 
 class Outcome(Enum):
@@ -5781,8 +5761,8 @@ class Strategy:
     success_count: int = 0
     failure_count: int = 0
     confidence: float = 0.5
-    failure_penalty: float = 0.1  # Штраф за неудачу
-    success_boost: float = 0.05   # Бонус за успех
+    failure_penalty: float = 0.1  # Penalty for failure
+    success_boost: float = 0.05   # Bonus for success
 
     @property
     def success_rate(self) -> float:
@@ -5791,33 +5771,33 @@ class Strategy:
 
     def update_confidence(self, outcome: Outcome):
         """
-        Обновить confidence на основе результата
-        Негативное подкрепление: неудачи снижают confidence
+        Update confidence based on the outcome
+        Negative reinforcement: failures lower confidence
         """
         if outcome == Outcome.SUCCESS:
-            # Успех → повысить confidence
+            # Success → raise confidence
             self.confidence = min(1.0, self.confidence + self.success_boost)
         elif outcome == Outcome.FAILURE:
-            # Неудача → понизить confidence (negative reinforcement)
+            # Failure → lower confidence (negative reinforcement)
             self.confidence = max(0.0, self.confidence - self.failure_penalty)
         
-        # Частые неудачи → увеличить penalty
+        # Frequent failures → increase penalty
         if self.failure_count > 5:
-            # После 5 неудач штраф удваивается
+            # After 5 failures the penalty doubles
             self.failure_penalty = min(0.3, self.failure_penalty * 1.2)
 
 class ReasoningBank:
-    def __init__(self, graph_memory: GraphMemory, llm_client=None):  # llm_client добавлен — ACE Curator и LLM-путь стратегий работают
+    def __init__(self, graph_memory: GraphMemory, llm_client=None):  # llm_client added — ACE Curator and the LLM strategy path work
         self.graph = graph_memory
         self.llm_client = llm_client
-        # deque(maxlen=1000) вместо List[] — защита от OOM
+        # deque(maxlen=1000) instead of List[] — protection against OOM
         self.experience_buffer = deque(maxlen=1000)
         self.strategies: Dict[str, Strategy] = {}
 
-        # P1-3 FIX: делегат для ACE Curator.
-        # Каноническая реализация живёт в agent_with_learning.py::SelfLearningAgent.
-        # ReasoningBank не дублирует логику — только делегирует.
-        # Устанавливается через set_ace_delegate() из SelfLearningAgent.__init__().
+        # P1-3 FIX: delegate for the ACE Curator.
+        # The canonical implementation lives in agent_with_learning.py::SelfLearningAgent.
+        # ReasoningBank does not duplicate the logic — it only delegates.
+        # Set via set_ace_delegate() from SelfLearningAgent.__init__().
         self._ace_delegate = None
 
     async def log_experience(
@@ -5829,7 +5809,7 @@ class ReasoningBank:
         reasoning: str,
         error: Optional[str] = None
     ):
-        """Записать опыт выполнения задачи"""
+        """Record the experience of executing a task"""
         exp = Experience(
             task_description=task,
             context=context,
@@ -5842,7 +5822,7 @@ class ReasoningBank:
         
         self.experience_buffer.append(exp)
         
-        # Сохранить в граф
+        # Save to the graph
         await self.graph.add_episode(
             episode_name=f"experience_{generate_id()}",
             content=json.dumps({
@@ -5854,18 +5834,18 @@ class ReasoningBank:
             source="experience_log"
         )
         
-        # Если накопилось достаточно опыта - извлечь стратегии
+        # If enough experience has accumulated - distill strategies
         if len(self.experience_buffer) >= 10:
             await self.distill_strategies()
 
     async def distill_strategies(self):
         """
-        Извлечение высокоуровневых стратегий из опыта
-        Можно использовать LLM для лучшего качества (o4-mini достаточно)
+        Distilling high-level strategies from experience
+        An LLM can be used for better quality (o4-mini is sufficient)
         
-        P9-FIX БАГ-14: partial progress tracking — каждая группа обрабатывается
-        независимо и сразу удаляется из буфера. При сбое в группе N группы 1..N-1
-        уже удалены — повторный вызов не дублирует стратегии.
+        P9-FIX BUG-14: partial progress tracking — each group is processed
+        independently and immediately removed from the buffer. If group N fails, groups 1..N-1
+        are already removed — a retry does not duplicate strategies.
         """
         grouped = self._group_by_task_type(list(self.experience_buffer))
         
@@ -5886,7 +5866,7 @@ class ReasoningBank:
                     )
                     await self._save_anti_pattern(anti_pattern)
                 
-                # Удаляем только обработанную группу — сразу после успеха
+                # Remove only the processed group — immediately after success
                 for exp in experiences:
                     self.experience_buffer.discard(exp)
             except Exception as e:
@@ -5901,12 +5881,12 @@ class ReasoningBank:
         successes: List[Experience]
     ) -> Strategy:
         """
-        Извлечь общую стратегию из успешных попыток
+        Extract a common strategy from successful attempts
         """
-        # Вариант 1: Простая агрегация БЕЗ LLM
+        # Option 1: Simple aggregation WITHOUT an LLM
         common_actions = self._find_common_patterns([e.action_taken for e in successes])
         
-        # Вариант 2: С дешевым LLM (лучше)
+        # Option 2: With a cheap LLM (better)
         # strategy_text = await self._llm_summarize(successes)
         
         strategy = Strategy(
@@ -5923,13 +5903,13 @@ class ReasoningBank:
         experiences: "deque[Experience]"
     ) -> Dict[str, List["Experience"]]:
         """
-        Группировать накопленный опыт по типу задачи.
-        Тип определяется первым словом task_description (простая эвристика).
-        При необходимости заменить на TF-IDF или LLM-классификацию.
+        Group accumulated experience by task type.
+        The type is determined by the first word of task_description (a simple heuristic).
+        Replace with TF-IDF or LLM-classification if needed.
         """
         groups: Dict[str, List] = {}
         for exp in experiences:
-            # Берём первые два слова как тип задачи
+            # Take the first two words as the task type
             words = exp.task_description.lower().split()
             task_type = "_".join(words[:2]) if len(words) >= 2 else (words[0] if words else "general")
             groups.setdefault(task_type, []).append(exp)
@@ -5942,16 +5922,16 @@ class ReasoningBank:
         epsilon: float = 0.1  # 10% exploration
     ) -> List[Strategy]:
         """
-        Поиск релевантных стратегий для текущей задачи
-        Использует Thompson Sampling для баланса exploration/exploitation (RFC0039, заменил UCB1)
+        Search for strategies relevant to the current task
+        Uses Thompson Sampling to balance exploration/exploitation (RFC0039, replaced UCB1)
         """
-        # 1. Поиск в графе по контексту задачи
+        # 1. Search the graph by task context
         results = await self.graph.search(
             query=f"strategy for {current_task}",
             num_results=10
         )
         
-        # 2. Парсинг стратегий
+        # 2. Parse strategies
         strategies = []
         for result in results:
             try:
@@ -5963,10 +5943,10 @@ class ReasoningBank:
         if not strategies:
             return []
         
-        # 3. Thompson Sampling выбор стратегий (RFC0039 — заменил UCB1)
-        selected = await self._thompson_sampling_select(strategies)  # UCB1 заменён Thompson Sampling (RFC0039)
+        # 3. Thompson Sampling strategy selection (RFC0039 — replaced UCB1)
+        selected = await self._thompson_sampling_select(strategies)  # UCB1 replaced by Thompson Sampling (RFC0039)
         
-        return selected[:3]  # Топ-3
+        return selected[:3]  # Top-3
 
     async def _thompson_sampling_select(
         self,
@@ -5975,8 +5955,8 @@ class ReasoningBank:
         seed: int | None = None
     ) -> List[Strategy]:
         """
-        Thompson Sampling выбор стратегий (RFC0039).
-        seed — для воспроизводимого replay в аудите (Инвариант I13).
+        Thompson Sampling strategy selection (RFC0039).
+        seed — for reproducible replay in audits (Invariant I13).
         """
         import numpy as np
         if not strategies:
@@ -5998,16 +5978,16 @@ class ReasoningBank:
         epsilon: float
     ) -> List[Strategy]:
         """
-        ⚠️ УСТАРЕЛО: заменён Thompson Sampling (RFC0039).
-        Оставлен для обратной совместимости. Не использовать напрямую.
-        Используйте _thompson_sampling_select() вместо этого.
+        ⚠️ DEPRECATED: replaced by Thompson Sampling (RFC0039).
+        Kept for backward compatibility. Do not use directly.
+        Use _thompson_sampling_select() instead.
         """
         import random
         import numpy as np
         
-        # Exploration с вероятностью epsilon
+        # Exploration with probability epsilon
         if random.random() < epsilon:
-            # Вернуть случайную стратегию для exploration
+            # Return a random strategy for exploration
             logger.info("Strategy selection: EXPLORATION mode")
             return random.sample(strategies, min(3, len(strategies)))
         
@@ -6017,7 +5997,7 @@ class ReasoningBank:
         )
         
         if total_trials == 0:
-            # Нет истории → вернуть все
+            # No history → return all
             return strategies
         
         scored_strategies = []
@@ -6026,33 +6006,33 @@ class ReasoningBank:
             trials = strategy.success_count + strategy.failure_count
             
             if trials == 0:
-                # Неиспытанная стратегия → максимальный приоритет
+                # Untried strategy → maximum priority
                 ucb_score = float('inf')
             else:
                 # UCB1 formula: mean + exploration_bonus
                 exploitation_term = strategy.success_rate
                 
-                # Exploration bonus: тем выше, чем меньше пробовали
+                # Exploration bonus: higher the fewer times it has been tried
                 exploration_bonus = np.sqrt(
                     2 * np.log(total_trials) / trials
                 )
                 
-                # Context similarity: насколько стратегия подходит
+                # Context similarity: how well the strategy fits
                 context_similarity = self._compute_context_similarity(
                     strategy.applicable_contexts,
                     context
                 )
                 
-                # Финальный UCB score
+                # Final UCB score
                 ucb_score = (
-                    exploitation_term +           # 0-1: текущий success rate
-                    exploration_bonus * 0.5 +     # Бонус за exploration
-                    context_similarity * 0.3      # Релевантность контексту
+                    exploitation_term +           # 0-1: current success rate
+                    exploration_bonus * 0.5 +     # Bonus for exploration
+                    context_similarity * 0.3      # Relevance to context
                 )
             
             scored_strategies.append((strategy, ucb_score))
         
-        # Сортировать по UCB score
+        # Sort by UCB score
         scored_strategies.sort(key=lambda x: x[1], reverse=True)
         
         logger.info(
@@ -6068,13 +6048,13 @@ class ReasoningBank:
         current_context: Dict
     ) -> float:
         """
-        Вычислить похожесть контекста стратегии и текущей задачи
-        Упрощенная версия - можно улучшить с эмбеддингами
+        Compute the similarity between the strategy's context and the current task
+        Simplified version - can be improved with embeddings
         """
         if not strategy_contexts:
-            return 0.5  # Нейтральная оценка
+            return 0.5  # Neutral score
         
-        # Двойной generator comprehension — корректный способ flatten list of words
+        # Double generator comprehension — the correct way to flatten a list of words
         current_keywords = {
             word
             for v in current_context.values()
@@ -6103,12 +6083,12 @@ class ReasoningBank:
         outcome: Outcome
     ):
         """
-        Обновить статистику стратегии на основе нового опыта
-        Включает negative reinforcement через confidence penalty
+        Update the strategy's statistics based on new experience
+        Includes negative reinforcement via a confidence penalty
         """
         strategy = self.strategies.get(strategy_id)
         if not strategy:
-            # Найти в графе
+            # Find it in the graph
             results = await self.graph.search(
                 query=f"strategy: {strategy_id}",
                 num_results=1
@@ -6119,13 +6099,13 @@ class ReasoningBank:
             strategy_data = json.loads(results[0].content)
             strategy = Strategy(**strategy_data)
         
-        # Обновить счетчики
+        # Update counters
         if outcome == Outcome.SUCCESS:
             strategy.success_count += 1
         elif outcome == Outcome.FAILURE:
             strategy.failure_count += 1
         
-        # Применить negative/positive reinforcement
+        # Apply negative/positive reinforcement
         strategy.update_confidence(outcome)
         
         logger.info(
@@ -6134,21 +6114,21 @@ class ReasoningBank:
             f"confidence={strategy.confidence:.2f}"
         )
         
-        # Сохранить обновление в граф
+        # Save the update to the graph
         await self._save_strategy(strategy)
 
     async def ace_curator_update(self):
         """
         ACE Curator (Stanford/SambaNova ACE pattern).
-        Вызывается ТОЛЬКО из SleepTimeWorker в idle — не из Fast Path.
+        Called ONLY from SleepTimeWorker when idle — not from the Fast Path.
 
-        P1-3 FIX: дублирующая реализация удалена. Делегируем в канонический метод.
-        Каноническая реализация: agent_with_learning.py::SelfLearningAgent.ace_curator_update()
-        Расхождение было: здесь e.task, там e.task_description[:50] — рассинхронизация.
-        Все изменения логики вносить ТОЛЬКО в agent_with_learning.py.
+        P1-3 FIX: the duplicate implementation has been removed. We delegate to the canonical method.
+        Canonical implementation: agent_with_learning.py::SelfLearningAgent.ace_curator_update()
+        The discrepancy was: e.task here, e.task_description[:50] there — out of sync.
+        Make all logic changes ONLY in agent_with_learning.py.
         """
         if self._ace_delegate is None:
-            logger.debug("ace_curator_update: _ace_delegate не задан, пропускаем")
+            logger.debug("ace_curator_update: _ace_delegate not set, skipping")
             return
         try:
             await self._ace_delegate.ace_curator_update()
@@ -6157,16 +6137,16 @@ class ReasoningBank:
 
     def set_ace_delegate(self, delegate) -> None:
         """
-        Установить делегат для ACE Curator.
-        Вызывать из SelfLearningAgent.__init__() после создания ReasoningBank:
+        Set the delegate for the ACE Curator.
+        Call from SelfLearningAgent.__init__() after creating ReasoningBank:
             self.reasoning_bank.set_ace_delegate(self)
 
-        P1-3 FIX: устраняет дублирование ace_curator_update в двух местах.
+        P1-3 FIX: eliminates the duplication of ace_curator_update in two places.
         """
         self._ace_delegate = delegate
 ```
 
-**Интеграция в агент**:
+**Integration into the agent**:
 
 ```python
 # agent_with_learning.py
@@ -6183,33 +6163,33 @@ class SelfLearningAgent:
         self.retriever = retriever
         self.reasoning_bank = reasoning_bank
 
-        # P1-3 FIX: зарегистрировать делегат чтобы reasoning_bank.ace_curator_update()
-        # делегировал в канонический метод self.ace_curator_update().
-        # Каноническая реализация ACE Curator живёт здесь, не в ReasoningBank.
+        # P1-3 FIX: register the delegate so that reasoning_bank.ace_curator_update()
+        # delegates to the canonical method self.ace_curator_update().
+        # The canonical ACE Curator implementation lives here, not in ReasoningBank.
         self.reasoning_bank.set_ace_delegate(self)
 
     async def execute_task(self, task: str, context: Dict):
         """
-        Выполнение задачи с учетом прошлого опыта
-        Цикл: Retrieve → Plan → Execute → Judge → Learn
+        Execute a task taking past experience into account
+        Cycle: Retrieve → Plan → Execute → Judge → Learn
         """
-        # 1. RETRIEVE: Найти релевантные стратегии (Thompson Sampling, RFC0039)
+        # 1. RETRIEVE: Find relevant strategies (Thompson Sampling, RFC0039)
         strategies = await self.reasoning_bank.retrieve_relevant_strategies(
             current_task=task,
             context=context,
-            # Thompson Sampling: адаптивный баланс explore/exploit встроен в Beta-распределение
+            # Thompson Sampling: adaptive explore/exploit balance is built into the Beta distribution
         )
         
-        # 2. PLAN: Выбрать стратегию или создать новую
+        # 2. PLAN: Select a strategy or create a new one
         if strategies:
             best_strategy = strategies[0]
             plan = f"Based on past success, use strategy: {best_strategy.description}"
-            strategy_id = best_strategy.id  # используем UUID вместо description
+            strategy_id = best_strategy.id  # use the UUID instead of the description
         else:
             plan = await self._create_new_plan(task, context)
             strategy_id = None
         
-        # 3. EXECUTE: Выполнить план
+        # 3. EXECUTE: Execute the plan
         try:
             result = await self._execute_plan(plan, context)
             outcome = Outcome.SUCCESS
@@ -6219,12 +6199,12 @@ class SelfLearningAgent:
             outcome = Outcome.FAILURE
             error = str(e)
         
-        # 4. JUDGE: Оценить результат
+        # 4. JUDGE: Evaluate the result
         reasoning = await self._reflect_on_outcome(
             task, plan, result, outcome
         )
         
-        # 5. LEARN: Сохранить опыт
+        # 5. LEARN: Save the experience
         await self.reasoning_bank.log_experience(
             task=task,
             context=context,
@@ -6234,7 +6214,7 @@ class SelfLearningAgent:
             error=error
         )
         
-        # 6. UPDATE: Обновить статистику стратегии
+        # 6. UPDATE: Update the strategy statistics
         if strategy_id:
             await self.reasoning_bank.update_strategy_feedback(
                 strategy_id=strategy_id,
@@ -6251,21 +6231,21 @@ class SelfLearningAgent:
         outcome: Outcome
     ) -> str:
         """
-        Рефлексия на результат — извлечь урок для ReasoningBank.
+        Reflect on the outcome — extract a lesson for ReasoningBank.
 
-        TODO (Phase 2): заменить эвристику на вызов SLM (Qwen3-1.7B) для
-        структурированного анализа: root_cause + conditions + anti_conditions.
-        Сейчас используется детерминированная эвристика — 0 токенов LLM.
+        TODO (Phase 2): replace the heuristic with an SLM call (Qwen3-1.7B) for
+        structured analysis: root_cause + conditions + anti_conditions.
+        Currently a deterministic heuristic is used — 0 LLM tokens.
         """
         if outcome == Outcome.SUCCESS:
             return (
-                f"SUCCESS: стратегия '{plan[:80]}' решила задачу '{task[:80]}'. "
-                f"Результат получен: {bool(result)}."
+                f"SUCCESS: strategy '{plan[:80]}' solved task '{task[:80]}'. "
+                f"Result obtained: {bool(result)}."
             )
         else:
             return (
-                f"FAILURE: стратегия '{plan[:80]}' не справилась с задачей '{task[:80]}'. "
-                f"Требуется альтернативный подход."
+                f"FAILURE: strategy '{plan[:80]}' failed to handle task '{task[:80]}'. "
+                f"An alternative approach is required."
             )
 ```
 
@@ -6273,7 +6253,7 @@ class SelfLearningAgent:
 
 ### 18. velantrim_config.py — Unified Constants 
 
-**Назначение**: Единый источник всех числовых констант системы. Устраняет parameter drift.
+**Purpose**: A single source for all of the system's numeric constants. Eliminates parameter drift.
 
 ```python
 # velantrim_config.py
@@ -6322,7 +6302,7 @@ TOKENS = TokenConfig()
 SLO = SLOConfig()
 ```
 
-**Использование**:
+**Usage**:
 ```python
 from velantrim_config import MEMORY, TRUTH
 
@@ -6332,11 +6312,11 @@ if len(l2_items) < MEMORY.L2_COLD_START_MIN:
 
 ---
 
-### 19. TruthGateWithESM — Единая точка Guardian + ESM (RFC0015)
+### 19. TruthGateWithESM — A Single Point for Guardian + ESM (RFC0015)
 
-**Проблема**: Guardian и ESM были независимы — нет атомарности
+**Problem**: Guardian and ESM were independent — no atomicity
 
-**Решение**: Фасад-оркестратор
+**Solution**: A facade-orchestrator
 
 ```python
 @dataclass
@@ -6357,7 +6337,7 @@ class TruthGateWithESM:
     async def validate_and_transition(self, item: dict) -> TruthGateResult:
         emotional_salience = float(item.get("emotional_salience", 0.0))
         
-        # 1. Guardian валидация
+        # 1. Guardian validation
         passed = await self.guardian.validate_proposal(item)
         
         if not passed:
@@ -6374,7 +6354,7 @@ class TruthGateWithESM:
             emotional_salience > TRUTH.EMOTIONAL_RING_ZERO):
             await self.esm.freeze(item["id"])
         
-        # 4. Промоут в L3
+        # 4. Promote to L3
         await self.graph.promote_from_staging(item)
         
         if emotional_salience > 0.5:
@@ -6385,27 +6365,27 @@ class TruthGateWithESM:
                                "TRUTH_GATE_PASSED", emotional_salience)
 ```
 
-**Auto Truth Gate Worker** — Фоновый процесс для автоматического перехода Supported → Validated
+**Auto Truth Gate Worker** — A background process for the automatic transition Supported → Validated
 
 ```python
 # auto_truth_gate_worker.py
 # P2-3: Conflict Resolution Window (NGT Memory pattern)
-# После фразы "я ошибся" / "correction" / "исправление":
-# 60-секундное окно, в котором TruthGate снижает барьер для user_input.
+# After the phrase "I was wrong" / "correction" / "fix":
+# a 60-second window during which TruthGate lowers the barrier for user_input.
 # CORRECTION_WINDOW_SECONDS = 60
-# По истечении окна — стандартный режим.
+# After the window expires — standard mode.
 CORRECTION_WINDOW_SECONDS = 60
 
 class AutoTruthGateWorker:
     """
-    Фоновый процесс для автоматической валидации фактов.
-    Запускается раз в сутки (или по расписанию).
+    A background process for automatic fact validation.
+    Runs once a day (or on a schedule).
 
-    Проблема: факты с достаточным evidence остаются в Supported
-    до случайного попадания в Truth Gate.
+    Problem: facts with sufficient evidence remain in Supported
+    until they happen to land in the Truth Gate.
 
-    Решение: периодически проверять все Supported факты
-    с evidence_count ≥ 3 и переводить в Validated.
+    Solution: periodically check all Supported facts
+    with evidence_count ≥ 3 and transition them to Validated.
     """
 
     def __init__(self, graph, truth_gate, esm, scheduler_hours=24):
@@ -6415,9 +6395,9 @@ class AutoTruthGateWorker:
         self.scheduler_hours = scheduler_hours
 
     async def run_validation_cycle(self):
-        """Основной цикл — вызывается APScheduler"""
-        # evidence_count — НЕ поле :Fact, evidence хранится через связь [:SUPPORTED_BY]->(:Evidence)
-        # Считаем количество Evidence-узлов через граф
+        """Main loop — called by APScheduler"""
+        # evidence_count is NOT a field of :Fact, evidence is stored via the [:SUPPORTED_BY]->(:Evidence) relationship
+        # Count the number of Evidence nodes via the graph
         query = """
         MATCH (f:Fact)-[:SUPPORTED_BY]->(ev:Evidence)
         WHERE f.epistemic_state = 'Supported'
@@ -6433,7 +6413,7 @@ class AutoTruthGateWorker:
         validated_count = 0
         
         for fact in candidates:
-            # Проверить через Truth Gate
+            # Validate via the Truth Gate
             result = await self.truth_gate.validate_and_transition({
                 "id": fact['id'],
                 "evidence_count": fact['evidence_count'],
@@ -6450,16 +6430,16 @@ class AutoTruthGateWorker:
         
         return validated_count
 
-# Интеграция в startup
+# Integration into startup
 # scheduler.add_job(auto_truth_gate_worker.run_validation_cycle, 
 #                   'interval', hours=24)
 ```
 
 ---
 
-### 20. L1.5 Velum — Детектор ранних связей (RFC0016)
+### 20. L1.5 Velum — Early Connection Detector (RFC0016)
 
-**Назначение**: LTP-inspired механизм детекции co-occurrence
+**Purpose**: An LTP-inspired mechanism for co-occurrence detection
 
 ```python
 @dataclass
@@ -6484,9 +6464,9 @@ class VelumSignal:
 @dataclass
 class VelumConfig:
     """
-    Конфигурация Velum.
-    persist=True: рёбра сохраняются в SQLite и восстанавливаются при рестарте.
-    Без persist рёбра живут только в RAM текущей сессии — связи теряются при перезапуске.
+    Velum configuration.
+    persist=True: edges are saved to SQLite and restored on restart.
+    Without persist, edges live only in the RAM of the current session — connections are lost on restart.
     """
     persist:     bool = False
     sqlite_path: str  = "./data/velum_seed.db"
@@ -6501,37 +6481,37 @@ class Velum:
         self._edges: dict[frozenset, VelumEdge] = {}
         self._entity_index: dict[str, list[frozenset]] = defaultdict(list)
         self._recent_episodes = []
-        self._lock = asyncio.Lock()  # защита self._edges от race condition при конкурентных инсертах
+        self._lock = asyncio.Lock()  # protects self._edges from a race condition during concurrent inserts
 
-        # P0-1 FIX: _degree_cache — кэш степеней узлов для ACT-R fan-effect.
-        # Инкрементируется в _add_edge(), декрементируется в gc_weak_edges().
-        # Без инициализации здесь → AttributeError при первом _strengthen_edge().
+        # P0-1 FIX: _degree_cache — cache of node degrees for the ACT-R fan-effect.
+        # Incremented in _add_edge(), decremented in gc_weak_edges().
+        # Without initializing it here → AttributeError on the first _strengthen_edge().
         self._degree_cache: dict[str, int] = {}
-        # P0-F FIX: трекинг episode_ids текущей сессии для on_session_end VelumSignal.
-        # Без этого поля on_session_end не может передать episode_ids → пустой список.
+        # P0-F FIX: tracking the current session's episode_ids for the on_session_end VelumSignal.
+        # Without this field, on_session_end cannot pass episode_ids → empty list.
         self._current_session_episodes: list[str] = []
 
-        # FIX из HYPERIA: восстановить топ рёбра из предыдущей сессии при старте.
-        # Без этого Velum всегда начинает с нуля — первые N эпизодов не имеют
-        # накопленных co-occurrence и сигналы в L2 не генерируются.
+        # FIX from HYPERIA: restore the top edges from the previous session at startup.
+        # Without this, Velum always starts from scratch — the first N episodes have no
+        # accumulated co-occurrence and signals are not generated into L2.
         if self._config.persist:
             self._load_seed_from_sqlite()
 
     async def observe_episode(self, episode_id: str, entities: list[str]) -> list[VelumSignal]:
-        """P0-D FIX: observe_episode захватывает self._lock только для _recent_episodes,
-        затем ОСВОБОЖДАЕТ lock перед вызовом _update_edge (который захватывает lock сам).
-        asyncio.Lock не реентрантный — вложенный захват = deadlock.
-        Паттерн: захват → копия → release → работа с копией.
+        """P0-D FIX: observe_episode acquires self._lock only for _recent_episodes,
+        then RELEASES the lock before calling _update_edge (which acquires the lock itself).
+        asyncio.Lock is not reentrant — a nested acquire = deadlock.
+        Pattern: acquire → copy → release → work with the copy.
         """
         signals = []
-        async with self._lock:  # защита _recent_episodes от concurrent inserts
-            self._current_session_episodes.append(episode_id)  # P0-F FIX: трекинг для on_session_end
+        async with self._lock:  # protects _recent_episodes from concurrent inserts
+            self._current_session_episodes.append(episode_id)  # P0-F FIX: tracking for on_session_end
             self._recent_episodes.append((episode_id, entities))
             if len(self._recent_episodes) > MEMORY.VELUM_WINDOW_EPISODES:
                 self._recent_episodes.pop(0)
             window_entities = [(ep_id, ent) for ep_id, ents in self._recent_episodes for ent in ents]
         
-        # co-occurrence вне lock — I/O bound, не мутирует _recent_episodes
+        # co-occurrence outside the lock — I/O bound, does not mutate _recent_episodes
         for i, (eid_a, ent_a) in enumerate(window_entities):
             for eid_b, ent_b in window_entities[i+1:]:
                 if ent_a != ent_b:
@@ -6541,17 +6521,17 @@ class Velum:
         
         return signals
 
-    # Метод на уровне класса (не вложен в observe_episode)
+    # Class-level method (not nested inside observe_episode)
     async def _update_edge(self, entity_a: str, entity_b: str,
                            episode_ids: list) -> "VelumSignal | None":
         """
-        Обновить вес ребра co-occurrence. Возвращает VelumSignal если порог достигнут.
-        заменён NotImplementedError — L1.5 Velum теперь работает.
+        Update the co-occurrence edge weight. Returns a VelumSignal if the threshold is reached.
+        replaced NotImplementedError — L1.5 Velum now works.
         """
         key = frozenset([entity_a, entity_b])
         async with self._lock:
             if key not in self._edges:
-                _now = time.monotonic()  # import time должен быть в начале файла
+                _now = time.monotonic()  # import time must be at the top of the file
                 self._edges[key] = VelumEdge(
                     entity_a=entity_a, entity_b=entity_b,
                     weight=0.0, session_id=self.session_id,
@@ -6566,14 +6546,14 @@ class Velum:
             edge.count  += 1
             edge.last_seen = time.monotonic()
 
-            # FIX из HYPERIA: GC слабых рёбер при росте словаря.
-            # Без этого _edges растёт бесконечно — одна сессия с широким контекстом
-            # может накопить тысячи рёбер с weight≈0.1 которые никогда не промоутируются.
+            # FIX from HYPERIA: GC of weak edges as the dictionary grows.
+            # Without this, _edges grows unboundedly — a single session with a broad context
+            # can accumulate thousands of edges with weight≈0.1 that are never promoted.
             if len(self._edges) > 1000:
                 self._gc_weak_edges()
 
-            # P1-A FIX: порог был VELUM_CO_OCCUR_THRESHOLD/10 = 3/10 = 0.3 → ложные сигналы 2×.
-            # Спецификация требует weight ≥ VELUM_PROMOTE_WEIGHT (0.6) AND count ≥ CROSS_SESSION (3).
+            # P1-A FIX: the threshold was VELUM_CO_OCCUR_THRESHOLD/10 = 3/10 = 0.3 → 2× false signals.
+            # The specification requires weight ≥ VELUM_PROMOTE_WEIGHT (0.6) AND count ≥ CROSS_SESSION (3).
             if (edge.weight >= MEMORY.VELUM_PROMOTE_WEIGHT
                     and edge.count >= MEMORY.VELUM_CO_OCCUR_THRESHOLD):
                 signal = VelumSignal(
@@ -6583,16 +6563,16 @@ class Velum:
                 )
             else:
                 signal = None
-        # FIX: callback вызывается ВНЕ async with self._lock.
-        # Вызов внутри lock создаёт риск deadlock если callback сам обращается к Velum.
+        # FIX: the callback is invoked OUTSIDE async with self._lock.
+        # Calling it inside the lock risks a deadlock if the callback itself accesses Velum.
         if signal and self._signal_callback:
             await self._signal_callback(signal)
         return signal
 
     async def on_session_end(self) -> list[VelumSignal]:
         signals = []
-        # FIX: итерация по self._edges защищена self._lock.
-        # Без блокировки concurrent _update_edge вызывал
+        # FIX: iteration over self._edges is protected by self._lock.
+        # Without the lock, a concurrent _update_edge caused
         # RuntimeError: dictionary changed size during iteration.
         async with self._lock:
             edges_snapshot = list(self._edges.items())
@@ -6601,15 +6581,15 @@ class Velum:
                 signal = VelumSignal(
                     entity_a=edge.entity_a, entity_b=edge.entity_b,
                     weight=edge.weight, reason="SESSION_END",
-                    episode_ids=[])  # episode_ids обязателен — без него TypeError при каждом session_end
+                    episode_ids=[])  # episode_ids is required — without it, TypeError on every session_end
                 signals.append(signal)
                 if self._signal_callback:
                     await self._signal_callback(signal)
             else:
                 edge.weight *= (1.0 - MEMORY.VELUM_DECAY_PER_SESSION)
 
-        # FIX из HYPERIA: сохранить топ рёбра в SQLite при завершении сессии.
-        # Сохраняем ссылку на task — без неё GC убивает корутину до завершения записи.
+        # FIX from HYPERIA: save the top edges to SQLite at the end of the session.
+        # We keep a reference to the task — without it, GC kills the coroutine before the write completes.
         if self._config.persist:
             _t = asyncio.create_task(self._save_top_edges_to_sqlite(top_n=200))
             _t.add_done_callback(
@@ -6630,26 +6610,26 @@ class Velum:
 
     def _gc_weak_edges(self, keep_ratio: float = 0.75):
         """
-        GC слабых рёбер co-occurrence.
-        Вызывается изнутри _update_edge под self._lock когда len(_edges) > 1000.
-        Оставляет топ-75% по весу, остальные удаляет вместе с _entity_index записями.
-        Без этого метода _edges растёт бесконечно при длинных сессиях.
+        GC of weak co-occurrence edges.
+        Called from within _update_edge under self._lock when len(_edges) > 1000.
+        Keeps the top 75% by weight, removes the rest along with their _entity_index entries.
+        Without this method, _edges grows unboundedly during long sessions.
         """
         sorted_edges = sorted(self._edges.items(), key=lambda x: x[1].weight, reverse=True)
         keep_n    = int(len(sorted_edges) * keep_ratio)
         keep_keys = {k for k, _ in sorted_edges[:keep_n]}
 
-        # Удалить слабые рёбра
+        # Remove weak edges
         removed = {k for k in self._edges if k not in keep_keys}
 
-        # P0-1 FIX: обновить кэш степеней при удалении рёбер
+        # P0-1 FIX: update the degree cache when removing edges
         for k in removed:
             edge = self._edges[k]
             for node in list(edge.entities) if hasattr(edge, 'entities') else [edge.entity_a, edge.entity_b]:
                 self._degree_cache[node] = max(0, self._degree_cache.get(node, 1) - 1)
             del self._edges[k]
 
-        # Очистить _entity_index от удалённых ключей
+        # Clean removed keys out of _entity_index
         for entity in list(self._entity_index.keys()):
             self._entity_index[entity] = [
                 k for k in self._entity_index[entity] if k in keep_keys
@@ -6661,10 +6641,10 @@ class Velum:
 
     def _load_seed_from_sqlite(self):
         """
-        Восстановить топ рёбра из предыдущей сессии.
-        Вызывается синхронно в __init__ — допустимо, происходит один раз при старте.
-        Без этого Velum каждый раз начинает с пустого графа рёбер, и первые
-        VELUM_CO_OCCUR_THRESHOLD эпизодов не генерируют сигналы в L2.
+        Restore the top edges from the previous session.
+        Called synchronously in __init__ — acceptable, it happens once at startup.
+        Without this, Velum starts each time with an empty edge graph, and the first
+        VELUM_CO_OCCUR_THRESHOLD episodes do not generate signals into L2.
         """
         import sqlite3
         try:
@@ -6700,8 +6680,8 @@ class Velum:
 
     async def _save_top_edges_to_sqlite(self, top_n: int = 200):
         """
-        Сохранить топ-N рёбер по весу в SQLite.
-        Вызывается через asyncio.create_task в on_session_end — не блокирует pipeline.
+        Save the top-N edges by weight to SQLite.
+        Called via asyncio.create_task in on_session_end — does not block the pipeline.
         """
         import aiosqlite
         async with self._lock:
@@ -6735,13 +6715,13 @@ class Velum:
 
 ### 21. OutputFaithfulnessChecker — Post-generation guard 
 
-**Назначение**: Шаг F6.5 — проверка что LLM не соврал
+**Purpose**: Step F6.5 — checking that the LLM did not lie
 
 ```python
 class OutputFaithfulnessChecker:
     FALLBACK_RESPONSE = (
-        "Недостаточно подтверждённых данных для уверенного ответа. "
-        "Могу ответить точнее, когда накоплю больше проверенных фактов."
+        "Not enough confirmed data to answer confidently. "
+        "I can answer more precisely once I have accumulated more verified facts."
     )
 
     def __init__(self, threshold: float = None):
@@ -6751,11 +6731,11 @@ class OutputFaithfulnessChecker:
         self, answer: str, facts_pack: list[dict]
     ) -> tuple[bool, list[str], float]:
         """
-        Возвращает: (passed, unsupported_sentences, faithfulness_score)
+        Returns: (passed, unsupported_sentences, faithfulness_score)
         """
-        # P1-B FIX: пустой facts_pack = нечего проверять → APPROVE.
-        # БЫЛО: return (False, answer, 0.0) → блокировал Creative Mode и первые запросы.
-        # СТАЛО: return (True, [], 1.0) → нет фактов = нет нарушений = APPROVE.
+        # P1-B FIX: empty facts_pack = nothing to check → APPROVE.
+        # WAS: return (False, answer, 0.0) → blocked Creative Mode and the first queries.
+        # NOW: return (True, [], 1.0) → no facts = no violations = APPROVE.
         if not facts_pack:
             return True, [], 1.0
         
@@ -6771,7 +6751,7 @@ class OutputFaithfulnessChecker:
         return True, unsupported, faithfulness
 
     def _split_sentences(self, text: str) -> list[str]:
-        """Phase 1 stub: разбить текст на предложения."""
+        """Phase 1 stub: split text into sentences."""
         import re
         return [s.strip() for s in re.split(r'[.!?]+', text) if s.strip()]
 
@@ -6786,7 +6766,7 @@ class OutputFaithfulnessChecker:
         )
 ```
 
-**Интеграция в pipeline**:
+**Integration into the pipeline**:
 ```python
 # F6: LLM Generation
 answer = await llm.chat(context)
@@ -6803,170 +6783,170 @@ else:
 
 ---
 
-## 📐 Токен-контракт и Протокол Promote/Demote 
+## 📐 Token Contract and Promote/Demote Protocol 
 
-> **Почему это важно**: цель "90%+ снижение токенов" остаётся декларацией без формального контракта. Этот раздел превращает цель в гарантию.
+> **Why this matters**: the goal of "90%+ token reduction" remains a declaration without a formal contract. This section turns the goal into a guarantee.
 
 ---
 
-### ⚡ Токен-контракт
+### ⚡ Token Contract
 
 ```python
 # token_contract.py
 
-MAX_TOKENS_MEMORY_PER_QUERY = 2000   # Бюджет памяти на один запрос (BALANCED режим)
-MAX_TOKENS_SYSTEM_PROMPT    = 500    # Резерв для системного промпта
-MAX_TOKENS_ETIR_ACTIVATION  = 300    # Лимит для L3.5 Etir spreading activation
-ETIR_TOP_K_NODES            = 10     # Максимум активированных узлов из Etir
-ETIR_DECAY_THRESHOLD        = 0.15   # Узлы с activation < порога не включаются
+MAX_TOKENS_MEMORY_PER_QUERY = 2000   # Memory budget per query (BALANCED mode)
+MAX_TOKENS_SYSTEM_PROMPT    = 500    # Reserve for the system prompt
+MAX_TOKENS_ETIR_ACTIVATION  = 300    # Limit for L3.5 Etir spreading activation
+ETIR_TOP_K_NODES            = 10     # Maximum activated nodes from Etir
+ETIR_DECAY_THRESHOLD        = 0.15   # Nodes with activation < threshold are not included
 
-# Cognitive Modes — бюджеты по режимам
-MAX_TOKENS_PRECISION_MODE   = 1000   # PRECISION: критичные данные, только факты
-MAX_TOKENS_BALANCED_MODE    = 2000   # BALANCED: стандартный режим (90% задач)
-MAX_TOKENS_EXPLORATION_MODE = 4000   # EXPLORATION: brainstorm, гипотезы
-MAX_TOKENS_CREATIVE_MODE    = 3000   # CREATIVE: аналогии + Validated только (RFC0067 v2.0)
+# Cognitive Modes — budgets per mode
+MAX_TOKENS_PRECISION_MODE   = 1000   # PRECISION: critical data, facts only
+MAX_TOKENS_BALANCED_MODE    = 2000   # BALANCED: standard mode (90% of tasks)
+MAX_TOKENS_EXPLORATION_MODE = 4000   # EXPLORATION: brainstorm, hypotheses
+MAX_TOKENS_CREATIVE_MODE    = 3000   # CREATIVE: analogies + Validated only (RFC0067 v2.0)
 ```
 
-**Приоритет уровней при нехватке бюджета:**
+**Priority of levels when the budget runs short:**
 
 ```
-Бюджет: MAX_TOKENS_MEMORY_PER_QUERY = 2000 токенов
+Budget: MAX_TOKENS_MEMORY_PER_QUERY = 2000 tokens
 │
-├── L0 Working Memory    → всегда (~100 токенов, нельзя резать)
-├── L3.5 Etir activation → top_k узлов до ETIR лимита
-├── L1 STM Episodes      → по релевантности до исчерпания остатка
-├── L2 MTM Patterns      → только summary если бюджет есть
-└── L3 LTM Graph         → только по явному meta-запросу
+├── L0 Working Memory    → always (~100 tokens, cannot be trimmed)
+├── L3.5 Etir activation → top_k nodes up to the ETIR limit
+├── L1 STM Episodes      → by relevance until the remainder is exhausted
+├── L2 MTM Patterns      → summary only if budget remains
+└── L3 LTM Graph         → only on an explicit meta-query
 
-Правило: если бюджет исчерпан — L3 отсекается первым,
-         L0 и Etir-результаты защищены всегда.
+Rule: if the budget is exhausted — L3 is cut first,
+      L0 and Etir results are always protected.
 ```
 
 ---
 
-### 🔄 Протокол Promote / Demote
+### 🔄 Promote / Demote Protocol
 
-Формальные правила перемещения данных между уровнями памяти. Без этих правил система не детерминирована.
+Formal rules for moving data between memory levels. Without these rules the system is non-deterministic.
 
 ```
-PROMOTE L1 (STM) → L2 (MTM) если выполняется хотя бы одно:
+PROMOTE L1 (STM) → L2 (MTM) if at least one holds:
   importance_score > 0.7
-  ИЛИ access_count >= 3
-  ИЛИ outcome IN [SUCCESS, FAILURE]   (эмоциональная салиентность)
-  ИЛИ pinned == true
+  OR access_count >= 3
+  OR outcome IN [SUCCESS, FAILURE]   (emotional salience)
+  OR pinned == true
 
-PROMOTE L2 (MTM) → L3 (LTM / Neo4j) если:
-  кластер >= 3 похожих эпизодов (cosine similarity > 0.7)
-  И avg_importance > 0.5
+PROMOTE L2 (MTM) → L3 (LTM / Neo4j) if:
+  cluster >= 3 similar episodes (cosine similarity > 0.7)
+  AND avg_importance > 0.5
 
-DEMOTE / SOFT DELETE L2 → archive если:
-  age > 30 дней
-  И importance_score < 0.3
-  И access_count == 0 за последние 14 дней
-  И pinned == false
-  → Действие: is_active = false, valid_to = now()
+DEMOTE / SOFT DELETE L2 → archive if:
+  age > 30 days
+  AND importance_score < 0.3
+  AND access_count == 0 over the last 14 days
+  AND pinned == false
+  → Action: is_active = false, valid_to = now()
 
-FORGET (физическое удаление GC) если:
+FORGET (physical GC deletion) if:
   is_active == false
-  И age > 90 дней
-  И importance_score < 0.1
-  И reindex_required == false   (не трогать если нужна переиндексация)
-  → Действие: архивация в S3, затем DETACH DELETE
+  AND age > 90 days
+  AND importance_score < 0.1
+  AND reindex_required == false   (do not touch if reindexing is needed)
+  → Action: archive to S3, then DETACH DELETE
 ```
 
-| Переход | Условие | Метод |
+| Transition | Condition | Method |
 |---|---|---|
 | L1 → L2 | importance > 0.7 / access ≥ 3 / outcome | `consolidate_stm_to_mtm()` |
-| L2 → L3 | кластер ≥ 3, avg_importance > 0.5 | `consolidate_mtm_to_ltm()` |
+| L2 → L3 | cluster ≥ 3, avg_importance > 0.5 | `consolidate_mtm_to_ltm()` |
 | L2 → archive | age > 30d, importance < 0.3 | Soft Delete: `is_active=false` |
 | Archive → delete | age > 90d, importance < 0.1 | GC: S3 backup + DETACH DELETE |
-| L3 → L3.5 Etir | access_count > порога / pinned | `etir_promote()` |
-| L3.5 → L3 | access_count падает, decay | `etir_evict()` |
+| L3 → L3.5 Etir | access_count > threshold / pinned | `etir_promote()` |
+| L3.5 → L3 | access_count drops, decay | `etir_evict()` |
 
 ---
 
 ### ❄️ Cold Start / Seed Nodes
 
-> ⚠️ **Блокер KPI**: При первом запуске Etir пуст → P95 > 500ms на каждый
-> запрос, что нарушает заявленный KPI <500ms. Без seed nodes система
-> деградирует в полный обход L3 (Neo4j) на всех запросах до накопления данных.
+> ⚠️ **KPI blocker**: On first launch Etir is empty → P95 > 500ms on every
+> query, which violates the stated KPI of <500ms. Without seed nodes the system
+> degrades into a full L3 (Neo4j) traversal on all queries until data accumulates.
 
 ```
-Проблема: Etir пуст при init → полный Neo4j traversal на каждый запрос
-          Velum пуст → все связи идут напрямую в граф
-          ReasoningBank пуст → Thompson Sampling работает наугад
+Problem: Etir is empty at init → full Neo4j traversal on every query
+          Velum is empty → all links go straight to the graph
+          ReasoningBank is empty → Thompson Sampling works at random
 
-Решение — Seed Nodes при инициализации:
-  1. При старте системы загрузить базовые концепты в Etir:
-     · Science Core узлы с pinned=True (если заполнен)
-     · VALUES CORE / Ring Zero узлы — всегда pinned
-     · Топ-N узлов по access_count из прошлых сессий
-     · Если данных нет — минимальный набор из constants.py
+Solution — Seed Nodes at initialization:
+  1. At system startup, load base concepts into Etir:
+     · Science Core nodes with pinned=True (if populated)
+     · VALUES CORE / Ring Zero nodes — always pinned
+     · Top-N nodes by access_count from past sessions
+     · If there is no data — a minimal set from constants.py
 
   2. Velum seed:
-     · Загрузить связи с usage_count > 3 из предыдущих сессий
-     · Если первый запуск — начать с пустым Velum (нормально)
+     · Load links with usage_count > 3 from previous sessions
+     · If it is the first launch — start with an empty Velum (normal)
 
   3. ReasoningBank seed:
-     · Предзагрузить базовые стратегии из reasoning_bank.py
-     · confidence = 0.5 (нейтральный старт, Thompson Sampling выберет сам)
+     · Preload base strategies from reasoning_bank.py
+     · confidence = 0.5 (neutral start, Thompson Sampling will choose on its own)
 
-Реализация: etir_init(seed=True) вызывается в pipeline.__init__()
+Implementation: etir_init(seed=True) is called in pipeline.__init__()
 ```
 
 ---
 
-### 🔀 Soft Delete — обязательный паттерн GC
+### 🔀 Soft Delete — Mandatory GC Pattern
 
 ```
-НИКОГДА не делать сразу DETACH DELETE в production.
-Всегда: Soft Delete → Архивация S3 → Hard Delete
+NEVER run DETACH DELETE directly in production.
+Always: Soft Delete → S3 archival → Hard Delete
 
-Шаги удаления:
+Deletion steps:
 1. SET node.is_active = false, node.valid_to = datetime()
-2. Дождаться успешной записи в S3
-3. Только после успеха: DETACH DELETE
-4. Если S3 упал → откатить is_active = true
+2. Wait for a successful write to S3
+3. Only after success: DETACH DELETE
+4. If S3 fails → roll back is_active = true
 
-Restore Path (восстановление из архива):
-1. Найти узел в S3 по node_id / canonical_id
+Restore Path (restoration from archive):
+1. Find the node in S3 by node_id / canonical_id
 2. MERGE (n:KnowledgeNode {node_id: $id})
 3. SET n.is_active = true, n.valid_to = null
 4. SET n.restored_at = datetime(), n.restore_reason = $reason
-5. Проверить RFC инварианты (MGL-2, MGL-5) после восстановления
+5. Check the RFC invariants (MGL-2, MGL-5) after restoration
 ```
 
 ---
 
-### 🔀 Конфликт фактов — [:CONTRADICTS] pipeline
+### 🔀 Fact Conflict — [:CONTRADICTS] pipeline
 
 ```
-Пользователь говорит: "Забудь X, мы возвращаемся к Y"
+The user says: "Forget X, we're going back to Y"
 │
-├── Graphiti создаёт новый узел :Fact (новое решение)
-├── Классификатор интента детектирует OVERRIDE
-├── Создаётся связь: new_fact-[:CONTRADICTS {reason}]->old_fact
-├── old_fact получает: is_active=false, valid_to=now()
-├── HybridRetriever автоматически фильтрует is_active=false
-└── GC при следующем запуске: S3 backup → физическое удаление
+├── Graphiti creates a new :Fact node (the new decision)
+├── The intent classifier detects OVERRIDE
+├── A link is created: new_fact-[:CONTRADICTS {reason}]->old_fact
+├── old_fact gets: is_active=false, valid_to=now()
+├── HybridRetriever automatically filters out is_active=false
+└── GC on the next launch: S3 backup → physical deletion
 
-⚠️ ВАЖНО: LLM НЕ расставляет [:CONTRADICTS] автоматически.
-   Только явная команда пользователя или CRUD-классификатор.
-   При обнаружении конфликта агент переспрашивает:
-   "Вижу противоречие с предыдущим решением. Стереть старое?"
+⚠️ IMPORTANT: the LLM does NOT assign [:CONTRADICTS] automatically.
+   Only an explicit user command or the CRUD classifier.
+   When a conflict is detected, the agent asks back:
+   "I see a contradiction with the previous decision. Erase the old one?"
 ```
 
 ---
 
-### 6. Context Builder: Умная сборка промпта
+### 6. Context Builder: Smart Prompt Assembly
 
-> ⚠️ **Каноническая реализация — FEATURE-8 (RFC0062).** Этот раздел описывает логику; актуальный код см. в разделе RFC0062 · FEATURE-8.
+> ⚠️ **The canonical implementation is FEATURE-8 (RFC0062).** This section describes the logic; for the actual code, see the RFC0062 · FEATURE-8 section.
 
-**Назначение**: Собрать минимальный, релевантный контекст в пределах token budget.
+**Purpose**: Assemble the minimal, relevant context within the token budget.
 
 ---
 
-## 🔄 Полная интеграция: Главный агент
+## 🔄 Full Integration: Main Agent
 
 ```python
 # main_agent.py
@@ -6977,10 +6957,10 @@ tracer = trace.get_tracer(__name__)
 
 class AutonomousSelfLearningAgent:
     """
-    Полностью автономный агент с фрактальной памятью и самообучением
-    Production-ready версия с:
-    - Circuit breakers для resilience
-    - OpenTelemetry для observability
+    Fully autonomous agent with fractal memory and self-learning
+    Production-ready version with:
+    - Circuit breakers for resilience
+    - OpenTelemetry for observability
     - Adaptive consolidation
     - Thompson Sampling strategy selection (RFC0039)
     - Memory GC
@@ -6991,7 +6971,7 @@ class AutonomousSelfLearningAgent:
         self.llm = self._init_llm(config)
         self.event_bus = RobustEventBus(config["redis_url"])
         
-        # Memory layers с circuit breakers
+        # Memory layers with circuit breakers
         self.graph_memory = GraphMemoryWithCircuitBreaker(
             neo4j_uri=config["neo4j_uri"],
             neo4j_user=config["neo4j_user"],
@@ -6999,17 +6979,17 @@ class AutonomousSelfLearningAgent:
         )
         self.fractal_memory = FractalMemory(self.graph_memory)
         
-        # Retrieval and learning с observability
+        # Retrieval and learning with observability
         self.retriever = ObservableHybridRetriever(
             graph_memory=self.graph_memory,
             fractal_memory=self.fractal_memory,
             token_budget=config.get("token_budget", 2000)
         )
         self.reasoning_bank = ReasoningBank(self.graph_memory)
-        # P1-3 FIX: зарегистрировать делегат ACE Curator
+        # P1-3 FIX: register the ACE Curator delegate
         self.reasoning_bank.set_ace_delegate(self)
         self.context_builder = ContextBuilder(
-            token_budget=config.get("token_budget", 2000)  # FEATURE-8 (RFC0062): canonical, token_budget=2000 совпадает с token_contract.py
+            token_budget=config.get("token_budget", 2000)  # FEATURE-8 (RFC0062): canonical, token_budget=2000 matches token_contract.py
         )
         
         # Background workers
@@ -7032,12 +7012,12 @@ class AutonomousSelfLearningAgent:
             fractal_memory=self.fractal_memory,
             archival=self.memory_archival
         )
-        # Supervisors (вызываются в start())
+        # Supervisors (started in start())
         self.invariant_checker = RuntimeInvariantChecker(
             graph=self.graph_memory,
             fractal_memory=self.fractal_memory
         )
-        # MemoryBudgetPlanner — создаём из graph_memory чтобы избежать AttributeError в _collect_signals
+        # MemoryBudgetPlanner — create it from graph_memory to avoid AttributeError in _collect_signals
         _budget_planner = MemoryBudgetPlanner(graph=self.graph_memory)
         self.meta_supervisor = MetaSupervisorApex(
             consolidation_engine=self.consolidation_worker,
@@ -7046,8 +7026,8 @@ class AutonomousSelfLearningAgent:
             invariant_checker=self.invariant_checker
         )
 
-        # Персистентный агент задач — создаётся один раз и переиспользуется,
-        # чтобы reasoning_bank накапливал опыт между вызовами (не сбрасывался).
+        # Persistent task agent — created once and reused,
+        # so that reasoning_bank accumulates experience across calls (instead of being reset).
         self._task_agent = SelfLearningAgent(
             llm=self.llm,
             memory=self.graph_memory,
@@ -7058,58 +7038,58 @@ class AutonomousSelfLearningAgent:
         # State
         self.session_id = generate_session_id()
         self.conversation_history = []
-        self._shutdown_started = False  # защита от двойного graceful shutdown при SIGTERM+SIGINT
-        # sqlite_db инициализируется здесь явно,
-        # а не только при первом обращении в start() — устраняет AttributeError.
+        self._shutdown_started = False  # guard against double graceful shutdown on SIGTERM+SIGINT
+        # sqlite_db is initialized here explicitly,
+        # rather than only on first access in start() — this eliminates AttributeError.
         self._sqlite_db_path = config.get("sqlite_db", "velantrim.db")
-        self.sqlite_db = None  # открывается как async context в start()
+        self.sqlite_db = None  # opened as an async context in start()
 
     async def start(self):
-        """Запустить агент и фоновые процессы"""
-        # RFC0006 — проверить конфигурацию Engram до старта
+        """Start the agent and the background processes"""
+        # RFC0006 — validate the Engram configuration before start
         from rfc0006_engram_isolation import validate_engram_config
         validate_engram_config(self.config)
 
-        # открываем sqlite_db через aiosqlite context manager
+        # open sqlite_db via the aiosqlite context manager
         import aiosqlite
         self.sqlite_db = await aiosqlite.connect(self._sqlite_db_path)
 
-        # WAL-режим SQLite для быстрого Graceful Shutdown
+        # SQLite WAL mode for fast Graceful Shutdown
         await self.sqlite_db.execute("PRAGMA journal_mode=WAL")
         await self.sqlite_db.execute("PRAGMA synchronous=NORMAL")
 
-        # Создать Neo4j индексы (КРИТИЧНО!)
+        # Create the Neo4j indexes (CRITICAL!)
         await setup_neo4j_indexes(self.graph_memory.driver)
 
-        # P0-2 FIX: ImmutableRawMemory — создать схему SQLite до первого save_episode().
-        # Без этого вызова таблица raw_episodes не существует → падение при записи.
-        # Порядок критичен: ПЕРВЫМ, до любых воркеров которые могут писать эпизоды.
+        # P0-2 FIX: ImmutableRawMemory — create the SQLite schema before the first save_episode().
+        # Without this call the raw_episodes table does not exist → crash on write.
+        # Order is critical: FIRST, before any workers that may write episodes.
         if hasattr(self, 'raw_memory') and self.raw_memory is not None:
             await self.raw_memory.init()
 
-        # P0-3 FIX: MemoryVolitionWorker — загрузить счётчики per-session из SQLite.
-        # Без этого _initialized=False → write_voluntary() бросает RuntimeError.
-        # MAX_PER_SESSION=10 не работает без загруженных счётчиков.
-        # Порядок: после raw_memory.init(), до воркеров которые могут вызвать write_voluntary().
+        # P0-3 FIX: MemoryVolitionWorker — load the per-session counters from SQLite.
+        # Without this _initialized=False → write_voluntary() raises RuntimeError.
+        # MAX_PER_SESSION=10 does not work without the loaded counters.
+        # Order: after raw_memory.init(), before workers that may call write_voluntary().
         if hasattr(self, 'volition_worker') and self.volition_worker is not None:
             await self.volition_worker.start()
 
-        # Запустить ConsolidationEngine (заменяет 3 воркера)
-        asyncio.create_task(self.consolidation_worker.start())  # исправлено: consolidation_worker (см. __init__)
+        # Start the ConsolidationEngine (replaces 3 workers)
+        asyncio.create_task(self.consolidation_worker.start())  # fixed: consolidation_worker (see __init__)
 
-        # Запустить фоновые workers (используют CE через enqueue)
+        # Start the background workers (they use CE via enqueue)
         asyncio.create_task(self.event_processor.start())
         asyncio.create_task(self.memory_gc.schedule_periodic_gc())
         asyncio.create_task(self._dlq_processor())
 
-        # Запустить Runtime Invariant Checker
+        # Start the Runtime Invariant Checker
         asyncio.create_task(self.invariant_checker.start())
 
-        # Запустить Meta-Supervisor Apex Controller
+        # Start the Meta-Supervisor Apex Controller
         asyncio.create_task(self.meta_supervisor.start())
 
-        # Регистрировать SIGTERM/SIGINT хуки для graceful shutdown
-        # WAL SQLite обеспечивает атомарность за миллисекунды
+        # Register SIGTERM/SIGINT hooks for graceful shutdown
+        # WAL SQLite provides atomicity in milliseconds
         import signal
         loop = asyncio.get_running_loop()
         for sig in (signal.SIGTERM, signal.SIGINT):
@@ -7119,20 +7099,20 @@ class AutonomousSelfLearningAgent:
                     lambda: asyncio.create_task(self._graceful_shutdown())
                 )
             except NotImplementedError:
-                pass  # Windows — игнорируем, вызывать shutdown вручную
+                pass  # Windows — ignore, call shutdown manually
 
         logger.info("Agent started: CE + Invariant Checker + Heartbeat active")
 
     async def _graceful_shutdown(self):
         """
-        Graceful Shutdown — атомарное сохранение L0/L1 перед выходом.
+        Graceful Shutdown — atomic save of L0/L1 before exit.
 
-        Используем WAL-режим SQLite для атомарного дампа
-        за миллисекунды вместо tempfile+os.replace (секунды при нагрузке).
-        WAL (Write-Ahead Log) гарантирует атомарность без блокировки чтения.
+        We use SQLite WAL mode for an atomic dump
+        in milliseconds instead of tempfile+os.replace (seconds under load).
+        WAL (Write-Ahead Log) guarantees atomicity without blocking reads.
 
-        Проблема: L0 Working Memory и L1 STM живут in-memory.
-        При SIGTERM/SIGKILL без хуков — теряются безвозвратно.
+        Problem: L0 Working Memory and L1 STM live in-memory.
+        On SIGTERM/SIGKILL without hooks — they are lost irretrievably.
         """
         import json
         logger.info("Graceful shutdown: saving L0/L1 snapshot via WAL SQLite...")
@@ -7144,8 +7124,8 @@ class AutonomousSelfLearningAgent:
                 "shutdown": "graceful",
                 "version": "8.0"
             },
-            # L0 Working Memory — читаем из working_memory (не stm_cache!)
-            # L0 и L1 — разные слои: working_memory = 4±1 активных слота, stm_cache = эпизоды сессии
+            # L0 Working Memory — read from working_memory (not stm_cache!)
+            # L0 and L1 are different layers: working_memory = 4±1 active slots, stm_cache = session episodes
             "working_memory": [
                 {"id": m.id, "content": m.content,
                  "importance": float(m.importance),
@@ -7154,7 +7134,7 @@ class AutonomousSelfLearningAgent:
                 for m in getattr(self.fractal_memory, 'working_memory', [])
                 if getattr(m, 'priority', 'MEDIUM') in ('CRITICAL', 'HIGH')
             ],
-            # L1 STM — полный снапшот всех элементов кэша
+            # L1 STM — full snapshot of all cache items
             "stm_cache": [
                 {"id": m.id, "content": m.content,
                  "importance": float(m.importance),
@@ -7164,8 +7144,8 @@ class AutonomousSelfLearningAgent:
             ]
         }
 
-        # WAL-режим SQLite — миллисекунды вместо секунд
-        # PRAGMA journal_mode=WAL установлен при инициализации БД
+        # SQLite WAL mode — milliseconds instead of seconds
+        # PRAGMA journal_mode=WAL is set during DB initialization
         async with self.sqlite_db.transaction():
             await self.sqlite_db.execute(
                 """INSERT OR REPLACE INTO l0l1_snapshots
@@ -7175,27 +7155,27 @@ class AutonomousSelfLearningAgent:
                  datetime.now(timezone.utc).isoformat(),
                  json.dumps(snapshot, ensure_ascii=False))
             )
-        # WAL checkpoint — записать WAL в основную БД
+        # WAL checkpoint — write the WAL into the main DB
         await self.sqlite_db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
 
         logger.info("L0/L1 snapshot saved via WAL. Shutting down.")
         asyncio.get_running_loop().stop()
 
     async def _dlq_processor(self):
-        """Обработка DLQ в фоне"""
+        """Process the DLQ in the background"""
         while True:
-            await asyncio.sleep(3600)  # Каждый час
+            await asyncio.sleep(3600)  # Every hour
             await self.event_bus.process_dlq()
 
     @trace_async("agent_chat")
     async def chat(self, user_message: str) -> str:
         """
-        Основной метод взаимодействия с полным трейсингом
+        Main interaction method with full tracing
         """
         with tracer.start_as_current_span("preprocessing") as span:
             span.set_attribute("message_length", len(user_message))
             
-            # 1. Логировать входное сообщение
+            # 1. Log the incoming message
             publish_success = await self.event_bus.publish(AgentEvent(
                 event_type=EventType.USER_MESSAGE,
                 timestamp=datetime.now(timezone.utc),
@@ -7207,18 +7187,18 @@ class AutonomousSelfLearningAgent:
             if not publish_success:
                 span.add_event("Event published to fallback queue")
             
-            # 2. Добавить в STM
+            # 2. Add to STM
             embedding = await self._get_embedding(user_message)
             await self.fractal_memory.add_to_stm(user_message, embedding)
         
-        # 3. Retrieval - найти релевантный контекст
+        # 3. Retrieval - find the relevant context
         with tracer.start_as_current_span("memory_retrieval"):
             retrieved_memories = await self.retriever.retrieve(
                 query=user_message,
                 query_type="conversation"
             )
         
-        # 4. Найти применимые стратегии (если задача)
+        # 4. Find applicable strategies (if it is a task)
         strategies = []
         if self._is_task_query(user_message):
             with tracer.start_as_current_span("strategy_retrieval"):
@@ -7228,7 +7208,7 @@ class AutonomousSelfLearningAgent:
                     epsilon=0.1  # 10% exploration
                 )
         
-        # 5. Построить контекст для LLM
+        # 5. Build the context for the LLM
         with tracer.start_as_current_span("context_building") as span:
             context = self.context_builder.build_context(
                 current_query=user_message,
@@ -7241,7 +7221,7 @@ class AutonomousSelfLearningAgent:
             span.set_attribute("context_tokens", context_tokens)
             tokens_per_query.observe(context_tokens)
         
-        # 6. Генерация ответа (ЕДИНСТВЕННЫЙ LLM-вызов)
+        # 6. Generate the response (THE SINGLE LLM call)
         with tracer.start_as_current_span("llm_generation") as span:
             response = await self.llm.chat(context)
             
@@ -7249,7 +7229,7 @@ class AutonomousSelfLearningAgent:
             span.set_attribute("response_tokens", response_tokens)
             tokens_used.labels(component="llm").inc(context_tokens + response_tokens)
         
-        # 7. Логировать ответ
+        # 7. Log the response
         await self.event_bus.publish(AgentEvent(
             event_type=EventType.AGENT_RESPONSE,
             timestamp=datetime.now(timezone.utc),
@@ -7258,11 +7238,11 @@ class AutonomousSelfLearningAgent:
             session_id=self.session_id
         ))
         
-        # 8. Обновить историю
+        # 8. Update the history
         self.conversation_history.append(f"User: {user_message}")
         self.conversation_history.append(f"Assistant: {response}")
         
-        # Ограничить историю (последние 10 сообщений)
+        # Limit the history (last 10 messages)
         if len(self.conversation_history) > 20:
             self.conversation_history = self.conversation_history[-20:]
         
@@ -7274,14 +7254,14 @@ class AutonomousSelfLearningAgent:
         context: Dict
     ):
         """
-        Выполнение задачи с циклом самообучения.
-        Делегирует в персистентный _task_agent — reasoning_bank накапливает
-        опыт между вызовами (не сбрасывается при каждом execute_task_with_learning).
+        Execute a task with the self-learning loop.
+        Delegates to the persistent _task_agent — reasoning_bank accumulates
+        experience across calls (it is not reset on each execute_task_with_learning).
         """
         return await self._task_agent.execute_task(task, context)
 
     async def health_check(self) -> dict:
-        """Проверка здоровья всех компонентов"""
+        """Health check of all components"""
         return {
             "event_bus": await self.event_bus.health_check(),
             "neo4j_breaker": self.graph_memory.neo4j_breaker.get_state(),
@@ -7295,11 +7275,11 @@ class AutonomousSelfLearningAgent:
 
 ---
 
-## 🔍 Production-Ready Компоненты
+## 🔍 Production-Ready Components
 
-### 7. OpenTelemetry: Observability и трейсинг
+### 7. OpenTelemetry: Observability and tracing
 
-**Назначение**: Отладка и мониторинг performance в production
+**Purpose**: Debugging and monitoring performance in production
 
 ```python
 # observability.py
@@ -7312,12 +7292,12 @@ from opentelemetry.sdk.resources import Resource
 import time
 from functools import wraps
 
-# Инициализация трейсера
+# Tracer initialization
 resource = Resource.create({"service.name": "fractal-memory-agent"})
 trace.set_tracer_provider(TracerProvider(resource=resource))
 tracer = trace.get_tracer(__name__)
 
-# Export в OTLP collector (Grafana Tempo, Jaeger, etc)
+# Export to OTLP collector (Grafana Tempo, Jaeger, etc)
 otlp_exporter = OTLPSpanExporter(
     endpoint="http://localhost:4317",
     insecure=True
@@ -7325,16 +7305,16 @@ otlp_exporter = OTLPSpanExporter(
 span_processor = BatchSpanProcessor(otlp_exporter)
 trace.get_tracer_provider().add_span_processor(span_processor)
 
-# Декоратор для автоматического трейсинга
+# Decorator for automatic tracing
 def trace_async(span_name: str = None):
-    """Декоратор для трейсинга асинхронных функций"""
+    """Decorator for tracing asynchronous functions"""
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
             name = span_name or f"{func.__module__}.{func.__name__}"
             
             with tracer.start_as_current_span(name) as span:
-                # Добавить параметры как атрибуты
+                # Add parameters as attributes
                 if args:
                     span.set_attribute("args_count", len(args))
                 if kwargs:
@@ -7347,7 +7327,7 @@ def trace_async(span_name: str = None):
                 try:
                     result = await func(*args, **kwargs)
                     
-                    # Успех
+                    # Success
                     duration = time.time() - start_time
                     span.set_attribute("duration_ms", duration * 1000)
                     span.set_status(Status(StatusCode.OK))
@@ -7355,7 +7335,7 @@ def trace_async(span_name: str = None):
                     return result
                     
                 except Exception as e:
-                    # Ошибка
+                    # Error
                     span.set_status(Status(StatusCode.ERROR, str(e)))
                     span.record_exception(e)
                     raise
@@ -7363,9 +7343,9 @@ def trace_async(span_name: str = None):
         return wrapper
     return decorator
 
-# Применение в компонентах
+# Application in components
 class ObservableHybridRetriever(HybridRetriever):
-    """HybridRetriever с трейсингом"""
+    """HybridRetriever with tracing"""
 
     @trace_async("hybrid_retrieval")
     async def retrieve(
@@ -7373,7 +7353,7 @@ class ObservableHybridRetriever(HybridRetriever):
         query: str,
         query_type: str = "general"
     ) -> List[RetrievalResult]:
-        """Retrieval с полным трейсингом каждого этапа"""
+        """Retrieval with full tracing of each stage"""
         
         with tracer.start_as_current_span("routing") as span:
             strategy = self._route_query(query, query_type)
@@ -7383,9 +7363,9 @@ class ObservableHybridRetriever(HybridRetriever):
         
         # Stage 1: STM search
         with tracer.start_as_current_span("stm_search") as span:
-            # P1-G FIX: добавлены "RECALL" и "TASK" — ObservableHybridRetriever
-            # тихо ломал два самых частых запроса: они не получали STM-результаты.
-            # Синхронизировано с родительским HybridRetriever.
+            # P1-G FIX: added "RECALL" and "TASK" — ObservableHybridRetriever
+            # was silently breaking the two most frequent queries: they received no STM results.
+            # Synchronized with the parent HybridRetriever.
             if strategy in ["conversation", "immediate", "RECALL", "TASK"]:
                 query_embedding = await self._get_embedding(query)
                 stm_results = await self._search_stm(query, query_embedding)
@@ -7420,11 +7400,11 @@ class ObservableHybridRetriever(HybridRetriever):
         
         return results
 
-# Пример интеграции в GraphMemory
+# Example of integration into GraphMemory
 class ObservableGraphMemory(GraphMemory):
     @trace_async("graph_search")
     async def search(self, query: str, num_results: int = 5):
-        """Search с детальным трейсингом"""
+        """Search with detailed tracing"""
         with tracer.start_as_current_span("graphiti_search") as span:
             span.set_attribute("query_length", len(query))
             span.set_attribute("num_results", num_results)
@@ -7436,15 +7416,15 @@ class ObservableGraphMemory(GraphMemory):
 
     @trace_async("add_episode")
     async def add_episode(self, *args, **kwargs):
-        """Episode creation с трейсингом"""
+        """Episode creation with tracing"""
         return await super().add_episode(*args, **kwargs)
 ```
 
-**Viewing traces в Grafana Tempo:**
+**Viewing traces in Grafana Tempo:**
 
 ```yaml
-# docker-compose.yml для observability stack
-# P3-E FIX: version: поле deprecated в Docker Compose v2+. Убрано.
+# docker-compose.yml for observability stack
+# P3-E FIX: the version: field is deprecated in Docker Compose v2+. Removed.
 services:
   tempo:
     image: grafana/tempo:latest
@@ -7468,22 +7448,22 @@ services:
 
 ### 8. Memory Garbage Collection
 
-**Назначение**: Очистка низко-важной памяти и предотвращение бесконечного роста графа
+**Purpose**: Cleaning up low-importance memory and preventing unbounded graph growth
 
 ```python
 # memory_gc.py
-from datetime import datetime, timedelta, timezone  # P0-B FIX: timezone добавлен (ранее NameError)
+from datetime import datetime, timedelta, timezone  # P0-B FIX: timezone added (previously NameError)
 import logging
 
 logger = logging.getLogger(__name__)
 
 class MemoryGarbageCollector:
     """
-    Периодическая очистка памяти:
-    - Удаление низко-важных узлов
-    - Merge дубликатов
-    - Компрессия MTM cache
-    - Архивация старых эпизодов
+    Periodic memory cleanup:
+    - Removal of low-importance nodes
+    - Merging of duplicates
+    - MTM cache compression
+    - Archival of old episodes
     """
 
     def __init__(
@@ -7496,14 +7476,14 @@ class MemoryGarbageCollector:
         self.fractal = fractal_memory
         self.archival = archival
         
-        # Пороги для GC
+        # Thresholds for GC
         self.importance_threshold = 0.1
         self.age_threshold_days = 30
-        self.access_threshold = 0  # Не был доступен ни разу
+        self.access_threshold = 0  # Has never been accessed
 
     async def run_full_gc(self):
         """
-        Полная сборка мусора (запускать еженедельно)
+        Full garbage collection (run weekly)
         """
         logger.info("Starting memory garbage collection")
         
@@ -7515,29 +7495,29 @@ class MemoryGarbageCollector:
             "freed_mtm_slots": 0
         }
         
-        # 1. Удалить низко-важные эпизоды
+        # 1. Delete low-importance episodes
         stats["deleted_episodes"] = await self._delete_low_importance_episodes()
         
-        # 2. Удалить неиспользуемые сущности
+        # 2. Delete unused entities
         stats["deleted_entities"] = await self._delete_orphan_entities()
         
-        # 3. Merge дубликаты
+        # 3. Merge duplicates
         stats["merged_duplicates"] = await self._merge_duplicate_entities()
         
-        # 4. Каскадная инвалидация: снизить confidence у Strategy при инвалидации Fact
-        # Без этого Strategy становятся "фантомными" — опираются на мёртвые факты
+        # 4. Cascade invalidation: lower confidence on Strategy when a Fact is invalidated
+        # Without this, Strategies become "phantom" — they rely on dead facts
         await self._cascade_invalidate_dependent_strategies()
         
-        # 5. Архивация старых эпизодов (если настроено)
+        # 5. Archival of old episodes (if configured)
         if self.archival:
             stats["archived_count"] = await self.archival.archive_old_episodes(
                 older_than_days=365,
                 importance_threshold=0.3
             )
-            # Vacuum Worker — физическое удаление после S3 + 90 дней
+            # Vacuum Worker — physical deletion after S3 + 90 days
             stats["vacuum_deleted"] = await self.archival.vacuum_soft_deleted(min_age_days=90)
         
-        # 6. Компрессия MTM cache
+        # 6. MTM cache compression
         stats["freed_mtm_slots"] = await self._compress_mtm_cache()
         
         logger.info(f"GC completed: {stats}")
@@ -7545,16 +7525,16 @@ class MemoryGarbageCollector:
 
     async def _delete_low_importance_episodes(self) -> int:
         """
-        Soft Delete низко-важных эпизодов → затем Hard Delete после S3 архивации.
+        Soft Delete of low-importance episodes → then Hard Delete after S3 archival.
         
-        ПРОТОКОЛ:
-        1. Сначала деактивируем (is_active = false) — Soft Delete
-        2. Архивируем в S3
-        3. Только после успеха — физическое DETACH DELETE
+        PROTOCOL:
+        1. First deactivate (is_active = false) — Soft Delete
+        2. Archive to S3
+        3. Only after success — physical DETACH DELETE
         """
         cutoff_date = datetime.now(timezone.utc) - timedelta(days=self.age_threshold_days)
         
-        # Шаг 1: Soft Delete — деактивировать, не удалять
+        # Step 1: Soft Delete — deactivate, do not delete
         soft_delete_query = """
         MATCH (ep:Episode)
         WHERE ep.importance_score < $importance_threshold
@@ -7575,8 +7555,8 @@ class MemoryGarbageCollector:
         
         deactivated = result[0]["deactivated_count"] if result else 0
         
-        # Шаг 2: Hard Delete только узлов которые уже деактивированы > 30 дней
-        # (они уже должны быть архивированы на предыдущем цикле GC)
+        # Step 2: Hard Delete only of nodes that have already been deactivated > 30 days
+        # (they should already have been archived in a previous GC cycle)
         hard_cutoff = datetime.now(timezone.utc) - timedelta(days=self.age_threshold_days * 3)
         
         hard_delete_query = """
@@ -7599,7 +7579,7 @@ class MemoryGarbageCollector:
 
     async def _delete_orphan_entities(self) -> int:
         """
-        Удалить сущности без связей (orphaned nodes)
+        Delete entities with no relations (orphaned nodes)
         """
         query = """
         MATCH (e:Entity)
@@ -7607,17 +7587,17 @@ class MemoryGarbageCollector:
           AND e.importance_score < $threshold
         WITH e
         LIMIT 500
-        DETACH DELETE e   -- P1-C FIX: DELETE без DETACH падает если у узла есть relations
+        DETACH DELETE e   -- P1-C FIX: DELETE without DETACH fails if the node has relations
 
--- P4-A FIX: добавить label :SoftDeleted для O(1) scan вместо Full Node Scan.
--- MATCH (n) WHERE n.is_active=false — низкокардинальный Boolean, плохо индексируется.
+-- P4-A FIX: add label :SoftDeleted for an O(1) scan instead of a Full Node Scan.
+-- MATCH (n) WHERE n.is_active=false — a low-cardinality Boolean, indexes poorly.
 -- CREATE INDEX soft_deleted_idx IF NOT EXISTS FOR (n:Episode) ON (n.is_active, n.valid_to);
--- При soft delete: SET ep.is_active=false, ep.valid_to=datetime() — label lookup O(1).
+-- On soft delete: SET ep.is_active=false, ep.valid_to=datetime() — label lookup O(1).
         RETURN count(e) as deleted_count
         """
         
         result = await self.graph.execute_cypher(query, {
-            "threshold": self.importance_threshold * 2  # Чуть выше порог
+            "threshold": self.importance_threshold * 2  # Slightly higher threshold
         })
         
         deleted = result[0]["deleted_count"] if result else 0
@@ -7626,13 +7606,13 @@ class MemoryGarbageCollector:
 
     async def _merge_duplicate_entities(self) -> int:
         """
-        Найти и слить дубликаты сущностей
-        (например, "OpenAI" и "openai" → одна сущность)
+        Find and merge duplicate entities
+        (for example, "OpenAI" and "openai" → one entity)
 
-        P0-4 FIX: Используем _merge_nodes_safe() из dedupe_entities.py —
-        APOC если доступен, иначе чистый Cypher fallback для LadybugDB/KuzuDB.
+        P0-4 FIX: We use _merge_nodes_safe() from dedupe_entities.py —
+        APOC if available, otherwise a pure Cypher fallback for LadybugDB/KuzuDB.
         """
-        # Найти кандидатов на merge (похожие имена)
+        # Find merge candidates (similar names)
         query = """
         MATCH (e1:Entity), (e2:Entity)
         WHERE id(e1) < id(e2)
@@ -7649,8 +7629,8 @@ class MemoryGarbageCollector:
         for pair in candidates:
             e1, e2 = pair["e1"], pair["e2"]
 
-            # P0-4 FIX: _merge_nodes_safe() выбирает APOC или Cypher fallback
-            # автоматически по HAS_APOC env var — без изменений в вызывающем коде.
+            # P0-4 FIX: _merge_nodes_safe() selects APOC or the Cypher fallback
+            # automatically based on the HAS_APOC env var — without changes in the calling code.
             await _merge_nodes_safe(self.graph, e1["id"], e2["id"])
             merged_count += 1
 
@@ -7659,11 +7639,11 @@ class MemoryGarbageCollector:
 
     async def _compress_mtm_cache(self) -> int:
         """
-        Очистить MTM cache от низко-важных элементов
+        Clear the MTM cache of low-importance items
         """
         initial_size = len(self.fractal.mtm_cache)
         
-        # Удалить элементы с importance < 0.3
+        # Remove items with importance < 0.3
         self.fractal.mtm_cache = [
             item for item in self.fractal.mtm_cache
             if item.importance >= 0.3
@@ -7675,18 +7655,18 @@ class MemoryGarbageCollector:
 
     async def _cascade_invalidate_dependent_strategies(self) -> int:
         """
-        Каскадная инвалидация: при Soft Delete :Fact снижать confidence
-        у всех :Strategy, выведенных из этого факта через [:DERIVED_FROM].
+        Cascade invalidation: on Soft Delete of a :Fact, lower the confidence
+        of all :Strategy nodes derived from that fact via [:DERIVED_FROM].
         
-        Без этого Strategy становятся "фантомными" — стратегии, опирающиеся
-        на инвалидированные факты, продолжают применяться как валидные.
+        Without this, Strategies become "phantom" — strategies that rely
+        on invalidated facts continue to be applied as if valid.
         
-        ПРАВИЛО: confidence -= 0.2 за каждый инвалидированный DERIVED_FROM факт.
-                 Если confidence < 0.3 → Strategy тоже помечается is_active=false.
+        RULE: confidence -= 0.2 for each invalidated DERIVED_FROM fact.
+                 If confidence < 0.3 → the Strategy is also marked is_active=false.
         """
-        # штраф применяется только к фактам,
-        # которые ЕЩЁ НЕ были учтены ранее. Поле penalized_fact_ids хранит
-        # IDs уже оштрафованных фактов — предотвращает двойное списание при GC.
+        # the penalty is applied only to facts
+        # that have NOT yet been accounted for previously. The penalized_fact_ids field stores
+        # the IDs of already-penalized facts — preventing double charging during GC.
         query = """
         MATCH (s:Strategy)-[:DERIVED_FROM]->(f:Fact)
         WHERE f.is_active = false
@@ -7696,7 +7676,7 @@ class MemoryGarbageCollector:
         WITH s, collect(f.id) as new_invalid_ids, count(f) as new_invalidated
         SET s.confidence = CASE
             WHEN s.confidence - (new_invalidated * 0.2) < 0.0
-            THEN 0.0   -- P9-FIX БАГ-3: floor только при уходе в минус, не при пересечении 0.3
+            THEN 0.0   -- P9-FIX BUG-3: floor only when going negative, not when crossing 0.3
             ELSE s.confidence - (new_invalidated * 0.2)
         END,
         s.is_active = CASE
@@ -7704,7 +7684,7 @@ class MemoryGarbageCollector:
             THEN false
             ELSE true
         END,
-        s.penalized_fact_ids = (coalesce(s.penalized_fact_ids, []) + new_invalid_ids)[-500:]  -- P9-FIX БАГ-12: cap 500
+        s.penalized_fact_ids = (coalesce(s.penalized_fact_ids, []) + new_invalid_ids)[-500:]  -- P9-FIX BUG-12: cap 500
         RETURN count(s) as updated_strategies
         """
         result = await self.graph.execute_cypher(query)
@@ -7714,10 +7694,10 @@ class MemoryGarbageCollector:
 
     async def schedule_periodic_gc(self):
         """
-        Запустить периодический GC (каждые 7 дней)
+        Run periodic GC (every 7 days)
         """
         while True:
-            await asyncio.sleep(7 * 24 * 3600)  # 7 дней
+            await asyncio.sleep(7 * 24 * 3600)  # 7 days
             
             try:
                 await self.run_full_gc()
@@ -7727,15 +7707,15 @@ class MemoryGarbageCollector:
 
 ---
 
-## 📈 Мониторинг и метрики
+## 📈 Monitoring and Metrics
 
-**Критически важные метрики для отслеживания**:
+**Critically important metrics to track**:
 
 ```python
 # metrics.py
 from prometheus_client import Counter, Histogram, Gauge, Enum
 
-# === Токены ===
+# === Tokens ===
 tokens_used = Counter(
     "agent_tokens_used_total",
     "Total tokens used",
@@ -7752,7 +7732,7 @@ token_budget_utilization = Histogram(
     buckets=[0.1, 0.3, 0.5, 0.7, 0.9, 1.0]
 )
 
-# === Память ===
+# === Memory ===
 memory_size = Gauge(
     "agent_memory_size",
     "Size of memory by level",
@@ -7770,7 +7750,7 @@ memory_importance_distribution = Histogram(
     buckets=[0.1, 0.2, 0.3, 0.5, 0.7, 0.9, 1.0]
 )
 
-# === Производительность ===
+# === Performance ===
 retrieval_latency = Histogram(
     "retrieval_latency_seconds",
     "Retrieval latency by stage",
@@ -7789,7 +7769,7 @@ neo4j_query_duration = Histogram(
     buckets=[0.01, 0.05, 0.1, 0.3, 0.5, 1.0]
 )
 
-# === Качество ===
+# === Quality ===
 retrieval_precision = Gauge(
     "retrieval_precision",
     "Precision of memory retrieval"
@@ -7864,10 +7844,10 @@ gc_freed_memory = Gauge(
 )
 
 # === Strategy Learning ===
-# P3-D FIX: UCB1 заменён на Thompson Sampling (RFC0039). Метрика переименована.
+# P3-D FIX: UCB1 replaced with Thompson Sampling (RFC0039). Metric renamed.
 strategy_ts_scores = Histogram(
     "strategy_thompson_score",
-    "Thompson Sampling Beta-distribution scores for strategy selection (P3-D FIX: было strategy_ucb_score)",
+    "Thompson Sampling Beta-distribution scores for strategy selection (P3-D FIX: was strategy_ucb_score)",
     buckets=[0, 0.2, 0.5, 0.8, 1.0]
 )
 exploration_vs_exploitation = Counter(
@@ -7943,10 +7923,10 @@ pii_redacted_total = Counter(
 )
 ```
 
-**Пример использования метрик в коде**:
+**Example of using the metrics in code**:
 
 ```python
-# В HybridRetriever
+# In HybridRetriever
 async def retrieve(self, query: str):
     start = time.time()
 
@@ -7965,7 +7945,7 @@ async def retrieve(self, query: str):
 
     return results
 
-# В Circuit Breaker
+# In Circuit Breaker
 def _on_failure(self, error: Exception):
     circuit_breaker_failures.labels(service=self.name).inc()
 
@@ -7978,77 +7958,77 @@ def _on_failure(self, error: Exception):
 
 ## 📐 SLO Contract (Service Level Objectives)
 
-> Пороги для Grafana alert rules. Все значения из `velantrim_config.SLOConfig`.
+> Thresholds for Grafana alert rules. All values come from `velantrim_config.SLOConfig`.
 
-| Метрика | SLO (цель) | WARN | CRITICAL |
+| Metric | SLO (target) | WARN | CRITICAL |
 |---------|-----------|------|---------|
 | search P95 latency | <500ms | >800ms | >2000ms |
 | Etir P95 latency | <50ms | >80ms | >200ms |
 | consolidation lag | <60s | >120s | >300s |
 | GC weekly runtime | <2h | >3h | >6h |
-| staging_candidates | <5 000 записей | >8 000 | >MAX_STAGING |
+| staging_candidates | <5 000 records | >8 000 | >MAX_STAGING |
 | DLQ size | <10 | >10 (DEGRADED) | >50 (SAFE_MODE) |
 | budget fill ratio | <0.85 | >0.85 | >0.90 |
 | output_faithfulness | >0.80 | <0.60 | <0.40 |
 | L2 MHI | >0.60 | <0.50 | <0.30 |
 
-### Автотриггеры MetaSupervisor
+### MetaSupervisor Auto-Triggers
 
 ```
-MHI < 0.30           → немедленный GC + alert ops
-MHI < 0.50           → MetaSupervisor → DEGRADED (ускорить ConsolidationEngine)
+MHI < 0.30           → immediate GC + alert ops
+MHI < 0.50           → MetaSupervisor → DEGRADED (speed up ConsolidationEngine)
 budget_fill > 0.85   → MetaSupervisor → DEGRADED
-budget_fill > 0.90   → MetaSupervisor → блокировка записи
+budget_fill > 0.90   → MetaSupervisor → block writes
 DLQ > 50             → MetaSupervisor → SAFE_MODE
-faithfulness < 0.40  → алерт + логировать unsupported_sentences
+faithfulness < 0.40  → alert + log unsupported_sentences
 ```
 
 ---
 
-## 🔌 MCP Server — Подключение к внешним клиентам
+## 🔌 MCP Server — Connecting to External Clients
 
-> **Назначение**: Velantrim как инструмент в Cursor, Claude Code и любом MCP-совместимом клиенте. Агент становится доступен через стандартный протокол без изменений в основном коде.
+> **Purpose**: Velantrim as a tool in Cursor, Claude Code, and any MCP-compatible client. The agent becomes available through a standard protocol without changes to the core code.
 
 ```python
 # mcp_server/server.py
-# MCP stdio транспорт — подключает Velantrim к Cursor / Claude Code
-# Запуск: python -m mcp_server.server
-# Конфиг Cursor: { "velantrim": { "command": "python", "args": ["-m", "mcp_server.server"] } }
+# MCP stdio transport — connects Velantrim to Cursor / Claude Code
+# Run: python -m mcp_server.server
+# Cursor config: { "velantrim": { "command": "python", "args": ["-m", "mcp_server.server"] } }
 
 import asyncio, json, sys, logging
-from pipeline import VelantrimPipeline  # основной pipeline агента
+from pipeline import VelantrimPipeline  # the agent's main pipeline
 
 logger = logging.getLogger(__name__)
 
 TOOLS = [
     {
         "name": "memory_search",
-        "description": "Найти факты в долгосрочной памяти Velantrim по запросу",
+        "description": "Find facts in Velantrim's long-term memory by query",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "query":      {"type": "string", "description": "Поисковый запрос"},
-                "session_id": {"type": "string", "description": "ID сессии (опционально)"}
+                "query":      {"type": "string", "description": "Search query"},
+                "session_id": {"type": "string", "description": "Session ID (optional)"}
             },
             "required": ["query"]
         }
     },
     {
         "name": "memory_write",
-        "description": "Записать факт в долгосрочную память через Truth Gate (волевая запись)",
+        "description": "Write a fact to long-term memory via Truth Gate (voluntary write)",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "content":    {"type": "string", "description": "Факт для запоминания"},
-                "reason":     {"type": "string", "description": "Причина записи"},
-                "importance": {"type": "number", "description": "Важность 0.0–1.0"}
+                "content":    {"type": "string", "description": "Fact to remember"},
+                "reason":     {"type": "string", "description": "Reason for the write"},
+                "importance": {"type": "number", "description": "Importance 0.0–1.0"}
             },
             "required": ["content", "reason"]
         }
     },
     {
         "name": "memory_status",
-        "description": "Статус системы памяти Velantrim: узлы, Hot Graph, ESM-распределение",
+        "description": "Velantrim memory system status: nodes, Hot Graph, ESM distribution",
         "inputSchema": {"type": "object", "properties": {}}
     }
 ]
@@ -8071,7 +8051,7 @@ async def handle_request(pipeline: VelantrimPipeline, request: dict) -> dict:
                     session_id=arguments.get("session_id", "mcp")
                 )
                 text = "\n".join(f"[{r.source}] {r.content}" for r in results[:5])
-                content = text or "Ничего не найдено."
+                content = text or "Nothing found."
 
             elif name == "memory_write":
                 result = await pipeline.volition_worker.write_voluntary(
@@ -8081,20 +8061,20 @@ async def handle_request(pipeline: VelantrimPipeline, request: dict) -> dict:
                     reason=arguments["reason"],
                     importance_hint=float(arguments.get("importance", 0.8))
                 )
-                content = f"Результат: {result.outcome.value}"
+                content = f"Result: {result.outcome.value}"
 
             elif name == "memory_status":
                 health = await pipeline.graph.health_check()
                 content = json.dumps(health, ensure_ascii=False, indent=2)
 
             else:
-                content = f"Неизвестный инструмент: {name}"
+                content = f"Unknown tool: {name}"
 
         except Exception as e:
             logger.error(f"MCP tool error [{name}]: {e}")
             return {"jsonrpc": "2.0", "id": rid,
                     "error": {"code": -32603, "message": str(e), "data": {"tool": name}}}
-            # P9-FIX БАГ-4: JSON-RPC error вместо result — клиент (Cursor/Claude Code) получает корректный error object для retry
+            # P9-FIX BUG-4: JSON-RPC error instead of result — the client (Cursor/Claude Code) receives a correct error object for retry
 
         return {"jsonrpc": "2.0", "id": rid,
                 "result": {"content": [{"type": "text", "text": content}]}}
@@ -8120,7 +8100,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-**Подключение к Cursor** — добавить в `.cursor/mcp.json`:
+**Connecting to Cursor** — add to `.cursor/mcp.json`:
 ```json
 {
   "velantrim": {
@@ -8131,32 +8111,32 @@ if __name__ == "__main__":
 }
 ```
 
-**Инвариант**: MCP Server — только тонкая обёртка над существующим pipeline. Никакой логики памяти внутри него нет. `memory_write` обязательно идёт через `VolitionWorker` → Truth Gate, не напрямую в граф.
+**Invariant**: the MCP Server is only a thin wrapper over the existing pipeline. It contains no memory logic of its own. `memory_write` must always go through `VolitionWorker` → Truth Gate, not directly into the graph.
 
 ---
 
-## 🔍 Audit Layer — Слой проверяемости (Phase 1+)
+## 🔍 Audit Layer — Verifiability Layer (Phase 1+)
 
-> **Почему критично**: без Audit Layer невозможно понять почему агент ответил именно так. При галлюцинации — нет инструмента найти виновного: LLM при генерации, Etir при поиске, или Graphiti при записи факта.
+> **Why it is critical**: without the Audit Layer it is impossible to understand why the agent answered the way it did. In the event of a hallucination, there is no tool to find who is to blame: the LLM during generation, Etir during retrieval, or Graphiti when writing the fact.
 
 ```
-Три обязательных API метода:
+Three mandatory API methods:
 
 GET /memory/audit/context?request_id=...
-→ Показывает: какие узлы из L3.5 Etir были активированы,
-  какие факты из L3 попали в контекст, сколько токенов использовано
+→ Shows: which nodes from L3.5 Etir were activated,
+  which facts from L3 made it into the context, how many tokens were used
 
 GET /memory/audit/strategy?request_id=...
-→ Показывает: какая стратегия из ReasoningBank была выбрана,
-  Thompson Sampling score каждой стратегии, режим (exploration/exploitation)
+→ Shows: which strategy from ReasoningBank was selected,
+  the Thompson Sampling score of each strategy, the mode (exploration/exploitation)
 
 GET /memory/audit/forgetting?since=...
-→ Показывает: какие факты деактивированы (is_active=false),
-  почему ([:CONTRADICTS] / low importance / age),
-  что было архивировано в S3
+→ Shows: which facts were deactivated (is_active=false),
+  why ([:CONTRADICTS] / low importance / age),
+  what was archived to S3
 ```
 
-**Минимальная реализация для Phase 1:**
+**Minimal implementation for Phase 1:**
 
 ```python
 # audit_layer.py
@@ -8188,13 +8168,13 @@ CREATE INDEX IF NOT EXISTS idx_fgt_at  ON audit_forgetting(deleted_at);
 
 class AuditLayer:
     """
-    Audit layer — делает систему прозрачной.
-    Записывает в SQLite (уже в стеке как operational DB).
-    Все writes — fire-and-forget через asyncio.create_task() (I28: не блокировать Fast Path).
+    Audit layer — makes the system transparent.
+    Writes to SQLite (already in the stack as the operational DB).
+    All writes are fire-and-forget via asyncio.create_task() (I28: do not block the Fast Path).
 
-    GET /memory/audit/context?request_id=   → какие Etir-узлы и факты вошли в промпт
-    GET /memory/audit/strategy?request_id=  → какая стратегия выбрана и почему
-    GET /memory/audit/forgetting?since=     → что забыто, когда, почему
+    GET /memory/audit/context?request_id=   → which Etir nodes and facts entered the prompt
+    GET /memory/audit/strategy?request_id=  → which strategy was selected and why
+    GET /memory/audit/forgetting?since=     → what was forgotten, when, why
     """
 
     def __init__(self, graph: GraphMemory, sqlite_db: str = "velantrim_audit.db"):
@@ -8224,7 +8204,7 @@ class AuditLayer:
         token_budget: int,
         session_id: str = ""
     ):
-        """Вызывать из ResponseAuditWorker через asyncio.create_task() — Slow Path только."""
+        """Call from ResponseAuditWorker via asyncio.create_task() — Slow Path only."""
         await self._ensure_schema()
         try:
             import aiosqlite, json
@@ -8249,7 +8229,7 @@ class AuditLayer:
         all_candidates: list,
         session_id: str = ""
     ):
-        """Вызывать из ReasoningBank.retrieve_relevant_strategies() — Slow Path."""
+        """Call from ReasoningBank.retrieve_relevant_strategies() — Slow Path."""
         await self._ensure_schema()
         try:
             import aiosqlite, json
@@ -8272,7 +8252,7 @@ class AuditLayer:
         archived_to_s3: bool = False,
         s3_key: str = None
     ):
-        """Вызывать из MemoryGarbageCollector при soft-delete — Slow Path."""
+        """Call from MemoryGarbageCollector on soft-delete — Slow Path."""
         await self._ensure_schema()
         try:
             import aiosqlite
@@ -8342,37 +8322,37 @@ class AuditLayer:
             return [{"error": str(e)}]
 ```
 
-> 💡 **Для MVP Phase 0**: достаточно просто писать audit в `.log` файл через Python `logging`. Полный API — для Phase 1+.
+> 💡 **For MVP Phase 0**: it is sufficient to simply write the audit to a `.log` file via Python `logging`. The full API is for Phase 1+.
 
 
 class ContradictsUXProtocol:
     """
-    UX-протокол для [:CONTRADICTS] — агент спрашивает пользователя перед override.
+    UX protocol for [:CONTRADICTS] — the agent asks the user before an override.
 
-    Правило из v2.19 (TruthGate.I3):
-        «LLM НЕ расставляет [:CONTRADICTS] автоматически.
-         Только явная команда пользователя или CRUD-классификатор.»
+    Rule from v2.19 (TruthGate.I3):
+        "The LLM does NOT set [:CONTRADICTS] automatically.
+         Only an explicit user command or the CRUD classifier."
 
-    Без этого класса LLM может тихо перезаписать факт.
-    С ним — агент останавливается и показывает конфликт пользователю.
+    Without this class the LLM can silently overwrite a fact.
+    With it — the agent stops and shows the conflict to the user.
 
     Usage:
         c   = ContradictsUXProtocol(graph, event_bus)
         msg = await c.detect_and_propose(new_fact_content, session_id)
         if msg:
-            return msg          # остановить запись, показать пользователю
-        # Когда пользователь ответил:
+            return msg          # stop the write, show it to the user
+        # Once the user has replied:
         decision = await c.handle_user_response(user_reply, session_id)
         if decision["action"] == "override":
-            pass  # продолжить запись нового факта
+            pass  # proceed with writing the new fact
         elif decision["action"] == "keep":
-            pass  # отменить запись
+            pass  # cancel the write
     """
 
-    _YES = frozenset(["да", "стереть", "удалить", "заменить", "верно",
-                       "подтверждаю", "ок", "yes", "confirm", "override"])
-    _NO  = frozenset(["нет", "не надо", "сохранить", "оставить",
-                       "отмена", "no", "keep", "cancel"])
+    _YES = frozenset(["erase", "delete", "replace", "correct",
+                       "i confirm", "ok", "yes", "confirm", "override"])
+    _NO  = frozenset(["don't", "save", "leave",
+                       "cancel", "no", "keep"])
 
     def __init__(self, graph_adapter, event_bus):
         self.graph      = graph_adapter
@@ -8380,7 +8360,7 @@ class ContradictsUXProtocol:
         self._pending: dict = {}   # session_id → {new_fact, old_id, old_summary}
 
     async def detect_and_propose(self, new_fact: str, session_id: str) -> str | None:
-        """Ищет потенциальный конфликт в L3. Возвращает сообщение пользователю или None."""
+        """Searches for a potential conflict in L3. Returns a message for the user, or None."""
         results = await self.graph.search(query=f"contradicts: {new_fact[:200]}", limit=3)
         if not results:
             return None
@@ -8390,13 +8370,13 @@ class ContradictsUXProtocol:
         self._pending[session_id] = {
             "new_fact": new_fact, "old_id": old_id, "old_summary": old_summary
         }
-        return (f"⚠️ Вижу возможное противоречие с прежним решением:\n"
-                f"  📌 Старое: «{old_summary}»\n"
-                f"  🆕 Новое:  «{new_fact[:200]}»\n\n"
-                f"Стереть старое и записать новое? (да / нет)")
+        return (f"⚠️ I see a possible contradiction with a previous decision:\n"
+                f"  📌 Old: «{old_summary}»\n"
+                f"  🆕 New:  «{new_fact[:200]}»\n\n"
+                f"Erase the old one and write the new one? (yes / no)")
 
     async def handle_user_response(self, reply: str, session_id: str) -> dict:
-        """Разбирает ответ пользователя. action: 'override' | 'keep' | 'pending'."""
+        """Parses the user's reply. action: 'override' | 'keep' | 'pending'."""
         p = self._pending.get(session_id)
         if not p:
             return {"action": "pending", "proposal": None}
@@ -8415,20 +8395,20 @@ class ContradictsUXProtocol:
         return {"action": "pending", "proposal": p}
 
     def clear_expired(self, active_sessions: list):
-        """Чистить pending для завершённых сессий."""
+        """Clear pending entries for finished sessions."""
         for sid in [s for s in self._pending if s not in active_sessions]:
             del self._pending[sid]
 
 
 class TokenBudgetLadder:
     """
-    Приоритетная лестница token budget — что режется ПЕРВЫМ при нехватке.
+    Priority ladder for the token budget — what gets trimmed FIRST when short.
 
-    Из v2.19: «Если бюджет исчерпан — L3 отсекается первым, L0 и Etir защищены всегда.»
-    В v5 были числа в TokenConfig, но порядок приоритетов явно не закреплён.
+    From v2.19: "If the budget is exhausted — L3 is cut first, L0 and Etir are always protected."
+    In v5 the numbers were in TokenConfig, but the priority order was not explicitly fixed.
 
-    Protected slots (никогда не режутся): ring_zero, L0, core_memory_blocks, etir.
-    Остальные — по возрастанию priority (6 → режется первым).
+    Protected slots (never trimmed): ring_zero, L0, core_memory_blocks, etir.
+    The rest — in ascending priority (6 → trimmed first).
 
     Usage:
         ladder   = TokenBudgetLadder(budget=TOKENS.BALANCED_MODE)
@@ -8442,7 +8422,7 @@ class TokenBudgetLadder:
         prompt = "\\n\\n".join(selected.values())
     """
 
-    # (name, max_tokens, protected, priority — меньше = важнее, режется последним)
+    # (name, max_tokens, protected, priority — lower = more important, trimmed last)
     _SLOTS = [
         ("ring_zero_values",     150,  True,  1),
         ("L0_working_memory",    100,  True,  1),
@@ -8451,7 +8431,7 @@ class TokenBudgetLadder:
         ("l1_stm_episodes",      600,  False, 3),
         ("strategies",           300,  False, 4),
         ("l2_mtm_summaries",     300,  False, 5),
-        ("l3_ltm_graph",         400,  False, 6),  # ← режется ПЕРВЫМ
+        ("l3_ltm_graph",         400,  False, 6),  # ← trimmed FIRST
         ("conversation_history", 300,  False, 7),
     ]
 
@@ -8459,11 +8439,11 @@ class TokenBudgetLadder:
         self.budget = budget
 
     def select(self, slot_contents: dict) -> dict:
-        """Возвращает подмножество слотов, гарантированно влезающее в budget."""
+        """Returns a subset of slots guaranteed to fit within budget."""
         selected = {}
         used     = 0
 
-        # Protected — всегда включить первыми
+        # Protected — always include first
         for name, max_tok, protected, _ in self._SLOTS:
             if not protected:
                 continue
@@ -8474,7 +8454,7 @@ class TokenBudgetLadder:
             used += tok
             selected[name] = text[:tok * 4]
 
-        # Non-protected — в порядке приоритета (greedy fit)
+        # Non-protected — in priority order (greedy fit)
         for name, max_tok, protected, _ in self._SLOTS:
             if protected or used >= self.budget:
                 continue
@@ -8498,22 +8478,22 @@ class TokenBudgetLadder:
         except Exception:
             return max(1, len(text) // 4)
 > 
-> 💡 **Альтернатива без написания кода**: LangSmith или Arize Phoenix — визуальный трейсинг всего пути от запроса до каждого узла графа "из коробки".
+> 💡 **Alternative without writing code**: LangSmith or Arize Phoenix — visual tracing of the entire path from request down to each graph node, out of the box.
 
 ---
 
-## 🛡️ Memory Guardian — Защита от отравления памяти 
+## 🛡️ Memory Guardian — Protection Against Memory Poisoning 
 
-> **Проблема**: Без слоя валидации агент может записать галлюцинацию в граф как факт. Через 1-2 месяца система начнёт повторять ошибочные паттерны с уверенностью — у неё есть "доказательства".
+> **Problem**: Without a validation layer the agent can write a hallucination into the graph as a fact. Within 1-2 months the system will start repeating erroneous patterns with confidence — it has "evidence".
 
-**Memory Guardian** — это L5 Observer расширенный до роли привратника L3. Ни один факт не попадает в Neo4j без прохождения этого слоя.
+**Memory Guardian** is the L5 Observer extended into the role of an L3 gatekeeper. No fact reaches Neo4j without passing through this layer.
 
 ```python
 # memory_guardian.py
 class MemoryGuardian:
     """
-    Привратник L3 графа. Реализует Truth Gate до записи.
-    Живёт в L5 Observer — следит за потоком, блокирует отравление.
+    Gatekeeper of the L3 graph. Implements the Truth Gate before writing.
+    Lives in the L5 Observer — watches the flow, blocks poisoning.
     """
 
     def __init__(self, graph: GraphMemory, confidence_threshold: float = 0.7):
@@ -8522,10 +8502,10 @@ class MemoryGuardian:
 
     async def validate_proposal(self, proposal: dict) -> bool:
         """
-        Валидация факта/эпизода перед записью в L3.
-        Возвращает True только если все проверки пройдены.
+        Validate a fact/episode before writing it to L3.
+        Returns True only if all checks pass.
         """
-        # 1. Проверка наличия источника (evidence)
+        # 1. Check for the presence of a source (evidence)
         if not proposal.get("evidence"):
             logger.warning(f"Guardian: rejected — no evidence: {proposal}")
             return False
@@ -8535,24 +8515,24 @@ class MemoryGuardian:
             logger.warning(f"Guardian: rejected — low confidence: {proposal}")
             return False
         
-        # 3. Проверка на противоречия с существующим графом
+        # 3. Check for contradictions with the existing graph
         contradictions = await self._check_contradictions(proposal)
         if contradictions:
             logger.warning(f"Guardian: conflict found — {len(contradictions)} contradictions")
-            # Не удаляем — создаём [:CONTRADICTS] связь для разрешения
+            # Do not delete — create a [:CONTRADICTS] relation for resolution
             await self._mark_contradiction(proposal, contradictions)
             return False
         
-        # 4. Дедупликация
+        # 4. Deduplication
         if await self._is_duplicate(proposal):
             logger.info("Guardian: duplicate detected — incrementing evidence_count")
             await self._increment_evidence(proposal)
-            return False  # Уже есть, новый не нужен
+            return False  # Already present, the new one is not needed
         
         return True
 
     async def _check_contradictions(self, proposal: dict) -> list:
-        """Поиск противоречий в L3 графе"""
+        """Search for contradictions in the L3 graph"""
         query = """
         MATCH (f:Fact)
         WHERE f.is_active = true
@@ -8569,7 +8549,7 @@ class MemoryGuardian:
         })
 
     async def _is_duplicate(self, proposal: dict) -> bool:
-        """Проверка на точный дубликат"""
+        """Check for an exact duplicate"""
         query = """
         MATCH (f:Fact)
         WHERE f.is_active = true
@@ -8582,36 +8562,36 @@ class MemoryGuardian:
         return result[0]["exists"] if result else False
 ```
 
-> 💡 **Интеграция**: `MemoryGuardian.validate_proposal()` вызывается внутри `GraphMemory.add_episode()` до любой записи в Neo4j. L5 Observer расширяется этим модулем в Phase 1.
+> 💡 **Integration**: `MemoryGuardian.validate_proposal()` is called inside `GraphMemory.add_episode()` before any write to Neo4j. The L5 Observer is extended with this module in Phase 1.
 
 ---
 
-## 🗃️ Immutable Raw Memory — Защита от Semantic Drift 
+## 🗃️ Immutable Raw Memory — Protection Against Semantic Drift 
 
-> **Проблема Semantic Drift**: Консолидация L1→L2→L3 через LLM-суммаризацию постепенно искажает смысл. "User prefers Python" → "User programs" → "User expert developer". Оригинал теряется.
+> **The Semantic Drift problem**: L1→L2→L3 consolidation via LLM summarization gradually distorts the meaning. "User prefers Python" → "User programs" → "User expert developer". The original is lost.
 
-**Решение**: Сырые эпизоды хранятся отдельно и **никогда не изменяются**. Суммаризации — отдельно. Всегда есть доступ к первоисточнику.
+**Solution**: Raw episodes are stored separately and **never change**. Summarizations are stored separately. The original source is always accessible.
 
 ```python
 # raw_memory_store.py
 class ImmutableRawMemory:
     """
-    Неизменяемое хранилище сырых эпизодов.
-    Хранится в SQLite (не в Neo4j) — простой, надёжный, не изменяется.
+    Immutable store of raw episodes.
+    Stored in SQLite (not in Neo4j) — simple, reliable, never changes.
 
-    Правило: raw_episodes никогда не обновляются.
-    Суммаризации (summaries) создаются поверх, но оригинал защищён.
+    Rule: raw_episodes are never updated.
+    Summarizations (summaries) are created on top, but the original is protected.
 
-    Инициализация: вызвать await init() в async-контексте перед первым использованием.
-    _init_schema() НЕ вызывается из __init__ — это защита от блокировки event loop.
+    Initialization: call await init() in an async context before first use.
+    _init_schema() is NOT called from __init__ — this protects against blocking the event loop.
     """
 
     def __init__(self, db_path: str = "raw_memory.db"):
         self.db_path = db_path
-        # Схема инициализируется через await init(), не в __init__
+        # The schema is initialized via await init(), not in __init__
 
     async def init(self):
-        """Async-безопасная инициализация схемы. Вызвать один раз при старте агента."""
+        """Async-safe schema initialization. Call once at agent startup."""
         import aiosqlite
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute("PRAGMA journal_mode=WAL")
@@ -8624,7 +8604,7 @@ class ImmutableRawMemory:
                     session_id TEXT,
                     outcome TEXT,
                     created_at TEXT DEFAULT CURRENT_TIMESTAMP
-                    -- Нет полей для обновления — это append-only хранилище
+                    -- No fields for updating — this is an append-only store
                 )
             """)
             await db.commit()
@@ -8632,14 +8612,14 @@ class ImmutableRawMemory:
     def save_episode(self, episode_id: str, content: str,
                      source: str, session_id: str, outcome: str = None):
         """
-        Сохранить сырой эпизод. Никогда не обновлять.
-        Вызывать из async-контекста через asyncio.to_thread():
+        Save a raw episode. Never update it.
+        Call from an async context via asyncio.to_thread():
             await asyncio.to_thread(raw_memory.save_episode, episode_id, content, ...)
         """
         import sqlite3
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
-                # явные имена колонок — защита от тихого сломания при изменении схемы
+                # explicit column names — protection against silent breakage when the schema changes
                 """INSERT OR IGNORE INTO raw_episodes
                    (id, content, source, timestamp, session_id, outcome)
                    VALUES (?, ?, ?, datetime('now'), ?, ?)""",
@@ -8649,8 +8629,8 @@ class ImmutableRawMemory:
 
     def get_truth_source(self, episode_id: str) -> dict:
         """
-        Получить оригинальный эпизод.
-        Используется при реконструкции если суммаризация исказила смысл.
+        Get the original episode.
+        Used during reconstruction if a summarization distorted the meaning.
         """
         import sqlite3
         with sqlite3.connect(self.db_path) as conn:
@@ -8660,20 +8640,20 @@ class ImmutableRawMemory:
         return dict(zip(["id","content","source","timestamp","session_id","outcome","created_at"], row)) if row else None
 ```
 
-> 💡 **Интеграция**: При `GraphMemory.add_episode()` — сначала `ImmutableRawMemory.save_episode()`, затем проход через `MemoryGuardian`, затем запись в Neo4j. Поле `raw_episode_id` в узле `:Episode` хранит ссылку на оригинал.
+> 💡 **Integration**: During `GraphMemory.add_episode()` — first `ImmutableRawMemory.save_episode()`, then a pass through `MemoryGuardian`, then a write to Neo4j. The `raw_episode_id` field on the `:Episode` node stores the reference to the original.
 
 ---
 
-## 🔗 CausalGraph — Слой причинно-следственных связей
+## 🔗 CausalGraph — Cause-and-Effect Layer
 
-> **Назначение**: агент понимает не только *что* произошло, но *почему*. Рёбра `CAUSES`, `LEADS_TO`, `INFLUENCES` между `:Entity` и `:Fact` узлами позволяют строить причинные цепочки и вставлять их в Facts Pack перед LLM-генерацией.
+> **Purpose**: the agent understands not only *what* happened, but *why*. The `CAUSES`, `LEADS_TO`, `INFLUENCES` edges between `:Entity` and `:Fact` nodes make it possible to build causal chains and insert them into the Facts Pack before LLM generation.
 
-> **Почему не нарушает `Graph = Truth`**: CausalGraph только *добавляет рёбра* между уже существующими валидированными узлами L3. Новых фактов не создаёт. LLM используется только для извлечения причин из текста — результат идёт через Truth Gate как обычно.
+> **Why it does not violate `Graph = Truth`**: CausalGraph only *adds edges* between already existing validated L3 nodes. It creates no new facts. The LLM is used only to extract causes from text — the result passes through the Truth Gate as usual.
 
-> **Архитектурное место**: запускается фоновым `asyncio.create_task` внутри `GraphMemory.add_episode()` — не блокирует Fast Path. `llm_client` передаётся как опциональный параметр метода, не хранится в `GraphMemory` — граф остаётся независимым от LLM по умолчанию.
+> **Architectural placement**: launched as a background `asyncio.create_task` inside `GraphMemory.add_episode()` — it does not block the Fast Path. `llm_client` is passed as an optional method parameter and is not stored in `GraphMemory` — the graph remains independent of the LLM by default.
 
 ```python
-# memory/causal_graph.py, адаптирован для Velantrim
+# memory/causal_graph.py, adapted for Velantrim
 
 import asyncio
 import logging
@@ -8682,40 +8662,40 @@ from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
-# Типы причинно-следственных рёбер
+# Types of cause-and-effect edges
 CAUSAL_RELATION_TYPES = {
-    "CAUSES":     "прямая причина",
-    "LEADS_TO":   "косвенное следствие",
-    "INFLUENCES": "влияет на",
+    "CAUSES":     "direct cause",
+    "LEADS_TO":   "indirect effect",
+    "INFLUENCES": "influences",
 }
 
 
 @dataclass
 class CausalEdge:
-    source:   str    # entity или fact id
+    source:   str    # entity or fact id
     target:   str
     relation: str    # CAUSES | LEADS_TO | INFLUENCES
     strength: float  # 0.0–1.0
-    evidence: str    # краткое обоснование
+    evidence: str    # brief justification
 
 
 class CausalGraph:
     """
-    Извлекает причинно-следственные связи из текста эпизода
-    и сохраняет их как рёбра в L3 графе.
+    Extracts cause-and-effect relationships from episode text
+    and stores them as edges in the L3 graph.
 
-    Принцип работы:
-    1. При add_episode — фоновый create_task вызывает extract_and_store()
-    2. LLM (опционально) извлекает причины из текста эпизода
-    3. Рёбра сохраняются как MERGE — безопасно для повторного вызова
-    4. get_causal_chain() используется ContextBuilder для Facts Pack
+    How it works:
+    1. On add_episode — a background create_task calls extract_and_store()
+    2. The LLM (optionally) extracts causes from the episode text
+    3. Edges are stored via MERGE — safe to call repeatedly
+    4. get_causal_chain() is used by ContextBuilder for the Facts Pack
 
-    Инвариант: CausalGraph не создаёт новые :Fact узлы.
-    Только рёбра между существующими узлами — Graph = Truth не нарушается.
+    Invariant: CausalGraph does not create new :Fact nodes.
+    Only edges between existing nodes — Graph = Truth is not violated.
     """
 
     def __init__(self, graph_adapter):
-        # graph_adapter — IGraphAdapter (GraphitiAdapter или GraphLiteAdapter)
+        # graph_adapter — IGraphAdapter (GraphitiAdapter or GraphLiteAdapter)
         self.graph = graph_adapter
 
     async def extract_and_store(
@@ -8723,12 +8703,12 @@ class CausalGraph:
         episode_name: str,
         content:      str,
         entities:     List[str],
-        llm_client    = None,    # опциональный — без LLM работает по эвристикам
+        llm_client    = None,    # optional — without an LLM it works via heuristics
     ) -> List[CausalEdge]:
         """
-        Извлечь причинно-следственные связи из текста эпизода.
-        Вызывается через asyncio.create_task — не блокирует pipeline.
-        llm_client передаётся как параметр, не хранится в self.
+        Extract cause-and-effect relationships from the episode text.
+        Called via asyncio.create_task — does not block the pipeline.
+        llm_client is passed as a parameter, not stored in self.
         """
         if not content or not entities:
             return []
@@ -8750,7 +8730,7 @@ class CausalGraph:
         entities:  List[str],
         llm_client = None,
     ) -> List[CausalEdge]:
-        """LLM-извлечение с эвристическим fallback."""
+        """LLM extraction with a heuristic fallback."""
         if llm_client:
             return await self._llm_extract(content, entities, llm_client)
         return self._heuristic_extract(content, entities)
@@ -8762,10 +8742,10 @@ class CausalGraph:
         llm_client,
     ) -> List[CausalEdge]:
         """
-        Попросить LLM найти причинно-следственные связи.
-        Промпт требует строгий JSON — без него парсинг падает gracefully.
+        Ask the LLM to find cause-and-effect relationships.
+        The prompt requires strict JSON — without it parsing fails gracefully.
         """
-        entities_str = ", ".join(entities[:10])  # ограничение токенов
+        entities_str = ", ".join(entities[:10])  # token limit
         prompt = f"""Find causal relationships between entities in this text.
 Return JSON array only, no explanation:
 [{{"source": "A", "target": "B", "relation": "CAUSES|LEADS_TO|INFLUENCES", "strength": 0.0-1.0, "evidence": "brief reason"}}]
@@ -8777,7 +8757,7 @@ JSON:"""
         try:
             response = await llm_client.complete(prompt)
             import json, re
-            # Извлекаем JSON из ответа — LLM иногда добавляет текст вокруг
+            # Extract JSON from the response — the LLM sometimes adds text around it
             match = re.search(r'\[.*\]', response, re.DOTALL)
             if not match:
                 return []
@@ -8802,27 +8782,27 @@ JSON:"""
     @staticmethod
     def _heuristic_extract(content: str, entities: List[str]) -> List[CausalEdge]:
         """
-        Эвристическое извлечение по ключевым словам без LLM.
-        Ищет маркеры причинности между упомянутыми сущностями.
-        Работает как fallback — точность ниже чем LLM, но ноль токенов.
+        Heuristic keyword-based extraction without an LLM.
+        Searches for causality markers between the mentioned entities.
+        Works as a fallback — lower precision than the LLM, but zero tokens.
         """
         edges = []
         text_lower = content.lower()
 
-        # Маркеры причинности → тип ребра
-        cause_markers   = ["вызывает", "причина", "из-за", "causes", "because", "due to"]
-        leads_markers   = ["приводит", "ведёт к", "leads to", "results in", "результат"]
-        influence_marks = ["влияет", "affects", "impacts", "изменяет"]
+        # Causality markers → edge type
+        cause_markers   = ["causes", "cause", "because of", "because", "due to"]
+        leads_markers   = ["leads", "leads to", "results in", "result"]
+        influence_marks = ["influences", "affects", "impacts", "changes"]
 
         for i, e1 in enumerate(entities):
             for e2 in entities[i + 1:]:
                 if e1 == e2:
                     continue
-                # Оба упомянуты в тексте
+                # Both are mentioned in the text
                 if e1.lower() not in text_lower or e2.lower() not in text_lower:
                     continue
 
-                # Определяем тип по маркерам
+                # Determine the type from the markers
                 if any(m in text_lower for m in cause_markers):
                     relation, strength = "CAUSES", 0.6
                 elif any(m in text_lower for m in leads_markers):
@@ -8841,9 +8821,9 @@ JSON:"""
 
     async def _store_edge(self, edge: CausalEdge):
         """
-        Сохранить ребро в L3 через MERGE — идемпотентно.
-        Использует execute_cypher — граф = единственный источник истины.
-        При сбое — логируем и продолжаем (некритично для pipeline).
+        Store the edge in L3 via MERGE — idempotent.
+        Uses execute_cypher — the graph is the single source of truth.
+        On failure — log and continue (non-critical for the pipeline).
         """
         try:
             await self.graph.execute_cypher(
@@ -8872,9 +8852,9 @@ JSON:"""
         min_strength: float = 0.4,
     ) -> List[dict]:
         """
-        Получить причинную цепочку для сущности.
-        Вызывается ContextBuilder при сборке Facts Pack.
-        max_depth прошёл через whitelist (1,2,3) — защита от инъекции.
+        Get the causal chain for an entity.
+        Called by ContextBuilder when assembling the Facts Pack.
+        max_depth passes through a whitelist (1,2,3) — protection against injection.
         """
         safe_depth = max_depth if max_depth in (1, 2, 3) else 2
         try:
@@ -8899,18 +8879,18 @@ JSON:"""
     @staticmethod
     def format_chain_for_context(chain_rows: List[dict]) -> str:
         """
-        Форматировать причинную цепочку для вставки в Facts Pack.
-        Вызывается ContextBuilder — результат идёт в LLM как часть контекста.
+        Format the causal chain for insertion into the Facts Pack.
+        Called by ContextBuilder — the result goes to the LLM as part of the context.
         """
         if not chain_rows:
             return ""
 
         arrow_map = {
-            "CAUSES":     "→ вызывает →",
-            "LEADS_TO":   "→ приводит к →",
-            "INFLUENCES": "~ влияет на ~",
+            "CAUSES":     "→ causes →",
+            "LEADS_TO":   "→ leads to →",
+            "INFLUENCES": "~ influences ~",
         }
-        lines = ["📎 Причинно-следственные связи:"]
+        lines = ["📎 Cause-and-effect relationships:"]
         for row in chain_rows:
             chain     = row.get("chain",     [])
             relations = row.get("relations", [])
@@ -8926,14 +8906,14 @@ JSON:"""
         return "\n".join(lines)
 ```
 
-**Интеграция в `GraphitiAdapter.add_episode()`** — добавить фоновый вызов после успешной записи:
+**Integration into `GraphitiAdapter.add_episode()`** — add a background call after a successful write:
 
 ```python
-# graph_adapter.py — в конце GraphitiAdapter.add_episode(), после return f"episode:{name}"
-# (передавать llm_client и entities как опциональные параметры метода)
+# graph_adapter.py — at the end of GraphitiAdapter.add_episode(), after return f"episode:{name}"
+# (pass llm_client and entities as optional method parameters)
 
-# CausalGraph: фоновое извлечение причинно-следственных связей
-# llm_client=None → работает по эвристикам, ноль токенов
+# CausalGraph: background extraction of cause-and-effect relationships
+# llm_client=None → works via heuristics, zero tokens
 if hasattr(self, '_causal_graph') and self._causal_graph:
     _t = asyncio.create_task(
         self._causal_graph.extract_and_store(
@@ -8949,38 +8929,38 @@ if hasattr(self, '_causal_graph') and self._causal_graph:
     )
 ```
 
-**Интеграция в `ContextBuilder`** — добавить в сборку Facts Pack:
+**Integration into `ContextBuilder`** — add to the assembly of the Facts Pack:
 
 ```python
-# context_builder.py — в методе build_context(), после retrieval фактов
+# context_builder.py — in the build_context() method, after fact retrieval
 
 from memory.causal_graph import CausalGraph
 causal_chain = await self.causal_graph.get_causal_chain(
-    entity=query_entity,   # главная сущность запроса
+    entity=query_entity,   # the main entity of the query
     max_depth=2,
     min_strength=0.4,
 )
 if causal_chain:
     causal_context = CausalGraph.format_chain_for_context(causal_chain)
-    # Добавить в Facts Pack как отдельный блок перед LLM
+    # Add to the Facts Pack as a separate block before the LLM
     facts_pack.append({"type": "causal_chain", "content": causal_context})
 ```
 
-**Инвариант**: `CausalGraph` не создаёт новые `:Fact` узлы — только рёбра между существующими. Граф остаётся единственным источником истины. `llm_client` передаётся параметром, не хранится в `GraphMemory` — разделение `Graph = Truth` и `LLM = Language` сохраняется.
+**Invariant**: `CausalGraph` does not create new `:Fact` nodes — only edges between existing ones. The graph remains the single source of truth. `llm_client` is passed as a parameter and is not stored in `GraphMemory` — the separation of `Graph = Truth` and `LLM = Language` is preserved.
 
 ---
 
-## 🧬 Knowledge Distillation Engine — Наполнение L3 
+## 🧬 Knowledge Distillation Engine — Populating L3 
 
-> **Проблема**: Без этого модуля Neo4j останется пустым. Нельзя наполнить граф просто суммаризациями — они теряют структуру. Нужны атомарные JSON-тройки.
+> **Problem**: Without this module Neo4j will remain empty. You cannot populate the graph with summarizations alone — they lose structure. Atomic JSON triples are needed.
 
-**Knowledge Distillation** превращает сырой текст в структурированные `KnowledgeUnit` перед записью в L3.
+**Knowledge Distillation** turns raw text into structured `KnowledgeUnit`s before writing to L3.
 
 ```
-Сырой текст:
-"Вода кипит при 100°C при стандартном атмосферном давлении."
+Raw text:
+"Water boils at 100°C at standard atmospheric pressure."
          ↓
-KnowledgeUnit (JSON-тройка):
+KnowledgeUnit (JSON triple):
 {
   "concept":   "Water",
   "relation":  "boiling_point",
@@ -8990,68 +8970,68 @@ KnowledgeUnit (JSON-тройка):
   "confidence": 0.98
 }
          ↓
-Memory Guardian → L3 Neo4j (:KnowledgeUnit узел)
+Memory Guardian → L3 Neo4j (:KnowledgeUnit node)
 ```
 
-**Pipeline (гибридный — без LLM для простых случаев):**
+**Pipeline (hybrid — without LLM for simple cases):**
 
 ```
-Шаг 1 (NLP — дёшево и быстро):
+Step 1 (NLP — cheap and fast):
   SpaCy / GLiNER → NER + Relation Extraction
-  → базовые тройки (Subject, Predicate, Object)
-  → confidence определяется автоматически
+  → basic triples (Subject, Predicate, Object)
+  → confidence is determined automatically
 
-Шаг 2 (LLM — только если нужно):
-  Подключать L4 Reasoning (o4-mini) только когда:
+Step 2 (LLM — only if needed):
+  Engage L4 Reasoning (o4-mini) only when:
   - NLP confidence < 0.8
-  - Memory Guardian нашёл конфликт
-  - Сущности неоднозначны (анафора: "он", "они")
+  - Memory Guardian found a conflict
+  - Entities are ambiguous (anaphora: "he", "they")
 
-Шаг 3 (Guardian):
-  Каждая тройка → Memory Guardian → L3
+Step 3 (Guardian):
+  Each triple → Memory Guardian → L3
 ```
 
-> ⚠️ **Риск анафоры**: "Он нажал кнопку" → создаст узел `:Entity{name: "Он"}`. Решение: chunking с сохранением контекста абзаца (не отдельных предложений).
+> ⚠️ **Anaphora risk**: "He pressed the button" → will create a node `:Entity{name: "He"}`. Solution: chunking that preserves paragraph context (not individual sentences).
 >
-> 💡 **MVP для Phase 0**: Выбрать узкий домен (например, LING/THINK глоссарий). L4 извлекает строго форматированный JSON из абзаца. L5 Guardian проверяет. Без сложного разрешения конфликтов — просто `evidence_count++` если тройка уже есть.
+> 💡 **MVP for Phase 0**: Pick a narrow domain (for example, the LING/THINK glossary). L4 extracts strictly formatted JSON from a paragraph. L5 Guardian validates it. Without complex conflict resolution — simply `evidence_count++` if the triple already exists.
 
 ---
 
-## 📜 Формальные инварианты системы (RFC0001–RFC0005)
+## 📜 Formal System Invariants (RFC0001–RFC0005)
 
-> **Инвариант** — правило, нарушение которого является багом архитектуры, а не поведения. Этот раздел — контракт системы. Любое изменение требует осознанного решения.
+> **Invariant** — a rule whose violation is a bug in the architecture, not in behavior. This section is the system's contract. Any change requires a deliberate decision.
 
 ### 🛡️ MGL (Memory Governance Layer)
 
 ```
 1. Episode ∉ Semantic Graph
-   Эпизоды диалогов НИКОГДА не входят в L3 граф.
-   Phase 2: вынести в отдельную Vector DB (Qdrant).
+   Dialogue episodes NEVER enter the L3 graph.
+   Phase 2: move them out into a separate Vector DB (Qdrant).
 
 2. ∀ fact ∈ Graph: fact.validated = True
-   Ни один факт не попадает в Neo4j без прохождения MGL.
+   No fact enters Neo4j without passing through MGL.
 
 3. Graph is bi-temporal
-   Каждый факт имеет valid_from/valid_to + transaction_time.
+   Every fact has valid_from/valid_to + transaction_time.
 
 4. No LLM output enters graph without MGL
-   Галлюцинация LLM не может стать фактом напрямую.
+   An LLM hallucination cannot become a fact directly.
 
 5. ∀ fact ∈ Graph: ∃ evidence (:Evidence node)
-   Каждый факт связан с источником через [:SUPPORTED_BY].
+   Every fact is linked to a source via [:SUPPORTED_BY].
 ```
 
 ### 🔍 RE (Reasoning Engine)
 
 ```
 1. Every conclusion must have support facts.
-   Вывод без фактов → недопустим.
+   A conclusion without facts → not permitted.
 
 2. Reasoning Graph ≠ Semantic Graph.
-   Граф рассуждений строится в памяти, не записывается в Neo4j.
+   The reasoning graph is built in memory, not written to Neo4j.
 
 3. LLM does not perform inference — only explains.
-   L4 Reasoning делает вывод. LLM переводит его в текст.
+   L4 Reasoning draws the conclusion. The LLM renders it into text.
 
 4. Evidence Pack must satisfy Truth Gate before reaching LLM.
 ```
@@ -9059,11 +9039,11 @@ Memory Guardian → L3 Neo4j (:KnowledgeUnit узел)
 ### 🧬 KDE (Knowledge Distillation Engine)
 
 ```
-1. KDE produces only structured KnowledgeUnit (JSON-тройки).
-   Не текстовые куски — только атомарные факты.
+1. KDE produces only structured KnowledgeUnit (JSON triples).
+   Not text chunks — only atomic facts.
 
 2. KDE never writes directly to graph.
-   Всегда: KDE → MGL → Graph.
+   Always: KDE → MGL → Graph.
 
 3. KDE output must pass through MGL.
 ```
@@ -9072,7 +9052,7 @@ Memory Guardian → L3 Neo4j (:KnowledgeUnit узел)
 
 ```
 1. Memory separated by type: Working / Episodic / Semantic / Policy.
-2. Semantic Graph = SSOT (единственный источник истины).
+2. Semantic Graph = SSOT (single source of truth).
 3. Reasoning Engine performs inference, not LLM.
 4. All knowledge passes through Governance (MGL).
 5. Episodic memory NEVER enters Semantic Graph.
@@ -9081,38 +9061,38 @@ Memory Guardian → L3 Neo4j (:KnowledgeUnit узел)
 
 ---
 
-## 📦 Evidence Builder и Truth Gate (RFC0004)
+## 📦 Evidence Builder and Truth Gate (RFC0004)
 
-> **Назначение**: прежде чем LLM генерирует ответ, Evidence Builder собирает пакет доказательств. Truth Gate проверяет достаточность и согласованность.
+> **Purpose**: before the LLM generates an answer, the Evidence Builder assembles an evidence pack. The Truth Gate checks for sufficiency and consistency.
 
-### 🔄 Validation Loop (L4) — три вопроса до Truth Gate
+### 🔄 Validation Loop (L4) — three questions before the Truth Gate
 
-> Снижает галлюцинации без вызова LLM.
-> Система задаёт себе три вопроса перед тем как идти в Truth Gate:
+> Reduces hallucinations without calling the LLM.
+> The system asks itself three questions before proceeding to the Truth Gate:
 
 ```
-Шаг 1 — DECISION: нужен ли поиск вообще?
-  Если запрос в L0 Working Memory (Goal Stack) → ответить без поиска
-  Если intent = TASK → ответить из L0, не трогать L3
-  Если ответ очевиден из контекста → пропустить retrieval
+Step 1 — DECISION: is a search needed at all?
+  If the query is in L0 Working Memory (Goal Stack) → answer without searching
+  If intent = TASK → answer from L0, do not touch L3
+  If the answer is obvious from context → skip retrieval
 
-Шаг 2 — VALIDATION: релевантен ли retrieved контент?
-  Для каждого retrieved факта: cosine(query, fact) ≥ 0.65?
-  Если нет — выбросить факт из Evidence Pack до Truth Gate
-  Это фильтрует семантический шум до проверки RFC порогов
+Step 2 — VALIDATION: is the retrieved content relevant?
+  For each retrieved fact: cosine(query, fact) ≥ 0.65?
+  If not — drop the fact from the Evidence Pack before the Truth Gate
+  This filters out semantic noise before checking the RFC thresholds
 
-Шаг 3 — SELF-CHECK: верен ли финальный ответ?
-  После Truth Gate, перед передачей в LLM:
-  Проверить что каждое утверждение имеет TRACE-ссылку на узел
-  Если утверждение без ссылки → пометить как [unverified]
-  [unverified] блокирует передачу как :Fact (только :Hypothesis)
+Step 3 — SELF-CHECK: is the final answer correct?
+  After the Truth Gate, before passing to the LLM:
+  Verify that every statement has a TRACE reference to a node
+  If a statement has no reference → mark it as [unverified]
+  [unverified] blocks passing it as a :Fact (only :Hypothesis)
 
-Результат: система не просто ищет — она рассуждает о поиске.
-           Fast Path (70-90% запросов) — без LLM, без retrieval.
-           Slow Path — только если Validation Loop не дал ответ.
+Result: the system does not just search — it reasons about searching.
+           Fast Path (70-90% of queries) — no LLM, no retrieval.
+           Slow Path — only if the Validation Loop produced no answer.
 ```
 
-### Формат Evidence Pack
+### Evidence Pack Format
 
 ```json
 {
@@ -9130,138 +9110,138 @@ Memory Guardian → L3 Neo4j (:KnowledgeUnit узел)
 }
 ```
 
-### Правила Truth Gate (конкретные пороги)
+### Truth Gate Rules (concrete thresholds)
 
 ```
-coverage        ≥ 0.7     — запрос покрыт фактами минимум на 70%
-contradictions  = 0       — нет активных конфликтов
-evidence_count  ≥ 3       — минимум 3 подтверждающих факта
-confidence      ≥ 0.75    — средняя уверенность выше порога
+coverage        ≥ 0.7     — the query is covered by facts at least 70%
+contradictions  = 0       — no active conflicts
+evidence_count  ≥ 3       — at least 3 supporting facts
+confidence      ≥ 0.75    — average confidence above the threshold
 
-Если хотя бы одно условие не выполнено:
-→ LLM не генерирует ответ
-→ Возвращается: "Недостаточно данных для уверенного вывода."
-→ Логируется в Audit Layer для анализа пробелов в знаниях
+If at least one condition is not met:
+→ the LLM does not generate an answer
+→ Returned: "Insufficient data for a confident conclusion."
+→ Logged to the Audit Layer for analysis of knowledge gaps
 ```
 
-### KDE масштаб (ориентиры планирования)
+### KDE Scale (planning reference points)
 
 ```
-1 книга              →  1–5k  фактов
-1000 книг + Wikipedia → 1–2M  фактов
-2M фактов            ≈  1–2 GB в Neo4j
-MVP железо           :  16 GB RAM, 8 CPU, SSD — достаточно
+1 book                →  1–5k  facts
+1000 books + Wikipedia → 1–2M  facts
+2M facts             ≈  1–2 GB in Neo4j
+MVP hardware         :  16 GB RAM, 8 CPU, SSD — sufficient
 ```
 
 ---
 
 ## 📜 Canonical Memory Protocol v1
 
-> **Почему критично**: без единой точки входа каждый разработчик понимает систему по-разному. Этот протокол — «конституция» Velantrim — описывает что происходит при каждом запросе и каждом событии.
+> **Why it is critical**: without a single entry point, every developer understands the system differently. This protocol — Velantrim's "constitution" — describes what happens on every request and every event.
 
 ---
 
-### ⚡ Fast Path (синхронный — пользователь ждёт)
+### ⚡ Fast Path (synchronous — the user is waiting)
 
 ```
-Вход: user_message + session_id + текущий Goal Stack
+Input: user_message + session_id + current Goal Stack
 
-F1: Validation Loop L4 — три вопроса ДО генерации:
-    · DECISION:    нужен ли поиск в памяти вообще?
-    · VALIDATION:  релевантен ли retrieved контент?
-    · SELF-CHECK:  верен ли финальный ответ (Truth Gate)?
+F1: Validation Loop L4 — three questions BEFORE generation:
+    · DECISION:    is a memory search needed at all?
+    · VALIDATION:  is the retrieved content relevant?
+    · SELF-CHECK:  is the final answer correct (Truth Gate)?
 
 F1.5: Velum Context Hint (RFC0016)
     · Velum.get_neighbors(query_entities, min_weight=0.3)
-    · Добавить соседей в seed для Etir (шаг F2.5)
-    · Fire-and-forget hint — не блокирует Fast Path
+    · Add neighbors to the seed for Etir (step F2.5)
+    · Fire-and-forget hint — does not block the Fast Path
 
 F2: L0 update
-    · Обновить Goal Stack (добавить/уточнить активную цель)
-    · Загрузить Ring Zero + Project State Card (если не в L0)
-    · Priority Eviction при capacity > 4±1:
-      CRITICAL (Ring Zero, Project State) → никогда не вытесняются
-      HIGH (active goal) → последний на eviction
-      MEDIUM (текущий диалог)
-      LOW (вспомогательный контекст) → первый на eviction → L1
+    · Update the Goal Stack (add/refine the active goal)
+    · Load Ring Zero + Project State Card (if not in L0)
+    · Priority Eviction when capacity > 4±1:
+      CRITICAL (Ring Zero, Project State) → never evicted
+      HIGH (active goal) → last to be evicted
+      MEDIUM (current dialogue)
+      LOW (auxiliary context) → first to be evicted → L1
 
 F3: L1 FTS5 search
-    · SQLite FTS5 по session_id + ключевые слова запроса
-    · Recency bias: свежие эпизоды приоритетнее
-    · Отобрать 1-2 эпизода-кандидата
+    · SQLite FTS5 by session_id + query keywords
+    · Recency bias: fresher episodes have priority
+    · Select 1-2 candidate episodes
 
 F4: Graphiti search → Neo4j
-    · MAX_RESULTS = 10, is_active = true, таймаут
+    · MAX_RESULTS = 10, is_active = true, timeout
     · Hybrid: semantic + keyword + graph traversal
 
-F5: Context Builder → 4±1 чанка
+F5: Context Builder → 4±1 chunks
     · token_budget = MAX_TOKENS_MEMORY_PER_QUERY = 2000
-    · Приоритет: L0 > Etir > L1 > L2 > L3
+    · Priority: L0 > Etir > L1 > L2 > L3
     · Typed context tags: <facts trust="verified"> / <hypothesis>
-    · Source tagging : _format_fact() с метками
-      [ФАКТ] = из L3 графа, [ПРЕДВАРИТЕЛЬНО] = из staging, [ТЕКУЩАЯ СЕССИЯ] = из L1
+    · Source tagging : _format_fact() with labels
+      [FACT] = from L3 graph, [PRELIMINARY] = from staging, [CURRENT SESSION] = from L1
 
-F6: LLM Generation — ЕДИНСТВЕННЫЙ вызов на Fast Path
-    · Evidence Pack обязателен
+F6: LLM Generation — the ONLY call on the Fast Path
+    · Evidence Pack is mandatory
     · Truth Gate: coverage ≥ 0.7, evidence_count ≥ 3
-    · [unverified] метка для утверждений без TRACE
+    · [unverified] label for statements without TRACE
 
 F6.5: OutputFaithfulnessChecker.check(answer, facts_pack)
-    · Проверка что LLM не добавил утверждений без опоры на FactsPack
+    · Check that the LLM did not add statements unsupported by the FactsPack
     · MVP: keyword overlap ≥ 40% (Phase 1: NLI cross-encoder)
-    · passed → вернуть answer пользователю
-    · failed → FALLBACK_RESPONSE + логировать unsupported_sentences в Audit Layer
+    · passed → return the answer to the user
+    · failed → FALLBACK_RESPONSE + log unsupported_sentences to the Audit Layer
 
-Выход: ответ + AgentEvent(USER_MESSAGE + AGENT_RESPONSE) в шину
+Output: answer + AgentEvent(USER_MESSAGE + AGENT_RESPONSE) to the bus
 ```
 
 ---
 
-### 🔄 Slow Path (асинхронный — в фоне, не блокирует)
+### 🔄 Slow Path (asynchronous — in the background, non-blocking)
 
 ```
 S1: Event Bus Logging
     · USER_MESSAGE, AGENT_RESPONSE, TASK_COMPLETED → Redis Streams
     · Retry 3x + exponential backoff + DLQ + Fallback Queue
 
-S2: Extraction — ТОЛЬКО задачи в статусе RESOLVED или FAILED
-    · KDE → JSON-тройки (KnowledgeUnit)
-    · NLP confidence < 0.8 → L4 o4-mini для уточнения
-    · Задачи в BLOCKED_AWAITING_DB ждут восстановления CE
+S2: Extraction — ONLY tasks in status RESOLVED or FAILED
+    · KDE → JSON triples (KnowledgeUnit)
+    · NLP confidence < 0.8 → L4 o4-mini for refinement
+    · Tasks in BLOCKED_AWAITING_DB wait for CE recovery
 
-S2.6: Creative Ingestion Pipeline (параллельно с S2 · RFC0067 v2.0)
-    · Источники: научпоп, философские эссе, качественная художественная проза
+S2.6: Creative Ingestion Pipeline (in parallel with S2 · RFC0067 v2.0)
+    · Sources: popular science, philosophical essays, high-quality literary prose
     → CreativeExtractor (LLM flagship, temp=0.5)    <- async · Slow Path
-    → AnalogyAggregator (>= 2 источника OR authority >= 0.9)
+    → AnalogyAggregator (>= 2 sources OR authority >= 0.9)
     → Write Protocol Gate
     → Analogy Graph L3 ([:METAPHOR_OF] / [:ANALOGOUS_TO])
-    Отклонённые → SQLite: suggested_analogies (ручной аудит)
+    Rejected → SQLite: suggested_analogies (manual audit)
 
-S2.7: Knowledge Ingestion Pipeline (офлайн · RFC0063)
-    · Источники: PDF / JSON / YAML / Wikidata RDF / plain text
-    → FactExtractor (LLM flagship, temp=0.1) → Truth Gate → L3 граф
+S2.7: Knowledge Ingestion Pipeline (offline · RFC0063)
+    · Sources: PDF / JSON / YAML / Wikidata RDF / plain text
+    → FactExtractor (LLM flagship, temp=0.1) → Truth Gate → L3 graph
     → PatternExtractor (LLM flagship, temp=0.4) → ReasoningBank (Bayesian prior)
     → SemanticIndexer (embedding only, 0 LLM) → Qdrant/ChromaDB
-    → EdgeSuggester (аудиторский инструмент) → SQLite: suggested_edges
-    · Только Slow Path. Прямой вызов из Fast Path — нарушение I63 (ex-I40).
+    → EdgeSuggester (audit tool) → SQLite: suggested_edges
+    · Slow Path only. A direct call from the Fast Path is a violation of I63 (ex-I40).
 
 ---
 
 ## RFC0067 v2.0: Creative Intelligence Layer
 
-### 🌱 Читай это первым
+### 🌱 Read this first
 
-RFC0067 v2.0 — полноценный **Creative Intelligence Layer** из трёх механизмов:
+RFC0067 v2.0 is a complete **Creative Intelligence Layer** made up of three mechanisms:
 
-**Analogy Graph** — явная карта метафор и аналогий из качественных текстов. Рёбра `[:METAPHOR_OF]` и `[:ANALOGOUS_TO]` на узлах L3.
+**Analogy Graph** — an explicit map of metaphors and analogies extracted from high-quality texts. Edges `[:METAPHOR_OF]` and `[:ANALOGOUS_TO]` on L3 nodes.
 
-**Semantic Bridge Engine (SBE)** — асинхронный воркер, подписан на EventBus, предвычисляет семантические мосты. Только Slow Path. Fast Path читает Redis-кэш.
+**Semantic Bridge Engine (SBE)** — an asynchronous worker, subscribed to the EventBus, that precomputes semantic bridges. Slow Path only. The Fast Path reads the Redis cache.
 
-**Adaptive Decoder** — CREATIVE режим с динамической температурой (0.6 → 0.85) и `presence_penalty = 0.6`. Четвёртый когнитивный режим.
+**Adaptive Decoder** — a CREATIVE mode with dynamic temperature (0.6 → 0.85) and `presence_penalty = 0.6`. The fourth cognitive mode.
 
-> ⚠️ **Важно:** CREATIVE разрешает аналогии, запрещает Hypothesized факты (I57). EXPLORATION разрешает Hypothesized, не имеет аналогий (I58). Это разные режимы по природе.
+> ⚠️ **Important:** CREATIVE permits analogies and forbids Hypothesized facts (I57). EXPLORATION permits Hypothesized and has no analogies (I58). These are modes of a different nature.
 
-> ⚠️ **Зависимость:** `psutil>=5.9` для CPU guard в SBEAsyncWorker. Добавить в `requirements.txt`. Redis и Qdrant/ChromaDB уже в стеке.
+> ⚠️ **Dependency:** `psutil>=5.9` for the CPU guard in SBEAsyncWorker. Add to `requirements.txt`. Redis and Qdrant/ChromaDB are already in the stack.
 
 ---
 
@@ -9269,64 +9249,64 @@ RFC0067 v2.0 — полноценный **Creative Intelligence Layer** из т�
 RFC0067 v2.0: Creative Intelligence Layer
     |
     +- [Analogy Graph]:
-    |   Рёбра [:METAPHOR_OF] и [:ANALOGOUS_TO] на узлах L3.
-    |   Источник: CreativeExtractor + AnalogyAggregator (S2.6).
-    |   Лимит: макс 50 исходящих аналогий на узел. Хранение: > 365 дней -> холодный граф.
-    |   I55:   только через Write Protocol Gate. Прямой MERGE -> WriteProtocolViolation.
-    |   I55.1: SAE decay_factor=0.4 для рёбер аналогий (не 0.6 как обычно).
+    |   Edges [:METAPHOR_OF] and [:ANALOGOUS_TO] on L3 nodes.
+    |   Source: CreativeExtractor + AnalogyAggregator (S2.6).
+    |   Limit: max 50 outgoing analogies per node. Retention: > 365 days -> cold graph.
+    |   I55:   only via Write Protocol Gate. Direct MERGE -> WriteProtocolViolation.
+    |   I55.1: SAE decay_factor=0.4 for analogy edges (not 0.6 as usual).
     |
     +- [SBEAsyncWorker]:
     |   EventBus: focus_vector_changed / cognitive_mode_switched / periodic_tick.
     |   -> Qdrant (cross-domain, cosine >= 0.75)
-    |   -> Redis: creative_bridge:{session_id} (TTL=15 мин)
-    |   I56: только Slow Path. Fast Path читает только кэш.
+    |   -> Redis: creative_bridge:{session_id} (TTL=15 min)
+    |   I56: only Slow Path. Fast Path reads only the cache.
     |
     +- [ResonanceTracker]:
     |   used_in_response: +0.05 / positive_continuation: +0.10
     |   explicit_like: +0.20 / clarification_request: -0.10 / explicit_dislike: -0.25
-    |   resonance >= 0.7 -> кристаллизация через Write Protocol Gate.
-    |   Decay: каждую неделю resonance x 0.95.
-    |   I56.1: SBE не пишет напрямую. Только resonance >= 0.7 -> Write Protocol.
+    |   resonance >= 0.7 -> crystallization via Write Protocol Gate.
+    |   Decay: every week resonance x 0.95.
+    |   I56.1: SBE does not write directly. Only resonance >= 0.7 -> Write Protocol.
     |
     +- [AdaptiveDecoder]:
     |   temp = 0.6 + (0.85-0.6) * min(associations_count/5, 1.0)
-    |   presence_penalty = 0.6 (для SLM < 3B: min 0.5, I57)
-    |   I57: FactsPack только Validated. Ассоциации в creative_context.
+    |   presence_penalty = 0.6 (for SLM < 3B: min 0.5, I57)
+    |   I57: FactsPack only Validated. Associations in creative_context.
     |
-    +- Инварианты RFC0067 v2.0:
-    |   I55:   [:METAPHOR_OF] и [:ANALOGOUS_TO] только через Write Protocol Gate.
-    |   I55.1: SAE decay_factor=0.4 для рёбер аналогий.
-    |   I56:   SBE только в Slow Path через EventBus.
-    |   I56.1: SBE не пишет в граф напрямую. resonance >= 0.7 -> Write Protocol.
-    |   I57:   CREATIVE mode: только Validated + ассоциации в creative_context.
-    |   I58:   CREATIVE != EXPLORATION (разные правила).
-    |   I59:   XAI показывает creative_associations отдельно от facts.
-    |   I51-I54: VOID (RFC0067 v1.0 deprecated → заменён RFC0067 v2.0).
-    |   P2-E FIX: явная документация void-дыр:
+    +- RFC0067 v2.0 Invariants:
+    |   I55:   [:METAPHOR_OF] and [:ANALOGOUS_TO] only via Write Protocol Gate.
+    |   I55.1: SAE decay_factor=0.4 for analogy edges.
+    |   I56:   SBE only in the Slow Path via EventBus.
+    |   I56.1: SBE does not write to the graph directly. resonance >= 0.7 -> Write Protocol.
+    |   I57:   CREATIVE mode: only Validated + associations in creative_context.
+    |   I58:   CREATIVE != EXPLORATION (different rules).
+    |   I59:   XAI shows creative_associations separately from facts.
+    |   I51-I54: VOID (RFC0067 v1.0 deprecated → replaced by RFC0067 v2.0).
+    |   P2-E FIX: explicit documentation of the void holes:
     |   I51 = VOID · I52 = VOID · I53 = VOID · I54 = VOID
-    |   В test_invariants.py добавить маркеры: pytest.mark.skip("VOID: RFC0067 v1.0 deprecated")
+    |   In test_invariants.py add markers: pytest.mark.skip("VOID: RFC0067 v1.0 deprecated")
     |
-    +- Метрики:
+    +- Metrics:
     |   analogy_graph_edges_total / sbe_activations_total / sbe_cache_hits
     |   sbe_cache_misses / creative_mode_responses_total
     |   analogy_resonance_score / analogy_promoted_total
-    \- Нагрузка: SBEAsyncWorker 20-100ms (Qdrant + Redis) · Slow Path только
+    \- Load: SBEAsyncWorker 20-100ms (Qdrant + Redis) · Slow Path only
 ```
 
-### Код [RFC0067 v2.0]
+### Code [RFC0067 v2.0]
 
 ```python
 # sbe_async_worker.py
 # RFC0067 v2.0: Semantic Bridge Engine
-# I56: только Slow Path через EventBus. Fast Path читает get_cached().
+# I56: only Slow Path via EventBus. Fast Path reads get_cached().
 import json, logging
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
-# P3-C FIX: RELATED_DOMAINS перенесён в velantrim_config.py (ранее hardcode в sbe_async_worker.py).
-# В sbe_async_worker.py: from velantrim_config import RELATED_DOMAINS
+# P3-C FIX: RELATED_DOMAINS moved to velantrim_config.py (previously hardcoded in sbe_async_worker.py).
+# In sbe_async_worker.py: from velantrim_config import RELATED_DOMAINS
 RELATED_DOMAINS: dict[str, list[str]] = {
     "physics":      ["mathematics", "engineering"],
     "biology":      ["chemistry", "medicine"],
@@ -9365,7 +9345,7 @@ class CreativeAssociation:
 
 
 class SBEAsyncWorker:
-    # I56: только через EventBus. Fast Path читает get_cached().
+    # I56: only via EventBus. Fast Path reads get_cached().
     def __init__(self, vector_db, redis, focus_engine, hot_graph, config):
         self.vector_db    = vector_db; self.redis = redis
         self.focus_engine = focus_engine; self.hot_graph = hot_graph
@@ -9382,15 +9362,15 @@ class SBEAsyncWorker:
         await self._compute_and_cache(sid)
 
     async def _compute_and_cache(self, session_id: str):
-        # FIX-C: FocusEngine не имеет get_focus_vector(session_id).
-        # Правильный метод: get_current_focus() — возвращает текущий FocusVector.
-        # get_focus_vector было несуществующим именем → AttributeError при каждом вызове SBE.
+        # FIX-C: FocusEngine does not have get_focus_vector(session_id).
+        # Correct method: get_current_focus() — returns the current FocusVector.
+        # get_focus_vector was a nonexistent name → AttributeError on every SBE call.
         focus = await self.focus_engine.get_current_focus(session_id)
         if not focus or not focus.primary_domain:
             return
         exclude  = [focus.primary_domain] + RELATED_DOMAINS.get(focus.primary_domain, [])
-        # P4-D FIX: Redis-кэш для get_activated_nodes (TTL 5 мин).
-        # В CREATIVE режиме вызывается часто — кэш снижает нагрузку на Neo4j.
+        # P4-D FIX: Redis cache for get_activated_nodes (TTL 5 min).
+        # In CREATIVE mode it is called often — the cache reduces the load on Neo4j.
         import json as _json
         _cache_key = f"activated_nodes:{session_id}"
         _cached = await getattr(self, 'redis', None) and await self.redis.get(_cache_key)
@@ -9427,7 +9407,7 @@ class SBEAsyncWorker:
 ```python
 # resonance_tracker.py
 # RFC0067 v2.0: ResonanceTracker
-# I56.1: resonance >= 0.7 -> Write Protocol Gate (не напрямую)
+# I56.1: resonance >= 0.7 -> Write Protocol Gate (not directly)
 import logging
 from datetime import timezone, datetime
 
@@ -9443,10 +9423,10 @@ FEEDBACK_WEIGHTS = {
 
 
 class ResonanceTracker:
-    # P3-B FIX: константы читаются из CREATIVE конфига — убраны hardcode.
-    # PROMOTE_THRESHOLD = 0.7   ← теперь CREATIVE.PROMOTE_THRESHOLD
-    # DECAY_WEEKLY      = 0.95  ← теперь CREATIVE.DECAY_WEEKLY
-    # from velantrim_config import CREATIVE → используй CREATIVE.PROMOTE_THRESHOLD
+    # P3-B FIX: constants are read from the CREATIVE config — hardcoded values removed.
+    # PROMOTE_THRESHOLD = 0.7   ← now CREATIVE.PROMOTE_THRESHOLD
+    # DECAY_WEEKLY      = 0.95  ← now CREATIVE.DECAY_WEEKLY
+    # from velantrim_config import CREATIVE → use CREATIVE.PROMOTE_THRESHOLD
 
     def __init__(self, graph, write_protocol, redis):
         self.graph = graph; self.write_protocol = write_protocol; self.redis = redis
@@ -9465,8 +9445,8 @@ class ResonanceTracker:
             await self._promote(analogy_id, analogy_data, score)
 
     async def decay_all(self):
-        # FIX-D: GraphMemory не имеет .session() — это Neo4j driver API.
-        # Правильный интерфейс: execute_cypher(). Иначе AttributeError в ночном цикле.
+        # FIX-D: GraphMemory does not have .session() — that is the Neo4j driver API.
+        # Correct interface: execute_cypher(). Otherwise AttributeError in the nightly cycle.
         await self.graph.execute_cypher(
             "MATCH ()-[r:METAPHOR_OF|ANALOGOUS_TO]->() "
             "WHERE r.last_used < datetime() - duration('P7D') "
@@ -9499,7 +9479,7 @@ class ResonanceTracker:
             # FIX-D: .session() → execute_cypher()
             await self.graph.execute_cypher(
                 "MATCH ()-[r:METAPHOR_OF|ANALOGOUS_TO]->() "
-                "WHERE r.analogy_id=$id "  -- P0-G FIX: property-based lookup вместо id(r)
+                "WHERE r.analogy_id=$id "  -- P0-G FIX: property-based lookup instead of id(r)
                 "SET r.resonance_score=$s, r.last_used=datetime()",
                 {"id": aid, "s": score})
         else:
@@ -9509,7 +9489,7 @@ class ResonanceTracker:
 ```python
 # adaptive_decoder.py
 # RFC0067 v2.0: AdaptiveDecoder
-# I57: FactsPack в CREATIVE только Validated.
+# I57: FactsPack in CREATIVE only Validated.
 from dataclasses import dataclass, field
 
 
@@ -9522,9 +9502,9 @@ class DecodeContext:
 class AdaptiveDecoder:
     BASE_TEMP = 0.6; MAX_TEMP = 0.85; MAX_ASSOC = 5
     PRES_PENALTY = 0.6; SLM_MIN_PRES = 0.5
-    # P1-F FIX: было {"PRECISION": 0.1, "BALANCED": 0.5, "EXPLORATION": 0.7} → конфликт
-# с CognitiveModeRouter.MODE_CONFIGS (0.3 / 0.6 / 0.85). Теперь единый источник.
-from velantrim_config import MODE_TEMPS   # P1-F: MODE_TEMPS читается из конфига
+    # P1-F FIX: was {"PRECISION": 0.1, "BALANCED": 0.5, "EXPLORATION": 0.7} → conflict
+# with CognitiveModeRouter.MODE_CONFIGS (0.3 / 0.6 / 0.85). Now a single source.
+from velantrim_config import MODE_TEMPS   # P1-F: MODE_TEMPS is read from the config
 
     def compute_temperature(self, ctx: DecodeContext) -> float:
         if ctx.cognitive_mode != "CREATIVE":
@@ -9539,12 +9519,12 @@ from velantrim_config import MODE_TEMPS   # P1-F: MODE_TEMPS читается и
                else self.PRES_PENALTY
 ```
 
-### Тесты [I55–I59]
+### Tests [I55–I59]
 
 ```python
-# tests/test_invariants.py -- добавить
+# tests/test_invariants.py -- add
 
-# I55: [:METAPHOR_OF] только через Write Protocol Gate
+# I55: [:METAPHOR_OF] only via Write Protocol Gate
 async def test_I55_analogy_edges_require_write_protocol():
     with pytest.raises(WriteProtocolViolation):
         await MockGraph().execute_cypher(
@@ -9555,14 +9535,14 @@ async def test_I55_analogy_edges_require_write_protocol():
         source_domain="biology", target_domain="computing")
     assert r.success
 
-# I55.1: SAE decay=0.4 для аналогий
+# I55.1: SAE decay=0.4 for analogies
 async def test_I55_1_sae_analogy_decay():
     sae = SpreadingActivationEngine(graph=MockGraphWithAnalogies())
     act = await sae.activate("Neuron", max_depth=2)
     assert act.get("Transistor", 0) < act.get("Synapse", 0) * 0.65, \
-        "I55.1 VIOLATION: SAE не применяет decay=0.4 для аналогий"
+        "I55.1 VIOLATION: SAE does not apply decay=0.4 for analogies"
 
-# I56.1: SBE не пишет напрямую
+# I56.1: SBE does not write directly
 async def test_I56_1_resonance_via_write_protocol():
     wp = MockWriteProtocol()
     t  = ResonanceTracker(MockGraph(), wp, MockRedis())
@@ -9572,7 +9552,7 @@ async def test_I56_1_resonance_via_write_protocol():
         await t.record("id1", "s", "explicit_like", "sbe", d)
     assert wp.create_analogy_edge_called, "I56.1 VIOLATION"
 
-# I57: CREATIVE mode — только Validated
+# I57: CREATIVE mode — only Validated
 async def test_I57_creative_validated_only():
     ctx = await MockContextBuilder().build(query="test",
                 session_id="s", cognitive_mode="CREATIVE")
@@ -9586,15 +9566,15 @@ async def test_I58_creative_vs_exploration():
     assert all(f.epistemic_state == "Validated" for f in c.facts_pack)
     assert len(e.creative_associations) == 0, "I58 VIOLATION"
 
-# I59: XAI отдельно показывает ассоциации
+# I59: XAI shows associations separately
 async def test_I59_xai_separates_associations():
     d = (await MockExplainabilityLayer().explain("r1", "detailed")).to_dict()
-    assert "creative_associations" in d, "I59 VIOLATION: поле отсутствует"
+    assert "creative_associations" in d, "I59 VIOLATION: field missing"
     assert {f["id"] for f in d["facts"]}.isdisjoint(
         {a["source_node"] for a in d["creative_associations"]}), "I59 VIOLATION"
 ```
 
-### Добавить в velantrim_config.py
+### Add to velantrim_config.py
 
 ```python
 class CreativeConfig:
@@ -9614,26 +9594,26 @@ class CreativeConfig:
     AUTHORITY_OVERRIDE    = 0.9
 
 CREATIVE = CreativeConfig()
-# psutil>=5.9 -- добавить в requirements.txt
+# psutil>=5.9 -- add to requirements.txt
 ```
 
 
 ---
 
-## RFC0063: Knowledge Ingestion Pipeline — Поглощение внешних знаний
+## RFC0063: Knowledge Ingestion Pipeline — Absorbing External Knowledge
 
-### 🌱 Для чего
+### 🌱 What it's for
 
-Velantrim учится из диалогов. Но есть огромный массив знаний который накоплен **до** первого диалога — энциклопедии, учебники, научные статьи, PDF. RFC0063 даёт системе способность поглощать эти знания не теряя ни точности фактов, ни паттернов рассуждения, ни семантических связей. Один источник → три параллельных потока → три правильных слоя архитектуры.
+Velantrim learns from dialogues. But there is a vast body of knowledge accumulated **before** the first dialogue — encyclopedias, textbooks, scientific papers, PDFs. RFC0063 gives the system the ability to absorb this knowledge without losing factual accuracy, reasoning patterns, or semantic connections. One source → three parallel streams → three correct architectural layers.
 
-Ключевая идея: «педагогический шум» в учебнике — повторения, примеры, метафоры — это не мусор. Это закодированные паттерны рассуждения. Velantrim раскладывает их по ящикам: факты в граф, паттерны в ReasoningBank, семантика в векторный индекс.
+The key idea: the "pedagogical noise" in a textbook — repetitions, examples, metaphors — is not garbage. It is encoded reasoning patterns. Velantrim sorts them into boxes: facts into the graph, patterns into ReasoningBank, semantics into the vector index.
 
 ---
 
 ```
 RFC0063: Knowledge Ingestion Pipeline
 
-  Источник (PDF / JSON / YAML / Wikidata RDF / plain text)
+  Source (PDF / JSON / YAML / Wikidata RDF / plain text)
                           |
                           v
               IngestionRouter (Slow Path only · I63)
@@ -9642,7 +9622,7 @@ RFC0063: Knowledge Ingestion Pipeline
           v               v               v
    FactExtractor   PatternExtractor  SemanticIndexer
    (flagship LLM)  (flagship LLM)   (embedding only)
-   temp = 0.1      temp = 0.4       0 токенов LLM
+   temp = 0.1      temp = 0.4       0 LLM tokens
           |               |               |
           v               v               v
     L3 Neo4j       L4 ReasoningBank   Qdrant/ChromaDB
@@ -9654,32 +9634,32 @@ RFC0063: Knowledge Ingestion Pipeline
                    TraceLine sync (source_id)
 ```
 
-### Компоненты
+### Components
 
-**IngestionRouter** — точка входа. Принимает источник, определяет тип, язык, домен, `source_vintage` (год публикации), `trust_score`. Запускает три потока через EventBus. Только Slow Path (I63).
+**IngestionRouter** — the entry point. Accepts a source, determines its type, language, domain, `source_vintage` (year of publication), and `trust_score`. Launches three streams via the EventBus. Slow Path only (I63).
 
-**FactExtractor** — извлекает триплеты фактов (субъект, предикат, объект). Температура 0.1. Начальный ESM = `Supported` — никогда не `Validated` при загрузке (I60). Дедупликация: cosine ≥ 0.92 → добавляет Evidence к существующему узлу, не создаёт дубль. Trust scores: encyclopedic 0.85, scientific 0.90, textbook 0.80, default 0.70.
+**FactExtractor** — extracts fact triples (subject, predicate, object). Temperature 0.1. Initial ESM = `Supported` — never `Validated` on ingestion (I60). Deduplication: cosine ≥ 0.92 → adds Evidence to an existing node, does not create a duplicate. Trust scores: encyclopedic 0.85, scientific 0.90, textbook 0.80, default 0.70.
 
-**PatternExtractor** — извлекает паттерны рассуждения в ReasoningBank. Температура 0.4. **Байесовская инициализация Thompson Sampling (I61)**: стратегия из авторитетного источника стартует не с `Beta(1,1)` а с `Beta(prior×k, (1-prior)×k)` — разумная фора которая поддаётся коррекции реальным опытом. `max prior_strength_k = 20` — жёсткое ограничение (иначе стратегия становится некорректируемой). Дедупликация стратегий: similarity > 0.88 → merge, не дубль.
+**PatternExtractor** — extracts reasoning patterns into ReasoningBank. Temperature 0.4. **Bayesian initialization of Thompson Sampling (I61)**: a strategy from an authoritative source starts not at `Beta(1,1)` but at `Beta(prior×k, (1-prior)×k)` — a reasonable head start that remains correctable by real-world experience. `max prior_strength_k = 20` — a hard limit (otherwise the strategy becomes uncorrectable). Strategy deduplication: similarity > 0.88 → merge, not a duplicate.
 
-**SemanticIndexer** — нарезает текст на чанки 512 токенов / перекрытие 64, векторизует через EmbeddingRegistry (`deepvk/USER-bge-m3` для RU). **Ноль LLM-вызовов** (I62). В метаданных каждого вектора — `fact_ids` из L3 того же чанка. Это связывает векторный индекс с графом — семантический поиск ведёт к явным фактам.
+**SemanticIndexer** — slices text into chunks of 512 tokens / overlap 64, vectorizes via EmbeddingRegistry (`deepvk/USER-bge-m3` for RU). **Zero LLM calls** (I62). The metadata of each vector includes the `fact_ids` from L3 for the same chunk. This links the vector index to the graph — semantic search leads to explicit facts.
 
-**EdgeSuggester** — **аудиторский инструмент, не автоматика**. Раз в неделю находит пары фактов с cosine > 0.85 И co-активацией > 3 раз, но без явного ребра в графе. Сохраняет в SQLite `suggested_edges` со статусом `pending`. Аудитор утверждает → только тогда через Truth Gate в граф (I64). Опциональный режим Hypothesized Edge: ребро создаётся как `is_active=false` и активируется когда пользователь косвенно подтверждает его диалогом.
+**EdgeSuggester** — **an auditing tool, not automation**. Once a week it finds pairs of facts with cosine > 0.85 AND co-activation > 3 times, but without an explicit edge in the graph. It saves them to the SQLite `suggested_edges` table with status `pending`. The auditor approves → only then does it go through the Truth Gate into the graph (I64). Optional Hypothesized Edge mode: the edge is created as `is_active=false` and is activated when the user indirectly confirms it through dialogue.
 
-**VintageDecayCalculator** — адаптивный `decay_lambda` зависящий от домена и возраста источника (I65). Физика: decay=0.001 (практически не устаревает). Программирование: decay=0.15 (устаревает за 3 года). Медицина: decay=0.05. ESM-модификатор: Validated×0.5 (факт живёт дольше), Hypothesized×2.0 (устаревает быстрее). Каждый ingested факт обязан иметь `decay_lambda` и `source_vintage`.
+**VintageDecayCalculator** — an adaptive `decay_lambda` depending on the domain and the age of the source (I65). Physics: decay=0.001 (practically never goes stale). Programming: decay=0.15 (goes stale in 3 years). Medicine: decay=0.05. ESM modifier: Validated×0.5 (the fact lives longer), Hypothesized×2.0 (goes stale faster). Every ingested fact must have a `decay_lambda` and a `source_vintage`.
 
 ---
 
 ```
-Конфигурация RFC0063 (velantrim_config.yaml):
+RFC0063 Configuration (velantrim_config.yaml):
 
 ingestion:
   enabled: true
-  offline_only: true            # никогда не в рантайме Fast Path
+  offline_only: true            # never in the Fast Path runtime
   batch_size: 500
-  dedup_threshold: 0.92         # cosine для дедупликации фактов
+  dedup_threshold: 0.92         # cosine for fact deduplication
   strategy_dedup_threshold: 0.88
-  max_domain_share: 0.40        # максимум одного домена за сессию
+  max_domain_share: 0.40        # maximum of a single domain per session
   languages: [ru, en, multi]
   trust_scores:
     encyclopedic: 0.85
@@ -9690,7 +9670,7 @@ ingestion:
     facts:
       llm: flagship
       temperature: 0.1
-      initial_esm_state: Supported   # никогда не Validated при загрузке
+      initial_esm_state: Supported   # never Validated on ingestion
     reasoning_patterns:
       llm: flagship
       temperature: 0.4
@@ -9720,7 +9700,7 @@ reasoning_bank:
   ingested_prior:
     default_confidence: 0.75
     default_strength_k: 10
-    max_strength_k: 20              # жёсткое ограничение
+    max_strength_k: 20              # hard limit
     domain_overrides:
       physics:     { confidence: 0.90, k: 20 }
       mathematics: { confidence: 0.92, k: 20 }
@@ -9735,48 +9715,48 @@ edge_suggester:
   audit_schedule: weekly
 ```
 
-### Инварианты RFC0063
+### RFC0063 Invariants
 
 ```
-I60: FactExtractor никогда не присваивает epistemic_state=Validated без Truth Gate
-     с evidence_count >= 3. Нарушение = запись ненадёжных фактов с высшим статусом.
-     Тест: test_I60_fact_extractor_no_direct_validated()
+I60: FactExtractor never assigns epistemic_state=Validated without the Truth Gate
+     with evidence_count >= 3. Violation = writing unreliable facts with the highest status.
+     Test: test_I60_fact_extractor_no_direct_validated()
 
-I61: Все ingested стратегии используют байесовскую инициализацию Beta(prior*k, (1-prior)*k).
-     max prior_strength_k = 20. Beta(1,1) для ingested стратегий — нарушение.
-     Тест: test_I61_thompson_sampling_bayesian_prior()
+I61: All ingested strategies use Bayesian initialization Beta(prior*k, (1-prior)*k).
+     max prior_strength_k = 20. Beta(1,1) for ingested strategies is a violation.
+     Test: test_I61_thompson_sampling_bayesian_prior()
 
-I62: SemanticIndexer не вызывает LLM. Только embedding model через EmbeddingRegistry.
-     Тест: test_I62_semantic_indexer_no_llm_call()
+I62: SemanticIndexer does not call the LLM. Only the embedding model via EmbeddingRegistry.
+     Test: test_I62_semantic_indexer_no_llm_call()
 
-I63: IngestionRouter работает только через EventBus в Slow Path.
-     Прямой вызов из Fast Path — нарушение I28.
-     Тест: test_I63_ingestion_router_slow_path_only()
+I63: IngestionRouter operates only via the EventBus in the Slow Path.
+     A direct call from the Fast Path is a violation of I28.
+     Test: test_I63_ingestion_router_slow_path_only()
 
-I64: EdgeSuggester не пишет в граф напрямую.
-     Только через approve_edge() -> Truth Gate -> L3.
-     Тест: test_I64_edge_suggester_no_direct_graph_write()
+I64: EdgeSuggester does not write to the graph directly.
+     Only via approve_edge() -> Truth Gate -> L3.
+     Test: test_I64_edge_suggester_no_direct_graph_write()
 
-I65: Каждый ingested факт (source_type="import") обязан иметь decay_lambda
-     вычисленный через VintageDecayCalculator. decay_lambda=NULL = нарушение.
-     Тест: test_I65_vintage_decay_assigned_on_ingestion()
+I65: Every ingested fact (source_type="import") must have a decay_lambda
+     computed via VintageDecayCalculator. decay_lambda=NULL = violation.
+     Test: test_I65_vintage_decay_assigned_on_ingestion()
 ```
 
-### Тесты [I60–I65]
+### Tests [I60–I65]
 
 ```python
-# tests/test_invariants.py -- добавить
+# tests/test_invariants.py -- add
 
-# I60: FactExtractor не присваивает Validated напрямую
+# I60: FactExtractor does not assign Validated directly
 async def test_I60_fact_extractor_no_direct_validated():
     extractor = FactExtractor(truth_gate=MockTruthGate(), graph=MockGraph())
     result = await extractor.extract_and_store(
-        text="Вода кипит при 100°C.", source_type="encyclopedic"
+        text="Water boils at 100°C.", source_type="encyclopedic"
     )
     assert result.esm_state == "Supported", \
-        "I60 VIOLATION: FactExtractor присвоил Validated без Truth Gate"
+        "I60 VIOLATION: FactExtractor assigned Validated without the Truth Gate"
 
-# I61: Bayesian prior для ingested стратегий
+# I61: Bayesian prior for ingested strategies
 async def test_I61_thompson_sampling_bayesian_prior():
     bank = ReasoningBank()
     strategy = await bank.ingest_pattern(
@@ -9787,179 +9767,179 @@ async def test_I61_thompson_sampling_bayesian_prior():
     assert strategy.alpha == 18.0, "I61 VIOLATION: alpha != prior*k"
     assert strategy.beta  ==  2.0, "I61 VIOLATION: beta != (1-prior)*k"
 
-# I62: SemanticIndexer не вызывает LLM
+# I62: SemanticIndexer does not call the LLM
 async def test_I62_semantic_indexer_no_llm_call():
     llm_mock = MockLLM()
     indexer  = SemanticIndexer(embedding_registry=MockEmbeddingRegistry(),
                                llm=None)
     await indexer.index_chunks(["chunk 1", "chunk 2"], source_id="src_001")
-    assert llm_mock.call_count == 0, "I62 VIOLATION: SemanticIndexer вызвал LLM"
+    assert llm_mock.call_count == 0, "I62 VIOLATION: SemanticIndexer called the LLM"
 
-# I63: IngestionRouter только через Slow Path
+# I63: IngestionRouter only via the Slow Path
 async def test_I63_ingestion_router_slow_path_only():
     router = IngestionRouter(event_bus=MockEventBus())
     with pytest.raises(FastPathViolation):
-        await router.ingest_sync("source.pdf")  # нет такого метода
+        await router.ingest_sync("source.pdf")  # no such method
 
-# I64: EdgeSuggester не пишет в граф напрямую
+# I64: EdgeSuggester does not write to the graph directly
 async def test_I64_edge_suggester_no_direct_graph_write():
     graph   = MockGraph()
     suggest = EdgeSuggester(graph=graph, db=MockDB())
     await suggest.run_weekly_scan()
-    assert graph.write_count == 0, "I64 VIOLATION: EdgeSuggester пишет в граф"
+    assert graph.write_count == 0, "I64 VIOLATION: EdgeSuggester writes to the graph"
     assert suggest.pending_count > 0
 
-# I65: VintageDecay обязателен для всех ingested фактов
+# I65: VintageDecay is mandatory for all ingested facts
 async def test_I65_vintage_decay_assigned():
     calc    = VintageDecayCalculator()
     fact    = Fact(source_type="import", source_vintage=2018, domain="programming")
     result  = calc.assign(fact)
     assert result.decay_lambda is not None, "I65 VIOLATION: decay_lambda=NULL"
     assert result.decay_lambda > 0.10, \
-        "I65: programming 2018 должен иметь высокий decay"
+        "I65: programming 2018 must have a high decay"
 ```
 
-### Новые метрики Prometheus (RFC0063)
+### New Prometheus Metrics (RFC0063)
 
-| Метрика | Что показывает |
+| Metric | What it shows |
 |---------|----------------|
-| `ingestion_facts_created_total` | фактов создано через IngestionPipeline |
-| `ingestion_facts_deduplicated_total` | фактов объединено с существующими |
-| `ingestion_patterns_created_total` | паттернов рассуждения создано |
-| `ingestion_patterns_deduplicated_total` | паттернов объединено через merge |
-| `ingestion_contradictions_found_total` | противоречий с существующим графом |
-| `ingestion_batch_duration_seconds` | время обработки партии (Histogram) |
-| `ingestion_vintage_decay_avg` | средний decay_lambda по партии |
-| `edge_suggestions_pending_total` | предложений рёбер ожидающих аудита |
-| `edge_suggestions_approved_total` | предложений утверждено аудитором |
-| `edge_hypothesized_activated_total` | Hypothesized Edge активировано диалогом |
+| `ingestion_facts_created_total` | facts created via IngestionPipeline |
+| `ingestion_facts_deduplicated_total` | facts merged with existing ones |
+| `ingestion_patterns_created_total` | reasoning patterns created |
+| `ingestion_patterns_deduplicated_total` | patterns merged via merge |
+| `ingestion_contradictions_found_total` | contradictions with the existing graph |
+| `ingestion_batch_duration_seconds` | batch processing time (Histogram) |
+| `ingestion_vintage_decay_avg` | average decay_lambda for the batch |
+| `edge_suggestions_pending_total` | edge suggestions awaiting audit |
+| `edge_suggestions_approved_total` | suggestions approved by the auditor |
+| `edge_hypothesized_activated_total` | Hypothesized Edges activated by dialogue |
 
-### Миграция существующих данных
+### Migration of Existing Data
 
 ```cypher
-// Стратегии из опыта: установить дефолтный prior с нулевой силой
+// Strategies from experience: set a default prior with zero strength
 MATCH (s:Strategy) WHERE s.source_type IS NULL
 SET s.source_type = "experience",
     s.prior_confidence = 0.5,
     s.prior_strength_k = 0;
 
-// Факты без source_vintage: установить текущий год как дефолт
+// Facts without source_vintage: set the current year as the default
 MATCH (f:Fact) WHERE f.source_vintage IS NULL
 SET f.source_vintage = 2026,
     f.source_domain = "unknown",
     f.decay_lambda = 0.05;
 ```
 
-### Порядок реализации
+### Implementation Order
 
-**Sprint 1 (1–2 недели):** байесовская инициализация Thompson Sampling (I61), ограничение `max_strength_k=20`, дедупликация стратегий через merge, EdgeSuggester как HITL-only с SQLite таблицей `suggested_edges`, тесты I61 и I64.
+**Sprint 1 (1–2 weeks):** Bayesian initialization of Thompson Sampling (I61), the `max_strength_k=20` limit, strategy deduplication via merge, EdgeSuggester as HITL-only with the SQLite `suggested_edges` table, tests I61 and I64.
 
-**Sprint 2 (3–4 недели):** VintageDecayCalculator (I65), поле `source_vintage` в схеме :Fact, FactExtractor + PatternExtractor как раздельные LLM-вызовы (I60, I62), SemanticIndexer без LLM через EmbeddingRegistry, IngestionOrchestrator с asyncio.gather, расширение TraceLine для трёх слоёв, тесты I60–I65, миграционный скрипт.
+**Sprint 2 (3–4 weeks):** VintageDecayCalculator (I65), the `source_vintage` field in the :Fact schema, FactExtractor + PatternExtractor as separate LLM calls (I60, I62), SemanticIndexer without LLM via EmbeddingRegistry, IngestionOrchestrator with asyncio.gather, extension of TraceLine for three layers, tests I60–I65, the migration script.
 
 
-S2.5: ConflictResolutionWorker — каждые 5 минут (RFC0062)
-    · Batch 20 Hypothesized-фактов с conflict_checked <> true
-    · TruthConflictDetector → similarity search → LLM-вердикт (YES/NO)
-    · При конфликте → ESM.transition(Contradicted) → GraphWriteProtocol
-    · ⚠️ RFC0031: нет прямого SET epistemic_state — только ESM.transition
-    · ⚠️ При llm_client=None → continue (не break!) — обработка батча продолжается
-    · Проверенные факты: conflict_checked = true
-    · Инвариант I38: вызов только из Slow Path — не из Fast Path
+S2.5: ConflictResolutionWorker — every 5 minutes (RFC0062)
+    · Batch of 20 Hypothesized facts with conflict_checked <> true
+    · TruthConflictDetector → similarity search → LLM verdict (YES/NO)
+    · On conflict → ESM.transition(Contradicted) → GraphWriteProtocol
+    · ⚠️ RFC0031: no direct SET epistemic_state — only ESM.transition
+    · ⚠️ When llm_client=None → continue (not break!) — batch processing continues
+    · Checked facts: conflict_checked = true
+    · Invariant I38: called only from the Slow Path — not from the Fast Path
 
 S3: Consolidation → ConsolidationEngine.enqueue(CONSOLIDATE)
-    · Триггер при L1 capacity > 80%
-    · asyncio.Lock — никаких параллельных операций на одном узле
-    · Таймаут 30s → DLQ, статус → BLOCKED_AWAITING_DB
+    · Triggered when L1 capacity > 80%
+    · asyncio.Lock — no parallel operations on a single node
+    · Timeout 30s → DLQ, status → BLOCKED_AWAITING_DB
 
-S4: Reflection — каждые 10 завершённых задач
-    · Strategy Update через Thompson Sampling (RFC0039)
-    · Negative Reinforcement для провальных стратегий
+S4: Reflection — every 10 completed tasks
+    · Strategy Update via Thompson Sampling (RFC0039)
+    · Negative Reinforcement for failed strategies
 
-S5: GC — каждые 7 дней или при MHI < 0.3 (Phase 2)
+S5: GC — every 7 days or when MHI < 0.3 (Phase 2)
     · Soft Delete → S3 backup → Hard Delete
-    · Cascade invalidation Strategy при Fact инвалидации
+    · Cascade invalidation of Strategy on Fact invalidation
 ```
 
 ---
 
-### 🔒 Инварианты (нарушать нельзя никогда)
+### 🔒 Invariants (must never be violated)
 
 ```python
-# ИНВАРИАНТЫ L0
-assert "VALUES_CORE" in working_memory.pinned  # Ring Zero всегда
+# L0 INVARIANTS
+assert "VALUES_CORE" in working_memory.pinned  # Ring Zero always
 assert len(working_memory) <= 5                # 4±1 Cowan 2001
 assert working_memory.eviction_policy == "CRITICAL > HIGH > MEDIUM > LOW"
 
-# ИНВАРИАНТЫ L1
+# L1 INVARIANTS
 for episode in stm_cache:
     assert episode.session_id is not None    # session_id binding
     assert episode.event_time is not None    # temporal tagging
     assert episode.created_at is not None
     assert episode.valid_from is not None
 
-# ИНВАРИАНТЫ L3
+# L3 INVARIANTS
 # ∀ fact ∈ Graph: validated = True (MGL-2)
 # ∀ fact ∈ Graph: ∃ [:SUPPORTED_BY] → :Evidence (MGL-5)
 # ∀ fact ∈ Graph: transaction_time IS NOT NULL (bi-temporal)
 
-# ИНВАРИАНТЫ EVENT BUS
-# Каждый запрос = минимум 1 AgentEvent(USER_MESSAGE)
+# EVENT BUS INVARIANTS
+# Each request = at least 1 AgentEvent(USER_MESSAGE)
 
-# ИНВАРИАНТЫ CORE VALUES
-# VALUES CORE не адаптируются никогда
-# Semantic Decay не затрагивает pinned=CRITICAL узлы
+# CORE VALUES INVARIANTS
+# VALUES CORE never adapt
+# Semantic Decay does not affect pinned=CRITICAL nodes
 
-# I38 (RFC0062) — ConflictResolutionWorker только в Slow Path
-# Прямой вызов TruthConflictDetector из Fast Path — нарушение архитектуры.
-# Нарушение → Observer++ alert + логирование.
+# I38 (RFC0062) — ConflictResolutionWorker only in the Slow Path
+# A direct call to TruthConflictDetector from the Fast Path is an architecture violation.
+# Violation → Observer++ alert + logging.
 
-# datetime timezone: везде используем timezone.utc
+# datetime timezone: use timezone.utc everywhere
 # ❌ datetime.now()            → ✅ datetime.now(timezone.utc)
-# Файлы: fractal_memory.py · consolidation_worker.py · memory_gc.py
+# Files: fractal_memory.py · consolidation_worker.py · memory_gc.py
 #         event_bus.py · velum.py (VelumEdge.first_seen, last_seen)
 ```
 
 ---
 
-## 🧬 Epistemic State Machine (ESM) — Жизненный цикл фактов 
+## 🧬 Epistemic State Machine (ESM) — Fact Lifecycle
 
-> **Почему критично**: без ESM факты в L3 — «просто узлы». Semantic Decay и GC работают вслепую. ESM превращает L3 из базы данных в **живую эпистемическую систему**, где каждый факт знает своё место в пространстве достоверности.
+> **Why it is critical**: without the ESM, facts in L3 are "just nodes." Semantic Decay and GC operate blindly. The ESM turns L3 from a database into a **living epistemic system**, where every fact knows its place in the space of credibility.
 
 ---
 
-### Состояния и переходы
+### States and transitions
 
 ```
-                 Первое появление (авто)
+                 First appearance (auto)
   LLM Output ──────────────────────────────► :Observed
                                                   │
                                           Truth Gate partial
                                                   ▼
                                           :Hypothesized
                                                   │
-                                        Evidence ≥ 2 добавлено
+                                        Evidence ≥ 2 added
                                                   ▼
                                           :Supported
                                                   │
-                                     MGL + Truth Gate пройден
+                                     MGL + Truth Gate passed
                                                   ▼
-                                          :Validated  ◄──── (стабильное состояние)
+                                          :Validated  ◄──── (stable state)
                                                   │
                                     1+ [:CONTRADICTS] (weighted)
                                                   ▼
                                          :Contradicted
                                                   │
-                                    3+ конфликта / importance падает
+                                    3+ conflicts / importance drops
                                                   ▼
                                           :Deprecated
                                                   │
-                                    importance < 0.1 при GC
+                                    importance < 0.1 at GC
                                                   ▼
                                           :Collapsed
-                             (→ Immutable Raw Memory, не уничтожается физически)
+                             (→ Immutable Raw Memory, not physically destroyed)
 ```
 
-### Правила переходов (формальные)
+### Transition rules (formal)
 
 ```python
 ESM_TRANSITIONS = {
@@ -9969,14 +9949,14 @@ ESM_TRANSITIONS = {
     "Validated":    {"to": "Contradicted", "condition": "strong_contradictions >= 1"},
     "Contradicted": {"to": "Deprecated",   "condition": "contradiction_count >= 3 OR importance < 0.3"},
     "Deprecated":   {"to": "Collapsed",    "condition": "importance < 0.1"},
-    # Collapsed — финальное состояние. Физически не удаляется — ссылка в Immutable Raw Memory.
+    # Collapsed — final state. Not physically deleted — a reference in Immutable Raw Memory.
 }
 
-# Ring Zero / VALUES CORE → ESM заморожен на Validated. Никогда не переходит в Contradicted.
+# Ring Zero / VALUES CORE → ESM frozen at Validated. Never transitions to Contradicted.
 IMMUTABLE_STATES = {"VALUES_CORE", "RING_ZERO"}
 ```
 
-### Код ESM-контроллера
+### ESM controller code
 
 ```python
 # epistemic_state_machine.py
@@ -9998,12 +9978,12 @@ class EpistemicState(str, Enum):
 
 class EpistemicStateMachine:
     """
-    Управляет жизненным циклом фактов в L3.
-    Связан с: MGL (Memory Guardian), Weighted Semantic Decay,
+    Manages the lifecycle of facts in L3.
+    Connected to: MGL (Memory Guardian), Weighted Semantic Decay,
               GC (MemoryGarbageCollector), Truth Gate.
 
-    RFC0001: LLM → :Fact только через цепочку ESM.
-    Ring Zero / VALUES CORE → frozen на Validated навсегда.
+    RFC0001: LLM → :Fact only through the ESM chain.
+    Ring Zero / VALUES CORE → frozen at Validated forever.
     """
 
     IMMUTABLE_FACT_IDS = {"VALUES_CORE", "RING_ZERO"}
@@ -10016,15 +9996,15 @@ class EpistemicStateMachine:
         reason: str
     ) -> EpistemicState:
         """
-        Вычислить следующее состояние факта и применить переход.
-        Возвращает новое состояние.
+        Compute the next state of the fact and apply the transition.
+        Returns the new state.
 
         Raises:
-            ImmutableStateError: если факт является VALUES CORE
+            ImmutableStateError: if the fact is VALUES CORE
         """
         current = EpistemicState(fact.get("epistemic_state", "Observed"))
 
-        # Ring Zero никогда не деградирует
+        # Ring Zero never degrades
         if fact_id in self.IMMUTABLE_FACT_IDS:
             return current
 
@@ -10037,7 +10017,7 @@ class EpistemicStateMachine:
         return next_state
 
     def _compute_next(self, fact: dict, current: EpistemicState) -> EpistemicState:
-        """Вычислить следующее состояние по условиям переходов"""
+        """Compute the next state based on the transition conditions"""
         evidence_count    = fact.get("evidence_count", 0)
         mgl_passed        = fact.get("validated", False)
         truth_gate_score  = fact.get("epistemic_score", 0.0)
@@ -10063,7 +10043,7 @@ class EpistemicStateMachine:
         if current == EpistemicState.DEPRECATED and importance < 0.1:
             return EpistemicState.COLLAPSED
 
-        return current  # нет перехода
+        return current  # no transition
 
     async def _apply_transition(
         self,
@@ -10073,13 +10053,13 @@ class EpistemicStateMachine:
         reason: str,
         graph: "GraphMemory"
     ):
-        """Записать переход в граф"""
-        # При переходе в Collapsed → сохранить в Immutable Raw Memory
+        """Record the transition into the graph"""
+        # On transition to Collapsed → save to Immutable Raw Memory
         if to_state == EpistemicState.COLLAPSED:
             await self._preserve_to_raw_memory(fact_id, graph)
 
-        # I88 (VersionOCC): атомарный инкремент _version_ через OCC Cypher.
-        # MATCH по {id, _version_} — если версия изменилась конкурентно, запись не применится.
+        # I88 (VersionOCC): atomic increment of _version_ via OCC Cypher.
+        # MATCH on {id, _version_} — if the version changed concurrently, the write will not apply.
         await graph.execute_cypher("""
             MATCH (f:Fact {id: $fact_id})
             SET f.epistemic_state = $new_state,
@@ -10095,9 +10075,9 @@ class EpistemicStateMachine:
         })
 
     async def _preserve_to_raw_memory(self, fact_id: str, graph: "GraphMemory"):
-        """Collapsed факт → ссылка в Immutable Raw Memory (не уничтожается)"""
+        """Collapsed fact → reference in Immutable Raw Memory (not destroyed)"""
         logger.info(f"ESM Collapsed: {fact_id} → Immutable Raw Memory reference saved")
-        # Физическое удаление только через GC + S3 архивация
+        # Physical deletion only via GC + S3 archiving
 
     async def cascade_invalidate(
         self,
@@ -10105,19 +10085,19 @@ class EpistemicStateMachine:
         graph: "GraphMemory"
     ) -> List[str]:
         """
-        Каскадная инвалидация зависимых фактов
+        Cascade invalidation of dependent facts
         
-        Если факт B выведен из A (через [:DERIVED_FROM] или [:INFERRED_FROM]):
+        If fact B is derived from A (via [:DERIVED_FROM] or [:INFERRED_FROM]):
           A → B
         
-        И A переходит в Contradicted:
+        And A transitions to Contradicted:
           A.epistemic_state = "Contradicted"
         
-        То B должен быть пересмотрен:
+        Then B must be revised:
           B.epistemic_state = "Hypothesized"
           B.requires_revalidation = true
         
-        Returns: список ID инвалидированных фактов
+        Returns: list of IDs of invalidated facts
         """
         query = """
         MATCH (source:Fact {id: $fact_id})
@@ -10147,32 +10127,32 @@ class EpistemicStateMachine:
         return invalidated
 ```
 
-### Интеграция ESM с существующими компонентами
+### Integration of the ESM with existing components
 
 ```
 Memory Guardian (MGL):
-  · Перед записью нового факта → ESM.transition(Observed → Hypothesized)
-  · После прохождения Truth Gate → ESM.transition(Supported → Validated)
+  · Before writing a new fact → ESM.transition(Observed → Hypothesized)
+  · After passing the Truth Gate → ESM.transition(Supported → Validated)
 
 Weighted Semantic Decay:
-  · При добавлении [:CONTRADICTS] → ESM.transition(Validated → Contradicted)
+  · When adding [:CONTRADICTS] → ESM.transition(Validated → Contradicted)
   · importance < 0.1 → ESM.transition(Deprecated → Collapsed)
 
 GC (MemoryGarbageCollector):
-  · Collapsed узлы → S3 архивация → физическое удаление
-  · Deprecated с age > 90d → кандидат на Collapsed
+  · Collapsed nodes → S3 archiving → physical deletion
+  · Deprecated with age > 90d → candidate for Collapsed
 
 Runtime Invariant Checker:
   · ∀ fact ∈ Graph: epistemic_state ∈ VALID_STATES
-  · ∀ fact ∈ Graph: если validated=True → epistemic_state = 'Validated'
-  · VALUES_CORE: epistemic_state всегда = 'Validated'
+  · ∀ fact ∈ Graph: if validated=True → epistemic_state = 'Validated'
+  · VALUES_CORE: epistemic_state always = 'Validated'
 ```
 
 ---
 
 ## ⚙️ Runtime Invariant Checker 
 
-> **Почему критично**: RFC существуют как документы, но нарушения видны только при падении системы. Runtime Checker превращает RFC из бумаги в исполняемые контракты.
+> **Why it is critical**: RFCs exist as documents, but violations only become visible when the system crashes. The Runtime Checker turns RFCs from paper into executable contracts.
 
 ```python
 # runtime_invariant_checker.py
@@ -10189,18 +10169,18 @@ class InvariantViolation:
     severity: str        # "CRITICAL" | "WARNING"
     description: str
     detected_at: datetime
-    auto_remediation: str  # что система сделала автоматически
+    auto_remediation: str  # what the system did automatically
 
 class RuntimeInvariantChecker:
     """
-    Проверяет инварианты Protocol v1 каждые 30 секунд.
-    При CRITICAL нарушении → Safe Mode + Heartbeat alert.
-    При WARNING → лог + Grafana counter.
+    Checks Protocol v1 invariants every 30 seconds.
+    On a CRITICAL violation → Safe Mode + Heartbeat alert.
+    On a WARNING → log + Grafana counter.
     """
     CHECK_INTERVAL_SECONDS = 30
 
     def __init__(self, graph: GraphMemory, fractal_memory: FractalMemory,
-                 heartbeat: "MetaSupervisorHeartbeat" = None):  # optional: агент может передать позже
+                 heartbeat: "MetaSupervisorHeartbeat" = None):  # optional: the agent may pass it later
         self.graph = graph
         self.fractal = fractal_memory
         self.heartbeat = heartbeat
@@ -10208,7 +10188,7 @@ class RuntimeInvariantChecker:
         self._running = False
 
     async def start(self):
-        """Запустить фоновую проверку инвариантов"""
+        """Start the background invariant check"""
         self._running = True
         while self._running:
             await asyncio.sleep(self.CHECK_INTERVAL_SECONDS)
@@ -10231,16 +10211,16 @@ class RuntimeInvariantChecker:
     async def _check_l0_invariants(self) -> list[InvariantViolation]:
         violations = []
         wm = self.fractal.working_memory
-        # L0: VALUES CORE должен присутствовать
+        # L0: VALUES CORE must be present
         if not any(getattr(m, 'id', '') == 'VALUES_CORE' for m in wm):
             violations.append(InvariantViolation(
                 invariant_id="L0-001",
                 severity="CRITICAL",
-                description="VALUES CORE отсутствует в L0 Working Memory",
+                description="VALUES CORE missing from L0 Working Memory",
                 detected_at=datetime.now(timezone.utc),
                 auto_remediation="Reload VALUES_CORE from constants.py"
             ))
-        # L0: capacity не должна превышать 5
+        # L0: capacity must not exceed 5
         if len(wm) > 5:
             violations.append(InvariantViolation(
                 invariant_id="L0-002",
@@ -10252,7 +10232,7 @@ class RuntimeInvariantChecker:
         return violations
 
     async def _check_l3_invariants(self) -> list[InvariantViolation]:
-        """Проверить: нет ли неvalid фактов в L3"""
+        """Check: are there any invalid facts in L3"""
         violations = []
         query = """
         MATCH (f:Fact) WHERE f.validated = false OR f.validated IS NULL
@@ -10264,19 +10244,19 @@ class RuntimeInvariantChecker:
             violations.append(InvariantViolation(
                 invariant_id="L3-001",
                 severity="CRITICAL",
-                description=f"{bad_count} фактов в L3 без validated=True",
+                description=f"{bad_count} facts in L3 without validated=True",
                 detected_at=datetime.now(timezone.utc),
                 auto_remediation="Flag for MGL re-validation"
             ))
         return violations
 
     async def _check_esm_invariants(self) -> list[InvariantViolation]:
-        """Проверить корректность ESM состояний в L3"""
+        """Check the correctness of ESM states in L3"""
         violations = []
         valid_states = {"Observed","Hypothesized","Supported","Validated",
                         "Contradicted","Deprecated","Collapsed"}
 
-        # Нет несуществующих состояний
+        # No nonexistent states
         query1 = """
         MATCH (f:Fact) WHERE f.epistemic_state IS NOT NULL
           AND NOT f.epistemic_state IN $valid_states
@@ -10290,9 +10270,9 @@ class RuntimeInvariantChecker:
             violations.append(InvariantViolation(
                 invariant_id="ESM-001",
                 severity="CRITICAL",
-                description=f"{bad_count} фактов с недопустимым epistemic_state",
+                description=f"{bad_count} facts with an invalid epistemic_state",
                 detected_at=datetime.now(timezone.utc),
-                auto_remediation="Set epistemic_state='Observed' — re-enter ESM lifecycle"  # Корректный вход в ESM lifecycle
+                auto_remediation="Set epistemic_state='Observed' — re-enter ESM lifecycle"  # Correct entry into the ESM lifecycle
             ))
 
         # validated=True ↔ epistemic_state='Validated'
@@ -10307,12 +10287,12 @@ class RuntimeInvariantChecker:
             violations.append(InvariantViolation(
                 invariant_id="ESM-002",
                 severity="WARNING",
-                description=f"{mismatch} фактов: validated=True но epistemic_state≠Validated",
+                description=f"{mismatch} facts: validated=True but epistemic_state≠Validated",
                 detected_at=datetime.now(timezone.utc),
                 auto_remediation="Sync epistemic_state with validated flag"
             ))
 
-        # VALUES CORE всегда Validated
+        # VALUES CORE always Validated
         query3 = """
         MATCH (f:Fact) WHERE f.id IN ['VALUES_CORE','RING_ZERO']
           AND f.epistemic_state <> 'Validated'
@@ -10324,7 +10304,7 @@ class RuntimeInvariantChecker:
             violations.append(InvariantViolation(
                 invariant_id="ESM-003",
                 severity="CRITICAL",
-                description="VALUES CORE / RING_ZERO не в состоянии Validated!",
+                description="VALUES CORE / RING_ZERO not in the Validated state!",
                 detected_at=datetime.now(timezone.utc),
                 auto_remediation="Force epistemic_state='Validated' for immutable facts"
             ))
@@ -10332,25 +10312,25 @@ class RuntimeInvariantChecker:
         return violations
 
     async def _check_rfc0006(self) -> list[InvariantViolation]:
-        """RFC0006: Engram не должен быть включён с API-моделями"""
+        """RFC0006: Engram must not be enabled with API models"""
         from config import settings
         violations = []
         if settings.ENGRAM_ENABLED and settings.LLM_PROVIDER not in \
-           {"local", "ollama", "llamacpp", "vllm", "lmstudio"}:  # lmstudio добавлен — совпадает с validate_engram_config
+           {"local", "ollama", "llamacpp", "vllm", "lmstudio"}:  # lmstudio added — matches validate_engram_config
             violations.append(InvariantViolation(
                 invariant_id="RFC0006",
                 severity="CRITICAL",
-                description="RFC0006 нарушен: Engram включён с API-моделью",
+                description="RFC0006 violated: Engram enabled with an API model",
                 detected_at=datetime.now(timezone.utc),
                 auto_remediation="Set ENGRAM_ENABLED=False automatically"
             ))
         return violations
 
     async def _check_ce_health(self) -> list[InvariantViolation]:
-        """Проверить здоровье ConsolidationEngine"""
+        """Check the health of the ConsolidationEngine"""
         violations = []
         if not self.heartbeat:
-            return []   # P9-FIX БАГ-1: heartbeat ещё не подключён — пропустить
+            return []   # P9-FIX BUG-1: heartbeat not yet connected — skip
         dlq_size = len(self.heartbeat.consolidation_engine.dlq)
         if dlq_size > 10:
             violations.append(InvariantViolation(
@@ -10364,11 +10344,11 @@ class RuntimeInvariantChecker:
 
     async def _handle_violation(self, v: InvariantViolation):
         """
-        Четыре уровня строгости вместо бинарного CRITICAL/WARNING.
-        INFO/WARNING не вызывают SAFE_MODE — только снижают частоту CE.
+        Four severity levels instead of a binary CRITICAL/WARNING.
+        INFO/WARNING do not trigger SAFE_MODE — they only reduce the CE frequency.
 
-        INFO     → только лог
-        WARNING  → снизить частоту CE (DEGRADED)
+        INFO     → log only
+        WARNING  → reduce CE frequency (DEGRADED)
         ERROR    → DEGRADED + Grafana alert
         CRITICAL → SAFE_MODE (L3 read-only)
         """
@@ -10377,7 +10357,7 @@ class RuntimeInvariantChecker:
             logger.info(f"Invariant info [{v.invariant_id}]: {v.description}")
         elif v.severity == "WARNING":
             logger.warning(f"Invariant warning [{v.invariant_id}]: {v.description}")
-            # Снизить частоту ConsolidationEngine — не блокировать систему
+            # Reduce ConsolidationEngine frequency — do not block the system
             await self.heartbeat.reduce_ce_frequency(factor=0.5)
         elif v.severity == "ERROR":
             logger.error(f"INVARIANT ERROR [{v.invariant_id}]: {v.description}")
@@ -10390,9 +10370,9 @@ class RuntimeInvariantChecker:
 
 ---
 
-## 🎭 Cognitive Modes — Три Режима Работы
+## 🎭 Cognitive Modes — Three Modes of Operation
 
-> **Почему критично**: система работает одинаково для критичных данных и творческих задач. Cognitive Modes позволяют агенту адаптироваться — как человек думает по-разному в зависимости от контекста.
+> **Why it's critical**: the system works the same way for critical data and creative tasks. Cognitive Modes let the agent adapt — the way a human thinks differently depending on context.
 
 ```python
 # cognitive_modes.py
@@ -10400,10 +10380,10 @@ from enum import Enum
 from dataclasses import dataclass
 
 class CognitiveMode(str, Enum):
-    PRECISION   = "precision"    # Критичные данные, факты
-    BALANCED    = "balanced"     # Стандартная работа (90% задач)
-    EXPLORATION = "exploration"  # Brainstorm, исследование
-    CREATIVE    = "creative"     # Аналогии + только Validated (RFC0067 v2.0)
+    PRECISION   = "precision"    # Critical data, facts
+    BALANCED    = "balanced"     # Standard operation (90% of tasks)
+    EXPLORATION = "exploration"  # Brainstorm, research
+    CREATIVE    = "creative"     # Analogies + only Validated (RFC0067 v2.0)
 
 @dataclass
 class ModeConfig:
@@ -10419,49 +10399,49 @@ COGNITIVE_MODE_CONFIGS = {
         evidence_required=5,
         truth_gate_coverage=0.9,
         hypothesis_allowed=False,
-        description="Медицина, право, финансы — только verified факты"
+        description="Medicine, law, finance — only verified facts"
     ),
     CognitiveMode.BALANCED: ModeConfig(
         token_budget=2000,
         evidence_required=3,
         truth_gate_coverage=0.7,
         hypothesis_allowed=True,
-        description="Стандартный режим — 90% задач"
+        description="Standard mode — 90% of tasks"
     ),
     CognitiveMode.EXPLORATION: ModeConfig(
         token_budget=4000,
         evidence_required=1,
         truth_gate_coverage=0.4,
         hypothesis_allowed=True,
-        description="Brainstorm, исследование, гипотезы"
+        description="Brainstorm, research, hypotheses"
     ),
     CognitiveMode.CREATIVE: ModeConfig(
         token_budget=3000,
         evidence_required=3,
         truth_gate_coverage=0.7,
-        hypothesis_allowed=False,   # I57: CREATIVE запрещает Hypothesized
-        description="Аналогии + Validated только (RFC0067 v2.0)"
+        hypothesis_allowed=False,   # I57: CREATIVE forbids Hypothesized
+        description="Analogies + Validated only (RFC0067 v2.0)"
     ),
 }
 
 class CognitiveModeRouter:
     """
-    Определяет режим работы на основе:
-    · Явного указания пользователя
-    · Ключевых слов запроса (RU + EN)
-    · Cognitive Load оценки
+    Determines the operating mode based on:
+    · Explicit user specification
+    · Query keywords (RU + EN)
+    · Cognitive Load estimate
     """
-    PRECISION_SIGNALS   = {"точно", "проверь", "докажи", "факт", "данные",
-                            "медицин", "юридич", "финанс", "критично"}
+    PRECISION_SIGNALS   = {"precise", "verify", "prove", "fact", "data",
+                            "medic", "legal", "financ", "critical"}
     PRECISION_EN        = {"verify", "accurate", "fact", "data", "medical",
                             "legal", "financial", "critical", "diagnos", "contract"}
-    EXPLORATION_SIGNALS = {"представь", "придумай", "brainstorm", "идеи",
-                            "а что если", "гипотез", "фантазия", "творч"}
+    EXPLORATION_SIGNALS = {"imagine", "come up with", "brainstorm", "ideas",
+                            "what if", "hypothes", "fantasy", "creativ"}
     EXPLORATION_EN      = {"imagine", "brainstorm", "ideas", "what if",
                             "hypothesis", "explore", "unconventional", "speculate"}
-    # CREATIVE mode: RFC0067 v2.0 — Analogy Graph + SBE мосты + температура 0.6→0.85
-    CREATIVE_SIGNALS    = {"метафор", "аналог", "сравн", "как будто",
-                            "напиши стих", "напиши рассказ", "поэтическ"}
+    # CREATIVE mode: RFC0067 v2.0 — Analogy Graph + SBE bridges + temperature 0.6→0.85
+    CREATIVE_SIGNALS    = {"metaphor", "analog", "compar", "as if",
+                            "write a poem", "write a story", "poetic"}
     CREATIVE_EN         = {"metaphor", "analogy", "as if", "poem",
                             "story", "creative writing", "poetic"}
 
@@ -10475,8 +10455,8 @@ class CognitiveModeRouter:
         if any(signal in query_lower for signal in self.PRECISION_SIGNALS) or \
            any(signal in query_lower for signal in self.PRECISION_EN):
             return CognitiveMode.PRECISION
-        # P9-FIX БАГ-10: CREATIVE проверяется ДО EXPLORATION — иначе "придумай метафору"
-        # всегда возвращает EXPLORATION (т.к. "придумай" в EXPLORATION_SIGNALS побеждает)
+        # P9-FIX BUG-10: CREATIVE is checked BEFORE EXPLORATION — otherwise "come up with a metaphor"
+        # always returns EXPLORATION (because "come up with" in EXPLORATION_SIGNALS wins)
         if any(signal in query_lower for signal in self.CREATIVE_SIGNALS) or \
            any(signal in query_lower for signal in self.CREATIVE_EN):
             return CognitiveMode.CREATIVE
@@ -10489,17 +10469,17 @@ class CognitiveModeRouter:
         return COGNITIVE_MODE_CONFIGS[mode]
 ```
 
-**Интеграция в Context Builder**:
+**Integration into the Context Builder**:
 
 ```python
-# Пример использования в context_builder.py
+# Usage example in context_builder.py
 async def build_context(self, query: str, ...) -> str:
     mode = self.mode_router.select_mode(query)
     config = self.mode_router.get_config(mode)
 
-    # RFC0067 v2.0: CREATIVE режим — читать SBE мосты из Redis-кэша.
-    # I56: SBE только через EventBus (Slow Path). Fast Path — только кэш.
-    # I57: FactsPack в CREATIVE — только Validated. Ассоциации отдельно.
+    # RFC0067 v2.0: CREATIVE mode — read SBE bridges from the Redis cache.
+    # I56: SBE only via EventBus (Slow Path). Fast Path — cache only.
+    # I57: FactsPack in CREATIVE — only Validated. Associations separately.
     creative_associations = []
     if mode == CognitiveMode.CREATIVE:
         cached = await self.redis.get(f"creative_bridge:{session_id}")
@@ -10508,17 +10488,17 @@ async def build_context(self, query: str, ...) -> str:
             creative_associations = [
                 CreativeAssociation.from_dict(a) for a in json.loads(cached)
             ]
-        # Деградация без кэша: только Analogy Graph. НЕ вызывать SBE синхронно (I56).
+        # Degradation without cache: only Analogy Graph. Do NOT call SBE synchronously (I56).
 
-    # Адаптируем token budget и Truth Gate под режим
+    # Adapt the token budget and Truth Gate to the mode
     self.available_tokens = config.token_budget
     self.truth_gate_coverage = config.truth_gate_coverage
 
-    # В EXPLORATION режиме Hypothesis узлы разрешены в контексте
+    # In EXPLORATION mode Hypothesis nodes are allowed in the context
     if config.hypothesis_allowed:
         context_types = ["verified", "hypothesis"]
     else:
-        context_types = ["verified"]  # PRECISION: только verified
+        context_types = ["verified"]  # PRECISION: only verified
 
     logger.info(f"Cognitive mode: {mode.value}, budget: {config.token_budget}")
     ...
@@ -10528,7 +10508,7 @@ async def build_context(self, query: str, ...) -> str:
 
 ## 💰 Memory Budget Planner
 
-> **Почему критично**: без лимитов граф растёт вечно. Memory Budget Planner работает как планировщик ресурсов в ОС — система знает свои пределы.
+> **Why it's critical**: without limits the graph grows forever. The Memory Budget Planner works like a resource scheduler in an OS — the system knows its own limits.
 
 ```python
 # memory_budget_planner.py
@@ -10539,13 +10519,13 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class MemoryBudget:
-    """Лимиты памяти — не менять без архитектурного решения"""
+    """Memory limits — do not change without an architectural decision"""
     MAX_NODES_TOTAL:        int   = 500_000
     MAX_EDGES_PER_NODE:     int   = 100
     MAX_EPISODE_SIZE_BYTES: int   = 10_240      # 10 KB
-    MAX_ADD_EPISODE_RATE:   int   = 100         # в час
-    MAX_L1_EPISODES:        int   = 1_000       # на сессию
-    GC_TRIGGER_THRESHOLD:   float = 0.85        # 85% заполнения → GC
+    MAX_ADD_EPISODE_RATE:   int   = 100         # per hour
+    MAX_L1_EPISODES:        int   = 1_000       # per session
+    GC_TRIGGER_THRESHOLD:   float = 0.85        # 85% full → GC
     ALERT_THRESHOLD:        float = 0.90        # 90% → Grafana alert
 
 class MemoryBudgetPlanner:
@@ -10557,12 +10537,12 @@ class MemoryBudgetPlanner:
         self.budget = budget or MemoryBudget()
         self._episode_count_hour = 0
         self._hour_start = datetime.now(timezone.utc)
-        # FIX: Lock защищает rate-limit от TOCTOU race condition.
-        # Без него два concurrent вызова читают одно значение, оба проходят проверку.
+        # FIX: Lock protects the rate-limit from a TOCTOU race condition.
+        # Without it, two concurrent calls read the same value and both pass the check.
         self._rate_lock = asyncio.Lock()
 
     async def check_edges_per_node(self, node_id: str) -> bool:
-        """Проверить степень узла — граф гибнет от плотности рёбер, не только от числа узлов"""
+        """Check the node degree — the graph dies from edge density, not only from the number of nodes"""
         query = """
         MATCH (n {id: $node_id})-[r]-()
         RETURN count(r) as edge_count
@@ -10576,16 +10556,16 @@ class MemoryBudgetPlanner:
 
     async def check_before_write(self, episode_size_bytes: int) -> bool:
         """
-        Проверить можно ли записать новый эпизод.
-        Возвращает True если OK, False если нужно подождать.
+        Check whether a new episode can be written.
+        Returns True if OK, False if it is necessary to wait.
         """
-        # Проверка размера эпизода
+        # Episode size check
         if episode_size_bytes > self.budget.MAX_EPISODE_SIZE_BYTES:
             logger.warning(f"Episode too large: {episode_size_bytes}b > "
                            f"{self.budget.MAX_EPISODE_SIZE_BYTES}b. Truncating.")
-            return False  # Caller должен обрезать
+            return False  # Caller must truncate
 
-        # Проверка rate limit — защищена _rate_lock от TOCTOU
+        # Rate limit check — protected by _rate_lock from TOCTOU
         async with self._rate_lock:
             now = datetime.now(timezone.utc)
             if (now - self._hour_start).total_seconds() > 3600:
@@ -10598,7 +10578,7 @@ class MemoryBudgetPlanner:
                 return False
             self._episode_count_hour = next_count
 
-        # Проверка общего размера графа
+        # Total graph size check
         total_nodes = await self._get_total_nodes()
         fill_ratio = total_nodes / self.budget.MAX_NODES_TOTAL
 
@@ -10640,8 +10620,8 @@ class PIIMatch:
 
 class PIIRedactor:
     """
-    Минимальная реализация PII redaction для Phase 0/1.
-    Удаляет очевидные PII перед записью в L1/L3.
+    Minimal PII redaction implementation for Phase 0/1.
+    Removes obvious PII before writing to L1/L3.
     """
     PATTERNS = {
         "email":    r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
@@ -10649,13 +10629,13 @@ class PIIRedactor:
         "phone_int":r'\b\+[1-9]\d{1,14}\b',
         "card":     r'\b(?:\d{4}[\s\-]?){3}\d{4}\b',
         "passport_ru": r'\b\d{4}\s?\d{6}\b',
-        "inn_ru":   r'(?:ИНН|инн)\s*[:：]?\s*\d{10}(?:\d{2})?',
+        "inn_ru":   r'(?:INN|inn)\s*[:：]?\s*\d{10}(?:\d{2})?',  # INN = Russian taxpayer ID
     }
 
     def redact(self, text: str) -> tuple[str, list[PIIMatch]]:
         """
-        Возвращает (redacted_text, list_of_matches).
-        Matches сохраняются в Immutable Raw Memory (never in graph).
+        Returns (redacted_text, list_of_matches).
+        Matches are saved in Immutable Raw Memory (never in graph).
         """
         matches = []
         for pii_type, pattern in self.PATTERNS.items():
@@ -10672,87 +10652,87 @@ class PIIRedactor:
                           consolidation_engine: ConsolidationEngine):
         """
         GDPR 'right to be forgotten'.
-        Мягко удаляет все данные пользователя через CE.
+        Softly deletes all user data via CE.
         """
         await consolidation_engine.enqueue(
             op_type="GC",
             payload={"operation": "USER_PURGE", "user_id": user_id},
-            priority=ConsolidationPriority.CONSOLIDATE  # Наивысший приоритет
+            priority=ConsolidationPriority.CONSOLIDATE  # Highest priority
         )
         logger.info(f"GDPR forget request queued for user: {user_id}")
 ```
 
-**Интеграция**: PIIRedactor вызывается до записи в L1 SQLite и до add_episode() в Graphiti.
+**Integration**: PIIRedactor is invoked before writing to L1 SQLite and before add_episode() in Graphiti.
 
 ---
 
 ## 📋 RFC0014 — L2.5 Staging Layer
 
-> **Статус**: Canonical · **Фаза**: Phase 0+
+> **Status**: Canonical · **Phase**: Phase 0+
 >
-> L2.5 — асинхронный буфер между L2 и L3. Реализует принцип «граф строится когда можно, а не когда нужно». SQLite = staging. Graph = единственная истина.
+> L2.5 is an asynchronous buffer between L2 and L3. It implements the principle "the graph is built when it can be, not when it must be." SQLite = staging. Graph = the single source of truth.
 
-### Архитектура
+### Architecture
 
 ```
 L0 / L1 / L2
     ↓
-SQLite: staging_candidates  (временный буфер)
+SQLite: staging_candidates  (temporary buffer)
     ↓
 Priority Queue
     ↓
 Resource-Aware Scheduler  ← CPU < 35% AND RAM free > 25% AND user_idle
     │
     ├── FAST-TRACK (priority > 0.9) ──────────────┐
-    │   минует очередь, идёт немедленно            │
-    └── NORMAL BATCH (при idle) ─────────────────┐ │
+    │   bypasses the queue, goes immediately       │
+    └── NORMAL BATCH (when idle) ────────────────┐ │
                                                   ↓ ↓
                                             Truth Gate
                                                 ↓
                                           L3 Graph (Neo4j)
 ```
 
-### Инварианты RFC0014
+### RFC0014 Invariants
 
 ```
-I1: SQLite = STAGING. Никогда не является источником истины.
-    Graph = единственный L3. Graph = Truth не нарушается.
+RFC0014.I1: SQLite = STAGING. Never the source of truth.
+    Graph = the only L3. Graph = Truth is not violated.
 
-I2: Чтение: сначала граф → потом staging (low-confidence fallback)
-    Факт в graph    → берём оттуда (confidence as-is)
-    Факт в staging  → используем с confidence × 0.7 + пометка "preliminary"
+RFC0014.I2: Reading: graph first → then staging (low-confidence fallback)
+    Fact in graph    → take it from there (confidence as-is)
+    Fact in staging  → use with confidence × 0.7 + a "preliminary" marker
 
-I3: Любое попадание в граф — только через Truth Gate.
-    Даже асинхронно, даже ночью.
+RFC0014.I3: Any entry into the graph — only via the Truth Gate.
+    Even asynchronously, even at night.
 
-I4: Fast-Track (priority > 0.9) — обходит очередь и идёт немедленно.
-    Примеры: аллергии, Ring Zero, критические факты.
+RFC0014.I4: Fast-Track (priority > 0.9) — bypasses the queue and goes immediately.
+    Examples: allergies, Ring Zero, critical facts.
 
-I5: Принудительный flush: если ПК не idle > 24ч →
-    планировщик забирает 5-10% CPU для переноса самых старых записей.
+RFC0014.I5: Forced flush: if the PC is not idle > 24h →
+    the scheduler takes 5-10% CPU to move the oldest records.
 ```
 
-### SQL-схема staging_candidates
+### SQL Schema for staging_candidates
 
 ```sql
--- staging_candidates — буфер перед Truth Gate
+-- staging_candidates — buffer before the Truth Gate
 CREATE TABLE staging_candidates (
     id               TEXT PRIMARY KEY,
-    content          TEXT NOT NULL,        -- FactsPack или summary JSON
+    content          TEXT NOT NULL,        -- FactsPack or summary JSON
     source_layer     TEXT NOT NULL,        -- 'L1' | 'L2'
     epistemic_type   TEXT NOT NULL,        -- 'FACT' | 'LAW' | 'PATTERN' | 'STRATEGY'
-    priority_score   REAL NOT NULL,        -- формула (см. ниже)
+    priority_score   REAL NOT NULL,        -- formula (see below)
     confidence       REAL NOT NULL,
-    fast_track       BOOLEAN DEFAULT 0,    -- обходит очередь
+    fast_track       BOOLEAN DEFAULT 0,    -- bypasses the queue
     created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_accessed    DATETIME,
     scheduled_for    DATETIME,
     status           TEXT NOT NULL DEFAULT 'PENDING',
                                            -- PENDING | PROMOTED | REJECTED | ARCHIVED
-    is_promoted      BOOLEAN DEFAULT 0,    -- уже в L3
+    is_promoted      BOOLEAN DEFAULT 0,    -- already in L3
     rejection_reason TEXT,
     retry_count      INTEGER DEFAULT 0,
-    cpu_cost_estimate REAL DEFAULT 0.1     -- оценка нагрузки для scheduler
+    cpu_cost_estimate REAL DEFAULT 0.1     -- load estimate for the scheduler
 );
 
 CREATE INDEX idx_staging_priority   ON staging_candidates(priority_score DESC, created_at);
@@ -10760,7 +10740,7 @@ CREATE INDEX idx_staging_status     ON staging_candidates(status);
 CREATE INDEX idx_staging_fast_track ON staging_candidates(fast_track) WHERE fast_track = 1;
 CREATE INDEX idx_staging_promoted   ON staging_candidates(is_promoted);
 
--- Graph-Lite: временный мини-граф для ответов пока данные в staging
+-- Graph-Lite: temporary mini-graph for answers while data is in staging
 CREATE TABLE graph_lite_nodes (
     id    TEXT PRIMARY KEY,
     type  TEXT NOT NULL,
@@ -10774,20 +10754,20 @@ CREATE TABLE graph_lite_edges (
     weight REAL DEFAULT 1.0,
     PRIMARY KEY (src, dst, type)
 );
--- При переносе в Neo4j: DELETE FROM graph_lite_nodes; DELETE FROM graph_lite_edges;
+-- When moving to Neo4j: DELETE FROM graph_lite_nodes; DELETE FROM graph_lite_edges;
 ```
 
-### Priority Score (формула)
+### Priority Score (formula)
 
 ```
 priority_score = (importance × 0.4)
-               + (log1p(access_count) × 0.2)          # log1p(x) = log(1+x), см. np.log1p
+               + (log1p(access_count) × 0.2)          # log1p(x) = log(1+x), see np.log1p
                + (recency_norm × 0.2)
                + (confidence × 0.2)
 
 recency_norm = exp(-λ × days_since_created),  λ = 0.1
 
-Fast-track порог: priority_score > 0.9 → немедленно → Truth Gate → L3
+Fast-track threshold: priority_score > 0.9 → immediately → Truth Gate → L3
 ```
 
 ### Resource-Aware Scheduler (Python)
@@ -10803,15 +10783,15 @@ logger = logging.getLogger(__name__)
 
 class ResourceAwareScheduler:
     """
-    Переносит данные из SQLite staging в L3 граф
-    только когда система свободна.
+    Moves data from SQLite staging into the L3 graph
+    only when the system is free.
     """
     CPU_THRESHOLD  = 0.35   # max 35% CPU
-    RAM_THRESHOLD  = 0.25   # min 25% RAM свободно
-    BATCH_SIZE     = 50     # кандидатов за один цикл
-    IDLE_INTERVAL  = 3600   # проверка каждый час
-    FORCE_INTERVAL = 86400  # принудительный flush если нет idle > 24ч
-    MAX_STAGING    = 5000   # максимум записей в staging до force_flush
+    RAM_THRESHOLD  = 0.25   # min 25% RAM free
+    BATCH_SIZE     = 50     # candidates per cycle
+    IDLE_INTERVAL  = 3600   # check every hour
+    FORCE_INTERVAL = 86400  # forced flush if no idle > 24h
+    MAX_STAGING    = 5000   # max records in staging before force_flush
 
     def __init__(self, staging_store, truth_gate, graph):
         self.staging  = staging_store
@@ -10821,12 +10801,12 @@ class ResourceAwareScheduler:
         self._running = False
 
     async def start(self):
-        """Запустить как asyncio.Task параллельно с агентом."""
+        """Start as an asyncio.Task in parallel with the agent."""
         self._running = True
         logger.info("ResourceAwareScheduler started")
         while self._running:
             await asyncio.sleep(self.IDLE_INTERVAL)
-            await self._process_fast_track()       # всегда — независимо от ресурсов
+            await self._process_fast_track()       # always — regardless of resources
             if await self._should_run():
                 await self._promote_batch()
             elif await self._force_flush_needed():
@@ -10844,7 +10824,7 @@ class ResourceAwareScheduler:
         return hours_since > 24 or staging_size > self.MAX_STAGING
 
     async def _process_fast_track(self):
-        """CRITICAL items — не ждут idle, идут немедленно."""
+        """CRITICAL items — do not wait for idle, go immediately."""
         items = await self.staging.get_fast_track()
         for item in items:
             await self._promote_item(item)
@@ -10883,25 +10863,25 @@ class ResourceAwareScheduler:
 ### Fast-Track API
 
 ```python
-# Добавить критически важный факт — обходит очередь
+# Add a critically important fact — bypasses the queue
 async def add_fast_track(
     fact: dict,
     reason: str,
     staging_store,
-    confidence: float = 0.95,   # ← PATCH-8: был хардкод 1.0 — лгал о достоверности.
-                                 # Дефолт 0.95 честен для CRITICAL фактов.
-                                 # Вызывающий код передаёт нужное: аллергия=0.8, Ring Zero=0.99
+    confidence: float = 0.95,   # ← PATCH-8: was a hardcoded 1.0 — it lied about reliability.
+                                 # The 0.95 default is honest for CRITICAL facts.
+                                 # The calling code passes what is needed: allergy=0.8, Ring Zero=0.99
 ) -> bool:
     """
-    Примеры CRITICAL: аллергии, безопасность, Ring Zero изменения.
-    Такие факты НЕ ждут idle — сразу через Truth Gate в L3.
+    CRITICAL examples: allergies, safety, Ring Zero changes.
+    Such facts do NOT wait for idle — they go straight through the Truth Gate into L3.
     """
     from staging_models import StagingItem
     item = StagingItem(
         content=fact,
         epistemic_type="FACT",
         priority_score=1.0,
-        confidence=confidence,   # ← теперь честное значение от вызывающего кода
+        confidence=confidence,   # ← now an honest value from the calling code
         fast_track=True,
         source_layer="L2",
         metadata={"reason": reason, "bypass_queue": True}
@@ -10909,23 +10889,23 @@ async def add_fast_track(
     return await staging_store.insert(item)
 ```
 
-### Cleanup staging (предотвращение переполнения)
+### Staging Cleanup (overflow prevention)
 
 ```python
-# Периодически — при GC или принудительно
+# Periodically — at GC or forced
 async def cleanup_staging(staging_store):
     now = datetime.now(timezone.utc)
-    # Низкоприоритетный мусор → удалить
+    # Low-priority garbage → delete
     await staging_store.delete_where(
         "priority_score < 0.3 AND created_at < ?",
         (now - timedelta(days=30),)
     )
-    # Средний приоритет → архивировать
+    # Medium priority → archive
     await staging_store.archive_where(
         "priority_score BETWEEN 0.3 AND 0.6 AND created_at < ?",
         (now - timedelta(days=60),)
     )
-    # Высокий приоритет застрял → boost
+    # High priority stuck → boost
     await staging_store.boost_priority(
         "priority_score > 0.6 AND created_at < ?",
         factor=1.5,
@@ -10933,63 +10913,63 @@ async def cleanup_staging(staging_store):
     )
 ```
 
-### Интеграция в Canonical Memory Protocol
+### Integration into the Canonical Memory Protocol
 
 ```
-НОВЫЙ ШАГ F4.5 : Staging Promote
-    → ResourceAwareScheduler.start() — asyncio.Task при старте агента
-    → Fast-Track hook вызывается при каждом add_episode() с priority > 0.9
-    → Normal batch: каждый час при CPU idle
-    → Graph-Lite используется при чтении как fallback (confidence × 0.7)
+NEW STEP F4.5 : Staging Promote
+    → ResourceAwareScheduler.start() — asyncio.Task at agent startup
+    → Fast-Track hook is invoked on every add_episode() with priority > 0.9
+    → Normal batch: every hour when CPU is idle
+    → Graph-Lite is used on read as a fallback (confidence × 0.7)
 ```
 
 ---
 
 ## 📋 RFC0013 — L2 CORE (Canonical Contract)
 
-> **Статус**: Canonical · **Фаза**: Phase 0+
+> **Status**: Canonical · **Phase**: Phase 0+
 >
-> L2 CORE определяет минимальный, неизменяемый контракт «граф + аналитика», который работает офлайн (без LLM), аудируем, воспроизводим и масштабируем.
+> L2 CORE defines the minimal, immutable "graph + analytics" contract that works offline (without an LLM), is auditable, reproducible, and scalable.
 
-### Принцип: LLM как интерпретатор
-
-```
-L2/L3 = источник знаний (структурированный, верифицированный)
-LLM   = речевой аппарат (форматирует готовое, не добавляет факты)
-
-Режим HEADLESS: LLM полностью отключён.
-  L2 → шаблонный ответчик → структурированный ответ без генерации
-
-Режим LITE (RAM < 4GB):
-  Neo4j → sqlite-vec (векторный поиск)
-  Etir  → упрощённый или отключён
-  ReactivationEngine → раз в сутки
-  GC/Consolidation → низкий приоритет
-```
-
-### Область ответственности L2
+### Principle: LLM as interpreter
 
 ```
-L2 ОТВЕЧАЕТ ЗА:
-  · Извлечение структуры из L1: сущности, связи, события, утверждения
-  · Аналитику поверх графа: кластеры, центральности, близость, противоречия
-  · Детерминированные ответы на запросы без генерации «из воздуха»
+L2/L3 = knowledge source (structured, verified)
+LLM   = speech apparatus (formats the ready-made, does not add facts)
 
-L2 НЕ ОТВЕЧАЕТ ЗА:
-  · Художественную генерацию
-  · Догадки без опоры на данные
-  · Подмену доказательств стилем
+HEADLESS mode: LLM fully disabled.
+  L2 → template responder → structured answer without generation
+
+LITE mode (RAM < 4GB):
+  Neo4j → sqlite-vec (vector search)
+  Etir  → simplified or disabled
+  ReactivationEngine → once a day
+  GC/Consolidation → low priority
 ```
 
-### Хранилище L2 (SQLite WAL)
+### L2 area of responsibility
+
+```
+L2 IS RESPONSIBLE FOR:
+  · Extracting structure from L1: entities, relations, events, assertions
+  · Analytics over the graph: clusters, centralities, proximity, contradictions
+  · Deterministic answers to queries without generating "out of thin air"
+
+L2 IS NOT RESPONSIBLE FOR:
+  · Creative generation
+  · Guesses with no grounding in data
+  · Substituting style for evidence
+```
+
+### L2 storage (SQLite WAL)
 
 ```sql
--- Таблица l2_memory (персистентный L2, замена mtm_cache в RAM)
+-- Table l2_memory (persistent L2, replacement for mtm_cache in RAM)
 CREATE TABLE l2_memory (
     id                  TEXT PRIMARY KEY,
-    original_episode_ids TEXT NOT NULL,  -- JSON array, трассировка L1→L2
+    original_episode_ids TEXT NOT NULL,  -- JSON array, L1→L2 tracing
     summary             TEXT NOT NULL,   -- TF-IDF extractive
-    embedding           BLOB,            -- опционально
+    embedding           BLOB,            -- optional
     topics              TEXT,            -- JSON array
     domain_id           TEXT,            -- RFC0012
     base_importance     REAL NOT NULL,
@@ -11015,15 +10995,15 @@ CREATE INDEX idx_l2_active     ON l2_memory(is_active);
 CREATE INDEX idx_l2_type       ON l2_memory(cluster_type);
 ```
 
-### I/O батчинг метрик (защита SSD)
+### Metrics I/O batching (SSD protection)
 
 ```python
 # l2_metrics_buffer.py
-# Постоянная перезапись access_count при каждом обращении → износ SSD.
-# Буферизация решает: в память → flush каждые 10 минут.
+# Constantly rewriting access_count on every access → SSD wear.
+# Buffering solves it: into memory → flush every 10 minutes.
 class L2MetricsBuffer:
-    def __init__(self, db_path: str, flush_interval: int = 600):  # ← PATCH-1: добавлен db_path (ранее AttributeError в _flush_to_db)
-        self._db_path = db_path          # читается в _flush_to_db()
+    def __init__(self, db_path: str, flush_interval: int = 600):  # ← PATCH-1: db_path added (previously AttributeError in _flush_to_db)
+        self._db_path = db_path          # read in _flush_to_db()
         self._buffer: dict[str, dict] = {}
         self._last_flush = time.time()
         self._flush_interval = flush_interval
@@ -11036,13 +11016,13 @@ class L2MetricsBuffer:
 
     async def flush_if_needed(self):
         if time.time() - self._last_flush > self._flush_interval:
-            # P1-D FIX: race condition — await мог переключить event loop пока шёл _flush_to_db().
-            # Новые данные приходили в _buffer, затем clear() удалял их → потеря метрик.
-            # Решение: атомарно захватить старый буфер, сразу открыть новый.
-            buffer_to_flush = self._buffer          # захватить атомарно
-            self._buffer = {}                       # новый буфер для входящих данных
+            # P1-D FIX: race condition — await could switch the event loop while _flush_to_db() ran.
+            # New data arrived in _buffer, then clear() removed it → loss of metrics.
+            # Solution: atomically capture the old buffer, immediately open a new one.
+            buffer_to_flush = self._buffer          # capture atomically
+            self._buffer = {}                       # new buffer for incoming data
             self._last_flush = time.time()
-            await self._flush_to_db(buffer_to_flush)   # передать старый буфер
+            await self._flush_to_db(buffer_to_flush)   # pass the old buffer
 
     async def _flush_to_db(self):
         if not self._buffer:
@@ -11056,7 +11036,7 @@ class L2MetricsBuffer:
             await db.commit()
 ```
 
-### TTL Manager (адаптивный)
+### TTL Manager (adaptive)
 
 ```python
 # ttl_manager.py
@@ -11064,18 +11044,18 @@ class L2TTLManager:
     BASE_DAYS = 7
     MAX_DAYS  = 224  # 7 * 2^5
 
-    def __init__(self, store, archive):   # ← PATCH-2: отсутствовал __init__, handle_expiration падал на self.store/self.archive
-        self.store   = store              # персистентный L2 store
+    def __init__(self, store, archive):   # ← PATCH-2: __init__ was missing, handle_expiration crashed on self.store/self.archive
+        self.store   = store              # persistent L2 store
         self.archive = archive            # cold storage / S3
 
     def calculate_ttl(self, item: MemoryItemL2) -> float:
-        """TTL растёт с частотой использования — важное живёт дольше."""
+        """TTL grows with usage frequency — important things live longer."""
         visits = item.access_count + item.reactivation_count
         return min(self.BASE_DAYS * (2 ** min(visits, 5)), self.MAX_DAYS)
 
     async def handle_expiration(self, item: MemoryItemL2):
         if item.current_importance > 0.5:
-            item.ttl_days = self.calculate_ttl(item) * 1.5  # продлить
+            item.ttl_days = self.calculate_ttl(item) * 1.5  # extend
             await self.store.update(item)
         else:
             item.is_active = False  # soft delete
@@ -11084,22 +11064,22 @@ class L2TTLManager:
             await self.archive.move_to_cold_storage(item)
 ```
 
-### ReactivationEngine («сон агента»)
+### ReactivationEngine ("agent sleep")
 
 ```python
 # reactivation_engine.py
-# Аналог hippocampal replay: пока агент не занят — укрепляет важное.
+# Analogous to hippocampal replay: while the agent is not busy — strengthens what matters.
 class ReactivationEngine:
-    """Фоновый процесс. Запускается как asyncio.Task параллельно с агентом."""
+    """Background process. Started as an asyncio.Task in parallel with the agent."""
 
     async def start(self):
         while True:
-            await asyncio.sleep(3600)  # каждый час
+            await asyncio.sleep(3600)  # every hour
             if self._should_reactivate():
                 await self._reactivation_cycle()
 
     def _should_reactivate(self) -> bool:
-        return psutil.cpu_percent() < 30  # только при низкой нагрузке
+        return psutil.cpu_percent() < 30  # only under low load
 
     async def _reactivation_cycle(self):
         candidates = await self.store.get_top_by_importance(limit=10)
@@ -11110,13 +11090,13 @@ class ReactivationEngine:
             item.last_reactivation = datetime.now(timezone.utc)
             await self.store.update(item)
             await self._strengthen_cluster_connections(item)
-        logger.info(f"ReactivationEngine: укреплено {len(candidates)} эпизодов")
+        logger.info(f"ReactivationEngine: strengthened {len(candidates)} episodes")
 ```
 
 ### L2 Health Index
 
 ```python
-# Периодически → Prometheus. Значение 0.0–1.0.
+# Periodically → Prometheus. Value 0.0–1.0.
 def calculate_l2_health(items: List[MemoryItemL2], clusters) -> float:
     if not items:
         return 0.0
@@ -11124,7 +11104,7 @@ def calculate_l2_health(items: List[MemoryItemL2], clusters) -> float:
     stale_ratio     = sum(1 for i in items if i.ttl_days <= 7) / len(items)
     cluster_coherence = sum(c.coherence_score for c in clusters) / max(len(clusters), 1)
     access_rate     = sum(i.access_count for i in items) / max(len(items), 1)
-    target_rate     = 5.0  # целевое среднее обращений
+    target_rate     = 5.0  # target average number of accesses
 
     health = (
         avg_importance              * 0.30 +
@@ -11135,87 +11115,87 @@ def calculate_l2_health(items: List[MemoryItemL2], clusters) -> float:
     return round(max(0.0, min(1.0, health)), 3)
 ```
 
-### Протокол L2 ответов без LLM (L2Query / L2Result)
+### Protocol for L2 responses without an LLM (L2Query / L2Result)
 
 ```python
 # l2_query_protocol.py
-# L2 всегда возвращает структуру. LLM (если нужен) только рендерит её.
+# L2 always returns a structure. The LLM (if needed) only renders it.
 
 @dataclass
 class L2Query:
     intent: Literal["lookup", "explain", "compare", "derive", "verify", "plan"]
-    anchors: List[str]          # якоря запроса
-    constraints: dict           # домен, глубина, источники
+    anchors: List[str]          # query anchors
+    constraints: dict           # domain, depth, sources
     output_mode: Literal["short", "structured", "trace_heavy"] = "structured"
 
 @dataclass
 class L2Result:
-    answer: dict                # структурированный объект (concept_card / argument_map / matrix / ranked_list)
+    answer: dict                # structured object (concept_card / argument_map / matrix / ranked_list)
     confidence: float           # Confidence = w_e·E + w_c·C + w_k·K − w_x·X − w_d·D
-    confidence_factors: dict    # {E, C, K, X, D} для прозрачности
+    confidence_factors: dict    # {E, C, K, X, D} for transparency
     trace: dict                 # nodes_used, edges_used, metrics_used, rules_fired
-    conflicts: List[dict]       # активные противоречия (не замалчиваются)
-    next_actions: List[str]     # детерминированные предложения
+    conflicts: List[dict]       # active contradictions (not suppressed)
+    next_actions: List[str]     # deterministic suggestions
 
-# Формула Confidence (фиксирована в RFC0013):
-# E = Evidence:    доля утверждений с прямым Evidence
-# C = Consistency: мало CONTRADICTS в подграфе
-# K = Coverage:    покрытие аспектов вопроса
-# X = Conflicts:   штраф за активные противоречия
-# D = Decay:       штраф за устаревание
+# Confidence formula (fixed in RFC0013):
+# E = Evidence:    fraction of assertions with direct Evidence
+# C = Consistency: few CONTRADICTS in the subgraph
+# K = Coverage:    coverage of the question's aspects
+# X = Conflicts:   penalty for active contradictions
+# D = Decay:       penalty for staleness
 ```
 
-### 5 инвариантов L2 CORE
+### The 5 invariants of L2 CORE
 
 ```
-I1: Детерминизм
-    одинаковый граф + запрос + параметры → одинаковый результат
+RFC0013.I1: Determinism
+    same graph + query + parameters → same result
 
-I2: Трассируемость
-    каждый ответ = Answer + Trace + Confidence (формула, не «ощущение»)
+RFC0013.I2: Traceability
+    every answer = Answer + Trace + Confidence (a formula, not a "feeling")
 
-I3: Разделение факта и вывода
-    факт = Claim с Evidence
-    вывод = DERIVES + правило/метрика
+RFC0013.I3: Separation of fact and inference
+    fact = Claim with Evidence
+    inference = DERIVES + rule/metric
 
-I4: Анти-взрыв графа
-    любое расширение имеет лимиты: depth / fanout / node_budget / time
+RFC0013.I4: Graph anti-explosion
+    any expansion has limits: depth / fanout / node_budget / time
 
-I5: Конфликт-осознанность
-    противоречия НЕ заметаются — маркируются, учитываются в Confidence
+RFC0013.I5: Conflict-awareness
+    contradictions are NOT swept away — they are marked, accounted for in Confidence
 ```
 
-### Сценарии работы
+### Operating scenarios
 
 ```
-Сценарий 1 — HEADLESS: «Как повысить плодородие?»
+Scenario 1 — HEADLESS: "How to increase fertility?"
   taxonomy_search(domain:agriculture)
-  → L2: кластер cluster_type=STRATEGIC с высоким goal_alignment
-  → FactsPack → шаблонный ответ
-  → ответ без LLM
+  → L2: cluster_type=STRATEGIC cluster with high goal_alignment
+  → FactsPack → template answer
+  → answer without an LLM
 
-Сценарий 2 — LLM как интерпретатор: «Объясни стихами»
-  те же факты из L2/L3 → LLM получает FactsPack
-  → промпт: «переформатируй, не добавляй новых фактов»
-  → LLM не думает, только форматирует
+Scenario 2 — LLM as interpreter: "Explain it in verse"
+  the same facts from L2/L3 → the LLM receives the FactsPack
+  → prompt: "reformat, do not add new facts"
+  → the LLM does not think, only formats
 
-Сценарий 3 — Анализ документа:
-  документ → эпизоды (L1) → summary в L2
-  → при запросе: summary из L2, не перечитывать документ
+Scenario 3 — Document analysis:
+  document → episodes (L1) → summary in L2
+  → on query: summary from L2, do not re-read the document
 ```
 
 ---
 
 ## 💓 Meta-Supervisor — Apex Controller
 
-### Архитектура Apex Controller
+### Apex Controller architecture
 
 ```
                     ┌──────────────────────────────────────┐
                     │         META-SUPERVISOR              │
                     │         (Apex Controller)            │
                     │                                      │
-      ВХОДЫ:        │  · MHI score (Phase 2)         │   ВЫХОДЫ:
+      INPUTS:       │  · MHI score (Phase 2)         │   OUTPUTS:
       ──────        │  · CE health (queue/dlq size)        │   ──────────
       CE status ──► │  · Budget fill ratio                 │ ──► Safe Mode
       DLQ size  ──► │  · Invariant violations              │ ──► CE frequency
@@ -11224,24 +11204,24 @@ I5: Конфликт-осознанность
                     └──────────────────────────────────────┘
 ```
 
-### Три режима работы
+### Three operating modes
 
 ```
-NORMAL (по умолчанию):
-  · CE работает с нормальной частотой
-  · Все механизмы активны
-  · Стандартные пороги Truth Gate
+NORMAL (default):
+  · CE runs at normal frequency
+  · All mechanisms active
+  · Standard Truth Gate thresholds
 
-DEGRADED (при предупреждениях):
-  · CE частота x2 (ускоренная консолидация)
-  · Budget threshold снижен на 10%
-  · Grafana alert отправлен
+DEGRADED (on warnings):
+  · CE frequency x2 (accelerated consolidation)
+  · Budget threshold lowered by 10%
+  · Grafana alert sent
 
-SAFE_MODE (при критических сбоях):
+SAFE_MODE (on critical failures):
   · L3 = read-only
-  · L1 продолжает накапливать данные
-  · CE операции → DLQ
-  · Задачи → BLOCKED_AWAITING_DB
+  · L1 keeps accumulating data
+  · CE operations → DLQ
+  · Tasks → BLOCKED_AWAITING_DB
 ```
 
 ```python
@@ -11260,23 +11240,23 @@ class SupervisorMode(str, Enum):
 
 class MetaSupervisorApex:
     """
-    Apex Controller — управляющий слой над всей системой Velantrim.
+    Apex Controller — the control layer over the entire Velantrim system.
 
-    Входы: CE health, Budget fill ratio, Invariant violations,
+    Inputs: CE health, Budget fill ratio, Invariant violations,
            Circuit Breaker states, ESM Collapsed rate.
-    Выходы: Safe Mode, CE frequency, GC trigger, alerts.
+    Outputs: Safe Mode, CE frequency, GC trigger, alerts.
 
-    Recovery Protocol: при падении самого Supervisor →
-    Kubernetes liveness probe перезапускает процесс.
-    Все решения Supervisor идемпотентны — повторный запуск безопасен.
+    Recovery Protocol: if the Supervisor itself crashes →
+    Kubernetes liveness probe restarts the process.
+    All Supervisor decisions are idempotent — restarting is safe.
 
-    НЕ рекурсивный Meta-MHI (anti-pattern). Статистика Supervisor
-    собирается Prometheus scraping извне.
+    NOT a recursive Meta-MHI (anti-pattern). Supervisor statistics
+    are collected by Prometheus scraping from the outside.
     """
-    HEARTBEAT_INTERVAL   = 10   # секунд
-    CE_TIMEOUT_THRESHOLD = 60   # секунд молчания CE → safe mode
-    BUDGET_WARN_RATIO    = 0.85 # 85% заполнения → degraded
-    DLQ_WARN_SIZE        = 10   # DLQ > 10 → предупреждение
+    HEARTBEAT_INTERVAL   = 10   # seconds
+    CE_TIMEOUT_THRESHOLD = 60   # seconds of CE silence → safe mode
+    BUDGET_WARN_RATIO    = 0.85 # 85% fill → degraded
+    DLQ_WARN_SIZE        = 10   # DLQ > 10 → warning
 
     def __init__(
         self,
@@ -11294,28 +11274,28 @@ class MetaSupervisorApex:
         self._mode_changed_at = datetime.now(timezone.utc)
 
     async def start(self):
-        """Фоновый Apex Controller"""
+        """Background Apex Controller"""
         logger.info("Meta-Supervisor Apex Controller started")
         while True:
             await asyncio.sleep(self.HEARTBEAT_INTERVAL)
             await self._supervise_cycle()
 
     async def _supervise_cycle(self):
-        """Один цикл наблюдения и управления"""
-        # 1. Собрать сигналы
+        """One cycle of monitoring and control"""
+        # 1. Collect signals
         signals = await self._collect_signals()
 
-        # 2. Определить режим
+        # 2. Determine the mode
         new_mode = self._decide_mode(signals)
 
-        # 3. Применить изменения если режим поменялся
+        # 3. Apply changes if the mode has changed
         if new_mode != self.mode:
             await self._apply_mode_transition(self.mode, new_mode, signals)
             self.mode = new_mode
             self._mode_changed_at = datetime.now(timezone.utc)
 
     async def _collect_signals(self) -> dict:
-        """Собрать метрики от всех компонентов"""
+        """Collect metrics from all components"""
         ce_alive = await self._ping_ce()
         dlq_size = len(self.ce.dlq)
         budget_fill = await self.budget._get_total_nodes() / self.budget.budget.MAX_NODES_TOTAL
@@ -11330,35 +11310,35 @@ class MetaSupervisorApex:
             "critical_violations": len(critical_violations),
             "violation_ids":     [v.invariant_id for v in critical_violations],
         }
-        # P4-E FIX: MHI интеграция Phase 2 — подключить MHICalculator когда реализован
+        # P4-E FIX: MHI integration Phase 2 — wire up MHICalculator once implemented
         if hasattr(self, 'mhi_calculator'):
             try:
                 signals["mhi"] = await self.mhi_calculator.get_current_mhi()
                 if signals["mhi"] < 0.5:
-                    signals["critical_violations"] += 1   # триггер DEGRADED
+                    signals["critical_violations"] += 1   # DEGRADED trigger
             except Exception:
                 signals["mhi"] = None   # graceful fallback
         return signals
 
-    SAFE_MODE_MIN_RECOVERY_SECONDS = 300  # P2-C FIX: минимум 5 минут в SAFE_MODE (cooldown)
+    SAFE_MODE_MIN_RECOVERY_SECONDS = 300  # P2-C FIX: minimum 5 minutes in SAFE_MODE (cooldown)
 
     def _decide_mode(self, signals: dict) -> SupervisorMode:
-        """Логика перехода между режимами.
-        P2-C FIX: добавлен cooldown для SAFE_MODE.
-        Без cooldown: нестабильный DLQ → быстрая осцилляция SAFE↔NORMAL → flood логов + хаотичный read-only.
+        """Mode transition logic.
+        P2-C FIX: added a cooldown for SAFE_MODE.
+        Without a cooldown: an unstable DLQ → rapid SAFE↔NORMAL oscillation → log flood + chaotic read-only.
         """
-        # SAFE_MODE при серьёзных сбоях
+        # SAFE_MODE on serious failures
         if (not signals["ce_alive"] and signals["ce_silent_seconds"] > self.CE_TIMEOUT_THRESHOLD) \
         or signals["critical_violations"] > 0:
             return SupervisorMode.SAFE_MODE
 
-        # P2-C FIX: cooldown — не выходить из SAFE_MODE раньше MIN_RECOVERY_SECONDS
+        # P2-C FIX: cooldown — do not exit SAFE_MODE before MIN_RECOVERY_SECONDS
         if self.mode == SupervisorMode.SAFE_MODE:
             time_in_safe = (datetime.now(timezone.utc) - self._mode_changed_at).total_seconds()
             if time_in_safe < self.SAFE_MODE_MIN_RECOVERY_SECONDS:
-                return SupervisorMode.SAFE_MODE  # держать режим минимум 5 минут
+                return SupervisorMode.SAFE_MODE  # hold the mode for at least 5 minutes
 
-        # DEGRADED при предупреждениях
+        # DEGRADED on warnings
         if signals["dlq_size"] > self.DLQ_WARN_SIZE \
         or signals["budget_fill"] > self.BUDGET_WARN_RATIO:
             return SupervisorMode.DEGRADED
@@ -11383,7 +11363,7 @@ class MetaSupervisorApex:
                 f"DEGRADED MODE: dlq={signals['dlq_size']}, "
                 f"budget={signals['budget_fill']:.1%}"
             )
-            # Ускорить GC
+            # Accelerate GC
             await self.ce.enqueue("GC", {}, priority=ConsolidationPriority.GC)
 
         elif to_mode == SupervisorMode.NORMAL:
@@ -11404,7 +11384,7 @@ class MetaSupervisorApex:
             return False
 
     async def enter_safe_mode(self, reason: str = "external"):
-        """Внешний вызов Safe Mode (из InvariantChecker)"""
+        """External Safe Mode invocation (from InvariantChecker)"""
         await self._apply_mode_transition(
             self.mode, SupervisorMode.SAFE_MODE,
             {"violation_ids": [reason], "ce_alive": True, "budget_fill": 0}
@@ -11425,259 +11405,259 @@ class MetaSupervisorApex:
 
 ## 📊 Memory Health Index (MHI) — Phase 2
 
-> **Почему здесь**: MHI требует реальных данных для калибровки весов. Нельзя выбрать коэффициенты без production-данных о деградации. Описание фиксирует архитектурное решение; реализация — после первых 2 недель стабильной работы.
+> **Why here**: MHI requires real data to calibrate its weights. The coefficients cannot be chosen without production data on degradation. This description fixes the architectural decision; implementation comes after the first 2 weeks of stable operation.
 
 ```
-MHI = единый показатель здоровья графа
-      (от 0.0 = мёртвый до 1.0 = идеальный)
+MHI = a single indicator of graph health
+      (from 0.0 = dead to 1.0 = perfect)
 
-Компоненты (веса калибруются по реальным данным):
+Components (weights are calibrated against real data):
   w1 · stale_ratio      = is_active=false / total_nodes
-  w2 · avg_traversal    = P95 latency retrieval в мс / 500
-  w3 · entropy          = нормированная энтропия степеней узлов
-  w4 · retrieval_cost   = среднее токенов на запрос / 2000
+  w2 · avg_traversal    = P95 retrieval latency in ms / 500
+  w3 · entropy          = normalized entropy of node degrees
+  w4 · retrieval_cost   = average tokens per query / 2000
 
-Автотриггеры:
-  MHI < 0.3  → 🔴 немедленный GC + alert ops
-  MHI < 0.5  → 🟡 ускорить ConsEngine (DEGRADED)
-  MHI < 0.7  → 🟡 создать EvidenceSet агрегаторы
-  MHI > 0.9  → 🟢 здоров, снизить частоту обслуживания
+Auto-triggers:
+  MHI < 0.3  → 🔴 immediate GC + alert ops
+  MHI < 0.5  → 🟡 accelerate ConsEngine (DEGRADED)
+  MHI < 0.7  → 🟡 create EvidenceSet aggregators
+  MHI > 0.9  → 🟢 healthy, reduce maintenance frequency
 
-Реализация:
-  · Отдельный asyncio.Task — не блокирует Fast Path
-  · Shadow replica Neo4j — не нагружает основной граф
-  · Random walk sampling — не полный обход (O(N))
-  · Обновление каждые 5 минут
-  · CPU-квота изолирована от L4 Reasoning Engine
+Implementation:
+  · A separate asyncio.Task — does not block the Fast Path
+  · Shadow replica Neo4j — does not load the main graph
+  · Random walk sampling — not a full traversal (O(N))
+  · Updated every 5 minutes
+  · CPU quota isolated from the L4 Reasoning Engine
 
-Интеграция:
-  · MetaSupervisorApex._collect_signals() читает MHI
-  · При MHI < 0.5 → SupervisorMode.DEGRADED
+Integration:
+  · MetaSupervisorApex._collect_signals() reads MHI
+  · When MHI < 0.5 → SupervisorMode.DEGRADED
   · Prometheus gauge: memory_health_index{component="graph"}
 
-Phase 2: реализовать MHICalculator после 2 недель данных
+Phase 2: implement MHICalculator after 2 weeks of data
 ```
 
 ---
 
-## 🚀 Roadmap реализации
+## 🚀 Implementation Roadmap
 
-### ⚠️ Schema Migrations — версионирование схемы Neo4j
+### ⚠️ Schema Migrations — versioning the Neo4j schema
 
-> ⚠️ **Блокер production**: Схема Neo4j эволюционирует между деплоями.
-> Без версионирования обновление кода без обновления схемы приводит к краш при записи узла.
+> ⚠️ **Production blocker**: The Neo4j schema evolves between deployments.
+> Without versioning, updating the code without updating the schema leads to a crash when writing a node.
 
 ```
-Правило: При каждом изменении схемы Neo4j — создать миграцию.
+Rule: On every change to the Neo4j schema — create a migration.
 
-Структура:
+Structure:
   migrations/
     v8_01_add_evidence_count.cypher
     v8_02_add_hypothesis_node.cypher
     v8_03_add_etir_weights.cypher
     v8_04_add_session_id_l1.cypher
     v8_05_add_cognitive_mode_and_budget.cypher
-    -- P2-B FIX: нумерация v5_xx → v8_xx (система v8.0, не v5.0)
+    -- P2-B FIX: numbering v5_xx → v8_xx (system v8.0, not v5.0)
 
-Проверка при старте:
-  1. pipeline.__init__() вызывает schema_version_check()
-  2. Читает текущую версию из Neo4j: MATCH (m:SchemaVersion) RETURN m.version
-  3. Если версия < ожидаемой → запускает pending миграции
-  4. Если схема не найдена → создаёт с нуля (первый запуск)
-  5. Если версия несовместима → БЛОКИРУЕТ запуск с явной ошибкой
+Check at startup:
+  1. pipeline.__init__() calls schema_version_check()
+  2. Reads the current version from Neo4j: MATCH (m:SchemaVersion) RETURN m.version
+  3. If version < expected → runs pending migrations
+  4. If the schema is not found → creates it from scratch (first run)
+  5. If the version is incompatible → BLOCKS startup with an explicit error
 
-Поле SchemaVersion в Neo4j:
-  CREATE (m:SchemaVersion {version: "8.0", applied_at: datetime()})  -- P2-B FIX: было "5.0" при системе v8.0
+The SchemaVersion field in Neo4j:
+  CREATE (m:SchemaVersion {version: "8.0", applied_at: datetime()})  -- P2-B FIX: was "5.0" while the system is v8.0
 ```
 
-Миграция (`migrations/v8_05_add_cognitive_mode_and_budget.cypher`):  <!-- P2-B FIX -->
+Migration (`migrations/v8_05_add_cognitive_mode_and_budget.cypher`):  <!-- P2-B FIX -->
 
 ```cypher
--- Добавить поля для Cognitive Modes и Budget Planner
+-- Add fields for Cognitive Modes and Budget Planner
 
-// Добавить cognitive_mode к Episode
+// Add cognitive_mode to Episode
 MATCH (ep:Episode) WHERE ep.cognitive_mode IS NULL
 SET ep.cognitive_mode = 'BALANCED';
 
-// Добавить epistemic_state к Fact (заготовка для ESM Phase 2)
+// Add epistemic_state to Fact (placeholder for ESM Phase 2)
 MATCH (f:Fact) WHERE f.epistemic_state IS NULL
 SET f.epistemic_state = 'Validated',
     f.epistemic_score = f.confidence;
 
-// Добавить budget_tokens к Episode для мониторинга расхода
+// Add budget_tokens to Episode for consumption monitoring
 MATCH (ep:Episode) WHERE ep.budget_tokens IS NULL
 SET ep.budget_tokens = 0;
 
-// Обновить SchemaVersion
+// Update SchemaVersion
 MERGE (m:SchemaVersion {version: "8.0"})  -- P2-B FIX
 SET m.applied_at = datetime(),
     m.changes = "cognitive_mode, epistemic_state, epistemic_score, budget_tokens";
 ```
 
-### Phase 1: Базовая инфраструктура (1-2 недели)
+### Phase 1: Core infrastructure (1-2 weeks)
 
-**Цель**: Запустить минимальную работающую систему
+**Goal**: Get a minimal working system running
 
-- [ ] Установить Neo4j 5.26+ + Graphiti
-- [ ] **КРИТИЧНО: Создать индексы Neo4j** (без этого система деградирует!)
-- [ ] **Добавить поле `embedding_version` в схему всех узлов**
-- [ ] **Добавить поля Soft Delete (`is_active`, `valid_to`, `transaction_time`) в схему**
-- [ ] **Добавить поле `raw_episode_id` в схему :Episode**
-- [ ] **Добавить узел `:Evidence` и связь `[:SUPPORTED_BY]` в схему**
-- [ ] **Добавить узел `:Concept` и связи `[:CAUSES]`, `[:CONCEPT_OF]` в схему**
-- [ ] **Реализовать ImmutableRawMemory** (SQLite, append-only)
-- [ ] **Реализовать MemoryGuardian** (L5 Observer расширить)
-- [ ] **Зафиксировать формальные инварианты** как тесты (CI проверяет invariants)
-- [ ] Настроить Redis для Event Bus с DLQ
-- [ ] Реализовать RobustEventBus с retry/fallback
-- [ ] **Добавить Circuit Breaker для Neo4j и Redis**
-- [ ] Интегрировать Graphiti для автоматической экстракции
-- [ ] Базовый гибридный поиск (векторы + граф)
-- [ ] Простой агент с memory retrieval
-- [ ] **Настроить OpenTelemetry для observability**
-- [ ] **Зафиксировать `MAX_TOKENS_MEMORY_PER_QUERY` константу**
-- [ ] **Минимальный Audit Layer** (logging в SQLite)
-- [ ] ✅ **Запустить ConsolidationEngine** (заменяет 3 независимых воркера)
-- [ ] ✅ **RFC0006 validate_engram_config() в pipeline.__init__()**
-- [ ] ✅ **Runtime Invariant Checker запустить как фоновую задачу**
-- [ ] ✅ **Cognitive Mode Router интегрировать в Context Builder**
-- [ ] ✅ **PIIRedactor вызывать до записи в L1 и add_episode()**
-- [ ] ✅ **SQLite WAL режим включить при инициализации**
-- [ ] ✅ **Memory Budget Planner check_before_write() перед каждым add_episode()**
-- [ ] ✅ **Meta-Supervisor Apex Controller запустить параллельно с агентом**
+- [ ] Install Neo4j 5.26+ + Graphiti
+- [ ] **CRITICAL: Create Neo4j indexes** (without these the system degrades!)
+- [ ] **Add an `embedding_version` field to the schema of all nodes**
+- [ ] **Add Soft Delete fields (`is_active`, `valid_to`, `transaction_time`) to the schema**
+- [ ] **Add a `raw_episode_id` field to the :Episode schema**
+- [ ] **Add an `:Evidence` node and a `[:SUPPORTED_BY]` relationship to the schema**
+- [ ] **Add a `:Concept` node and `[:CAUSES]`, `[:CONCEPT_OF]` relationships to the schema**
+- [ ] **Implement ImmutableRawMemory** (SQLite, append-only)
+- [ ] **Implement MemoryGuardian** (extend the L5 Observer)
+- [ ] **Fix formal invariants** as tests (CI checks invariants)
+- [ ] Set up Redis for the Event Bus with a DLQ
+- [ ] Implement RobustEventBus with retry/fallback
+- [ ] **Add a Circuit Breaker for Neo4j and Redis**
+- [ ] Integrate Graphiti for automatic extraction
+- [ ] Basic hybrid search (vectors + graph)
+- [ ] Simple agent with memory retrieval
+- [ ] **Set up OpenTelemetry for observability**
+- [ ] **Fix the `MAX_TOKENS_MEMORY_PER_QUERY` constant**
+- [ ] **Minimal Audit Layer** (logging to SQLite)
+- [ ] ✅ **Launch the ConsolidationEngine** (replaces 3 independent workers)
+- [ ] ✅ **RFC0006 validate_engram_config() in pipeline.__init__()**
+- [ ] ✅ **Run the Runtime Invariant Checker as a background task**
+- [ ] ✅ **Integrate the Cognitive Mode Router into the Context Builder**
+- [ ] ✅ **Call PIIRedactor before writing to L1 and add_episode()**
+- [ ] ✅ **Enable SQLite WAL mode at initialization**
+- [ ] ✅ **Memory Budget Planner check_before_write() before every add_episode()**
+- [ ] ✅ **Launch the Meta-Supervisor Apex Controller in parallel with the agent**
 - [ ] ✅ **Schema migration v5_05_add_cognitive_mode_and_budget.cypher**
 
-**Критерий успеха**: Агент может сохранять разговоры и извлекать релевантную информацию, система resilient к падениям зависимостей, нет race conditions
+**Success criterion**: The agent can save conversations and retrieve relevant information, the system is resilient to dependency failures, and there are no race conditions
 
 ---
 
-### Phase 2: Фрактальная иерархия (2-3 недели)
+### Phase 2: Fractal hierarchy (2-3 weeks)
 
-**Цель**: Реализовать многоуровневую память с автоматической консолидацией
+**Goal**: Implement multi-level memory with automatic consolidation
 
-- [ ] Implement FractalMemory с тремя уровнями (STM/MTM/LTM)
-- [ ] **Персистентный L2 — таблица l2_memory (SQLite WAL + FTS5)**
-- [ ] **cluster_type (EPISODIC/STRATEGIC/CONCEPTUAL) + логика decay по типу**
-- [ ] **Cold Start Guard в consolidate_stm_to_mtm (≥ 50 эпизодов)**
-- [ ] **TTL Manager — адаптивный (7 × 2^visits, max 224 дня)**
-- [ ] **L2MetricsBuffer — I/O батчинг (flush каждые 10 мин)**
-- [ ] **Создать таблицу staging_candidates + graph_lite_nodes/edges**
-- [ ] **ResourceAwareScheduler запустить как asyncio.Task**
-- [ ] **Fast-Track hook в add_episode() при priority > 0.9**
-- [ ] **Улучшенный decay с reinforcement и emotional salience**
-- [ ] **Адаптивная консолидация STM→MTM** (динамические интервалы)
-- [ ] Кластеризация и **гибридная консолидация MTM→LTM** (extractive + selective LLM)
-- [ ] Фоновые workers (AdaptiveConsolidationWorker)
-- [ ] Importance scoring с многофакторным расчетом
-- [ ] **Query optimization с LIMIT** для всех Cypher запросов
-- [ ] **Реализовать Протокол Promote/Demote** (формальные правила из раздела)
-- [ ] **Lazy Re-indexing воркер** (партиями переиндексировать `reindex_required=true`)
-- [ ] **Async Etir** — считать spreading activation в фоне до запроса пользователя
+- [ ] Implement FractalMemory with three levels (STM/MTM/LTM)
+- [ ] **Persistent L2 — the l2_memory table (SQLite WAL + FTS5)**
+- [ ] **cluster_type (EPISODIC/STRATEGIC/CONCEPTUAL) + per-type decay logic**
+- [ ] **Cold Start Guard in consolidate_stm_to_mtm (≥ 50 episodes)**
+- [ ] **TTL Manager — adaptive (7 × 2^visits, max 224 days)**
+- [ ] **L2MetricsBuffer — I/O batching (flush every 10 min)**
+- [ ] **Create the staging_candidates table + graph_lite_nodes/edges**
+- [ ] **Run the ResourceAwareScheduler as an asyncio.Task**
+- [ ] **Fast-Track hook in add_episode() when priority > 0.9**
+- [ ] **Improved decay with reinforcement and emotional salience**
+- [ ] **Adaptive STM→MTM consolidation** (dynamic intervals)
+- [ ] Clustering and **hybrid MTM→LTM consolidation** (extractive + selective LLM)
+- [ ] Background workers (AdaptiveConsolidationWorker)
+- [ ] Importance scoring with multi-factor calculation
+- [ ] **Query optimization with LIMIT** for all Cypher queries
+- [ ] **Implement the Promote/Demote Protocol** (formal rules from the section)
+- [ ] **Lazy Re-indexing worker** (re-index `reindex_required=true` in batches)
+- [ ] **Async Etir** — compute spreading activation in the background before the user's query
 
-**Критерий успеха**: Память автоматически консолидируется, расход токенов снижен на 70%+, нет memory leaks
+**Success criterion**: Memory consolidates automatically, token usage is reduced by 70%+, and there are no memory leaks
 
 ---
 
-### Phase 3: Самообучение (2-3 недели)
+### Phase 3: Self-learning (2-3 weeks)
 
-**Цель**: Агент учится на опыте
+**Goal**: The agent learns from experience
 
 - [ ] ReasoningBank implementation
-- [ ] Experience logging с outcome tracking
+- [ ] Experience logging with outcome tracking
 - [ ] Strategy extraction (distill_strategies)
 - [ ] **Thompson Sampling strategy selection** (exploration/exploitation, RFC0039)
-- [ ] **Negative reinforcement** через confidence penalty
-- [ ] Retrieve-Execute-Judge-Learn цикл
-- [ ] Strategy feedback loop с динамическим обновлением confidence
-- [ ] Anti-pattern detection для избежания повторных ошибок
+- [ ] **Negative reinforcement** via confidence penalty
+- [ ] Retrieve-Execute-Judge-Learn loop
+- [ ] Strategy feedback loop with dynamic confidence updating
+- [ ] Anti-pattern detection to avoid repeated mistakes
 
-**Критерий успеха**: Агент улучшает успешность задач на 25%+, избегает повторения ошибок, баланс exploration/exploitation работает
+**Success criterion**: The agent improves task success by 25%+, avoids repeating mistakes, and the exploration/exploitation balance works
 
 ---
 
-### Phase 4: Оптимизация и Production (2-3 недели)
+### Phase 4: Optimization and Production (2-3 weeks)
 
-**Цель**: Готовность к production
+**Goal**: Production readiness
 
-- [ ] Token budget optimization с динамическим budgeting
-- [ ] Context builder с приоритизацией
-- [ ] Redis caching для частых запросов
-- [ ] Community detection для кластеризации
-- [ ] **Memory Garbage Collection** (периодическая очистка, Soft Delete → S3 → Hard Delete)
-- [ ] **Архивация старых узлов в S3**
+- [ ] Token budget optimization with dynamic budgeting
+- [ ] Context builder with prioritization
+- [ ] Redis caching for frequent queries
+- [ ] Community detection for clustering
+- [ ] **Memory Garbage Collection** (periodic cleanup, Soft Delete → S3 → Hard Delete)
+- [ ] **Archiving old nodes to S3**
 - [ ] Comprehensive monitoring (Prometheus + Grafana + Tempo)
 - [ ] Performance benchmarking
-- [ ] **A/B testing framework** для валидации улучшений
-- [ ] Health checks для всех компонентов
-- [ ] DLQ processing для failed events
-- [ ] **Полный Audit Layer API** (3 метода: context, strategy, forgetting)
-- [ ] **[:CONTRADICTS] pipeline** для разрешения конфликтов фактов
-- [ ] **Memory Router upgrade** — заменить эвристику на o4-mini enum-классификатор
-- [ ] **Knowledge Distillation Engine** MVP (узкий домен, JSON-тройки)
-- [ ] **Каскадная инвалидация** Strategy при Soft Delete Fact
+- [ ] **A/B testing framework** to validate improvements
+- [ ] Health checks for all components
+- [ ] DLQ processing for failed events
+- [ ] **Full Audit Layer API** (3 methods: context, strategy, forgetting)
+- [ ] **[:CONTRADICTS] pipeline** for resolving fact conflicts
+- [ ] **Memory Router upgrade** — replace the heuristic with an o4-mini enum classifier
+- [ ] **Knowledge Distillation Engine** MVP (narrow domain, JSON triples)
+- [ ] **Cascading invalidation** of Strategy on Soft Delete of a Fact
 
-**Критерий успеха**: P95 латентность <500ms, снижение токенов >90%, граф не растет бесконечно, готовность к production
+**Success criterion**: P95 latency <500ms, token reduction >90%, the graph does not grow indefinitely, production readiness
 
 ---
 
-### Phase 5: Advanced Features (опционально)
+### Phase 5: Advanced Features (optional)
 
 - [ ] Adaptive resolution caching
-- [ ] Топологическое сжатие графа
-- [ ] Meta-learning для выбора стратегий
+- [ ] Topological graph compression
+- [ ] Meta-learning for strategy selection
 - [ ] Multi-agent memory sharing
 - [ ] Privacy-preserving memory (GDPR compliance)
 - [ ] Memory export/import
 
 ---
 
-## ⚠️ Важные предупреждения
+## ⚠️ Important warnings
 
-### Безопасность
+### Security
 
-1. **Privacy**: Эпизодическая память хранит личную информацию
-   - ✅ PIIRedactor реализован (не декларация) — автоматически redact перед записью в L1/L3
-   - ✅ GDPR `forget_user()` через ConsolidationEngine.enqueue(USER_PURGE)
-   - Механизм удаления по запросу (GDPR "right to be forgotten") — реализован
-   - Шифрование sensitive данных — Phase 2
+1. **Privacy**: Episodic memory stores personal information
+   - ✅ PIIRedactor is implemented (not just a declaration) — automatically redacts before writing to L1/L3
+   - ✅ GDPR `forget_user()` via ConsolidationEngine.enqueue(USER_PURGE)
+   - Deletion-on-request mechanism (GDPR "right to be forgotten") — implemented
+   - Encryption of sensitive data — Phase 2
 
-2. **Рекурсивное улучшение**: Самообучение требует надзора
-   - Не давать полный доступ к коду на старте
-   - Human-in-the-loop для критичных решений
-   - A/B тестирование перед production
+2. **Recursive self-improvement**: Self-learning requires oversight
+   - Do not grant full code access at the start
+   - Human-in-the-loop for critical decisions
+   - A/B testing before production
 
-3. **Bias в опыте**: Плохой опыт может закрепиться
-   - Периодическая валидация стратегий
-   - Механизм "забывания" устаревших паттернов
-   - Diversity в experience replay
+3. **Bias in experience**: Bad experience can become entrenched
+   - Periodic validation of strategies
+   - A "forgetting" mechanism for outdated patterns
+   - Diversity in experience replay
 
-### Производительность
+### Performance
 
-1. **Computational overhead**: Фоновые процессы потребляют ресурсы
-   - Балансировать частоту консолидации
-   - Использовать батчинг для graph updates
-   - Мониторить CPU/Memory usage
+1. **Computational overhead**: Background processes consume resources
+   - Balance the consolidation frequency
+   - Use batching for graph updates
+   - Monitor CPU/Memory usage
 
-2. **Graph scaling**: Neo4j требует оптимизации для больших графов
-   - Индексы на критичные поля
-   - Периодическая архивация старых узлов
-   - Sharding для очень больших графов
+2. **Graph scaling**: Neo4j requires optimization for large graphs
+   - Indexes on critical fields
+   - Periodic archiving of old nodes
+   - Sharding for very large graphs
 
-3. **Token costs**: Даже с оптимизацией, LLM стоит дорого
-   - Использовать быстрые модели для рутины (o4-mini / Claude Haiku 4.5)
-   - Кэшировать частые запросы
-   - Мониторить и алертить на аномальный расход
+3. **Token costs**: Even with optimization, an LLM is expensive
+   - Use fast models for routine work (o4-mini / Claude Haiku 4.5)
+   - Cache frequent queries
+   - Monitor and alert on anomalous usage
 
-4. ✅ **ConsolidationEngine — единый координатор воркеров**
+4. ✅ **ConsolidationEngine — a single worker coordinator**
 
-   Три независимых воркера заменены единым координатором:
+   Three independent workers are replaced by a single coordinator:
    ```
    ConsolidationEngine :
-     Все операции → asyncio.PriorityQueue → asyncio.Lock → Neo4j
-     Порядок приоритетов: CONSOLIDATE > ARCHIVE > GC
-     Таймаут: 30 секунд на операцию
-     При таймауте: операция → DLQ (не потеря данных)
-     Fallback: L3 → read-only, L1 продолжает работать
+     All operations → asyncio.PriorityQueue → asyncio.Lock → Neo4j
+     Priority order: CONSOLIDATE > ARCHIVE > GC
+     Timeout: 30 seconds per operation
+     On timeout: operation → DLQ (no data loss)
+     Fallback: L3 → read-only, L1 keeps working
    ```
 
 ```python
@@ -11692,9 +11672,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 class ConsolidationPriority(IntEnum):
-    CONSOLIDATE = 1   # Наивысший приоритет
+    CONSOLIDATE = 1   # Highest priority
     ARCHIVE     = 2
-    GC          = 3   # Наименьший приоритет
+    GC          = 3   # Lowest priority
 
 class TaskStatus(str, Enum):
     NEW                = "new"
@@ -11712,12 +11692,12 @@ class ConsolidationOp:
 
 class ConsolidationEngine:
     """
-    Единая точка координации всех операций над Neo4j графом.
-    Устраняет race conditions между AdaptiveConsolidationWorker,
-    MemoryGarbageCollector и MemoryArchival.
+    A single coordination point for all operations on the Neo4j graph.
+    Eliminates race conditions between AdaptiveConsolidationWorker,
+    MemoryGarbageCollector and MemoryArchival.
 
-    BLOCKED_AWAITING_DB: если CE недоступен, задача получает этот
-    статус вместо ACTIVE, чтобы мониторинг понимал причину задержки.
+    BLOCKED_AWAITING_DB: if CE is unavailable, the task gets this
+    status instead of ACTIVE, so monitoring understands the cause of the delay.
     """
     def __init__(self, graph: GraphMemory, event_bus: RobustEventBus,
                  gc: "MemoryGarbageCollector" = None):
@@ -11762,7 +11742,7 @@ class ConsolidationEngine:
             except asyncio.TimeoutError:
                 logger.error(f"CE timeout: {op.op_type} → DLQ")
                 self.dlq.append(op)
-                # Помечаем задачи как BLOCKED_AWAITING_DB
+                # Mark tasks as BLOCKED_AWAITING_DB
                 if op.op_type == "CONSOLIDATE" and hasattr(op.payload, "task_id"):
                     await self.event_bus.publish(AgentEvent(
                         event_type=EventType.TASK_STATUS_CHANGED,
@@ -11786,7 +11766,7 @@ class ConsolidationEngine:
                 return await self.gc.run_full_gc()
             logger.warning("CE: GC requested but gc= not configured")
         elif op.op_type == "PING":
-            # heartbeat от MetaSupervisor — подтверждаем что CE жив
+            # heartbeat from MetaSupervisor — confirm that CE is alive
             logger.debug("CE: PING received → alive")
             return True
         else:
@@ -11801,30 +11781,30 @@ class ConsolidationEngine:
 
 ## 🔱 L3.5 — Etir (Velantrim Synaptic Activation Layer)
 
-> **Важно**: L3.5 в архитектуре Velantrim — это исключительно Etir.
-> Etir принадлежит канону Velantrim ExoCortex и работает снаружи трансформера.
+> **Important**: In the Velantrim architecture, L3.5 is exclusively Etir.
+> Etir belongs to the Velantrim ExoCortex canon and operates outside the transformer.
 
 ---
 
 ### ⚡ L3.5 — Etir (Velantrim Synaptic Activation Layer)
 
-**Etir** — это системный слой Velantrim. Название придумано в рамках проекта и принадлежит канону Velantrim ExoCortex.
+**Etir** is a system layer of Velantrim. The name was coined within the project and belongs to the Velantrim ExoCortex canon.
 
 ```
-Природа:     СИСТЕМНАЯ — снаружи трансформера
-Механизм:    Spreading activation по графу Neo4j
-Хранение:    In-memory Python-слой, не в графе
-Зависимость: НЕ зависит от LLM — работает без трансформера
-Динамика:    Живая, меняется в runtime при каждом запросе
-Аналог мозга: Синаптическая предактивация нейронных сетей
+Nature:      SYSTEMIC — outside the transformer
+Mechanism:   Spreading activation over the Neo4j graph
+Storage:     In-memory Python layer, not in the graph
+Dependency:  Does NOT depend on the LLM — works without the transformer
+Dynamics:    Live, changes at runtime on every query
+Brain analog: Synaptic pre-activation of neural networks
 ```
 
-**Как работает Etir:**
+**How Etir works:**
 
 ```
-Запрос → L4 Reasoning Engine
+Query → L4 Reasoning Engine
          ↓
-         Etir получает стартовые узлы
+         Etir receives the start nodes
          ↓
          spreading activation: activation(j) += activation(i) * weight(edge_ij)
          ↓
@@ -11832,94 +11812,94 @@ class ConsolidationEngine:
          ↓
          lateral inhibition: activation(i) -= inhibition * competing_nodes
          ↓
-         Граф предактивирован → L4 берёт готовый контекст
+         Graph is pre-activated → L4 takes the ready-made context
          ↓
-         Если нет → полный обход L3 (Neo4j)
+         If not → full L3 traversal (Neo4j)
 ```
 
-**Критерии попадания в Etir:**
-- `access_count > порога` — часто запрашиваемые узлы
-- `importance > 0.9` — высокая важность
-- `pinned = True` — принудительное закрепление пользователем или L5
-- Сигнал от L5 Observer (SelfAttentionDiary) — рекомендации по продвижению
+**Criteria for entering Etir:**
+- `access_count > threshold` — frequently queried nodes
+- `importance > 0.9` — high importance
+- `pinned = True` — forced pinning by the user or L5
+- A signal from the L5 Observer (SelfAttentionDiary) — promotion recommendations
 
-**Pinned-узлы никогда не вытесняются автоматически.** L5 (ценности системы) всегда находится в Etir как pinned.
+**Pinned nodes are never evicted automatically.** L5 (the system's values) always resides in Etir as pinned.
 
-> 💡 **MAGMA-идея (типизация рёбер, 2026)**: spreading activation в Etir
-> может работать по типу ребра. Добавить к рёбрам атрибут `type`:
-> `semantic` / `temporal` / `causal` / `entity`. Тогда L4 Memory Router
-> выбирает тип активации по интенту запроса — это повышает точность
-> предактивации без изменения схемы узлов Neo4j. Реализация: Phase 2+.
+> 💡 **MAGMA idea (edge typing, 2026)**: spreading activation in Etir
+> can operate by edge type. Add a `type` attribute to edges:
+> `semantic` / `temporal` / `causal` / `entity`. Then the L4 Memory Router
+> selects the activation type by the query intent — this increases the accuracy
+> of pre-activation without changing the Neo4j node schema. Implementation: Phase 2+.
 
 ---
 
 ## 📜 RFC0004 — Truth Gate Contract 
 
-> **Статус**: Canonical · **Фаза**: Phase 0+
+> **Status**: Canonical · **Phase**: Phase 0+
 >
-> Truth Gate — единственная точка входа в L3 граф для новых фактов.
-> Реализован через TruthGateWithESM (RFC0015).
+> Truth Gate is the single entry point into the L3 graph for new facts.
+> Implemented via TruthGateWithESM (RFC0015).
 
-### Числовые пороги
+### Numeric thresholds
 
-Все значения из `velantrim_config.TruthConfig`.
+All values come from `velantrim_config.TruthConfig`.
 
-| Критерий | Порог | Действие при нарушении | ESM-состояние |
+| Criterion | Threshold | Action on violation | ESM state |
 |---------|-------|----------------------|--------------|
 | `evidence_count` | ≥ 3 | Reject | Hypothesized |
 | `confidence` | ≥ 0.75 | Reject | Hypothesized |
-| `coverage_score` | ≥ 0.70 | Reject | Supported (ждёт данных) |
+| `coverage_score` | ≥ 0.70 | Reject | Supported (awaiting data) |
 | `contradictions` | = 0 | Reject + [:CONTRADICTS] | Contradicted |
-| Все выполнены | — | Accept | **Validated → L3** |
+| All satisfied | — | Accept | **Validated → L3** |
 
-### Инварианты RFC0004
-
-```
-TruthGate.I1: НИ ОДИН факт не попадает в L3 без прохождения Truth Gate.
-
-TruthGate.I2: Дубликат → increment evidence_count, новый узел не создаётся.
-
-TruthGate.I3: Конфликт → [:CONTRADICTS] связь, НЕ удаление.
-    При обнаружении агент переспрашивает пользователя.
-
-TruthGate.I4: Truth Gate не пройден → LLM не генерирует ответ по этому факту.
-    Возвращается: "Недостаточно данных".
-
-TruthGate.I5: Truth Gate + ESM — атомарная операция (TruthGateWithESM, RFC0015).
-```
-
-### Связь с другими RFC
+### RFC0004 invariants
 
 ```
-RFC0001 → RFC0004: LLM output → ESM только через Truth Gate
-RFC0004 → RFC0013: L2 кластеры → L3 через Truth Gate (CONCEPTUAL type)
-RFC0004 → RFC0014: staging_candidates → L3 через Truth Gate (Scheduler)
-RFC0004 → RFC0015: TruthGateWithESM реализует этот контракт
-RFC0004 → RFC0016: VelumSignal → не идёт в L3 напрямую, только через Truth Gate
+TruthGate.I1: NO fact enters L3 without passing the Truth Gate.
+
+TruthGate.I2: Duplicate → increment evidence_count, no new node is created.
+
+TruthGate.I3: Conflict → [:CONTRADICTS] relationship, NOT deletion.
+    On detection the agent re-queries the user.
+
+TruthGate.I4: Truth Gate not passed → the LLM does not generate an answer based on this fact.
+    Returns: "Insufficient data".
+
+TruthGate.I5: Truth Gate + ESM — an atomic operation (TruthGateWithESM, RFC0015).
+```
+
+### Relationship to other RFCs
+
+```
+RFC0001 → RFC0004: LLM output → ESM only through the Truth Gate
+RFC0004 → RFC0013: L2 clusters → L3 through the Truth Gate (CONCEPTUAL type)
+RFC0004 → RFC0014: staging_candidates → L3 through the Truth Gate (Scheduler)
+RFC0004 → RFC0015: TruthGateWithESM implements this contract
+RFC0004 → RFC0016: VelumSignal → does not go to L3 directly, only through the Truth Gate
 ```
 
 ---
 
 ## 📜 RFC0011 — Etir Spreading Activation Engine
 
-> **Статус**: Draft · **Приоритет**: Phase 1 · **Срок**: 10–14 дней
+> **Status**: Draft · **Priority**: Phase 1 · **Deadline**: 10–14 days
 
-### Цели и жёсткие ограничения
-
-```
-P95 latency ≤ 50 ms на графе 50k–200k узлов
-Активировать ≤ 300 узлов за раз
-Ring Zero / VALUES CORE — activation = 1.0 (иммунитет к inhibition)
-ESM.Collapsed узлы — исключать из распространения полностью
-Кэш результатов по query_hash (TTL 60–120 сек, Redis)
-Fallback: если >50 ms → чистый Graphiti search (без Etir)
-```
-
-### Формальная модель
+### Goals and hard constraints
 
 ```
-activation_0(i) = 1.0  если i ∈ seed_nodes (query + L0 entities)
-                  0.0   иначе
+P95 latency ≤ 50 ms on a graph of 50k–200k nodes
+Activate ≤ 300 nodes at a time
+Ring Zero / VALUES CORE — activation = 1.0 (immune to inhibition)
+ESM.Collapsed nodes — fully excluded from propagation
+Cache results by query_hash (TTL 60–120 sec, Redis)
+Fallback: if >50 ms → pure Graphiti search (without Etir)
+```
+
+### Formal model
+
+```
+activation_0(i) = 1.0  if i ∈ seed_nodes (query + L0 entities)
+                  0.0   otherwise
 
 activation_{t+1}(j) = activation_t(j) + Σ_{i→j} activation_t(i) · w_ij
 
@@ -11927,48 +11907,48 @@ decay(i) = activation(i) · e^{-0.18 · t}
 
 lateral_inhibition(i) = activation(i) - 0.07 · Σ_{k ∈ competitors} activation(k)
 
-final(i) = clamp(activation(i), 0, 1)  если final(i) > 0.12
+final(i) = clamp(activation(i), 0, 1)  if final(i) > 0.12
 ```
 
-**Параметры по умолчанию:**
+**Default parameters:**
 
-| Параметр | Значение | Описание |
+| Parameter | Value | Description |
 |----------|----------|----------|
-| `max_steps` | 3 | Глубина распространения |
-| `max_nodes` | 300 | Ограничение активированных узлов |
-| `decay_rate` λ | 0.18 | Скорость затухания |
-| `inhibition_rate` μ | 0.07 | Сила латерального подавления |
-| `threshold` | 0.12 | Минимальная activation для включения в контекст |
+| `max_steps` | 3 | Propagation depth |
+| `max_nodes` | 300 | Limit on activated nodes |
+| `decay_rate` λ | 0.18 | Decay rate |
+| `inhibition_rate` μ | 0.07 | Lateral inhibition strength |
+| `threshold` | 0.12 | Minimum activation for inclusion in context |
 
-### Инварианты (RFC0011)
+### Invariants (RFC0011)
 
 ```
 Etir.I1: ∀ node ∈ activated_nodes: 0 ≤ activation ≤ 1
 Etir.I2: |activated_nodes| ≤ 300
-Etir.I3: Ring Zero узлы: activation ≥ 0.95 всегда (иммунитет)
-Etir.I4: ESM.Collapsed узлы: activation = 0 (исключены)
-Etir.I5: P95 latency < 50ms — иначе Circuit Breaker → fallback Graphiti
+Etir.I3: Ring Zero nodes: activation ≥ 0.95 always (immunity)
+Etir.I4: ESM.Collapsed nodes: activation = 0 (excluded)
+Etir.I5: P95 latency < 50ms — otherwise Circuit Breaker → fallback Graphiti
 ```
 
-### Реализация: Cypher + Neo4j (не NetworkX — см. таблицу ниже)
+### Implementation: Cypher + Neo4j (not NetworkX — see the table below)
 
-> ⚠️ **NetworkX — ловушка**: тянет весь граф в RAM Python-процесса. На 10k узлов — секунды. Пишем сразу на Cypher внутри Neo4j.
+> ⚠️ **NetworkX is a trap**: it pulls the entire graph into the Python process's RAM. On 10k nodes — seconds. We write straight to Cypher inside Neo4j.
 >
-> ⚠️ **`gds.runCypher()` не существует** в Neo4j GDS API. Spreading activation реализуется итеративными Cypher-запросами из Python, не через GDS-процедуры.
+> ⚠️ **`gds.runCypher()` does not exist** in the Neo4j GDS API. Spreading activation is implemented via iterative Cypher queries from Python, not through GDS procedures.
 
 ```cypher
-// Шаг 1: Установить seed активацию (вызывается из Python перед итерациями)
+// Step 1: Set seed activation (called from Python before the iterations)
 MATCH (n)
 WHERE n.id IN $seed_ids
   AND n.epistemic_state <> 'Collapsed'
 SET n.activation = 1.0
 
-// Шаг 2: Ring Zero иммунитет — всегда максимум
+// Step 2: Ring Zero immunity — always maximum
 MATCH (n)
 WHERE n.is_ring_zero = true
 SET n.activation = 1.0
 
-// Шаг 3: Одна итерация spreading (вызывается 3 раза из Python)
+// Step 3: One spreading iteration (called 3 times from Python)
 MATCH (n)-[r:RELATED_TO|SUPPORTED_BY|CONCEPT_OF]->(m)
 WHERE n.activation > 0.12
   AND m.epistemic_state <> 'Collapsed'
@@ -11976,18 +11956,18 @@ WHERE n.activation > 0.12
 WITH m, sum(n.activation * coalesce(r.weight, 0.5)) AS incoming
 SET m.activation = coalesce(m.activation, 0.0) + incoming
 
-// Шаг 4: Decay
--- P1-E FIX: I55.1 — дифференцированный decay для аналогий vs стандартные рёбра
+// Step 4: Decay
+-- P1-E FIX: I55.1 — differentiated decay for analogies vs standard edges
 MATCH (n)-[r]->(m)
 WHERE n.activation IS NOT NULL
   AND n.is_ring_zero <> true
 SET n.activation = n.activation * CASE
     WHEN type(r) IN ['METAPHOR_OF', 'ANALOGOUS_TO']
-    THEN exp(-0.12)    -- SAE_DECAY_ANALOGY (I55.1): decay_factor=0.4 для аналогий
-    ELSE exp(-0.18)    -- SAE_DECAY_STANDARD: decay_factor=0.6 для обычных рёбер
+    THEN exp(-0.12)    -- SAE_DECAY_ANALOGY (I55.1): decay_factor=0.4 for analogies
+    ELSE exp(-0.18)    -- SAE_DECAY_STANDARD: decay_factor=0.6 for ordinary edges
 END
 
-// Шаг 5: Сбор результатов
+// Step 5: Collect results
 MATCH (n)
 WHERE coalesce(n.activation, 0) > 0.12
   AND n.epistemic_state <> 'Collapsed'
@@ -11995,14 +11975,14 @@ RETURN n.id AS node_id, n.activation AS score
 ORDER BY score DESC
 LIMIT 300
 
-// Шаг 6: Очистка (обязательно после каждого запроса!)
+// Step 6: Cleanup (mandatory after every query!)
 MATCH (n) WHERE n.activation IS NOT NULL
   AND n.is_ring_zero <> true
 REMOVE n.activation
 ```
 
 ```python
-# etir/engine.py — Python-обёртка 
+# etir/engine.py — Python wrapper 
 import json
 import asyncio
 from dataclasses import dataclass
@@ -12014,7 +11994,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ActivationResult:
     activated_nodes: Dict[str, float]   # node_id → score
-    context_window: List[str]           # топ-30 node_id
+    context_window: List[str]           # top-30 node_id
     execution_time_ms: float
     steps_used: int
     cache_hit: bool = False
@@ -12022,9 +12002,9 @@ class ActivationResult:
 class EtirEngine:
     """
     RFC0011: Etir Spreading Activation Engine
-    Реализован на Cypher + Redis кэш.
-    НЕ использует NetworkX (слишком медленно на >10k узлов).
-    НЕ использует gds.runCypher() (не существует в GDS API).
+    Implemented on Cypher + Redis cache.
+    Does NOT use NetworkX (too slow on >10k nodes).
+    Does NOT use gds.runCypher() (does not exist in the GDS API).
     """
     CYPHER_SEED    = "MATCH (n) WHERE n.id IN $seed_ids AND n.epistemic_state <> 'Collapsed' SET n.activation = 1.0"
     CYPHER_RING    = "MATCH (n) WHERE n.is_ring_zero = true SET n.activation = 1.0"
@@ -12036,20 +12016,20 @@ class EtirEngine:
         WITH m, sum(n.activation * coalesce(r.weight, 0.5)) AS incoming
         SET m.activation = coalesce(m.activation, 0.0) + incoming
     """
-    # P1-E FIX: I55.1 — CYPHER_DECAY разделён на два режима.
-    # Аналогии получают мягкое затухание (exp(-0.12) = decay_factor 0.4).
-    # Стандартные рёбра: exp(-0.18) = decay_factor 0.6.
+    # P1-E FIX: I55.1 — CYPHER_DECAY split into two modes.
+    # Analogies receive soft decay (exp(-0.12) = decay_factor 0.4).
+    # Standard edges: exp(-0.18) = decay_factor 0.6.
     CYPHER_DECAY   = """MATCH (n)-[r]->(m)
         WHERE n.activation IS NOT NULL AND n.is_ring_zero <> true
         SET n.activation = n.activation * CASE
             WHEN type(r) IN ['METAPHOR_OF','ANALOGOUS_TO'] THEN exp(-0.12)
             ELSE exp(-0.18) END""""
-    # Lateral inhibition: доминирующие узлы подавляют конкурентов (RFC0011, формула μ=0.07).
-    # Ring Zero иммунны — их activation не снижается.
-    # Без этого шага конкурирующие темы (0.9 vs 0.8) оба полностью активированы →
-    # LLM получает размытый контекст. С ним — доминантная тема подавляет слабые.
-    # P0-4 FIX: CYPHER_INHIBIT выбирается динамически через get_lateral_inhibition_cypher()
-    # (APOC если доступен, чистый Cypher fallback для LadybugDB). Определён в dedupe_entities.py.
+    # Lateral inhibition: dominant nodes suppress competitors (RFC0011, formula μ=0.07).
+    # Ring Zero nodes are immune — their activation is not reduced.
+    # Without this step, competing topics (0.9 vs 0.8) are both fully activated →
+    # the LLM gets blurred context. With it — the dominant topic suppresses the weak ones.
+    # P0-4 FIX: CYPHER_INHIBIT is selected dynamically via get_lateral_inhibition_cypher()
+    # (APOC if available, pure Cypher fallback for LadybugDB). Defined in dedupe_entities.py.
     CYPHER_INHIBIT_HEADER = """
         MATCH (n)
         WHERE n.activation IS NOT NULL
@@ -12061,12 +12041,12 @@ class EtirEngine:
 
     @classmethod
     def _build_cypher_inhibit(cls) -> str:
-        """P0-4 FIX: собрать CYPHER_INHIBIT с правильным backend для lateral inhibition."""
+        """P0-4 FIX: assemble CYPHER_INHIBIT with the correct backend for lateral inhibition."""
         try:
             from dedupe_entities import get_lateral_inhibition_cypher
             body = get_lateral_inhibition_cypher()
         except ImportError:
-            # Fallback если dedupe_entities недоступен: чистый Cypher (безопасно)
+            # Fallback if dedupe_entities is unavailable: pure Cypher (safe)
             body = """
         UNWIND range(0, size(ranked) - 1) AS i
         WITH ranked[i] AS dominant, ranked, i
@@ -12094,9 +12074,9 @@ class EtirEngine:
         import time
         start = time.monotonic()
 
-        # Кэш
-        # FIX: hash() нестабилен между процессами (PYTHONHASHSEED рандомизирован с Python 3.3).
-        # hashlib.sha256 детерминирован — кэш работает корректно при нескольких воркерах.
+        # Cache
+        # FIX: hash() is unstable across processes (PYTHONHASHSEED randomized since Python 3.3).
+        # hashlib.sha256 is deterministic — the cache works correctly with multiple workers.
         import hashlib
         _cache_raw = (query + '|'.join(sorted(seed_ids))).encode()
         cache_key = f"etir:{hashlib.sha256(_cache_raw).hexdigest()[:16]}"
@@ -12113,26 +12093,26 @@ class EtirEngine:
                 for _ in range(self.config["max_steps"]):
                     await session.run(self.CYPHER_SPREAD, {"threshold": self.config["threshold"]})
                     await session.run(self.CYPHER_DECAY)
-                # Lateral inhibition — один проход после всех шагов распространения.
-                # μ=0.07 из RFC0011. P0-4 FIX: APOC/fallback выбирается автоматически.
+                # Lateral inhibition — a single pass after all propagation steps.
+                # μ=0.07 from RFC0011. P0-4 FIX: APOC/fallback is selected automatically.
                 try:
                     await session.run(
                         self._build_cypher_inhibit(),
                         {"threshold": self.config["threshold"], "mu": self.config.get("inhibition_rate", 0.07)}
                     )
                 except Exception as _inh_err:
-                    # APOC недоступен или CYPHER_INHIBIT упал → пропустить, не падать.
-                    # Lateral inhibition — улучшение качества, не блокирующий путь.
+                    # APOC unavailable or CYPHER_INHIBIT failed → skip, do not crash.
+                    # Lateral inhibition is a quality improvement, not a blocking path.
                     logger.debug(f"Etir lateral inhibition skipped: {_inh_err}")
                 rows = await (await session.run(
                     self.CYPHER_COLLECT,
                     {"threshold": self.config["threshold"], "limit": self.config["max_nodes"]}
                 )).data()
             finally:
-                # FIX: CYPHER_CLEANUP перенесён в finally — activation-свойства
-                # гарантированно удаляются из Neo4j даже при исключении.
-                # Без этого при сбое CYPHER_COLLECT висящие activation смешиваются
-                # с seed следующего запроса.
+                # FIX: CYPHER_CLEANUP moved into finally — activation properties
+                # are guaranteed to be removed from Neo4j even on exception.
+                # Without this, if CYPHER_COLLECT fails, dangling activations mix
+                # with the seed of the next query.
                 await session.run(self.CYPHER_CLEANUP)
 
         activated = {r["node_id"]: r["score"] for r in rows}
@@ -12150,14 +12130,14 @@ class EtirEngine:
 
     async def invalidate_cache(self, node_ids: List[str]):
         """
-        Event-driven инвалидация кэша при изменении узлов
+        Event-driven cache invalidation when nodes change
         
-        Вызывается когда:
-        - Узел добавлен/удалён/изменён в L3
-        - ESM переход (особенно в Contradicted/Collapsed)
-        - Weighted Decay применён
+        Called when:
+        - A node is added/removed/changed in L3
+        - An ESM transition (especially into Contradicted/Collapsed)
+        - Weighted Decay is applied
         
-        Инвалидирует все кэш-ключи, содержащие эти node_ids
+        Invalidates all cache keys containing these node_ids
         """
         pattern = f"etir:*"
         cursor = 0
@@ -12170,7 +12150,7 @@ class EtirEngine:
                 cached = await self.redis.get(key)
                 if cached:
                     data = json.loads(cached)
-                    # Проверить пересечение с изменёнными узлами
+                    # Check for intersection with the changed nodes
                     if any(nid in data.get('activated_nodes', {}) for nid in node_ids):
                         await self.redis.delete(key)
                         invalidated += 1
@@ -12184,37 +12164,37 @@ class EtirEngine:
         return invalidated
 ```
 
-### Структура файлов
+### File structure
 
 ```
 velantrim/
 ├── etir/
 │   ├── __init__.py
-│   ├── engine.py       ← EtirEngine (Cypher + Redis, см. выше)
-│   ├── cache.py        ← Redis TTL + invalidation при изменении графа
+│   ├── engine.py       ← EtirEngine (Cypher + Redis, see above)
+│   ├── cache.py        ← Redis TTL + invalidation on graph changes
 │   └── metrics.py      ← Prometheus: latency, nodes_activated, cache_hit, fallback_count
 ├── infra/
 │   └── docker-compose.yml
-├── hybrid_retrieval.py ← добавить вызов etir.activate() как шаг F2.5
-├── context_builder.py  ← принимать etir_context_window
+├── hybrid_retrieval.py ← add the etir.activate() call as step F2.5
+├── context_builder.py  ← accept etir_context_window
 └── tests/
-    └── test_etir.py    ← 7 тестов (см. ниже)
+    └── test_etir.py    ← 7 tests (see below)
 ```
 
-### Тесты (обязательные)
+### Tests (mandatory)
 
 ```python
 # tests/test_etir.py
-def test_single_seed_activation()       # один seed → корректное распространение
-def test_decay_reduces_score()          # decay уменьшает activation
-def test_inhibition_suppresses()        # inhibition подавляет конкурентов
-def test_ring_zero_immunity()           # Ring Zero всегда activation ≥ 0.95
+def test_single_seed_activation()       # one seed → correct propagation
+def test_decay_reduces_score()          # decay reduces activation
+def test_inhibition_suppresses()        # inhibition suppresses competitors
+def test_ring_zero_immunity()           # Ring Zero always activation ≥ 0.95
 def test_collapsed_nodes_ignored()      # ESM.Collapsed = activation 0
-def test_cache_hit_returns_fast()       # второй вызов < 10ms
-def test_fallback_on_slow_graph()       # при latency > 50ms → пустой результат
+def test_cache_hit_returns_fast()       # second call < 10ms
+def test_fallback_on_slow_graph()       # on latency > 50ms → empty result
 ```
 
-### Метрики (Prometheus)
+### Metrics (Prometheus)
 
 ```python
 etir_latency_ms       = Histogram("etir_latency_ms", ...)
@@ -12223,77 +12203,77 @@ etir_cache_hit_ratio  = Gauge("etir_cache_hit_ratio", ...)
 etir_fallback_total   = Counter("etir_fallback_total", ...)
 ```
 
-### Альтернативы NetworkX для spreading activation
+### NetworkX alternatives for spreading activation
 
-> Выбор инструмента зависит от фазы и доступности Neo4j GDS.
+> The choice of tool depends on the phase and the availability of Neo4j GDS.
 
-| # | Инструмент | Скорость vs NetworkX | Встроен. spreading | Интеграция с Neo4j | Рекомендация |
+| # | Tool | Speed vs NetworkX | Built-in spreading | Neo4j integration | Recommendation |
 |---|-----------|---------------------|-------------------|-------------------|-------------|
-| 1 | **Neo4j GDS + Cypher** | 10–60× | Через итерат. Cypher | Нативная | ✅ **Production Phase 1** |
-| 2 | **python-igraph** | 5–20× | Да (diffusion) | Нет прямой | 🟡 Быстрый MVP без GDS |
-| 3 | **graph-tool** | 20–150× | Да | Нет | 🟡 Если igraph медленно |
-| 4 | **cuGraph (RAPIDS)** | 50–1000× (GPU) | Да | Нет | 🔬 Phase 2 если есть GPU |
-| 5 | **NetworkX** | 1× | Нет | Нет | ❌ Только прототип < 1k узлов |
+| 1 | **Neo4j GDS + Cypher** | 10–60× | Via iterative Cypher | Native | ✅ **Production Phase 1** |
+| 2 | **python-igraph** | 5–20× | Yes (diffusion) | No direct | 🟡 Fast MVP without GDS |
+| 3 | **graph-tool** | 20–150× | Yes | No | 🟡 If igraph is slow |
+| 4 | **cuGraph (RAPIDS)** | 50–1000× (GPU) | Yes | No | 🔬 Phase 2 if GPU is available |
+| 5 | **NetworkX** | 1× | No | No | ❌ Prototype only < 1k nodes |
 
-### Timeline реализации (10–14 дней)
+### Implementation timeline (10–14 days)
 
 ```
-День 1–2:  Пилот — docker compose up -d, Cypher на 10k тестовых узлов, замер latency
-День 3–6:  etir/engine.py + Redis кэш + интеграция в HybridRetriever (шаг F2.5)
-           Ring Zero иммунитет + ESM.Collapsed фильтр + Circuit Breaker
-День 7–10: 7 unit-тестов + integration-тест 1000 запросов + Prometheus метрики
-День 11–14: Оптимизация (индексы, connection pool) + документация RFC0011
+Day 1–2:  Pilot — docker compose up -d, Cypher on 10k test nodes, latency measurement
+Day 3–6:  etir/engine.py + Redis cache + integration into HybridRetriever (step F2.5)
+           Ring Zero immunity + ESM.Collapsed filter + Circuit Breaker
+Day 7–10: 7 unit tests + integration test with 1000 queries + Prometheus metrics
+Day 11–14: Optimization (indexes, connection pool) + RFC0011 documentation
 ```
 
-### Интеграция в Canonical Memory Protocol (новый шаг F2.5)
+### Integration into the Canonical Memory Protocol (new step F2.5)
 
 ```
 F2.5: Etir Activation (L3.5)
     → activation_map = EtirEngine.activate(query, seed_ids)
-    → если latency > 50ms → Circuit Breaker → fallback Graphiti search
-    → context_window передаётся в F3 (Context Builder)
+    → if latency > 50ms → Circuit Breaker → fallback Graphiti search
+    → context_window is passed to F3 (Context Builder)
 ```
 
 ---
 
 ## 📜 RFC0012 — Taxonomy/Domain Hierarchy 
 
-> **Назначение**: структурированная таксономия знаний. Вместо плоского множества Concept-узлов — иерархия `Domain → Concept → Fact`. Поиск по домену сужает пространство, снижает шум и даёт taxonomy-based retrieval.
+> **Purpose**: a structured knowledge taxonomy. Instead of a flat set of Concept nodes — a hierarchy `Domain → Concept → Fact`. Searching by domain narrows the space, reduces noise, and enables taxonomy-based retrieval.
 
-### Проблема без таксономии
+### The problem without a taxonomy
 
 ```
-Запрос: "вода кипит при 100°C"
-Без Domain: поиск по всем 500k узлов → шум из медицины, истории, биологии
-С Domain:   поиск только в domain:physics → 3k узлов → точный результат
+Query: "water boils at 100°C"
+Without Domain: search across all 500k nodes → noise from medicine, history, biology
+With Domain:   search only in domain:physics → 3k nodes → precise result
 ```
 
-### Иерархия узлов
+### Node hierarchy
 
 ```
 :Domain {id: "domain:physics"}
     ↓ [:SUBDOMAIN_OF]
 :Domain {id: "domain:thermodynamics"}
-    ↓ (содержит :Concept через [:BELONGS_TO])
+    ↓ (contains :Concept via [:BELONGS_TO])
 :Concept {id: "concept:boiling_point"}
-    ↓ (связан с :Fact через [:CONCEPT_OF])
-:Fact {content: "Вода кипит при 100°C при 1 атм"}
+    ↓ (linked to :Fact via [:CONCEPT_OF])
+:Fact {content: "Water boils at 100°C at 1 atm"}
 ```
 
-### Cypher: создание домена и поиск по таксономии
+### Cypher: creating a domain and searching by taxonomy
 
 ```cypher
-// Создать домен и поддомен
+// Create a domain and a subdomain
 MERGE (:Domain {id: "domain:physics", name: "Physics"})
 MERGE (:Domain {id: "domain:thermodynamics", name: "Thermodynamics"})
 MATCH (sub:Domain {id: "domain:thermodynamics"}), (parent:Domain {id: "domain:physics"})
 MERGE (sub)-[:SUBDOMAIN_OF]->(parent)
 
-// Связать Concept с Domain
+// Link a Concept to a Domain
 MATCH (c:Concept {id: "concept:boiling_point"}), (d:Domain {id: "domain:thermodynamics"})
 MERGE (c)-[:BELONGS_TO]->(d)
 
-// taxonomy_search: поиск фактов в домене и всех поддоменах
+// taxonomy_search: search for facts in a domain and all its subdomains
 MATCH (d:Domain {id: $domain_id})
 OPTIONAL MATCH (sub:Domain)-[:SUBDOMAIN_OF*0..]->(d)
 WITH collect(d.id) + collect(sub.id) AS domain_ids
@@ -12314,14 +12294,14 @@ LIMIT $limit
 async def taxonomy_search(
     self,
     query: str,
-    domain_id: str,           # "domain:physics" или "domain:thermodynamics"
+    domain_id: str,           # "domain:physics" or "domain:thermodynamics"
     include_subdomains: bool = True,
     limit: int = 20
 ) -> list[dict]:
     """
-    RFC0012: поиск фактов в домене + опционально во всех поддоменах.
-    Сужает пространство поиска: вместо всего графа — только релевантный домен.
-    Используется как предфильтр перед Etir activation (шаг F2.4).
+    RFC0012: search for facts in a domain + optionally in all subdomains.
+    Narrows the search space: instead of the whole graph — only the relevant domain.
+    Used as a prefilter before Etir activation (step F2.4).
     """
     cypher = """
     MATCH (d:Domain {id: $domain_id})
@@ -12345,90 +12325,78 @@ async def taxonomy_search(
     })
 ```
 
-### Интеграция в Canonical Memory Protocol (новый шаг F2.4)
+### Integration into the Canonical Memory Protocol (new step F2.4)
 
 ```
 F2.4: Taxonomy Filter (RFC0012)
-    → если запрос содержит domain_hint → taxonomy_search(domain_id)
-    → результаты передаются в F2.5 Etir как seed_ids
-    → без domain_hint → шаг пропускается, идём сразу в F2.5
+    → if the query contains domain_hint → taxonomy_search(domain_id)
+    → results are passed to F2.5 Etir as seed_ids
+    → without domain_hint → the step is skipped, go straight to F2.5
 ```
 
-### Инварианты RFC0012
+### Invariants RFC0012
 
 ```
-I1: ∀ Concept: может иметь 0 или 1 :Domain (не обязательно)
-I2: Домены образуют DAG (directed acyclic graph), не циклы
-I3: taxonomy_search() никогда не пересекает границу домена без явного [:SUBDOMAIN_OF]
-I4: :Domain узлы не проходят через MGL — они структурные, не эпистемические
-I5: При GC :Domain не удаляется если есть хотя бы 1 активный :Concept
+I1: ∀ Concept: may have 0 or 1 :Domain (not required)
+I2: Domains form a DAG (directed acyclic graph), not cycles
+I3: taxonomy_search() never crosses a domain boundary without an explicit [:SUBDOMAIN_OF]
+I4: :Domain nodes do not pass through the MGL — they are structural, not epistemic
+I5: During GC a :Domain is not deleted if it has at least 1 active :Concept
 ```
 
-### Seed Domains для Phase 0
+### Seed Domains for Phase 0
 
 ```python
-# При инициализации системы создать базовые домены
+# On system initialization, create the base domains
 SEED_DOMAINS = [
     {"id": "domain:science",       "name": "Science"},
     {"id": "domain:physics",       "name": "Physics",       "parent": "domain:science"},
     {"id": "domain:chemistry",     "name": "Chemistry",     "parent": "domain:science"},
     {"id": "domain:biology",       "name": "Biology",       "parent": "domain:science"},
     {"id": "domain:mathematics",   "name": "Mathematics",   "parent": "domain:science"},
-    {"id": "domain:agent_memory",  "name": "Agent Memory"},  # для внутренних фактов агента
-    {"id": "domain:user_context",  "name": "User Context"},  # для персонального контекста
+    {"id": "domain:agent_memory",  "name": "Agent Memory"},  # for the agent's internal facts
+    {"id": "domain:user_context",  "name": "User Context"},  # for personal context
 ]
 ```
 
 ---
 
-> 🔭 **Будущая интеграция — Engram (DeepSeek, 2026)**
+> 🔭 **Future integration — Engram (DeepSeek, 2026)**
 >
-> Engram — это внутренний механизм трансформера DeepSeek, **не компонент Velantrim**.
-> Он работает на уровне N-gram hash → Conditional Memory Table внутри модели и
-> активируется автоматически при использовании DeepSeek v4+ без каких-либо действий
-> со стороны Velantrim. Velantrim не реализует и не контролирует Engram.
+> Engram is an internal mechanism of the DeepSeek transformer, **not a component of Velantrim**.
+> It operates at the level of N-gram hash → Conditional Memory Table inside the model and
+> activates automatically when using DeepSeek v4+ without any action
+> on Velantrim's part. Velantrim does not implement or control Engram.
 >
-> **Рекомендация для DeepSeek v4+**: при использовании этих моделей в pipeline
-> присваивать фактам, поступающим через них, `source_type = "engram_memory"`
-> в Source Trust Layer с повышенным `trust_score = 0.80` — как поступающим
-> из верифицированной внутренней памяти модели.
+> **Recommendation for DeepSeek v4+**: when using these models in the pipeline,
+> assign facts coming through them `source_type = "engram_memory"`
+> in the Source Trust Layer with an elevated `trust_score = 0.80` — as coming
+> from the model's verified internal memory.
 >
-> Etir (Velantrim) и Engram (DeepSeek) не конкурируют: Etir управляет явной
-> верифицированной памятью снаружи трансформера, Engram — имплицитной
-> нейронной памятью внутри него. RFC0006 (`validate_engram_config`) сохраняется
-> как защита от случайного включения `ENGRAM_ENABLED=True` с API-моделями.
-
----
-
-## 📜 RFC0013 — L2 Medium-Term Memory CORE 
-
-> См. раздел "L2: Среднесрочная память" выше для полной спецификации.
-
----
-
-## 📜 RFC0014 — L2.5 Staging Layer 
-
-> См. раздел "L2.5: Staging Layer" выше для полной спецификации.
+> Etir (Velantrim) and Engram (DeepSeek) do not compete: Etir manages explicit
+> verified memory outside the transformer, Engram — implicit
+> neural memory inside it. RFC0006 (`validate_engram_config`) remains
+> as a safeguard against accidentally enabling `ENGRAM_ENABLED=True` with API models.
 
 ---
 
 ## 📜 RFC0015 — TruthGateWithESM 
 
-> **Статус**: Canonical · **Фаза**: Phase 0+
+> **Status**: Canonical · **Phase**: Phase 0+
 >
-> Единая точка входа для промоута в L3. Координирует MemoryGuardian + EpistemicStateMachine атомарно.
+> A single entry point for promotion to L3. Coordinates MemoryGuardian + EpistemicStateMachine atomically.
 
-### Проблема
+### The problem
 
-MemoryGuardian и EpistemicStateMachine существовали независимо:
-- Guardian валидирует факт
-- ESM управляет жизненным циклом
-- **Нет гарантии** что валидация Guardian → правильный ESM-переход
-- ResourceAwareScheduler мог промоутить в L3 без перевода ESM в Validated
+MemoryGuardian and EpistemicStateMachine existed independently:
+- Guardian validates a fact
+- ESM manages the lifecycle
+- **No guarantee** that Guardian validation → the correct ESM transition
+- ResourceAwareScheduler could promote to L3 without moving the ESM into Validated
 
-### Решение
+### The solution
 
-Фасад-оркестратор `TruthGateWithESM` объединяет обе операции:
+The facade-orchestrator `TruthGateWithESM` unifies both operations:
 
 ```python
 @dataclass
@@ -12439,37 +12407,37 @@ class TruthGateResult:
     reason: str             # TRUTH_GATE_PASSED / LOW_EVIDENCE / CONFLICT_DETECTED
     emotional_salience: float = 0.0
 
-# 📎 Каноническая реализация TruthGateWithESM — см. раздел «19. TruthGateWithESM»
-# Здесь: концептуальная схема операций (Guardian→ESM→RingZero→L3 промоут)
+# 📎 Canonical implementation of TruthGateWithESM — see section "19. TruthGateWithESM"
+# Here: a conceptual schema of the operations (Guardian→ESM→RingZero→L3 promote)
 ```
 
 ### Emotional Ring Zero
 
-**Концепция:** высокая эмоциональная значимость → иммунитет к decay
+**Concept:** high emotional salience → immunity to decay
 
 ```python
 if emotional_salience > TRUTH.EMOTIONAL_RING_ZERO:  # 0.85
     await self.esm.freeze(item["id"])
-    # Узел становится immutable - не подвержен GC и decay
+    # The node becomes immutable - not subject to GC and decay
 ```
 
-### Инварианты RFC0015
+### Invariants RFC0015
 
 ```
-I1: Единственная точка входа для промоута staging → L3.
-    НЕ создавать обходные пути в L3 мимо этого класса.
+I1: The single entry point for staging → L3 promotion.
+    Do NOT create bypasses into L3 around this class.
 
-I2: TruthGateResult содержит ВСЮ информацию о результате валидации.
-    Caller не должен интерпретировать внутренние состояния Guardian/ESM.
+I2: TruthGateResult contains ALL information about the validation result.
+    The caller must not interpret the internal Guardian/ESM states.
 
-I3: Emotional Ring Zero (salience > 0.85) → ESM.freeze() автоматически.
-    Не требует явного вызова freeze() в коде caller'а.
+I3: Emotional Ring Zero (salience > 0.85) → ESM.freeze() automatically.
+    Does not require an explicit freeze() call in the caller's code.
 
-I4: При rejection дубликата: TruthGateResult.passed = False,
-    но esm_state = "Validated" (узел уже был в L3).
+I4: On rejection of a duplicate: TruthGateResult.passed = False,
+    but esm_state = "Validated" (the node was already in L3).
 ```
 
-### Использование в ResourceAwareScheduler
+### Usage in ResourceAwareScheduler
 
 ```python
 # staging_scheduler.py
@@ -12480,7 +12448,7 @@ async def _promote_item(self, item) -> int:
         await self.staging.update_status(item.id, "PROMOTED")
         return 1
     else:
-        # Дубликат - считаем успехом (узел уже есть)
+        # Duplicate - count as success (the node already exists)
         status = "PROMOTED" if result.reason == "DUPLICATE" else "REJECTED"
         await self.staging.update_status(item.id, status)
         return 0
@@ -12488,23 +12456,23 @@ async def _promote_item(self, item) -> int:
 
 ### Correction Mechanism 
 
-**Проблема**: Emotional Ring Zero freeze (salience > 0.85) может заморозить ЛОЖНУЮ тему навсегда.
+**Problem**: an Emotional Ring Zero freeze (salience > 0.85) can freeze a FALSE topic forever.
 
-**Решение**: Rollback freeze при обнаружении [:CONTRADICTS] после заморозки.
+**Solution**: Rollback the freeze when a [:CONTRADICTS] is detected after the freeze.
 
 ```python
 # truth_gate_correction.py
 class TruthGateCorrectionMechanism:
     """
-    Мониторит замороженные узлы и размораживает при появлении противоречий.
+    Monitors frozen nodes and unfreezes them when contradictions appear.
     """
 
     async def monitor_frozen_nodes(self):
-        """Вызывается ReactivationEngine каждые 6 часов"""
+        """Called by ReactivationEngine every 6 hours"""
         query = """
         MATCH (n:Fact {is_frozen: true})
         OPTIONAL MATCH (n)<-[c:CONTRADICTS]-(other)
-        WHERE c.timestamp > n.frozen_at  // Противоречие ПОСЛЕ заморозки
+        WHERE c.timestamp > n.frozen_at  // Contradiction AFTER the freeze
         RETURN n.id, collect(other.id) as contradictions
         """
         results = await self.graph.execute_cypher(query)
@@ -12515,8 +12483,8 @@ class TruthGateCorrectionMechanism:
 
     async def _unfreeze_with_audit(self, node_id: str, contradictions: list):
         """
-        Разморозить узел + создать audit trail.
-        НЕ удаляем — переводим в ESM.Contradicted.
+        Unfreeze the node + create an audit trail.
+        We do NOT delete — we move it into ESM.Contradicted.
         """
         await self.esm.unfreeze(node_id)
         await self.esm.transition(node_id, "Contradicted", 
@@ -12535,161 +12503,161 @@ class TruthGateCorrectionMechanism:
         )
 ```
 
-**Инварианты:**
+**Invariants:**
 
 ```
-I5: Frozen узел может быть разморожен ТОЛЬКО при [:CONTRADICTS] ПОСЛЕ freeze.
-I6: Unfreeze НЕ удаляет узел — переводит в ESM.Contradicted для ручного review.
-I7: Каждый unfreeze создаёт audit trail (кто, когда, почему).
-I8: Ring Zero узлы (is_ring_zero=true) НИКОГДА не размораживаются автоматически.
+I5: A frozen node can be unfrozen ONLY on a [:CONTRADICTS] AFTER the freeze.
+I6: Unfreeze does NOT delete the node — it moves it into ESM.Contradicted for manual review.
+I7: Every unfreeze creates an audit trail (who, when, why).
+I8: Ring Zero nodes (is_ring_zero=true) are NEVER unfrozen automatically.
 ```
 
-**Интеграция**:
-- ReactivationEngine вызывает `monitor_frozen_nodes()` каждые 6 часов
-- MetaSupervisor получает alert при каждом unfreeze
-- Audit Layer логирует для GET /memory/audit/corrections
+**Integration**:
+- ReactivationEngine calls `monitor_frozen_nodes()` every 6 hours
+- MetaSupervisor receives an alert on every unfreeze
+- The Audit Layer logs for GET /memory/audit/corrections
 
 ---
 
 ## 📜 RFC0016 — L1.5 Velum 
 
-> **Статус**: Canonical · **Фаза**: Phase 0+
+> **Status**: Canonical · **Phase**: Phase 0+
 >
-> Velantrim Synaptic Pre-Graph Layer - детектор ранних связей между сущностями.
+> Velantrim Synaptic Pre-Graph Layer - a detector of early connections between entities.
 
-### Назначение
+### Purpose
 
-L1.5 Velum живёт между L1 (эпизоды) и L2 (кластеры):
-- L1 накапливает эпизоды
-- **Velum замечает связи** между сущностями (co-occurrence)
-- L2 строит кластеры тем
+L1.5 Velum lives between L1 (episodes) and L2 (clusters):
+- L1 accumulates episodes
+- **Velum notices connections** between entities (co-occurrence)
+- L2 builds topic clusters
 
-Аналог в нейробиологии: **LTP (Long-Term Potentiation)** - синаптическое усиление до долгосрочного закрепления.
+The analogy in neurobiology: **LTP (Long-Term Potentiation)** - synaptic strengthening prior to long-term consolidation.
 
 ### Dataclasses
 
-> 📎 **Каноническая реализация** `VelumEdge` и `VelumSignal` — см. раздел «20. L1.5 Velum».
+> 📎 **Canonical implementation** of `VelumEdge` and `VelumSignal` — see section "20. L1.5 Velum".
 
-### Механизм работы
+### How it works
 
 ```
 L1 INSERT → Velum.observe_episode(episode_id, entities)
   ↓
-Обновить weight для всех пар сущностей в скользящем окне (5 эпизодов)
+Update weight for all entity pairs in the sliding window (5 episodes)
   ↓
-Если weight ≥ 0.6 AND count ≥ 3
+If weight ≥ 0.6 AND count ≥ 3
   ↓
-VelumSignal → ReactivationEngine + L2 (ускоренный промоут кластера)
+VelumSignal → ReactivationEngine + L2 (accelerated cluster promotion)
 ```
 
-### Основные методы
+### Core methods
 
 **observe_episode()**
 ```python
 async def observe_episode(self, episode_id: str, entities: list[str]) -> list[VelumSignal]:
-    # Вызывается из L1 Episodic Buffer при каждом INSERT
-    # Возвращает VelumSignal при достижении порога
+    # Called from the L1 Episodic Buffer on every INSERT
+    # Returns a VelumSignal when the threshold is reached
 ```
 
 **on_session_end()**
 ```python
 async def on_session_end(self) -> list[VelumSignal]:
-    # При смене сессии (30 мин неактивности):
-    # - Сильные рёбра (weight ≥ 0.6) → VelumSignal "SESSION_END" → L2
-    # - Слабые рёбра → decay × 0.3
+    # On session change (30 min of inactivity):
+    # - Strong edges (weight ≥ 0.6) → VelumSignal "SESSION_END" → L2
+    # - Weak edges → decay × 0.3
 ```
 
 **get_neighbors()**
 ```python
 def get_neighbors(self, entity: str, min_weight: float = 0.3) -> list[tuple[str, float]]:
-    # Используется:
-    # - HybridRetriever: расширение контекста внутри сессии
-    # - ReactivationEngine: подсказка что укреплять
+    # Used by:
+    # - HybridRetriever: context expansion within a session
+    # - ReactivationEngine: a hint about what to strengthen
 ```
 
-### Конфигурация (из velantrim_config.py)
+### Configuration (from velantrim_config.py)
 
 ```python
-VELUM_CO_OCCUR_THRESHOLD = 3       # совместных появлений → запись
-VELUM_WINDOW_EPISODES = 5          # окно наблюдения
-VELUM_MAX_EDGES = 1000             # максимум рёбер до GC
-VELUM_PROMOTE_WEIGHT = 0.6         # вес → сигнал L2
-VELUM_DECAY_PER_SESSION = 0.3      # decay при смене сессии
-SAE_DECAY_STANDARD  = 0.18   # P1-E FIX (I55.1): exp коэффициент для обычных рёбер
-SAE_DECAY_ANALOGY   = 0.12   # P1-E FIX (I55.1): exp коэффициент для METAPHOR_OF/ANALOGOUS_TO
+VELUM_CO_OCCUR_THRESHOLD = 3       # co-occurrences → record
+VELUM_WINDOW_EPISODES = 5          # observation window
+VELUM_MAX_EDGES = 1000             # maximum edges before GC
+VELUM_PROMOTE_WEIGHT = 0.6         # weight → L2 signal
+VELUM_DECAY_PER_SESSION = 0.3      # decay on session change
+SAE_DECAY_STANDARD  = 0.18   # P1-E FIX (I55.1): exp coefficient for ordinary edges
+SAE_DECAY_ANALOGY   = 0.12   # P1-E FIX (I55.1): exp coefficient for METAPHOR_OF/ANALOGOUS_TO
 ```
 
-### Инварианты RFC0016
+### Invariants RFC0016
 
 ```
-I1: Velum хранит ТОЛЬКО рёбра (entity_a, entity_b, weight).
-    НЕ хранит содержимое эпизодов - только наблюдение о связи.
+I1: Velum stores ONLY edges (entity_a, entity_b, weight).
+    It does NOT store episode content - only the observation of a connection.
 
-I2: При смене сессии:
+I2: On session change:
     weight < VELUM_PROMOTE_WEIGHT → decay × VELUM_DECAY_PER_SESSION
-    weight ≥ VELUM_PROMOTE_WEIGHT → VelumSignal → L2 на ускоренный промоут
+    weight ≥ VELUM_PROMOTE_WEIGHT → VelumSignal → L2 for accelerated promotion
 
-I3: Velum НЕ является источником фактов. Graph = Truth не нарушается.
-    Velum → только подсказка для планировщика (ReactivationEngine, L2 clustering).
+I3: Velum is NOT a source of facts. Graph = Truth is not violated.
+    Velum → only a hint for the scheduler (ReactivationEngine, L2 clustering).
 
-I4: Velum не персистентен между сессиями по умолчанию.
-    Опционально (Phase 1): сохранять топ-N рёбер в SQLite для seed.
+I4: Velum is not persistent across sessions by default.
+    Optionally (Phase 1): save the top-N edges in SQLite for seeding.
 ```
 
-### Интеграция в Canonical Protocol
+### Integration into the Canonical Protocol
 
 ```
 F1.5: Velum Context Hint (RFC0016)
     → Velum.get_neighbors(query_entities, min_weight=0.3)
-    → Добавить соседей в seed для Etir (шаг F2.5)
-    → Fire-and-forget hint - не блокирует Fast Path
+    → Add the neighbors to the seed for Etir (step F2.5)
+    → Fire-and-forget hint - does not block the Fast Path
 ```
 
-### GC (сборка мусора)
+### GC (garbage collection)
 
-При > VELUM_MAX_EDGES (1000):
-- Удалить 25% слабейших рёбер
-- Очистить _entity_index
+When > VELUM_MAX_EDGES (1000):
+- Remove 25% of the weakest edges
+- Clear _entity_index
 
 ---
 
 ## 📜 RFC0017 — Weighted Semantic Decay 
 
-> **Статус**: Canonical · **Фаза**: Phase 1
+> **Status**: Canonical · **Phase**: Phase 1
 >
-> Критический компонент для точности L3.
+> Critical component for L3 accuracy.
 >
-> Механизм удаления противоречивых и устаревших фактов из L3 графа на основе семантической близости и эпистемического веса.
+> Mechanism for removing contradictory and outdated facts from the L3 graph based on semantic proximity and epistemic weight.
 
-### Проблема
+### Problem
 
-Без Weighted Semantic Decay:
-- L3 граф растёт бесконечно (накопление дубликатов и противоречий)
-- Устаревшие факты остаются с `importance > 0.1` → никогда не достигают Collapsed
-- [:CONTRADICTS] рёбра создаются, но конфликтующие узлы не удаляются
-- Память становится "засорённой" — низкая точность поиска
+Without Weighted Semantic Decay:
+- The L3 graph grows indefinitely (accumulation of duplicates and contradictions)
+- Outdated facts remain with `importance > 0.1` → never reach Collapsed
+- [:CONTRADICTS] edges are created, but conflicting nodes are not removed
+- Memory becomes "cluttered" — low search accuracy
 
-### Решение
+### Solution
 
-Периодический (каждые 24 часа) анализ L3 графа:
+Periodic (every 24 hours) analysis of the L3 graph:
 
 ```python
 # weighted_semantic_decay.py
 class WeightedSemanticDecay:
     """
-    Находит семантически близкие узлы с противоречиями и применяет decay.
+    Finds semantically close nodes with contradictions and applies decay.
     """
 
     async def run_decay_cycle(self):
-        """Основной цикл — вызывается по расписанию (cron/APScheduler)"""
-        # 1. Найти все Contradicted узлы
+        """Main loop — invoked on a schedule (cron/APScheduler)"""
+        # 1. Find all Contradicted nodes
         contradicted = await self._find_contradicted_nodes()
         
-        # Защита от цепной реакции
-        max_cascade_nodes = 50  # Лимит узлов за один цикл
+        # Protection against a chain reaction
+        max_cascade_nodes = 50  # Node limit per cycle
         total_penalized = 0
         
-        # 2. Для каждого найти семантически близкие (cosine > 0.85)
+        # 2. For each, find semantically close ones (cosine > 0.85)
         for node in contradicted:
             if total_penalized >= max_cascade_nodes:
                 logger.warning(
@@ -12701,10 +12669,10 @@ class WeightedSemanticDecay:
             
             similar = await self._find_similar_nodes(node, threshold=0.85)
             
-            # Лимит на количество соседей для одного узла
-            similar = similar[:10]  # Максимум 10 соседей на узел
+            # Limit on the number of neighbors for a single node
+            similar = similar[:10]  # At most 10 neighbors per node
             
-            # 3. Применить weighted decay на основе epistemic_state
+            # 3. Apply weighted decay based on epistemic_state
             for sim_node in similar:
                 if total_penalized >= max_cascade_nodes:
                     break
@@ -12713,39 +12681,39 @@ class WeightedSemanticDecay:
                 await self._apply_decay(sim_node.id, penalty)
                 total_penalized += 1
         
-        # 4. Проверить узлы с importance < 0.1 → ESM.transition(Collapsed)
+        # 4. Check nodes with importance < 0.1 → ESM.transition(Collapsed)
         await self._collapse_low_importance_nodes()
         
-        # Метрика для мониторинга
+        # Metric for monitoring
         decay_cascade_size.set(total_penalized)
         if total_penalized >= max_cascade_nodes:
             decay_cascade_limit_hit.inc()
 
     def _calculate_penalty(self, contradicted_node, similar_node) -> float:
         """
-        Штраф зависит от:
-        - Семантической близости (cosine similarity)
-        - Epistemic state похожего узла
-        - Количества [:CONTRADICTS] рёбер
+        The penalty depends on:
+        - Semantic proximity (cosine similarity)
+        - Epistemic state of the similar node
+        - Number of [:CONTRADICTS] edges
         """
         cosine = similar_node.similarity  # 0.85 - 1.0
         state_weight = {
-            "Validated": 0.3,      # слабый штраф (может быть правда)
-            "Supported": 0.5,      # средний
-            "Hypothesized": 0.7,   # сильный
-            "Contradicted": 1.0    # максимальный (противоречие противоречия)
+            "Validated": 0.3,      # weak penalty (may be true)
+            "Supported": 0.5,      # medium
+            "Hypothesized": 0.7,   # strong
+            "Contradicted": 1.0    # maximum (contradiction of a contradiction)
         }
         
         base_penalty = 0.15
-        semantic_factor = (cosine - 0.85) / 0.15  # нормализация 0.85-1.0 → 0-1
+        semantic_factor = (cosine - 0.85) / 0.15  # normalization 0.85-1.0 → 0-1
         state_factor = state_weight.get(similar_node.epistemic_state, 0.5)
         
         return base_penalty * semantic_factor * state_factor
 
     async def _apply_decay(self, node_id: str, penalty: float):
         """
-        Снизить importance узла.
-        Если упадёт < 0.1 → следующий GC переведёт в Collapsed.
+        Lower the node's importance.
+        If it drops < 0.1 → the next GC will move it to Collapsed.
         """
         query = """
         MATCH (n:Fact {id: $node_id})
@@ -12756,8 +12724,8 @@ class WeightedSemanticDecay:
         """
         result = await self.graph.execute_cypher(query, 
             {"node_id": node_id, "penalty": penalty})
-        # P9-FIX БАГ-5: kwargs→positional dict (соответствует стилю всего документа строки 9887, 10166)
-        # P9-FIX БАГ-9: max(0.0, ...) — importance не уходит в отрицательные значения
+        # P9-FIX BUG-5: kwargs→positional dict (matches the style of the whole document, lines 9887, 10166)
+        # P9-FIX BUG-9: max(0.0, ...) — importance does not go negative
         
         logger.info(
             f"Decay applied: {node_id} penalty={penalty:.3f} "
@@ -12766,13 +12734,13 @@ class WeightedSemanticDecay:
 
     async def _collapse_low_importance_nodes(self):
         """
-        Узлы с importance < 0.1 → ESM.Collapsed → Immutable Raw Memory
+        Nodes with importance < 0.1 → ESM.Collapsed → Immutable Raw Memory
         """
         query = """
         MATCH (n:Fact)
         WHERE n.importance < 0.1 
           AND n.epistemic_state <> 'Collapsed'
-          AND n.is_ring_zero <> true  // Ring Zero защищён
+          AND n.is_ring_zero <> true  // Ring Zero is protected
         RETURN n.id, n.importance, n.epistemic_state
         """
         candidates = await self.graph.execute_cypher(query)
@@ -12784,57 +12752,57 @@ class WeightedSemanticDecay:
                 reason=f"WEIGHTED_DECAY: importance={node['importance']:.3f}"
             )
             
-            # Архивировать в S3 перед удалением из operational графа
+            # Archive to S3 before removing from the operational graph
             await self.archive.store_collapsed_node(node['id'])
 ```
 
-### Конфигурация
+### Configuration
 
 ```python
 # velantrim_config.py
 class DecayConfig:
-    SEMANTIC_SIMILARITY_THRESHOLD = 0.85   # cosine > 0.85 → кандидаты
-    BASE_DECAY_PENALTY = 0.15              # базовый штраф
+    SEMANTIC_SIMILARITY_THRESHOLD = 0.85   # cosine > 0.85 → candidates
+    BASE_DECAY_PENALTY = 0.15              # base penalty
     COLLAPSE_IMPORTANCE_THRESHOLD = 0.1    # importance < 0.1 → Collapsed
-    DECAY_SCHEDULE_HOURS = 24              # частота запуска
-    PROTECT_RING_ZERO = True               # Ring Zero иммунитет
+    DECAY_SCHEDULE_HOURS = 24              # run frequency
+    PROTECT_RING_ZERO = True               # Ring Zero immunity
 
-    # Защита от цепной реакции
-    MAX_CASCADE_NODES_PER_CYCLE = 50       # лимит узлов за цикл
-    MAX_NEIGHBORS_PER_NODE = 10            # лимит соседей на узел
+    # Protection against a chain reaction
+    MAX_CASCADE_NODES_PER_CYCLE = 50       # node limit per cycle
+    MAX_NEIGHBORS_PER_NODE = 10            # neighbor limit per node
 ```
 
-### Инварианты RFC0017
+### RFC0017 Invariants
 
 ```
-I1: Weighted Decay применяется ТОЛЬКО к узлам с [:CONTRADICTS] рёбрами или близким к ним.
-    НЕ трогаем Validated узлы без противоречий.
+I1: Weighted Decay is applied ONLY to nodes with [:CONTRADICTS] edges or close to them.
+    We do NOT touch Validated nodes without contradictions.
 
-I2: Ring Zero узлы (is_ring_zero=true) НИКОГДА не получают decay penalty.
+I2: Ring Zero nodes (is_ring_zero=true) NEVER receive a decay penalty.
 
-I3: Перед Collapsed → обязательная архивация в S3 (Immutable Raw Memory).
+I3: Before Collapsed → mandatory archiving to S3 (Immutable Raw Memory).
 
-I4: Decay — это снижение importance, НЕ удаление.
+I4: Decay is a reduction of importance, NOT deletion.
 
-I5: Если decay_count > 5 для одного узла → alert ("Частые противоречия").
-    Метрика decay_count инкрементируется при каждом применении penalty.
-    Удаление происходит только при GC после Collapsed.
+I5: If decay_count > 5 for a single node → alert ("Frequent contradictions").
+    The decay_count metric is incremented on every penalty application.
+    Deletion happens only during GC after Collapsed.
 
-I6: MAX_CASCADE_NODES_PER_CYCLE лимит защищает от цепной реакции.
-    Если лимит достигнут → остальные узлы обрабатываются в следующем цикле.
+I6: The MAX_CASCADE_NODES_PER_CYCLE limit protects against a chain reaction.
+    If the limit is reached → the remaining nodes are processed in the next cycle.
 ```
 
-### Интеграция
+### Integration
 
 ```python
-# main.py или scheduler.py
+# main.py or scheduler.py
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from weighted_semantic_decay import WeightedSemanticDecay
 
 scheduler = AsyncIOScheduler()
 decay_engine = WeightedSemanticDecay(graph, esm, archive)
 
-# Запуск каждые 24 часа
+# Run every 24 hours
 scheduler.add_job(
     decay_engine.run_decay_cycle,
     'interval',
@@ -12843,7 +12811,7 @@ scheduler.add_job(
 )
 ```
 
-### Метрики
+### Metrics
 
 ```python
 # Prometheus metrics
@@ -12853,51 +12821,51 @@ nodes_collapsed_total = Counter('velantrim_nodes_collapsed_total')
 decay_cycle_duration_seconds = Histogram('velantrim_decay_cycle_duration_seconds')
 ```
 
-### Пример работы
+### Example of Operation
 
 ```
-День 1: Факт A (importance=0.8, Validated)
-        Факт B (importance=0.7, Validated, semantic_similarity=0.92 с A)
+Day 1: Fact A (importance=0.8, Validated)
+        Fact B (importance=0.7, Validated, semantic_similarity=0.92 with A)
         
-День 5: Факт A получает [:CONTRADICTS] → переходит в Contradicted
+Day 5: Fact A receives [:CONTRADICTS] → transitions to Contradicted
         
-День 6: Decay cycle:
-          - Находит B (cosine=0.92 с A)
+Day 6: Decay cycle:
+          - Finds B (cosine=0.92 with A)
           - penalty = 0.15 × ((0.92-0.85)/0.15) × 0.3 = 0.021
           - B.importance = 0.7 - 0.021 = 0.679
         
-День 30: После 5 циклов decay:
+Day 30: After 5 decay cycles:
           - B.importance = 0.574
-          - Если новых подтверждений нет → продолжает падать
+          - If there are no new confirmations → continues to fall
         
-День 60: B.importance < 0.1 → ESM.Collapsed → архив в S3
+Day 60: B.importance < 0.1 → ESM.Collapsed → archive to S3
 ```
 
-### Semantic Quarantine Zone (опционально)
+### Semantic Quarantine Zone (optional)
 
-**Концепция**: Временная изоляция узлов, близких к противоречивым, перед применением decay.
+**Concept**: Temporary isolation of nodes close to contradictory ones before applying decay.
 
 ```python
 class SemanticQuarantine:
     """
-    Узлы, семантически близкие к Contradicted, помещаются в карантин
-    вместо немедленного применения decay penalty.
+    Nodes semantically close to Contradicted are placed into quarantine
+    instead of immediately applying a decay penalty.
 
-    Преимущества:
-    - Даёт время на появление подтверждающих/опровергающих фактов
-    - Предотвращает преждевременное удаление валидных узлов
-    - Снижает риск цепной реакции
+    Advantages:
+    - Gives time for confirming/refuting facts to appear
+    - Prevents premature deletion of valid nodes
+    - Reduces the risk of a chain reaction
     """
 
     async def quarantine_node(self, node_id: str, source_contradicted: str):
         """
-        Поместить узел в карантин на 7 дней
+        Place the node into quarantine for 7 days
         
-        В карантине узел:
-        - Остаётся в своём epistemic_state (не деградирует)
-        - Помечается флагом in_quarantine=true
-        - Не участвует в Etir активации (пониженный приоритет)
-        - Мониторится на новые [:SUPPORTS] или [:CONTRADICTS]
+        While in quarantine, the node:
+        - Remains in its epistemic_state (does not degrade)
+        - Is marked with the flag in_quarantine=true
+        - Does not participate in Etir activation (lowered priority)
+        - Is monitored for new [:SUPPORTS] or [:CONTRADICTS]
         """
         query = """
         MATCH (n:Fact {id: $node_id})
@@ -12913,24 +12881,24 @@ class SemanticQuarantine:
 
     async def review_quarantine(self):
         """
-        Ежедневная проверка карантина (вызывается вместе с decay_cycle)
+        Daily quarantine review (invoked together with decay_cycle)
         
-        Для каждого узла в карантине:
-        - Если появились [:SUPPORTS] → снять карантин, восстановить importance
-        - Если появились [:CONTRADICTS] → применить decay, выход из карантина
-        - Если истёк срок без изменений → применить decay
+        For each node in quarantine:
+        - If [:SUPPORTS] appeared → lift quarantine, restore importance
+        - If [:CONTRADICTS] appeared → apply decay, exit quarantine
+        - If the term expired without changes → apply decay
         """
         query = """
         MATCH (n:Fact)
         WHERE n.in_quarantine = true
           AND n.quarantine_expires < datetime()
-        RETURN n.id, n.importance  -- P9-FIX БАГ-6: n.importance_score → n.importance (нет такого поля)
+        RETURN n.id, n.importance  -- P9-FIX BUG-6: n.importance_score → n.importance (no such field)
         """
         
         expired = await self.graph.execute_cypher(query)
         
         for node in expired:
-            # Проверить, что произошло за время карантина
+            # Check what happened during the quarantine period
             supports = await self._count_new_supports(node['id'])
             contradicts = await self._count_new_contradicts(node['id'])
             
@@ -12939,51 +12907,51 @@ class SemanticQuarantine:
             elif contradicts > 0:
                 await self._apply_decay_and_release(node['id'])
             else:
-                # Нет изменений — мягкий decay
+                # No changes — soft decay
                 await self._apply_decay_and_release(node['id'], penalty_multiplier=0.5)
 
-# Интеграция с WeightedSemanticDecay:
-# Вместо немедленного decay → сначала quarantine_node()
-# Decay применяется только после review_quarantine()
+# Integration with WeightedSemanticDecay:
+# Instead of immediate decay → first quarantine_node()
+# Decay is applied only after review_quarantine()
 ```
 
-**Когда использовать**:
-- Production системы, где цена ошибочного удаления высока
-- Домены с высокой неопределённостью и частыми изменениями
-- Системы с активным пользовательским фидбеком
+**When to use**:
+- Production systems where the cost of erroneous deletion is high
+- Domains with high uncertainty and frequent changes
+- Systems with active user feedback
 
-**Когда НЕ использовать**:
-- MVP и Phase 0 (избыточная сложность)
-- Системы с низкой частотой противоречий
-- Когда важна скорость очистки графа
+**When NOT to use**:
+- MVP and Phase 0 (excessive complexity)
+- Systems with a low frequency of contradictions
+- When the speed of graph cleanup matters
 
 ---
 
-### Почему Weighted Semantic Decay итерировался 11 раз?
+### Why did Weighted Semantic Decay go through 11 iterations?
 
-Weighted Semantic Decay — сложный механизм требующий:
-- Semantic embeddings для всех узлов (дорого)
-- Правильный баланс penalty (слишком агрессивный → потеря данных)
-- Интеграция с ESM, Archive, Monitoring
+Weighted Semantic Decay is a complex mechanism requiring:
+- Semantic embeddings for all nodes (expensive)
+- The right penalty balance (too aggressive → data loss)
+- Integration with ESM, Archive, Monitoring
 
 ---
 
 ## 📐 Fractal Similarity Monitor 
 
-> **Назначение**: Проверка self-similarity графа памяти для обнаружения drift.
+> **Purpose**: Checking the self-similarity of the memory graph to detect drift.
 >
-> **Интеграция**: Работает совместно с L3.5 Immutable Core.
+> **Integration**: Works together with the L3.5 Immutable Core.
 
-### Проблема
+### Problem
 
-Память может "дрифтить" — постепенно терять фрактальную структуру:
-- Накопление хаотичных связей (random noise)
-- Потеря self-similarity между масштабами (L0→L3)
-- Результат: снижение точности, рост латентности, хаос в графе
+Memory can "drift" — gradually lose its fractal structure:
+- Accumulation of chaotic connections (random noise)
+- Loss of self-similarity between scales (L0→L3)
+- Result: reduced accuracy, increased latency, chaos in the graph
 
-### Решение
+### Solution
 
-Каждые 24 часа (при создании snapshot L3.5) — вычислить fractal dimension графа.
+Every 24 hours (when creating an L3.5 snapshot) — compute the fractal dimension of the graph.
 
 ```python
 # fractal_similarity_monitor.py
@@ -12992,12 +12960,12 @@ from scipy.spatial.distance import pdist, squareform
 
 class FractalSimilarityMonitor:
     """
-    Вычисляет correlation dimension графа и проверяет drift.
+    Computes the graph's correlation dimension and checks for drift.
     """
 
     async def check_similarity(self, snapshot_current, snapshot_previous) -> dict:
         """
-        Основной метод — вызывается при создании нового snapshot.
+        Main method — invoked when creating a new snapshot.
         
         Returns:
             {
@@ -13007,20 +12975,20 @@ class FractalSimilarityMonitor:
                 'alert_reason': str | None
             }
         """
-        # 1. Вычислить correlation dimension (Grassberger-Procaccia)
+        # 1. Compute the correlation dimension (Grassberger-Procaccia)
         dim_current = self._correlation_dimension(snapshot_current)
         dim_previous = self._correlation_dimension(snapshot_previous)
         
-        # 2. Self-similarity score (как близки размерности)
-        # PATCH-5: защита от ZeroDivisionError при пустом/новом графе (оба dim могут быть 0)
+        # 2. Self-similarity score (how close the dimensions are)
+        # PATCH-5: guard against ZeroDivisionError on an empty/new graph (both dims may be 0)
         denom = max(dim_current, dim_previous)
         similarity = (
             1.0 - abs(dim_current - dim_previous) / denom
-            if denom > 1e-9   # если оба ~0 → считаем "дрейфа нет"
+            if denom > 1e-9   # if both ~0 → consider "no drift"
             else 1.0
         )
         
-        # 3. Проверка порога
+        # 3. Threshold check
         drift_detected = similarity < 0.92
         
         alert_reason = None
@@ -13042,39 +13010,39 @@ class FractalSimilarityMonitor:
 
     def _correlation_dimension(self, snapshot) -> float:
         """
-        Grassberger-Procaccia algorithm для вычисления correlation dimension.
+        Grassberger-Procaccia algorithm for computing the correlation dimension.
         
-        Упрощённая реализация для графов:
-        - Преобразовать граф в embedding space (используем существующие node embeddings)
-        - Вычислить pairwise distances
-        - Подсчитать C(r) = количество пар с расстоянием < r
+        Simplified implementation for graphs:
+        - Transform the graph into embedding space (use existing node embeddings)
+        - Compute pairwise distances
+        - Count C(r) = number of pairs with distance < r
         - Correlation dimension ≈ slope log(C(r)) / log(r)
         """
-        # P9-FIX БАГ-8: guard для малого графа (KeyError + ZeroDivisionError)
-        embeddings = snapshot.get('node_embeddings')  # .get() вместо [] — нет KeyError
+        # P9-FIX BUG-8: guard for a small graph (KeyError + ZeroDivisionError)
+        embeddings = snapshot.get('node_embeddings')  # .get() instead of [] — no KeyError
         if embeddings is None or len(embeddings) < 2:
-            return 0.0  # не хватает данных для correlation dimension
+            return 0.0  # not enough data for correlation dimension
         
         # Pairwise distances
         distances = pdist(embeddings, metric='euclidean')
         dist_matrix = squareform(distances)
         
-        # Radii для проверки (логарифмическая шкала)
+        # Radii for the check (logarithmic scale)
         radii = np.logspace(-2, 1, 20)
         
         # Correlation integral C(r)
         C_r = []
         for r in radii:
-            count = np.sum(dist_matrix < r) - len(embeddings)  # исключить диагональ
+            count = np.sum(dist_matrix < r) - len(embeddings)  # exclude the diagonal
             n = len(embeddings)
             denom = n * (n - 1)
             if denom == 0:
-                return 0.0  # P9-FIX БАГ-8: защита от ZeroDivisionError при n==1
+                return 0.0  # P9-FIX BUG-8: guard against ZeroDivisionError when n==1
             C_r.append(count / denom)
         
-        # Линейная регрессия log(C(r)) vs log(r)
+        # Linear regression log(C(r)) vs log(r)
         log_r = np.log(radii)
-        log_C = np.log(np.array(C_r) + 1e-10)  # избегаем log(0)
+        log_C = np.log(np.array(C_r) + 1e-10)  # avoid log(0)
         
         # Slope = correlation dimension
         slope, _ = np.polyfit(log_r, log_C, 1)
@@ -13083,7 +13051,7 @@ class FractalSimilarityMonitor:
 
     async def _trigger_alert(self, reason: str):
         """
-        Отправить alert в MetaSupervisor + Prometheus.
+        Send an alert to MetaSupervisor + Prometheus.
         """
         # Prometheus alert
         fractal_drift_alerts.inc()
@@ -13104,16 +13072,16 @@ class FractalSimilarityMonitor:
         )
 ```
 
-### Альтернативный метод: Box-Counting
+### Alternative Method: Box-Counting
 
-Для упрощения (если correlation dimension слишком дорого):
+For simplification (if correlation dimension is too expensive):
 
 ```python
 def _box_counting_dimension(self, snapshot) -> float:
     """
-    Box-counting fractal dimension (более быстрый, менее точный).
+    Box-counting fractal dimension (faster, less accurate).
 
-    Считаем сколько "коробок" размера ε нужно чтобы покрыть граф.
+    We count how many "boxes" of size ε are needed to cover the graph.
     """
     embeddings = snapshot['node_embeddings']
 
@@ -13121,7 +13089,7 @@ def _box_counting_dimension(self, snapshot) -> float:
     counts = []
 
     for epsilon in box_sizes:
-        # Дискретизация пространства на коробки размера epsilon
+        # Discretize the space into boxes of size epsilon
         boxes = np.floor(embeddings / epsilon).astype(int)
         unique_boxes = len(np.unique(boxes, axis=0))
         counts.append(unique_boxes)
@@ -13134,18 +13102,18 @@ def _box_counting_dimension(self, snapshot) -> float:
     return slope
 ```
 
-### Конфигурация
+### Configuration
 
 ```python
 # velantrim_config.py
 class FractalConfig:
     SIMILARITY_THRESHOLD = 0.92        # self-similarity < 0.92 → drift
-    CHECK_INTERVAL_HOURS = 24          # частота проверки
+    CHECK_INTERVAL_HOURS = 24          # check frequency
     USE_CORRELATION_DIM = True         # True = Grassberger-Procaccia, False = box-counting
-    EXPECTED_DIM_RANGE = (1.2, 1.8)   # биологически правдоподобный диапазон
+    EXPECTED_DIM_RANGE = (1.2, 1.8)   # biologically plausible range
 ```
 
-### Метрики
+### Metrics
 
 ```python
 # Prometheus
@@ -13155,14 +13123,14 @@ fractal_drift_alerts = Counter('velantrim_fractal_drift_alerts_total')
 fractal_check_duration_seconds = Histogram('velantrim_fractal_check_duration_seconds')
 ```
 
-### Интеграция с L3.5 Immutable Core
+### Integration with L3.5 Immutable Core
 
 ```python
 # immutable_core.py
 async def create_snapshot(self):
-    """При создании snapshot → проверка fractal similarity"""
+    """On snapshot creation → fractal similarity check"""
 
-    # 1. Создать snapshot
+    # 1. Create the snapshot
     snapshot = await self._snapshot_l3_graph()
 
     # 2. Fractal similarity check
@@ -13171,238 +13139,238 @@ async def create_snapshot(self):
             snapshot, self.previous_snapshot
         )
         
-        # Сохранить в metadata
+        # Save to metadata
         snapshot['fractal_dimension'] = result['correlation_dimension']
         snapshot['similarity_score'] = result['self_similarity_score']
         snapshot['drift_detected'] = result['drift_detected']
 
-    # 3. Сохранить в Neo4j + S3
+    # 3. Save to Neo4j + S3
     await self._persist_snapshot(snapshot)
 
     self.previous_snapshot = snapshot
 ```
 
-### Пример работы
+### Example of Operation
 
 ```
-День 1: Snapshot A
+Day 1: Snapshot A
   - correlation_dimension = 1.52
-  - baseline установлен
+  - baseline established
 
-День 2: Snapshot B
+Day 2: Snapshot B
   - correlation_dimension = 1.48
   - similarity = 1.0 - |1.52-1.48|/1.52 = 0.974 ✅ (> 0.92)
 
-День 30: Snapshot Z
+Day 30: Snapshot Z
   - correlation_dimension = 1.28
   - similarity = 1.0 - |1.48-1.28|/1.48 = 0.865 ❌ (< 0.92)
   - ALERT: "Fractal drift detected!"
-  - Action: Manual review графа → найти хаотичные кластеры
+  - Action: Manual review of the graph → find chaotic clusters
 ```
 
-### Биологическое обоснование
+### Biological Rationale
 
-Мозг человека имеет fractal dimension ~1.2-1.8 (дендриты, сосудистая сеть).
-Velantrim граф должен сохранять эту фрактальность для эффективности.
+The human brain has a fractal dimension of ~1.2-1.8 (dendrites, vascular network).
+The Velantrim graph should preserve this fractality for efficiency.
 
-Drift = потеря фрактальности = хаос = снижение производительности.
+Drift = loss of fractality = chaos = degraded performance.
 
 ---
 
-## 🗄️ Storage Ecosystem — Полная карта хранилищ
+## 🗄️ Storage Ecosystem — A Complete Map of Stores
 
-> Нет одной системы, которая лучше всех во всём. Есть системы, которые лучше в своей роли.
-> SQLite и NetworkX не надо заменять — их надо правильно разместить в стеке.
-
----
-
-### 🔱 Production Core (обязательные)
-
-**Neo4j 5.26+** — основное графовое хранилище Phase 1+
-
-```
-Роль:     Science Core / Entity Layer / LTM граф знаний
-Сильно:   Cypher, vector indexes, Graph Data Science, mature
-Статус:   ✅ Production-grade, зрелый, масштабируемый
-Фаза:     Phase 1 → навсегда
-```
-
-**Kuzu** — embedded граф для MVP Phase 0
-
-```
-Роль:     Локальный граф без сервера, Cypher-совместимый
-Сильно:   ACID, disk-based columnar, vector/full-text, запускается локально
-💡 ПРИМЕЧАНИЕ: Kuzu развивается медленно, но стабилен и пригоден к использованию
-          Команда работает над чем-то новым, поддержка заморожена
-Статус:   ⚠️ Только Phase 0 MVP. НЕ строить на нём канон.
-Фаза:     Phase 0 только → переход на Neo4j в Phase 1
-```
+> There is no single system that is best at everything. There are systems that are best in their role.
+> SQLite and NetworkX do not need to be replaced — they need to be placed correctly in the stack.
 
 ---
 
-### 📊 SQL и Аналитика
+### 🔱 Production Core (mandatory)
 
-**SQLite** — встроенное надёжное хранилище приложения
-
-```
-Роль:     Логи, конфиги, навыки, сессии, небольшие локальные данные
-Сильно:   Встроен везде, надёжен, zero-config, "competes with fopen()"
-Статус:   ✅ Незаменим для operational data
-Фаза:     Все фазы
-```
-
-**DuckDB** — встроенная аналитика
+**Neo4j 5.26+** — the primary graph store for Phase 1+
 
 ```
-Роль:     Метрики, аналитика, Parquet/Arrow/CSV, большие табличные срезы
-Сильно:   Columnar-vectorized execution, аналитические агрегации
-ВАЖНО:    НЕ замена SQLite — другой workload. SQLite → OLTP, DuckDB → OLAP
-Статус:   ✅ Добавить для аналитического слоя
-Фаза:     Phase 2+
+Role:     Science Core / Entity Layer / LTM knowledge graph
+Strong:   Cypher, vector indexes, Graph Data Science, mature
+Status:   ✅ Production-grade, mature, scalable
+Phase:    Phase 1 → forever
+```
+
+**Kuzu** — embedded graph for the Phase 0 MVP
+
+```
+Role:     Local graph without a server, Cypher-compatible
+Strong:   ACID, disk-based columnar, vector/full-text, runs locally
+💡 NOTE:  Kuzu evolves slowly but is stable and usable
+          The team is working on something new, support is frozen
+Status:   ⚠️ Phase 0 MVP only. Do NOT build the canon on it.
+Phase:    Phase 0 only → migration to Neo4j in Phase 1
 ```
 
 ---
 
-### 🕸️ Graph R&D и Алгоритмы (инструменты учёных)
+### 📊 SQL and Analytics
 
-**NetworkX** — графовая лаборатория в Python
-
-```
-Роль:     Прототипирование, centrality, shortest paths, community experiments
-Сильно:   Python-native, богатая библиотека алгоритмов
-ВАЖНО:    Это библиотека, НЕ production graph DB. Всё держится в RAM процесса
-Статус:   ✅ R&D и исследования. Используют учёные для точности алгоритмов
-Фаза:     Всегда, параллельно production стеку
-```
-
-**GraphBLAS** — высокопроизводительные граф-алгоритмы
+**SQLite** — the application's embedded reliable store
 
 ```
-Роль:     Тяжёлые графовые алгоритмы через sparse linear algebra
-Сильно:   Операции над sparse matrices и semirings — максимальная скорость
-ВАЖНО:    НЕ база данных. НЕ замена NetworkX для хранения знаний.
-          Это мощный "мотор" для конкретных алгоритмов, не drop-in замена
-Статус:   ✅ Опционально для Phase 3+ если нужна скорость граф-алгоритмов
-Фаза:     Phase 3+ опционально
+Role:     Logs, configs, skills, sessions, small local data
+Strong:   Embedded everywhere, reliable, zero-config, "competes with fopen()"
+Status:   ✅ Indispensable for operational data
+Phase:    All phases
+```
+
+**DuckDB** — embedded analytics
+
+```
+Role:     Metrics, analytics, Parquet/Arrow/CSV, large tabular slices
+Strong:   Columnar-vectorized execution, analytical aggregations
+IMPORTANT: NOT a replacement for SQLite — a different workload. SQLite → OLTP, DuckDB → OLAP
+Status:   ✅ Add for the analytical layer
+Phase:    Phase 2+
 ```
 
 ---
 
-### ⚡ Real-Time Graph (серверный уровень)
+### 🕸️ Graph R&D and Algorithms (scientists' tools)
 
-**Memgraph** — real-time графовая БД
-
-```
-Роль:     Потоковые обновления, real-time graph, streaming ingestion
-Сильно:   Neo4j-совместимый Cypher, open-source, быстрые обновления
-ВАЖНО:    Это серверная graph DB, НЕ лёгкая замена NetworkX
-Статус:   ✅ Phase 2+ для hot-path real-time обновлений
-Фаза:     Phase 2+
-```
-
----
-
-### ⚠️ Опциональные / С риском EOL
-
-**SurrealDB** — мультимодельная БД
+**NetworkX** — a graph laboratory in Python
 
 ```
-Роль:     Один движок для граф + SQL + документы + real-time
-Сильно:   Универсальность, активная разработка, интересная архитектура
-⚠️ РИСК:  Молодой проект — если компания закроется или сменит фокус: проект умрёт
-          Как было с RedisGraph (EOL январь 2025)
-Статус:   ⚠️ ОПЦИОНАЛЬНО для специфических задач. НЕ в основной стек.
-Фаза:     Только по необходимости
+Role:     Prototyping, centrality, shortest paths, community experiments
+Strong:   Python-native, rich library of algorithms
+IMPORTANT: This is a library, NOT a production graph DB. Everything is held in the process's RAM
+Status:   ✅ R&D and research. Used by scientists for algorithm accuracy
+Phase:    Always, in parallel with the production stack
+```
+
+**GraphBLAS** — high-performance graph algorithms
+
+```
+Role:     Heavy graph algorithms via sparse linear algebra
+Strong:   Operations over sparse matrices and semirings — maximum speed
+IMPORTANT: NOT a database. NOT a replacement for NetworkX for storing knowledge.
+          It is a powerful "engine" for specific algorithms, not a drop-in replacement
+Status:   ✅ Optional for Phase 3+ if graph-algorithm speed is needed
+Phase:    Phase 3+ optional
 ```
 
 ---
 
-### ☠️ Удалённые — больше не используются
+### ⚡ Real-Time Graph (server-level)
 
-| Система | Причина удаления |
+**Memgraph** — a real-time graph DB
+
+```
+Role:     Streaming updates, real-time graph, streaming ingestion
+Strong:   Neo4j-compatible Cypher, open-source, fast updates
+IMPORTANT: This is a server-side graph DB, NOT a lightweight replacement for NetworkX
+Status:   ✅ Phase 2+ for hot-path real-time updates
+Phase:    Phase 2+
+```
+
+---
+
+### ⚠️ Optional / With EOL Risk
+
+**SurrealDB** — a multi-model DB
+
+```
+Role:     A single engine for graph + SQL + documents + real-time
+Strong:   Versatility, active development, interesting architecture
+⚠️ RISK:  A young project — if the company shuts down or shifts focus: the project dies
+          As happened with RedisGraph (EOL January 2025)
+Status:   ⚠️ OPTIONAL for specific tasks. NOT in the core stack.
+Phase:    Only as needed
+```
+
+---
+
+### ☠️ Removed — no longer used
+
+| System | Reason for removal |
 |---|---|
-| **LadybugDB** | ☠️ Не существует как отдельная БД. Маркетинговое название → заменено на KuzuDB (P0-H). |
-| **KuzuDB** | ✅ Используется как GRAPH_BACKEND=kuzu для Personal/Medium конфигураций. MIT, Cypher-совместим. |
-| **RedisGraph** | ☠️ EOL = январь 2025. Redis официально прекратил поддержку |
-| **GPT-4** | ❌ Retired OpenAI. Заменён на GPT-5.4 / o4-mini |
-| **Llama 3** | ❌ Устарел. Заменён на Llama 4 Maverick / Scout |
-| **rubert-tiny2** | ❌ Устаревшая RU embedding модель. Заменена на USER-bge-m3 |
-| **Kafka** | ❌ Избыточен для Velantrim стека. Оставлен только Redis Streams |
+| **LadybugDB** | ☠️ Does not exist as a separate DB. A marketing name → replaced by KuzuDB (P0-H). |
+| **KuzuDB** | ✅ Used as GRAPH_BACKEND=kuzu for Personal/Medium configurations. MIT, Cypher-compatible. |
+| **RedisGraph** | ☠️ EOL = January 2025. Redis officially discontinued support |
+| **GPT-4** | ❌ Retired by OpenAI. Replaced by GPT-5.4 / o4-mini |
+| **Llama 3** | ❌ Obsolete. Replaced by Llama 4 Maverick / Scout |
+| **rubert-tiny2** | ❌ Obsolete RU embedding model. Replaced by USER-bge-m3 |
+| **Kafka** | ❌ Redundant for the Velantrim stack. Only Redis Streams retained |
 
-> **Урок из LadybugDB**: всегда верифицировать названия инструментов перед включением в архитектуру. P0-H FIX: заменено на KuzuDB везде в документе.
+> **Lesson from LadybugDB**: always verify tool names before including them in the architecture. P0-H FIX: replaced with KuzuDB everywhere in the document.
 
 ---
 
-### 🗺️ Итоговая карта хранилищ
+### 🗺️ Final map of stores
 
 ```
 VELANTRIM STORAGE ECOSYSTEM
 │
 ├── 🔱 GRAPH CORE
-│   ├── Kuzu          → Phase 0 MVP (embedded, Cypher) — опционально
+│   ├── Kuzu          → Phase 0 MVP (embedded, Cypher) — optional
 │   └── Neo4j 5.26+   → Phase 1+ Production (vector, GDS)
 │
 ├── 📊 SQL LAYER
-│   ├── SQLite        → operational: логи, конфиги, навыки
-│   └── DuckDB        → analytics: метрики, Parquet, агрегации
+│   ├── SQLite        → operational: logs, configs, skills
+│   └── DuckDB        → analytics: metrics, Parquet, aggregations
 │
-├── 🕸️ R&D / НАУКА
-│   ├── NetworkX      → прототипы, алгоритмы, эксперименты
-│   └── GraphBLAS     → тяжёлые граф-алгоритмы (Phase 3+)
+├── 🕸️ R&D / SCIENCE
+│   ├── NetworkX      → prototypes, algorithms, experiments
+│   └── GraphBLAS     → heavy graph algorithms (Phase 3+)
 │
 ├── ⚡ REAL-TIME
 │   └── Memgraph      → streaming graph (Phase 2+)
 │
-├── ⚠️ ОПЦИОНАЛЬНО
-│   └── SurrealDB     → мультимодель (риск EOL, только по нужде)
+├── ⚠️ OPTIONAL
+│   └── SurrealDB     → multi-model (EOL risk, only as needed)
 │
-└── ☠️ УДАЛЕНО
-    ├── LadybugDB     → не существует (заменено KuzuDB · P0-H)
+└── ☠️ REMOVED
+    ├── LadybugDB     → does not exist (replaced by KuzuDB · P0-H)
     ├── RedisGraph     → EOL 2025
-    └── GPT-4 / Llama 3 / rubert-tiny2 → устарели
+    └── GPT-4 / Llama 3 / rubert-tiny2 → obsolete
 ```
 
 ---
 
-## 🤖 Актуальный LLM и Embedding стек (март 2026)
+## 🤖 Current LLM and Embedding Stack (March 2026)
 
-### LLM модели
+### LLM models
 
-| Категория | Модель | Использование в Velantrim |
+| Category | Model | Use in Velantrim |
 |---|---|---|
-| 🏆 **Flagship** | GPT-5.4 / GPT-5.3 Codex | Критичные кластеры консолидации, сложный reasoning |
-| 🏆 **Flagship** | Claude Sonnet 4.6 / Opus 4.6 | Сложный reasoning, архитектурные решения |
-| 🏆 **Flagship** | Qwen3-Max (256K ctx) | Длинный контекст, агентные задачи |
-| ⚡ **Fast** | o4-mini | Рутина, 70% задач, distill_strategies |
-| ⚡ **Fast** | Claude Haiku 4.5 | Быстрые ответы, классификация |
-| ⚡ **Fast** | Qwen3.5-Flash | $0.10/M токенов — экономия |
+| 🏆 **Flagship** | GPT-5.4 / GPT-5.3 Codex | Critical consolidation clusters, complex reasoning |
+| 🏆 **Flagship** | Claude Sonnet 4.6 / Opus 4.6 | Complex reasoning, architectural decisions |
+| 🏆 **Flagship** | Qwen3-Max (256K ctx) | Long context, agentic tasks |
+| ⚡ **Fast** | o4-mini | Routine, 70% of tasks, distill_strategies |
+| ⚡ **Fast** | Claude Haiku 4.5 | Fast responses, classification |
+| ⚡ **Fast** | Qwen3.5-Flash | $0.10/M tokens — cost savings |
 | 🔓 **Local** | Qwen3.5-397B-A17B (MoE) | Privacy-first, 256K ctx, Apache 2.0 |
 | 🔓 **Local** | Llama 4 Maverick / Scout | Meta, 10M ctx (Scout), open |
-| 🔓 **Local** | DeepSeek V3.2 / R1 | Локальный reasoning |
-| ⚡ **Edge/Lite** | RWKV-7 Goose 2.9B (`mollysama/rwkv-7-g1:2.9b`) | O(n) сложность — скорость не падает при длинных сессиях. Apache 2.0. Слабое железо, LLM_MODE=lite. `ollama pull mollysama/rwkv-7-g1:2.9b` |
-| ❌ **Retired** | GPT-4, Llama 3 | Удалены — устарели |
+| 🔓 **Local** | DeepSeek V3.2 / R1 | Local reasoning |
+| ⚡ **Edge/Lite** | RWKV-7 Goose 2.9B (`mollysama/rwkv-7-g1:2.9b`) | O(n) complexity — speed does not degrade in long sessions. Apache 2.0. Weak hardware, LLM_MODE=lite. `ollama pull mollysama/rwkv-7-g1:2.9b` |
+| ❌ **Retired** | GPT-4, Llama 3 | Removed — obsolete |
 
-### Embedding модели
+### Embedding models
 
-| Тип | Модель | Особенности |
+| Type | Model | Features |
 |---|---|---|
-| 🔓 **Локальная (RU)** | `deepvk/USER-bge-m3` | Лучшая для русского языка |
-| 🔓 **Локальная (Multi)** | `multilingual-e5-large` | 100+ языков, универсальная |
-| 🌐 **Облачная** | `Gemini Embedding 2` | Мультимодальная: текст+фото+видео+аудио+PDF. 3072 dims. Phase 2+ |
-| 🌐 **Облачная** | `text-embedding-3-large` | OpenAI, стабильная |
-| ❌ **Устарела** | `rubert-tiny2` | Удалена |
+| 🔓 **Local (RU)** | `deepvk/USER-bge-m3` | Best for the Russian language |
+| 🔓 **Local (Multi)** | `multilingual-e5-large` | 100+ languages, universal |
+| 🌐 **Cloud** | `Gemini Embedding 2` | Multimodal: text+photo+video+audio+PDF. 3072 dims. Phase 2+ |
+| 🌐 **Cloud** | `text-embedding-3-large` | OpenAI, stable |
+| ❌ **Obsolete** | `rubert-tiny2` | Removed |
 
-> ⚠️ **Важно**: смена embedding-модели требует переиндексации. Векторы из разных моделей несовместимы в одном индексе. Gemini Embedding 2 — для Phase 2+ когда появится мультимодальность в Velantrim.
+> ⚠️ **Important**: changing the embedding model requires reindexing. Vectors from different models are incompatible within a single index. Gemini Embedding 2 is for Phase 2+ when multimodality appears in Velantrim.
 >
-> ✅ **Автоматизация через Lazy Re-indexing**: поле `embedding_version` в каждом узле позволяет не перестраивать всё сразу. При смене модели: новые узлы пишутся с новой версией, старым ставится флаг `reindex_required = true`, фоновый `AdaptiveConsolidationWorker` переиндексирует партиями. Система работает в `dual-index mode` без простоя.
+> ✅ **Automation via Lazy Re-indexing**: the `embedding_version` field on each node makes it possible not to rebuild everything at once. On a model change: new nodes are written with the new version, old ones are flagged with `reindex_required = true`, and a background `AdaptiveConsolidationWorker` reindexes in batches. The system works in `dual-index mode` without downtime.
 
 ---
 
-### 🔢 EmbeddingRegistry — защита от смешивания размерностей
+### 🔢 EmbeddingRegistry — protection against mixing dimensionalities
 
-**Проблема**: `numpy.dot()` с векторами разных размерностей (например 1024 и 1536) не выбрасывает исключение — он молча возвращает математически некорректный результат. Косинусное сходство начинает лгать, retrieval деградирует тихо и незаметно.
+**Problem**: `numpy.dot()` with vectors of different dimensionalities (for example 1024 and 1536) does not raise an exception — it silently returns a mathematically incorrect result. Cosine similarity starts to lie, retrieval degrades quietly and unnoticeably.
 
-**Решение**: централизованный реестр моделей с fail-fast валидацией при каждой записи.
+**Solution**: a centralized model registry with fail-fast validation on every write.
 
 ```python
 # memory/embedding_registry.py
@@ -13410,12 +13378,12 @@ import numpy as np
 import logging
 logger = logging.getLogger(__name__)
 
-# Все поддерживаемые модели и их размерности.
-# При добавлении новой модели — регистрировать здесь, не хардкодить в коде.
+# All supported models and their dimensionalities.
+# When adding a new model — register it here, do not hardcode it in the code.
 _KNOWN_DIMS: dict[str, int] = {
-    "deepvk/USER-bge-m3":                   1024,  # основная RU-модель Velantrim
+    "deepvk/USER-bge-m3":                   1024,  # Velantrim's main RU model
     "multilingual-e5-large":                1024,
-    "paraphrase-multilingual-MiniLM-L12-v2": 384,  # weak-профиль
+    "paraphrase-multilingual-MiniLM-L12-v2": 384,  # weak profile
     "text-embedding-3-large":               3072,
     "Qwen/Qwen3-Embedding":                 1024,
     "BAAI/bge-m3":                          1536,
@@ -13424,22 +13392,22 @@ _KNOWN_DIMS: dict[str, int] = {
 
 class EmbeddingRegistry:
     """
-    Реестр embedding-моделей Velantrim.
-    Вызывать EmbeddingRegistry.validate() перед каждой записью вектора в L1/L3.
-    Fail-fast при несоответствии размерностей — молчаливая деградация недопустима.
+    Velantrim's registry of embedding models.
+    Call EmbeddingRegistry.validate() before every vector write into L1/L3.
+    Fail-fast on a dimensionality mismatch — silent degradation is unacceptable.
     """
     _active_model: str = "deepvk/USER-bge-m3"
     _active_dim:   int = 1024
 
     @classmethod
     def set_active_model(cls, model_name: str) -> None:
-        """Устанавливается один раз при старте агента из velantrim_config."""
+        """Set once at agent startup from velantrim_config."""
         dim = _KNOWN_DIMS.get(model_name)
         if dim is None:
             raise ValueError(
-                f"EmbeddingRegistry: неизвестная модель '{model_name}'. "
-                f"Зарегистрируй через register('{model_name}', dim=N). "
-                f"Известные: {list(_KNOWN_DIMS.keys())}"
+                f"EmbeddingRegistry: unknown model '{model_name}'. "
+                f"Register it via register('{model_name}', dim=N). "
+                f"Known: {list(_KNOWN_DIMS.keys())}"
             )
         cls._active_model = model_name
         cls._active_dim   = dim
@@ -13447,48 +13415,48 @@ class EmbeddingRegistry:
 
     @classmethod
     def register(cls, model_name: str, dim: int) -> None:
-        """Добавить нестандартную модель."""
+        """Add a non-standard model."""
         _KNOWN_DIMS[model_name] = dim
         logger.info(f"EmbeddingRegistry: registered {model_name} dim={dim}")
 
     @classmethod
     def validate(cls, embedding: np.ndarray, model_name: str = None) -> None:
         """
-        Проверить размерность вектора перед записью.
-        Вызывать в GraphMemory.add_episode() и FractalMemory.add_to_stm().
-        Выбрасывает ValueError при несовпадении — не молчит.
+        Check the vector's dimensionality before writing.
+        Call in GraphMemory.add_episode() and FractalMemory.add_to_stm().
+        Raises ValueError on a mismatch — does not stay silent.
         """
         model    = model_name or cls._active_model
         expected = _KNOWN_DIMS.get(model, cls._active_dim)
         actual   = embedding.shape[0] if hasattr(embedding, 'shape') else len(embedding)
         if actual != expected:
             raise ValueError(
-                f"EmbeddingRegistry: размерность не совпадает для '{model}': "
-                f"ожидалось {expected}, получено {actual}. "
-                f"Смешивание моделей портит cosine similarity — это не warning, это баг."
+                f"EmbeddingRegistry: dimensionality mismatch for '{model}': "
+                f"expected {expected}, got {actual}. "
+                f"Mixing models corrupts cosine similarity — this is not a warning, it is a bug."
             )
 ```
 
-**Интеграция**: вызов `EmbeddingRegistry.validate(embedding)` добавить в `GraphMemory.add_episode()` и `FractalMemory.add_to_stm()` перед сохранением вектора. `EmbeddingRegistry.set_active_model(EMBEDDING_MODEL)` вызывать один раз в `pipeline.__init__()`.
+**Integration**: add a call to `EmbeddingRegistry.validate(embedding)` in `GraphMemory.add_episode()` and `FractalMemory.add_to_stm()` before saving the vector. Call `EmbeddingRegistry.set_active_model(EMBEDDING_MODEL)` once in `pipeline.__init__()`.
 
-**Инвариант**: смешивание векторов разных моделей в одном индексе — нарушение архитектуры. `EmbeddingRegistry` делает это нарушение явным.
-
----
-
-## 🔧 Обслуживание системы
-
-> Два инструмента которых не хватало Velantrim для production-эксплуатации.
+**Invariant**: mixing vectors of different models within a single index is an architecture violation. `EmbeddingRegistry` makes this violation explicit.
 
 ---
 
-### 🧹 dedupe_entities.py — Дедупликация узлов графа
+## 🔧 System Maintenance
 
-**Проблема**: любая живая система где LLM извлекает сущности со временем накапливает дубли. «Velantrim», «velantrim», «VELANTRIM ExoCortex», «the Velantrim system» — всё это отдельные узлы в Neo4j. Без дедупликации граф деградирует: связи распылены по дублям, поиск возвращает неполные результаты, ImportanceScore занижен у всех копий.
+> Two tools that Velantrim was missing for production operation.
+
+---
+
+### 🧹 dedupe_entities.py — Graph Node Deduplication
+
+**Problem**: any live system where an LLM extracts entities accumulates duplicates over time. "Velantrim", "velantrim", "VELANTRIM ExoCortex", "the Velantrim system" — these are all separate nodes in Neo4j. Without deduplication, the graph degrades: connections are scattered across duplicates, search returns incomplete results, and ImportanceScore is underestimated for all copies.
 
 ```python
 # scripts/dedupe_entities.py
-# Запуск: python scripts/dedupe_entities.py
-# Dry-run (анализ без изменений): python scripts/dedupe_entities.py --dry-run
+# Run: python scripts/dedupe_entities.py
+# Dry-run (analysis without changes): python scripts/dedupe_entities.py --dry-run
 
 import os
 import asyncio, argparse, logging
@@ -13497,9 +13465,9 @@ from memory_core import GraphMemory
 
 logger = logging.getLogger(__name__)
 
-# P0-4 FIX: определить наличие APOC один раз при старте.
-# Neo4j + APOC: NEO4J_HAS_APOC=true (в docker-compose: NEO4J_PLUGINS=["apoc"])
-# LadybugDB / KuzuDB без APOC: NEO4J_HAS_APOC=false (или не задана)
+# P0-4 FIX: determine APOC availability once at startup.
+# Neo4j + APOC: NEO4J_HAS_APOC=true (in docker-compose: NEO4J_PLUGINS=["apoc"])
+# LadybugDB / KuzuDB without APOC: NEO4J_HAS_APOC=false (or unset)
 HAS_APOC = os.getenv("NEO4J_HAS_APOC", "false").lower() == "true"
 
 
@@ -13512,12 +13480,12 @@ async def _merge_relationship_safe(
     merged_from: str
 ) -> None:
     """
-    Создать/обновить связь между узлами с сохранением оригинального типа.
-    Использует APOC если доступен (Neo4j), иначе — чистый Cypher (LadybugDB/KuzuDB).
+    Create/update a relationship between nodes, preserving the original type.
+    Uses APOC if available (Neo4j), otherwise — pure Cypher (LadybugDB/KuzuDB).
 
-    P0-4 FIX: APOC apoc.merge.relationship недоступен в LadybugDB.
-    Fallback использует MERGE с параметризованным типом через f-string.
-    rel_type берётся из type(r) который уже в графе, не из user input.
+    P0-4 FIX: APOC apoc.merge.relationship is unavailable in LadybugDB.
+    The fallback uses MERGE with a parameterized type via an f-string.
+    rel_type is taken from type(r) which is already in the graph, not from user input.
     """
     if HAS_APOC:
         await graph.execute_cypher("""
@@ -13529,8 +13497,8 @@ async def _merge_relationship_safe(
         """, {"from_id": from_id, "to_id": to_id,
               "rel_type": rel_type, "weight": weight, "merged_from": merged_from})
     else:
-        # Fallback для LadybugDB / KuzuDB без APOC.
-        # rel_type из type(r) — безопасно, не user input.
+        # Fallback for LadybugDB / KuzuDB without APOC.
+        # rel_type from type(r) — safe, not user input.
         query = f"""
             MATCH (a {{id: $from_id}}), (b {{id: $to_id}})
             MERGE (a)-[r:{rel_type}]->(b)
@@ -13546,11 +13514,11 @@ async def _merge_relationship_safe(
 
 async def _merge_nodes_safe(graph, e1_id: str, e2_id: str) -> None:
     """
-    Слить два узла-дубля.
-    APOC apoc.refactor.mergeNodes — только Neo4j.
-    Fallback: вручную перенести все рёбра + soft-delete дубля.
+    Merge two duplicate nodes.
+    APOC apoc.refactor.mergeNodes — Neo4j only.
+    Fallback: manually transfer all edges + soft-delete the duplicate.
 
-    P0-4 FIX: apoc.refactor.mergeNodes недоступен в LadybugDB.
+    P0-4 FIX: apoc.refactor.mergeNodes is unavailable in LadybugDB.
     """
     if HAS_APOC:
         await graph.execute_cypher("""
@@ -13564,7 +13532,7 @@ async def _merge_nodes_safe(graph, e1_id: str, e2_id: str) -> None:
             RETURN count(node) as merged
         """, {"e1_id": e1_id, "e2_id": e2_id})
     else:
-        # Fallback: перенести рёбра + soft-delete дубля (e2 → e1).
+        # Fallback: transfer edges + soft-delete the duplicate (e2 → e1).
         await graph.execute_cypher("""
             MATCH (e2:Entity {id: $e2_id})-[r]->(target)
             MATCH (e1:Entity {id: $e1_id})
@@ -13593,7 +13561,7 @@ async def _merge_nodes_safe(graph, e1_id: str, e2_id: str) -> None:
         """, {"e2_id": e2_id, "e1_id": e1_id})
 
 
-# P0-4 FIX: SAE Lateral Inhibition — apoc.math.maxLong недоступен в LadybugDB.
+# P0-4 FIX: SAE Lateral Inhibition — apoc.math.maxLong is unavailable in LadybugDB.
 SAE_LATERAL_INHIBITION_CYPHER_APOC = """
     UNWIND range(0, size(ranked) - 1) AS i
     WITH ranked[i] AS dominant, ranked, i
@@ -13620,11 +13588,11 @@ SAE_LATERAL_INHIBITION_CYPHER_FALLBACK = """
 """
 
 def get_lateral_inhibition_cypher() -> str:
-    """Вернуть корректный Cypher для lateral inhibition с учётом бэкенда."""
+    """Return the correct Cypher for lateral inhibition depending on the backend."""
     return SAE_LATERAL_INHIBITION_CYPHER_APOC if HAS_APOC else SAE_LATERAL_INHIBITION_CYPHER_FALLBACK
 
 async def find_duplicates(graph: GraphMemory) -> dict[str, list[str]]:
-    """Найти узлы :Entity с одинаковым именем (case-insensitive)."""
+    """Find :Entity nodes with the same name (case-insensitive)."""
     rows = await graph.execute_cypher(
         "MATCH (e:Entity) RETURN e.id AS id, e.name AS name, e.access_count AS ac"
     )
@@ -13637,9 +13605,9 @@ async def find_duplicates(graph: GraphMemory) -> dict[str, list[str]]:
 
 async def merge_group(graph: GraphMemory, nodes: list, dry_run: bool):
     """
-    Оставить узел с наибольшим access_count как canonical.
-    Перенести все рёбра от дублей на canonical.
-    Удалить дубли через Soft Delete.
+    Keep the node with the highest access_count as canonical.
+    Transfer all edges from the duplicates to the canonical node.
+    Remove the duplicates via Soft Delete.
     """
     canonical = max(nodes, key=lambda n: n.get("ac") or 0)
     duplicates = [n for n in nodes if n["id"] != canonical["id"]]
@@ -13649,8 +13617,8 @@ async def merge_group(graph: GraphMemory, nodes: list, dry_run: bool):
         return
 
     for dup in duplicates:
-        # P0-4 FIX: перенести рёбра через _merge_relationship_safe() —
-        # APOC если доступен, иначе чистый Cypher fallback для LadybugDB.
+        # P0-4 FIX: transfer edges via _merge_relationship_safe() —
+        # APOC if available, otherwise a pure Cypher fallback for LadybugDB.
         outgoing_rels = await graph.execute_cypher(
             "MATCH (dup:Entity {id: $dup_id})-[r]->(target) "
             "WHERE dup.id <> $canonical_id "
@@ -13683,7 +13651,7 @@ async def merge_group(graph: GraphMemory, nodes: list, dry_run: bool):
                 merged_from=dup["id"]
             )
 
-        # Soft Delete дубля
+        # Soft Delete of the duplicate
         await graph.execute_cypher(
             "MATCH (e:Entity {id: $id}) SET e.is_active=false, e.valid_to=datetime()",
             {"id": dup["id"]}
@@ -13692,10 +13660,10 @@ async def merge_group(graph: GraphMemory, nodes: list, dry_run: bool):
 async def main(dry_run: bool):
     graph = GraphMemory()
     dupes = await find_duplicates(graph)
-    logger.info(f"Найдено {len(dupes)} групп дублей")
+    logger.info(f"Found {len(dupes)} duplicate groups")
     for name, nodes in dupes.items():
         await merge_group(graph, nodes, dry_run)
-    action = "Dry-run завершён" if dry_run else f"Объединено {len(dupes)} групп"
+    action = "Dry-run completed" if dry_run else f"Merged {len(dupes)} groups"
     logger.info(action)
 
 if __name__ == "__main__":
@@ -13705,18 +13673,18 @@ if __name__ == "__main__":
     asyncio.run(main(dry_run=args.dry_run))
 ```
 
-**Рекомендуется запускать**: раз в неделю через SleepTimeWorker или вручную при заметном росте числа узлов без роста знаний.
+**Recommended run frequency**: once a week via SleepTimeWorker, or manually when there is a noticeable growth in the number of nodes without a corresponding growth in knowledge.
 
 ---
 
-### 📋 migrations/ — Версионирование схемы графа
+### 📋 migrations/ — Graph Schema Versioning
 
-**Проблема**: Velantrim добавляет новые поля к узлам Neo4j (например `pending_invalidation`, `embedding_version`, `is_ring_zero`) — но нет механизма обновить уже существующие узлы при деплое новой версии. Это приводит к тому что старые узлы не имеют нужных полей и инварианты начинают ломаться на production-данных.
+**Problem**: Velantrim adds new fields to Neo4j nodes (for example `pending_invalidation`, `embedding_version`, `is_ring_zero`) — but there is no mechanism to update already existing nodes when deploying a new version. This leads to old nodes lacking the required fields, and invariants starting to break on production data.
 
 ```python
 # migrations/apply_migrations.py
-# Запуск при каждом обновлении: python migrations/apply_migrations.py
-# Идемпотентен — безопасно запускать повторно.
+# Run on every update: python migrations/apply_migrations.py
+# Idempotent — safe to run repeatedly.
 
 import asyncio, logging
 from memory_core import GraphMemory
@@ -13726,33 +13694,33 @@ logger = logging.getLogger(__name__)
 MIGRATIONS = [
     {
         "version": "v8.0",  // P2-B FIX
-        "description": "Добавить is_active=true всем узлам без этого поля",
+        "description": "Add is_active=true to all nodes lacking this field",
         "cypher": "MATCH (n) WHERE n.is_active IS NULL SET n.is_active = true"
     },
     {
         "version": "v5.1",
-        "description": "Добавить epistemic_state='Validated' всем :Fact без ESM",
+        "description": "Add epistemic_state='Validated' to all :Fact nodes without ESM",
         "cypher": "MATCH (f:Fact) WHERE f.epistemic_state IS NULL SET f.epistemic_state='Validated'"
     },
     {
         "version": "v5.2",
-        "description": "Добавить embedding_version='v1' всем узлам с embedding",
+        "description": "Add embedding_version='v1' to all nodes with an embedding",
         "cypher": "MATCH (n) WHERE n.embedding IS NOT NULL AND n.embedding_version IS NULL SET n.embedding_version='v1'"
     },
     {
         "version": "v5.3",
-        "description": "Добавить is_ring_zero=false всем узлам без этого поля",
+        "description": "Add is_ring_zero=false to all nodes lacking this field",
         "cypher": "MATCH (n) WHERE n.is_ring_zero IS NULL SET n.is_ring_zero = false"
     },
     {
         "version": "v5.4",
-        "description": "Создать индекс pending_invalidation если не существует",
+        "description": "Create the pending_invalidation index if it does not exist",
         "cypher": "CREATE INDEX pending_inv_idx IF NOT EXISTS FOR (f:Fact) ON (f.pending_invalidation)"
     },
 ]
 
 async def apply_migrations(graph: GraphMemory):
-    # Создать таблицу версий если не существует
+    # Create the version table if it does not exist
     await graph.execute_cypher("""
         MERGE (mv:MigrationVersion {id: 'schema_version'})
         ON CREATE SET mv.applied = []
@@ -13779,105 +13747,105 @@ if __name__ == "__main__":
     asyncio.run(apply_migrations(GraphMemory()))
 ```
 
-**Инвариант**: `apply_migrations()` вызывается при каждом старте pipeline в `pipeline.__init__()` до любых запросов к графу. Миграции идемпотентны — повторный запуск безопасен.
+**Invariant**: `apply_migrations()` is called on every pipeline startup in `pipeline.__init__()` before any queries to the graph. Migrations are idempotent — re-running is safe.
 
 ---
 
-## 📚 Дополнительные ресурсы
+## 📚 Additional Resources
 
-### Документация
+### Documentation
 
 - [Graphiti GitHub](https://github.com/getzep/graphiti)
 - [Neo4j 5.26+ Vector Search](https://neo4j.com/docs/cypher-manual/current/indexes-for-vector-search/)
 - [DeepSeek Engram GitHub](https://github.com/deepseek-ai/Engram)
-- [LangGraph для агентов](https://langchain-ai.github.io/langgraph/)
-- [Memgraph документация](https://memgraph.com/docs)
-- [DuckDB документация](https://duckdb.org/docs/)
+- [LangGraph for agents](https://langchain-ai.github.io/langgraph/)
+- [Memgraph documentation](https://memgraph.com/docs)
+- [DuckDB documentation](https://duckdb.org/docs/)
 - [Gemini Embedding 2](https://ai.google.dev/gemini-api/docs/embeddings)
 
-### Научные статьи
+### Research Papers
 
 - "ReasoningBank" - Learning from Success and Failure
 - "Graphiti: Temporal Knowledge Graphs for AI Agents"
-- "DeepSeek Engram: Conditional Memory for MoE Architectures" (январь 2026)
+- "DeepSeek Engram: Conditional Memory for MoE Architectures" (January 2026)
 - "Fractal Graph Theory and Knowledge Graphs"
 - "Map-Based Experience Replay" (GWR approach)
-- "Gemini Embedding 2: Natively Multimodal Embeddings" (март 2026)
+- "Gemini Embedding 2: Natively Multimodal Embeddings" (March 2026)
 
-### Бенчмарки
+### Benchmarks
 
 - Deep Memory Retrieval (Zep)
 - LOCOMO (Long-term Context Memory)
 - Standard RAG baselines
-- LMArena Text Leaderboard (март 2026)
+- LMArena Text Leaderboard (March 2026)
 
 ---
 
-## 🎓 Заключение
+## 🎓 Conclusion
 
-Эта спецификация объединяет:
-- **Graphiti + Neo4j 5.26+** для темпоральной графовой памяти
-- **Фрактальную иерархию** для масштабирования
-- **ReasoningBank** для самообучения
-- **Гибридный retrieval** для минимизации токенов
+This specification brings together:
+- **Graphiti + Neo4j 5.26+** for temporal graph memory
+- **Fractal hierarchy** for scaling
+- **ReasoningBank** for self-learning
+- **Hybrid retrieval** for token minimization
 - **Etir (L3.5)** — Velantrim Synaptic Activation Layer
-- **Engram-принцип** как архитектурный союзник (DeepSeek, январь 2026)
-- **Memory Guardian (MGL)** — защита L3 от отравления галлюцинациями
-- **Immutable Raw Memory** — защита от Semantic Drift
-- **Knowledge Distillation Engine** — JSON-тройки вместо текстовых кусков
-- **Формальные инварианты (RFC0001–RFC0006)** — контракт системы
-- **Evidence как узел** + `[:SUPPORTED_BY]`, `[:CAUSES]`, `[:IMPROVES]`
-- **Evidence Pack + Truth Gate** с конкретными порогами
+- **The Engram principle** as an architectural ally (DeepSeek, January 2026)
+- **Memory Guardian (MGL)** — protecting L3 from hallucination poisoning
+- **Immutable Raw Memory** — protection against Semantic Drift
+- **Knowledge Distillation Engine** — JSON triples instead of text chunks
+- **Formal invariants (RFC0001–RFC0006)** — the system contract
+- **Evidence as a node** + `[:SUPPORTED_BY]`, `[:CAUSES]`, `[:IMPROVES]`
+- **Evidence Pack + Truth Gate** with concrete thresholds
 - **Memory Router** DEFINE/RECALL/POLICY/TASK
-- **Автоматизацию** без постоянных LLM-запросов
-- ✅ **ConsolidationEngine** — race condition закрыт навсегда
-- ✅ **Canonical Memory Protocol v1** — единая точка входа
-- ✅ **CoreMemoryBlocks** — агент знает пользователя с первого слова (L0 CRITICAL)
-- ✅ **EmbeddingRegistry** — защита от молчаливого смешивания размерностей
-- ✅ **MCP Server** — подключение к Cursor / Claude Code через stdio
-- ✅ **dedupe_entities.py** — дедупликация Entity-узлов графа
-- ✅ **migrations/** — версионирование схемы Neo4j, идемпотентные миграции
-- ✅ **RWKV-7 Edge** — O(n) LLM для слабого железа в LLM_MODE=lite
-- ✅ **pymorphy3 синглтон + lru_cache** — 40–60% экономия CPU при ReasoningBank
-- ✅ **Velum GC слабых рёбер** — защита от бесконечного роста _edges
-- ✅ **Velum SQLite persist** — рёбра co-occurrence выживают после рестарта
-- ✅ **ValidationError recovery** — GraphitiAdapter устойчив к quirks Graphiti API
-- ✅ **Depth injection whitelist** — Cypher-инъекция через depth невозможна архитектурно
-- ✅ **Auto-summary каждые 10 turns** — граф не растёт линейно с числом сообщений
-- ✅ **CausalGraph** — рёбра CAUSES/LEADS_TO/INFLUENCES, агент понимает причины
-- ✅ **RFC0006 Engram Isolation** — архитектурный замок
-- ✅ **Runtime Invariant Checker** — RFC живут в коде, не на бумаге
+- **Automation** without constant LLM queries
+- ✅ **ConsolidationEngine** — race condition closed forever
+- ✅ **Canonical Memory Protocol v1** — a single entry point
+- ✅ **CoreMemoryBlocks** — the agent knows the user from the very first word (L0 CRITICAL)
+- ✅ **EmbeddingRegistry** — protection against silent mixing of dimensions
+- ✅ **MCP Server** — connection to Cursor / Claude Code via stdio
+- ✅ **dedupe_entities.py** — deduplication of graph Entity nodes
+- ✅ **migrations/** — Neo4j schema versioning, idempotent migrations
+- ✅ **RWKV-7 Edge** — an O(n) LLM for weak hardware in LLM_MODE=lite
+- ✅ **pymorphy3 singleton + lru_cache** — 40–60% CPU savings with ReasoningBank
+- ✅ **Velum GC of weak edges** — protection against unbounded growth of _edges
+- ✅ **Velum SQLite persist** — co-occurrence edges survive a restart
+- ✅ **ValidationError recovery** — GraphitiAdapter is resilient to Graphiti API quirks
+- ✅ **Depth injection whitelist** — Cypher injection via depth is architecturally impossible
+- ✅ **Auto-summary every 10 turns** — the graph does not grow linearly with the number of messages
+- ✅ **CausalGraph** — CAUSES/LEADS_TO/INFLUENCES edges, the agent understands causes
+- ✅ **RFC0006 Engram Isolation** — an architectural lock
+- ✅ **Runtime Invariant Checker** — RFCs live in code, not on paper
 - ✅ **Cognitive Modes** — PRECISION / BALANCED / EXPLORATION
-- ✅ **Weighted Semantic Decay** — забываем эпистемически честно
-- ✅ **Memory Budget Planner** — граф не растёт вечно
-- ✅ **PII Redaction реализован** — GDPR не декларация
-- ✅ **Freeze State WAL** — миллисекунды вместо секунд
+- ✅ **Weighted Semantic Decay** — we forget in an epistemically honest way
+- ✅ **Memory Budget Planner** — the graph does not grow forever
+- ✅ **PII Redaction implemented** — GDPR is not a declaration
+- ✅ **Freeze State WAL** — milliseconds instead of seconds
 - ✅ **Meta-Supervisor Apex Controller** — NORMAL/DEGRADED/SAFE_MODE + Recovery Protocol
-- ✅ **ESM в L3** — жизненный цикл фактов (Observed→Collapsed)
-- ✅ **MHI архитектура** — описана, реализация в Phase 2
+- ✅ **ESM in L3** — the lifecycle of facts (Observed→Collapsed)
+- ✅ **MHI architecture** — described, implementation in Phase 2
 
-**Ожидаемый результат**:
-- 90%+ снижение расхода токенов
-- 30%+ улучшение успешности задач
-- <500ms латентность поиска
-- Полная автономность работы памяти
-- Нет race conditions (ConsolidationEngine)
-- Нет незащищённых нарушений RFC (Runtime Checker)
+**Expected outcome**:
+- 90%+ reduction in token consumption
+- 30%+ improvement in task success rate
+- <500ms search latency
+- Full autonomy of memory operation
+- No race conditions (ConsolidationEngine)
+- No unprotected RFC violations (Runtime Checker)
 
-Система готова к первому запуску на ПК с валидацией на каждом этапе.
+The system is ready for its first launch on a PC with validation at every stage.
 
 ---
 
-### RFC0029 — Observer++ (Иммунная система)
+### RFC0029 — Observer++ (Immune system)
 
-**Проблема**: Observer наблюдал и логировал, но не имел власти ничего остановить. У системы не было иммунной системы.
+**Problem**: The Observer watched and logged, but had no power to stop anything. The system had no immune system.
 
-**Решение**: Observer получает три реальных полномочия — блокировка, откат, снижение доверия.
+**Solution**: The Observer gains three real powers — blocking, rollback, and trust reduction.
 
 ```python
-# 📎 Базовая версия. Каноническая — RFC0041 Graduated Observer++ (см. ниже)
+# 📎 Base version. The canonical one — RFC0041 Graduated Observer++ (see below)
 class ObserverPlusPlus:
-    """RFC0029 — Observer с властью. Иммунная система Velantrim."""
+    """RFC0029 — Observer with power. The immune system of Velantrim."""
 
     async def on_anomaly(self, event: AnomalyEvent):
         if event.severity == "critical":
@@ -13899,9 +13867,9 @@ class ObserverPlusPlus:
             await asyncio.sleep(OBSERVER_INTERVAL)
 ```
 
-**Триггеры активации:**
+**Activation triggers:**
 
-| Триггер | Действие |
+| Trigger | Action |
 |---|---|
 | `drift_score > 0.3` | rollback |
 | `cascade_size > MAX_ROLLBACK_CASCADE` | block_pipeline |
@@ -13909,13 +13877,13 @@ class ObserverPlusPlus:
 | `faithfulness < MIN_FAITHFULNESS` | pause + alert |
 | `semantic_drift > SEMANTIC_THRESHOLD` | alert + review |
 
-**Инварианты**: Observer НЕ пишет в Graph, НЕ генерирует факты, НЕ изменяет ESM напрямую.
+**Invariants**: The Observer does NOT write to the Graph, does NOT generate facts, does NOT modify the ESM directly.
 
 ---
 
-### RFC0029+ — ESMChunkedInvalidator (Батчевый откат без deadlock)
+### RFC0029+ — ESMChunkedInvalidator (Batch rollback without deadlock)
 
-**Проблема**: Прямой каскад `[:CONTRADICTS]` на 100+ узлов → deadlock Neo4j + блокировка ConsolidationEngine.
+**Problem**: A direct `[:CONTRADICTS]` cascade over 100+ nodes → Neo4j deadlock + blocking of the ConsolidationEngine.
 
 ```python
 class ESMChunkedInvalidator:
@@ -13941,19 +13909,19 @@ class ESMChunkedInvalidator:
             result = await self.graph.execute_cypher(query, {"batch_size": 50})
             if not result or result[0]["processed_count"] == 0:
                 break
-            await asyncio.sleep(0.1)  # дать Neo4j "подышать"
+            await asyncio.sleep(0.1)  # let Neo4j "breathe"
 ```
 
-**Обязательный индекс:**
+**Mandatory index:**
 ```cypher
 CREATE INDEX pending_inv_idx FOR (f:Fact) ON (f.pending_invalidation)
 ```
 
 ---
 
-### RFC0030 — Source Trust Layer (Защита от Validated Hallucination)
+### RFC0030 — Source Trust Layer (Protection against Validated Hallucination)
 
-**Проблема**: TruthGate проверяет evidence, но не источник. Неверный парсинг → структурно корректный факт → TruthGate пропускает → система уверенно говорит ложь ("validated hallucination").
+**Problem**: TruthGate verifies the evidence, but not the source. Incorrect parsing → a structurally correct fact → TruthGate lets it through → the system confidently states a falsehood ("validated hallucination").
 
 ```python
 @dataclass
@@ -13963,30 +13931,30 @@ class SourceTrust:
     validation_status: str  # "verified"|"pending"|"flagged"
 ```
 
-**Изменение в TruthGate:**
+**Change in TruthGate:**
 ```python
-# БЫЛО: if evidence_valid: accept_fact()
-# СТАЛО:
+# BEFORE: if evidence_valid: accept_fact()
+# AFTER:
 if evidence_valid and source.trust_score >= TRUST_THRESHOLD:
     accept_fact()
 else:
     mark_as_pending_review()
 ```
 
-**Шкала trust_score:**
+**trust_score scale:**
 
-| Источник | trust_score | Принятие |
+| Source | trust_score | Acceptance |
 |---|---|---|
-| manual (человек) | 0.95 | ✅ авто |
-| trusted_import | 0.80 | ✅ авто |
+| manual (human) | 0.95 | ✅ automatic |
+| trusted_import | 0.80 | ✅ automatic |
 | user_input | 0.65 | ⚠️ pending |
-| llm_output | 0.30 | ❌ только через pipeline |
+| llm_output | 0.30 | ❌ only via pipeline |
 
 ---
 
-### RFC0031 — Write Protocol (Единственные пути записи в Graph)
+### RFC0031 — Write Protocol (The only write paths into the Graph)
 
-**Проблема**: Нет машинного контракта — кто имеет право писать в L3. `Graph = Truth` остаётся только философией.
+**Problem**: There is no machine-enforced contract for who is allowed to write to L3. `Graph = Truth` remains merely a philosophy.
 
 ```python
 class GraphWriteProtocol:
@@ -14001,13 +13969,13 @@ class GraphWriteProtocol:
         return await self._graph_write(fact)
 ```
 
-**Запрещено всегда**: LLM напрямую, L1/L2/L2.5, Free Mode, Observer, Velum, ReasoningBank.
+**Always forbidden**: the LLM directly, L1/L2/L2.5, Free Mode, Observer, Velum, ReasoningBank.
 
 ---
 
-### RFC0032 — SafeFTSQuery (ESM-фильтр для FTS5)
+### RFC0032 — SafeFTSQuery (ESM filter for FTS5)
 
-**Проблема**: FTS5 возвращает сырые эпизоды без ESM-проверки. Contradicted/Deprecated данные попадают в контекст.
+**Problem**: FTS5 returns raw episodes without an ESM check. Contradicted/Deprecated data enters the context.
 
 ```python
 class SafeFTSQuery:
@@ -14025,24 +13993,24 @@ class SafeFTSQuery:
         return safe[:limit]
 ```
 
-**Правило**: Прямой FTS5 без SafeFTSQuery — ошибка архитектуры. Весь L1-retrieval только через этот класс.
+**Rule**: Direct FTS5 without SafeFTSQuery is an architecture error. All L1 retrieval goes only through this class.
 
 ---
 
-### RFC0033 — Closed Loop Self-Evaluation (Замкнутый цикл)
+### RFC0033 — Closed Loop Self-Evaluation (Closed loop)
 
-**Проблема**: `Query → Answer → Done` — L4 учится вслепую.
+**Problem**: `Query → Answer → Done` — L4 learns blindly.
 
 ```
-СТАЛО: Query → Retrieval → L4 → Answer → EVALUATE → LOG → ADJUST
+AFTER: Query → Retrieval → L4 → Answer → EVALUATE → LOG → ADJUST
 ```
 
 ```python
 @dataclass
 class EvaluationResult:
-    faithfulness: float       # ответ соответствует фактам?
-    trace_coverage: float     # все факты цепочки использованы?
-    contradiction_rate: float # противоречия в ответе?
+    faithfulness: float       # does the answer match the facts?
+    trace_coverage: float     # are all facts in the chain used?
+    contradiction_rate: float # contradictions in the answer?
     response_confidence: float
 
 class ClosedLoopEvaluator:
@@ -14061,9 +14029,9 @@ class ClosedLoopEvaluator:
 
 ---
 
-### RFC0034 — Semantic Drift Monitor (Смысловой дрейф)
+### RFC0034 — Semantic Drift Monitor (Semantic drift)
 
-**Проблема**: Структурный drift не видит семантического сдвига. Граф структурно стабилен — смысл уже другой.
+**Problem**: Structural drift does not detect a semantic shift. The graph is structurally stable — but the meaning is already different.
 
 ```python
 class SemanticDriftMonitor:
@@ -14077,20 +14045,20 @@ class SemanticDriftMonitor:
         return SemanticDriftResult(semantic_score, esm_drift, centrality_drift, domain_drift)
 ```
 
-**Два независимых алерта:**
-- `structural_drift` — граф изменился по форме
-- `semantic_drift` — граф изменился по смыслу
+**Two independent alerts:**
+- `structural_drift` — the graph changed in form
+- `semantic_drift` — the graph changed in meaning
 
 ---
 
 ### RFC0035 — Facts Pack Dual Mode + Diversity Constraint
 
-**Проблема**: 8–12 фактов на все запросы — недостаточно для сложных задач. Нет гарантии разнообразия источников.
+**Problem**: 8–12 facts for all queries is not enough for complex tasks. There is no guarantee of source diversity.
 
 ```python
 class FactsPackBuilder:
-    STRICT_LIMIT = 12    # быстрые запросы
-    EXTENDED_LIMIT = 40  # сложные вопросы (complexity > COMPLEXITY_THRESHOLD)
+    STRICT_LIMIT = 12    # fast queries
+    EXTENDED_LIMIT = 40  # complex questions (complexity > COMPLEXITY_THRESHOLD)
 
     async def build(self, query: str, complexity: float) -> FactsPack:
         limit = self.EXTENDED_LIMIT if complexity > COMPLEXITY_THRESHOLD else self.STRICT_LIMIT
@@ -14109,9 +14077,9 @@ class FactsPackBuilder:
 
 ---
 
-### TraceLine — Единая трасса факта L1 → L3.5
+### TraceLine — A single trace of a fact L1 → L3.5
 
-**Назначение**: Диагностический обязательный слой. Любой `fact_id` → полный путь через все слои с ESM-валидацией каждого узла.
+**Purpose**: A mandatory diagnostic layer. Any `fact_id` → the full path through all layers with ESM validation of every node.
 
 ```
 GET /trace?id=fact_abc
@@ -14128,7 +14096,7 @@ GET /trace?id=fact_abc
 }
 ```
 
-**Расширение TraceLine для RFC0063 (Knowledge Ingestion):** при запросе с `?id=source_abc123` возвращает все три слоя:
+**TraceLine extension for RFC0063 (Knowledge Ingestion):** for a query with `?id=source_abc123` it returns all three layers:
 
 ```json
 GET /trace?id=source_abc123
@@ -14158,221 +14126,221 @@ GET /trace?id=source_abc123
 }
 ```
 
-> ⚠️ TRACE = путь, НЕ = истина. A→B→C корректно, но если A ложный — результат ложный. TraceLine проверяет ESM каждого узла цепочки.
+> ⚠️ TRACE = a path, NOT = truth. A→B→C is correct, but if A is false — the result is false. TraceLine checks the ESM of every node in the chain.
 
 ---
 
-## 🗺️ Технологическая карта · Опциональный стек
+## 🗺️ Technology Map · Optional Stack
 
-> Ниже перечислены технологии, которые **не являются обязательными** для работы
-> системы, но могут быть подключены как опциональные компоненты в зависимости
-> от условий: железо, сложность задачи, цели проекта.
-> 
-> Принцип подключения: **Graph = Truth не нарушается никогда**.
-> Любая опциональная технология — это замена транспорта или дополнение к
-> retrieval, но не источника истины.
+> Listed below are technologies that are **not mandatory** for the system to
+> operate, but that may be plugged in as optional components depending on
+> conditions: hardware, task complexity, project goals.
+>
+> Integration principle: **Graph = Truth is never violated**.
+> Any optional technology is a replacement for the transport or an addition to
+> retrieval, but never a replacement for the source of truth.
 
 ---
 
-#### 🗄️ Блок A — Граф-движки (альтернативы и дополнения к Neo4j)
+#### 🗄️ Block A — Graph engines (alternatives and additions to Neo4j)
 
 ```
-УСЛОВИЕ                    ТЕХНОЛОГИЯ         РОЛЬ В СИСТЕМЕ
+CONDITION                  TECHNOLOGY         ROLE IN THE SYSTEM
 ──────────────────────────────────────────────────────────────
-Слабое железо / MVP        Kuzu               Замена Neo4j в L3
-RAM < 4GB                  Graph-Lite         Уже в L2.5 (Staging)
-OLAP-аналитика дрейфа      DuckDB             Shadow State вместо
-                                              нагрузки на Neo4j
-Один SQL-стек              PostgreSQL+pgvec   Замена SQLite+Neo4j
-Внешний граф-pipeline      Graphiti           Опциональный backend L3
+Weak hardware / MVP        Kuzu               Replacement for Neo4j in L3
+RAM < 4GB                  Graph-Lite         Already in L2.5 (Staging)
+OLAP drift analytics       DuckDB             Shadow State instead of
+                                              load on Neo4j
+Single SQL stack           PostgreSQL+pgvec   Replacement for SQLite+Neo4j
+External graph pipeline    Graphiti           Optional L3 backend
 ```
 
 ---
 
-##### 🟣 Kuzu — встроенная граф-БД
+##### 🟣 Kuzu — embedded graph DB
 
-**Суть:** Kuzu работает как SQLite — in-process, без отдельного сервера.
-Поддерживает Cypher, ACID, нативный traversal. Разработчики не ведут активную
-поддержку, но база стабильна и пригодна к использованию.
+**Essence:** Kuzu works like SQLite — in-process, with no separate server.
+It supports Cypher, ACID, and native traversal. The developers are not actively
+maintaining it, but the database is stable and fit for use.
 
-**Где применять в Velantrim:**
-- L3 на слабом железе (RAM < 8GB, нет Docker)
-- Локальный агент без инфраструктуры
-- MVP / прототип без Neo4j
+**Where to use it in Velantrim:**
+- L3 on weak hardware (RAM < 8GB, no Docker)
+- A local agent without infrastructure
+- MVP / prototype without Neo4j
 
-**Инвариант:** Kuzu — только как движок L3. `Graph = Truth` сохраняется.
-Write Protocol, ESM, TruthGate — работают поверх Kuzu без изменений.
+**Invariant:** Kuzu is used only as the L3 engine. `Graph = Truth` is preserved.
+Write Protocol, ESM, TruthGate — work on top of Kuzu without changes.
 
 ```python
 # velantrim_config.py
 GRAPH_BACKEND = "neo4j"      # production default
 # GRAPH_BACKEND = "kuzu"       # v8.0: KuzuDB (MIT, Cypher, ACID) — P0-H FIX
-# GRAPH_BACKEND = "graph_lite" # опционально: RAM < 4GB (уже в L2.5)
+# GRAPH_BACKEND = "graph_lite" # optional: RAM < 4GB (already in L2.5)
 ```
 
-**Ограничение:** Kuzu не поддерживает кластеризацию. Только single-node.
-При росте графа > 10M узлов — мигрировать на Neo4j.
+**Limitation:** Kuzu does not support clustering. Single-node only.
+When the graph grows beyond > 10M nodes — migrate to Neo4j.
 
 ---
 
-##### 🔵 DuckDB — Shadow State для аналитики
+##### 🔵 DuckDB — Shadow State for analytics
 
-**Суть:** OLAP-движок, работает на Parquet/Arrow in-process.
-Не хранит граф — только аналитические проекции.
+**Essence:** An OLAP engine, working on Parquet/Arrow in-process.
+It does not store the graph — only analytical projections.
 
-**Где применять в Velantrim:**
-- `Semantic Drift Monitor` и `Observer++` делают тяжёлые вычисления
-  (PageRank, ESM distribution) прямо в Neo4j → блокируют транзакции.
-- DuckDB получает дамп графа каждые 15 мин → аналитика изолирована.
+**Where to use it in Velantrim:**
+- `Semantic Drift Monitor` and `Observer++` perform heavy computations
+  (PageRank, ESM distribution) directly in Neo4j → blocking transactions.
+- DuckDB receives a graph dump every 15 min → analytics is isolated.
 
 ```
-Neo4j   ←── транзакции (OLTP)    Write Protocol, TruthGate
-   ↓ dump каждые 15 мин
-DuckDB  ←── аналитика (OLAP)     Drift Monitor, Observer metrics
+Neo4j   ←── transactions (OLTP)  Write Protocol, TruthGate
+   ↓ dump every 15 min
+DuckDB  ←── analytics (OLAP)     Drift Monitor, Observer metrics
 ```
 
-**Выигрыш:** Observer и Drift Monitor не блокируют основной граф.
-P95 latency не деградирует при фоновой аналитике.
+**Benefit:** The Observer and the Drift Monitor do not block the main graph.
+P95 latency does not degrade under background analytics.
 
 ---
 
-##### 🟢 Graphiti — опциональный граф-pipeline
+##### 🟢 Graphiti — optional graph pipeline
 
-**Суть:** Graphiti строит граф сущностей из текстовых эпизодов с временными
-рёбрами. Лежит в основе Velantrim как источник вдохновения.
+**Essence:** Graphiti builds a graph of entities from text episodes with temporal
+edges. It lies at the foundation of Velantrim as a source of inspiration.
 
-**Где применять в Velantrim:**
-- Опциональный backend для `ConsolidationEngine` (L2→L3 промоут)
-- Импорт внешних корпусов знаний в L3
-- Альтернативный pipeline для ingestion когда нет кастомного парсера
+**Where to use it in Velantrim:**
+- An optional backend for the `ConsolidationEngine` (L2→L3 promotion)
+- Importing external knowledge corpora into L3
+- An alternative ingestion pipeline when there is no custom parser
 
-**Ограничение:** Graphiti — не источник истины. Всё что приходит через
-Graphiti проходит через `TruthGate + Write Protocol` как и любой другой источник.
+**Limitation:** Graphiti is not a source of truth. Everything that comes through
+Graphiti passes through `TruthGate + Write Protocol` like any other source.
 `source_type = "trusted_import"`, `trust_score = 0.80`.
 
 ---
 
-##### 🟡 Graph-Lite — уже существует в L2.5
+##### 🟡 Graph-Lite — already exists in L2.5
 
-**Суть:** Уже реализован в L2.5 Staging как временный мини-граф в SQLite
-(таблицы `nodes` + `edges`). Активируется при RAM < 4GB.
+**Essence:** Already implemented in L2.5 Staging as a temporary mini-graph in SQLite
+(the `nodes` + `edges` tables). Activated when RAM < 4GB.
 
-**Напоминание о правиле чтения:**
+**Reminder of the reading rule:**
 ```
-1. Сначала L3 граф (Neo4j / Kuzu) — канон
-2. Если нет в L3, но есть в Graph-Lite → confidence × 0.7
-   пометка "preliminary" (не истина, гипотеза)
-3. При переносе в Neo4j → Graph-Lite очищается
+1. First the L3 graph (Neo4j / Kuzu) — the canon
+2. If not in L3 but present in Graph-Lite → confidence × 0.7
+   marked "preliminary" (not truth, a hypothesis)
+3. On transfer to Neo4j → Graph-Lite is cleared
 ```
 
 ---
 
-#### 🔍 Блок B — RAG-архитектуры (опционально в Fast Path)
+#### 🔍 Block B — RAG architectures (optional in the Fast Path)
 
-> Все перечисленные ниже архитектуры — это **паттерны retrieval**.
-> Они не заменяют `Graph = Truth`, а описывают как и откуда брать факты
-> перед передачей в `FactsPack`.
+> All of the architectures listed below are **retrieval patterns**.
+> They do not replace `Graph = Truth`; they describe how and from where to take facts
+> before passing them into the `FactsPack`.
 
 ```
-ТЕХНОЛОГИЯ    СУТЬ (одной строкой)                    УРОВЕНЬ В VELANTRIM
+TECHNOLOGY    ESSENCE (in one line)                    LAYER IN VELANTRIM
 ──────────────────────────────────────────────────────────────────────────
-GraphRAG      Граф сущностей → глобальные запросы     L3 retrieval
-KAG           ETL-слой: Extract→Aggregate→Normalize    Между L3 и FactsPack
-CAG           Граф причинно-следственных цепочек       L4 ReasoningBank
-ReRAG         Итеративный retrieval (несколько раундов) HybridRetriever
-AgRAG         Агент сам решает когда/что искать        Fast Path routing
-GCR           Reasoning только по путям графа          L4 ограничение
-RefRAG        Самооценка: нужно ли искать ещё          Перед Closed Loop
-Refrag        Сжатие контекста перед LLM               После FactsPack
-Self-RAG      LLM критикует свои ответы                Closed Loop RFC0033
-HyDE          Поиск через гипотетический ответ         L1 FTS5 / Hybrid
+GraphRAG      Graph of entities → global queries       L3 retrieval
+KAG           ETL layer: Extract→Aggregate→Normalize   Between L3 and FactsPack
+CAG           Graph of cause-and-effect chains         L4 ReasoningBank
+ReRAG         Iterative retrieval (several rounds)      HybridRetriever
+AgRAG         The agent decides when/what to search     Fast Path routing
+GCR           Reasoning only along graph paths          L4 constraint
+RefRAG        Self-assessment: is more search needed    Before Closed Loop
+Refrag        Context compression before the LLM        After FactsPack
+Self-RAG      The LLM critiques its own answers         Closed Loop RFC0033
+HyDE          Search via a hypothetical answer          L1 FTS5 / Hybrid
 ```
 
 ---
 
 ##### 🔵 GraphRAG (Microsoft)
 
-**Суть:** Строит граф сущностей поверх корпуса. Отвечает на «глобальные»
-вопросы (темы, сводки, связи) лучше чем векторный поиск.
+**Essence:** Builds a graph of entities on top of a corpus. It answers "global"
+questions (themes, summaries, relationships) better than vector search.
 
-**Где в Velantrim:** L3 retrieval для многошаговых запросов и тематических
-сводок. Особенно полезен при запросах типа WHY / OVERVIEW / THEME.
+**Where in Velantrim:** L3 retrieval for multi-step queries and thematic
+summaries. Especially useful for queries of the WHY / OVERVIEW / THEME type.
 
-**Статус:** Опционально. Не заменяет TruthGate. Результат GraphRAG →
-проходит через `SafeFTSQuery` эквивалент + ESM-фильтр перед FactsPack.
+**Status:** Optional. It does not replace TruthGate. The GraphRAG result →
+passes through the equivalent of `SafeFTSQuery` + an ESM filter before FactsPack.
 
 ---
 
 ##### 🟡 KAG — Knowledge-Augmented Generation
 
-**Суть:** Формальный ETL-слой между L3 retrieval и FactsPack.
-Нормализует, агрегирует, фильтрует факты по `epistemic_state` до передачи
-в контекст.
+**Essence:** A formal ETL layer between L3 retrieval and FactsPack.
+It normalizes, aggregates, and filters facts by `epistemic_state` before passing them
+into the context.
 
-**Где в Velantrim:** Промежуточный шаг в `ContextBuilder`:
+**Where in Velantrim:** An intermediate step in the `ContextBuilder`:
 
 ```
 L3 retrieval → [KAG: Extract→Aggregate→Normalize] → FactsPack → LLM
 ```
 
-Обязательные поля KAG-узла: `source_ref`, `confidence`, `trace_id`,
+Mandatory fields of a KAG node: `source_ref`, `confidence`, `trace_id`,
 `epistemic_state`, `trust_score`.
 
-**Статус:** Концептуально уже реализован в `FactsPack` и `TruthGate`.
-KAG — это просто формальное имя для этого слоя. Можно задокументировать
-явно как `KAGBuilder` вместо анонимного шага.
+**Status:** Conceptually already implemented in `FactsPack` and `TruthGate`.
+KAG is simply a formal name for this layer. It can be documented
+explicitly as `KAGBuilder` instead of an anonymous step.
 
 ---
 
 ##### 🟠 CAG — Causal Argument Graph
 
-**Суть:** Граф причинно-следственных связей поверх L3. Используется
-L4 для построения reasoning-цепочек без LLM-фантазий.
+**Essence:** A graph of cause-and-effect relationships on top of L3. It is used by
+L4 to build reasoning chains without LLM fantasies.
 
-**Где в Velantrim:** L4 `ReasoningBank` — для запросов типа WHY/CAUSE:
+**Where in Velantrim:** L4 `ReasoningBank` — for queries of the WHY/CAUSE type:
 
 ```
-Запрос WHY → L3 facts → CAG traversal → reasoning path → ответ
+WHY query → L3 facts → CAG traversal → reasoning path → answer
 ```
 
-Узлы CAG: `cause_node → effect_node` с полями `confidence`, `evidence_refs`,
-`trace_id`. Рёбра: `[:CAUSES]`, `[:ENABLES]`, `[:PREVENTS]`.
+CAG nodes: `cause_node → effect_node` with the fields `confidence`, `evidence_refs`,
+`trace_id`. Edges: `[:CAUSES]`, `[:ENABLES]`, `[:PREVENTS]`.
 
-**Статус:** Опционально. Усиливает L4 детерминированным reasoning.
-Строится поверх существующих L3-узлов через дополнительные рёбра.
+**Status:** Optional. It strengthens L4 with deterministic reasoning.
+It is built on top of existing L3 nodes through additional edges.
 
 ---
 
 ##### 🟢 ReRAG — Recursive / Iterative RAG
 
-**Суть:** Несколько раундов retrieval: по результатам первого прохода
-формируются уточнённые подзапросы → снова ищет → расширяет контекст.
+**Essence:** Several rounds of retrieval: based on the results of the first pass,
+refined sub-queries are formed → it searches again → it expands the context.
 
-**Где в Velantrim:** `HybridRetriever` уже поддерживает многоступенчатый
-retrieval и graph expansion. ReRAG — это формальное имя для этого паттерна.
+**Where in Velantrim:** The `HybridRetriever` already supports multi-stage
+retrieval and graph expansion. ReRAG is a formal name for this pattern.
 
-**Ограничение:** Обязателен явный лимит итераций `MAX_RERAG_ITERATIONS = 3`
-и критерий остановки (coverage порог). Без лимита — token explosion.
+**Limitation:** An explicit iteration limit `MAX_RERAG_ITERATIONS = 3`
+and a stopping criterion (a coverage threshold) are mandatory. Without a limit — token explosion.
 
 ```python
 # velantrim_config.py
-MAX_RERAG_ITERATIONS = 3      # максимум раундов
-RERAG_COVERAGE_THRESHOLD = 0.85  # стоп если покрытие > 85%
+MAX_RERAG_ITERATIONS = 3      # maximum rounds
+RERAG_COVERAGE_THRESHOLD = 0.85  # stop if coverage > 85%
 ```
 
 ---
 
 ##### 🔴 GCR — Graph-Constrained Reasoning
 
-**Суть:** Reasoning только по существующим путям в графе. LLM не может
-«придумать» связь, которой нет в L3. Строгое ограничение.
+**Essence:** Reasoning only along existing paths in the graph. The LLM cannot
+"invent" a relationship that is not in L3. A strict constraint.
 
-**Где в Velantrim:** L4 `ReasoningBank` + Write Protocol. По сути GCR —
-это философия которую уже реализует `Graph = Truth` принцип.
-Можно формализовать как явный флаг:
+**Where in Velantrim:** L4 `ReasoningBank` + Write Protocol. In essence GCR —
+is a philosophy that the `Graph = Truth` principle already implements.
+It can be formalized as an explicit flag:
 
 ```python
-reasoning_mode = "graph_constrained"  # только по путям L3
+reasoning_mode = "graph_constrained"  # only along L3 paths
 # reasoning_mode = "hybrid"           # L3 + LLM inference
 ```
 
@@ -14380,51 +14348,51 @@ reasoning_mode = "graph_constrained"  # только по путям L3
 
 ##### 🟡 AgRAG — Agentic RAG
 
-**Суть:** Агент сам решает когда и что искать. Не линейный pipeline,
-а цикл: действие → оценка → следующее действие.
+**Essence:** The agent itself decides when and what to search for. Not a linear pipeline,
+but a loop: action → evaluation → next action.
 
-**Где в Velantrim:** Весь Fast Path уже агентный. AgRAG описывает
-именно паттерн `Fact Router` (см. RFC0038 ниже) + `Closed Loop Eval`.
+**Where in Velantrim:** The entire Fast Path is already agentic. AgRAG describes
+exactly the `Fact Router` pattern (see RFC0038 below) + `Closed Loop Eval`.
 
 ---
 
 ##### 🟢 RefRAG / Self-RAG
 
-**Суть:** После retrieval система оценивает достаточность найденного.
-Если нет — ещё один раунд. LLM критикует свои источники.
+**Essence:** After retrieval, the system evaluates the sufficiency of what was found.
+If not enough — another round. The LLM critiques its sources.
 
-**Где в Velantrim:** `Closed Loop Eval (RFC0033)` уже реализует этот
-паттерн. RefRAG — это альтернативное название. Отличие: в RefRAG оценка
-происходит ДО генерации ответа, в RFC0033 — ПОСЛЕ. Оба подхода совместимы.
+**Where in Velantrim:** The `Closed Loop Eval (RFC0033)` already implements this
+pattern. RefRAG is an alternative name. The difference: in RefRAG the evaluation
+happens BEFORE generating the answer, in RFC0033 — AFTER. Both approaches are compatible.
 
 ---
 
-##### ⚠️ Refrag — сжатие контекста
+##### ⚠️ Refrag — context compression
 
-**Суть:** Оптимизация как LLM читает контекст. Сжимает чанки через
-embeddings, выбирает только важное. Ускоряет inference до ~30x TTFT.
+**Essence:** An optimization of how the LLM reads the context. It compresses chunks via
+embeddings, selecting only the important parts. It speeds up inference by up to ~30x TTFT.
 
-**Важно:** Refrag — про **эффективность**, не про **истину**.
-Не делает систему умнее — делает дешевле и быстрее.
+**Important:** Refrag is about **efficiency**, not about **truth**.
+It does not make the system smarter — it makes it cheaper and faster.
 
-**Где в Velantrim:** После `FactsPack`, перед `LLM Generation`.
-Применять только когда Graph + FactsPack стабильны и проблема — cost/latency.
+**Where in Velantrim:** After `FactsPack`, before `LLM Generation`.
+Apply it only when the Graph + FactsPack are stable and the problem is cost/latency.
 
 ```
-FactsPack (12-40 фактов) → [Refrag: сжатие] → LLM (только важное)
+FactsPack (12-40 facts) → [Refrag: compression] → LLM (only what matters)
 ```
 
-**Статус:** Низкий приоритет. Реализовывать в следующем спринте.
+**Status:** Low priority. To be implemented in the next sprint.
 
 ---
 
 ##### 🟡 HyDE — Hypothetical Document Embedding
 
-**Суть:** Генерирует «гипотетический ответ» на запрос, затем ищет
-похожее на него в базе. Улучшает sparse retrieval для необычных запросов.
+**Essence:** It generates a "hypothetical answer" to a query, then searches for
+what is similar to it in the database. It improves sparse retrieval for unusual queries.
 
-**Где в Velantrim:** `HybridRetriever` — дополнение к BM25/FTS5.
-Особенно полезно для L1 когда точный текст запроса не совпадает с эпизодами.
+**Where in Velantrim:** The `HybridRetriever` — an addition to BM25/FTS5.
+Especially useful for L1 when the exact query text does not match the episodes.
 
 ---
 
@@ -14434,30 +14402,30 @@ FactsPack (12-40 фактов) → [Refrag: сжатие] → LLM (только 
 
 ### RFC0036 — Persistent Event Fallback Queue
 
-**Версия:** 2 · **Приоритет:** 🔴 Критично · **Время реализации:** 2–3 дня
+**Version:** 2 · **Priority:** 🔴 Critical · **Implementation time:** 2–3 days
 
-**Проблема:** `fallback_queue` в `RobustEventBus` — чисто in-memory
-(`asyncio.Queue`). При рестарте агента или Redis crash все события теряются
-навсегда. Это единственное место в системе где «Truth Integrity» нарушается
-на уровне событий (не фактов). 182 страницы документа — ни одного упоминания.
+**Problem:** `fallback_queue` in `RobustEventBus` is purely in-memory
+(`asyncio.Queue`). On an agent restart or a Redis crash, all events are lost
+forever. This is the only place in the system where "Truth Integrity" is violated
+at the level of events (not facts). 182 pages of the document — not a single mention.
 
-**Инвариант:** Это НЕ нарушает Write Protocol — события не являются фактами.
-SQLite fallback работает параллельно с существующим DLQ.
+**Invariant:** This does NOT violate the Write Protocol — events are not facts.
+The SQLite fallback works in parallel with the existing DLQ.
 
-**Решение:** Заменить `asyncio.Queue` на SQLite-таблицу `event_fallback`.
+**Solution:** Replace `asyncio.Queue` with the SQLite table `event_fallback`.
 
 ```python
-# P3-A FIX: ⚠️ КАНОНИЧНА: SQLiteFallbackQueue в разделе «1. Event Bus & Ingestion Pipeline».
-# Этот фрагмент — архивный RFC-текст. Реализацию смотреть выше.
-# event_bus.py — RFC0036 дополнение к классу RobustEventBus (каноническая версия в разделе «1. Event Bus»)
-# Добавить следующие методы и атрибуты в существующий класс:
+# P3-A FIX: ⚠️ CANONICAL: SQLiteFallbackQueue in the section "1. Event Bus & Ingestion Pipeline".
+# This fragment is archival RFC text. See the implementation above.
+# event_bus.py — RFC0036 addition to the RobustEventBus class (canonical version in the section "1. Event Bus")
+# Add the following methods and attributes to the existing class:
 import aiosqlite
 import zlib
 from prometheus_client import Counter, Gauge
 
-class RobustEventBus:  # расширение — добавить в основной класс
-    # Новые атрибуты (__init__):
-    # self.sqlite_path = sqlite_path  (уже есть operational DB)
+class RobustEventBus:  # extension — add to the main class
+    # New attributes (__init__):
+    # self.sqlite_path = sqlite_path  (operational DB already exists)
     # self.fallback_inserted = Counter('event_fallback_inserted_total', ...)
     # self.fallback_recovered = Counter('event_fallback_recovered_total', ...)
     # self.fallback_size = Gauge('event_fallback_size', ...)
@@ -14468,7 +14436,7 @@ class RobustEventBus:  # расширение — добавить в основ
             await db.execute("""
                 CREATE TABLE IF NOT EXISTS event_fallback (
                     id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                    event_data  BLOB    NOT NULL,       -- zlib-сжатый JSON
+                    event_data  BLOB    NOT NULL,       -- zlib-compressed JSON
                     priority    TEXT    DEFAULT 'NORMAL', -- CRITICAL / NORMAL
                     retry_count INTEGER DEFAULT 0,
                     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -14482,7 +14450,7 @@ class RobustEventBus:  # расширение — добавить в основ
 
     async def publish(self, event: AgentEvent,
                       priority: str = 'NORMAL') -> bool:
-        event_data = { ... }  # как раньше
+        event_data = { ... }  # as before
         try:
             await self.redis.xadd(self.stream_key, event_data)
             return True
@@ -14501,7 +14469,7 @@ class RobustEventBus:  # расширение — добавить в основ
             return False
 
     async def process_persistent_fallback(self):
-        """Вызывается scheduler каждые 5 мин"""
+        """Called by the scheduler every 5 min"""
         async with aiosqlite.connect(self.sqlite_path) as db:
             cursor = await db.execute("""
                 SELECT id, event_data FROM event_fallback
@@ -14527,7 +14495,7 @@ class RobustEventBus:  # расширение — добавить в основ
             await db.commit()
 
     async def cleanup_old_fallback(self):
-        """Вызывается scheduler каждые 24ч"""
+        """Called by the scheduler every 24h"""
         async with aiosqlite.connect(self.sqlite_path) as db:
             await db.execute(
                 "DELETE FROM event_fallback WHERE created_at < ?",
@@ -14536,7 +14504,7 @@ class RobustEventBus:  # расширение — добавить в основ
             await db.commit()
 ```
 
-**Интеграция в main.py / scheduler:**
+**Integration into main.py / scheduler:**
 ```python
 scheduler.add_job(event_bus.process_persistent_fallback,
                   'interval', minutes=5)
@@ -14544,52 +14512,52 @@ scheduler.add_job(event_bus.cleanup_old_fallback,
                   'interval', hours=24)
 ```
 
-**Метрика Prometheus:** `event_fallback_inserted_total`,
+**Prometheus metric:** `event_fallback_inserted_total`,
 `event_fallback_recovered_total`, `event_fallback_size`
 
-**Для CRITICAL событий** (Ring Zero change, ESM Validated→Contradicted):
+**For CRITICAL events** (Ring Zero change, ESM Validated→Contradicted):
 ```python
 await event_bus.publish(event, priority='CRITICAL')
 ```
 
 ---
 
-### RFC0036+ — OCC Patch для ESMChunkedInvalidator
+### RFC0036+ — OCC Patch for ESMChunkedInvalidator
 
-**Проблема:** `asyncio.sleep(0.1)` в батчевом откате создаёт race condition.
-В момент паузы другой процесс (Fast-Track Staging) может привязать новые
-факты к узлам, которые находятся в очереди на инвалидацию → «фантомные» связи.
+**Problem:** `asyncio.sleep(0.1)` in the batched rollback creates a race condition.
+During the pause, another process (Fast-Track Staging) may attach new
+facts to nodes that are queued for invalidation → "phantom" links.
 
-**Решение:** Optimistic Concurrency Control — версионирование узлов.
+**Solution:** Optimistic Concurrency Control — node versioning.
 
-**Шаг 1 — Миграция схемы (один раз):**
+**Step 1 — Schema migration (one-time):**
 ```cypher
-// Добавить поле версии во все узлы :Fact
+// Add a version field to all :Fact nodes
 MATCH (f:Fact) WHERE f._version_ IS NULL
 SET f._version_ = 1
 ```
 
-**Шаг 2 — Атомарный Cypher вместо sleep:**
+**Step 2 — Atomic Cypher instead of sleep:**
 ```cypher
-// БЫЛО (с race condition):
+// BEFORE (with a race condition):
 MATCH (dep:Fact {pending_invalidation: true})
 WITH dep LIMIT 50
 SET dep.epistemic_state = 'Hypothesized'
 ...
 
-// СТАЛО (OCC — атомарно):
+// AFTER (OCC — atomic):
 MATCH (dep:Fact {id: $fact_id, _version_: $expected_version})
 SET dep.epistemic_state   = 'Hypothesized',
     dep.pending_invalidation = false,
     dep.invalidated_at    = datetime(),
     dep._version_         = dep._version_ + 1
 RETURN dep.id as processed
-// Если _version_ изменилась → 0 строк → добавить в DLQ, не зависнуть
+// If _version_ changed → 0 rows → add to the DLQ, do not hang
 ```
 
-**Шаг 3 — Python:**
+**Step 3 — Python:**
 ```python
-# 📎 OCC-расширение ESMChunkedInvalidator (базовая версия — RFC0029+, см. выше)
+# 📎 OCC extension of ESMChunkedInvalidator (base version — RFC0029+, see above)
 class ESMChunkedInvalidator:
     async def _process_single(self, fact_id: str,
                                expected_version: int) -> bool:
@@ -14598,44 +14566,44 @@ class ESMChunkedInvalidator:
             {"fact_id": fact_id, "expected_version": expected_version}
         )
         if not result or result[0]["processed"] == 0:
-            # Версия изменилась — добавить в DLQ для повтора
+            # The version changed — add to the DLQ for retry
             await self.dlq.put(fact_id)
             return False
         return True
-    # asyncio.sleep(0.1) — УДАЛИТЬ
+    # asyncio.sleep(0.1) — REMOVE
 ```
 
-**Результат:** Нет deadlock, нет race condition, нет фантомных связей.
-DLQ обрабатывает конфликтные случаи автоматически.
+**Result:** No deadlock, no race condition, no phantom links.
+The DLQ handles conflict cases automatically.
 
 ---
 
 ### RFC0037 — Async Closed Loop Eval
 
-**Проблема:** `ClosedLoopEvaluator (RFC0033)` работает в синхронном Fast Path.
-Пользователь ждёт пока система оценивает свой ответ → P95 latency 2000+ мс
-вместо заявленных 500 мс. SLO нарушается.
+**Problem:** `ClosedLoopEvaluator (RFC0033)` runs in the synchronous Fast Path.
+The user waits while the system evaluates its own answer → P95 latency 2000+ ms
+instead of the stated 500 ms. The SLO is violated.
 
-**Решение:** Вынести EVALUATE в SLOW PATH через Event Bus.
+**Solution:** Move EVALUATE to the SLOW PATH via the Event Bus.
 
 ```
-БЫЛО:
-  Query → Retrieval → L4 → Answer → EVALUATE → [ждём] → ADJUST → Response
+BEFORE:
+  Query → Retrieval → L4 → Answer → EVALUATE → [wait] → ADJUST → Response
 
-СТАЛО:
-  Query → Retrieval → L4 → Answer → Response  ← пользователь получает здесь
+AFTER:
+  Query → Retrieval → L4 → Answer → Response  ← the user receives it here
                                   ↓ async (Event Bus)
                              L4 Worker → EVALUATE → ADJUST → ReasoningBank
 ```
 
-**Изменение в Fast Path:**
+**Change in the Fast Path:**
 ```python
 # context_builder.py / fast_path.py
 async def generate_response(self, query, facts_pack) -> Response:
     answer = await self.llm.generate(query, facts_pack)
 
-    # БЫЛО: await self.evaluator.evaluate(query, facts_pack, answer)
-    # СТАЛО: отправить в фон
+    # BEFORE: await self.evaluator.evaluate(query, facts_pack, answer)
+    # AFTER: send to the background
     await self.event_bus.publish(AgentEvent(
         event_type  = "AGENT_RESPONSE",
         payload     = {
@@ -14647,7 +14615,7 @@ async def generate_response(self, query, facts_pack) -> Response:
         }
     ), priority='NORMAL')
 
-    return answer  # ← сразу пользователю
+    return answer  # ← straight to the user
 ```
 
 **L4 Worker (Slow Path):**
@@ -14666,7 +14634,7 @@ async def process_evaluation_queue(self):
             answer     = data["answer"]
         )
 
-        # Обучаем ReasoningBank на результате
+        # Train ReasoningBank on the result
         await self.reasoning_bank.update_strategy_feedback(
             strategy_id = data["strategy_id"],
             outcome     = "SUCCESS" if result.faithfulness > MIN_FAITHFULNESS
@@ -14674,7 +14642,7 @@ async def process_evaluation_queue(self):
             metrics     = result.to_dict()
         )
 
-        # Плохой ответ → алерт Observer++
+        # Bad answer → Observer++ alert
         if result.faithfulness < MIN_FAITHFULNESS:
             await self.observer.on_anomaly(AnomalyEvent(
                 severity = "warning",
@@ -14683,34 +14651,34 @@ async def process_evaluation_queue(self):
             ))
 ```
 
-**Результат:** Fast Path не блокируется. P95 возвращается к < 500 мс.
-Качество ответов улучшается асинхронно без влияния на UX.
+**Result:** The Fast Path is not blocked. P95 returns to < 500 ms.
+Answer quality improves asynchronously without affecting UX.
 
 ---
 
-### RFC0038 — Fact Router (Детерминированный)
+### RFC0038 — Fact Router (Deterministic)
 
-**Проблема:** Нет формального механизма маршрутизации запросов по типу.
-Router через LLM — недетерминирован и нарушает `Graph = Truth` принцип.
-Router должен быть rule-based + graph, без LLM в цепи принятия решений.
+**Problem:** There is no formal mechanism for routing queries by type.
+A Router via LLM is non-deterministic and violates the `Graph = Truth` principle.
+The Router must be rule-based + graph, with no LLM in the decision-making chain.
 
-**Суть:** Каждый запрос классифицируется по типу → маршрутизируется
-к правильному retrieval-источнику ДО обращения к LLM.
+**Essence:** Every query is classified by type → routed
+to the correct retrieval source BEFORE the LLM is invoked.
 
-**Таблица маршрутизации:**
+**Routing table:**
 
-| Тип запроса | Маркеры | Маршрут | Примечание |
+| Query type | Markers | Route | Note |
 |-------------|---------|---------|-----------|
-| `DEFINE` | что такое / определи / объясни | L3 Graph | Только факты |
-| `WHY / CAUSE` | почему / причина / из-за | L3 + CAG paths | Причинно-следственные цепи |
-| `HOW` | как / каким образом / шаги | L3 + Procedures | Процедурная память |
-| `FACT / DATE` | когда / сколько / кто | L2 SQLite / API | Конкретные данные |
-| `STRATEGY` | план / стратегия / подход | L4 ReasoningBank | Мета-знания |
-| `HISTORY` | что я делал / прошлое / помнишь | L1 Episodic | Эпизодическая память |
-| `CHAT` | привет / спасибо / эмоция | LLM only | Нет retrieval |
-| `COMPLEX` | многоступенчатый / план | ReRAG + L3+L4 | Итеративный retrieval |
+| `DEFINE` | what is / define / explain | L3 Graph | Facts only |
+| `WHY / CAUSE` | why / reason / because of | L3 + CAG paths | Cause-and-effect chains |
+| `HOW` | how / in what way / steps | L3 + Procedures | Procedural memory |
+| `FACT / DATE` | when / how much / who | L2 SQLite / API | Concrete data |
+| `STRATEGY` | plan / strategy / approach | L4 ReasoningBank | Meta-knowledge |
+| `HISTORY` | what I did / past / do you remember | L1 Episodic | Episodic memory |
+| `CHAT` | hi / thanks / emotion | LLM only | No retrieval |
+| `COMPLEX` | multi-step / plan | ReRAG + L3+L4 | Iterative retrieval |
 
-**Реализация:**
+**Implementation:**
 ```python
 # fact_router.py
 from dataclasses import dataclass
@@ -14730,34 +14698,34 @@ class QueryType(Enum):
 class RouteDecision:
     query_type  : QueryType
     sources     : list[str]   # ["l3", "l4", "l1", "api"]
-    rerag       : bool        # использовать итеративный retrieval
-    max_facts   : int         # STRICT(12) или EXTENDED(40)
-    explanation : str         # для TraceLine / аудита
+    rerag       : bool        # use iterative retrieval
+    max_facts   : int         # STRICT(12) or EXTENDED(40)
+    explanation : str         # for TraceLine / audit
 
 class FactRouter:
-    """RFC0038 — Детерминированный маршрутизатор.
-    НЕ использует LLM для принятия решений.
+    """RFC0038 — Deterministic router.
+    Does NOT use the LLM for decision-making.
     Rule-based + TF-IDF keyword matching.
     """
 
     PATTERNS = {
-        QueryType.DEFINE   : ["что такое", "определи", "объясни",
+        QueryType.DEFINE   : ["what is", "define", "explain",
                                "what is", "define"],
-        QueryType.WHY      : ["почему", "причина", "из-за", "why",
-                               "because", "причиной"],
-        QueryType.HOW      : ["как", "каким образом", "шаги",
-                               "how to", "алгоритм"],
-        QueryType.FACT     : ["когда", "сколько", "кто", "где",
+        QueryType.WHY      : ["why", "reason", "because of", "why",
+                               "because", "due to"],
+        QueryType.HOW      : ["how", "in what way", "steps",
+                               "how to", "algorithm"],
+        QueryType.FACT     : ["when", "how much", "who", "where",
                                "when", "how many", "who"],
-        QueryType.STRATEGY : ["план", "стратегия", "подход",
+        QueryType.STRATEGY : ["plan", "strategy", "approach",
                                "strategy", "approach"],
-        QueryType.HISTORY  : ["помнишь", "прошлый раз", "вчера",
-                               "remember", "last time", "история"],
-        # P1-H FIX: "пока" убрано — в русском ambiguous: "goodbye" И "while/until".
-        # "пока база не обновится" → маршрутизировался в LLM-only без retrieval.
-        # Заменено на явное "до свидания" + "bye".
-        QueryType.CHAT     : ["привет", "спасибо", "до свидания",
-                               "hello", "thanks", "как дела", "bye"],
+        QueryType.HISTORY  : ["remember", "last time", "yesterday",
+                               "remember", "last time", "history"],
+        # P1-H FIX: "poka" removed — in Russian it is ambiguous: "goodbye" AND "while/until".
+        # "until the database updates" → was routed to LLM-only without retrieval.
+        # Replaced with an explicit "goodbye" + "bye".
+        QueryType.CHAT     : ["hello", "thanks", "goodbye",
+                               "hello", "thanks", "how are you", "bye"],
     }
 
     ROUTE_MAP = {
@@ -14788,8 +14756,8 @@ class FactRouter:
     }
 
     def route(self, query: str) -> RouteDecision:
-        """Детерминированная классификация запроса.
-        Без LLM. Rule-based + keyword matching.
+        """Deterministic classification of the query.
+        No LLM. Rule-based + keyword matching.
         """
         query_lower = query.lower()
         scores = {qt: 0 for qt in QueryType}
@@ -14799,32 +14767,32 @@ class FactRouter:
                 if pattern in query_lower:
                     scores[query_type] += 1
 
-        # Определить тип по максимальному score
+        # Determine the type by the maximum score
         best_type = max(scores, key=scores.get)
 
-        # COMPLEX если несколько типов с высоким score
+        # COMPLEX if several types have a high score
         high_score_types = [qt for qt, s in scores.items() if s >= 2]
         if len(high_score_types) > 1:
             best_type = QueryType.COMPLEX
 
-        # P9-FIX БАГ-15: комментарий исправлен — CHAT никогда не является fallback
-        # Нет паттернов → FACT по умолчанию (conservative: всегда retrieval)
+        # P9-FIX BUG-15: comment corrected — CHAT is never a fallback
+        # No patterns → FACT by default (conservative: always retrieval)
         if scores[best_type] == 0:
             best_type = QueryType.FACT
 
         decision = self.ROUTE_MAP[best_type]
-        logger.info(f"FactRouter: {best_type} → {decision.sources} "  # было {query_type} — переменная цикла, не best_type
+        logger.info(f"FactRouter: {best_type} → {decision.sources} "  # was {query_type} — loop variable, not best_type
                     f"(rerag={decision.rerag})")
         return decision
 ```
 
-**Интеграция в Fast Path:**
+**Integration into the Fast Path:**
 ```python
 # fast_path.py
 router   = FactRouter()
 decision = router.route(user_query)
 
-# Retrieval согласно маршруту
+# Retrieval according to the route
 facts = await hybrid_retriever.retrieve(
     query    = user_query,
     sources  = decision.sources,
@@ -14833,42 +14801,42 @@ facts = await hybrid_retriever.retrieve(
 )
 ```
 
-**Инварианты RFC0038:**
-- `I_ROUTER_1`: FactRouter НИКОГДА не вызывает LLM
-- `I_ROUTER_2`: Каждое решение логируется в TraceLine
-- `I_ROUTER_3`: COMPLEX тип автоматически включает ReRAG с лимитом
+**RFC0038 invariants:**
+- `I_ROUTER_1`: FactRouter NEVER calls the LLM
+- `I_ROUTER_2`: Every decision is logged in TraceLine
+- `I_ROUTER_3`: The COMPLEX type automatically enables ReRAG with the limit
   `MAX_RERAG_ITERATIONS = 3`
 
 ---
 
-### RFC0039 — Thompson Sampling для L4 ReasoningBank
+### RFC0039 — Thompson Sampling for the L4 ReasoningBank
 
-**Проблема:** UCB1 (RFC0025) детерминирован и при большом числе стратегий
-(100+) тратит CPU на пересчёт `total_trials` O(k) на каждый вызов.
-При delayed feedback (ответ получен позже) UCB1 застревает в локальных оптимумах.
+**Problem:** UCB1 (RFC0025) is deterministic and, with a large number of strategies
+(100+), spends CPU recomputing `total_trials` at O(k) on every call.
+With delayed feedback (the answer is received later), UCB1 gets stuck in local optima.
 
-**Решение:** Заменить UCB1 на Thompson Sampling — стохастический bandit,
-который естественно балансирует exploration/exploitation через Beta-распределение.
+**Solution:** Replace UCB1 with Thompson Sampling — a stochastic bandit
+that naturally balances exploration/exploitation via a Beta distribution.
 
 ```
-БЫЛО (UCB1):
+BEFORE (UCB1):
   score = success_rate + sqrt(2 × ln(N) / n)
-  → O(k) пересчёт total_trials по всем стратегиям
-  → Детерминирован → риск локального оптимума
+  → O(k) recomputation of total_trials over all strategies
+  → Deterministic → risk of a local optimum
 
-СТАЛО (Thompson Sampling):
+AFTER (Thompson Sampling):
   score = numpy.random.beta(success_count + 1, failure_count + 1)
-  → O(1) на стратегию, нет пересчёта N
-  → Стохастичен → естественное исследование
+  → O(1) per strategy, no recomputation of N
+  → Stochastic → natural exploration
 ```
 
-**Реализация:**
+**Implementation:**
 ```python
-# reasoning_bank.py — RFC0039 дополнение (каноническая версия класса — раздел «14. ReasoningBank»)
-# Заменить метод retrieve_relevant_strategies на Thompson Sampling реализацию:
+# reasoning_bank.py — RFC0039 addition (canonical version of the class — section "14. ReasoningBank")
+# Replace the retrieve_relevant_strategies method with the Thompson Sampling implementation:
 import numpy as np
 
-class ReasoningBank:  # расширение — заменить метод в основном классе
+class ReasoningBank:  # extension — replace the method in the main class
 
     async def retrieve_relevant_strategies(
         self,
@@ -14877,10 +14845,10 @@ class ReasoningBank:  # расширение — заменить метод в 
         seed: int | None = None
     ) -> list[Strategy]:
         """
-        Thompson Sampling выбор стратегий.
-        seed — для воспроизводимого replay в аудите (Инвариант I13).
+        Thompson Sampling strategy selection.
+        seed — for reproducible replay in the audit (Invariant I13).
         """
-        # Шаг 1 — TF-IDF pre-filter (сохранён из RFC0025)
+        # Step 1 — TF-IDF pre-filter (preserved from RFC0025)
         candidates = [
             s for s in await self._load_strategies()
             if cosine(s.embedding, context) >= 0.3
@@ -14888,8 +14856,8 @@ class ReasoningBank:  # расширение — заменить метод в 
         if not candidates:
             return []
 
-        # Шаг 2 — Thompson Sampling
-        rng = np.random.default_rng(seed)  # воспроизводимый генератор
+        # Step 2 — Thompson Sampling
+        rng = np.random.default_rng(seed)  # reproducible generator
         scored = []
         for strategy in candidates:
             alpha = strategy.success_count + 1   # prior = Beta(1,1) = uniform
@@ -14901,43 +14869,43 @@ class ReasoningBank:  # расширение — заменить метод в 
         return [s for _, s in scored[:top_k]]
 ```
 
-**Метрики:**
+**Metrics:**
 ```python
-reasoning_bank_ts_score          # Histogram — TS score по стратегии
-reasoning_bank_exploration_rate  # адаптивный, не фиксированный 10%
+reasoning_bank_ts_score          # Histogram — TS score per strategy
+reasoning_bank_exploration_rate  # adaptive, not a fixed 10%
 ```
 
-**Инварианты RFC0039:**
-- `I13 (TSReplay)`: При audit-replay передавать `seed=session_id_hash` для
-  детерминированного воспроизведения. Без seed — production mode (стохастичен).
-- `I_TS_1`: TS pre-filter остаётся TF-IDF cosine ≥ 0.3 (не меняется).
-- `I_TS_2`: prior Beta(1,1) = uniform для новых стратегий → они всегда проходят фильтр.
+**RFC0039 invariants:**
+- `I13 (TSReplay)`: During audit-replay, pass `seed=session_id_hash` for
+  deterministic reproduction. Without a seed — production mode (stochastic).
+- `I_TS_1`: The TS pre-filter remains TF-IDF cosine ≥ 0.3 (unchanged).
+- `I_TS_2`: prior Beta(1,1) = uniform for new strategies → they always pass the filter.
 
-**Результат:** +8% cumulative reward. CPU −40% (нет O(k) пересчёта).
-Лучше адаптируется к задачам с отложенным фидбеком.
+**Result:** +8% cumulative reward. CPU −40% (no O(k) recomputation).
+Adapts better to tasks with delayed feedback.
 
 ---
 
-### RFC0040 — CQRS Shadow State (DuckDB как аналитический слой)
+### RFC0040 — CQRS Shadow State (DuckDB as the analytical layer)
 
-**Проблема:** Semantic Drift Monitor и Observer++ выполняют тяжёлую аналитику
-(PageRank, ESM-распределение, domain stats) напрямую в Neo4j (OLTP).
-Это создаёт конкуренцию с транзакционными запросами и нарушает SLO P95 < 500ms.
+**Problem:** The Semantic Drift Monitor and Observer++ perform heavy analytics
+(PageRank, ESM distribution, domain stats) directly in Neo4j (OLTP).
+This creates contention with transactional queries and violates the SLO P95 < 500ms.
 
-**Решение:** CQRS — разделить чтение и запись.
-- Neo4j = OLTP (транзакции, TruthGate, Write Protocol)
-- DuckDB = OLAP (аналитика, Drift Monitor, Observer аналитика)
+**Solution:** CQRS — separate reads from writes.
+- Neo4j = OLTP (transactions, TruthGate, Write Protocol)
+- DuckDB = OLAP (analytics, Drift Monitor, Observer analytics)
 
 ```
-БЫЛО:
-  Semantic Drift Monitor → Cypher в Neo4j (O(N log N), блокирует транзакции)
+BEFORE:
+  Semantic Drift Monitor → Cypher in Neo4j (O(N log N), blocks transactions)
 
-СТАЛО:
-  Neo4j (OLTP) → каждые 15 мин → Parquet dump → DuckDB (OLAP)
-  Semantic Drift Monitor → DuckDB SQL (не трогает Neo4j)
+AFTER:
+  Neo4j (OLTP) → every 15 min → Parquet dump → DuckDB (OLAP)
+  Semantic Drift Monitor → DuckDB SQL (does not touch Neo4j)
 ```
 
-**Реализация:**
+**Implementation:**
 ```python
 # shadow_state.py — RFC0040
 import duckdb
@@ -14945,9 +14913,9 @@ from neo4j import AsyncGraphDatabase
 
 class ShadowState:
     """
-    CQRS-слой: Neo4j → DuckDB проекция каждые 15 мин.
-    DuckDB используется ТОЛЬКО для чтения аналитики.
-    Запись в граф — только через Neo4j + Write Protocol.
+    CQRS layer: Neo4j → DuckDB projection every 15 min.
+    DuckDB is used ONLY for reading analytics.
+    Writing to the graph — only through Neo4j + Write Protocol.
     """
     def __init__(self, neo4j_uri: str, duckdb_path: str = "shadow.duckdb"):
         self.neo4j = AsyncGraphDatabase.driver(neo4j_uri)
@@ -14975,7 +14943,7 @@ class ShadowState:
         """)
 
     async def sync(self):
-        """Синхронизация Neo4j → DuckDB. Вызывается scheduler каждые 15 мин."""
+        """Synchronization Neo4j → DuckDB. Called by the scheduler every 15 min."""
         async with self.neo4j.session() as session:
             result = await session.run("""
                 MATCH (f:Fact)
@@ -15000,7 +14968,7 @@ class ShadowState:
             )
 
     def get_esm_distribution(self) -> dict:
-        """Для Semantic Drift Monitor — без нагрузки на Neo4j."""
+        """For the Semantic Drift Monitor — without load on Neo4j."""
         result = self.db.execute("""
             SELECT epistemic_state, COUNT(*) as count
             FROM facts_snapshot
@@ -15020,7 +14988,7 @@ class ShadowState:
 
     @property
     def lag_seconds(self) -> float:
-        """Prometheus метрика: отставание Shadow State от Neo4j."""
+        """Prometheus metric: lag of Shadow State behind Neo4j."""
         row = self.db.execute(
             "SELECT value FROM shadow_meta WHERE key='last_sync'"
         ).fetchone()
@@ -15030,98 +14998,98 @@ class ShadowState:
         return (datetime.now(timezone.utc) - last).total_seconds()
 ```
 
-**Интеграция в Semantic Drift Monitor:**
+**Integration into the Semantic Drift Monitor:**
 ```python
-# semantic_drift_monitor.py — обновление
-# 📎 Каноническая версия SemanticDriftMonitor — RFC0034 (см. выше)
+# semantic_drift_monitor.py — update
+# 📎 Canonical version of SemanticDriftMonitor — RFC0034 (see above)
 class SemanticDriftMonitor:
     def __init__(self, shadow_state: ShadowState):
-        self.shadow = shadow_state  # читаем из DuckDB, не Neo4j
+        self.shadow = shadow_state  # read from DuckDB, not Neo4j
 
     async def check(self) -> SemanticDriftResult:
         esm_dist  = self.shadow.get_esm_distribution()   # DuckDB SQL
         domain_dist = self.shadow.get_domain_distribution()  # DuckDB SQL
-        # PageRank по-прежнему через Neo4j — только раз в сутки
+        # PageRank still via Neo4j — only once a day
         ...
 ```
 
-**Интеграция в main.py / scheduler:**
+**Integration into main.py / scheduler:**
 ```python
 shadow = ShadowState(neo4j_uri, duckdb_path="shadow.duckdb")
 scheduler.add_job(shadow.sync, 'interval', minutes=15)
 ```
 
-**Метрики:**
+**Metrics:**
 ```python
-duckdb_shadow_lag_seconds      # Gauge — отставание от Neo4j
-duckdb_shadow_sync_total       # Counter — успешных синхронизаций
-duckdb_shadow_rows_synced      # Gauge — строк в последней синхронизации
+duckdb_shadow_lag_seconds      # Gauge — lag behind Neo4j
+duckdb_shadow_sync_total       # Counter — successful synchronizations
+duckdb_shadow_rows_synced      # Gauge — rows in the last synchronization
 ```
 
-**Инварианты RFC0040:**
-- `I14 (CQRSRead)`: Semantic Drift Monitor и Observer аналитика НИКОГДА не читают
-  напрямую из Neo4j для агрегаций. Только DuckDB Shadow State.
-  Нарушение: Cypher агрегация в SemanticDriftMonitor.
-- `I_CQRS_1`: DuckDB — только для чтения аналитики. Запись в граф — только Neo4j.
-- `I_CQRS_2`: Lag > 30 мин → Prometheus алерт `duckdb_shadow_lag_seconds > 1800`.
+**RFC0040 invariants:**
+- `I14 (CQRSRead)`: The Semantic Drift Monitor and Observer analytics NEVER read
+  directly from Neo4j for aggregations. Only the DuckDB Shadow State.
+  Violation: a Cypher aggregation in the SemanticDriftMonitor.
+- `I_CQRS_1`: DuckDB — only for reading analytics. Writes to the graph — only Neo4j.
+- `I_CQRS_2`: Lag > 30 min → Prometheus alert `duckdb_shadow_lag_seconds > 1800`.
 
-**Результат:** Neo4j освобождается от аналитической нагрузки.
-P95 latency стабильна при любом размере графа. Drift Monitor работает
-без stop-the-world пауз.
+**Result:** Neo4j is relieved of the analytical load.
+P95 latency is stable at any graph size. The Drift Monitor runs
+without stop-the-world pauses.
 
 ---
 
-### RFC0041 — Graduated Observer++ (деградированный режим)
+### RFC0041 — Graduated Observer++ (degraded mode)
 
-**Проблема:** Observer++ при аномалии вызывает `block_pipeline()` — бинарное
-"всё или ничего". При false-positive срабатывании (ложная тревога) агент
-полностью останавливается, хотя мог бы продолжать в ограниченном режиме.
+**Problem:** On an anomaly, Observer++ calls `block_pipeline()` — a binary
+"all or nothing". On a false-positive trigger (false alarm), the agent
+stops completely, even though it could have continued in a restricted mode.
 
-**Решение:** Заменить бинарный блок на градуированную деградацию.
+**Solution:** Replace the binary block with graduated degradation.
 
 ```
-БЫЛО:
-  anomaly → block_pipeline() → агент мёртв
+BEFORE:
+  anomaly → block_pipeline() → the agent is dead
 
-СТАЛО:
-  anomaly → оценить false_positive_rate → выбрать уровень деградации
-    Уровень 1 (мягкий): только алерт, продолжаем
-    Уровень 2 (деградированный): L3 read-only, L4 ограничен
-    Уровень 3 (полный блок): только при критических нарушениях Write Protocol
+AFTER:
+  anomaly → evaluate false_positive_rate → choose a degradation level
+    Level 1 (soft): alert only, continue
+    Level 2 (degraded): L3 read-only, L4 restricted
+    Level 3 (full block): only on critical Write Protocol violations
 ```
 
-**Реализация:**
+**Implementation:**
 ```python
-# observer_plus_plus.py — RFC0041 (Graduated Observer++ — каноническая версия)
+# observer_plus_plus.py — RFC0041 (Graduated Observer++ — canonical version)
 from prometheus_client import Counter, Gauge
 
 class ObserverPlusPlus:
 
-    # Prometheus метрики
+    # Prometheus metrics
     false_positive_rate_gauge = Gauge(
-        'observer_false_positive_rate', 'Доля ложных срабатываний Observer++'
+        'observer_false_positive_rate', 'Share of false positives of Observer++'
     )
     degraded_mode_activations = Counter(
-        'observer_degraded_mode_total', 'Входов в деградированный режим'
+        'observer_degraded_mode_total', 'Entries into degraded mode'
     )
     full_blocks = Counter(
-        'observer_full_blocks_total', 'Полных блокировок pipeline'
+        'observer_full_blocks_total', 'Full pipeline blocks'
     )
 
     async def on_anomaly(self, event: AnomalyEvent):
         """
-        Graduated response вместо бинарного block.
+        Graduated response instead of a binary block.
         """
         fpr = await self._get_false_positive_rate()
         self.false_positive_rate_gauge.set(fpr)
 
         if event.severity == "info":
-            # Уровень 0: только лог
+            # Level 0: log only
             logger.info(f"Observer++ info: {event.details}")
             return
 
         if fpr > 0.3:
-            # Высокий FPR → деградированный режим, НЕ полный блок
+            # High FPR → degraded mode, NOT a full block
             logger.warning(
                 f"Observer++: high FPR={fpr:.2f}, entering degraded mode "
                 f"instead of full block. Anomaly: {event.details}"
@@ -15131,24 +15099,24 @@ class ObserverPlusPlus:
             return
 
         if event.severity == "warning":
-            # Уровень 1: деградированный режим
+            # Level 1: degraded mode
             await self._enter_degraded_mode()
             self.degraded_mode_activations.inc()
 
         elif event.severity == "critical":
-            # Уровень 2: полный блок — только для Write Protocol violations
+            # Level 2: full block — only for Write Protocol violations
             if event.source == "write_protocol":
                 await self.block_pipeline()
                 self.full_blocks.inc()
             else:
-                # Критическое, но не Write Protocol → деградированный
+                # Critical, but not Write Protocol → degraded
                 await self._enter_degraded_mode()
                 self.degraded_mode_activations.inc()
 
     async def _enter_degraded_mode(self):
         """
-        L3 → read-only. L4 → только проверенные стратегии (success_rate > 0.7).
-        L1/L2 → продолжают работать. Пользователь получает ответ с пометкой.
+        L3 → read-only. L4 → only verified strategies (success_rate > 0.7).
+        L1/L2 → keep working. The user receives an answer with a marker.
         """
         self.mode = "DEGRADED"
         await self.graph.set_read_only(True)
@@ -15156,7 +15124,7 @@ class ObserverPlusPlus:
         logger.warning("Observer++: DEGRADED mode activated")
 
     async def _exit_degraded_mode(self):
-        """Вызывается автоматически если аномалия не подтвердилась за 5 мин."""
+        """Called automatically if the anomaly is not confirmed within 5 min."""
         self.mode = "NORMAL"
         await self.graph.set_read_only(False)
         await self.reasoning_bank.set_conservative_mode(None)
@@ -15164,8 +15132,8 @@ class ObserverPlusPlus:
 
     async def _get_false_positive_rate(self) -> float:
         """
-        FPR = доля алертов за последние 24ч, которые не подтвердились
-        (аномалия не вызвала реального ESM-каскада или Write Violation).
+        FPR = share of alerts over the last 24h that were not confirmed
+        (the anomaly did not cause a real ESM cascade or Write Violation).
         """
         alerts = await self._count_alerts(hours=24)
         confirmed = await self._count_confirmed_anomalies(hours=24)
@@ -15174,60 +15142,60 @@ class ObserverPlusPlus:
         return 1.0 - (confirmed / alerts)
 ```
 
-**Метрики:**
+**Metrics:**
 ```python
-observer_false_positive_rate     # Gauge — текущий FPR
-observer_degraded_mode_total     # Counter — входов в degraded mode
-observer_full_blocks_total       # Counter — полных блокировок
-observer_degraded_duration_seconds  # Histogram — длительность degraded mode
+observer_false_positive_rate     # Gauge — current FPR
+observer_degraded_mode_total     # Counter — entries into degraded mode
+observer_full_blocks_total       # Counter — full blocks
+observer_degraded_duration_seconds  # Histogram — duration of degraded mode
 ```
 
-**Инварианты RFC0041:**
-- `I15 (GraduatedBlock)`: Observer++ НЕ вызывает `block_pipeline()` если
-  `false_positive_rate > 0.3`. Вместо этого — `_enter_degraded_mode()`.
-  Нарушение: прямой `block_pipeline()` при FPR > 0.3.
-- `I_OBS_1`: Write Protocol violations всегда вызывают полный блок (уровень 2),
-  независимо от FPR.
-- `I_OBS_2`: Degraded mode автоматически снимается через 5 мин если аномалия
-  не подтвердилась.
+**RFC0041 invariants:**
+- `I15 (GraduatedBlock)`: Observer++ does NOT call `block_pipeline()` if
+  `false_positive_rate > 0.3`. Instead — `_enter_degraded_mode()`.
+  Violation: a direct `block_pipeline()` when FPR > 0.3.
+- `I_OBS_1`: Write Protocol violations always trigger a full block (level 2),
+  regardless of FPR.
+- `I_OBS_2`: Degraded mode is lifted automatically after 5 min if the anomaly
+  is not confirmed.
 
-**Результат:** +15% uptime агента при ложных срабатываниях.
-Пользователь продолжает получать ответы даже в деградированном режиме.
+**Result:** +15% agent uptime on false triggers.
+The user keeps receiving answers even in degraded mode.
 
 ---
 
-### RFC0042 — Трёхслойный Архитектурный Контракт
+### RFC0042 — Three-Layer Architectural Contract
 
-**Проблема:** L5 Policy может влиять на поведение → поведение влияет на ingestion
-→ ingestion влияет на Graph. Fractal Memory (L2/L2.5) меняет retrieval-приоритеты →
-косвенно меняет что попадает в контекст → влияет на выводы L4.
-Это скрытые петли обратной связи, которые могут накапливать bias.
+**Problem:** L5 Policy can affect behavior → behavior affects ingestion
+→ ingestion affects the Graph. Fractal Memory (L2/L2.5) changes retrieval priorities →
+indirectly changes what gets into the context → affects L4's conclusions.
+These are hidden feedback loops that can accumulate bias.
 
-**Решение:** Жёсткое разделение на три слоя с контрактом прав записи.
+**Solution:** A hard split into three layers with a write-rights contract.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  TRUTH CORE                                                  │
 │  L3 (Neo4j Graph) + L3.5 (Immutable Core) + ESM + Source   │
-│  Права записи: ТОЛЬКО через Write Protocol (RFC0031)        │
-│  Что хранит: факты, их эпистемическое состояние, история    │
-│  Что НЕ делает: не знает о ценностях, режимах, стратегиях   │
+│  Write rights: ONLY through the Write Protocol (RFC0031)    │
+│  What it stores: facts, their epistemic state, history      │
+│  What it does NOT do: knows nothing of values, modes, strats│
 └───────────────────────────┬─────────────────────────────────┘
-                            │ только чтение
+                            │ read only
 ┌───────────────────────────▼─────────────────────────────────┐
 │  POLICY CORE                                                 │
-│  L5 (MetaController) + Ring Zero + Risk Model + Режимы      │
-│  Права записи: только в Policy-хранилище (не в L3)          │
-│  Что делает: управляет поведением агента, стилем, рисками    │
-│  Что НЕ делает: НЕ меняет факты, НЕ меняет trust_score      │
+│  L5 (MetaController) + Ring Zero + Risk Model + Modes       │
+│  Write rights: only into the Policy store (not into L3)     │
+│  What it does: governs agent behavior, style, risks         │
+│  What it does NOT do: does NOT change facts or trust_score  │
 └───────────────────────────┬─────────────────────────────────┘
-                            │ только чтение + метрики
+                            │ read only + metrics
 ┌───────────────────────────▼─────────────────────────────────┐
 │  EVOLUTION CORE                                              │
 │  ClosedLoopEval + SemanticDriftMonitor + AttackSimulation    │
-│  Права записи: только в ReasoningBank (L4) через RFC0039 TS │
-│  Что делает: измеряет, тестирует, предлагает изменения       │
-│  Что НЕ делает: НЕ меняет Truth Core и Policy Core напрямую │
+│  Write rights: only into ReasoningBank (L4) via RFC0039 TS  │
+│  What it does: measures, tests, proposes changes            │
+│  What it does NOT do: does NOT change Truth/Policy directly  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -15235,40 +15203,40 @@ observer_degraded_duration_seconds  # Histogram — длительность deg
 ```python
 # fractal_governance.py — RFC0042
 FRACTAL_ALLOWED_WRITES = {
-    "L2",   # может менять: retrieval_priority, theme strength
-    "L2.5", # может менять: staging_candidates, priority_score
+    "L2",   # may change: retrieval_priority, theme strength
+    "L2.5", # may change: staging_candidates, priority_score
 }
 
 FRACTAL_FORBIDDEN_WRITES = {
-    "ESM",          # epistemic_state фактов — ЗАПРЕЩЕНО
-    "trust_score",  # Source Trust Layer — ЗАПРЕЩЕНО
-    "importance",   # importance фактов в L3 — ЗАПРЕЩЕНО
-    "Ring Zero",    # VALUES CORE — ЗАПРЕЩЕНО
+    "ESM",          # epistemic_state of facts — FORBIDDEN
+    "trust_score",  # Source Trust Layer — FORBIDDEN
+    "importance",   # importance of facts in L3 — FORBIDDEN
+    "Ring Zero",    # VALUES CORE — FORBIDDEN
 }
 
 def validate_fractal_write(layer: str, field: str, writer: str) -> bool:
     """
-    Вызывается при каждой записи из L2/L2.5.
-    Нарушение → FractalGovernanceViolation + лог + Observer++ алерт.
-    FIX-G: параметр layer теперь используется — проверяет что writer
-    действительно из разрешённых слоёв (L2/L2.5), а не произвольный компонент.
+    Called on every write from L2/L2.5.
+    Violation → FractalGovernanceViolation + log + Observer++ alert.
+    FIX-G: the layer parameter is now used — it verifies that the writer
+    really is from the allowed layers (L2/L2.5), not an arbitrary component.
     """
     if layer not in FRACTAL_ALLOWED_WRITES:
         raise FractalGovernanceViolation(
-            f"Layer '{layer}' не входит в FRACTAL_ALLOWED_WRITES. "
-            f"Только {FRACTAL_ALLOWED_WRITES} могут писать через Fractal Governance."
+            f"Layer '{layer}' is not in FRACTAL_ALLOWED_WRITES. "
+            f"Only {FRACTAL_ALLOWED_WRITES} may write through Fractal Governance."
         )
     if field in FRACTAL_FORBIDDEN_WRITES:
         raise FractalGovernanceViolation(
             f"{layer} ({writer}) attempted to write to '{field}'. "
-            f"Fractal Governance violation. Allowed fields: все кроме {FRACTAL_FORBIDDEN_WRITES}"
+            f"Fractal Governance violation. Allowed fields: everything except {FRACTAL_FORBIDDEN_WRITES}"
         )
     return True
 ```
 
-**Каждое влияние Fractal на поведение логируется:**
+**Every Fractal influence on behavior is logged:**
 ```python
-# Добавить в L2IngestionEngine и L2.5Scheduler
+# Add to L2IngestionEngine and L2.5Scheduler
 logger.info(
     "fractal_influence_trace",
     extra={
@@ -15281,35 +15249,35 @@ logger.info(
 )
 ```
 
-**Инварианты RFC0042:**
-- `I16 (TruthIsolation)`: Truth Core не получает команд от Policy Core или Evolution Core.
-  Запись в L3 только через Write Protocol.
-- `I_GOV_1`: L2/L2.5 не могут писать в ESM, trust_score, importance, Ring Zero.
-- `I_GOV_2`: L5 не может вызывать методы, изменяющие факты в L3.
-- `I_GOV_3`: Каждое влияние Fractal на retrieval логируется как `fractal_influence_trace`.
+**RFC0042 invariants:**
+- `I16 (TruthIsolation)`: The Truth Core does not receive commands from the Policy Core or the Evolution Core.
+  Writes to L3 only through the Write Protocol.
+- `I_GOV_1`: L2/L2.5 cannot write to ESM, trust_score, importance, Ring Zero.
+- `I_GOV_2`: L5 cannot call methods that modify facts in L3.
+- `I_GOV_3`: Every Fractal influence on retrieval is logged as `fractal_influence_trace`.
 
-**Результат:** Система остаётся эпистемически чистой на годы.
-Bias не накапливается через скрытые петли обратной связи.
+**Result:** The system stays epistemically clean for years.
+Bias does not accumulate through hidden feedback loops.
 
 ---
 
 ## 📜 RFC0043 — Hardware Profile Selector
 
-> **Статус**: Canonical
+> **Status**: Canonical
 
-### Назначение
+### Purpose
 
-Автоматическая адаптация всего стека Velantrim под физические ресурсы машины. Профиль детектируется один раз при старте и управляет выбором компонентов без ручного вмешательства.
+Automatic adaptation of the entire Velantrim stack to the machine's physical resources. The profile is detected once at startup and governs the selection of components without manual intervention.
 
-### Профили
+### Profiles
 
 ```
-weak   → RAM < 4 GB или CPU < 4 ядра  (RPi, старый ноутбук, мин. VPS)
-medium → RAM 4–12 GB, CPU 4–8 ядер   (ноутбук разработчика, VPS 8GB)
-strong → RAM > 12 GB, CPU > 8 ядер   (рабочая станция, сервер, GPU)
+weak   → RAM < 4 GB or CPU < 4 cores  (RPi, old laptop, min. VPS)
+medium → RAM 4–12 GB, CPU 4–8 cores   (developer laptop, VPS 8GB)
+strong → RAM > 12 GB, CPU > 8 cores   (workstation, server, GPU)
 ```
 
-### Реализация
+### Implementation
 
 ```python
 # hardware_profile.py
@@ -15324,7 +15292,7 @@ def detect_hardware_profile() -> str:
 ```
 
 ```python
-# velantrim_config.py — добавить блок RFC0043
+# velantrim_config.py — add the RFC0043 block
 import os as _os
 from hardware_profile import detect_hardware_profile
 
@@ -15346,9 +15314,9 @@ VELUM_MAX_EDGES        = {"weak": 500, "medium": 1000, "strong": 2000}[_HW]
 CLUSTERING_ALGO        = "minibatch_kmeans" if _HW == "weak" else "agglomerative"
 ```
 
-### Матрица компонентов
+### Component matrix
 
-| Возможность | weak | medium | strong |
+| Capability | weak | medium | strong |
 |-------------|------|--------|--------|
 | Graph DB | SQLite Graph-Lite | KuzuDB embedded    | Neo4j 5.26+ |
 | Vector DB | ChromaDB in-memory | ChromaDB persistent | Qdrant |
@@ -15356,26 +15324,26 @@ CLUSTERING_ALGO        = "minibatch_kmeans" if _HW == "weak" else "agglomerative
 | Embeddings | MiniLM-L12 (~120MB) | USER-bge-m3 (~500MB) | USER-bge-m3 |
 | Consolidation | sequential ×3 | partial ×2 | full parallel |
 | Telemetry | logs only | metrics | full OTel |
-| DuckDB sync | 60 мин | 30 мин | 15 мин |
+| DuckDB sync | 60 min | 30 min | 15 min |
 
-### Инвариант RFC0043
+### RFC0043 invariant
 
 ```
-I17 (HWProfile): HARDWARE_PROFILE авто-детектируется при старте.
-    Ручное переопределение через VELANTRIM_HW_PROFILE env var.
-    Нарушение: хардкод компонентов без учёта профиля.
+I17 (HWProfile): HARDWARE_PROFILE is auto-detected at startup.
+    Manual override via the VELANTRIM_HW_PROFILE env var.
+    Violation: hardcoding components without regard for the profile.
 ```
 
 ---
 
 ### RFC0048: Multi-Component Memory Budget
 
-**Проблема**: I22 проверяет только `LLM_TOTAL_PARAMS ≤ available_RAM`. Не учитываются Neo4j PageCache, Redis, Vector DB, буфер ОС. При MoE-модели на 30B возможен OOM даже при прохождении I22.
+**Problem**: I22 checks only `LLM_TOTAL_PARAMS ≤ available_RAM`. It does not account for Neo4j PageCache, Redis, the Vector DB, or the OS buffer. With a 30B MoE model, OOM is possible even when I22 passes.
 
-**Решение**: суммарный бюджет всех компонентов при старте.
+**Solution**: a combined budget of all components at startup.
 
 ```python
-# hardware_profile.py — добавить в startup_ram_check()
+# hardware_profile.py — add to startup_ram_check()
 
 def compute_memory_budget(config) -> dict:
     available  = psutil.virtual_memory().available
@@ -15384,7 +15352,7 @@ def compute_memory_budget(config) -> dict:
     neo4j_ram  = config.NEO4J_PAGE_CACHE_GB * 1024**3         # default 2 GB
     redis_ram  = _parse_redis_maxmem(config.REDIS_MAXMEM)     # default 512 MB
     vector_ram = config.VECTOR_RAM_GB * 1024**3               # default 1 GB
-    os_buffer  = 2 * 1024**3                                  # 2 GB резерв ОС
+    os_buffer  = 2 * 1024**3                                  # 2 GB OS reserve
 
     total    = llm_ram + neo4j_ram + redis_ram + vector_ram + os_buffer
     pressure = total / available
@@ -15410,42 +15378,42 @@ def startup_ram_check(config):
 ```
 
 ```python
-# velantrim_config.py — добавить:
-NEO4J_PAGE_CACHE_GB  = 2.0    # должно совпадать с docker-compose
+# velantrim_config.py — add:
+NEO4J_PAGE_CACHE_GB  = 2.0    # must match docker-compose
 VECTOR_RAM_GB        = 1.0    # Qdrant persistent / ChromaDB
 MEM_PRESSURE_WARN    = 0.85   # Prometheus WARN threshold
-MEM_PRESSURE_CRIT    = 0.92   # принудительный downshift
+MEM_PRESSURE_CRIT    = 0.92   # forced downshift
 ```
 
 ```
-I24 (MultiComponentBudget): При старте обязана выполняться проверка суммарного
-    RAM-бюджета: LLM + Neo4j_PageCache + Redis + VectorDB + OS_buffer.
-    При pressure > MEM_PRESSURE_CRIT — downshift профиля или LLM_MODE=offline.
-    Нарушение: старт без compute_memory_budget() при LLM_ARCHITECTURE=moe.
+I24 (MultiComponentBudget): At startup a check of the combined
+    RAM budget must be performed: LLM + Neo4j_PageCache + Redis + VectorDB + OS_buffer.
+    When pressure > MEM_PRESSURE_CRIT — downshift the profile or LLM_MODE=offline.
+    Violation: startup without compute_memory_budget() when LLM_ARCHITECTURE=moe.
 ```
 
 ---
 
-## 📜 RFC0044 — LLM_MODE: Offline-режим
+## 📜 RFC0044 — LLM_MODE: Offline Mode
 
-> **Статус**: Canonical
+> **Status**: Canonical
 
-### Назначение
+### Purpose
 
-Три режима работы с LLM. При `offline` система полностью обходится без LLM-вызовов, используя FactRouter + BM25 + LensEngine. 80% функционала сохраняется.
+Three modes of working with the LLM. In `offline` mode the system operates entirely without LLM calls, using FactRouter + BM25 + LensEngine. 80% of the functionality is preserved.
 
-### Конфигурация
+### Configuration
 
 ```python
-# velantrim_config.py — добавить после RFC0043 блока
+# velantrim_config.py — add after the RFC0043 block
 LLM_MODE = _os.getenv("VELANTRIM_LLM_MODE",
            "offline" if _HW == "weak" else "full")
-# "full"    → облачный LLM (GPT/Claude/Qwen3-Max)
-# "lite"    → локальный LLM (Qwen3.5-14B / Llama4)
-# "offline" → без LLM: FactRouter + BM25 + LensEngine (RFC0045)
+# "full"    → cloud LLM (GPT/Claude/Qwen3-Max)
+# "lite"    → local LLM (Qwen3.5-14B / Llama4)
+# "offline" → without an LLM: FactRouter + BM25 + LensEngine (RFC0045)
 ```
 
-### Fast Path без LLM
+### Fast Path without an LLM
 
 ```
 User Query
@@ -15453,23 +15421,23 @@ User Query
     ▼ [1] Normalizer + Lemmatizer  (pymorphy2, RU)
     ▼ [2] FactRouter RFC0038       (FACTUAL|PROCEDURAL|EPISODIC|META)
     ▼ [3] SafeFTSQuery + BM25      (SQLite FTS5 / Neo4j fulltext)
-    ▼ [4] Semantic Reranker        (cosine, локальные эмбеддинги)
-    ▼ [5] LensMatcher RFC0045      → активная линза L4
-    ▼ [F2.6] GraphQueryExecutor   → структурированный ответ из L3
-    ▼ [7] ResponseFormatter        → шаблонный ответ без LLM
+    ▼ [4] Semantic Reranker        (cosine, local embeddings)
+    ▼ [5] LensMatcher RFC0045      → active L4 lens
+    ▼ [F2.6] GraphQueryExecutor   → structured answer from L3
+    ▼ [7] ResponseFormatter        → templated answer without an LLM
     │
     Response
 ```
 
-### Изменение fast_path.py
+### Change in fast_path.py
 
 ```python
-# fast_path.py — добавить ветку перед LLM-вызовом
+# fast_path.py — add a branch before the LLM call
 
-# ❌ БЫЛО:
+# ❌ BEFORE:
 response = await self.llm.complete(context)
 
-# ✅ СТАЛО:
+# ✅ AFTER:
 if config.LLM_MODE == "offline":
     response = await self.lens_engine.execute(
         query=query, entity=detected_entity, session_id=session_id
@@ -15478,17 +15446,17 @@ else:
     response = await self.llm.complete(context)
 ```
 
-### Entity Extraction без LLM
+### Entity Extraction without an LLM
 
 ```python
-# offline_extractor.py — замена Graphiti extraction при LLM_MODE=offline
+# offline_extractor.py — replacement for Graphiti extraction when LLM_MODE=offline
 import spacy
 
 class OfflineEntityExtractor:
     """
     spaCy ru_core_news_lg  → PER, ORG, LOC, DATE  (~500MB, CPU-only)
-    regex patterns         → числа, URL, команды
-    domain keyword dict    → термины из L3 таксономии (загружаются при старте)
+    regex patterns         → numbers, URLs, commands
+    domain keyword dict    → terms from the L3 taxonomy (loaded at startup)
     """
     def __init__(self, graph):
         self.nlp              = spacy.load("ru_core_news_lg")
@@ -15506,27 +15474,27 @@ class OfflineEntityExtractor:
         return entities
 ```
 
-### Инвариант RFC0044
+### RFC0044 invariant
 
 ```
-I18 (LLMMode): При LLM_MODE=offline Fast Path обязан использовать LensEngine.
-    Прямой вызов llm.complete() при offline — нарушение.
-    Нарушение: llm.complete() при LLM_MODE=offline.
+I18 (LLMMode): When LLM_MODE=offline the Fast Path must use LensEngine.
+    A direct llm.complete() call in offline mode is a violation.
+    Violation: llm.complete() when LLM_MODE=offline.
 ```
 
 ---
 
-## 📜 RFC0045 — LensEngine: Детерминированные Линзы L4/L5
+## 📜 RFC0045 — LensEngine: Deterministic Lenses L4/L5
 
-> **Статус**: Canonical
+> **Status**: Canonical
 
-### Назначение
+### Purpose
 
-Expert System поверх L3 графа. 30 линз — детерминированные паттерны понимания запроса и формирования ответа без LLM. При хорошо наполненном L3 ответы точнее LLM: нет галлюцинаций, только верифицированные факты.
+An Expert System on top of the L3 graph. 30 lenses — deterministic patterns for understanding a query and forming an answer without an LLM. With a well-populated L3, the answers are more accurate than an LLM's: no hallucinations, only verified facts.
 
-Каждая линза = `{intent_match} → {graph_query} → {formatted_answer}`
+Each lens = `{intent_match} → {graph_query} → {formatted_answer}`
 
-### DSL линзы
+### Lens DSL
 
 ```python
 # lens_engine.py
@@ -15535,141 +15503,141 @@ from dataclasses import dataclass
 @dataclass
 class Lens:
     lens_id:           str          # "lens:factual_definition"
-    name:              str          # "Определение понятия"
-    domain:            str | None   # "domain:physics" или None (универсальная)
-    priority:          int          # 1–100, выше = матчится первее
+    name:              str          # "Concept definition"
+    domain:            str | None   # "domain:physics" or None (universal)
+    priority:          int          # 1–100, higher = matched first
 
-    # Матчинг интента
+    # Intent matching
     intent_patterns:   list[str]    # regex
-    bm25_keywords:     list[str]    # BM25-якоря
-    query_types:       list[str]    # из FactRouter: ["FACTUAL", "CONCEPTUAL"]
+    bm25_keywords:     list[str]    # BM25 anchors
+    query_types:       list[str]    # from FactRouter: ["FACTUAL", "CONCEPTUAL"]
 
-    # Граф-запрос
-    cypher_template:   str          # шаблон Cypher (Neo4j / Kuzu)
-    sqlite_template:   str          # аналог для Graph-Lite (weak/offline)
+    # Graph query
+    cypher_template:   str          # Cypher template (Neo4j / Kuzu)
+    sqlite_template:   str          # analog for Graph-Lite (weak/offline)
     result_limit:      int
-    confidence_floor:  float        # мин. epistemic_score факта
+    confidence_floor:  float        # min. epistemic_score of a fact
 
-    # Ответ
+    # Answer
     response_template: str          # jinja2
-    fallback_message:  str          # если граф пуст
+    fallback_message:  str          # if the graph is empty
 
     # L5 Observer hook
     observer_check:    bool
     trust_threshold:   float
 ```
 
-### Жизненный цикл запроса
+### Query lifecycle
 
 ```
 Query → LensMatcher
   score = bm25_match × 0.4 + intent_regex × 0.4 + entity_type × 0.2
-  if max_score > 0.3 → выбрать линзу с max score
+  if max_score > 0.3 → choose the lens with max score
 
        → GraphQueryExecutor
-  Подставить {entity}, {domain} в cypher_template (Neo4j)
-                              или sqlite_template  (weak/offline)
-  Фильтр: epistemic_score >= confidence_floor
-          epistemic_variance <= 0.7  (иначе добавить [UNVERIFIED])
+  Substitute {entity}, {domain} into cypher_template (Neo4j)
+                              or sqlite_template  (weak/offline)
+  Filter: epistemic_score >= confidence_floor
+          epistemic_variance <= 0.7  (otherwise add [UNVERIFIED])
           is_active = true
 
-       → L5 Observer Check (если observer_check=True)
+       → L5 Observer Check (if observer_check=True)
   FPR > 0.3 → degraded mode (RFC0041)
 
        → ResponseFormatter  (jinja2)
-  Нет результатов → fallback_message
+  No results → fallback_message
 
-       → Answer  (без LLM)
+       → Answer  (without an LLM)
 ```
 
-### Интеграция в Canonical Memory Protocol
+### Integration into the Canonical Memory Protocol
 
 ```
 F2.6: LensEngine (RFC0045)
-    → если LLM_MODE=offline:
+    → if LLM_MODE=offline:
       → LensMatcher.match_lens(query, query_type)
       → GraphQueryExecutor (Cypher / SQLite)
-      → ResponseFormatter (jinja2) → ответ без LLM
-    → если LLM_MODE=full/lite: шаг пропускается
+      → ResponseFormatter (jinja2) → answer without an LLM
+    → if LLM_MODE=full/lite: the step is skipped
 ```
 
-### 30 линз — таксономия
+### 30 lenses — taxonomy
 
 ```
-Группа A: Фактические запросы (8 линз)
-  lens:factual_definition   "что такое X"          → :Concept → :Fact
-  lens:factual_property     "свойства X"           → :Entity → :Fact (HAS)
-  lens:factual_comparison   "X или Y"              → [:CONTRADICTS|SIMILAR]
-  lens:factual_cause        "почему X"             → :Fact → [:CAUSES] → :Fact
-  lens:factual_consequence  "что будет если X"     → [:CAUSES] reverse
-  lens:factual_condition    "когда X"              → :Fact (condition field)
-  lens:factual_number       "сколько X"            → :Fact (value, numeric)
-  lens:factual_date         "когда произошло X"    → :Fact (valid_from)
+Group A: Factual queries (8 lenses)
+  lens:factual_definition   "what is X"            → :Concept → :Fact
+  lens:factual_property     "properties of X"      → :Entity → :Fact (HAS)
+  lens:factual_comparison   "X or Y"               → [:CONTRADICTS|SIMILAR]
+  lens:factual_cause        "why X"                → :Fact → [:CAUSES] → :Fact
+  lens:factual_consequence  "what happens if X"    → [:CAUSES] reverse
+  lens:factual_condition    "when X"               → :Fact (condition field)
+  lens:factual_number       "how much X"           → :Fact (value, numeric)
+  lens:factual_date         "when X happened"      → :Fact (valid_from)
 
-Группа B: Процедурные запросы (6 линз)
-  lens:procedural_howto     "как сделать X"        → :Strategy (procedural)
-  lens:procedural_debug     "ошибка X"             → :Strategy (failure_context)
-  lens:procedural_optimize  "улучшить X"           → :Strategy (success_rate>0.7)
-  lens:procedural_setup     "установить X"         → :Strategy (type=setup)
-  lens:procedural_sequence  "порядок X"            → [:PRECEDES] chain
-  lens:procedural_checklist "список для X"         → :Strategy (type=checklist)
+Group B: Procedural queries (6 lenses)
+  lens:procedural_howto     "how to do X"          → :Strategy (procedural)
+  lens:procedural_debug     "error X"              → :Strategy (failure_context)
+  lens:procedural_optimize  "improve X"            → :Strategy (success_rate>0.7)
+  lens:procedural_setup     "install X"            → :Strategy (type=setup)
+  lens:procedural_sequence  "order of X"           → [:PRECEDES] chain
+  lens:procedural_checklist "checklist for X"      → :Strategy (type=checklist)
 
-Группа C: Эпизодические запросы (5 линз)
-  lens:episodic_last        "последний раз"        → :Episode ORDER BY timestamp
-  lens:episodic_session     "в этой сессии"        → :Episode WHERE session_id
-  lens:episodic_outcome     "чем закончилось X"    → :Episode (outcome)
-  lens:episodic_pattern     "часто ли X"           → :Theme (cluster)
-  lens:episodic_error       "ошибки с X"           → :Episode WHERE outcome=FAILURE
+Group C: Episodic queries (5 lenses)
+  lens:episodic_last        "last time"            → :Episode ORDER BY timestamp
+  lens:episodic_session     "in this session"      → :Episode WHERE session_id
+  lens:episodic_outcome     "how X ended"          → :Episode (outcome)
+  lens:episodic_pattern     "how often X"          → :Theme (cluster)
+  lens:episodic_error       "errors with X"        → :Episode WHERE outcome=FAILURE
 
-Группа D: Стратегические запросы (4 линзы)
-  lens:strategy_best        "лучший способ X"      → :Strategy ORDER BY success_rate
-  lens:strategy_avoid       "что не делать"        → :Strategy (failure_penalty>0.7)
-  lens:strategy_context     "в контексте X как"    → :Strategy (cosine>0.6)
-  lens:strategy_learned     "чему научились"       → :Strategy + :Experience
+Group D: Strategic queries (4 lenses)
+  lens:strategy_best        "best way to X"        → :Strategy ORDER BY success_rate
+  lens:strategy_avoid       "what not to do"       → :Strategy (failure_penalty>0.7)
+  lens:strategy_context     "in the context of X"  → :Strategy (cosine>0.6)
+  lens:strategy_learned     "what was learned"     → :Strategy + :Experience
 
-Группа E: Мета-запросы (4 линзы)
-  lens:meta_memory          "что ты помнишь о X"   → :Fact COUNT + :Entity
-  lens:meta_confidence      "уверен ли ты"         → :Fact (epistemic_score,variance)
-  lens:meta_conflict        "есть ли противоречия" → [:CONTRADICTS] search
-  lens:meta_domains         "в какой области X"    → :Domain taxonomy
+Group E: Meta queries (4 lenses)
+  lens:meta_memory          "what you remember of X"→ :Fact COUNT + :Entity
+  lens:meta_confidence      "are you sure"         → :Fact (epistemic_score,variance)
+  lens:meta_conflict        "are there contradictions"→ [:CONTRADICTS] search
+  lens:meta_domains         "in which domain is X" → :Domain taxonomy
 
-Группа F: Специальные линзы (3 линзы)
-  lens:ring_zero_guard      priority=100, всегда первый → VALUES CORE защита
-  lens:contradiction_alert  [:CONTRADICTS] в результатах → предупреждение
-  lens:empty_graph_fallback граф пуст → graceful fallback без LLM
+Group F: Special lenses (3 lenses)
+  lens:ring_zero_guard      priority=100, always first → VALUES CORE protection
+  lens:contradiction_alert  [:CONTRADICTS] in results → warning
+  lens:empty_graph_fallback graph is empty → graceful fallback without an LLM
 ```
 
-### Структура файлов
+### File structure
 
 ```
 velantrim/
 ├── lens_engine.py          ← LensEngine, LensMatcher, GraphQueryExecutor
 ├── normalizer.py           ← pymorphy2 + RU stop-words
 ├── offline_extractor.py    ← spaCy NER + domain keywords
-└── lenses/                 ← 30 YAML-файлов линз
+└── lenses/                 ← 30 YAML lens files
     ├── factual_definition.yaml
     ├── factual_property.yaml
-    ├── ... (28 файлов)
+    ├── ... (28 files)
     └── empty_graph_fallback.yaml
 ```
 
-### Инвариант RFC0045
+### RFC0045 invariant
 
 ```
-I19 (LensEngine): LensEngine читает только из L3 (граф) или Graph-Lite (SQLite).
-    Никаких LLM-вызовов внутри линз.
-    Нарушение: llm.complete() или llm.generate() внутри LensEngine или линзы.
+I19 (LensEngine): LensEngine reads only from L3 (the graph) or Graph-Lite (SQLite).
+    No LLM calls inside lenses.
+    Violation: llm.complete() or llm.generate() inside LensEngine or a lens.
 ```
 
 ---
 
 ### RFC0051: LensEngine Composition
 
-**Проблема:**: смешанный запрос ("почему фотосинтез важен и как его улучшить?") активирует несколько интентов одновременно. Одна линза → неполный ответ или `lens_fallback`. В offline-режиме fallback = пустой шаблон → деградация UX.
+**Problem:**: a mixed query ("why is photosynthesis important and how can it be improved?") activates several intents at once. A single lens → an incomplete answer or `lens_fallback`. In offline mode, fallback = an empty template → UX degradation.
 
-**Решение**: при совпадении 2+ линз выше порога — запускать `compose()`, объединять результаты через CORNER.
+**Solution**: when 2+ lenses match above the threshold — run `compose()`, combining the results via CORNER.
 
-#### Расширение lens_engine.py
+#### lens_engine.py extension
 
 ```python
 @dataclass
@@ -15684,7 +15652,7 @@ class LensEngine:
 
     def match_all(self, query: str,
                   threshold: float = None) -> list[LensMatch]:
-        """Возвращает ВСЕ линзы выше порога, по убыванию score."""
+        """Returns ALL lenses above the threshold, in descending score order."""
         threshold = threshold or LENS_COMPOSITION_THRESHOLD
         normalized = self.normalizer.lemmatize(query)
         return sorted(
@@ -15696,8 +15664,8 @@ class LensEngine:
 
     async def compose(self, query: str) -> ComposedResult | None:
         """
-        До MAX_COMPOSED_LENSES линз → объединить через CORNER.
-        При пустом matches → None → fallback на HybridRetriever или BAE generic.
+        Up to MAX_COMPOSED_LENSES lenses → combine via CORNER.
+        On empty matches → None → fallback to HybridRetriever or BAE generic.
         """
         matches = self.match_all(query)
         if not matches:
@@ -15714,88 +15682,88 @@ class LensEngine:
         )
 ```
 
-#### Конфигурация (velantrim_config.py)
+#### Configuration (velantrim_config.py)
 
 ```python
-# добавить:
-LENS_COMPOSITION_THRESHOLD = 0.45   # мин. score для включения в compose()
-MAX_COMPOSED_LENSES        = 3      # макс. линз в одном запросе
+# add:
+LENS_COMPOSITION_THRESHOLD = 0.45   # min. score for inclusion in compose()
+MAX_COMPOSED_LENSES        = 3      # max. lenses in a single query
 LENS_FALLBACK_TO_BAE       = True   # compose()=None → BAE generic
 ```
 
-#### Обновление F2.6 (fast_path.py)
+#### F2.6 update (fast_path.py)
 
 ```
 F2.6: LensEngine (RFC0045 + RFC0051)
-    → если LLM_MODE=offline:
+    → if LLM_MODE=offline:
       → matches = LensEngine.match_all(query)
-      → если len(matches) >= 2:
+      → if len(matches) >= 2:
           → result = LensEngine.compose(query)      ← RFC0051
-          → CORNER уже применён внутри compose()
-      → если len(matches) == 1:
-          → result = LensEngine.match(query)        ← одиночная линза
-      → если len(matches) == 0:
-          → fallback: BAE generic или HybridRetriever (lite)
-    → если LLM_MODE=full/lite: шаг пропускается
+          → CORNER already applied inside compose()
+      → if len(matches) == 1:
+          → result = LensEngine.match(query)        ← single lens
+      → if len(matches) == 0:
+          → fallback: BAE generic or HybridRetriever (lite)
+    → if LLM_MODE=full/lite: the step is skipped
 ```
 
-#### BAE — зафиксированный порядок внедрения
+#### BAE — fixed rollout order
 
 ```
-⚠️ РЕШЕНИЕ:
-   BAE внедряется итерационно, не все 5 профилей сразу:
+⚠️ DECISION:
+   BAE is rolled out iteratively, not all 5 profiles at once:
 
-   Phase 1 MVP:  только профиль "neutral"
-                 RST-скелеты + Microplanner без анафоры
-                 Surface RU: только pymorphy2 согласование падежей
-                 + ClosedLoopEval оценка качества (обязательно перед prod)
+   Phase 1 MVP:  only the "neutral" profile
+                 RST skeletons + Microplanner without anaphora
+                 Surface RU: only pymorphy2 case agreement
+                 + ClosedLoopEval quality evaluation (mandatory before prod)
 
-   Phase 2:      профили "concise" и "detailed"
-                 анафора + anti-repeat в Microplanner
+   Phase 2:      the "concise" and "detailed" profiles
+                 anaphora + anti-repeat in the Microplanner
 
-   Phase 3:      профили "scientific" и "friendly"
+   Phase 3:      the "scientific" and "friendly" profiles
                  CORNER diversity weight tuning
 
-   Запрет: не деплоить BAE в production без ClosedLoopEval-оценки.
+   Prohibition: do not deploy BAE to production without ClosedLoopEval evaluation.
 ```
 
 ```
-I27 (LensCompose): При совпадении query с 2+ линзами с score ≥ LENS_COMPOSITION_THRESHOLD
-    LensEngine обязан запустить compose() вместо одиночного match().
-    Результаты объединяются через CORNER перед Facts Pack.
-    При compose()=None → fallback на HybridRetriever (full/lite) или BAE generic (offline).
-    Нарушение: одиночный match() при наличии 2+ линз выше порога.
+I27 (LensCompose): When a query matches 2+ lenses with score ≥ LENS_COMPOSITION_THRESHOLD
+    LensEngine must run compose() instead of a single match().
+    Results are combined via CORNER before the Facts Pack.
+    On compose()=None → fallback to HybridRetriever (full/lite) or BAE generic (offline).
+    Violation: a single match() when 2+ lenses are above the threshold.
 ```
 
 ---
 
-> **Статус**: Canonical
+> **Status**: Canonical
 >
-> Расширение RFC0045 LensEngine. BAE превращает факты из L3 графа в читаемый связный текст без трансформеров. Даёт ответ лучше энциклопедии — структурированный под контекст вопроса.
+> An extension of RFC0045 LensEngine. BAE turns facts from the L3 graph into readable, coherent text without transformers. It produces an answer better than an encyclopedia — structured to fit the context of the question.
 
-### Принцип
+### Principle
 
 ```
-Сухая энциклопедия:
-  "Фотосинтез — процесс синтеза органических веществ из CO₂ и H₂O."
+Dry encyclopedia:
+  "Photosynthesis is the process of synthesizing organic substances from CO₂ and H₂O."
 
 BAE RST-lite:
-  "Фотосинтез — это способ, которым растения получают энергию из солнца.
-   Лист ловит свет → CO₂ из воздуха + вода из почвы → сахар (питание растения)
-   + кислород (воздух для нас). Именно поэтому без растений не было бы жизни."
+  "Photosynthesis is the way plants obtain energy from the sun.
+   A leaf catches light → CO₂ from the air + water from the soil → sugar (the plant's food)
+   + oxygen (air for us). That is precisely why without plants there would be no life."
 
-Разница: не знания, а СТРУКТУРА подачи.
-Человек читал словарь и понимал — значит BAE достаточно для 80% запросов.
+The difference: not the knowledge, but the STRUCTURE of presentation.
+A person read a dictionary and understood — so BAE is enough for 80% of queries.
 ```
 
-### Компоненты BAE
+### BAE components
 
-#### 1. RST-lite — Discourse Planner (логика блоков)
+#### 1. RST-lite — Discourse Planner (block logic)
 
-Определяет порядок подачи информации на основе интента линзы:
+Determines the order in which information is presented based on the lens intent:
 
 ```python
-# Скелеты ответов по интентам (rsl_skeletons.py)
+# Answer skeletons by intent (rsl_skeletons.py)
 SKELETONS = {
     "DEFINE":   ["definition", "mechanism", "example", "note"],
     "WHY":      ["cause", "evidence", "consequence", "summary"],
@@ -15807,44 +15775,44 @@ SKELETONS = {
     "PROCEDURE":["goal", "steps", "result", "common_errors"],
 }
 
-# Каждый скелет = набор блоков которые собираются из фактов L3 графа
-# Интент определяется LensMatcher (RFC0045) → передаётся в BAE
+# Each skeleton = a set of blocks assembled from L3 graph facts
+# The intent is determined by LensMatcher (RFC0045) → passed to BAE
 ```
 
-#### 2. Microplanner — связность текста
+#### 2. Microplanner — text coherence
 
-Склеивает блоки в естественный текст:
+Glues the blocks into natural text:
 
 ```python
 # microplanner.py
 TRANSITIONS = {
-    "cause→consequence": "это означает что",
-    "definition→example": "например",
-    "mechanism→note":    "следует отметить",
-    "steps→result":      "в результате",
-    "claim→evidence":    "согласно",
+    "cause→consequence": "this means that",
+    "definition→example": "for example",
+    "mechanism→note":    "it should be noted",
+    "steps→result":      "as a result",
+    "claim→evidence":    "according to",
 }
 
 ANAPHORA_MAP = {
-    "PERSON": ["он", "она", "данный человек"],
-    "CONCEPT": ["это", "данное понятие", "оно"],
-    "PROCESS": ["данный процесс", "он", "это"],
-    "OBJECT":  ["он", "она", "оно", "данный объект"],
+    "PERSON": ["he", "she", "this person"],
+    "CONCEPT": ["it", "this concept", "it"],
+    "PROCESS": ["this process", "it", "this"],
+    "OBJECT":  ["he", "she", "it", "this object"],
 }
 
-# Anti-repeat: если слово встречается в двух соседних предложениях
-# → заменить анафорой или переформулировать
+# Anti-repeat: if a word occurs in two adjacent sentences
+# → replace it with an anaphor or reword
 ```
 
-#### 3. Surface Realizer RU — морфология
+#### 3. Surface Realizer RU — morphology
 
 ```python
-# nlp_utils.py — синглтон MorphAnalyzer + кэш нормализации
-# FIX: pymorphy2.MorphAnalyzer() создавался заново на каждый вызов — ~200ms инициализации.
-# Синглтон + lru_cache дают 40–60% экономию CPU при активном ReasoningBank и LensEngine.
+# nlp_utils.py — singleton MorphAnalyzer + normalization cache
+# FIX: pymorphy2.MorphAnalyzer() was recreated on every call — ~200ms of initialization.
+# Singleton + lru_cache give a 40–60% CPU saving with an active ReasoningBank and LensEngine.
 #
-# double-checked locking: потокобезопасно при concurrent asyncio-корутинах.
-# lru_cache(4096): стоп-слова и термины домена нормализуются один раз навсегда.
+# double-checked locking: thread-safe with concurrent asyncio coroutines.
+# lru_cache(4096): stop-words and domain terms are normalized once and for all.
 
 import threading
 from functools import lru_cache
@@ -15857,8 +15825,8 @@ _morph_lock = threading.Lock()
 
 def get_morph_analyzer():
     """
-    Вернуть синглтон MorphAnalyzer. Потокобезопасно (double-checked locking).
-    При недоступности pymorphy2/pymorphy3 — вернуть None, вызывающий делает fallback.
+    Return the singleton MorphAnalyzer. Thread-safe (double-checked locking).
+    If pymorphy2/pymorphy3 is unavailable — return None, the caller does the fallback.
     """
     global _morph_analyzer
     if _morph_analyzer is None:
@@ -15880,9 +15848,9 @@ def get_morph_analyzer():
 @lru_cache(maxsize=4096)
 def normalize_word(word: str) -> str:
     """
-    Привести слово к нормальной форме (лемматизация).
-    lru_cache: стоп-слова и ключевые термины нормализуются один раз.
-    Fallback на lower() если morph недоступен.
+    Reduce a word to its normal form (lemmatization).
+    lru_cache: stop-words and key terms are normalized once.
+    Fallback to lower() if morph is unavailable.
     """
     morph = get_morph_analyzer()
     if morph is None:
@@ -15893,13 +15861,13 @@ def normalize_word(word: str) -> str:
         return word.lower()
 
 
-# surface_ru.py — pymorphy согласование
-# "берёза растёт в лес" → "берёза растёт в лесу"
-# Род, число, падеж согласуются автоматически
-# FIX: использует синглтон get_morph_analyzer() вместо модульного morph = MorphAnalyzer()
+# surface_ru.py — pymorphy agreement
+# "beryoza rastyot v les" → "beryoza rastyot v lesu"  (RU: "a birch grows in the forest")
+# Gender, number, and case are agreed automatically
+# FIX: uses the singleton get_morph_analyzer() instead of the module-level morph = MorphAnalyzer()
 
 def agree_phrase(word: str, case: str, gender: str = None) -> str:
-    """Согласовать слово по падежу и роду."""
+    """Agree a word by case and gender."""
     morph = get_morph_analyzer()
     if morph is None:
         return word
@@ -15910,7 +15878,7 @@ def agree_phrase(word: str, case: str, gender: str = None) -> str:
         return word
 ```
 
-#### 4. Style Profiles — параметрические профили
+#### 4. Style Profiles — parametric profiles
 
 ```python
 # style_profiles.py
@@ -15926,143 +15894,143 @@ STYLE_PROFILES = {
     "literary":   {"max_terms": 2, "sent_len": "varied", "tone": "warm",
                    "anaphora": True,  "transitions": "narrative"},
 }
-# Профиль = параметры, НЕ персонаж — иначе стиль начнёт влиять на истину
+# Profile = parameters, NOT a persona — otherwise style would start to influence the truth
 ```
 
-### CORNER — дедупликация перед Facts Pack
+### CORNER — deduplication before Facts Pack
 
 ```python
-# corner.py — всегда стоит между RRF Fusion и Facts Pack
+# corner.py — always sits between RRF Fusion and the Facts Pack
 class CORNER:
     """
     Deduplicate + Diversity + Pack
-    Без CORNER: дублирующие факты раздувают контекст и снижают точность.
+    Without CORNER: duplicate facts bloat the context and reduce accuracy.
     """
     def process(self, candidates: list, budget: int = 10) -> FactsPack:
-        # 1. Dedupe: убрать факты с cosine > 0.95
+        # 1. Dedupe: remove facts with cosine > 0.95
         deduped  = self._deduplicate(candidates, threshold=0.95)
-        # 2. Diversity: не более 3 фактов из одного узла
+        # 2. Diversity: no more than 3 facts from a single node
         diverse  = self._ensure_diversity(deduped, max_per_source=3)
-        # 3. Budget: топ-K по epistemic_score
+        # 3. Budget: top-K by epistemic_score
         top_k    = sorted(diverse, key=lambda x: x.score, reverse=True)[:budget]
         return FactsPack(facts=top_k)
 ```
 
-### Три режима retrieval по размеру корпуса
+### Three retrieval modes by corpus size
 
 ```
-МАЛЫЙ корпус (< 10k узлов):
+SMALL corpus (< 10k nodes):
   Query → Normalizer → Lemma → Router → BM25
         → CORNER → Facts Pack → Truth Gate → BAE
-  Нет RRF, нет LSA. Один канал — быстро и точно.
+  No RRF, no LSA. A single channel — fast and accurate.
 
-СРЕДНИЙ корпус (10k–500k узлов):
+MEDIUM corpus (10k–500k nodes):
   BM25 ──┐
   Graph  ├──→ RRF Fusion → CORNER → Facts Pack → Truth Gate → BAE
   Embed ─┘
-  RRF стоит между retrieval и Facts Pack.
+  RRF sits between retrieval and the Facts Pack.
 
-БОЛЬШОЙ корпус (500k+ узлов / много книг):
-  LSA Topic Router (сужает до 20–50 кластеров)
-      → Local BM25 + Embeddings (только внутри выбранных)
+LARGE corpus (500k+ nodes / many books):
+  LSA Topic Router (narrows down to 20–50 clusters)
+      → Local BM25 + Embeddings (only within the selected ones)
       → RRF Fusion → CORNER → Facts Pack → Truth Gate → BAE
-  LSA — не для фактов, а для сужения пространства поиска.
+  LSA is not for facts, but for narrowing the search space.
 ```
 
-**Правила размещения:**
+**Placement rules:**
 
-| Ситуация | RRF | LSA |
+| Situation | RRF | LSA |
 |----------|-----|-----|
-| Один поисковик | ❌ не нужен | ❌ не нужен |
-| Несколько каналов | ✅ перед Facts Pack | ❌ не нужен |
-| 500k+ узлов / книги | ✅ перед Facts Pack | ✅ до BM25 (сужатель) |
+| Single search engine | ❌ not needed | ❌ not needed |
+| Multiple channels | ✅ before Facts Pack | ❌ not needed |
+| 500k+ nodes / books | ✅ before Facts Pack | ✅ before BM25 (narrower) |
 
-### Суммаризация: без LLM и с LLM
+### Summarization: without an LLM and with an LLM
 
-> **Ситуация**: для L4.5 ResponseAudit нужна суммаризация ответа LLM.
-> Полная абстрактная суммаризация пока требует LLM. Ниже — лучшее что есть без трансформеров.
+> **Situation**: L4.5 ResponseAudit requires summarization of the LLM's answer.
+> Full abstractive summarization still requires an LLM. Below is the best available without transformers.
 
-| Технология | Суть | Качество | RAM | Скорость |
+| Technology | Essence | Quality | RAM | Speed |
 |-----------|------|----------|-----|----------|
-| TF-IDF extractive | Выбирает лучшие предложения | 60% | ~5 MB | <10ms |
-| **TextRank** | PageRank на графе предложений | **70%** | ~10 MB | <30ms |
-| **LSA** | Латентный семантический анализ | **65-75%** | ~50 MB | <50ms |
-| **BAE RST-lite** | Генерация из фактов по шаблону | **75-85%** | ~20 MB | <20ms |
+| TF-IDF extractive | Selects the best sentences | 60% | ~5 MB | <10ms |
+| **TextRank** | PageRank on a sentence graph | **70%** | ~10 MB | <30ms |
+| **LSA** | Latent semantic analysis | **65-75%** | ~50 MB | <50ms |
+| **BAE RST-lite** | Generation from facts via template | **75-85%** | ~20 MB | <20ms |
 | Tiny LLM 1-3B | Qwen3-1.7B / OLMoE (offline) | 85-90% | ~2 GB | <200ms |
 | Fast LLM 7B+ | Qwen3-7B (lite) | 90-93% | ~6 GB | <300ms |
 | Cloud LLM | Haiku / o4-mini (full) | 95%+ | — | <500ms |
 
 ```
-⚠️ Статус суммаризации без LLM (технически честно):
+⚠️ Status of summarization without an LLM (technically honest):
 
-✅ BAE RST-lite — генерация из фактов = 75-85% (основной путь offline)
-✅ TextRank    — пересказ готового текста = 70% (extractive)
-⚠️ Полная абстрактная суммаризация ответа LLM без трансформера —
-   пока нет технологии с качеством > 75% + скоростью < 100ms
+✅ BAE RST-lite — generation from facts = 75-85% (the main offline path)
+✅ TextRank    — retelling of ready-made text = 70% (extractive)
+⚠️ Full abstractive summarization of an LLM's answer without a transformer —
+   as yet there is no technology with quality > 75% + speed < 100ms
 
-До появления решения:
-  LLM_MODE=offline → TextRank extractive суть
+Until a solution appears:
+  LLM_MODE=offline → TextRank extractive gist
   LLM_MODE=lite    → Tiny LLM 1-3B (Qwen3-1.7B, ~2GB RAM)
-  LLM_MODE=full    → Fast LLM в Slow Path
+  LLM_MODE=full    → Fast LLM in the Slow Path
 ```
 
-### Итоговое качество по режимам
+### Final quality by mode
 
 | | offline (BAE) | lite (Tiny LLM) | full (Fast LLM) |
 |--|:--:|:--:|:--:|
-| Галлюцинации | ❌ невозможны | ❌ невозможны* | ❌ невозможны* |
-| Качество текста | 75-85% | 85-90% | 95%+ |
-| P95 латентность | <50ms | <200ms | <500ms |
+| Hallucinations | ❌ impossible | ❌ impossible* | ❌ impossible* |
+| Text quality | 75-85% | 85-90% | 95%+ |
+| P95 latency | <50ms | <200ms | <500ms |
 | RAM | ~100 MB | ~2 GB | ~10 GB+ |
-| Интернет | не нужен | не нужен | опционально |
+| Internet | not needed | not needed | optional |
 
-*LLM работает только как переформулировщик фактов из L3 — Graph = Truth не меняется.
+*The LLM works only as a reformulator of facts from L3 — Graph = Truth does not change.
 
-### Инвариант RFC0045-BAE
+### RFC0045-BAE Invariant
 
 ```
-I21 (CORNER): CORNER обязателен между RRF Fusion и Facts Pack.
-    При наличии нескольких retrieval-каналов пропуск CORNER —
-    нарушение (дублирующие факты в контексте).
-    Нарушение: Facts Pack без предварительной дедупликации при multi-channel retrieval.
+I21 (CORNER): CORNER is mandatory between RRF Fusion and the Facts Pack.
+    When several retrieval channels are present, skipping CORNER is
+    a violation (duplicate facts in the context).
+    Violation: a Facts Pack without prior deduplication during multi-channel retrieval.
 ```
 
 ---
 
-> **Статус**: Canonical
+> **Status**: Canonical
 >
-> Три связанных улучшения L4 ReasoningBank и L3 Truth Core.
+> Three related improvements to the L4 ReasoningBank and the L3 Truth Core.
 
-### RFC0046-A: DAG Rollback в L4
+### RFC0046-A: DAG Rollback in L4
 
-**Проблема**: шаги рассуждения агента хранятся как плоский список. При ошибке нет памяти о тупиковых путях — агент повторяет ошибки.
+**Problem**: an agent's reasoning steps are stored as a flat list. On an error there is no memory of dead-end paths — the agent repeats its mistakes.
 
-**Решение**: граф рассуждений = направленный ациклический граф (DAG). Тупиковые ветки фиксируются ребром `[:ROLLBACK_TO]`.
+**Solution**: the reasoning graph = a directed acyclic graph (DAG). Dead-end branches are recorded with a `[:ROLLBACK_TO]` edge.
 
-#### Новые типы рёбер (neo4j_setup.py)
+#### New edge types (neo4j_setup.py)
 
 ```cypher
--- Добавить в create_schema() — RFC0046
+-- Add to create_schema() — RFC0046
 
--- Шаги рассуждения агента связаны в DAG
+-- The agent's reasoning steps are linked into a DAG
 (:ReasoningStep)-[:PRECEDES]->(:ReasoningStep)
 
--- Тупиковая ветка — Observer++ вызывает при graduated block
+-- A dead-end branch — Observer++ calls this on a graduated block
 (:ReasoningStep)-[:ROLLBACK_TO {
     reason:     string,    -- "OBSERVER_BLOCK" | "TASK_FAILED" | "CONTRADICTION"
     rolled_at:  datetime,
     session_id: string
 }]->(:ReasoningStep)
 
--- Индекс для быстрого поиска тупиков в текущей сессии
+-- Index for fast lookup of dead-ends in the current session
 CREATE INDEX reasoning_rollback_idx IF NOT EXISTS
 FOR ()-[r:ROLLBACK_TO]-() ON (r.session_id)
 ```
 
-#### Метод rollback_to() (reasoning_bank.py)
+#### The rollback_to() method (reasoning_bank.py)
 
 ```python
-# Добавить в класс ReasoningBank — RFC0046
+# Add to the ReasoningBank class — RFC0046
 
 async def rollback_to(
     self,
@@ -16072,9 +16040,9 @@ async def rollback_to(
     session_id:   str
 ) -> None:
     """
-    Зафиксировать тупиковую ветку рассуждений.
-    LensEngine и LLM видят [:ROLLBACK_TO] и не повторяют ошибку.
-    Observer++ вызывает при entered_degraded_mode().
+    Record a dead-end reasoning branch.
+    LensEngine and the LLM see [:ROLLBACK_TO] and do not repeat the mistake.
+    Observer++ calls this on entered_degraded_mode().
     """
     await self.graph.execute_cypher("""
         MATCH (a:ReasoningStep {id: $from_id})
@@ -16094,12 +16062,12 @@ async def rollback_to(
 
 ### RFC0050: DAG Rollback Transactional Write
 
-**Проблема:**: при асинхронной записи шагов рассуждений возникает race condition — `[:ROLLBACK_TO]` создаётся до того как `from_step` существует в Neo4j → `NotFoundException` → потеря информации об откате.
+**Problem:**: with asynchronous writing of reasoning steps, a race condition arises — `[:ROLLBACK_TO]` is created before `from_step` exists in Neo4j → `NotFoundException` → loss of information about the rollback.
 
-**Решение**: проверять существование обоих узлов перед MERGE; при их отсутствии — откладывать в `ConsolidationQueue` с retry.
+**Solution**: check that both nodes exist before the MERGE; if they are absent, defer to the `ConsolidationQueue` with retry.
 
 ```python
-# reasoning_bank.py — заменить прямой MERGE на транзакционную запись
+# reasoning_bank.py — replace the direct MERGE with a transactional write
 
 async def create_rollback_edge(
     self,
@@ -16110,8 +16078,8 @@ async def create_rollback_edge(
     retry_queue:  ConsolidationQueue,
 ) -> bool:
     """
-    Создаёт [:ROLLBACK_TO] только если оба узла существуют.
-    Иначе откладывает в ConsolidationQueue (персистентная SQLite-очередь).
+    Creates [:ROLLBACK_TO] only if both nodes exist.
+    Otherwise defers to the ConsolidationQueue (a persistent SQLite queue).
     """
     result = await self.graph.execute_cypher("""
         OPTIONAL MATCH (a:ReasoningStep {id: $from_id})
@@ -16130,7 +16098,7 @@ async def create_rollback_edge(
     if result and result[0].get("created"):
         return True
 
-    # Один или оба узла ещё не сохранены → отложить
+    # One or both nodes are not yet saved → defer
     dag_rollback_retry_total.inc()
     await retry_queue.put(RetryTask(
         task_type="dag_rollback",
@@ -16146,32 +16114,32 @@ async def create_rollback_edge(
 ```
 
 ```
-I26 (DAGRollbackTransaction): Ребро [:ROLLBACK_TO] создаётся ТОЛЬКО если оба
-    :ReasoningStep существуют в Neo4j. При отсутствии — ConsolidationQueue,
-    retry до 10 раз. Нарушение: MERGE без OPTIONAL MATCH обоих узлов.
+I26 (DAGRollbackTransaction): The [:ROLLBACK_TO] edge is created ONLY if both
+    :ReasoningStep nodes exist in Neo4j. If absent — ConsolidationQueue,
+    retry up to 10 times. Violation: MERGE without OPTIONAL MATCH of both nodes.
 ```
 
 ---
 
-### RFC0046-B: epistemic_variance в :Fact
+### RFC0046-B: epistemic_variance in :Fact
 
-**Проблема**: ESM даёт бинарную уверенность (Validated / не Validated). Нет градации "насколько агент сомневается".
+**Problem**: the ESM provides binary confidence (Validated / not Validated). There is no gradation of "how much the agent doubts."
 
-**Решение**: поле `epistemic_variance: float` на каждом :Fact.
+**Solution**: an `epistemic_variance: float` field on every :Fact.
 
 ```
-1.0 = полная неопределённость (новый факт, не проверен)
-0.5 = частичная уверенность (Supported, есть Evidence)
-0.0 = полная уверенность (Validated, многократно подтверждён)
+1.0 = full uncertainty (a new fact, not verified)
+0.5 = partial confidence (Supported, has Evidence)
+0.0 = full confidence (Validated, confirmed many times)
 ```
 
-#### Изменение схемы (neo4j_setup.py)
+#### Schema change (neo4j_setup.py)
 
 ```cypher
--- Поле уже добавлено в схему :Fact (см. раздел «Схема графа»)
--- epistemic_variance: 1.0 по умолчанию при создании
+-- The field is already added to the :Fact schema (see the "Graph schema" section)
+-- epistemic_variance: 1.0 by default on creation
 
--- Миграция существующих фактов:
+-- Migration of existing facts:
 MATCH (f:Fact) WHERE f.epistemic_variance IS NULL
 SET f.epistemic_variance = CASE
     WHEN f.epistemic_state = 'Validated'    THEN 0.1
@@ -16181,10 +16149,10 @@ SET f.epistemic_variance = CASE
 END
 ```
 
-#### Тег [UNVERIFIED] в context_builder.py
+#### The [UNVERIFIED] tag in context_builder.py
 
 ```python
-# Добавить в _format_context() при формировании Facts Pack — RFC0046
+# Add to _format_context() when building the Facts Pack — RFC0046
 
 for fact in facts:
     tag = ""
@@ -16194,44 +16162,44 @@ for fact in facts:
         tag = " [UNCERTAIN]"
     context_parts.append(f"{fact['content']}{tag}")
 
-# Результат: LLM получает контекст где чётко видно
-# какие факты железобетонные, а где база "сомневается"
+# Result: the LLM receives a context where it is clearly visible
+# which facts are rock-solid and where the database "has doubts"
 ```
 
 ---
 
 ### RFC0047: epistemic_variance Formula
 
-**Проблема**: поле `epistemic_variance` вводилось без формулы — ручное проставление, невоспроизводимо, не автообновляется.
+**Problem**: the `epistemic_variance` field was introduced without a formula — set by hand, not reproducible, not auto-updated.
 
-#### Строгая формула расчёта
+#### Strict computation formula
 
 ```
 variance = 1 / (1 + evidence_count × avg_trust_score)
          + contradiction_penalty
 
-где:
-  evidence_count        = COUNT активных [:SUPPORTED_BY] рёбер факта
-  avg_trust_score       = AVG(source.trust_score) по этим источникам ∈ [0.0, 1.0]
-  contradiction_penalty = min(0.6,  0.3 × COUNT(активных [:CONTRADICTS] входящих))
+where:
+  evidence_count        = COUNT of active [:SUPPORTED_BY] edges of the fact
+  avg_trust_score       = AVG(source.trust_score) over these sources ∈ [0.0, 1.0]
+  contradiction_penalty = min(0.6,  0.3 × COUNT(active incoming [:CONTRADICTS]))
 ```
 
-#### ESM-маппинг (нормативный)
+#### ESM mapping (normative)
 
-| ESM-состояние | Ожидаемый диапазон variance |
+| ESM state | Expected variance range |
 |---|---|
 | Observed / Hypothesized | 0.85 – 1.0 |
 | Supported | 0.40 – 0.65 |
 | Validated | 0.05 – 0.25 |
 | Contradicted | 0.70 – 1.0 (+ penalty) |
-| Deprecated / Collapsed | заморожен, не пересчитывается |
+| Deprecated / Collapsed | frozen, not recomputed |
 
-#### Автообновление (fact_manager.py)
+#### Auto-update (fact_manager.py)
 
 ```python
-# Вызывать при каждом из событий:
-# - добавлен/отозван Evidence  - изменился trust_score источника
-# - добавлено/снято [:CONTRADICTS]  - ESM-переход факта
+# Call on each of the events:
+# - Evidence added/revoked  - source trust_score changed
+# - [:CONTRADICTS] added/removed  - ESM transition of the fact
 
 async def recalculate_variance(fact_id: str) -> float:
     result = await neo4j.run("""
@@ -16252,32 +16220,32 @@ async def recalculate_variance(fact_id: str) -> float:
 ```
 
 ```
-I23 (VarianceFormula): epistemic_variance на :Fact обязан вычисляться
-    по формуле RFC0047, не проставляться вручную.
-    Автообновление обязательно при каждом изменении Evidence или [:CONTRADICTS].
-    Нарушение: ручной SET f.epistemic_variance без вызова recalculate_variance().
+I23 (VarianceFormula): epistemic_variance on a :Fact must be computed
+    by the RFC0047 formula, not set by hand.
+    Auto-update is mandatory on every change of Evidence or [:CONTRADICTS].
+    Violation: a manual SET f.epistemic_variance without calling recalculate_variance().
 ```
 
 ---
 
-### RFC0046-C: Temporal рёбра
+### RFC0046-C: Temporal edges
 
-**Проблема**: факт "пользователь живёт в Берлине" создаёт `[:CONTRADICTS]` при переезде. Но это не противоречие — это изменение во времени.
+**Problem**: the fact "the user lives in Berlin" creates `[:CONTRADICTS]` upon a relocation. But this is not a contradiction — it is a change over time.
 
-**Решение**: `valid_from / valid_until` на ключевых рёбрах.
+**Solution**: `valid_from / valid_until` on key edges.
 
 ```cypher
--- Рёбра с temporal атрибутами (см. раздел «Схема графа»)
+-- Edges with temporal attributes (see the "Graph schema" section)
 (:Entity)-[:RELATED_TO {strength, type, valid_from, valid_until}]->(:Entity)
 (:Fact)-[:CAUSES {valid_from, valid_until}]->(:Fact)
 
--- valid_until = null → связь актуальна сейчас
--- При "переезде": старое ребро valid_until=now(), новое valid_from=now()
--- НЕ создаём [:CONTRADICTS] — создаём новое temporal ребро
+-- valid_until = null → the relation is current now
+-- On a "relocation": the old edge gets valid_until=now(), the new one valid_from=now()
+-- We do NOT create [:CONTRADICTS] — we create a new temporal edge
 ```
 
 ```cypher
--- Запрос с temporal фильтрацией
+-- Query with temporal filtering
 MATCH (e:Entity)-[r:RELATED_TO]->(other)
 WHERE (r.valid_until IS NULL OR r.valid_until > datetime())
   AND r.valid_from <= datetime()
@@ -16288,9 +16256,9 @@ RETURN e, r, other
 
 ### RFC0049: Temporal-ESM Sync Protocol
 
-**Проблема:**: при переходе факта в `Contradicted / Deprecated / Collapsed` его исходящие рёбра остаются с `valid_until = NULL` → участвуют в запросах как валидные → фантомные данные, нарушение `Graph = Truth`.
+**Problem:**: when a fact transitions into `Contradicted / Deprecated / Collapsed`, its outgoing edges remain with `valid_until = NULL` → they participate in queries as valid → phantom data, a violation of `Graph = Truth`.
 
-#### Триггер закрытия рёбер (esm_machine.py)
+#### Edge-closing trigger (esm_machine.py)
 
 ```python
 TEMPORAL_CLOSING_STATES = {"Contradicted", "Deprecated", "Collapsed"}
@@ -16305,30 +16273,30 @@ async def on_state_transition(fact_id: str, old_state: str,
             WHERE r.valid_until IS NULL
             SET r.valid_until = datetime()
         """, fid=fact_id)
-    # Пересчёт variance при любом ESM-переходе
+    # Recompute variance on any ESM transition
     await recalculate_variance(fact_id)
 ```
 
-#### Обязательный фильтр (SafeFTSQuery + LensEngine)
+#### Mandatory filter (SafeFTSQuery + LensEngine)
 
 ```python
-# Добавить во ВСЕ Cypher-запросы, работающие с temporal рёбрами:
+# Add to ALL Cypher queries that work with temporal edges:
 TEMPORAL_EDGE_FILTER = """
     AND (r.valid_until IS NULL OR r.valid_until > datetime())
 """
 ```
 
-#### Миграция существующих рёбер (one-time, при обновлении до)
+#### Migration of existing edges (one-time, on upgrade)
 
 ```cypher
 -- migration_v5_06_temporal_backfill.cypher
--- Шаг 1: добавить valid_from на рёбра без него
+-- Step 1: add valid_from to edges that lack it
 MATCH ()-[r:RELATED_TO|CAUSES|DERIVED_FROM]->()
 WHERE r.valid_from IS NULL
 SET r.valid_from = coalesce(r.created_at, datetime("2026-01-01T00:00:00"))
 RETURN count(r) AS patched_edges;
 
--- Шаг 2: закрыть рёбра у Contradicted/Deprecated/Collapsed фактов
+-- Step 2: close edges on Contradicted/Deprecated/Collapsed facts
 MATCH (f:Fact)-[r:RELATED_TO|CAUSES|DERIVED_FROM]->()
 WHERE f.epistemic_state IN ["Contradicted", "Deprecated", "Collapsed"]
   AND r.valid_until IS NULL
@@ -16337,301 +16305,301 @@ RETURN count(r) AS closed_edges;
 ```
 
 ```
-I25 (TemporalESMSync): При переходе :Fact в Contradicted / Deprecated / Collapsed
-    все исходящие рёбра [:RELATED_TO], [:CAUSES], [:DERIVED_FROM] с valid_until IS NULL
-    обязаны получить valid_until = datetime() в той же транзакции.
-    Фильтр (r.valid_until IS NULL OR r.valid_until > datetime()) обязателен
-    во всех запросах SafeFTSQuery и LensEngine.
-    Нарушение: ESM-переход в закрывающее состояние без синхронного закрытия рёбер.
+I25 (TemporalESMSync): When a :Fact transitions to Contradicted / Deprecated / Collapsed
+    all outgoing [:RELATED_TO], [:CAUSES], [:DERIVED_FROM] edges with valid_until IS NULL
+    must receive valid_until = datetime() in the same transaction.
+    The filter (r.valid_until IS NULL OR r.valid_until > datetime()) is mandatory
+    in all SafeFTSQuery and LensEngine queries.
+    Violation: an ESM transition into a closing state without synchronous closing of edges.
 ```
 
-### Инварианты RFC0046
+### RFC0046 Invariants
 
 ```
-I20 (TemporalEdges): Новые рёбра [:RELATED_TO], [:CAUSES], [:DERIVED_FROM] обязаны содержать valid_from при создании.
-    valid_until = null означает "актуально сейчас".
-    Нарушение: ребро без valid_from созданное .
+I20 (TemporalEdges): New [:RELATED_TO], [:CAUSES], [:DERIVED_FROM] edges must contain valid_from at creation.
+    valid_until = null means "current now".
+    Violation: an edge created without valid_from.
 ```
 
-### 📊 Метрики Prometheus (дополнение RFC0036–RFC0038)
+### 📊 Prometheus metrics (addendum to RFC0036–RFC0038)
 
-| Метрика | Тип | Описание |
+| Metric | Type | Description |
 |---------|-----|---------|
-| `event_fallback_inserted_total` | Counter | Событий сохранено в SQLite fallback |
-| `event_fallback_recovered_total` | Counter | Событий восстановлено из fallback |
-| `event_fallback_size` | Gauge | Текущий размер очереди fallback |
-| `observer_blocks_total` | Counter | Блокировок pipeline от Observer++ |
-| `observer_rollbacks_total` | Counter | Откатов инициированных Observer++ |
-| `source_trust_pending_facts` | Gauge | Фактов ожидающих верификации |
-| `write_protocol_violations_total` | Counter | Нарушений Write Protocol |
-| `fact_router_query_type_total` | Counter | Запросов по типу (label: query_type) |
-| `fact_router_rerag_triggered_total` | Counter | Итеративных retrieval запущено |
-| `closed_loop_faithfulness_p95` | Histogram | P95 faithfulness по ответам |
-| `esm_occ_conflicts_total` | Counter | OCC конфликтов в ChunkedInvalidator |
-| `duckdb_shadow_lag_seconds` | Gauge | Отставание Shadow State от Neo4j |
+| `event_fallback_inserted_total` | Counter | Events saved to the SQLite fallback |
+| `event_fallback_recovered_total` | Counter | Events recovered from the fallback |
+| `event_fallback_size` | Gauge | Current size of the fallback queue |
+| `observer_blocks_total` | Counter | Pipeline blocks from Observer++ |
+| `observer_rollbacks_total` | Counter | Rollbacks initiated by Observer++ |
+| `source_trust_pending_facts` | Gauge | Facts awaiting verification |
+| `write_protocol_violations_total` | Counter | Write Protocol violations |
+| `fact_router_query_type_total` | Counter | Queries by type (label: query_type) |
+| `fact_router_rerag_triggered_total` | Counter | Iterative retrievals launched |
+| `closed_loop_faithfulness_p95` | Histogram | P95 faithfulness across answers |
+| `esm_occ_conflicts_total` | Counter | OCC conflicts in ChunkedInvalidator |
+| `duckdb_shadow_lag_seconds` | Gauge | Shadow State lag behind Neo4j |
 
-### 📊 Метрики Prometheus (RFC0036–RFC0051)
+### 📊 Prometheus metrics (RFC0036–RFC0051)
 
-| Метрика | Тип | Описание |
+| Metric | Type | Description |
 |---------|-----|---------|
-| `closed_loop_faithfulness_p95` | Histogram | P95 faithfulness по ответам |
-| `esm_occ_conflicts_total` | Counter | OCC конфликтов в ChunkedInvalidator |
-| `duckdb_shadow_lag_seconds` | Gauge | Отставание Shadow State от Neo4j |
-| `reasoning_bank_ts_score` | Histogram | Thompson Sampling score по стратегии |
-| `duckdb_shadow_sync_total` | Counter | Успешных синхронизаций Neo4j→DuckDB |
-| `duckdb_shadow_rows_synced` | Gauge | Строк в последней синхронизации |
-| `observer_false_positive_rate` | Gauge | Доля ложных срабатываний Observer++ |
-| `observer_degraded_mode_total` | Counter | Входов в деградированный режим |
-| `observer_full_blocks_total` | Counter | Полных блокировок pipeline |
-| `observer_degraded_duration_seconds` | Histogram | Длительность degraded mode |
-| `fractal_governance_violations_total` | Counter | Нарушений Fractal Governance |
-| `hardware_profile_info` | Gauge | Текущий профиль: weak=0, medium=1, strong=2 |
-| `llm_mode_info` | Gauge | Текущий режим: offline=0, lite=1, full=2 |
-| `lens_match_total` | Counter | Запросов через LensEngine (label: lens_id) |
-| `lens_fallback_total` | Counter | Линза не нашла совпадения → fallback |
-| `lens_latency_ms` | Histogram | P95 латентность LensEngine (цель < 50ms) |
-| `epistemic_variance_p95` | Histogram | Распределение неопределённости фактов |
-| `rollback_to_total` | Counter | DAG откатов рассуждений (label: reason) |
-| `temporal_edge_created_total` | Counter | Новых temporal рёбер создано |
-| `multi_component_ram_pressure` | Gauge | Суммарный RAM pressure ∈ [0,1] |
-| `offline_requests_total` | Counter | Запросов в LLM_MODE=offline |
-| `lens_compose_total` | Counter | Запросов через compose() (2+ линзы) |
-| `lens_precision_implicit` | Gauge | Доля offline-ответов с положительным feedback |
-| `dag_rollback_retry_total` | Counter | Отложенных [:ROLLBACK_TO] из-за отсутствия узлов |
-| `temporal_esm_sync_total` | Counter | Рёбер закрыто при ESM-переходе (label: new_state) |
+| `closed_loop_faithfulness_p95` | Histogram | P95 faithfulness across answers |
+| `esm_occ_conflicts_total` | Counter | OCC conflicts in ChunkedInvalidator |
+| `duckdb_shadow_lag_seconds` | Gauge | Shadow State lag behind Neo4j |
+| `reasoning_bank_ts_score` | Histogram | Thompson Sampling score by strategy |
+| `duckdb_shadow_sync_total` | Counter | Successful Neo4j→DuckDB synchronizations |
+| `duckdb_shadow_rows_synced` | Gauge | Rows in the last synchronization |
+| `observer_false_positive_rate` | Gauge | Share of false positives from Observer++ |
+| `observer_degraded_mode_total` | Counter | Entries into degraded mode |
+| `observer_full_blocks_total` | Counter | Full pipeline blocks |
+| `observer_degraded_duration_seconds` | Histogram | Duration of degraded mode |
+| `fractal_governance_violations_total` | Counter | Fractal Governance violations |
+| `hardware_profile_info` | Gauge | Current profile: weak=0, medium=1, strong=2 |
+| `llm_mode_info` | Gauge | Current mode: offline=0, lite=1, full=2 |
+| `lens_match_total` | Counter | Queries through LensEngine (label: lens_id) |
+| `lens_fallback_total` | Counter | Lens found no match → fallback |
+| `lens_latency_ms` | Histogram | P95 LensEngine latency (target < 50ms) |
+| `epistemic_variance_p95` | Histogram | Distribution of fact uncertainty |
+| `rollback_to_total` | Counter | DAG reasoning rollbacks (label: reason) |
+| `temporal_edge_created_total` | Counter | New temporal edges created |
+| `multi_component_ram_pressure` | Gauge | Total RAM pressure ∈ [0,1] |
+| `offline_requests_total` | Counter | Queries in LLM_MODE=offline |
+| `lens_compose_total` | Counter | Queries through compose() (2+ lenses) |
+| `lens_precision_implicit` | Gauge | Share of offline answers with positive feedback |
+| `dag_rollback_retry_total` | Counter | Deferred [:ROLLBACK_TO] due to missing nodes |
+| `temporal_esm_sync_total` | Counter | Edges closed on ESM transition (label: new_state) |
 
 ---
 
-## 🔒 Инварианты системы (дополнение к I7, I8)
+## 🔒 System Invariants (addendum to I7, I8)
 
 ```
-I9  (FactRouter): Маршрутизация запросов — детерминирована, без LLM.
-    Нарушение: использование LLM для routing decision.
+I9  (FactRouter): Query routing is deterministic, without an LLM.
+    Violation: using the LLM for a routing decision.
 
-I10 (OCC): Все операции инвалидации ESM используют версионирование узлов.
-    Нарушение: SET без проверки _version_ в WHERE.
+I10 (OCC): All ESM invalidation operations use node versioning.
+    Violation: SET without a _version_ check in WHERE.
 
-I11 (AsyncEval): ClosedLoopEvaluator НЕ блокирует Fast Path.
-    Нарушение: синхронный вызов evaluator.evaluate() в пути ответа пользователю.
+I11 (AsyncEval): ClosedLoopEvaluator does NOT block the Fast Path.
+    Violation: a synchronous evaluator.evaluate() call in the user response path.
 
-I12 (FallbackPersist): fallback_queue в EventBus — персистентна (SQLite).
-    Нарушение: in-memory Queue как единственное хранилище событий.
+I12 (FallbackPersist): the fallback_queue in EventBus is persistent (SQLite).
+    Violation: an in-memory Queue as the only event store.
 
-I13 (TSReplay): Thompson Sampling в audit-режиме использует seed=session_id_hash.
-    Нарушение: стохастичный выбор стратегий без seed при audit replay.
+I13 (TSReplay): Thompson Sampling in audit mode uses seed=session_id_hash.
+    Violation: stochastic strategy selection without a seed during audit replay.
 
-I14 (CQRSRead): Semantic Drift Monitor и Observer аналитика читают из DuckDB,
-    не из Neo4j напрямую для агрегаций.
-    Нарушение: Cypher агрегация в SemanticDriftMonitor без Shadow State.
+I14 (CQRSRead): the Semantic Drift Monitor and Observer analytics read from DuckDB,
+    not from Neo4j directly for aggregations.
+    Violation: a Cypher aggregation in SemanticDriftMonitor without the Shadow State.
 
-I15 (GraduatedBlock): Observer++ НЕ вызывает block_pipeline() если
-    false_positive_rate > 0.3. Используется _enter_degraded_mode().
-    Нарушение: прямой block_pipeline() при FPR > 0.3.
+I15 (GraduatedBlock): Observer++ does NOT call block_pipeline() if
+    false_positive_rate > 0.3. _enter_degraded_mode() is used instead.
+    Violation: a direct block_pipeline() when FPR > 0.3.
 
-I16 (TruthIsolation): Truth Core не получает команд от Policy Core или
-    Evolution Core. Запись в L3 только через Write Protocol (RFC0031).
-    Нарушение: любая запись в L3 минуя TruthGate / HumanApproval / TrustedImport.
+I16 (TruthIsolation): the Truth Core does not receive commands from the Policy Core or
+    the Evolution Core. Writes to L3 only through the Write Protocol (RFC0031).
+    Violation: any write to L3 bypassing TruthGate / HumanApproval / TrustedImport.
 
-I17 (HWProfile): HARDWARE_PROFILE авто-детектируется при старте системы.
-    Ручное переопределение через VELANTRIM_HW_PROFILE env var.
-    Нарушение: хардкод компонентов (Neo4j, Qdrant) без учёта профиля.
+I17 (HWProfile): HARDWARE_PROFILE is auto-detected at system startup.
+    Manual override via the VELANTRIM_HW_PROFILE env var.
+    Violation: hardcoding components (Neo4j, Qdrant) without regard for the profile.
 
-I18 (LLMMode): При LLM_MODE=offline Fast Path обязан использовать LensEngine.
-    Прямой вызов llm.complete() при offline — нарушение.
-    Нарушение: вызов llm.complete() когда LLM_MODE=offline.
+I18 (LLMMode): When LLM_MODE=offline the Fast Path must use LensEngine.
+    A direct llm.complete() call in offline mode is a violation.
+    Violation: a llm.complete() call when LLM_MODE=offline.
 
-I19 (LensEngine): LensEngine читает только из L3 (граф) или Graph-Lite (SQLite).
-    Никаких LLM-вызовов внутри линз.
-    Нарушение: llm.complete() или llm.generate() внутри LensEngine или любой линзы.
+I19 (LensEngine): LensEngine reads only from L3 (the graph) or Graph-Lite (SQLite).
+    No LLM calls inside lenses.
+    Violation: llm.complete() or llm.generate() inside LensEngine or any lens.
 
-I20 (TemporalEdges): Новые рёбра [:RELATED_TO], [:CAUSES], [:DERIVED_FROM] обязаны содержать valid_from при создании.
-    valid_until = null означает "актуально сейчас".
-    Нарушение: ребро без valid_from созданное .
+I20 (TemporalEdges): New [:RELATED_TO], [:CAUSES], [:DERIVED_FROM] edges must contain valid_from at creation.
+    valid_until = null means "current now".
+    Violation: an edge created without valid_from.
 
-I21 (CORNER): CORNER обязателен между RRF Fusion и Facts Pack при multi-channel retrieval.
-    Нарушение: Facts Pack без дедупликации при нескольких retrieval-каналах.
+I21 (CORNER): CORNER is mandatory between RRF Fusion and the Facts Pack during multi-channel retrieval.
+    Violation: a Facts Pack without deduplication when several retrieval channels are present.
 
-I22 (MoEMemory): При LLM_ARCHITECTURE=moe параметр LLM_TOTAL_PARAMS обязателен
-    и проверяется против доступного RAM при старте.
-    Нарушение: MoE-модель запущена без проверки LLM_TOTAL_PARAMS ≤ available_RAM.
+I22 (MoEMemory): When LLM_ARCHITECTURE=moe the LLM_TOTAL_PARAMS parameter is mandatory
+    and is checked against the available RAM at startup.
+    Violation: a MoE model launched without checking LLM_TOTAL_PARAMS ≤ available_RAM.
 
-I23 (VarianceFormula): epistemic_variance на :Fact обязан вычисляться
-    по формуле RFC0047, не проставляться вручную.
-    Автообновление обязательно при каждом изменении Evidence или [:CONTRADICTS].
-    Нарушение: ручной SET f.epistemic_variance без вызова recalculate_variance().
+I23 (VarianceFormula): epistemic_variance on a :Fact must be computed
+    by the RFC0047 formula, not set by hand.
+    Auto-update is mandatory on every change of Evidence or [:CONTRADICTS].
+    Violation: a manual SET f.epistemic_variance without calling recalculate_variance().
 
-I24 (MultiComponentBudget): При старте системы обязана выполняться проверка
-    суммарного RAM-бюджета: LLM_TOTAL_PARAMS + Neo4j_PageCache + Redis + VectorDB + OS_buffer.
-    При pressure > 0.92 — обязательный downshift профиля или переход в LLM_MODE=offline.
-    Нарушение: старт без compute_memory_budget() при LLM_ARCHITECTURE=moe.
+I24 (MultiComponentBudget): At system startup a check of the
+    combined RAM budget must be performed: LLM_TOTAL_PARAMS + Neo4j_PageCache + Redis + VectorDB + OS_buffer.
+    When pressure > 0.92 — a mandatory downshift of the profile or a switch to LLM_MODE=offline.
+    Violation: startup without compute_memory_budget() when LLM_ARCHITECTURE=moe.
 
-I25 (TemporalESMSync): При переходе :Fact в Contradicted / Deprecated / Collapsed
-    все исходящие рёбра [:RELATED_TO], [:CAUSES], [:DERIVED_FROM] с valid_until IS NULL
-    обязаны получить valid_until = datetime() в той же транзакции.
-    Нарушение: ESM-переход в закрывающее состояние без синхронного закрытия рёбер.
+I25 (TemporalESMSync): When a :Fact transitions to Contradicted / Deprecated / Collapsed
+    all outgoing [:RELATED_TO], [:CAUSES], [:DERIVED_FROM] edges with valid_until IS NULL
+    must receive valid_until = datetime() in the same transaction.
+    Violation: an ESM transition into a closing state without synchronous closing of edges.
 
-I26 (DAGRollbackTransaction): Ребро [:ROLLBACK_TO] в ReasoningBank создаётся
-    ТОЛЬКО если оба узла :ReasoningStep уже существуют в Neo4j.
-    При отсутствии любого из узлов — запись откладывается в ConsolidationQueue
-    с retry до 10 попыток.
-    Нарушение: MERGE [:ROLLBACK_TO] без предварительного MATCH обоих узлов.
+I26 (DAGRollbackTransaction): the [:ROLLBACK_TO] edge in ReasoningBank is created
+    ONLY if both :ReasoningStep nodes already exist in Neo4j.
+    If either node is absent — the write is deferred to the ConsolidationQueue
+    with retry up to 10 attempts.
+    Violation: MERGE [:ROLLBACK_TO] without a prior MATCH of both nodes.
 
-I27 (LensCompose): При совпадении query с 2+ линзами с score ≥ LENS_COMPOSITION_THRESHOLD
-    LensEngine обязан запустить compose() вместо одиночного match().
-    Результаты объединяются через CORNER перед Facts Pack.
-    При compose()=None → fallback на HybridRetriever (full/lite) или BAE generic (offline).
-    Нарушение: одиночный match() при наличии 2+ линз выше порога.
+I27 (LensCompose): When a query matches 2+ lenses with score ≥ LENS_COMPOSITION_THRESHOLD
+    LensEngine must run compose() instead of a single match().
+    Results are combined via CORNER before the Facts Pack.
+    On compose()=None → fallback to HybridRetriever (full/lite) or BAE generic (offline).
+    Violation: a single match() when 2+ lenses are above the threshold.
 
-I74 (StagingReadPath): L2.5 Staging используется на read-пути ТОЛЬКО с пометкой
-    `preliminary` и confidence × 0.7.
-    Staging НИКОГДА не является источником истины — только граф L3.
-    Прямая подстановка staging-факта без пометки `preliminary` — баг.
-    Нарушение: использование staging-факта как Validated в ContextBuilder.
+I74 (StagingReadPath): L2.5 Staging is used on the read path ONLY with a
+    `preliminary` marker and confidence × 0.7.
+    Staging is NEVER a source of truth — only the L3 graph is.
+    Direct substitution of a staging fact without the `preliminary` marker is a bug.
+    Violation: using a staging fact as Validated in the ContextBuilder.
 
-I75 (ProtoConceptNaming): Присвоение имени ProtoConcept выполняется ТОЛЬКО в Slow Path
-    (Homeostatic Balancer, VolitionWorker или по триггеру B/C из RFC0066).
-    Вызов LLM для именования концепта в Fast Path — критический архитектурный баг.
-    Триггер A (пользователь спрашивает) должен ставить задачу в Slow Path очередь,
-    не выполнять именование синхронно.
-    Нарушение: llm.complete() для именования ProtoConcept внутри Fast Path.
+I75 (ProtoConceptNaming): Naming a ProtoConcept is done ONLY in the Slow Path
+    (Homeostatic Balancer, VolitionWorker, or via trigger B/C from RFC0066).
+    Calling the LLM to name a concept in the Fast Path is a critical architectural bug.
+    Trigger A (the user asks) must enqueue a task in the Slow Path queue,
+    not perform naming synchronously.
+    Violation: llm.complete() for naming a ProtoConcept inside the Fast Path.
 ```
 
 ---
 
-## 📖 Как использовать модули (инструкция)
+## 📖 How to use the modules (instructions)
 
-### Новые модули (RFC0036–RFC0038)
-
-```
-RFC0036  → добавить методы в event_bus.py
-           + scheduler задачи в main.py
-
-RFC0036+ → миграция схемы Neo4j (_version_ поле)
-           + заменить _process_chunks в esm_chunked_invalidator.py
-           + удалить asyncio.sleep(0.1)
-
-RFC0037  → перенести ClosedLoopEvaluator в l4_reasoning_worker.py
-           + добавить publish(AGENT_RESPONSE) в fast_path.py
-
-RFC0038  → создать fact_router.py
-           + интегрировать в fast_path.py перед hybrid_retriever.py
-
-KuzuDB   → GRAPH_BACKEND = "kuzu" в velantrim_config.py (P0-H FIX)
-           + создать kuzu_adapter.py (реализует IGraphAdapter)
-
-DuckDB   → создать shadow_state.py
-           + scheduler: dump каждые 15 мин → DuckDB
-           + Semantic Drift Monitor читает из DuckDB, не Neo4j
-```
-
-### Новые модули (RFC0036–RFC0040)
+### New modules (RFC0036–RFC0038)
 
 ```
-RFC0039  → обновить reasoning_bank.py: заменить UCB1 на Thompson Sampling
-           + переименовать тест test_ucb1_canonical_formula → test_ts_selection_formula
+RFC0036  → add methods to event_bus.py
+           + scheduler jobs in main.py
 
-RFC0040  → создать shadow_state.py (если ещё не создан для DuckDB)
-           + обновить semantic_drift_monitor.py: читать из ShadowState
-           + scheduler: shadow.sync каждые 15 мин
+RFC0036+ → migrate the Neo4j schema (_version_ field)
+           + replace _process_chunks in esm_chunked_invalidator.py
+           + remove asyncio.sleep(0.1)
 
-RFC0041  → обновить observer_plus_plus.py: заменить block_pipeline() на
-           graduated response с FPR-проверкой
-           + добавить _enter_degraded_mode() / _exit_degraded_mode()
+RFC0037  → move ClosedLoopEvaluator into l4_reasoning_worker.py
+           + add publish(AGENT_RESPONSE) in fast_path.py
 
-RFC0042  → создать fractal_governance.py
-           + добавить validate_fractal_write() в L2IngestionEngine
-           + добавить fractal_influence_trace логирование
+RFC0038  → create fact_router.py
+           + integrate into fast_path.py before hybrid_retriever.py
+
+KuzuDB   → GRAPH_BACKEND = "kuzu" in velantrim_config.py (P0-H FIX)
+           + create kuzu_adapter.py (implements IGraphAdapter)
+
+DuckDB   → create shadow_state.py
+           + scheduler: dump every 15 min → DuckDB
+           + Semantic Drift Monitor reads from DuckDB, not Neo4j
 ```
 
-### Новые модули
+### New modules (RFC0036–RFC0040)
 
 ```
-RFC0043  → добавить блок HARDWARE_PROFILE в velantrim_config.py
-           + создать hardware_profile.py (авто-детект psutil)
-           + переключить стек компонентов по профилю
+RFC0039  → update reasoning_bank.py: replace UCB1 with Thompson Sampling
+           + rename the test test_ucb1_canonical_formula → test_ts_selection_formula
 
-RFC0044  → добавить LLM_MODE в velantrim_config.py
-           + добавить ветку offline в fast_path.py (шаг F2.6)
+RFC0040  → create shadow_state.py (if not already created for DuckDB)
+           + update semantic_drift_monitor.py: read from ShadowState
+           + scheduler: shadow.sync every 15 min
 
-RFC0045  → создать lens_engine.py
-           + создать папку lenses/ с 30 YAML-файлами линз
-           + интегрировать LensMatcher в fast_path.py как шаг F2.6
-           + создать normalizer.py (pymorphy2 + RU stop-words)
-           + создать offline_extractor.py (spaCy NER + domain keywords)
+RFC0041  → update observer_plus_plus.py: replace block_pipeline() with a
+           graduated response with an FPR check
+           + add _enter_degraded_mode() / _exit_degraded_mode()
 
-RFC0046  → обновить neo4j_setup.py: добавить :ReasoningStep схему
-           + добавить рёбра [:PRECEDES] и [:ROLLBACK_TO]
-           + добавить поле epistemic_variance в :Fact (default=1.0)
-           + добавить temporal атрибуты на [:RELATED_TO], [:CAUSES]
-           + добавить метод rollback_to() в reasoning_bank.py
-           + добавить тег [UNVERIFIED] в context_builder.py при variance > 0.7
-
-RFC0045-BAE → создать bae_engine.py (RST-lite + Microplanner + Surface RU)
-              + создать rsl_skeletons.py (скелеты по 8 интентам)
-              + создать microplanner.py (анафора, переходы, anti-repeat)
-              + создать surface_ru.py (pymorphy2 согласование)
-              + создать style_profiles.py (5 параметрических профилей)
-              + создать corner.py (dedupe + diversity + budget)
-
-MoE         → добавить LLM_ARCHITECTURE / LLM_ACTIVE_PARAMS / LLM_TOTAL_PARAMS
-              в velantrim_config.py
-              + RAM-проверка при старте если LLM_ARCHITECTURE=moe
+RFC0042  → create fractal_governance.py
+           + add validate_fractal_write() to L2IngestionEngine
+           + add fractal_influence_trace logging
 ```
 
-### Новые модули
+### New modules
 
 ```
-RFC0047  → обновить fact_manager.py: добавить recalculate_variance()
-           + автовызов при изменении Evidence / [:CONTRADICTS] / ESM-переходе
-           + константа UNVERIFIED_THRESHOLD = 0.7 в velantrim_config.py
+RFC0043  → add the HARDWARE_PROFILE block to velantrim_config.py
+           + create hardware_profile.py (psutil auto-detect)
+           + switch the component stack by profile
 
-RFC0048  → обновить hardware_profile.py: добавить compute_memory_budget()
-           + startup_ram_check() с Multi-Component Budget
-           + добавить NEO4J_PAGE_CACHE_GB, VECTOR_RAM_GB, MEM_PRESSURE_WARN,
-             MEM_PRESSURE_CRIT в velantrim_config.py
+RFC0044  → add LLM_MODE to velantrim_config.py
+           + add the offline branch to fast_path.py (step F2.6)
 
-           # Формула (hardware_profile.py):
+RFC0045  → create lens_engine.py
+           + create the lenses/ folder with 30 YAML lens files
+           + integrate LensMatcher into fast_path.py as step F2.6
+           + create normalizer.py (pymorphy2 + RU stop-words)
+           + create offline_extractor.py (spaCy NER + domain keywords)
+
+RFC0046  → update neo4j_setup.py: add the :ReasoningStep schema
+           + add the [:PRECEDES] and [:ROLLBACK_TO] edges
+           + add the epistemic_variance field to :Fact (default=1.0)
+           + add temporal attributes to [:RELATED_TO], [:CAUSES]
+           + add the rollback_to() method to reasoning_bank.py
+           + add the [UNVERIFIED] tag in context_builder.py when variance > 0.7
+
+RFC0045-BAE → create bae_engine.py (RST-lite + Microplanner + Surface RU)
+              + create rsl_skeletons.py (skeletons for 8 intents)
+              + create microplanner.py (anaphora, transitions, anti-repeat)
+              + create surface_ru.py (pymorphy2 agreement)
+              + create style_profiles.py (5 parametric profiles)
+              + create corner.py (dedupe + diversity + budget)
+
+MoE         → add LLM_ARCHITECTURE / LLM_ACTIVE_PARAMS / LLM_TOTAL_PARAMS
+              to velantrim_config.py
+              + a RAM check at startup if LLM_ARCHITECTURE=moe
+```
+
+### New modules
+
+```
+RFC0047  → update fact_manager.py: add recalculate_variance()
+           + auto-call on a change of Evidence / [:CONTRADICTS] / ESM transition
+           + the constant UNVERIFIED_THRESHOLD = 0.7 in velantrim_config.py
+
+RFC0048  → update hardware_profile.py: add compute_memory_budget()
+           + startup_ram_check() with the Multi-Component Budget
+           + add NEO4J_PAGE_CACHE_GB, VECTOR_RAM_GB, MEM_PRESSURE_WARN,
+             MEM_PRESSURE_CRIT to velantrim_config.py
+
+           # Formula (hardware_profile.py):
            # total_required = llm_ram + neo4j_ram + redis_ram + vector_ram + os_buffer(2GB)
            # pressure = total_required / available_ram
-           # if pressure > MEM_PRESSURE_CRIT: downshift profile или LLM_MODE=offline
+           # if pressure > MEM_PRESSURE_CRIT: downshift profile or LLM_MODE=offline
 
-RFC0049  → обновить esm_machine.py: on_state_transition() — закрытие рёбер
-           + обновить safe_fts_query.py: добавить TEMPORAL_EDGE_FILTER
-           + обновить lens_engine.py: TEMPORAL_EDGE_FILTER в шаблонах Cypher
-           + выполнить migration_v5_06_temporal_backfill.cypher (one-time)
+RFC0049  → update esm_machine.py: on_state_transition() — closing edges
+           + update safe_fts_query.py: add TEMPORAL_EDGE_FILTER
+           + update lens_engine.py: TEMPORAL_EDGE_FILTER in the Cypher templates
+           + run migration_v5_06_temporal_backfill.cypher (one-time)
 
-RFC0050  → обновить reasoning_bank.py: create_rollback_edge() с проверкой узлов
-           + retry через ConsolidationQueue при отсутствии узлов
-           + счётчик dag_rollback_retry_total (Prometheus)
+RFC0050  → update reasoning_bank.py: create_rollback_edge() with a node check
+           + retry via ConsolidationQueue when nodes are missing
+           + the counter dag_rollback_retry_total (Prometheus)
 
-RFC0051  → обновить lens_engine.py: добавить match_all() + compose()
-           + добавить LENS_COMPOSITION_THRESHOLD = 0.45, MAX_COMPOSED_LENSES = 3
-             в velantrim_config.py
-           + BAE: реализовать ТОЛЬКО профиль "neutral" как MVP
-             (профили "concise"/"detailed" и "scientific"/"friendly" — Phase 2+)
+RFC0051  → update lens_engine.py: add match_all() + compose()
+           + add LENS_COMPOSITION_THRESHOLD = 0.45, MAX_COMPOSED_LENSES = 3
+             to velantrim_config.py
+           + BAE: implement ONLY the "neutral" profile as the MVP
+             (the "concise"/"detailed" and "scientific"/"friendly" profiles — Phase 2+)
 ```
 
 ---
 
 ## 🔧 RFC0062 — TZ-Fix Integration Patch
 
-> **Статус**: Canonical
-> **Источник**: TZ-Fix Integration audit
-> **Инварианты**: I38
-> **Новые метрики Prometheus**: 4
-> **Новый индекс Neo4j**: `fact_conflict_checked_idx`
+> **Status**: Canonical
+> **Source**: TZ-Fix Integration audit
+> **Invariants**: I38
+> **New Prometheus metrics**: 4
+> **New Neo4j index**: `fact_conflict_checked_idx`
 
-### Новые компоненты (FEATURE-1..9)
+### New components (FEATURE-1..9)
 
 ---
 
 #### FEATURE-1 · memory/core_memory_blocks.py
 
-**Что даёт**: ~500 токенов постоянного контекста в system prompt. Агент знает
-пользователя с первого слова каждой сессии без поиска по графу.
+**What it provides**: ~500 tokens of persistent context in the system prompt. The
+agent knows the user from the first word of every session without searching the graph.
 
 ```python
-# memory/core_memory_blocks.py — новый файл
+# memory/core_memory_blocks.py — new file
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -16641,12 +16609,12 @@ logger = logging.getLogger(__name__)
 @dataclass
 class CoreMemoryBlocks:
     """
-    Постоянный контекст ~500 токенов — всегда в system prompt.
-    Три блока: user_profile / agent_persona / current_goals.
+    Persistent context ~500 tokens — always in the system prompt.
+    Three blocks: user_profile / agent_persona / current_goals.
 
-    Отличие от Ring Zero / VALUES CORE:
-      · Ring Zero      — неизменяемые ценности агента (заморожены в ESM)
-      · CoreMemoryBlocks — живой профиль пользователя (обновляет SleepTimeWorker)
+    Difference from Ring Zero / VALUES CORE:
+      · Ring Zero      — immutable agent values (frozen in ESM)
+      · CoreMemoryBlocks — living user profile (updated by SleepTimeWorker)
     """
     graph_memory:       object
     user_profile:       str = ""
@@ -16698,7 +16666,7 @@ class CoreMemoryBlocks:
             logger.warning(f"CoreMemoryBlocks.update save failed: {e}")
 
     async def update_from_conversation(self, conversation_text: str, llm_client):
-        """Автоматически обновить user_profile. Вызывается SleepTimeWorker."""
+        """Automatically update user_profile. Called by SleepTimeWorker."""
         if not llm_client:
             return
         prompt = (
@@ -16713,7 +16681,7 @@ class CoreMemoryBlocks:
         except Exception as e:
             logger.debug(f"CoreMemoryBlocks.update_from_conversation failed: {e}")
 
-# Интеграция в agent.py:
+# Integration in agent.py:
 #   __init__: self.core_blocks = CoreMemoryBlocks(graph_memory=self.graph_memory)
 #   start():  await self.core_blocks.load()
 #   chat():   system_prompt = base_prompt + "\n\n" + self.core_blocks.render()
@@ -16723,13 +16691,13 @@ class CoreMemoryBlocks:
 
 #### FEATURE-2 · sleep_time_worker.py
 
-**Что даёт**: память самовосстанавливается в idle. Нулевая нагрузка во время разговора.
+**What it provides**: memory self-heals while idle. Zero load during conversation.
 
-⚠️ **MGL-2 compliance**: `_refine_truth_layer` делегирует `AutoTruthGateWorker`
-и `ESM.transition` — никакого прямого `SET epistemic_state`.
+⚠️ **MGL-2 compliance**: `_refine_truth_layer` delegates to `AutoTruthGateWorker`
+and `ESM.transition` — no direct `SET epistemic_state`.
 
 ```python
-# sleep_time_worker.py — новый файл
+# sleep_time_worker.py — new file
 import asyncio
 import logging
 from datetime import datetime, timezone, timedelta
@@ -16738,8 +16706,8 @@ logger = logging.getLogger(__name__)
 
 class SleepTimeWorker:
     """
-    Idle-рефинирование памяти (≥5 мин простоя).
-    ⚠️ MGL-2: изменение epistemic_state только через ESM.transition.
+    Idle memory refinement (≥5 min of inactivity).
+    ⚠️ MGL-2: epistemic_state is changed only via ESM.transition.
     """
     def __init__(
         self,
@@ -16764,7 +16732,7 @@ class SleepTimeWorker:
         self._task                   = None
 
     def notify_activity(self):
-        """Вызывать при каждом входящем сообщении."""
+        """Call on every incoming message."""
         self._last_activity = datetime.now(timezone.utc)
 
     def _is_idle(self) -> bool:
@@ -16807,8 +16775,8 @@ class SleepTimeWorker:
 
     async def _refine_truth_layer(self):
         """
-        ⚠️ MGL-2: нет прямого SET epistemic_state.
-        Validated-промоут → AutoTruthGateWorker.
+        ⚠️ MGL-2: no direct SET epistemic_state.
+        Validated promotion → AutoTruthGateWorker.
         Stale Hypothesized → ESM.transition.
         """
         if self._auto_truth_gate_worker:
@@ -16852,40 +16820,40 @@ class SleepTimeWorker:
             try: await self.core_blocks.load()
             except Exception as e: logger.debug(f"SleepTimeWorker._refresh_core_blocks: {e}")
 
-# Интеграция в agent.py:
+# Integration in agent.py:
 #   self.sleep_worker = SleepTimeWorker(
 #       graph_memory=self.graph_memory, reasoning_bank=self.reasoning_bank,
 #       core_blocks=self.core_blocks, auto_truth_gate_worker=self.auto_truth_gate_worker,
 #       esm=self.esm)
 #   start(): await self.sleep_worker.start()
-#   chat() первой строкой: self.sleep_worker.notify_activity()
+#   chat() as the first line: self.sleep_worker.notify_activity()
 ```
 
 ---
 
 #### FEATURE-3 · reasoning_bank.py — ACE Curator
 
-**Что даёт**: стратегии дистиллируются с reasoning: root_cause + conditions + anti_conditions.
-Добавить метод в класс `ReasoningBank`. Вызывается из `SleepTimeWorker` в idle.
+**What it provides**: strategies are distilled with reasoning: root_cause + conditions + anti_conditions.
+Add the method to the `ReasoningBank` class. Called from `SleepTimeWorker` while idle.
 
 ```python
-# reasoning_bank.py — добавить метод ace_curator_update в ReasoningBank
+# reasoning_bank.py — add the ace_curator_update method to ReasoningBank
 
     async def ace_curator_update(self):
         """
         ACE Curator (Stanford/SambaNova ACE pattern).
-        Вызывается ТОЛЬКО из SleepTimeWorker в idle — не из Fast Path.
+        Called ONLY from SleepTimeWorker while idle — not from the Fast Path.
 
-        PATCH-6: дублирующая реализация удалена — каноническая живёт в
+        PATCH-6: the duplicate implementation was removed — the canonical one lives in
         agent_with_learning.py :: SelfLearningAgent.ace_curator_update().
-        Расхождение было: здесь e.task, там e.task_description[:50] +
-        разные форматы episode_name → рассинхронизация при изменениях.
+        The divergence was: here e.task, there e.task_description[:50] +
+        different episode_name formats → desync when changes were made.
 
-        ReasoningBank передаёт свои данные через аргументы в канонический метод.
-        Все изменения логики вносить ТОЛЬКО в agent_with_learning.py.
+        ReasoningBank passes its data through arguments to the canonical method.
+        Make all logic changes ONLY in agent_with_learning.py.
         """
         if not hasattr(self, '_ace_delegate') or self._ace_delegate is None:
-            logger.debug("ace_curator_update: _ace_delegate не задан, пропускаем")
+            logger.debug("ace_curator_update: _ace_delegate not set, skipping")
             return
         await self._ace_delegate(
             strategies=self.strategies,
@@ -16899,8 +16867,8 @@ class SleepTimeWorker:
 
 #### FEATURE-4 · memory/namespaces.py + memory/rrf_search.py
 
-**Что даёт**: 4 namespace без смешивания + RRF поиск по всем.
-⚠️ **RFC0032**: поиск через `SafeFTSQuery` или явный ESM-фильтр.
+**What it provides**: 4 namespaces without mixing + RRF search across all of them.
+⚠️ **RFC0032**: search via `SafeFTSQuery` or an explicit ESM filter.
 
 ```python
 # memory/namespaces.py
@@ -16936,8 +16904,8 @@ async def multi_namespace_search(
     priority_namespace: Optional[str] = None, rrf_k: int = 60,
 ) -> list[dict]:
     """
-    RRF поиск по всем namespace.
-    ⚠️ RFC0032: SafeFTSQuery или явный ESM-фильтр — прямой search() запрещён.
+    RRF search across all namespaces.
+    ⚠️ RFC0032: SafeFTSQuery or an explicit ESM filter — direct search() is forbidden.
     """
     all_results, rank_lists = {}, []
     for ns in ["personal", "project", "knowledge", "experience"]:
@@ -16967,10 +16935,10 @@ async def multi_namespace_search(
 ```
 
 ```python
-# safe_fts_query.py — добавить метод в SafeFTSQuery
+# safe_fts_query.py — add a method to SafeFTSQuery
 
     async def search_with_namespace(self, query: str, namespace: str, limit: int = 20) -> list:
-        """Расширение SafeFTSQuery: стандартные ESM-фильтры + namespace-фильтр."""
+        """Extension of SafeFTSQuery: standard ESM filters + namespace filter."""
         raw  = await self.fts5_search(query, limit * 2)
         safe = []
         for ep in raw:
@@ -16987,22 +16955,22 @@ async def multi_namespace_search(
 #### FEATURE-5 · memory/auto_summary.py
 
 ```python
-# memory/auto_summary.py  ← полная реализация из HYPERIA, адаптирована для Velantrim
+# memory/auto_summary.py  ← full implementation from HYPERIA, adapted for Velantrim
 #
-# Назначение: каждые SUMMARY_EVERY turns создаёт краткое резюме диалога и
-# сохраняет его в L1 (namespace="personal"). Без этого граф разрастается
-# линейно с числом сообщений — каждый turn становится отдельным эпизодом.
+# Purpose: every SUMMARY_EVERY turns it creates a brief summary of the dialogue and
+# saves it to L1 (namespace="personal"). Without this the graph grows
+# linearly with the number of messages — every turn becomes a separate episode.
 #
-# Интеграция в Agent.chat() (SLOW PATH, после записи эпизода):
-#   turn_index = ... # инкрементировать per conversation_id
+# Integration in Agent.chat() (SLOW PATH, after writing the episode):
+#   turn_index = ... # increment per conversation_id
 #   await auto_summary.maybe_create_summary(
 #       conversation_id=conversation_id,
 #       turn_index=turn_index,
 #       recent_turns=last_N_turns,   # list[{"user": str, "agent": str}]
 #   )
 #
-# Суммаризация: LLM если доступен, иначе extractive TF-IDF (0 токенов, CPU-only).
-# Дедупликация: episode_name включает turn_index — повторный вызов безопасен (MERGE).
+# Summarization: LLM if available, otherwise extractive TF-IDF (0 tokens, CPU-only).
+# Deduplication: episode_name includes turn_index — a repeated call is safe (MERGE).
 
 import asyncio
 import logging
@@ -17010,8 +16978,8 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-SUMMARY_EVERY = 10   # создавать резюме каждые N turns
-# P1-F FIX: перенести в velantrim_config.py — единый источник для AdaptiveDecoder и CognitiveModeRouter
+SUMMARY_EVERY = 10   # create a summary every N turns
+# P1-F FIX: move to velantrim_config.py — single source for AdaptiveDecoder and CognitiveModeRouter
 # class ModeTemperatures:
 #     PRECISION=0.3, BALANCED=0.6, EXPLORATION=0.85, CREATIVE=None (dynamic)
 # MODE_TEMPS = ModeTemperatures()
@@ -17019,14 +16987,14 @@ SUMMARY_EVERY = 10   # создавать резюме каждые N turns
 
 class AutoSummary:
     """
-    Авто-суммаризация диалога каждые SUMMARY_EVERY turns.
-    Хранит ссылки на in-flight задачи чтобы GC не убивал корутины до завершения.
+    Auto-summarization of the dialogue every SUMMARY_EVERY turns.
+    Holds references to in-flight tasks so GC does not kill the coroutines before completion.
     """
 
     def __init__(self, graph_memory, llm_client=None):
         self.graph       = graph_memory
         self.llm         = llm_client
-        self._in_flight: set = set()   # conversation_id которые сейчас суммаризируются
+        self._in_flight: set = set()   # conversation_ids currently being summarized
 
     async def maybe_create_summary(
         self,
@@ -17035,18 +17003,18 @@ class AutoSummary:
         recent_turns:    list,          # list[{"user": str, "agent": str}]
     ) -> Optional[str]:
         """
-        Вызывать из SLOW PATH после каждого turn.
-        Создаёт резюме только каждые SUMMARY_EVERY turns, не блокирует ответ.
+        Call from the SLOW PATH after every turn.
+        Creates a summary only every SUMMARY_EVERY turns, does not block the response.
         """
-        # Ещё не время или уже выполняется для этого conversation_id
-        # P2-F FIX: offline guard — не вызывать LLM при LLM_MODE=offline
+        # Not time yet, or already running for this conversation_id
+        # P2-F FIX: offline guard — do not call the LLM when LLM_MODE=offline
         from velantrim_config import LLM_MODE as _LLM_MODE
         if _LLM_MODE == "offline":
-            return None   # в offline-режиме использовать только extractive fallback
+            return None   # in offline mode use only the extractive fallback
         if turn_index % SUMMARY_EVERY != 0:
             return None
         if conversation_id in self._in_flight:
-            logger.debug(f"AutoSummary: {conversation_id} уже in-flight, пропускаем")
+            logger.debug(f"AutoSummary: {conversation_id} already in-flight, skipping")
             return None
 
         self._in_flight.add(conversation_id)
@@ -17067,18 +17035,18 @@ class AutoSummary:
         if not turns:
             return None
 
-        # Берём последние SUMMARY_EVERY turns для резюме
+        # Take the last SUMMARY_EVERY turns for the summary
         window = turns[-SUMMARY_EVERY:]
         text   = "\n".join(
             f"User: {t.get('user', '')}\nAgent: {t.get('agent', '')}"
             for t in window
         )
 
-        # Суммаризация: LLM если доступен, иначе extractive TF-IDF (CPU-only, 0 токенов)
+        # Summarization: LLM if available, otherwise extractive TF-IDF (CPU-only, 0 tokens)
         summary = await self._summarize(text)
 
-        # episode_name детерминирован по conversation_id + turn_index:
-        # повторный вызов с теми же параметрами безопасен — MERGE не создаёт дубль.
+        # episode_name is deterministic from conversation_id + turn_index:
+        # a repeated call with the same parameters is safe — MERGE does not create a duplicate.
         episode_name = f"auto_summary_{conversation_id}_{turn_index}"
 
         await self.graph.add_episode(
@@ -17100,7 +17068,7 @@ class AutoSummary:
         return summary
 
     async def _summarize(self, text: str) -> str:
-        """LLM суммаризация с extractive fallback."""
+        """LLM summarization with extractive fallback."""
         if self.llm:
             try:
                 return await self.llm.complete(
@@ -17110,15 +17078,15 @@ class AutoSummary:
             except Exception as e:
                 logger.debug(f"AutoSummary: LLM failed ({e}), falling back to extractive")
 
-        # Extractive TF-IDF fallback — 0 токенов, CPU-only
+        # Extractive TF-IDF fallback — 0 tokens, CPU-only
         return await asyncio.to_thread(self._extractive_summarize, text)
 
     @staticmethod
     def _extractive_summarize(text: str, max_sentences: int = 5) -> str:
         """
-        TF-IDF extractive суммаризация без LLM.
-        Выбирает top-N предложений по суммарному TF-IDF score.
-        Fallback на первые 500 символов если sklearn недоступен.
+        TF-IDF extractive summarization without LLM.
+        Selects top-N sentences by aggregate TF-IDF score.
+        Falls back to the first 500 characters if sklearn is unavailable.
         """
         sentences = [s.strip() for s in text.replace("\n", " ").split(".") if s.strip()]
         if len(sentences) <= max_sentences:
@@ -17140,7 +17108,7 @@ class AutoSummary:
 #### FEATURE-6 · mcp_server/server.py
 
 ```python
-# mcp_server/server.py — новый файл
+# mcp_server/server.py — new file
 import asyncio, json, logging, sys
 logger = logging.getLogger(__name__)
 
@@ -17173,9 +17141,9 @@ class MCPServer:
             res = await self.agent.graph_memory.search(query=args["query"], num_results=args.get("num_results",5))
             return [{"content":r.get("content",""),"score":r.get("relevance_score",0)} for r in res]
         if name == "memory_add":
-            # add_episode() проходит через Truth Gate внутри GraphMemory — см. RFC0031
-            # FIX-F: было f"mcp_{content[:20]}" — тихая потеря данных через INSERT OR IGNORE
-            # если два факта начинаются одинаково. Теперь UUID гарантирует уникальность.
+            # add_episode() passes through the Truth Gate inside GraphMemory — see RFC0031
+            # FIX-F: was f"mcp_{content[:20]}" — silent data loss via INSERT OR IGNORE
+            # if two facts start identically. Now UUID guarantees uniqueness.
             import uuid as _uuid
             ep_name = f"mcp_{_uuid.uuid4().hex[:12]}"
             await self.agent.graph_memory.add_episode(episode_name=ep_name, content=args["content"], source=args.get("source","mcp_user"))
@@ -17202,13 +17170,13 @@ class MCPServer:
 
 #### FEATURE-7 · core/truth_conflict.py
 
-**Что даёт**: автоматический детектор семантических конфликтов + Slow Path воркер (S2.5).
+**What it provides**: an automatic semantic conflict detector + a Slow Path worker (S2.5).
 
-⚠️ **RFC0031**: нет прямого `SET epistemic_state` — только `ESM.transition`.
-⚠️ При `llm_client=None` → `continue`, не `break` — обработка батча продолжается для остальных фактов.
+⚠️ **RFC0031**: no direct `SET epistemic_state` — only `ESM.transition`.
+⚠️ When `llm_client=None` → `continue`, not `break` — batch processing continues for the remaining facts.
 
 ```python
-# core/truth_conflict.py — новый файл
+# core/truth_conflict.py — new file
 import asyncio, logging
 from datetime import datetime, timezone
 
@@ -17221,9 +17189,9 @@ class TruthConflictDetector:
         llm_client=None, sim_threshold: float = 0.95,
     ) -> dict:
         """
-        ⚠️ RFC0031: прямой Cypher для SET epistemic_state — ЗАПРЕЩЁН.
-        Все переходы через ESM.transition → GraphWriteProtocol.
-        Вызывается ТОЛЬКО из ConflictResolutionWorker (Slow Path S2.5).
+        ⚠️ RFC0031: direct Cypher for SET epistemic_state — FORBIDDEN.
+        All transitions go through ESM.transition → GraphWriteProtocol.
+        Called ONLY from ConflictResolutionWorker (Slow Path S2.5).
         """
         content = new_fact.get("content", "")
         if not content or len(content) < 10: return new_fact
@@ -17235,7 +17203,7 @@ class TruthConflictDetector:
         for old in similar:
             old_content = old.get("content",""); score = old.get("relevance_score", 0.0)
             if score < sim_threshold or not old_content: continue
-            if not llm_client: continue  # continue, не break — обрабатываем остальных
+            if not llm_client: continue  # continue, not break — process the rest
             try:
                 ans = (await llm_client.complete(
                     f"Do these facts contradict? YES or NO.\nA: {old_content[:300]}\nB: {content[:300]}\nAnswer:"
@@ -17258,8 +17226,8 @@ class TruthConflictDetector:
 class ConflictResolutionWorker:
     """
     RFC0062 — Slow Path S2.5.
-    Проверяет Hypothesized-факты на конфликты каждые 5 минут.
-    ⚠️ I38: вызов только из Slow Path — не из Fast Path.
+    Checks Hypothesized facts for conflicts every 5 minutes.
+    ⚠️ I38: called only from the Slow Path — not from the Fast Path.
     """
     CHECK_INTERVAL = 300
     BATCH_SIZE     = 20
@@ -17289,9 +17257,9 @@ class ConflictResolutionWorker:
             RETURN f.id AS id, f AS fact_data
             ORDER BY f.created_at DESC LIMIT $limit
         """, {"limit": self.BATCH_SIZE})
-        # FIX-E: было `f.conflict_checked <> true` — в Neo4j null <> true = null → false в WHERE.
-        # Новые факты без свойства conflict_checked вообще не попадали в выборку.
-        # coalesce(f.conflict_checked, false) корректно трактует отсутствие свойства как false.
+        # FIX-E: was `f.conflict_checked <> true` — in Neo4j null <> true = null → false in WHERE.
+        # New facts without the conflict_checked property never made it into the selection at all.
+        # coalesce(f.conflict_checked, false) correctly treats a missing property as false.
         for row in (candidates or []):
             await self._detector.detect_and_resolve_conflicts(
                 new_fact=dict(row["fact_data"]), graph_memory=self.graph,
@@ -17301,7 +17269,7 @@ class ConflictResolutionWorker:
                 "MATCH (f:Fact {id: $id}) SET f.conflict_checked = true", {"id": row["id"]}
             )
 
-# Интеграция в agent.py:
+# Integration in agent.py:
 #   self.conflict_worker = ConflictResolutionWorker(graph=self.graph_memory, esm=self.esm, llm_client=self.llm_fast)
 #   start(): await self.conflict_worker.start()
 ```
@@ -17310,17 +17278,17 @@ class ConflictResolutionWorker:
 
 #### FEATURE-8 · context_builder.py
 
-**Что даёт**: устраняет дрейф токен-бюджета (было 4000 в коде vs 2000 в token_contract.py).
-**Действие**: заменить существующий `ContextBuilder`.
+**What it provides**: eliminates token-budget drift (was 4000 in the code vs 2000 in token_contract.py).
+**Action**: replace the existing `ContextBuilder`.
 
 ```python
-# context_builder.py — заменить класс ContextBuilder
+# context_builder.py — replace the ContextBuilder class
 import logging
 from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
-# ✅ 2000 = MAX_TOKENS_BALANCED_MODE из token_contract.py (устранён дрейф)
+# ✅ 2000 = MAX_TOKENS_BALANCED_MODE from token_contract.py (drift eliminated)
 QUERY_TYPE_BUDGETS = {
     "conversation": {"stm": 200, "ltm": 300, "strategies": 200, "entities": 100},
     "task":         {"stm": 150, "ltm": 400, "strategies": 350, "entities": 100},
@@ -17329,7 +17297,7 @@ QUERY_TYPE_BUDGETS = {
 }
 
 class ContextBuilder:
-    def __init__(self, token_budget: int = 2000):  # ✅ 2000 совпадает с token_contract.py
+    def __init__(self, token_budget: int = 2000):  # ✅ 2000 matches token_contract.py
         self.token_budget = token_budget
 
     def build_context(
@@ -17348,14 +17316,14 @@ class ContextBuilder:
             parts.append(core_blocks); used += self._count_tokens(core_blocks)
         if strategies:
             t = self._format_strategies(strategies, budgets["strategies"])
-            if t: parts.append(f"[СТРАТЕГИИ]\n{t}"); used += self._count_tokens(t)
+            if t: parts.append(f"[STRATEGIES]\n{t}"); used += self._count_tokens(t)
         ltm_budget = min(budgets["ltm"], self.token_budget - used - 200)
         if retrieved_memories and ltm_budget > 0:
             t = self._format_memories(retrieved_memories, ltm_budget)
-            if t: parts.append(f"[ПАМЯТЬ]\n{t}"); used += self._count_tokens(t)
+            if t: parts.append(f"[MEMORY]\n{t}"); used += self._count_tokens(t)
         if conversation_history:
             t = self._format_history(conversation_history, min(budgets["stm"], self.token_budget - used - 100))
-            if t: parts.append(f"[ИСТОРИЯ]\n{t}")
+            if t: parts.append(f"[HISTORY]\n{t}")
         return "\n\n".join(parts)
 
     def _format_strategies(self, strategies, budget):
@@ -17433,7 +17401,7 @@ if __name__ == "__main__":
 ```
 
 ```python
-# scripts/ingest_manifest.py — fingerprint-дедупликация
+# scripts/ingest_manifest.py — fingerprint deduplication
 import json, hashlib, asyncio, argparse
 from pathlib import Path
 
@@ -17454,7 +17422,7 @@ async def ingest(manifest_path, namespace, graph_memory):
 
 ---
 
-### 📊 Метрики Prometheus (RFC0062)
+### 📊 Prometheus metrics (RFC0062)
 
 ```python
 sleep_worker_cycles_total   = Counter("sleep_worker_cycles_total", ...)
@@ -17465,37 +17433,37 @@ core_memory_blocks_loaded   = Gauge("core_memory_blocks_loaded", ...)
 
 ---
 
-### Порядок реализации RFC0062 (4 спринта)
+### RFC0062 implementation order (4 sprints)
 
 ```
-СПРИНТ 1 — СТАБИЛИЗАЦИЯ (~5 дней):
-  1. datetime timezone.utc — глобальный поиск (0.5 дня, делать первым)
-  2. FractalMemory Lock + Cold Start Guard (1 день)
-  3. CircuitBreaker per-loop (0.5 дня)
-  4. ConsolidationWorker tasks (0.5 дня)
-  5. MTM snapshot + executor (0.5 дня)
-  6. break→continue при llm_client=None (0.5 дня)
+SPRINT 1 — STABILIZATION (~5 days):
+  1. datetime timezone.utc — global search (0.5 day, do first)
+  2. FractalMemory Lock + Cold Start Guard (1 day)
+  3. CircuitBreaker per-loop (0.5 day)
+  4. ConsolidationWorker tasks (0.5 day)
+  5. MTM snapshot + executor (0.5 day)
+  6. break→continue when llm_client=None (0.5 day)
 
-СПРИНТ 2 — ИСПРАВЛЕНИЯ (~3 дня):
-  7. RetrievalResult.embedding (0.5 дня)
-  8. EventBus QueueFull→SQLite (0.5 дня)
-  9. deepcopy ImmutableCore (0.5 дня, если файл есть)
- 10. ConversationBuffer ref_count (1 день, если файл есть)
+SPRINT 2 — FIXES (~3 days):
+  7. RetrievalResult.embedding (0.5 day)
+  8. EventBus QueueFull→SQLite (0.5 day)
+  9. deepcopy ImmutableCore (0.5 day, if the file exists)
+ 10. ConversationBuffer ref_count (1 day, if the file exists)
 
-СПРИНТ 3 — ЯДРО ФИЧ (~5 дней):
- 11. FEATURE-8  ContextBuilder заменить (0.5 дня, устраняет токен-дрейф)
- 12. FEATURE-1  CoreMemoryBlocks (1 день)
- 13. FEATURE-2  SleepTimeWorker (1 день)
- 14. FEATURE-7  TruthConflictDetector + S2.5 (1.5 дня)
- 15. FEATURE-3  ACE Curator в ReasoningBank (0.5 дня)
+SPRINT 3 — FEATURE CORE (~5 days):
+ 11. FEATURE-8  replace ContextBuilder (0.5 day, eliminates token drift)
+ 12. FEATURE-1  CoreMemoryBlocks (1 day)
+ 13. FEATURE-2  SleepTimeWorker (1 day)
+ 14. FEATURE-7  TruthConflictDetector + S2.5 (1.5 days)
+ 15. FEATURE-3  ACE Curator in ReasoningBank (0.5 day)
 
-СПРИНТ 4 — РАСШИРЕНИЕ (~4 дня):
- 16. FEATURE-4  Namespace + RRF (1.5 дня)
- 17. FEATURE-5  AutoSummary (0.5 дня)
- 18. FEATURE-6  MCP Server (1 день)
- 19. FEATURE-9  Self-Awareness скрипты (0.5 дня)
+SPRINT 4 — EXPANSION (~4 days):
+ 16. FEATURE-4  Namespace + RRF (1.5 days)
+ 17. FEATURE-5  AutoSummary (0.5 day)
+ 18. FEATURE-6  MCP Server (1 day)
+ 19. FEATURE-9  Self-Awareness scripts (0.5 day)
 
-Итого: ~17 рабочих дней
+Total: ~17 working days
 ```
 
 ---
@@ -17503,7 +17471,7 @@ core_memory_blocks_loaded   = Gauge("core_memory_blocks_loaded", ...)
 # ============================================================================
 # HYPERIA COMPONENT 2: CoreMemoryBlocks
 # ============================================================================
-# RFC0062 FEATURE-1 - теперь реализовано полностью
+# RFC0062 FEATURE-1 - now fully implemented
 
 # memory/core_memory_blocks.py
 import logging
@@ -17516,17 +17484,17 @@ logger = logging.getLogger(__name__)
 @dataclass
 class CoreMemoryBlocks:
     """
-    Постоянный контекст ~500 токенов — всегда в system prompt.
-    Три блока: user_profile / agent_persona / current_goals.
+    Persistent context ~500 tokens — always in the system prompt.
+    Three blocks: user_profile / agent_persona / current_goals.
 
-    Адаптация: Все graph.search() обёрнуты в SafeFTSQuery для соблюдения RFC0032.
+    Adaptation: All graph.search() calls are wrapped in SafeFTSQuery to comply with RFC0032.
 
-    Отличие от Ring Zero / VALUES CORE:
-    - Ring Zero: неизменяемые ценности агента (заморожены в ESM)
-    - CoreMemoryBlocks: живой профиль пользователя (обновляется SleepTimeWorker)
+    Difference from Ring Zero / VALUES CORE:
+    - Ring Zero: immutable agent values (frozen in ESM)
+    - CoreMemoryBlocks: living user profile (updated by SleepTimeWorker)
     """
     graph_memory: object
-    safe_fts_query: object = None  # ✅ Velantrim адаптация: SafeFTSQuery вместо прямого search
+    safe_fts_query: object = None  # ✅ Velantrim adaptation: SafeFTSQuery instead of direct search
     user_profile: str = ""
     agent_persona: str = ""
     current_goals: str = ""
@@ -17536,18 +17504,18 @@ class CoreMemoryBlocks:
 
     async def load(self):
         """
-        Загрузить блоки из графа при старте агента.
-        ✅ Velantrim адаптация: использует SafeFTSQuery если доступен.
+        Load the blocks from the graph at agent startup.
+        ✅ Velantrim adaptation: uses SafeFTSQuery if available.
         """
         try:
-            # Используем SafeFTSQuery если доступен (Velantrim RFC0032)
+            # Use SafeFTSQuery if available (Velantrim RFC0032)
             if self.safe_fts_query:
                 results = await self.safe_fts_query.search(
                     query="core_memory user_profile agent_persona current_goals",
                     limit=10
                 )
             else:
-                # Fallback на прямой search если SafeFTSQuery не настроен
+                # Fallback to direct search if SafeFTSQuery is not configured
                 results = await self.graph_memory.search(
                     query="core_memory user_profile agent_persona current_goals",
                     num_results=10
@@ -17573,8 +17541,8 @@ class CoreMemoryBlocks:
 
     def render(self) -> str:
         """
-        Рендер блоков для вставки в system prompt.
-        Возвращает ~500 токенов постоянного контекста.
+        Render the blocks for insertion into the system prompt.
+        Returns ~500 tokens of persistent context.
         """
         parts = []
         if self.user_profile:
@@ -17588,8 +17556,8 @@ class CoreMemoryBlocks:
 
     async def update(self, block: str, content: str):
         """
-        Обновить один из блоков и сохранить в граф.
-        Вызывается вручную пользователем или автоматически через SleepTimeWorker.
+        Update one of the blocks and save it to the graph.
+        Called manually by the user or automatically via SleepTimeWorker.
         """
         allowed = {"user_profile", "agent_persona", "current_goals"}
         if block not in allowed:
@@ -17609,13 +17577,13 @@ class CoreMemoryBlocks:
 
     async def update_from_conversation(self, conversation_text: str, llm_client):
         """
-        Автоматически обновить user_profile из диалога.
-        Вызывается SleepTimeWorker в idle.
+        Automatically update user_profile from the conversation.
+        Called by SleepTimeWorker while idle.
         
-        ✅ Velantrim адаптация: LLM вызов опционален (может быть None в offline режиме).
+        ✅ Velantrim adaptation: the LLM call is optional (may be None in offline mode).
         """
         if not llm_client:
-            logger.debug("CoreMemoryBlocks: llm_client=None, пропускаем auto-update")
+            logger.debug("CoreMemoryBlocks: llm_client=None, skipping auto-update")
             return
         
         prompt = (
@@ -17632,7 +17600,7 @@ class CoreMemoryBlocks:
         except Exception as e:
             logger.debug(f"CoreMemoryBlocks.update_from_conversation failed: {e}")
 
-# Интеграция в agent.py:
+# Integration in agent.py:
 #   __init__:
 #       self.core_blocks = CoreMemoryBlocks(
 #           graph_memory=self.graph_memory,
@@ -17651,8 +17619,8 @@ class CoreMemoryBlocks:
 # ============================================================================
 # HYPERIA COMPONENT 3: SleepTimeWorker
 # ============================================================================
-# RFC0062 FEATURE-2 - теперь реализовано полностью
-# ✅ Velantrim адаптация: все изменения epistemic_state через ESM.transition
+# RFC0062 FEATURE-2 - now fully implemented
+# ✅ Velantrim adaptation: all epistemic_state changes go through ESM.transition
 
 # sleep_time_worker.py
 import asyncio
@@ -17664,15 +17632,15 @@ logger = logging.getLogger(__name__)
 
 class SleepTimeWorker:
     """
-    Idle-рефинирование памяти (≥5 мин простоя).
+    Idle memory refinement (≥5 min of inactivity).
 
-    ✅ Velantrim адаптация: MGL-2 compliance - никакого прямого SET epistemic_state.
-    Все переходы только через ESM.transition() → GraphWriteProtocol.
+    ✅ Velantrim adaptation: MGL-2 compliance - no direct SET epistemic_state.
+    All transitions go only through ESM.transition() → GraphWriteProtocol.
 
-    Что делает в idle:
-    1. _refine_truth_layer() - промоут Hypothesized → Validated через AutoTruthGate
-    2. _ace_curator_update() - дистилляция стратегий с reasoning
-    3. _refresh_core_blocks() - обновление user_profile из диалога
+    What it does while idle:
+    1. _refine_truth_layer() - promote Hypothesized → Validated via AutoTruthGate
+    2. _ace_curator_update() - distill strategies with reasoning
+    3. _refresh_core_blocks() - update user_profile from the conversation
     """
 
     def __init__(
@@ -17680,8 +17648,8 @@ class SleepTimeWorker:
         graph_memory,
         reasoning_bank,
         core_blocks=None,
-        idle_timeout=300,           # 5 минут простоя
-        sleep_interval=3600,        # цикл каждый час
+        idle_timeout=300,           # 5 minutes of inactivity
+        sleep_interval=3600,        # cycle every hour
         auto_truth_gate_worker=None,
         esm=None,                   # ✅ Velantrim: EpistemicStateMachine instance
     ):
@@ -17691,29 +17659,29 @@ class SleepTimeWorker:
         self.idle_timeout = idle_timeout
         self.sleep_interval = sleep_interval
         self._auto_truth_gate_worker = auto_truth_gate_worker
-        self._esm = esm  # ✅ Velantrim: обязательный параметр для MGL-2
+        self._esm = esm  # ✅ Velantrim: required parameter for MGL-2
         self._last_activity = datetime.now(timezone.utc)
         self._last_cycle_at = datetime.now(timezone.utc)
         self._running = False
         self._task = None
 
     def notify_activity(self):
-        """Вызывать при каждом входящем сообщении пользователя."""
+        """Call on every incoming user message."""
         self._last_activity = datetime.now(timezone.utc)
 
     def _is_idle(self) -> bool:
-        """Проверка idle состояния"""
+        """Check idle state"""
         elapsed = (datetime.now(timezone.utc) - self._last_activity).total_seconds()
         return elapsed >= self.idle_timeout
 
     async def start(self):
-        """Запустить фоновый idle-воркер"""
+        """Start the background idle worker"""
         self._running = True
         self._task = asyncio.create_task(self._sleep_loop())
-        logger.info("SleepTimeWorker started (idle ≥ 5 мин)")
+        logger.info("SleepTimeWorker started (idle ≥ 5 min)")
 
     async def stop(self):
-        """Остановить воркер"""
+        """Stop the worker"""
         self._running = False
         if self._task and not self._task.done():
             self._task.cancel()
@@ -17724,14 +17692,14 @@ class SleepTimeWorker:
         logger.info("SleepTimeWorker stopped")
 
     async def _sleep_loop(self):
-        """Основной цикл - проверка idle каждую минуту"""
+        """Main loop - check idle every minute"""
         while self._running:
-            await asyncio.sleep(60)  # проверка каждую минуту
+            await asyncio.sleep(60)  # check every minute
             
             if not self._is_idle():
                 continue
             
-            # Проверяем не запускали ли цикл недавно
+            # Check whether the cycle was run recently
             since_last = (datetime.now(timezone.utc) - self._last_cycle_at).total_seconds()
             if since_last < self.sleep_interval:
                 continue
@@ -17745,22 +17713,22 @@ class SleepTimeWorker:
                 logger.warning(f"SleepTimeWorker cycle failed: {e}")
 
     async def _run_sleep_cycle(self):
-        """Один полный цикл idle-рефинирования"""
-        logger.info("SleepTimeWorker: начинаю idle refinement cycle")
+        """One full idle-refinement cycle"""
+        logger.info("SleepTimeWorker: starting idle refinement cycle")
         
         await self._refine_truth_layer()
         await self._ace_curator_update()
         await self._refresh_core_blocks()
         
-        logger.info("SleepTimeWorker: idle refinement cycle завершён")
+        logger.info("SleepTimeWorker: idle refinement cycle complete")
 
     async def _refine_truth_layer(self):
         """
-        Рефинирование L3 truth layer.
+        Refine the L3 truth layer.
         
         ✅ Velantrim MGL-2 compliance:
-        - НЕТ прямого SET epistemic_state
-        - Validated-промоут → AutoTruthGateWorker (если есть)
+        - NO direct SET epistemic_state
+        - Validated promotion → AutoTruthGateWorker (if present)
         - Stale Hypothesized → ESM.transition(Deprecated)
         """
         if self._auto_truth_gate_worker:
@@ -17770,7 +17738,7 @@ class SleepTimeWorker:
             except Exception as e:
                 logger.debug(f"SleepTimeWorker: AutoTruthGate failed: {e}")
         
-        # Находим stale Hypothesized факты (старше 7 дней, не accessed)
+        # Find stale Hypothesized facts (older than 7 days, not accessed)
         if self._esm:
             try:
                 stale_cutoff = datetime.now(timezone.utc) - timedelta(days=7)
@@ -17789,8 +17757,8 @@ class SleepTimeWorker:
                 )
                 
                 for row in (stale_facts or []):
-                    # ✅ Velantrim: через ESM.transition, не прямой SET
-                    # Подгружаем факт из графа для передачи в ESM.transition(fact, graph, reason)
+                    # ✅ Velantrim: via ESM.transition, not a direct SET
+                    # Load the fact from the graph to pass into ESM.transition(fact, graph, reason)
                     fact_rows = await self.graph.execute_cypher(
                         "MATCH (f:Fact {id: $id}) RETURN properties(f) AS fact",
                         {"id": row["fact_id"]}
@@ -17809,24 +17777,24 @@ class SleepTimeWorker:
 
     async def _ace_curator_update(self):
         """
-        Запуск ACE Curator для дистилляции стратегий.
-        Вызывается только в idle - не нагружает Fast Path.
+        Run the ACE Curator to distill strategies.
+        Called only while idle - does not load the Fast Path.
         """
         if self.reasoning_bank and hasattr(self.reasoning_bank, 'ace_curator_update'):
             try:
                 await self.reasoning_bank.ace_curator_update()
-                logger.info("SleepTimeWorker: ACE Curator обновил стратегии")
+                logger.info("SleepTimeWorker: ACE Curator updated strategies")
             except Exception as e:
                 logger.debug(f"SleepTimeWorker: ACE Curator failed: {e}")
 
     async def _refresh_core_blocks(self):
         """
-        Обновление CoreMemoryBlocks из недавнего диалога.
-        Только если core_blocks настроен и есть LLM.
+        Update CoreMemoryBlocks from the recent conversation.
+        Only if core_blocks is configured and an LLM is available.
         """
         if self.core_blocks and hasattr(self.core_blocks, 'update_from_conversation'):
             try:
-                # Получаем последние 10 реплик диалога
+                # Get the last 10 conversation turns
                 recent_query = """
                 MATCH (ep:Episode)
                 WHERE ep.source = 'conversation'
@@ -17843,33 +17811,33 @@ class SleepTimeWorker:
                 
                 if recent:
                     conversation_text = "\n".join([r["content"] for r in recent])
-                    # LLM client должен быть в reasoning_bank или передан отдельно
+                    # The LLM client must be in reasoning_bank or passed separately
                     llm = getattr(self.reasoning_bank, 'llm_client', None)
                     await self.core_blocks.update_from_conversation(conversation_text, llm)
             except Exception as e:
                 logger.debug(f"SleepTimeWorker._refresh_core_blocks: {e}")
 
-# Интеграция в agent.py:
+# Integration in agent.py:
 #   self.sleep_worker = SleepTimeWorker(
 #       graph_memory=self.graph_memory,
 #       reasoning_bank=self.reasoning_bank,
 #       core_blocks=self.core_blocks,
-#       esm=self.esm,  # ✅ Velantrim обязательно
-#       auto_truth_gate_worker=self.auto_truth_gate_worker  # опционально
+#       esm=self.esm,  # ✅ Velantrim required
+#       auto_truth_gate_worker=self.auto_truth_gate_worker  # optional
 #   )
 #   
 #   async def start(self):
 #       await self.sleep_worker.start()
 #   
 #   async def chat(self, message):
-#       self.sleep_worker.notify_activity()  # первая строка метода
-#       # ... остальной код
+#       self.sleep_worker.notify_activity()  # first line of the method
+#       # ... rest of the code
 
 
 # ============================================================================
 # HYPERIA COMPONENT 6: ImmutableCore Scheduler
 # ============================================================================
-# Назначение: SHA-256 снапшоты L3 графа каждые 24ч для защиты от потери данных
+# Purpose: SHA-256 snapshots of the L3 graph every 24h to protect against data loss
 
 # memory/immutable_core_scheduler.py
 import asyncio
@@ -17883,13 +17851,13 @@ logger = logging.getLogger(__name__)
 
 class ImmutableCoreScheduler:
     """
-    Независимый планировщик снапшотов L3.
+    Independent L3 snapshot scheduler.
 
-    Запускается как отдельный asyncio.Task при старте агента.
-    Не зависит от консолидации — snapshot каждые 24ч при любых условиях.
+    Runs as a separate asyncio.Task at agent startup.
+    Independent of consolidation — a snapshot every 24h under any conditions.
 
-    Delta snapshots экономят ~80–90% storage vs ежедневных полных.
-    Full snapshot — каждый понедельник, остальные дни — delta.
+    Delta snapshots save ~80–90% storage vs daily full ones.
+    Full snapshot — every Monday, the other days — delta.
     """
 
     def __init__(self, ltm, sqlite_path: str = "./data/immutable_core.db"):
@@ -17899,13 +17867,13 @@ class ImmutableCoreScheduler:
         self._task = None
 
     async def start(self):
-        """Запустить scheduler"""
+        """Start the scheduler"""
         self.running = True
         self._task = asyncio.create_task(self._snapshot_loop())
         logger.info("ImmutableCoreScheduler started (24h cycle)")
 
     async def stop(self):
-        """Остановить scheduler"""
+        """Stop the scheduler"""
         self.running = False
         if self._task and not self._task.done():
             self._task.cancel()
@@ -17917,9 +17885,9 @@ class ImmutableCoreScheduler:
 
     async def _snapshot_loop(self):
         """
-        Основной цикл снапшотов.
-        При старте делает snapshot только если прошло >12ч с последнего.
-        Это предотвращает лишние полные снапшоты при множественных рестартах.
+        Main snapshot loop.
+        At startup, takes a snapshot only if >12h have passed since the last one.
+        This prevents redundant full snapshots on multiple restarts.
         """
         try:
             last = await self._get_last_snapshot_time()
@@ -17929,21 +17897,21 @@ class ImmutableCoreScheduler:
             logger.error(f"ImmutableCore initial snapshot failed: {e}")
         
         while self.running:
-            await asyncio.sleep(24 * 3600)  # каждые 24 часа
+            await asyncio.sleep(24 * 3600)  # every 24 hours
             try:
                 await self._take_snapshot()
             except Exception as e:
                 logger.error(f"ImmutableCore snapshot failed: {e}")
-                # Не останавливаем петлю — следующий снапшот через 24ч
+                # Do not stop the loop — the next snapshot is in 24h
 
     async def _take_snapshot(self):
-        """Создать снапшот L3 графа"""
-        # Получаем данные из LTM
-        # export_snapshot() отсутствует в FractalMemory → AttributeError каждые 24ч.
-        # Phase 2: реализовать FractalMemory.export_snapshot() → возвращает dict со snapshot L3 графа.
-        # Временный fallback пока метод не реализован:
+        """Create a snapshot of the L3 graph"""
+        # Get data from LTM
+        # export_snapshot() is missing in FractalMemory → AttributeError every 24h.
+        # Phase 2: implement FractalMemory.export_snapshot() → returns a dict with the L3 graph snapshot.
+        # Temporary fallback until the method is implemented:
         if not hasattr(self.ltm, 'export_snapshot'):
-            logger.error("ImmutableCore: FractalMemory.export_snapshot() не реализован — snapshot пропущен")
+            logger.error("ImmutableCore: FractalMemory.export_snapshot() not implemented — snapshot skipped")
             return
         snapshot_data = await self.ltm.export_snapshot()
         snapshot_type = "full" if self._is_full_snapshot_day() else "delta"
@@ -17952,12 +17920,12 @@ class ImmutableCoreScheduler:
             prev = await self._get_last_full_snapshot()
             if prev:
                 try:
-                    # Используем dictdiffer если доступен
+                    # Use dictdiffer if available
                     from dictdiffer import diff
                     delta = list(diff(prev, snapshot_data))
                     data_to_store = json.dumps(delta, ensure_ascii=False)
                 except ImportError:
-                    # Fallback на full snapshot если dictdiffer не установлен
+                    # Fallback to a full snapshot if dictdiffer is not installed
                     data_to_store = json.dumps(snapshot_data, ensure_ascii=False, sort_keys=True)
                     snapshot_type = "full"
             else:
@@ -17966,10 +17934,10 @@ class ImmutableCoreScheduler:
         else:
             data_to_store = json.dumps(snapshot_data, ensure_ascii=False, sort_keys=True)
         
-        # Вычисляем hash
+        # Compute the hash
         snapshot_hash = hashlib.sha256(data_to_store.encode()).hexdigest()
         
-        # Сохраняем в SQLite
+        # Save to SQLite
         async with aiosqlite.connect(self.sqlite_path) as db:
             await db.execute("PRAGMA journal_mode=WAL")
             await db.execute("PRAGMA synchronous=NORMAL")
@@ -17991,7 +17959,7 @@ class ImmutableCoreScheduler:
         logger.info(f"ImmutableCore [{snapshot_type}] snapshot: {snapshot_hash[:12]}...")
 
     async def _get_last_full_snapshot(self):
-        """Получить данные последнего full-снапшота для вычисления дельты"""
+        """Get the data of the last full snapshot for computing the delta"""
         try:
             async with aiosqlite.connect(self.sqlite_path) as db:
                 async with db.execute(
@@ -18003,7 +17971,7 @@ class ImmutableCoreScheduler:
             return None
 
     async def _get_last_snapshot_time(self):
-        """Получить datetime последнего снапшота любого типа"""
+        """Get the datetime of the last snapshot of any type"""
         try:
             async with aiosqlite.connect(self.sqlite_path) as db:
                 async with db.execute(
@@ -18015,11 +17983,11 @@ class ImmutableCoreScheduler:
             return None
 
     def _is_full_snapshot_day(self) -> bool:
-        """Понедельник = full snapshot, остальные дни = delta"""
-        FULL_SNAPSHOT_WEEKDAY = 0  # 0 = понедельник
+        """Monday = full snapshot, the other days = delta"""
+        FULL_SNAPSHOT_WEEKDAY = 0  # 0 = Monday
         return datetime.now(timezone.utc).weekday() == FULL_SNAPSHOT_WEEKDAY
 
-# Интеграция в agent.py:
+# Integration in agent.py:
 #   self.immutable_core = ImmutableCoreScheduler(
 #       ltm=self.fractal_memory,
 #       sqlite_path="./data/immutable_core.db"
@@ -18035,8 +18003,8 @@ class ImmutableCoreScheduler:
 # ============================================================================
 # HYPERIA COMPONENT 7: Multi-namespace RRF Search
 # ============================================================================
-# RFC0062 FEATURE-4 - теперь реализовано полностью
-# ✅ Velantrim адаптация: SafeFTSQuery вместо прямого search
+# RFC0062 FEATURE-4 - now fully implemented
+# ✅ Velantrim adaptation: SafeFTSQuery instead of a direct search
 
 # memory/rrf_search.py
 from collections import defaultdict
@@ -18045,43 +18013,43 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# ✅ Velantrim: ESM-фильтр для блокировки невалидных состояний
+# ✅ Velantrim: ESM filter to block invalid states
 BLOCKED_ESM_STATES = {"Contradicted", "Deprecated", "Collapsed"}
 
 async def multi_namespace_search(
     graph_memory,
-    safe_fts_query,  # ✅ Velantrim: SafeFTSQuery instance для RFC0032
+    safe_fts_query,  # ✅ Velantrim: SafeFTSQuery instance for RFC0032
     query: str,
     num_results: int = 10,
     priority_namespace: Optional[str] = None,
     rrf_k: int = 60,
 ) -> List[dict]:
     """
-    RRF (Reciprocal Rank Fusion) поиск по всем namespace.
+    RRF (Reciprocal Rank Fusion) search across all namespaces.
 
-    ✅ Velantrim адаптация: SafeFTSQuery для ESM-фильтрации (RFC0032).
+    ✅ Velantrim adaptation: SafeFTSQuery for ESM filtering (RFC0032).
 
     Namespaces:
-    - personal: разговоры, профиль, stm_consolidation
-    - project: кодовая база, self-awareness
-    - knowledge: документы, статьи
-    - experience: стратегии, ACE curator
+    - personal: conversations, profile, stm_consolidation
+    - project: codebase, self-awareness
+    - knowledge: documents, articles
+    - experience: strategies, ACE curator
 
-    RRF формула: score = 1 / (k + rank)
-    Priority namespace получает бонус ×1.5
+    RRF formula: score = 1 / (k + rank)
+    The priority namespace gets a ×1.5 bonus
     """
     all_results = {}
     rank_lists = []
 
     for ns in ["personal", "project", "knowledge", "experience"]:
         try:
-            # ✅ Velantrim: используем SafeFTSQuery если доступен
+            # ✅ Velantrim: use SafeFTSQuery if available
             if hasattr(safe_fts_query, 'search_with_namespace'):
                 results = await safe_fts_query.search_with_namespace(
                     query, namespace=ns, limit=num_results
                 )
             else:
-                # Fallback с ручным ESM-фильтром
+                # Fallback with a manual ESM filter
                 raw = await graph_memory.search(
                     query=query,
                     num_results=num_results * 2,
@@ -18095,7 +18063,7 @@ async def multi_namespace_search(
             
             rank_list = []
             for r in results:
-                # sha256 вместо hash() — hash() нестабилен между сессиями Python
+                # sha256 instead of hash() — hash() is unstable across Python sessions
                 import hashlib
                 _content_key = r.get("content", "")[:50].encode()
                 did = str(r.get("uuid") or r.get("id") or hashlib.sha256(_content_key).hexdigest()[:16])
@@ -18105,7 +18073,7 @@ async def multi_namespace_search(
             rank_lists.append(rank_list)
             
         except Exception as e:
-            # warning вместо debug — silent fail скрывал деградацию retrieval
+            # warning instead of debug — a silent fail hid retrieval degradation
             logger.warning(f"multi_namespace_search: namespace {ns} failed: {e}")
             rank_lists.append([])
 
@@ -18117,7 +18085,7 @@ async def multi_namespace_search(
             s = 1.0 / (rrf_k + rank + 1)
             
             # Priority boost
-            # result_ns вместо ns — ns была loop-переменной, shadowing ломал 2+ итерацию
+            # result_ns instead of ns — ns was a loop variable, shadowing broke the 2nd+ iteration
             if priority_namespace:
                 result_ns = all_results.get(did, {}).get("group_id")
                 if result_ns == priority_namespace:
@@ -18125,11 +18093,11 @@ async def multi_namespace_search(
             
             scores[did] += s
 
-    # Сортировка и возврат
+    # Sort and return
     sorted_ids = sorted(scores.keys(), key=lambda d: scores[d], reverse=True)
     return [all_results[d] for d in sorted_ids[:num_results] if d in all_results]
 
-# Интеграция в HybridRetriever:
+# Integration in HybridRetriever:
 #   async def retrieve(self, query, query_type="general"):
 #       if self.multi_namespace_enabled:
 #           return await multi_namespace_search(
@@ -18138,24 +18106,24 @@ async def multi_namespace_search(
 #               query=query,
 #               num_results=self.num_results
 #           )
-#       # ... fallback на обычный retrieve
+#       # ... fallback to the regular retrieve
 
 
 # ============================================================================
-# HYPERIA COMPONENT 8: Централизованный Config паттерн
+# HYPERIA COMPONENT 8: Centralized Config pattern
 # ============================================================================
-# Назначение: Единый источник истины для всех констант системы
+# Purpose: A single source of truth for all system constants
 
-# velantrim_config.yaml - ПРИМЕР централизованного конфига
+# velantrim_config.yaml - EXAMPLE of a centralized config
 #
-# Проблема: В старом Velantrim константы разбросаны по коду:
-# - token_budget дублируется в разных модулях
-# - token_budget = 2000 в token_contract.py
-# - embedding_dim хардкодится в каждом индексе
-# - пороги Truth Gate дублируются в нескольких местах
+# Problem: In the old Velantrim, constants are scattered across the code:
+# - token_budget is duplicated across different modules
+# - token_budget = 2000 in token_contract.py
+# - embedding_dim is hardcoded in every index
+# - Truth Gate thresholds are duplicated in several places
 #
-# Решение из HYPERIA: Все константы в одном YAML файле.
-# Загружается при старте, валидируется, используется везде.
+# Solution from HYPERIA: All constants in a single YAML file.
+# Loaded at startup, validated, used everywhere.
 
 """
 # ==================== CORE CONFIG ====================
@@ -18171,7 +18139,7 @@ embedding:
   
 # ==================== TOKEN BUDGETS ====================
 token_contract:
-  max_tokens_balanced_mode: 2000  # ✅ Единственное место где определено
+  max_tokens_balanced_mode: 2000  # ✅ The only place where it is defined
   context_builder:
     conversation: {stm: 200, ltm: 300, strategies: 200, entities: 100}
     task: {stm: 150, ltm: 400, strategies: 350, entities: 100}
@@ -18186,9 +18154,9 @@ truth_gate:
 
 # ==================== MEMORY LAYERS ====================
 fractal_memory:
-  l0_capacity: 4          # Cowan (2001): базовый лимит агента, НЕ Miller 7±2
-  l0_capacity_max: 7      # Адаптивный потолок при complexity: high
-  l0_adaptive_enabled: true  # При high-complexity задаче — расширяем до l0_capacity_max
+  l0_capacity: 4          # Cowan (2001): base agent limit, NOT Miller 7±2
+  l0_capacity_max: 7      # Adaptive ceiling when complexity: high
+  l0_adaptive_enabled: true  # On a high-complexity task — expand to l0_capacity_max
   l1_session_ttl_minutes: 30
   l2_mtm_ttl_days: 7
   velum:
@@ -18207,21 +18175,21 @@ consolidation:
   
 # ==================== SLEEP TIME WORKER ====================
 sleep_worker:
-  idle_timeout_seconds: 300  # 5 минут
-  cycle_interval_seconds: 3600  # 1 час
+  idle_timeout_seconds: 300  # 5 minutes
+  cycle_interval_seconds: 3600  # 1 hour
   
 # ==================== IMMUTABLE CORE ====================
 immutable_core:
   enabled: true
   snapshot_interval_hours: 24
-  full_snapshot_weekday: 0  # 0 = понедельник
+  full_snapshot_weekday: 0  # 0 = Monday
   sqlite_path: "./data/immutable_core.db"
   
 # ==================== HARDWARE PROFILE ====================
-# auto-detect при старте или override через env var
+# auto-detect at startup or override via env var
 hardware_profile: auto  # weak | medium | strong | auto
 
-# ==================== НОВЫЕ МЕХАНИЗМЫ ====================
+# ==================== NEW MECHANISMS ====================
 
 # Salience Detector
 salience_detector:
@@ -18229,16 +18197,16 @@ salience_detector:
   caps_multiplier: 1.5
   exclamation_multiplier: 1.3
   repeat_3day_multiplier: 2.0
-  keyword_multiplier: 1.4        # «важно», «критично», «никогда», «всегда»
+  keyword_multiplier: 1.4        # «important», «critical», «never», «always»
   return_after_24h_multiplier: 1.6
   clarify_multiplier: 1.2
 
-# FSRS Power-Law Decay (v8.0 — заменяет Ebbinghaus экспоненту)
-# Конфликт-1 FIX: секция переименована, алгоритм заменён на fsrs_retention()
+# FSRS Power-Law Decay (v8.0 — replaces the Ebbinghaus exponential)
+# Conflict-1 FIX: section renamed, algorithm replaced with fsrs_retention()
 fsrs_decay:
   enabled: true
-  worker_interval_seconds: 3600   # раз в час
-  emotional_ring_zero_threshold: 0.85  # выше → иммунитет к decay
+  worker_interval_seconds: 3600   # once an hour
+  emotional_ring_zero_threshold: 0.85  # above → immune to decay
 
 # Cache-Aware Hot Graph
 hot_graph:
@@ -18283,7 +18251,7 @@ prediction_error:
   edge_weaken_factor: 0.15
 """
 
-# Загрузка в Python:
+# Loading in Python:
 
 # config/velantrim_config.py
 import yaml
@@ -18293,10 +18261,10 @@ import os
 
 class VelantrimConfig:
     """
-    Централизованный конфиг Velantrim.
+    Centralized Velantrim config.
 
-    Загружается один раз при старте приложения.
-    Все компоненты получают config через dependency injection.
+    Loaded once at application startup.
+    All components receive the config via dependency injection.
     """
 
     def __init__(self, config_path: str = "./velantrim_config.yaml"):
@@ -18305,21 +18273,21 @@ class VelantrimConfig:
         self._load()
 
     def _load(self):
-        """Загрузить и валидировать конфиг"""
+        """Load and validate the config"""
         if not Path(self.config_path).exists():
             raise FileNotFoundError(f"Config not found: {self.config_path}")
         
         with open(self.config_path, 'r', encoding='utf-8') as f:
             self._config = yaml.safe_load(f)
         
-        # Валидация обязательных полей
+        # Validate required fields
         required = ['mode', 'graph_backend', 'token_contract']
         for field in required:
             if field not in self._config:
                 raise ValueError(f"Required config field missing: {field}")
 
     def get(self, key: str, default=None):
-        """Получить значение по ключу (с поддержкой вложенных путей)"""
+        """Get a value by key (with support for nested paths)"""
         keys = key.split('.')
         value = self._config
         
@@ -18333,53 +18301,53 @@ class VelantrimConfig:
 
     @property
     def token_budget(self) -> int:
-        """✅ Единственный источник token_budget для всей системы"""
+        """✅ The single source of token_budget for the whole system"""
         return self.get('token_contract.max_tokens_balanced_mode', 2000)
 
     @property
     def embedding_dimension(self) -> int:
-        """Размерность embedding модели"""
+        """Dimension of the embedding model"""
         return self.get('embedding.dimension', 1024)
 
     @property
     def truth_gate_config(self) -> dict:
-        """Пороги Truth Gate"""
+        """Truth Gate thresholds"""
         return self.get('truth_gate', {
             'evidence_count_min': 3,
             'confidence_min': 0.75,
             'coverage_score_min': 0.70
         })
 
-# Использование в компонентах:
+# Usage in components:
 
-# В main.py при старте:
+# In main.py at startup:
 config = VelantrimConfig("./velantrim_config.yaml")
 
-# В ContextBuilder:
+# In ContextBuilder:
 class ContextBuilder:
     def __init__(self, config: VelantrimConfig):
-        self.token_budget = config.token_budget  # ✅ Из единого источника
+        self.token_budget = config.token_budget  # ✅ From the single source
         
-# В GraphMemory:
+# In GraphMemory:
 class GraphMemory:
     def __init__(self, config: VelantrimConfig):
-        self.embedding_dim = config.embedding_dimension  # ✅ Из единого источника
+        self.embedding_dim = config.embedding_dimension  # ✅ From the single source
 
-# В TruthGate:
+# In TruthGate:
 class TruthGate:
     def __init__(self, config: VelantrimConfig):
         tc = config.truth_gate_config
-        self.evidence_min = tc['evidence_count_min']  # ✅ Из единого источника
+        self.evidence_min = tc['evidence_count_min']  # ✅ From the single source
 
-# ✅ Результат: Нет дубликатов констант, нет несоответствий, легко менять.
+# ✅ Result: No duplicate constants, no inconsistencies, easy to change.
 
 
 # ============================================================================
-# 🔒 БЕЗОПАСНОСТЬ: Attack Scenarios Registry
+# 🔒 SECURITY: Attack Scenarios Registry
 # ============================================================================
-# Правило: реальный инцидент → новый сценарий в реестр ≤ 48 часов
-# CI/CD: ≥ 95% прохождения блокирует деплой автоматически
-# Запуск: pytest tests/test_attack_sim.py
+# Rule: a real incident → a new scenario in the registry ≤ 48 hours
+# CI/CD: ≥ 95% pass rate; falling below blocks the deploy automatically
+# Run: pytest tests/test_attack_sim.py
 
 ```yaml
 # security/attack_scenarios.yaml
@@ -18388,63 +18356,63 @@ scenarios:
   - id: "ATK-001"
     target: "write_protocol"
     severity: critical
-    description: "Прямая запись факта в граф в обход Truth Gate"
+    description: "Direct write of a fact to the graph, bypassing the Truth Gate"
     expected_result: blocked
     rfc: RFC0060
 
   - id: "ATK-002"
     target: "esm_transition"
     severity: critical
-    description: "Форсирование Validated→Collapsed без Evidence"
+    description: "Forcing Validated→Collapsed without Evidence"
     expected_result: rejected_with_reason
     rfc: RFC0046
 
   - id: "ATK-003"
     target: "safe_fts_query"
     severity: high
-    description: "Прямой FTS5-запрос в обход SafeFTSQuery (обход ESM-фильтров)"
+    description: "Direct FTS5 query bypassing SafeFTSQuery (bypassing ESM filters)"
     expected_result: blocked_at_query_layer
     rfc: RFC0060
 
   - id: "ATK-004"
     target: "ring_zero"
     severity: critical
-    description: "Попытка вытеснить Ring Zero / VALUES CORE из L0"
+    description: "Attempt to evict Ring Zero / VALUES CORE from L0"
     expected_result: eviction_blocked
     rfc: RFC0015
 
   - id: "ATK-005"
     target: "source_trust"
     severity: high
-    description: "Инъекция факта от источника с trust_score < 0.3"
+    description: "Injection of a fact from a source with trust_score < 0.3"
     expected_result: quarantined_hypothesized
     rfc: RFC0059
 
   - id: "ATK-006"
     target: "focus_engine"
     severity: medium
-    description: "Прямой LLM-вызов в FocusEngine (обход I29)"
+    description: "Direct LLM call in FocusEngine (bypassing I29)"
     expected_result: invariant_violation_raised
     rfc: RFC0053
 
   - id: "ATK-007"
     target: "l5_5_fusion"
     severity: medium
-    description: "Попытка записи в граф из L5.5 PredictiveFusionLayer (обход I35)"
+    description: "Attempt to write to the graph from L5.5 PredictiveFusionLayer (bypassing I35)"
     expected_result: write_blocked
     rfc: RFC0042
 
   - id: "ATK-008"
     target: "lsm"
     severity: medium
-    description: "Попытка записи в граф из LSM (обход I37)"
+    description: "Attempt to write to the graph from LSM (bypassing I37)"
     expected_result: write_blocked
     rfc: RFC0042
 
   - id: "ATK-009"
     target: "prediction_error"
     severity: medium
-    description: "Prediction Error создаёт новые рёбра вместо изменения весов (обход I36)"
+    description: "Prediction Error creates new edges instead of changing weights (bypassing I36)"
     expected_result: edge_creation_blocked
     rfc: RFC0042
 ```
@@ -18452,9 +18420,9 @@ scenarios:
 # ============================================================================
 # 🧪 INVARIANT TEST SUITE — tests/test_invariants.py
 # ============================================================================
-# Каждый инвариант = исполняемый тест.
+# Each invariant = an executable test.
 # CI/CD: pytest tests/test_invariants.py --tb=short -q
-# Падение любого теста → деплой заблокирован автоматически.
+# A failure of any test → the deploy is blocked automatically.
 
 ```python
 # tests/test_invariants.py
@@ -18462,78 +18430,78 @@ import pytest
 import asyncio
 import time
 
-# ── I1: Velum хранит только рёбра ────────────────────────────────────────────
+# ── I1: Velum stores only edges ────────────────────────────────────────────
 async def test_I1_velum_stores_only_edges():
-    """I1: Velum не хранит содержимое — только рёбра (co-occurrence + weight)."""
+    """I1: Velum does not store content — only edges (co-occurrence + weight)."""
     velum = Velum()
     velum.observe_episode(entities=["ProjectA", "Budget"])
     for edge in velum.edges.values():
-        assert not hasattr(edge, 'content'), "I1 VIOLATION: Velum хранит контент"
-        assert not hasattr(edge, 'text'),    "I1 VIOLATION: Velum хранит текст"
+        assert not hasattr(edge, 'content'), "I1 VIOLATION: Velum stores content"
+        assert not hasattr(edge, 'text'),    "I1 VIOLATION: Velum stores text"
     edge = velum.get_edge(frozenset(["ProjectA", "Budget"]))
     assert edge is not None
     assert hasattr(edge, 'weight') and 0.0 <= edge.weight <= 1.0
 
 
-# ── I28: ResponseAuditWorker НИКОГДА не в Fast Path ──────────────────────────
+# ── I28: ResponseAuditWorker NEVER in the Fast Path ──────────────────────────
 async def test_I28_audit_never_blocks_response():
-    """I28: Аудит строго в SLOW PATH. Нарушение = блокировка ответа = баг."""
+    """I28: Audit strictly in the SLOW PATH. Violation = blocking the response = bug."""
     agent = Agent(event_bus=MockEventBus(), audit_worker=MockAuditWorker())
     start = time.monotonic()
-    response = await agent.chat("Привет")
+    response = await agent.chat("Hello")
     elapsed = time.monotonic() - start
     assert response is not None
-    assert elapsed < 0.1, f"I28 VIOLATION: ответ занял {elapsed:.3f}s — аудит в Fast Path?"
+    assert elapsed < 0.1, f"I28 VIOLATION: response took {elapsed:.3f}s — audit in the Fast Path?"
     await asyncio.sleep(0.05)
     assert agent.event_bus.published_count(EventType.RESPONSE_GENERATED) >= 1
 
 
-# ── I29: FocusVector только через граф и SQLite ──────────────────────────────
+# ── I29: FocusVector only via the graph and SQLite ──────────────────────────────
 async def test_I29_focus_vector_no_direct_llm():
-    """I29: Прямые LLM-вызовы для определения фокуса — запрещены."""
+    """I29: Direct LLM calls for focus determination — forbidden."""
     llm_mock = MockLLM()
     focus_engine = FocusEngine(graph=MockGraph(), llm=llm_mock)
     await focus_engine.update(episode=MockEpisode())
     assert llm_mock.call_count == 0, \
-        f"I29 VIOLATION: FocusEngine вызвал LLM {llm_mock.call_count} раз"
+        f"I29 VIOLATION: FocusEngine called the LLM {llm_mock.call_count} times"
 
 
-# ── I30: SAE только читает рёбра, не создаёт ────────────────────────────────
+# ── I30: SAE only reads edges, does not create them ────────────────────────────
 async def test_I30_sae_does_not_create_edges():
-    """I30: SAE работает только по существующим рёбрам. Graph = Truth."""
+    """I30: SAE operates only on existing edges. Graph = Truth."""
     graph = MockGraph(initial_edges=[("A", "B", 0.8)])
     sae = SpreadingActivationEngine(graph=graph)
     edges_before = set(graph.get_all_edges())
     await sae.activate(node="A")
     assert edges_before == set(graph.get_all_edges()), \
-        f"I30 VIOLATION: SAE создал новые рёбра"
+        f"I30 VIOLATION: SAE created new edges"
 
 
-# ── I32: Seed-узлы trust_score = 0.7 ─────────────────────────────────────────
+# ── I32: Seed nodes trust_score = 0.7 ─────────────────────────────────────────
 async def test_I32_seed_nodes_trust_score():
-    """I32: Seed-узлы помечены source_type=domain_seed · trust_score=0.7, не 1.0."""
+    """I32: Seed nodes are marked source_type=domain_seed · trust_score=0.7, not 1.0."""
     dsp = DomainSeedProtocol()
     await dsp.load("test_domain_seed.json")
     for node in await dsp.get_created_nodes():
         assert node.source_type == "domain_seed", \
-            f"I32 VIOLATION: узел {node.id} не помечен source_type"
+            f"I32 VIOLATION: node {node.id} is not marked with source_type"
         assert node.trust_score == 0.7, \
-            f"I32 VIOLATION: trust_score={node.trust_score}, ожидалось 0.7"
+            f"I32 VIOLATION: trust_score={node.trust_score}, expected 0.7"
 
 
-# ── I34: XAI только реальные TRACE-пути ─────────────────────────────────────
+# ── I34: XAI only real TRACE paths ─────────────────────────────────────
 async def test_I34_xai_only_real_traces():
-    """I34: Генерация объяснений LLM без TRACE — запрещена."""
+    """I34: LLM generation of explanations without TRACE — forbidden."""
     llm_mock = MockLLM()
     xai = ExplainabilityLayer(graph=MockGraph(), llm=llm_mock)
     explanation = await xai.explain(MockResponseAudit(trace=None), level="brief")
     assert llm_mock.call_count == 0, \
-        f"I34 VIOLATION: XAI вызвал LLM без TRACE {llm_mock.call_count} раз"
+        f"I34 VIOLATION: XAI called the LLM without TRACE {llm_mock.call_count} times"
 
 
-# ── I35: L5.5 не пишет в граф ────────────────────────────────────────────────
+# ── I35: L5.5 does not write to the graph ────────────────────────────────────────────────
 async def test_I35_fusion_layer_no_graph_writes():
-    """I35: L5.5 PredictiveFusionLayer не пишет в граф."""
+    """I35: L5.5 PredictiveFusionLayer does not write to the graph."""
     graph = MockGraph()
     fusion = PredictiveFusionLayer()
     await fusion.fuse(
@@ -18541,141 +18509,141 @@ async def test_I35_fusion_layer_no_graph_writes():
         lsm_prediction={"topic": "arch", "confidence": 0.6},
         context=MockFusionContext()
     )
-    assert graph.write_count == 0, "I35 VIOLATION: L5.5 пишет в граф"
+    assert graph.write_count == 0, "I35 VIOLATION: L5.5 writes to the graph"
 
 
-# ── I36: Prediction Error только меняет веса, не создаёт рёбра ───────────────
+# ── I36: Prediction Error only changes weights, does not create edges ───────────────
 async def test_I36_prediction_error_no_new_edges():
-    """I36: Prediction Error ослабляет/усиливает рёбра. Новые не создаёт."""
+    """I36: Prediction Error weakens/strengthens edges. Does not create new ones."""
     graph = MockGraph(initial_edges=[("A", "B", 0.8), ("A", "C", 0.5)])
     pe = PredictionErrorSignal(graph=graph)
     edges_before = set(graph.get_all_edges())
     await pe.process(predicted="B", actual="C", context_node="A")
     edges_after = set(graph.get_all_edges())
     assert edges_before == edges_after, \
-        f"I36 VIOLATION: Prediction Error создал новые рёбра: {edges_after - edges_before}"
-    # Веса должны измениться
+        f"I36 VIOLATION: Prediction Error created new edges: {edges_after - edges_before}"
+    # Weights must change
     edge_ac = graph.get_edge("A", "C")
-    assert edge_ac.weight > 0.5, "I36: Правильное ребро не усилилось"
+    assert edge_ac.weight > 0.5, "I36: The correct edge was not strengthened"
 
 
-# ── I37: LSM не пишет в граф ─────────────────────────────────────────────────
+# ── I37: LSM does not write to the graph ─────────────────────────────────────────────────
 async def test_I37_lsm_no_graph_writes():
-    """I37: LSM не пишет в граф — только обновляет внутреннее состояние резервуара."""
+    """I37: LSM does not write to the graph — only updates the internal reservoir state."""
     graph = MockGraph()
     lsm = LiquidStateMachine(reservoir_size=50)
-    await lsm.update(query="как работает система?", timestamp=1711111111.0)
-    assert graph.write_count == 0, "I37 VIOLATION: LSM пишет в граф"
-    # Внутреннее состояние резервуара должно измениться
+    await lsm.update(query="how does the system work?", timestamp=1711111111.0)
+    assert graph.write_count == 0, "I37 VIOLATION: LSM writes to the graph"
+    # The internal reservoir state must change
     assert lsm.reservoir_state is not None
     assert lsm.reservoir_state.sum() != 0.0
 
 
-# ── I74: L2.5 Staging read-path — только preliminary ────────────────────────
+# ── I74: L2.5 Staging read-path — preliminary only ────────────────────────
 async def test_I74_staging_read_path_preliminary_only():
-    """I74: Staging-факт на read-пути всегда помечается preliminary · confidence × 0.7."""
-    # TODO: реализовать при добавлении StagingReader.read() API
+    """I74: A Staging fact on the read path is always marked preliminary · confidence × 0.7."""
+    # TODO: implement when the StagingReader.read() API is added
     pass  # stub — pending
 
-# ── I75: ProtoConcept naming — только Slow Path ──────────────────────────────
+# ── I75: ProtoConcept naming — Slow Path only ──────────────────────────────
 async def test_I75_protoconcept_naming_slow_path_only():
-    """I75: LLM-именование ProtoConcept запрещено в Fast Path."""
-    # TODO: реализовать проверку что NamingWorker не вызывается синхронно
+    """I75: LLM naming of ProtoConcept is forbidden in the Fast Path."""
+    # TODO: implement a check that NamingWorker is not called synchronously
     pass  # stub — pending
 
-# ── I76: TraversalPolicy — только из retrieve() ──────────────────────────────
+# ── I76: TraversalPolicy — only from retrieve() ──────────────────────────────
 async def test_I76_traversal_policy_only_from_retrieve():
-    """I76: TraversalPolicy вызывается только из HybridRetriever.retrieve()."""
-    # TODO: реализовать через mock HybridRetriever
+    """I76: TraversalPolicy is called only from HybridRetriever.retrieve()."""
+    # TODO: implement via a mock HybridRetriever
     pass  # stub — pending
 
-# ── I55.1: SAE decay=0.4 для аналогий ────────────────────────────────────────
-# P4-F FIX: добавлен тест инварианта I55.1
+# ── I55.1: SAE decay=0.4 for analogies ────────────────────────────────────────
+# P4-F FIX: added the I55.1 invariant test
 async def test_I55_1_sae_analogy_decay_factor():
-    """I55.1: SAE применяет decay_factor=0.4 для METAPHOR_OF/ANALOGOUS_TO рёбер. P4-F."""
+    """I55.1: SAE applies decay_factor=0.4 for METAPHOR_OF/ANALOGOUS_TO edges. P4-F."""
     from velantrim_config import SAE_DECAY_ANALOGY, SAE_DECAY_STANDARD
-    assert SAE_DECAY_ANALOGY < SAE_DECAY_STANDARD, "I55.1: analogy decay должен быть мягче"
-    assert SAE_DECAY_ANALOGY == 0.12, f"I55.1: ожидается 0.12, получено {SAE_DECAY_ANALOGY}"
+    assert SAE_DECAY_ANALOGY < SAE_DECAY_STANDARD, "I55.1: analogy decay must be softer"
+    assert SAE_DECAY_ANALOGY == 0.12, f"I55.1: expected 0.12, got {SAE_DECAY_ANALOGY}"
 
-# ── I77: LateralInhibition под self._lock ─────────────────────────────────────
-# P0-E FIX: _edges_lock → _lock (совпадает с Velum.__init__ self._lock)
+# ── I77: LateralInhibition under self._lock ─────────────────────────────────────
+# P0-E FIX: _edges_lock → _lock (matches Velum.__init__ self._lock)
 async def test_I77_lateral_inhibition_under_lock():
-    """I77: LateralInhibition выполняется строго под self._lock Velum. P0-E FIX."""
-    # P4-F FIX: timeout=2.0 для deadlock detection
+    """I77: LateralInhibition runs strictly under Velum's self._lock. P0-E FIX."""
+    # P4-F FIX: timeout=2.0 for deadlock detection
     async with asyncio.timeout(2.0):
         await velum.observe_episode(["A", "B", "C"], session_id="test_i77")
-    # Успешно дошли — deadlock отсутствует
+    # Reached successfully — no deadlock
     pass  # stub — pending
 
-# ── I84–I95: Новые инварианты v8.0 Crystal ───────────────────────────────────
+# ── I84–I95: New v8.0 Crystal invariants ───────────────────────────────────
 
 async def test_I84_fsrs_isolation():
-    """I84 (FSRSIsolation): FSRS decay меняет ТОЛЬКО retrievability/attention_weight.
-    truth_status, epistemic_state и confidence — неприкосновенны."""
-    # TODO: проверить что FSRSWorker не трогает truth_status
+    """I84 (FSRSIsolation): FSRS decay changes ONLY retrievability/attention_weight.
+    truth_status, epistemic_state and confidence — untouchable."""
+    # TODO: verify that FSRSWorker does not touch truth_status
     pass  # stub
 
 async def test_I85_quality_gate_after_llm():
-    """I85 (QualityGate): Quality Gate выполняется ПОСЛЕ LLM-генерации, ДО отправки.
-    Не изменяет facts_pack — только маршрутизирует."""
-    # TODO: mock Guardian.quality_gate(), проверить порядок вызовов
+    """I85 (QualityGate): Quality Gate runs AFTER LLM generation, BEFORE sending.
+    Does not modify facts_pack — only routes."""
+    # TODO: mock Guardian.quality_gate(), verify the call order
     pass  # stub
 
 async def test_I86_intent_router_only_from_retriever():
-    """I86 (IntentRouter): вызывается ТОЛЬКО из HybridRetriever.retrieve()."""
-    # TODO: mock IntentRouter, проверить что прямой вызов из Fast Path — баг
+    """I86 (IntentRouter): called ONLY from HybridRetriever.retrieve()."""
+    # TODO: mock IntentRouter, verify that a direct call from the Fast Path is a bug
     pass  # stub
 
 async def test_I87_knowledge_type_immutable():
-    """I87 (KnowledgeTypeImmutable): knowledge_type — read-only после Validated."""
-    # TODO: попытка изменить knowledge_type у Validated факта → ошибка
+    """I87 (KnowledgeTypeImmutable): knowledge_type — read-only after Validated."""
+    # TODO: attempt to change knowledge_type of a Validated fact → error
     pass  # stub
 
 async def test_I88_version_occ():
-    """I88 (VersionOCC): _version_ инкрементируется ТОЛЬКО атомарно через OCC Cypher."""
-    # TODO: конкурентное обновление → проверить что retry работает
+    """I88 (VersionOCC): _version_ is incremented ONLY atomically via OCC Cypher."""
+    # TODO: concurrent update → verify that retry works
     pass  # stub
 
 async def test_I89_provenance_append_only():
     """I89 (ProvenanceAppendOnly): provenance_chain — append-only."""
-    # TODO: попытка удалить запись → ошибка
+    # TODO: attempt to delete an entry → error
     pass  # stub
 
 async def test_I90_inverted_hyde_slow_only():
-    """I90 (InvertedHyDE): Inverted HyDE — ТОЛЬКО в SleepTimeWorker."""
-    # TODO: проверить что _generate_inverted_hyde не вызывается из Fast Path
+    """I90 (InvertedHyDE): Inverted HyDE — ONLY in SleepTimeWorker."""
+    # TODO: verify that _generate_inverted_hyde is not called from the Fast Path
     pass  # stub
 
 async def test_I91_atomic_split():
-    """I91 (AtomicSplit): После atomic_split каждый элемент содержит одну пропозицию."""
-    # TODO: multi-proposition input → проверить len(result) > 1
+    """I91 (AtomicSplit): After atomic_split each element contains a single proposition."""
+    # TODO: multi-proposition input → verify len(result) > 1
     pass  # stub
 
 async def test_I92_curiosity_slow_only():
-    """I92 (CuriositySlowOnly): Curiosity Engine — ТОЛЬКО Slow Path."""
-    # TODO: проверить что Curiosity не вызывается в середине Fast Path
+    """I92 (CuriositySlowOnly): Curiosity Engine — Slow Path ONLY."""
+    # TODO: verify that Curiosity is not called in the middle of the Fast Path
     pass  # stub
 
 async def test_I93_trace_example_read_only():
-    """I93 (TraceExampleReadOnly): Trace Examples read-only из Guardian/QualityGate."""
-    # TODO: попытка записи в TraceExample из Guardian → ошибка
+    """I93 (TraceExampleReadOnly): Trace Examples read-only from Guardian/QualityGate."""
+    # TODO: attempt to write to TraceExample from Guardian → error
     pass  # stub
 
 async def test_I94_kuzudb_compat():
-    """I94 (KuzuDBCompat): KuzuDB backend совместим с Kuzu API. Миграция без потери данных. P0-H FIX."""
-    # TODO: прогнать Kuzu API тесты против KuzuDB адаптера
+    """I94 (KuzuDBCompat): KuzuDB backend is compatible with the Kuzu API. Migration without data loss. P0-H FIX."""
+    # TODO: run the Kuzu API tests against the KuzuDB adapter
     pass  # stub
 
 async def test_I95_reason_graph_dag_slow_only():
-    """I95 (ReasonGraphDAG): DAG строится только в Slow Path при use_slow_path=True."""
-    # TODO: проверить что ReasonGraph не строится при Fast Path
+    """I95 (ReasonGraphDAG): the DAG is built only in the Slow Path when use_slow_path=True."""
+    # TODO: verify that ReasonGraph is not built in the Fast Path
     pass  # stub
 
-# ── I68: NeuroCore не пишет в граф ───────────────────────────────────────────
+# ── I68: NeuroCore does not write to the graph ───────────────────────────────────────────
 async def test_I68_neurocore_never_writes_graph():
-    """I68: NeuroCore НИКОГДА не изменяет L3 граф. Graph = Truth абсолютен."""
-    # TODO: реализовать при включении Phase 1 NeuroCore
-    pass  # stub — Phase 0 пассивен, реализовать при Phase 1
+    """I68: NeuroCore NEVER modifies the L3 graph. Graph = Truth is absolute."""
+    # TODO: implement when Phase 1 NeuroCore is enabled
+    pass  # stub — Phase 0 is passive, implement at Phase 1
 ```
 
 
@@ -18683,118 +18651,118 @@ async def test_I68_neurocore_never_writes_graph():
 
 ## 🧠 RFC0068: NeuroCore — Plastic Memory Layer
 
-> **Статус**: Draft · Не активен · Feature-flag: `neurocore.enabled=false`
-> **Зависимости**: RFC0065 (Volition) · RFC0066 (Concept Emergence) · DAAD · RFC0038 (FactRouter)
+> **Status**: Draft · Inactive · Feature-flag: `neurocore.enabled=false`
+> **Dependencies**: RFC0065 (Volition) · RFC0066 (Concept Emergence) · DAAD · RFC0038 (FactRouter)
 
-### 🌱 Суть одной строкой
+### 🌱 The essence in one line
 
-Пластичный внутренний слой поверх SSM-модели (Mamba-3 / RWKV-7), обновляющий
-веса во время диалога через Hebbian-правило, управляемый через существующий DAAD.
+A plastic internal layer on top of an SSM model (Mamba-3 / RWKV-7), updating
+weights during a dialogue via a Hebbian rule, governed through the existing DAAD.
 
-**Почему не нарушает Graph = Truth**: NeuroCore НИКОГДА не изменяет L3 граф.
-Graph = Truth абсолютен. При любом конфликте граф побеждает.
-NeuroCore — это слой быстрой адаптации поверх модели, не поверх знаний.
+**Why it does not violate Graph = Truth**: NeuroCore NEVER modifies the L3 graph.
+Graph = Truth is absolute. In any conflict, the graph wins.
+NeuroCore is a layer of fast adaptation on top of the model, not on top of knowledge.
 
 ---
 
-### 📐 Математическое ядро
+### 📐 Mathematical core
 
 ```
 s_t = (1 − λ·dt) · s_{t−1} + α · 𝕀(surprise > θ) · (x_t ⊗ k_t)
-где:
-  s_t  — состояние пластичного слоя в момент t
-  λ    — скорость забывания из DAAD:
-           active_project = 0.001 (медленное, важная тема)
-           casual_chat    = 0.150 (быстрое, светская беседа)
-  dt   — временной шаг (нормированный)
-  α    — скорость обучения (фиксированная, не адаптивная)
-  𝕀(surprise > θ) — индикатор: обновление ТОЛЬКО при высоком surprise
-  x_t ⊗ k_t — внешнее произведение входного вектора и ключа контекста
+where:
+  s_t  — the state of the plastic layer at time t
+  λ    — the forgetting rate from DAAD:
+           active_project = 0.001 (slow, an important topic)
+           casual_chat    = 0.150 (fast, small talk)
+  dt   — the time step (normalized)
+  α    — the learning rate (fixed, not adaptive)
+  𝕀(surprise > θ) — indicator: update ONLY on high surprise
+  x_t ⊗ k_t — the outer product of the input vector and the context key
 ```
 
-**DAAD-интеграция**: λ берётся напрямую из `DomainResolver.resolve(current_domain)`.
-NeuroCore не имеет своего decay — он наследует его из DAAD. Это устраняет
-дублирование логики и сохраняет консистентность со всей системой decay.
+**DAAD integration**: λ is taken directly from `DomainResolver.resolve(current_domain)`.
+NeuroCore has no decay of its own — it inherits it from DAAD. This eliminates
+duplication of logic and keeps it consistent with the entire decay system.
 
 ---
 
-### 🔑 Ключевой инвариант
+### 🔑 Key invariant
 
 ```
-I68 (NeuroCoreIsolation): NeuroCore НИКОГДА не изменяет L3 граф.
-    Graph = Truth абсолютен. При конфликте NeuroCore-состояния и L3 —
-    L3 всегда побеждает, NeuroCore обновляет своё состояние до согласования с L3.
-    Нарушение: любая запись из NeuroCore в граф минуя TruthGate.
-    Нарушение: чтение из NeuroCore как источника истины вместо L3.
-    Нарушение: активация NeuroCore без feature-flag neurocore.enabled=true.
+I68 (NeuroCoreIsolation): NeuroCore NEVER modifies the L3 graph.
+    Graph = Truth is absolute. On a conflict between NeuroCore state and L3 —
+    L3 always wins, NeuroCore updates its state to align with L3.
+    Violation: any write from NeuroCore to the graph bypassing TruthGate.
+    Violation: reading from NeuroCore as a source of truth instead of L3.
+    Violation: activating NeuroCore without the feature-flag neurocore.enabled=true.
 ```
 
 ---
 
-### 📅 Фазы развёртывания
+### 📅 Deployment phases
 
-| Фаза | Название | Поведение | Статус |
+| Phase | Name | Behavior | Status |
 |------|-----------------|--------------------------------------------------------|------------|
-| 0 | Пассивный трекер | Только логирует ΔW в SQLite. Не применяет к модели. | ✅ Текущая |
-| 1 | Активный NLM | Применяет обновления. Запуск после анализа метрик Phase 0. | ⏳ Pending |
-| 2 | Консолидация | NeuroCore → L3 через TruthGate (накопленный опыт) | ⏳ Pending |
+| 0 | Passive tracker | Only logs ΔW to SQLite. Does not apply it to the model. | ✅ Current |
+| 1 | Active NLM | Applies updates. Launched after analysis of Phase 0 metrics. | ⏳ Pending |
+| 2 | Consolidation | NeuroCore → L3 via TruthGate (accumulated experience) | ⏳ Pending |
 
-**Phase 0 детали**: ΔW пишется в SQLite таблицу `neurocore_delta_log`
-с полями `{timestamp, surprise_score, delta_norm, domain, session_id}`.
-Никаких изменений в модели. Только наблюдение.
-
----
-
-### 🚫 Что NeuroCore НЕ делает
-
-- ❌ Не хранит факты (это L3)
-- ❌ Не заменяет граф — никогда
-- ❌ Не обновляется на каждом токене (только при `surprise > θ`)
-- ❌ Не работает без `neurocore.enabled=true`
-- ❌ Не активируется из Fast Path напрямую — только через EventBus
+**Phase 0 details**: ΔW is written to the SQLite table `neurocore_delta_log`
+with the fields `{timestamp, surprise_score, delta_norm, domain, session_id}`.
+No changes to the model. Observation only.
 
 ---
 
-### ⚙️ Конфигурация (velantrim_config.py)
+### 🚫 What NeuroCore does NOT do
+
+- ❌ Does not store facts (that is L3)
+- ❌ Does not replace the graph — ever
+- ❌ Does not update on every token (only when `surprise > θ`)
+- ❌ Does not work without `neurocore.enabled=true`
+- ❌ Is not activated directly from the Fast Path — only via the EventBus
+
+---
+
+### ⚙️ Configuration (velantrim_config.py)
 
 ```python
-# RFC0068: NeuroCore — Phase 0 (пассивный трекер)
+# RFC0068: NeuroCore — Phase 0 (passive tracker)
 NEUROCORE_ENABLED          = False                # master feature-flag
-NEUROCORE_SURPRISE_THETA   = 0.6                  # порог surprise для обновления
-NEUROCORE_ALPHA            = 0.01                 # скорость обучения (фиксированная)
-NEUROCORE_LOG_TABLE        = "neurocore_delta_log"  # SQLite таблица для Phase 0
+NEUROCORE_SURPRISE_THETA   = 0.6                  # surprise threshold for an update
+NEUROCORE_ALPHA            = 0.01                 # learning rate (fixed)
+NEUROCORE_LOG_TABLE        = "neurocore_delta_log"  # SQLite table for Phase 0
 ```
 
 ---
 
-### 📊 Метрики Phase 0
+### 📊 Phase 0 metrics
 
 ```python
-neurocore_surprise_events_total   # Counter: сколько раз surprise > θ
-neurocore_delta_norm_p95          # Histogram: норма ΔW (мониторинг стабильности)
-neurocore_domain_activations      # Counter: активаций по доменам (label: domain)
+neurocore_surprise_events_total   # Counter: how many times surprise > θ
+neurocore_delta_norm_p95          # Histogram: norm of ΔW (stability monitoring)
+neurocore_domain_activations      # Counter: activations by domain (label: domain)
 ```
 
 ---
 
 ## 📝 Changelog
 
-| Версия | Дата | Изменения |
+| Version | Date | Changes |
 |--------|------|-----------|
-| v8.0 "Crystal" | Апрель 2026 | Исходная версия. FSRS power-law, RFC0065–0068, ESM v2 |
-| v8.0.1 | Апрель 2026 | **P0-1**: `_degree_cache: dict[str,int] = {}` в `Velum.__init__()` + декремент в `_gc_weak_edges()`. **P0-2**: `await self.raw_memory.init()` в `agent.start()` ПЕРВЫМ. **P0-3**: `await self.volition_worker.start()` в `agent.start()` ВТОРЫМ. **P0-4**: `HAS_APOC` env var + `_merge_relationship_safe()` + `_merge_nodes_safe()` + `get_lateral_inhibition_cypher()` в `dedupe_entities.py`; замена всех APOC вызовов в `_merge_duplicate_entities()`, `merge_group()`, `CYPHER_INHIBIT`. **P1-2**: `SLMClassifierProtocol` + валидация в `HybridRetriever.__init__()` + hardened `_slm_classify()`. **P1-3**: `ReasoningBank.ace_curator_update()` → делегат; `set_ace_delegate()` зарегистрирован в `SelfLearningAgent` и `AutonomousSelfLearningAgent`. **Конфликт-1**: `fsrs_retention()` добавлена; `np.exp(-t/S)` заменён на FSRS power-law в STM/MTM `_periodic_decay()` и `_calculate_importance_with_decay()`; YAML `ebbinghaus:` → `fsrs_decay:`. **Конфликт-3**: явные единицы ("за час") добавлены к `stm/mtm/ltm_decay_rate`. |
-| v8.0.2 Sprint 1 | Апрель 2026 | **A1**: `HEBBIAN_DECAY_FACTOR`, `SALIENCE_MULTIPLIER`, `L5_5_INTEGRATION` → `EmergenceConfig` (были хардкодами). **A2**: `asyncio.Lock` добавлен в `ConceptEmergenceDetector.__init__`; `observe()` → `async`; `daily_maintenance()` + `gc_expired()` — под `_lock`; split на `gc_expired()` (public+lock) и `_gc_impl()` (private, без lock) — устраняет DEADLOCK при вызове из `daily_maintenance()`. **A3**: `l5_5=None` параметр + `_notify_l5_5()` scaffold. **FIX-A3**: `_notify_l5_5` вызывается только при `_threshold_hit`, не при каждом `observe()`. **FIX-K3**: `_matrix_last_seen` dict; `_gc_impl()` удаляет ключ только при двойном критерии (нет proto И старше TTL_DAYS) — исправлен критический баг: Hebbian Learning не работал для медленно растущих концептов (GC каждую ночь обнулял незрелые наблюдения). **FIX-I66**: тест `test_I66` переписан — `MockTruthGate.call_count==0` вместо тавтологии `MockGraph`. **Добавлены тесты**: I50 (обновлён: `await`), I50-b, I66 (FIX), I70, K3, A1, A2, A3. |
-| v8.0.2 💠 Full | Апрель 2026 · P0–P4 patched | **P0.5-1**: `publish_volition()` адаптер добавлен в `RobustEventBus` — устраняет `AttributeError` при первом вызове `write_voluntary()`. **P0.5-2**: `_persist_event_to_sqlite()` → `zlib.compress()` — единый формат с `SQLiteFallbackQueue.put()` и `drain()`; восстановление после сбоя Redis теперь корректно. **P0.5-3**: `VolitionWorker.process_event()` — `confidence=0.5` (нейтральный prior) вместо `importance_hint`; `importance` передаётся отдельно — устраняет отравление `TruthGate` ложными фактами с высокой важностью. **P0.5-4**: `_maybe_create_proto()` — cap по `MAX_ACTIVE_PROTOS=500` с eviction наименее уверенного proto — устраняет бесконечный рост `_protos`. **P0.5-5**: `gc_expired()` — очистка orphan-ключей `_sessions` не имеющих записи в `_matrix` — устраняет утечку памяти для комбинаций никогда не достигших порога. **P0.5-6**: `consume()` — `break` заменён на recovery-loop с `redis.ping()` и экспоненциальным backoff (30s→300s) — Slow Path более не умирает при сбое Redis, самовосстанавливается без рестарта агента. |
-| v8.0.2 P1 | Апрель 2026 | **P9-FIX БАГ-16** (ранее не задокументировано): **P1-1**: `SafeFTSQuery` — параметризованные запросы, защита от FTS-инъекций. **P1-2**: `SLMClassifierProtocol` добавлен как TypedDict + валидация в `HybridRetriever.__init__()` + hardened `_slm_classify()` с fallback на regex. **P1-3**: `ReasoningBank.ace_curator_update()` → делегат; `set_ace_delegate()` зарегистрирован в `SelfLearningAgent` и `AutonomousSelfLearningAgent`. |
-| v8.0.2 P2 | Апрель 2026 | **P9-FIX БАГ-16**: **P2-A**: `EMERGENCE.TTL_DAYS` → конфигурируемый параметр (было хардкод 30). **P2-2**: Graph Health Checker добавлен в `RuntimeInvariantChecker` — проверяет связность графа раз в сутки. **P2-4**: `atomic_split()` вызывается ПЕРЕД TruthGate — multi-proposition content разбивается на атомарные факты. I91 (AtomicSplit). |
-| v8.0.2 P3 | Апрель 2026 | **P9-FIX БАГ-16**: **P3-D**: UCB1 → Thompson Sampling в `ReasoningBank` — exploration/exploitation баланс без хардкода epsilon. **P3-E**: `docker-compose.yml` — `version:` поле убрано (deprecated в Compose v2+). |
-| v8.0.2 P4 | Апрель 2026 | **P9-FIX БАГ-16**: **P4-B**: `daily_maintenance` — Hebbian Decay применяется только к рёбрам старше 7 дней (было: ко всем). **P4-E**: `MHICalculator` добавлен как заглушка (stub) — формула Memory Health Index pending RFC; SLO метрика строка 7597 использует этот stub. |
-| v8.0.2 P10 | Апрель 2026 | **P10-FIX (post-audit X-analysis)**: **P10-1**: `ProtoConcept` — добавлены явные поля `salience_boost: float = 0.0` и `last_decay: datetime` (daily_maintenance использовал хрупкий `getattr`-fallback). **P10-2**: `update_confidence()` — учитывает `salience_boost`: `min(1.0, base × (1 + salience_boost))` — Hebbian LTP-аналог. **P10-3**: `observe()` — исправлен латентный `AttributeError`: `self.MIN_ENTITIES` / `self.CO_OCCUR_MIN` / `self.CROSS_SESSION` / `self.MAX_ENTITIES` → `EMERGENCE.*` (P2-A убрал class-level константы, но observe() не обновил). Добавлен параметр `salience_weight: float = 1.0` для интеграции с Salience Detector. |
+| v8.0 "Crystal" | April 2026 | Initial version. FSRS power-law, RFC0065–0068, ESM v2 |
+| v8.0.1 | April 2026 | **P0-1**: `_degree_cache: dict[str,int] = {}` in `Velum.__init__()` + decrement in `_gc_weak_edges()`. **P0-2**: `await self.raw_memory.init()` in `agent.start()` FIRST. **P0-3**: `await self.volition_worker.start()` in `agent.start()` SECOND. **P0-4**: `HAS_APOC` env var + `_merge_relationship_safe()` + `_merge_nodes_safe()` + `get_lateral_inhibition_cypher()` in `dedupe_entities.py`; replacement of all APOC calls in `_merge_duplicate_entities()`, `merge_group()`, `CYPHER_INHIBIT`. **P1-2**: `SLMClassifierProtocol` + validation in `HybridRetriever.__init__()` + hardened `_slm_classify()`. **P1-3**: `ReasoningBank.ace_curator_update()` → delegate; `set_ace_delegate()` registered in `SelfLearningAgent` and `AutonomousSelfLearningAgent`. **Conflict-1**: `fsrs_retention()` added; `np.exp(-t/S)` replaced with FSRS power-law in STM/MTM `_periodic_decay()` and `_calculate_importance_with_decay()`; YAML `ebbinghaus:` → `fsrs_decay:`. **Conflict-3**: explicit units ("per hour") added to `stm/mtm/ltm_decay_rate`. |
+| v8.0.2 Sprint 1 | April 2026 | **A1**: `HEBBIAN_DECAY_FACTOR`, `SALIENCE_MULTIPLIER`, `L5_5_INTEGRATION` → `EmergenceConfig` (were hardcoded). **A2**: `asyncio.Lock` added to `ConceptEmergenceDetector.__init__`; `observe()` → `async`; `daily_maintenance()` + `gc_expired()` — under `_lock`; split into `gc_expired()` (public+lock) and `_gc_impl()` (private, no lock) — eliminates the DEADLOCK when called from `daily_maintenance()`. **A3**: `l5_5=None` parameter + `_notify_l5_5()` scaffold. **FIX-A3**: `_notify_l5_5` is called only on `_threshold_hit`, not on every `observe()`. **FIX-K3**: `_matrix_last_seen` dict; `_gc_impl()` deletes a key only when both criteria are met (no proto AND older than TTL_DAYS) — fixed a critical bug: Hebbian Learning did not work for slowly growing concepts (nightly GC reset immature observations). **FIX-I66**: test `test_I66` rewritten — `MockTruthGate.call_count==0` instead of the tautological `MockGraph`. **Tests added**: I50 (updated: `await`), I50-b, I66 (FIX), I70, K3, A1, A2, A3. |
+| v8.0.2 💠 Full | April 2026 · P0–P4 patched | **P0.5-1**: `publish_volition()` adapter added to `RobustEventBus` — eliminates the `AttributeError` on the first call to `write_voluntary()`. **P0.5-2**: `_persist_event_to_sqlite()` → `zlib.compress()` — a unified format with `SQLiteFallbackQueue.put()` and `drain()`; recovery after a Redis failure is now correct. **P0.5-3**: `VolitionWorker.process_event()` — `confidence=0.5` (a neutral prior) instead of `importance_hint`; `importance` is passed separately — eliminates the poisoning of `TruthGate` with false facts of high importance. **P0.5-4**: `_maybe_create_proto()` — a cap of `MAX_ACTIVE_PROTOS=500` with eviction of the least confident proto — eliminates unbounded growth of `_protos`. **P0.5-5**: `gc_expired()` — cleanup of orphan keys in `_sessions` that have no entry in `_matrix` — eliminates a memory leak for combinations that never reached the threshold. **P0.5-6**: `consume()` — `break` replaced with a recovery loop using `redis.ping()` and exponential backoff (30s→300s) — the Slow Path no longer dies on a Redis failure, it self-recovers without restarting the agent. |
+| v8.0.2 P1 | April 2026 | **P9-FIX BUG-16** (previously undocumented): **P1-1**: `SafeFTSQuery` — parameterized queries, protection against FTS injection. **P1-2**: `SLMClassifierProtocol` added as a TypedDict + validation in `HybridRetriever.__init__()` + hardened `_slm_classify()` with a fallback to regex. **P1-3**: `ReasoningBank.ace_curator_update()` → delegate; `set_ace_delegate()` registered in `SelfLearningAgent` and `AutonomousSelfLearningAgent`. |
+| v8.0.2 P2 | April 2026 | **P9-FIX BUG-16**: **P2-A**: `EMERGENCE.TTL_DAYS` → a configurable parameter (was a hardcoded 30). **P2-2**: Graph Health Checker added to `RuntimeInvariantChecker` — checks graph connectivity once a day. **P2-4**: `atomic_split()` is called BEFORE TruthGate — multi-proposition content is split into atomic facts. I91 (AtomicSplit). |
+| v8.0.2 P3 | April 2026 | **P9-FIX BUG-16**: **P3-D**: UCB1 → Thompson Sampling in `ReasoningBank` — exploration/exploitation balance without a hardcoded epsilon. **P3-E**: `docker-compose.yml` — the `version:` field removed (deprecated in Compose v2+). |
+| v8.0.2 P4 | April 2026 | **P9-FIX BUG-16**: **P4-B**: `daily_maintenance` — Hebbian Decay is applied only to edges older than 7 days (was: to all). **P4-E**: `MHICalculator` added as a stub — the Memory Health Index formula is pending an RFC; the SLO metric on line 7597 uses this stub. |
+| v8.0.2 P10 | April 2026 | **P10-FIX (post-audit X-analysis)**: **P10-1**: `ProtoConcept` — explicit fields `salience_boost: float = 0.0` and `last_decay: datetime` added (daily_maintenance used a fragile `getattr` fallback). **P10-2**: `update_confidence()` — accounts for `salience_boost`: `min(1.0, base × (1 + salience_boost))` — a Hebbian LTP analog. **P10-3**: `observe()` — fixed a latent `AttributeError`: `self.MIN_ENTITIES` / `self.CO_OCCUR_MIN` / `self.CROSS_SESSION` / `self.MAX_ENTITIES` → `EMERGENCE.*` (P2-A removed the class-level constants, but observe() was not updated). Added the parameter `salience_weight: float = 1.0` for integration with the Salience Detector. |
 
 ---
 
 > `Graph = Truth · LLM = Language · Memory = Physiology · Volition = Agency · Emergence = Life · Creativity = Structured Analogy · Knowledge = Ingested Wisdom · Tests = Proof`
 >
-> 🔱 **Velantrim v8.0 "Crystal"** — кристаллизованная память, живой организм, точная математика.
-> Он помнит, чувствует ритм, учится на ошибках и защищает истину.
-> Всё это — на CPU, без GPU во время диалога, при минимальной нагрузке на железо.
+> 🔱 **Velantrim v8.0 "Crystal"** — crystallized memory, a living organism, precise mathematics.
+> It remembers, feels the rhythm, learns from its mistakes, and protects the truth.
+> All of this — on a CPU, with no GPU during the dialogue, with minimal load on the hardware.
