@@ -192,20 +192,18 @@ def _make(name: str) -> Embedder:
     return _EMBEDDERS[name]()
 
 
-_REGISTRY = BackendRegistry("VELANTRIM_EMBEDDER", "auto", _make)
+_REGISTRY = BackendRegistry("VELANTRIM_EMBEDDER", "hashing", _make)
 
 
 def get_embedder(backend: Optional[str] = None) -> Embedder:
     """
     Embedder singleton. Backend — via argument or VELANTRIM_EMBEDDER
-    (default 'auto').
+    (default 'hashing').
 
     Modes:
+      'hashing' — always HashingEmbedder; default, dependency-free and offline.
       'auto'    — use the real model (sbert) if available; on ANY load failure
-                  (package not installed, model not downloadable) — fall back to
-                  HashingEmbedder. A safe default: where sbert is present — real
-                  semantics, otherwise — deterministic lexical search.
-      'hashing' — always HashingEmbedder.
+                  fall back to HashingEmbedder. Explicit opt-in.
       'sbert'   — always neural embeddings (ImportError if the package is missing).
     """
     return _REGISTRY.get(backend)
