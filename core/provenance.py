@@ -23,14 +23,17 @@
 # receipt stays content-light: verify_receipt can prove a fact's claim is
 # unchanged without the receipt re-exposing personal data.
 #
-# verify_receipt replays every citation against the current L3/L1 canon and
-# reports drift, tying provenance to the GDPR machinery:
-#   ok           — fact present, claim unchanged, still in a live ESM state
-#   erased       — fact was physically erased (Art. 17 tombstone present)
-#   restricted   — fact is under processing restriction (Art. 18)
-#   modified     — the claim text changed since the answer was produced
-#   invalidated  — fact dropped to Contradicted / Deprecated / Collapsed
-#   missing      — fact is gone with no tombstone (unexpected)
+# verify_receipt replays every citation against the current L3 canon and L1
+# working memory and reports drift:
+#   ok              — fact present in L3 and L1, claim unchanged, live ESM state
+#   erased          — fact was physically erased (Art. 17 tombstone present)
+#   restricted      — fact is under processing restriction (Art. 18)
+#   modified        — the claim text changed since the answer was produced
+#   invalidated     — fact dropped to Contradicted / Deprecated / Collapsed
+#   missing_from_l3 — L1 has the fact, but the canonical graph does not
+#   missing_from_l1 — L3 has the fact, but L1 does not
+#   l1_l3_mismatch  — L1 and L3 disagree on claim text
+#   missing         — fact is gone with no tombstone (unexpected)
 
 import os
 import json
@@ -40,6 +43,7 @@ from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 
 from core import memory
+from core.l3_graph import get_l3_graph
 
 RECEIPT_VERSION = 1
 _ENV_KEY = "VELANTRIM_PROVENANCE_KEY"
@@ -113,18 +117,27 @@ def build_receipt(result: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _citation_status(cit: Dict[str, Any], tombstoned: set) -> str:
-    """Replay a single citation against the current canon."""
+    """Replay a single citation against both L3 canon and L1 working memory."""
     fid = cit.get("fact_id")
     if fid in tombstoned:
         return "erased"
-    fact = memory.get_fact(fid)
-    if fact is None:
+
+    l1_fact = memory.get_fact(fid)
+    l3_fact = get_l3_graph().get_fact(fid)
+
+    if l1_fact is None and l3_fact is None:
         return "missing"
-    if int(fact.get("restricted", 0)):
+    if l3_fact is None:
+        return "missing_from_l3"
+    if l1_fact is None:
+        return "missing_from_l1"
+    if l1_fact.get("claim") != l3_fact.get("claim"):
+        return "l1_l3_mismatch"
+    if int(l1_fact.get("restricted", 0)) or int(l3_fact.get("restricted", 0)):
         return "restricted"
-    if claim_digest(fact.get("claim", "")) != cit.get("claim_sha256"):
+    if claim_digest(l3_fact.get("claim", "")) != cit.get("claim_sha256"):
         return "modified"
-    if fact.get("epistemic_state") not in _LIVE_STATES:
+    if l3_fact.get("epistemic_state") not in _LIVE_STATES:
         return "invalidated"
     return "ok"
 
