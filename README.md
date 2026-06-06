@@ -11,6 +11,14 @@
 > It runs **locally by default**: no cloud, no telemetry, no external calls
 > unless you explicitly opt in.
 
+> **Scope of this repository.** This repo is the **verified, dependency-free open
+> core** (v8.1.0 — 384 passing tests, 99% coverage): the memory layer, provenance,
+> and GDPR machinery you can run today. It is one component of the broader
+> Velantrim ExoCortex system; extended parts (a browser PWA demo, MCP integration,
+> and further research modules) are in active development and described in the
+> project roadmap. In keeping with the honesty principle below, this README
+> documents only what is implemented and tested **in this repository**.
+
 ---
 
 ## Why this exists
@@ -98,6 +106,35 @@ VELANTRIM_L3_BACKEND=sqlite VELANTRIM_L3_PATH=./data/canon.db velantrim ask "...
 No data leaves your machine. See [DEMO.md](./DEMO.md) for a walkthrough of the
 ingest → evidence → trace → answer chain.
 
+## MCP integration (read-only)
+
+Velantrim ships a **dependency-free MCP server** (Model Context Protocol) so
+agents — Claude Desktop, Cursor, any MCP client — can query the verifiable
+memory over the standard stdio transport. It is **pure stdlib**: no SDK, nothing
+extra to install.
+
+```bash
+python -m core.mcp_server          # speaks JSON-RPC 2.0 over stdio
+```
+
+Wire it into Claude Desktop (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "velantrim": { "command": "python", "args": ["-m", "core.mcp_server"] }
+  }
+}
+```
+
+The server exposes **read-only** tools only — `search`, `memory_report`,
+`get_fact`, `fact_history`, `find_conflicts`, `verify_receipt` — so an agent can
+read and *verify* memory but cannot mutate the canon. Following the
+capability-based design, write/curate tools (ingest / validate / supersede /
+erase) are **not registered** at this `reader` capability: a tool a role cannot
+use is never exposed, so a model cannot call it by accident. Capability-gated
+write access **behind the TruthGate** is the next step on the roadmap.
+
 ## ESM — Epistemic State Machine (core)
 
 Facts move through 8 states with validated transitions:
@@ -177,7 +214,9 @@ shippable infrastructure described above does not depend on any of them.
 
 ## License
 
-[MIT](./LICENSE).
+**AGPL-3.0** — see [LICENSE](./LICENSE). The copyleft open core keeps community
+work open (no closed-source cloud re-hosting); integrations may be released under
+permissive terms (Apache-2.0) where noted.
 
 ---
 
