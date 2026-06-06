@@ -89,9 +89,9 @@ def record_of_processing(controller: Optional[str] = None) -> Dict[str, Any]:
     audit_status = audit.verify_audit_log()
 
     l3 = os.environ.get("VELANTRIM_L3_BACKEND", "auto")
-    embedder = os.environ.get("VELANTRIM_EMBEDDER", "auto")
+    embedder = os.environ.get("VELANTRIM_EMBEDDER", "hashing")
     generator = os.environ.get("VELANTRIM_GENERATOR", "extractive")
-    transfers = (generator == "claude") or l3 == "neo4j"
+    transfers = generator in {"anthropic", "claude"} or l3 == "neo4j"
 
     return {
         "generated_at": _now(),
