@@ -20,6 +20,7 @@ Repository = "https://github.com/velantrian/velantrim-exocortex-crystal"
 # The CLI entry point: `velantrim <command>` after `pip install .`.
 [project.scripts]
 velantrim = "core.cli:main"
+velantrim-mcp = "core.mcp_server:main"
 
 [project.optional-dependencies]
 dev = [

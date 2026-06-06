@@ -106,6 +106,35 @@ VELANTRIM_L3_BACKEND=sqlite VELANTRIM_L3_PATH=./data/canon.db velantrim ask "...
 No data leaves your machine. See [DEMO.md](./DEMO.md) for a walkthrough of the
 ingest → evidence → trace → answer chain.
 
+## MCP integration (read-only)
+
+Velantrim ships a **dependency-free MCP server** (Model Context Protocol) so
+agents — Claude Desktop, Cursor, any MCP client — can query the verifiable
+memory over the standard stdio transport. It is **pure stdlib**: no SDK, nothing
+extra to install.
+
+```bash
+python -m core.mcp_server          # speaks JSON-RPC 2.0 over stdio
+```
+
+Wire it into Claude Desktop (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "velantrim": { "command": "python", "args": ["-m", "core.mcp_server"] }
+  }
+}
+```
+
+The server exposes **read-only** tools only — `search`, `memory_report`,
+`get_fact`, `fact_history`, `find_conflicts`, `verify_receipt` — so an agent can
+read and *verify* memory but cannot mutate the canon. Following the
+capability-based design, write/curate tools (ingest / validate / supersede /
+erase) are **not registered** at this `reader` capability: a tool a role cannot
+use is never exposed, so a model cannot call it by accident. Capability-gated
+write access **behind the TruthGate** is the next step on the roadmap.
+
 ## ESM — Epistemic State Machine (core)
 
 Facts move through 8 states with validated transitions:
