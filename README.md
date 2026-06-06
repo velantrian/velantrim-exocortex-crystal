@@ -153,6 +153,7 @@ for the full breakdown and honest implemented-vs-designed split):
 ## Documentation
 
 - [PRIVACY.md](./PRIVACY.md) — what data is stored, where, and what never leaves the device
+- [PERSISTENT_MEMORY.md](./docs/PERSISTENT_MEMORY.md) — persistent vs canonical vs immutable memory model
 - [GDPR.md](./GDPR.md) — article-by-article mapping of the design to GDPR
 - [SECURITY.md](./SECURITY.md) — threat model and responsible disclosure
 - [TEST_REPORT.md](./TEST_REPORT.md) — current, un-inflated test results
