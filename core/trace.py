@@ -24,6 +24,8 @@ def build_trace(retrieved: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
       - source:          source (where the fact came from)
       - origin:          how it was obtained (retrieval / ingestion / volition)
       - epistemic_state: the fact's current ESM state
+      - confidence:      epistemic/source confidence, not retrieval rank
+      - retrieval_score: transient retrieval relevance, if available
       - retrieved_at:    the retrieval timestamp
 
     epistemic_state:
@@ -39,14 +41,17 @@ def build_trace(retrieved: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         if not fact_id:
             continue  # skip malformed entries
 
-        trace.append({
+        element = {
             "fact_id":         fact_id,
             "source":          item.get("source", "unknown"),
             "origin":          item.get("origin", "retrieval"),
             "epistemic_state": item.get("epistemic_state", "Observed"),
-            "confidence":      round(float(item.get("_score", 0.5)), 4),
+            "confidence":      round(float(item.get("confidence", 0.5)), 4),
             "retrieved_at":    now,
-        })
+        }
+        if "_score" in item:
+            element["retrieval_score"] = round(float(item.get("_score", 0.0)), 4)
+        trace.append(element)
 
     return trace
 
@@ -79,10 +84,13 @@ def format_trace(trace: List[Dict[str, Any]]) -> str:
         return "TRACE: empty"
     lines = ["TRACE:"]
     for i, el in enumerate(trace, 1):
-        lines.append(
+        line = (
             f"  [{i}] {el.get('fact_id', '?')} | "
             f"source={el.get('source', '?')} | "
             f"state={el.get('epistemic_state', '?')} | "
             f"confidence={el.get('confidence', '?')}"
         )
+        if "retrieval_score" in el:
+            line += f" | retrieval_score={el.get('retrieval_score')}"
+        lines.append(line)
     return "\n".join(lines)
