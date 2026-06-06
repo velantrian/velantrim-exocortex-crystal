@@ -11,6 +11,14 @@
 > It runs **locally by default**: no cloud, no telemetry, no external calls
 > unless you explicitly opt in.
 
+> **Scope of this repository.** This repo is the **verified, dependency-free open
+> core** (v8.1.0 — 384 passing tests, 99% coverage): the memory layer, provenance,
+> and GDPR machinery you can run today. It is one component of the broader
+> Velantrim ExoCortex system; extended parts (a browser PWA demo, MCP integration,
+> and further research modules) are in active development and described in the
+> project roadmap. In keeping with the honesty principle below, this README
+> documents only what is implemented and tested **in this repository**.
+
 ---
 
 ## Why this exists
@@ -177,7 +185,9 @@ shippable infrastructure described above does not depend on any of them.
 
 ## License
 
-[MIT](./LICENSE).
+**AGPL-3.0** — see [LICENSE](./LICENSE). The copyleft open core keeps community
+work open (no closed-source cloud re-hosting); integrations may be released under
+permissive terms (Apache-2.0) where noted.
 
 ---
 
