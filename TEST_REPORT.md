@@ -7,11 +7,11 @@ numbers: run `pytest` yourself and you will get the figures below.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **513** |
+| **Tests passing** | **546** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **~99%** (gate enforced at 95%) |
-| Test files | 39 (`tests/test_*.py`) |
+| Test files | 41 (`tests/test_*.py`) |
 | Python | 3.11 (3.10+ supported) |
 | Runtime dependencies | standard library only |
 
@@ -27,7 +27,7 @@ which needs a running Redis and is not part of the dependency-free default.
 
 ```bash
 pip install -r requirements.txt
-pytest                 # 513 passed, 12 skipped
+pytest                 # 546 passed, 12 skipped
 ```
 
 ## Coverage by module (core/)
@@ -39,7 +39,7 @@ pytest                 # 513 passed, 12 skipped
 | `core/analogy.py`      | 86  | 100% |
 | `core/aio.py`          | 10  | 100% |
 | `core/audit.py`        | 69  | 100% |
-| `core/cli.py`          | 169 | 100% |
+| `core/cli.py`          | 177 | 100% |
 | `core/compliance.py`   | 43  | 100% |
 | `core/concept.py`      | 93  | 100% |
 | `core/consolidate.py`  | 45  | 96%  |
@@ -48,13 +48,15 @@ pytest                 # 513 passed, 12 skipped
 | `core/embedding.py`    | 76  | 100% |
 | `core/erasure.py`      | 45  | 100% |
 | `core/fractal.py`      | 93  | 99%  |
-| `core/generation.py`   | 41  | 100% |
+| `core/generation.py`   | 56  | 98%  |
 | `core/immune.py`       | 94  | 100% |
-| `core/ingest.py`       | 89  | 100% |
+| `core/ingest.py`       | 90  | 100% |
+| `core/knowledge.py`    | 122 | 99%  |
 | `core/l3_graph.py`     | 259 | 99%  |
 | `core/mcp_server.py`   | 104 | 100% |
-| `core/memory.py`       | 185 | 100% |
+| `core/memory.py`       | 187 | 100% |
 | `core/metrics.py`      | 10  | 100% |
+| `core/neurocore.py`    | 54  | 100% |
 | `core/neurogenesis.py` | 96  | 99%  |
 | `core/observe.py`      | 35  | 100% |
 | `core/pii.py`          | 56  | 100% |
@@ -65,7 +67,7 @@ pytest                 # 513 passed, 12 skipped
 | `core/trace.py`        | 26  | 100% |
 | `core/velum.py`        | 112 | 99%  |
 | `core/volition.py`     | 75  | 99%  |
-| **Total (repo-wide)**  | **3260** | **~99%** |
+| **Total (repo-wide)**  | **3462** | **~99%** |
 
 ## What the tests cover
 
@@ -81,11 +83,13 @@ pytest                 # 513 passed, 12 skipped
 | L1.5 Velum (RFC0016) — synaptic edges, signals, session decay, GC, degree cache, CLI | `test_velum.py` |
 | Analogy Graph / Bridges / CREATIVE (RFC0067) — edges, structural similarity, bridges, temperature, CLI | `test_analogy.py` |
 | Neurogenesis Dynamic Growth (RFC0073) — plasticity, pattern separation, growth/prune, CLI | `test_neurogenesis.py` |
+| NeuroCore Phase 0 (RFC0068) — passive plasticity tracker, threshold, I68 isolation, CLI | `test_neurocore.py` |
+| External knowledge ingestion (RFC0063) — txt/md/json/jsonl/csv parsers, TruthGate routing, `learn` CLI | `test_knowledge.py` |
 | L3 canonical graph adapter & backends | `test_l3_graph.py` |
 | On-disk SQLite L3 backend (persistence, erase, vectors, entities) | `test_l3_sqlite.py` |
 | Packaging contract (entry point, version, package surface) | `test_packaging.py` |
 | Embeddings (hashing + optional sbert) | `test_embedding.py` |
-| Answer generation (extractive + optional Claude) | `test_generation.py` |
+| Answer generation (extractive + optional Claude) + A9 LLM call safety (bounded retry/backoff) | `test_generation.py` |
 | Ingestion & claim-type classification | `test_ingest.py` |
 | Truth maintenance (reinforce/supersede/contradict) | `test_reconcile.py` |
 | Contradiction classifier (negation/antonym/numeric, auto-contradict) | `test_contradiction.py` |

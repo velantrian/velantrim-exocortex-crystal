@@ -1,0 +1,11 @@
+# Funding sources for Velantrim ExoCortex — Crystal
+# https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
+#
+# Crystal is built as open European infrastructure for accountable AI and is
+# seeking public-interest grant funding (e.g. NLnet / NGI). Fill in the handles
+# below as they become available.
+
+# github: velantrian            # GitHub Sponsors username (uncomment when enabled)
+# open_collective:              # Open Collective slug (uncomment when enabled)
+custom:
+  - "https://nlnet.nl"

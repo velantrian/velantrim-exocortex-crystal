@@ -2,7 +2,7 @@
 
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
-`v8.1.0` · 🧪 **513 tests** · 🎯 **99% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v0.1.0` · 🧪 **546 tests** · 🎯 **99% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
 
 > Velantrim is **not another chatbot**. It is a **verifiable memory layer** that AI
 > systems write to and read from, where **every stored fact carries its
@@ -78,7 +78,7 @@ git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
 pip install .                          # stdlib-only runtime; installs the `velantrim` CLI
 python -m core.pipeline                # runs the end-to-end demo, fully local
-pytest                                 # 513 passing, 99% coverage  (pip install -e '.[dev]')
+pytest                                 # 546 passing, 99% coverage  (pip install -e '.[dev]')
 ```
 
 After install the `velantrim` CLI is on your PATH:
@@ -250,7 +250,7 @@ individually tested. Grouped by what they do:
 > ✅ **Current status:** the full fact lifecycle runs end-to-end — ingest →
 > classify → TruthGate → L3 graph → vector + episodic recall → reinforce /
 > supersede / contradict / decay — with swappable backends and zero-dependency
-> defaults. **513 passing tests, 99% coverage** ([TEST_REPORT.md](./TEST_REPORT.md)).
+> defaults. **546 passing tests, 99% coverage** ([TEST_REPORT.md](./TEST_REPORT.md)).
 
 ---
 
@@ -477,10 +477,15 @@ still-exploratory arc lives in
 
 ## 🤝 Contributing
 
-1. Read this README and **[ROADMAP.md](./ROADMAP.md)**.
+1. Read this README and **[ROADMAP.md](./ROADMAP.md)**, then the
+   **[Contributing guide](./CONTRIBUTING.md)** (dev setup, PR checklist).
 2. Open an issue before large changes.
 3. Keep the **honesty invariant**: `ROADMAP.md` distinguishes *implemented* from
    *designed* — please preserve that distinction.
+
+By participating you agree to the **[Code of Conduct](./CODE_OF_CONDUCT.md)**.
+How the project is run and stays sustainable: **[GOVERNANCE.md](./GOVERNANCE.md)**.
+Changes are tracked in **[CHANGELOG.md](./CHANGELOG.md)**.
 
 ## ⚖️ License
 
