@@ -40,7 +40,7 @@ not become the source of truth.
 |---|---|---|
 | **L0** | in-RAM cache | fast working recall inside the current process |
 | **L1** | SQLite/WAL | local working memory, ESM state, facts before/around gate processing |
-| **L2** | pending/review path | claims needing review, conflict handling or stricter validation |
+| **L2** | pending/review path *(partial today)* | `Observed`/advisory-quarantined claims before the gate; a full review queue is planned (see grant scope WP2) |
 | **L3** | graph backend | canonical source-tracked graph after the gate |
 | **Trace / Receipt** | JSON/HMAC/digest material | replayable grounding proof for answers |
 

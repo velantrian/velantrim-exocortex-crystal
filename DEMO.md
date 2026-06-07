@@ -41,7 +41,7 @@ Expected shape:
   "reinforced": false,
   "fact_id": "...",
   "claim_type": "WORLD_FACT",
-  "truth_status": "UNVERIFIED",
+  "truth_status": "VERIFIED",
   "conflicts": []
 }
 ```

@@ -37,7 +37,7 @@ handling and replayable receipts.
 |---|---|---|
 | **L0 — Working cache** | short-lived in-RAM memory | fast recall inside the current process/session |
 | **L1 — Local working store** | SQLite/WAL operational memory | facts, states, updates and local persistence across runs |
-| **L2 — Pending / review path** | pre-canonical zone | claims needing evidence, conflict handling or stricter validation |
+| **L2 — Pending / review path** | pre-canonical zone *(partial today)* | claims still `Observed` or advisory-quarantined before the gate; a full review queue is planned (grant scope WP2) |
 | **L3 — Canonical graph** | durable truth graph | verified, source-tracked knowledge retrieved by the system |
 | **Trace / Receipt** | proof layer | shows how an answer connects back to facts and sources |
 
