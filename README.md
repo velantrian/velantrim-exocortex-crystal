@@ -12,7 +12,7 @@
 > unless you explicitly opt in.
 
 > **Scope of this repository.** This repo is the **verified, dependency-free open
-> core** (v8.1.0 — 474 passing tests, 99% coverage): the memory layer, provenance,
+> core** (v8.1.0 — 485 passing tests, 99% coverage): the memory layer, provenance,
 > and GDPR machinery you can run today. It is one component of the broader
 > Velantrim ExoCortex system; extended parts (a browser PWA demo, MCP integration,
 > and further research modules) are in active development and described in the
@@ -77,13 +77,14 @@ content-free audit tombstone), and full auditability of provenance. See
 | `core/fractal.py`     | ✅ | Fractal Memory Layer (RFC0070): recursive anchoring across self-similar scales (SHORT→CORE); protects deep anchors from decay (anti-catastrophic-forgetting) |
 | `core/neurogenesis.py`| ✅ | Neurogenesis Dynamic Growth (RFC0073): plasticity/maturation model, pattern separation (SEPARATED_FROM), growth & capacity reporting, prune candidates |
 | `core/concept.py`     | ✅ | Concept Emergence (RFC0066): ProtoConcepts emerge from Hebbian co-activation (CO_OCCURRED) → CONCEPT nodes with MEMBER_OF links |
+| `core/volition.py`    | ✅ | Memory Volition (RFC0065): `write_voluntary()` (self-authored facts via the gates) + VolitionWorker rehearsal of salient memories |
 | `core/adaptation.py`  | ✅ | Adaptive TruthGate threshold (RFC0071): stress ↑ → stricter; healthy → relaxes |
 | `core/queue.py`       | ✅ | Pluggable L3 re-merge outbox: `auto`→Redis (shared, optional) / `sqlite` (persistent, dependency-free default) |
 | `core/aio.py`         | ✅ | Async entry points (`arun`/`aingest`/`adrain_l3_outbox`) for embedding in asyncio/FastAPI/MCP without blocking |
 | `core/observe.py`     | ✅ | Memory observability report over the L3 canonical graph                     |
 | `core/metrics.py`     | ✅ | Lightweight in-process counters (query / ingest / gate)                     |
-| `core/cli.py`         | ✅ | CLI: `ingest`/`ask`/`history`/`report`/`erase`/`erasures`/`restrict`/`unrestrict`/`ropa`/`audit`/`audit-verify`/`redact`/`receipt`/`verify-receipt`/`conflicts`/`immune-*`/`fractal-*`/`neuro-*`/`concepts*` |
-| `tests/`              | ✅ | **474 passing**, 12 skipped, **99% coverage** (gate: 95%) — see [TEST_REPORT.md](./TEST_REPORT.md) |
+| `core/cli.py`         | ✅ | CLI: `ingest`/`ask`/`history`/`report`/`erase`/`erasures`/`restrict`/`unrestrict`/`ropa`/`audit`/`audit-verify`/`redact`/`receipt`/`verify-receipt`/`conflicts`/`immune-*`/`fractal-*`/`neuro-*`/`concepts*`/`volition-*` |
+| `tests/`              | ✅ | **485 passing**, 12 skipped, **99% coverage** (gate: 95%) — see [TEST_REPORT.md](./TEST_REPORT.md) |
 | `docs/Velantrim_V8_Crystal_Sprint1.jsonl` | 📜 Spec | Full system design (63 chunks) |
 
 **Current status**: the full fact lifecycle runs end-to-end — ingest → classify
@@ -97,7 +98,7 @@ git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
 pip install .                          # stdlib-only runtime; installs the `velantrim` CLI
 python -m core.pipeline                # runs the end-to-end demo, fully local
-pytest                                 # 474 passing, 99% coverage  (pip install -e '.[dev]')
+pytest                                 # 485 passing, 99% coverage  (pip install -e '.[dev]')
 ```
 
 After install the CLI is on your PATH:
@@ -239,6 +240,26 @@ velantrim concepts-for <fact_id>
 
 Concepts are **computed from the live graph** (never a stale store), emergence is
 idempotent, and it never touches fact truth — concepts sit *alongside* the canon.
+
+## Memory Volition (RFC0065)
+
+*Memory = Agency.* The canon isn't only a passive store — it can act on its own
+memory. Two faces, both honouring **Graph = Truth**:
+
+- **Voluntary writes** — `write_voluntary()` lets the system author a fact it
+  generated itself, but through the **same Guardian → TruthGate path** as any
+  other write (a self-claim earns its place or is blocked). Tagged
+  `metadata.volition` so it's always distinguishable.
+- **VolitionWorker rehearsal** — the system ranks the canon by a salience signal
+  (significance · confidence · reinforcement · co-activation) and **rehearses**
+  its most salient memories, refreshing their decay clock so attention slows
+  forgetting — *without* fabricating corroboration (confidence is left untouched).
+
+```bash
+velantrim volition-write "A self-authored claim"   # through the gates
+velantrim volition-focus                           # the system's attention set
+velantrim volition-cycle                           # rehearse the salient memories
+```
 
 ## ESM — Epistemic State Machine (core)
 
