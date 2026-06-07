@@ -23,7 +23,7 @@ from core.compliance import (
     restrict_processing, unrestrict_processing, record_of_processing,
 )
 from core.audit import audit_log, verify_audit_log
-from core import pii, provenance, immune, fractal, neurogenesis
+from core import pii, provenance, immune, fractal, neurogenesis, concept
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -103,6 +103,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_nprune.add_argument(
         "--max-confidence", type=float, default=0.2,
         help="confidence below which a fact is prune-eligible (default 0.2)")
+    # ─── Concept Emergence (RFC0066) ──────────────────────────────────────────
+    sub.add_parser(
+        "concepts", help="ProtoConcepts emerging from Hebbian co-activation")
+    sub.add_parser(
+        "concepts-emerge", help="materialise emergent concepts into the canon")
+    p_cfor = sub.add_parser(
+        "concepts-for", help="concepts a fact belongs to")
+    p_cfor.add_argument("fact_id")
 
     args = parser.parse_args(argv)
 
@@ -182,6 +190,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(json.dumps(
             neurogenesis.prune_candidates(max_confidence=args.max_confidence),
             ensure_ascii=False))
+    elif args.cmd == "concepts":
+        print(json.dumps(concept.concept_report(), ensure_ascii=False, indent=2))
+    elif args.cmd == "concepts-emerge":
+        print(json.dumps(concept.emerge_concepts(), ensure_ascii=False))
+    elif args.cmd == "concepts-for":
+        print(json.dumps(concept.concepts_for_fact(args.fact_id), ensure_ascii=False))
     return 0
 
 
