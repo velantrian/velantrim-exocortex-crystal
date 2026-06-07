@@ -23,7 +23,7 @@ from core.compliance import (
     restrict_processing, unrestrict_processing, record_of_processing,
 )
 from core.audit import audit_log, verify_audit_log
-from core import pii, provenance
+from core import pii, provenance, immune
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -70,6 +70,21 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_conf = sub.add_parser(
         "conflicts", help="find & classify canon facts conflicting with a claim")
     p_conf.add_argument("claim")
+    # ─── Immune / CRISPR Memory Guard (RFC0072) ───────────────────────────────
+    sub.add_parser("immune-report", help="immune layer status (threats, hits)")
+    p_iblock = sub.add_parser(
+        "immune-block", help="record a threat pattern to block on sight (CRISPR)")
+    p_iblock.add_argument("pattern")
+    p_iblock.add_argument("--type", default="manual", dest="threat_type",
+                          help="threat type (e.g. hallucination, harmful)")
+    p_iblock.add_argument("--severity", type=float, default=1.0,
+                          help="severity 0..1 (block floor is 0.5 by default)")
+    p_iallow = sub.add_parser(
+        "immune-allow", help="revoke a recorded threat by pattern_id")
+    p_iallow.add_argument("pattern_id")
+    p_icheck = sub.add_parser(
+        "immune-check", help="screen a claim against the immune guard (no write)")
+    p_icheck.add_argument("claim")
 
     args = parser.parse_args(argv)
 
@@ -83,6 +98,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             "claim_type": fact.get("claim_type"),
             "truth_status": fact.get("truth_status"),
             "conflicts": [c["fact_id"] for c in res.get("conflicts", [])],
+            **({"reason": res["reason"]} if not res["accepted"] else {}),
         }, ensure_ascii=False))
     elif args.cmd == "ask":
         res = run(args.query)
@@ -123,6 +139,19 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(json.dumps(provenance.verify_receipt(json.loads(raw)), ensure_ascii=False))
     elif args.cmd == "conflicts":
         print(json.dumps(find_conflicts(args.claim), ensure_ascii=False))
+    elif args.cmd == "immune-report":
+        print(json.dumps(immune.immunity_report(), ensure_ascii=False, indent=2))
+    elif args.cmd == "immune-block":
+        print(json.dumps(
+            immune.record_threat(args.pattern, threat_type=args.threat_type,
+                                 severity=args.severity, actor="cli"),
+            ensure_ascii=False))
+    elif args.cmd == "immune-allow":
+        print(json.dumps({"forgotten": immune.forget_threat(args.pattern_id,
+                                                            actor="cli")},
+                         ensure_ascii=False))
+    elif args.cmd == "immune-check":
+        print(json.dumps(immune.screen(args.claim), ensure_ascii=False))
     return 0
 
 

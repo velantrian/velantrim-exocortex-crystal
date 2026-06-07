@@ -125,6 +125,24 @@ _OUTBOX_DDL = """
     )
 """
 
+# ─── IMMUNE MEMORY: persistent CRISPR threat patterns (RFC0072) ───────────────
+# Recorded "spacers" — claim signatures (hallucination/harmful/refuted patterns)
+# that the Immune Guard recognises and blocks on sight (see core/immune.py).
+# Content-addressable by normalized pattern; hit counters make the response
+# observable. Empty by default → the guard is a no-op until something is recorded.
+_IMMUNE_DDL = """
+    CREATE TABLE IF NOT EXISTS immune_memory (
+        pattern_id   TEXT PRIMARY KEY,
+        pattern      TEXT NOT NULL,
+        threat_type  TEXT NOT NULL,
+        severity     REAL NOT NULL,
+        recorded_at  TEXT NOT NULL,
+        actor        TEXT NOT NULL,
+        hits         INTEGER NOT NULL DEFAULT 0,
+        last_hit_at  TEXT
+    )
+"""
+
 # ─── ERASURE LOG: tombstones of physical deletion (GDPR Art. 17 / Art. 30) ────
 # Contains PROOF of the deletion without the personal data itself: the claim
 # is not stored, only its sha256 hash. This way deletion stays accountable
@@ -190,6 +208,7 @@ def _db():
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute(_DDL)
     conn.execute(_OUTBOX_DDL)
+    conn.execute(_IMMUNE_DDL)
     conn.execute(_TOMBSTONE_DDL)
     conn.execute(_AUDIT_DDL)
     _migrate(conn)

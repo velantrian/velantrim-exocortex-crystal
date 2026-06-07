@@ -20,7 +20,7 @@ from core.l3_graph import get_l3_graph
 from core.embedding import assert_compatible_embedder
 from core.pipeline import guardian, truth_gate, _truth_status_for, _l3_payload
 from core.reconcile import reinforce, find_conflicts, REL_CONTRADICTS, _now
-from core import metrics, adaptation, pii, contradiction
+from core import metrics, adaptation, pii, contradiction, immune
 
 # Modality markers (RU + EN). Order matters: we check from specific to general.
 _CLAIM_MARKERS = [
@@ -131,6 +131,18 @@ def ingest(
     # L0/L1: store as raw experience (pending), even if the gates reject it.
     store_fact(fact)
 
+    # Immune pre-screen (RFC0072): block claims matching the CRISPR threat memory
+    # — known hallucination / harmful / previously-refuted patterns — BEFORE the
+    # gates. The threat memory is empty by default, so this is a no-op until a
+    # curator (or adaptive learning) records something. The fact stays Observed in
+    # L0/L1 (pending), never reaching the canon.
+    pre = immune.screen(utterance, fact_id=fid, check_canon=False)
+    if pre["verdict"] == immune.BLOCK:
+        metrics.incr("ingest.immune_blocked")
+        adaptation.record_block()
+        return {"accepted": False, "reason": f"Immune: {pre['reason']}",
+                "immune": pre, "fact": fact}
+
     facts_pack = {"facts": [fact], "query": utterance, "total": 1}
     trace = [{
         "fact_id": fid, "source": source, "origin": "ingestion",
@@ -144,6 +156,29 @@ def ingest(
         metrics.incr("ingest.blocked")
         adaptation.record_block()
         return {"accepted": False, "reason": reason, "fact": fact}
+
+    # Immune contradiction check (RFC0072): WORLD_FACTs are checked against the
+    # canon ONCE here (reused for the result below). By default a contradiction is
+    # a non-destructive advisory — we still admit and link (see truth-first
+    # principle). With VELANTRIM_IMMUNE_STRICT, a claim that contradicts the canon
+    # is blocked outright (and, with VELANTRIM_IMMUNE_LEARN, recorded as a threat
+    # so a repeat is caught pre-gate next time).
+    conflicts = find_conflicts(utterance, fact_id=fid) if ct == "WORLD_FACT" else []
+    contradictions = [c for c in conflicts
+                      if c["kind"] == contradiction.CONTRADICTION]
+    if contradictions and immune.strict_mode():
+        metrics.incr("ingest.immune_blocked")
+        adaptation.record_block()
+        if immune.learn_mode():
+            immune.record_threat(utterance, threat_type="contradiction",
+                                 severity=1.0, actor="immune-auto")
+        return {
+            "accepted": False,
+            "reason": f"Immune: contradicts {len(contradictions)} canonical "
+                      f"fact(s) (strict mode)",
+            "immune": {"verdict": immune.BLOCK, "contradictions": contradictions},
+            "conflicts": conflicts, "fact": fact,
+        }
 
     # Passed the gates → Validated, truth_status by modality, MERGE into the L3 canon.
     transition_esm(fid, "Validated")
@@ -162,25 +197,21 @@ def ingest(
     metrics.incr("ingest.accepted")
     adaptation.record_success()
     result = {"accepted": True, "fact": fact}
-    # Immune signal: for facts about the world we identify canon candidates that
-    # are close-but-different, now classified (CONTRADICTION/REFINEMENT/RELATED).
+    # Immune signal: for facts about the world we surface canon candidates that
+    # are close-but-different, classified (CONTRADICTION/REFINEMENT/RELATED) above.
     # By default we only hand it off for a decision. With VELANTRIM_AUTO_CONTRADICT
     # set, a high-precision CONTRADICTION is also recorded as a CONTRADICTS edge
     # (new → prior) so the clash is queryable via fact_history — we LINK, we do
     # not deprecate either side (a heuristic must not silently overwrite canon).
-    if ct == "WORLD_FACT":
-        conflicts = find_conflicts(utterance, fact_id=fid)
-        if conflicts:
-            result["conflicts"] = conflicts
-            contradictions = [c for c in conflicts
-                              if c["kind"] == contradiction.CONTRADICTION]
-            if contradictions and _auto_contradict_enabled():
-                graph_ = get_l3_graph()
-                for c in contradictions:
-                    graph_.add_edge(fid, REL_CONTRADICTS, c["fact_id"],
-                                    {"at": _now(), "signal": c["signal"], "auto": True})
-                result["auto_contradicted"] = [c["fact_id"] for c in contradictions]
-                metrics.incr("ingest.contradiction_detected")
+    if conflicts:
+        result["conflicts"] = conflicts
+        if contradictions and _auto_contradict_enabled():
+            graph_ = get_l3_graph()
+            for c in contradictions:
+                graph_.add_edge(fid, REL_CONTRADICTS, c["fact_id"],
+                                {"at": _now(), "signal": c["signal"], "auto": True})
+            result["auto_contradicted"] = [c["fact_id"] for c in contradictions]
+            metrics.incr("ingest.contradiction_detected")
     return result
 
 

@@ -12,7 +12,7 @@
 > unless you explicitly opt in.
 
 > **Scope of this repository.** This repo is the **verified, dependency-free open
-> core** (v8.1.0 — 412 passing tests, 99% coverage): the memory layer, provenance,
+> core** (v8.1.0 — 430 passing tests, 99% coverage): the memory layer, provenance,
 > and GDPR machinery you can run today. It is one component of the broader
 > Velantrim ExoCortex system; extended parts (a browser PWA demo, MCP integration,
 > and further research modules) are in active development and described in the
@@ -73,11 +73,14 @@ content-free audit tombstone), and full auditability of provenance. See
 | `core/crypto.py`      | ✅ | GDPR Art. 32 opt-in encryption at rest for claim/metadata (Fernet/AES or stdlib HMAC) |
 | `core/audit.py`       | ✅ | Tamper-evident, hash-chained audit log of erase/restrict events (optional HMAC signing) |
 | `core/pii.py`         | ✅ | PII detection & redaction at ingest — email/phone/card(Luhn)/IPv4/IBAN (GDPR Art. 5) |
+| `core/immune.py`      | ✅ | Immune / CRISPR Memory Guard (RFC0072): persistent adaptive threat memory; screens & blocks known hallucination/harmful/refuted patterns before the canon |
 | `core/adaptation.py`  | ✅ | Adaptive TruthGate threshold (RFC0071): stress ↑ → stricter; healthy → relaxes |
+| `core/queue.py`       | ✅ | Pluggable L3 re-merge outbox: `auto`→Redis (shared, optional) / `sqlite` (persistent, dependency-free default) |
+| `core/aio.py`         | ✅ | Async entry points (`arun`/`aingest`/`adrain_l3_outbox`) for embedding in asyncio/FastAPI/MCP without blocking |
 | `core/observe.py`     | ✅ | Memory observability report over the L3 canonical graph                     |
 | `core/metrics.py`     | ✅ | Lightweight in-process counters (query / ingest / gate)                     |
-| `core/cli.py`         | ✅ | CLI: `ingest`/`ask`/`history`/`report`/`erase`/`erasures`/`restrict`/`unrestrict`/`ropa`/`audit`/`audit-verify`/`redact`/`receipt`/`verify-receipt`/`conflicts` |
-| `tests/`              | ✅ | **412 passing**, 12 skipped, **99% coverage** (gate: 95%) — see [TEST_REPORT.md](./TEST_REPORT.md) |
+| `core/cli.py`         | ✅ | CLI: `ingest`/`ask`/`history`/`report`/`erase`/`erasures`/`restrict`/`unrestrict`/`ropa`/`audit`/`audit-verify`/`redact`/`receipt`/`verify-receipt`/`conflicts`/`immune-*` |
+| `tests/`              | ✅ | **430 passing**, 12 skipped, **99% coverage** (gate: 95%) — see [TEST_REPORT.md](./TEST_REPORT.md) |
 | `docs/Velantrim_V8_Crystal_Sprint1.jsonl` | 📜 Spec | Full system design (63 chunks) |
 
 **Current status**: the full fact lifecycle runs end-to-end — ingest → classify
@@ -91,7 +94,7 @@ git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
 pip install .                          # stdlib-only runtime; installs the `velantrim` CLI
 python -m core.pipeline                # runs the end-to-end demo, fully local
-pytest                                 # 412 passing, 99% coverage  (pip install -e '.[dev]')
+pytest                                 # 430 passing, 99% coverage  (pip install -e '.[dev]')
 ```
 
 After install the CLI is on your PATH:
@@ -153,6 +156,27 @@ pipeline workers, point it at Redis (`pip install '.[redis]'`):
 VELANTRIM_QUEUE_BACKEND=redis VELANTRIM_REDIS_URL=redis://localhost:6379/0 velantrim ask "..."
 # default 'auto' uses Redis when a server answers PING, else the SQLite outbox
 ```
+
+## Immune / CRISPR Memory Guard (RFC0072)
+
+Inspired by bacterial CRISPR immunity, the guard keeps a **persistent, adaptive
+record of known threat patterns** (hallucination signatures, harmful or
+previously-refuted claims) and screens every incoming claim against it *before*
+it can reach the canon. It is **truth-first and non-destructive by default**: a
+claim that merely contradicts the canon is flagged (`QUARANTINE`) and linked, not
+silently overwritten — only an explicitly recorded threat is blocked.
+
+```bash
+velantrim immune-block "the earth is flat" --type hallucination   # record a spacer
+velantrim immune-check "as everyone knows, the earth is flat"     # → {"verdict": "BLOCK", ...}
+velantrim ingest      "as everyone knows, the earth is flat"      # → blocked (Immune)
+velantrim immune-report                                           # threats + hit counts
+```
+
+Two opt-in escalations: `VELANTRIM_IMMUNE_STRICT=1` blocks any claim that
+contradicts the canon; `VELANTRIM_IMMUNE_LEARN=1` then records each blocked claim
+as a new spacer (adaptive immunity). Every record/forget is written to the
+tamper-evident audit log.
 
 ## ESM — Epistemic State Machine (core)
 
