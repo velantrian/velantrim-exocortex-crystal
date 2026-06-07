@@ -53,6 +53,16 @@ This document is the **honest truth** about what's implemented vs designed.
 - PII detection & redaction (`core/pii.py`, Art. 5 data minimisation): overlap-safe
   detection of email/phone/credit-card(Luhn)/IPv4/IBAN; opt-in redaction at ingest
   (`VELANTRIM_REDACT_PII`); CLI `redact`
+- Pluggable L3 re-merge queue (`core/queue.py`): the self-healing outbox behind a
+  swappable backend `auto`→**Redis** (when a server answers PING) / **sqlite** /
+  **redis** (`VELANTRIM_QUEUE_BACKEND`, `VELANTRIM_REDIS_URL`). The dependency-free
+  persistent SQLite outbox is the default and the `auto` fallback; Redis (optional
+  `pip install '.[redis]'`) lets several pipeline workers share one queue
+- Async-friendly entry points (`core/aio.py`): `arun` / `aingest` / `adrain_l3_outbox`
+  run the sync pipeline off the event loop via `asyncio.to_thread`, so Velantrim
+  embeds in an asyncio service / FastAPI / MCP server without blocking. (Interface
+  is async today; the underlying stdlib I/O is still synchronous — a full async
+  rewrite of the stores remains future work.)
 
 ## ✅ Implemented (metadata tooling, not runtime)
 
@@ -69,13 +79,13 @@ This document is the **honest truth** about what's implemented vs designed.
 | RFC0065 | Memory Volition, `write_voluntary()`, VolitionWorker | S3 |
 | RFC0067 v2.0 | Analogy Graph, Semantic Bridge Engine, Adaptive Decoder | S4 |
 | RFC0068 | NeuroCore (plastic memory, Phase 0 passive tracker) | S5+ |
-| — | Redis + fallback queue | S2 |
-| — | Async/await throughout (currently sync) | S2 |
+| — | Full async/await rewrite of the stores (async entry points already shipped) | S3+ |
 | — | Sprint A patches A1–A10 (documented, not wired) | S3 |
 
 > ✅ **Now done** (were in this table): RFC0017 FSRS-style decay → `core/consolidate.py`;
 > RFC0063 Ingestion → `core/ingest.py`; L3 graph adapter + LadybugDB backend
-> (`core/l3_graph.py`, Kuzu frozen Oct'25 → LadybugDB successor, Neo4j optional).
+> (`core/l3_graph.py`, Kuzu frozen Oct'25 → LadybugDB successor, Neo4j optional);
+> Redis + fallback queue → `core/queue.py`; async entry points → `core/aio.py`.
 
 ## 📊 Invariant enforcement status
 
@@ -90,7 +100,8 @@ This document is the **honest truth** about what's implemented vs designed.
 - **S1**: Honesty — fix README, ESM bugs, add tests/CI/LICENSE
 - **S2**: ✅ vector retrieval + L3 recall, swappable L3/embedder/generator
   backends (LadybugDB default, Neo4j optional), FSRS-style decay, ingestion,
-  truth maintenance. Remaining: async pipeline + Redis queue
+  truth maintenance, pluggable Redis/SQLite re-merge queue (`core/queue.py`),
+  async entry points (`core/aio.py`)
 - **S3**: RFC0066 ConceptEmergenceDetector + RFC0065 Volition + A6–A10 wiring
 - **S4**: RFC0067 Analogy Graph + RFC0063 Ingestion
 - **S5+**: RFC0068 NeuroCore (feature-flagged, Phase 0 passive)

@@ -16,20 +16,23 @@ def isolated_db(monkeypatch, tmp_path):
     no long-lived connection to tear down — we only need to redirect the DB
     path and clear the module-level in-memory cache.
     """
-    from core import memory, l3_graph, embedding, generation, metrics, adaptation
+    from core import memory, l3_graph, embedding, generation, metrics, adaptation, queue
 
     memory._L0.clear()
     monkeypatch.setattr(memory, "SQLITE_PATH", str(tmp_path / "test.db"))
     # Pin the deterministic, dependency-free backends so tests never load a
     # neural model, touch disk, or hit the network (production defaults differ:
-    # L3=auto→LadybugDB, embedder=auto→sbert, generator=extractive).
+    # L3=auto→LadybugDB, embedder=auto→sbert, generator=extractive,
+    # queue=auto→Redis-if-present). The SQLite queue shares the per-test DB.
     monkeypatch.setenv("VELANTRIM_L3_BACKEND", "mock")
     monkeypatch.setenv("VELANTRIM_EMBEDDER", "hashing")
     monkeypatch.setenv("VELANTRIM_GENERATOR", "extractive")
+    monkeypatch.setenv("VELANTRIM_QUEUE_BACKEND", "sqlite")
     # Fresh module-level singletons per test.
     l3_graph.reset_l3_graph()
     embedding.reset_embedder()
     generation.reset_generator()
+    queue.reset_outbox_queue()
     metrics.reset()
     adaptation.reset_adaptation()
     yield
@@ -37,3 +40,4 @@ def isolated_db(monkeypatch, tmp_path):
     l3_graph.reset_l3_graph()
     embedding.reset_embedder()
     generation.reset_generator()
+    queue.reset_outbox_queue()

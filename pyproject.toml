@@ -55,6 +55,12 @@ llm = [
 encryption = [
     "cryptography>=42.0.0",
 ]
+# Shared L3 re-merge queue across workers (VELANTRIM_QUEUE_BACKEND=redis, or
+# auto when a server is reachable). Optional: the default is the persistent,
+# dependency-free SQLite outbox.
+redis = [
+    "redis>=5.0.0",
+]
 
 # Explicit package surface — the runtime is the `core` package plus the
 # top-level `epigenetic_adaptation_module` it imports. Declaring them keeps the

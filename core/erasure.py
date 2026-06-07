@@ -23,7 +23,6 @@ from typing import Dict, Any, List, Optional
 from core.memory import (
     get_fact,
     delete_fact_l1,
-    clear_l3_write,
     write_tombstone,
     get_tombstone,
     get_tombstones,
@@ -31,6 +30,7 @@ from core.memory import (
     ImmutableStateError,
 )
 from core.l3_graph import get_l3_graph
+from core.queue import get_outbox_queue
 from core import audit
 
 # Provenance edge: derived -DERIVED_FROM-> source. Marks that a fact is derived
@@ -103,7 +103,7 @@ def erase_fact(
     # Deletion across all fabrics. Each step is idempotent and independent.
     l1_removed = delete_fact_l1(fact_id)
     l3_removed = graph.erase_fact(fact_id)
-    clear_l3_write(fact_id)  # remove any possible entry from the re-merge queue
+    get_outbox_queue().clear(fact_id)  # remove any possible entry from the re-merge queue
 
     erased_now = l1_removed or l3_removed
 
