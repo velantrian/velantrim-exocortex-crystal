@@ -23,7 +23,7 @@ from core.compliance import (
     restrict_processing, unrestrict_processing, record_of_processing,
 )
 from core.audit import audit_log, verify_audit_log
-from core import pii, provenance, immune, fractal, neurogenesis, concept, volition
+from core import pii, provenance, immune, fractal, neurogenesis, concept, volition, velum
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -120,6 +120,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     sub.add_parser(
         "volition-cycle", help="VolitionWorker: rehearse the most salient memories")
     sub.add_parser("volition-report", help="volition state (voluntary writes, focus)")
+    # ─── L1.5 Velum synaptic pre-graph (RFC0016) ──────────────────────────────
+    sub.add_parser("velum-report", help="Velum synaptic pre-graph status (edges, signals)")
+    p_vn = sub.add_parser(
+        "velum-neighbors", help="synaptically connected entities (context hint)")
+    p_vn.add_argument("entity")
+    p_vn.add_argument("--min-weight", type=float, default=0.3)
 
     args = parser.parse_args(argv)
 
@@ -218,6 +224,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(json.dumps(volition.volition_cycle(), ensure_ascii=False))
     elif args.cmd == "volition-report":
         print(json.dumps(volition.volition_report(), ensure_ascii=False, indent=2))
+    elif args.cmd == "velum-report":
+        print(json.dumps(velum.get_velum().report(), ensure_ascii=False, indent=2))
+    elif args.cmd == "velum-neighbors":
+        print(json.dumps(
+            velum.get_velum().get_neighbors(args.entity, min_weight=args.min_weight),
+            ensure_ascii=False))
     return 0
 
 
