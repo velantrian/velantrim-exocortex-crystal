@@ -10,7 +10,7 @@ vulnerabilities.
 
 | Version          | Supported |
 |------------------|-----------|
-| `8.x` (current)  | ✅        |
+| `0.1.x` / `8.x`  | ✅        |
 | `< 8.0`          | ❌        |
 
 ## Reporting a vulnerability
@@ -73,12 +73,13 @@ assets and threats:
   dependency-free HMAC-SHA256 keystream (CTR) with encrypt-then-MAC. Tokens are
   tamper-evident — a wrong key or modified ciphertext fails authentication.
   Disabled by default (identity), so the default runtime stays stdlib-only.
-- Test suite of 513 passing tests at ~99% coverage guards the invariants above
+- Test suite of **546 passing tests** at ~99% coverage guards the invariants above
   (see [TEST_REPORT.md](./TEST_REPORT.md)).
 
 ## Dependencies
 
-The runtime uses the Python standard library only. `requirements.txt` lists
-test tooling and **optional** backends (LadybugDB, sentence-transformers,
-Neo4j, Anthropic SDK), none of which are installed or active by default. Keep
-optional backends pinned and reviewed before enabling them.
+The default runtime uses the Python standard library only. `requirements.txt` is
+kept as a compatibility marker and intentionally contains no mandatory runtime
+packages. Development and CI tooling lives in `requirements-dev.txt`; optional
+backends are installed through `pyproject.toml` extras. Keep optional backends
+pinned and reviewed before enabling them.
