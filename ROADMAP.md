@@ -63,6 +63,14 @@ This document is the **honest truth** about what's implemented vs designed.
   embeds in an asyncio service / FastAPI / MCP server without blocking. (Interface
   is async today; the underlying stdlib I/O is still synchronous — a full async
   rewrite of the stores remains future work.)
+- RFC0072 Immune / CRISPR Memory Guard (`core/immune.py`): persistent, adaptive
+  threat memory ("spacers") that screens claims BEFORE the canon and blocks known
+  hallucination / harmful / refuted patterns; high-precision contradiction check
+  reuses `core/contradiction.py`. Non-destructive by default (contradiction →
+  advisory QUARANTINE, link-don't-overwrite); opt-in hard blocking
+  (`VELANTRIM_IMMUNE_STRICT`) and adaptive learning (`VELANTRIM_IMMUNE_LEARN`).
+  Accountable via the audit log; CLI `immune-block` / `immune-allow` /
+  `immune-check` / `immune-report`
 
 ## ✅ Implemented (metadata tooling, not runtime)
 
@@ -85,7 +93,8 @@ This document is the **honest truth** about what's implemented vs designed.
 > ✅ **Now done** (were in this table): RFC0017 FSRS-style decay → `core/consolidate.py`;
 > RFC0063 Ingestion → `core/ingest.py`; L3 graph adapter + LadybugDB backend
 > (`core/l3_graph.py`, Kuzu frozen Oct'25 → LadybugDB successor, Neo4j optional);
-> Redis + fallback queue → `core/queue.py`; async entry points → `core/aio.py`.
+> Redis + fallback queue → `core/queue.py`; async entry points → `core/aio.py`;
+> RFC0072 Immune / CRISPR Memory Guard → `core/immune.py` (issue #7, Hybrid Vision).
 
 ## 📊 Invariant enforcement status
 
