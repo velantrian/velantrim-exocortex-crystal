@@ -19,6 +19,7 @@ from typing import Dict, Any, Optional
 
 from core.memory import get_fact, update_fact
 from core.l3_graph import get_l3_graph
+from core import fractal
 
 _HALF_LIFE_DAYS = 30.0   # confidence half-life period for an insignificant fact
 _FLOOR = 0.02            # we do not go below this — a fact fades but does not disappear
@@ -68,8 +69,22 @@ def consolidate(
         if elapsed_days <= 0.0:
             continue  # already consolidated at this moment — idempotent
 
+        # Fractal anchoring (RFC0070): a fact's memory scale lengthens its
+        # half-life; a CORE anchor is exempt from decay entirely (the anti-
+        # catastrophic-forgetting guarantee). A fact with no assigned scale
+        # behaves exactly as before (protection 1.0), so this is inert until
+        # fractal.reanchor() has run.
+        scale = meta.get("fractal_scale")
+        if fractal.is_anchored(scale):
+            # Advance the clock so elapsed does not accumulate while anchored
+            # (so a later demotion out of CORE does not trigger a huge one-shot drop).
+            meta["last_consolidated"] = now.isoformat()
+            update_fact(node["fact_id"], metadata=meta)
+            graph.merge_fact(get_fact(node["fact_id"]))
+            continue
+
         sig = float(node.get("significance", 0.5))
-        eff_hl = half_life_days * (1.0 + sig)
+        eff_hl = half_life_days * (1.0 + sig) * fractal.protection_factor(scale)
         factor = 0.5 ** (elapsed_days / eff_hl)
         conf = float(node.get("confidence", 0.5))
         new_conf = max(floor, round(conf * factor, 4))
