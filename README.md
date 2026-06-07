@@ -26,6 +26,7 @@
 - [🎯 What you can build with it](#-what-you-can-build-with-it)
 - [🚀 Quick start](#-quick-start)
 - [🧠 Why it's different](#-why-its-different)
+- [🔒 Data sovereignty & offline autonomy](#-data-sovereignty--offline-autonomy)
 - [🏛️ How it works](#-how-it-works)
 - [🧩 What's inside — the systems](#-whats-inside--the-systems)
 - [🔬 Deep dives](#-deep-dives)
@@ -114,6 +115,56 @@ Four principles, enforced in code (not just documented):
 > infrastructure for accountable AI**: privacy-respecting, auditable, and operable
 > without sending personal data to third-party clouds — directly supporting GDPR
 > data minimisation, purpose limitation, rectification and erasure.
+
+---
+
+## 🔒 Data sovereignty & offline autonomy
+
+This is the heart of why Crystal exists for the public sector, research and
+regulated organisations.
+
+### 🏠 Your data stays on your device
+
+Personal data — whether it belongs to an individual, a company, or a government
+institution — is stored **locally, on the user's own machine** (an on-disk SQLite
+canon and an in-memory cache). By default **nothing is uploaded anywhere**: no
+cloud, no telemetry, no third-party calls.
+
+- 🗃️ **You own the file.** The canon is a single portable on-disk database you
+  control. If *you* choose to connect a backup or a cloud, you can **export** it
+  there yourself — but it is always an explicit, opt-in action. Data never leaves
+  the device on its own.
+- 🇪🇺 **EU digital sovereignty.** European public bodies increasingly require that
+  citizens', companies' and institutions' data **not flow into external
+  (e.g. US-based) services**, but remain autonomous and resident on their own
+  infrastructure inside the EU. Crystal is built exactly for that: a memory layer
+  that is auditable, GDPR-aligned, and **runs entirely on hardware you control**.
+
+### ⚡ Accurate answers without an LLM — even offline
+
+Because **Graph = Truth**, exact facts come straight from the knowledge graph.
+The default answerer is **extractive** and the default embedder is
+**dependency-free** — so Crystal can return precise, sourced facts with **no LLM
+at all** and **no internet connection**.
+
+- 🛰️ **Works with the network unplugged.** No external API is on the critical
+  path. This means stability and continuity even offline or under network
+  failure — important for **libraries, schools, universities, archives and
+  Wikipedia-style knowledge bases** that must keep serving verified information.
+- 💸 **Low compute, high reliability.** Answering from the graph puts **little to
+  no load on an LLM** (and often needs none), so running costs stay low and
+  results stay deterministic and reproducible. An LLM can be plugged in *on top*
+  for phrasing — but it is never required for correctness.
+
+### 🕸️ Smart interconnections an LLM cannot keep
+
+An LLM keeps knowledge as loose, lossy "notes" in an external scratchpad; if a
+note isn't in its context, the relationship is simply gone. Crystal instead
+maintains **explicit, durable links** between facts — provenance, supersession,
+contradiction, co-occurrence, emergent concepts, analogies and semantic bridges.
+This is **structured, queryable, machine-verifiable knowledge** that survives
+restarts and that a stateless language model cannot reconstruct on its own — the
+guarantee that information, *and its meaning*, is preserved.
 
 ---
 
