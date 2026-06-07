@@ -1,0 +1,8 @@
+# Velantrim ExoCortex — development and test requirements
+#
+# The runtime package intentionally has no mandatory third-party dependencies.
+# Use this file only for local development, tests and CI.
+
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+pytest-cov>=4.1.0
