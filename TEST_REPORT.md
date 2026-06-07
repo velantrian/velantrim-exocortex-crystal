@@ -7,11 +7,11 @@ numbers: run `pytest` yourself and you will get the figures below.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **444** |
+| **Tests passing** | **459** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **~99%** (gate enforced at 95%) |
-| Test files | 34 (`tests/test_*.py`) |
+| Test files | 35 (`tests/test_*.py`) |
 | Python | 3.11 (3.10+ supported) |
 | Runtime dependencies | standard library only |
 
@@ -27,7 +27,7 @@ which needs a running Redis and is not part of the dependency-free default.
 
 ```bash
 pip install -r requirements.txt
-pytest                 # 444 passed, 12 skipped
+pytest                 # 459 passed, 12 skipped
 ```
 
 ## Coverage by module (core/)
@@ -38,7 +38,7 @@ pytest                 # 444 passed, 12 skipped
 | `core/adaptation.py`   | 22  | 100% |
 | `core/aio.py`          | 10  | 100% |
 | `core/audit.py`        | 69  | 100% |
-| `core/cli.py`          | 110 | 100% |
+| `core/cli.py`          | 117 | 100% |
 | `core/compliance.py`   | 43  | 100% |
 | `core/consolidate.py`  | 45  | 96%  |
 | `core/contradiction.py`| 53  | 100% |
@@ -48,11 +48,12 @@ pytest                 # 444 passed, 12 skipped
 | `core/fractal.py`      | 93  | 99%  |
 | `core/generation.py`   | 41  | 100% |
 | `core/immune.py`       | 94  | 100% |
-| `core/ingest.py`       | 85  | 100% |
+| `core/ingest.py`       | 89  | 100% |
 | `core/l3_graph.py`     | 259 | 99%  |
 | `core/mcp_server.py`   | 104 | 100% |
 | `core/memory.py`       | 185 | 100% |
 | `core/metrics.py`      | 10  | 100% |
+| `core/neurogenesis.py` | 96  | 99%  |
 | `core/observe.py`      | 35  | 100% |
 | `core/pii.py`          | 56  | 100% |
 | `core/pipeline.py`     | 244 | 98%  |
@@ -60,7 +61,7 @@ pytest                 # 444 passed, 12 skipped
 | `core/queue.py`        | 53  | 91%  |
 | `core/reconcile.py`    | 80  | 96%  |
 | `core/trace.py`        | 26  | 100% |
-| **Total (repo-wide)**  | **2730** | **~99%** |
+| **Total (repo-wide)**  | **2837** | **~99%** |
 
 ## What the tests cover
 
@@ -71,6 +72,7 @@ pytest                 # 444 passed, 12 skipped
 | Pluggable re-merge queue (SQLite/Redis backends, fallback) & async entry points | `test_queue.py` |
 | Immune / CRISPR Memory Guard (RFC0072) — threat memory, screening, strict/learn, CLI | `test_immune.py` |
 | Fractal Memory Layer (RFC0070) — anchor strength, reanchor/spill, decay protection, CLI | `test_fractal.py` |
+| Neurogenesis Dynamic Growth (RFC0073) — plasticity, pattern separation, growth/prune, CLI | `test_neurogenesis.py` |
 | L3 canonical graph adapter & backends | `test_l3_graph.py` |
 | On-disk SQLite L3 backend (persistence, erase, vectors, entities) | `test_l3_sqlite.py` |
 | Packaging contract (entry point, version, package surface) | `test_packaging.py` |

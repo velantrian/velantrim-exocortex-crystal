@@ -23,7 +23,7 @@ from core.compliance import (
     restrict_processing, unrestrict_processing, record_of_processing,
 )
 from core.audit import audit_log, verify_audit_log
-from core import pii, provenance, immune, fractal
+from core import pii, provenance, immune, fractal, neurogenesis
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -94,6 +94,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_fanch.add_argument(
         "--scale", choices=fractal.SCALES, default=None,
         help="filter to a single scale (SHORT/MEDIUM/LONG/CORE)")
+    # ─── Neurogenesis Dynamic Growth (RFC0073) ────────────────────────────────
+    sub.add_parser(
+        "neuro-report", help="neurogenesis stats (plasticity, growth, capacity)")
+    p_nprune = sub.add_parser(
+        "neuro-prune-candidates",
+        help="mature, weak, non-anchored facts that could be reclaimed (advisory)")
+    p_nprune.add_argument(
+        "--max-confidence", type=float, default=0.2,
+        help="confidence below which a fact is prune-eligible (default 0.2)")
 
     args = parser.parse_args(argv)
 
@@ -167,6 +176,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(json.dumps(fractal.fractal_report(), ensure_ascii=False, indent=2))
     elif args.cmd == "fractal-anchors":
         print(json.dumps(fractal.anchors(args.scale), ensure_ascii=False))
+    elif args.cmd == "neuro-report":
+        print(json.dumps(neurogenesis.growth_report(), ensure_ascii=False, indent=2))
+    elif args.cmd == "neuro-prune-candidates":
+        print(json.dumps(
+            neurogenesis.prune_candidates(max_confidence=args.max_confidence),
+            ensure_ascii=False))
     return 0
 
 
