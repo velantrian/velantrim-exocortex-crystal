@@ -23,7 +23,7 @@ from core.compliance import (
     restrict_processing, unrestrict_processing, record_of_processing,
 )
 from core.audit import audit_log, verify_audit_log
-from core import pii, provenance, immune, fractal, neurogenesis, concept
+from core import pii, provenance, immune, fractal, neurogenesis, concept, volition
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -111,6 +111,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_cfor = sub.add_parser(
         "concepts-for", help="concepts a fact belongs to")
     p_cfor.add_argument("fact_id")
+    # ─── Memory Volition (RFC0065) ────────────────────────────────────────────
+    p_vwrite = sub.add_parser(
+        "volition-write", help="system voluntarily writes a fact (through the gates)")
+    p_vwrite.add_argument("claim")
+    sub.add_parser(
+        "volition-focus", help="the system's self-selected attention set (salient facts)")
+    sub.add_parser(
+        "volition-cycle", help="VolitionWorker: rehearse the most salient memories")
+    sub.add_parser("volition-report", help="volition state (voluntary writes, focus)")
 
     args = parser.parse_args(argv)
 
@@ -196,6 +205,19 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(json.dumps(concept.emerge_concepts(), ensure_ascii=False))
     elif args.cmd == "concepts-for":
         print(json.dumps(concept.concepts_for_fact(args.fact_id), ensure_ascii=False))
+    elif args.cmd == "volition-write":
+        res = volition.write_voluntary(args.claim)
+        print(json.dumps({
+            "accepted": res["accepted"], "volition": True,
+            "fact_id": res["fact"]["fact_id"],
+            **({"reason": res["reason"]} if not res["accepted"] else {}),
+        }, ensure_ascii=False))
+    elif args.cmd == "volition-focus":
+        print(json.dumps(volition.volition_focus(), ensure_ascii=False))
+    elif args.cmd == "volition-cycle":
+        print(json.dumps(volition.volition_cycle(), ensure_ascii=False))
+    elif args.cmd == "volition-report":
+        print(json.dumps(volition.volition_report(), ensure_ascii=False, indent=2))
     return 0
 
 
