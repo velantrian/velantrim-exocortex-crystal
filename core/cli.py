@@ -24,7 +24,7 @@ from core.compliance import (
 )
 from core.audit import audit_log, verify_audit_log
 from core import (pii, provenance, immune, fractal, neurogenesis, concept,
-                  volition, velum, analogy, knowledge, neurocore)
+                  volition, velum, analogy, knowledge, neurocore, eval as _eval)
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -152,6 +152,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     # ─── NeuroCore Phase 0 passive tracker (RFC0068) ───────────────────────────
     sub.add_parser(
         "neurocore-report", help="RFC0068 NeuroCore Phase 0 plasticity telemetry")
+    # ─── Evaluation harness (baseline) ─────────────────────────────────────────
+    sub.add_parser(
+        "eval", help="run the baseline evaluation harness (retrieval/trace/receipt metrics)")
 
     args = parser.parse_args(argv)
 
@@ -272,6 +275,8 @@ def main(argv: Optional[List[str]] = None) -> int:
                          ensure_ascii=False))
     elif args.cmd == "neurocore-report":
         print(json.dumps(neurocore.report(), ensure_ascii=False))
+    elif args.cmd == "eval":
+        print(json.dumps(_eval.run_baseline(), ensure_ascii=False))
     return 0
 
 

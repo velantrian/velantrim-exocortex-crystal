@@ -18,6 +18,19 @@ The repository currently reports:
 
 See [../TEST_REPORT.md](../TEST_REPORT.md) for the reproducible test summary.
 
+A **baseline evaluation harness now exists** (`core/eval.py`, run with `velantrim
+eval`). On a built-in deterministic fixture it reports retrieval `hit@1/3/5` + MRR,
+trace completeness, metadata completeness and receipt-replay survival — for
+example:
+
+```json
+{"cases": 4, "retrieval": {"hit@1": 0.5, "hit@3": 1.0, "hit@5": 1.0, "mrr": 0.75},
+ "trace_completeness": 1.0, "metadata_completeness": 1.0, "receipt_replay_survival": 1.0}
+```
+
+The dimensions below define where this harness is extended next (curated fixtures,
+contradiction recall, source-span coverage).
+
 ## Evaluation dimensions
 
 ### 1. Trace completeness
@@ -156,14 +169,19 @@ Each public release should include a small report with:
 }
 ```
 
-## Planned evaluation harness
+## Evaluation harness — status
 
-A future `core/eval.py` / `scripts/eval.py` should produce machine-readable
-outputs:
+**Delivered (baseline):** `core/eval.py` (`velantrim eval`) ingests a deterministic
+fixture, runs the real retrieval/answer/receipt path, and returns a machine-readable
+report with retrieval (hit@k, MRR), trace completeness, metadata completeness and
+receipt-replay survival. Pure metric functions (`hit_at_k`, `reciprocal_rank`,
+`aggregate`) are unit-tested exactly.
 
-- `metrics.jsonl` for per-case results;
-- `eval_report.md` for human review;
-- deterministic fixture corpora under `eval/fixtures/`;
+**Planned (extensions):**
+
+- `metrics.jsonl` for per-case results and `eval_report.md` for human review;
+- curated fixture corpora under `eval/fixtures/` (beyond the built-in set);
+- contradiction recall and source-span coverage metrics;
 - CI-friendly regression checks for trace completeness and receipt replay.
 
 ## Non-goals

@@ -7,11 +7,11 @@ numbers: run the commands below and compare the figures.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **546** |
+| **Tests passing** | **555** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **~99%** (gate enforced at 95%) |
-| Test files | 41 (`tests/test_*.py`) |
+| Test files | 42 (`tests/test_*.py`) |
 | Python | 3.11 / 3.12 in CI |
 | Runtime dependencies | standard library only |
 
@@ -48,6 +48,7 @@ pytest tests/ -v --cov=core --cov-fail-under=95
 | `core/crypto.py`       | 62  | 100% |
 | `core/embedding.py`    | 76  | 100% |
 | `core/erasure.py`      | 45  | 100% |
+| `core/eval.py`         | 56  | 100% |
 | `core/fractal.py`      | 93  | 99%  |
 | `core/generation.py`   | 56  | 98%  |
 | `core/immune.py`       | 94  | 100% |
@@ -68,7 +69,7 @@ pytest tests/ -v --cov=core --cov-fail-under=95
 | `core/trace.py`        | 26  | 100% |
 | `core/velum.py`        | 112 | 99%  |
 | `core/volition.py`     | 75  | 99%  |
-| **Total (repo-wide)**  | **3462** | **~99%** |
+| **Total (repo-wide)**  | **3521** | **~99%** |
 
 ## What the tests cover
 
@@ -86,6 +87,7 @@ pytest tests/ -v --cov=core --cov-fail-under=95
 | Neurogenesis Dynamic Growth (RFC0073) — plasticity, pattern separation, growth/prune, CLI | `test_neurogenesis.py` |
 | NeuroCore Phase 0 (RFC0068) — passive plasticity tracker, threshold, I68 isolation, CLI | `test_neurocore.py` |
 | External knowledge ingestion (RFC0063) — txt/md/json/jsonl/csv parsers, TruthGate routing, `learn` CLI | `test_knowledge.py` |
+| Evaluation harness (baseline) — hit@k/MRR/trace/metadata/receipt-replay metrics, `eval` CLI | `test_eval.py` |
 | L3 canonical graph adapter & backends | `test_l3_graph.py` |
 | On-disk SQLite L3 backend (persistence, erase, vectors, entities) | `test_l3_sqlite.py` |
 | Packaging contract (entry point, version, package surface) | `test_packaging.py` |

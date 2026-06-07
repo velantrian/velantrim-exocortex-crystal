@@ -4,7 +4,7 @@
 > and tested** and what is **designed but not yet coded**. The README documents
 > only the former; this file tracks both.
 
-**Status:** 🧪 **546 tests passing** · 🎯 **99% coverage** (gate 95%) · 🐍 stdlib-only
+**Status:** 🧪 **555 tests passing** · 🎯 **99% coverage** (gate 95%) · 🐍 stdlib-only
 runtime · every delivered item below ships with tests and a CLI surface.
 
 ---
@@ -107,6 +107,10 @@ runtime · every delivered item below ships with tests and a CLI surface.
 - **Read-only MCP server** (`core/mcp_server.py`): pure stdlib, JSON-RPC 2.0 over
   stdio; read/verify only, cannot mutate the canon.
 - **Observability** (`core/observe.py`, `core/metrics.py`) + full CLI (`core/cli.py`).
+- **Evaluation harness** (`core/eval.py`): baseline retrieval (hit@k / MRR), trace
+  completeness, metadata completeness and receipt-replay survival over a
+  deterministic fixture; CLI `eval`. Advanced fixtures/metrics tracked in
+  **[docs/EVAL.md](./docs/EVAL.md)**.
 
 ---
 

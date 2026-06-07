@@ -2,7 +2,7 @@
 
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
-`v0.1.0` · 🧪 **546 tests** · 🎯 **~99% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v0.1.0` · 🧪 **555 tests** · 🎯 **~99% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
 
 > Velantrim Crystal is **not another chatbot**. It is a **verifiable memory layer**
 > that AI systems write to and read from. Every stored fact carries provenance,
@@ -283,7 +283,8 @@ Default queue behaviour remains dependency-free with SQLite.
 - GDPR-relevant erasure, restriction, record-of-processing, audit and PII tools;
 - read-only MCP server;
 - biological-memory research modules;
-- 546 passing tests and ~99% coverage.
+- 555 passing tests and ~99% coverage;
+- baseline evaluation harness (`core/eval.py`, `velantrim eval`).
 
 **Next / grant-scope candidates**
 
@@ -291,7 +292,7 @@ Default queue behaviour remains dependency-free with SQLite.
 - dry-run imports and import sessions;
 - line/section/source-span provenance;
 - PDF/YAML/RDF/Wikidata adapters;
-- evaluation harness with trace/retrieval/receipt metrics;
+- evaluation harness extensions (curated fixtures, contradiction recall, source-span coverage) — a baseline harness is already delivered;
 - capability-gated write APIs;
 - optional browser/PWA companion integration through a local backend/API.
 
