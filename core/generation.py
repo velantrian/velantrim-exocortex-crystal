@@ -12,12 +12,25 @@
 #     adaptive thinking. Enabled with VELANTRIM_GENERATOR=anthropic.
 
 import logging
+import time
 from abc import ABC, abstractmethod
 from typing import Dict, List, Any, Optional
 
 from core._registry import BackendRegistry
 
 logger = logging.getLogger(__name__)
+
+# A9 (LLM call safety): a transient API failure (rate-limit / timeout / overload)
+# is retried a bounded number of times with exponential backoff before we degrade
+# to the extractive generator. A non-transient error (auth, bad request) is not
+# retried. This caps retry storms without adding any dependency.
+_TRANSIENT_MARKERS = ("429", "rate_limit", "ratelimit", "timeout", "timed out",
+                      "overloaded", "503", "502", "service unavailable")
+
+
+def _is_transient(err: Exception) -> bool:
+    blob = f"{type(err).__name__} {err}".lower()
+    return any(m in blob for m in _TRANSIENT_MARKERS)
 
 # Truth-first instruction: answer strictly from the provided facts.
 _SYSTEM_PROMPT = (
@@ -73,12 +86,15 @@ class AnthropicGenerator(Generator):
     is verified by a test with a stub client.
     """
 
-    def __init__(self, model: str = "claude-opus-4-8", client: Any = None) -> None:
+    def __init__(self, model: str = "claude-opus-4-8", client: Any = None,
+                 max_retries: int = 2, backoff_base: float = 1.5) -> None:
         if client is None:  # pragma: no cover - a real client requires the optional dependency
             import anthropic
             client = anthropic.Anthropic()
         self._client = client
         self._model = model
+        self._max_retries = max(0, max_retries)   # A9: bounded retries
+        self._backoff_base = max(0.0, backoff_base)
 
     def generate(self, query: str, facts: List[Dict[str, Any]]) -> str:
         system = [{
@@ -86,24 +102,35 @@ class AnthropicGenerator(Generator):
             "text": _SYSTEM_PROMPT + _facts_block(facts),
             "cache_control": {"type": "ephemeral"},  # cache the stable prefix
         }]
-        try:
-            response = self._client.messages.create(
-                model=self._model,
-                max_tokens=1024,
-                system=system,
-                thinking={"type": "adaptive"},
-                messages=[{"role": "user", "content": query}],
-            )
-        except Exception as e:  # noqa: BLE001 — a network/rate-limit failure must not crash the answer
-            # Degrade to extractive rather than fail: the facts are already verified.
-            logger.warning(
-                "AnthropicGenerator: API failure (%s), falling back to extractive",
-                type(e).__name__,
-            )
-            return ExtractiveGenerator().generate(query, facts)
-        return "".join(
-            block.text for block in response.content if block.type == "text"
-        ).strip()
+        # A9: bounded retry with exponential backoff on transient failures, then
+        # degrade to extractive rather than fail (the facts are already verified).
+        attempt = 0
+        while True:
+            try:
+                response = self._client.messages.create(
+                    model=self._model,
+                    max_tokens=1024,                  # bounded output ceiling
+                    system=system,
+                    thinking={"type": "adaptive"},
+                    messages=[{"role": "user", "content": query}],
+                )
+                return "".join(
+                    block.text for block in response.content if block.type == "text"
+                ).strip()
+            except Exception as e:  # noqa: BLE001 — must not crash the answer
+                if _is_transient(e) and attempt < self._max_retries:
+                    attempt += 1
+                    if self._backoff_base:
+                        time.sleep(self._backoff_base ** attempt)
+                    logger.warning(
+                        "AnthropicGenerator: transient API failure (%s), "
+                        "retry %d/%d", type(e).__name__, attempt, self._max_retries)
+                    continue
+                logger.warning(
+                    "AnthropicGenerator: API failure (%s), falling back to extractive",
+                    type(e).__name__,
+                )
+                return ExtractiveGenerator().generate(query, facts)
 
 
 # ─── FACTORY / SINGLETON ──────────────────────────────────────────────────────

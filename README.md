@@ -207,6 +207,7 @@ individually tested. Grouped by what they do:
 | `core/embedding.py` | Swappable embedder: `auto`→sentence-transformers / dependency-free hashing |
 | `core/generation.py` | Swappable answerer: extractive (local default) / Claude (opt-in) |
 | `core/ingest.py` | Utterance → claim-type classification → gate → L3 |
+| `core/knowledge.py` | 🌾 **External ingestion** — bulk-import `.txt`/`.md`/`.json`/`.jsonl`/`.csv` through the TruthGate (RFC0063) |
 
 #### 🛡️ Trust & truth
 | Module | Role |
@@ -235,6 +236,7 @@ individually tested. Grouped by what they do:
 | `core/volition.py` | ✍️ **Memory Volition** — the system writes & rehearses its own memory |
 | `core/velum.py` | 🕸️ **Velum L1.5** — synaptic pre-graph of entity co-occurrence |
 | `core/analogy.py` | 🎨 **Analogy Graph + CREATIVE mode** — metaphors & semantic bridges |
+| `core/neurocore.py` | 🧠 **NeuroCore** (RFC0068, Phase 0) — passive plasticity tracker; off by default, never writes the graph (I68) |
 
 #### 🔌 Ops & integration
 | Module | Role |
@@ -362,6 +364,23 @@ velantrim analogy-bridges atom solar-system
 velantrim analogy-suggest atom
 ```
 
+### 🌾 External knowledge ingestion (RFC0063)
+
+Teach Crystal from files — a lesson, a dataset, a reference document — and every
+claim still goes through the **same TruthGate** (nothing is trusted just because
+it came from a file). Imported facts are tagged `source_status = EXTERNAL` with
+the source file as provenance. Dependency-free parsers for `.txt`, `.md`,
+`.json`, `.jsonl` and `.csv`:
+
+```bash
+velantrim learn ./knowledge/astronomy.md --source astro-101
+# → {"accepted": 2, "reinforced": 0, "blocked": 0, ...}
+```
+
+This is what makes Crystal practical for **libraries, schools and universities**:
+load a curated corpus once and serve verified, sourced facts from it forever —
+offline and LLM-free.
+
 ---
 
 ## 🔌 Integrations
@@ -430,9 +449,9 @@ Velantrim ships as **fundable, verifiable deliverables**. See
 - **Ops**: pluggable Redis/SQLite queue, async entry points, read-only MCP server
 
 **⬜ Next**
-- 🌾 **RFC0063** — external knowledge ingestion (PDF / JSON / RDF → TruthGate)
-- 🧠 **RFC0068** — NeuroCore plastic memory (feature-flagged, Phase 0 passive)
-- 🩹 **Sprint-A hardening patches** (A1–A10)
+- 🌾 **RFC0063+** — more external-ingestion adapters (PDF / YAML / Wikidata RDF); core text/JSON/JSONL/CSV already shipped (`core/knowledge.py`)
+- 🧠 **RFC0068 Phase 1+** — active NeuroCore model adaptation; Phase 0 passive tracker already shipped (`core/neurocore.py`)
+- 🩹 **Sprint-A hardening** — A9 (LLM call safety) shipped; A1/A2/A3/A8 already satisfied; A6/A7/A10 apply only to the optional Phase‑1 stack ([status](./docs/SPRINT_A_STATUS.md))
 
 ---
 

@@ -100,3 +100,46 @@ def test_anthropic_generator_falls_back_to_extractive_on_api_error():
     fake.messages = BoomMessages()
     out = AnthropicGenerator(client=fake).generate("q", [{"claim": "A"}, {"claim": "B"}])
     assert out == "A | B"  # graceful degradation, not a crash
+
+
+# ─── A9: bounded retry + backoff on transient LLM failures ────────────────────
+
+class _FlakyMessages:
+    """Raises a transient error `fail_times`, then succeeds."""
+    def __init__(self, fail_times, exc):
+        self.fail_times = fail_times
+        self.exc = exc
+        self.calls = 0
+
+    def create(self, **kwargs):
+        self.calls += 1
+        if self.calls <= self.fail_times:
+            raise self.exc
+        return _FakeResponse("recovered answer")
+
+
+def test_a9_retries_transient_error_then_succeeds():
+    fake = _FakeClient()
+    fake.messages = _FlakyMessages(2, RuntimeError("HTTP 429 rate_limit"))
+    gen = AnthropicGenerator(client=fake, max_retries=2, backoff_base=0)
+    out = gen.generate("q", [{"claim": "A"}])
+    assert out == "recovered answer"
+    assert fake.messages.calls == 3            # 2 failures + 1 success
+
+
+def test_a9_exhausts_retries_then_falls_back():
+    fake = _FakeClient()
+    fake.messages = _FlakyMessages(99, TimeoutError("request timed out"))
+    gen = AnthropicGenerator(client=fake, max_retries=2, backoff_base=0)
+    out = gen.generate("q", [{"claim": "A"}, {"claim": "B"}])
+    assert out == "A | B"                       # graceful degradation
+    assert fake.messages.calls == 3            # 1 initial + 2 retries
+
+
+def test_a9_non_transient_error_is_not_retried():
+    fake = _FakeClient()
+    fake.messages = _FlakyMessages(99, ValueError("invalid api key"))
+    gen = AnthropicGenerator(client=fake, max_retries=2, backoff_base=0)
+    out = gen.generate("q", [{"claim": "A"}])
+    assert out == "A"                           # immediate fallback
+    assert fake.messages.calls == 1            # no retries for non-transient

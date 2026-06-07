@@ -143,6 +143,23 @@ _IMMUNE_DDL = """
     )
 """
 
+# ─── NEUROCORE DELTA LOG: passive plasticity tracker (RFC0068, Phase 0) ───────
+# NeuroCore is a plastic adaptation layer that, in later phases, updates an SSM
+# model's weights during a dialogue. Phase 0 is PASSIVE: it only logs the norm of
+# the would-be weight delta (ΔW) when surprise crosses the threshold — it never
+# touches the model and NEVER writes to the L3 graph (invariant I68, Graph =
+# Truth is absolute). This table is the Phase 0 observation log.
+_NEUROCORE_DDL = """
+    CREATE TABLE IF NOT EXISTS neurocore_delta_log (
+        id             INTEGER PRIMARY KEY,
+        timestamp      TEXT NOT NULL,
+        surprise_score REAL NOT NULL,
+        delta_norm     REAL NOT NULL,
+        domain         TEXT NOT NULL,
+        session_id     TEXT
+    )
+"""
+
 # ─── ERASURE LOG: tombstones of physical deletion (GDPR Art. 17 / Art. 30) ────
 # Contains PROOF of the deletion without the personal data itself: the claim
 # is not stored, only its sha256 hash. This way deletion stays accountable
@@ -209,6 +226,7 @@ def _db():
     conn.execute(_DDL)
     conn.execute(_OUTBOX_DDL)
     conn.execute(_IMMUNE_DDL)
+    conn.execute(_NEUROCORE_DDL)
     conn.execute(_TOMBSTONE_DDL)
     conn.execute(_AUDIT_DDL)
     _migrate(conn)
