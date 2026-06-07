@@ -92,13 +92,16 @@ public-sector use.
 
 ### WP2 — Import Sessions and Dry-run Review
 
-Extend external ingestion with:
+A **baseline is already implemented** (`core/imports.py`): a dry-run preview
+(`learn --dry-run`) predicts accept/reinforce/block/conflict through the same
+validators with zero writes; real imports carry a session id and can be
+restricted or erased as a batch (`import-session` / `session-restrict` /
+`session-erase`). The funded work extends this to institutional scale:
 
-- `import_session_id` / batch ID;
-- dry-run preview;
-- accepted/blocked/conflict report before write;
-- resumable import summary;
-- batch-level restrict/erase hooks.
+- resumable / chunked import summaries for large corpora;
+- intra-batch duplicate and conflict consolidation in the preview;
+- a curator review queue for `Observed`/quarantined items (the full L2 path);
+- per-source licence and provenance metadata capture.
 
 **Outcome:** safer corpus ingestion for institutions.
 

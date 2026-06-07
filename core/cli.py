@@ -25,7 +25,7 @@ from core.compliance import (
 from core.audit import audit_log, verify_audit_log
 from core import (pii, provenance, immune, fractal, neurogenesis, concept,
                   volition, velum, analogy, knowledge, neurocore, eval as _eval,
-                  evidence)
+                  evidence, imports)
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -150,6 +150,16 @@ def main(argv: Optional[List[str]] = None) -> int:
         "learn", help="import a knowledge file (.txt/.md/.json/.jsonl/.csv) via the TruthGate")
     p_learn.add_argument("path")
     p_learn.add_argument("--source", default=None, help="provenance label (default: filename)")
+    p_learn.add_argument("--dry-run", action="store_true",
+                         help="preview accept/block/conflict without writing (WP2)")
+    p_learn.add_argument("--session", default=None, help="import session id (WP2)")
+    # ─── Import sessions (WP2) ─────────────────────────────────────────────────
+    p_isf = sub.add_parser("import-session", help="list facts in an import session")
+    p_isf.add_argument("session_id")
+    p_isr = sub.add_parser("session-restrict", help="restrict (Art. 18) a whole import session")
+    p_isr.add_argument("session_id")
+    p_ise = sub.add_parser("session-erase", help="erase (Art. 17) a whole import session")
+    p_ise.add_argument("session_id")
     # ─── NeuroCore Phase 0 passive tracker (RFC0068) ───────────────────────────
     sub.add_parser(
         "neurocore-report", help="RFC0068 NeuroCore Phase 0 plasticity telemetry")
@@ -278,8 +288,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     elif args.cmd == "analogy-bridges":
         print(json.dumps(analogy.find_bridges(args.a, args.b), ensure_ascii=False))
     elif args.cmd == "learn":
-        print(json.dumps(knowledge.ingest_file(args.path, source=args.source),
-                         ensure_ascii=False))
+        print(json.dumps(imports.import_file(
+            args.path, source=args.source, session_id=args.session,
+            dry_run=args.dry_run), ensure_ascii=False))
+    elif args.cmd == "import-session":
+        print(json.dumps(imports.session_facts(args.session_id), ensure_ascii=False))
+    elif args.cmd == "session-restrict":
+        print(json.dumps(imports.restrict_session(args.session_id), ensure_ascii=False))
+    elif args.cmd == "session-erase":
+        print(json.dumps(imports.erase_session(args.session_id), ensure_ascii=False))
     elif args.cmd == "neurocore-report":
         print(json.dumps(neurocore.report(), ensure_ascii=False))
     elif args.cmd == "eval":

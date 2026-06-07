@@ -30,6 +30,11 @@ runtime · every delivered item below ships with tests and a CLI surface.
   `.txt` / `.md` / `.json` / `.jsonl` / `.csv` knowledge files through the SAME
   TruthGate; imported facts carry `source_status = EXTERNAL` + the source file as
   provenance. Stdlib-only parsers (PDF/YAML/RDF left to optional adapters); CLI `learn`.
+- **Import sessions & dry-run review** (`core/imports.py`, WP2): preview a corpus
+  (`learn --dry-run`) — predict accept/reinforce/block/conflict through the SAME
+  validators with **zero writes**; real imports get a session id so a whole batch
+  can be reviewed and restricted/erased together; CLI `import-session` /
+  `session-restrict` / `session-erase`.
 - **Packaging**: `pip install .` exposes the `velantrim` console script
   (`pyproject.toml`, PEP 440 version, explicit package surface).
 

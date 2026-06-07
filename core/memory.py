@@ -181,6 +181,20 @@ _EVIDENCE_DDL = """
     )
 """
 
+# ─── IMPORT SESSIONS: batch provenance for knowledge imports (WP2) ────────────
+# Each external import (a `learn` of a file/corpus) gets a session id; every fact
+# it accepts is recorded here. This lets a whole batch be reviewed, restricted or
+# erased together — important for institutions importing curated corpora.
+_IMPORT_SESSION_DDL = """
+    CREATE TABLE IF NOT EXISTS import_sessions (
+        session_id  TEXT NOT NULL,
+        fact_id     TEXT NOT NULL,
+        source      TEXT NOT NULL,
+        created_at  TEXT NOT NULL,
+        PRIMARY KEY (session_id, fact_id)
+    )
+"""
+
 # ─── ERASURE LOG: tombstones of physical deletion (GDPR Art. 17 / Art. 30) ────
 # Contains PROOF of the deletion without the personal data itself: the claim
 # is not stored, only its sha256 hash. This way deletion stays accountable
@@ -249,6 +263,7 @@ def _db():
     conn.execute(_IMMUNE_DDL)
     conn.execute(_NEUROCORE_DDL)
     conn.execute(_EVIDENCE_DDL)
+    conn.execute(_IMPORT_SESSION_DDL)
     conn.execute(_TOMBSTONE_DDL)
     conn.execute(_AUDIT_DDL)
     _migrate(conn)
