@@ -84,6 +84,11 @@ runtime · every delivered item below ships with tests and a CLI surface.
   RFC0067 v2.0): METAPHOR_OF / ANALOGOUS_TO edges (associations, never facts),
   deterministic bridges, advisory creative temperature with facts kept
   Validated-only; CLI `analogy-*`.
+- **NeuroCore — Phase 0 passive tracker** (`core/neurocore.py`, RFC0068): logs the
+  norm of the would-be plastic weight delta (ΔW) when surprise > θ to
+  `neurocore_delta_log`. Off by default (`VELANTRIM_NEUROCORE`); the model is never
+  touched and the L3 graph is never written (invariant **I68**); CLI
+  `neurocore-report`. Active adaptation (Phase 1+) remains future work.
 
 ### 🔌 Ops & integration
 - **Pluggable re-merge queue** (`core/queue.py`): self-healing outbox,
@@ -101,7 +106,7 @@ runtime · every delivered item below ships with tests and a CLI surface.
 | RFC / item | What it adds | Target |
 |---|---|---|
 | 🌾 **RFC0063+** | Additional external-ingestion adapters: PDF / YAML / Wikidata RDF (core text/JSON/JSONL/CSV already shipped in `core/knowledge.py`) | S5+ |
-| 🧠 **RFC0068** | **NeuroCore** plastic memory (feature-flagged, Phase 0 passive tracker) | S5+ |
+| 🧠 **RFC0068 Phase 1+** | **NeuroCore** active model adaptation + consolidation (Phase 0 passive tracker already shipped in `core/neurocore.py`) | S6+ |
 | 🩹 **A1–A10** | Sprint-A hardening patches (documented, not wired) | S3 |
 | ⚙️ async core | Full async/await rewrite of the stores (async *entry points* already shipped) | S3+ |
 
@@ -116,8 +121,9 @@ runtime · every delivered item below ships with tests and a CLI surface.
   L1.5. *(remaining: A1–A10 wiring)*
 - **S4** ✅ — RFC0067 Analogy Graph + Semantic Bridge + CREATIVE mode; RFC0063
   external knowledge ingestion (`core/knowledge.py`).
-- **S5+** ⬜ — RFC0068 NeuroCore (feature-flagged, Phase 0 passive); extra
-  ingestion adapters (PDF / YAML / RDF).
+- **S5** ✅ — RFC0068 NeuroCore Phase 0 passive tracker (`core/neurocore.py`).
+- **S6+** ⬜ — RFC0068 Phase 1+ (active NeuroCore adaptation + consolidation);
+  extra ingestion adapters (PDF / YAML / RDF); A1–A10 wiring.
 
 ---
 

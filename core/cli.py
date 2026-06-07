@@ -24,7 +24,7 @@ from core.compliance import (
 )
 from core.audit import audit_log, verify_audit_log
 from core import (pii, provenance, immune, fractal, neurogenesis, concept,
-                  volition, velum, analogy, knowledge)
+                  volition, velum, analogy, knowledge, neurocore)
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -149,6 +149,9 @@ def main(argv: Optional[List[str]] = None) -> int:
         "learn", help="import a knowledge file (.txt/.md/.json/.jsonl/.csv) via the TruthGate")
     p_learn.add_argument("path")
     p_learn.add_argument("--source", default=None, help="provenance label (default: filename)")
+    # ─── NeuroCore Phase 0 passive tracker (RFC0068) ───────────────────────────
+    sub.add_parser(
+        "neurocore-report", help="RFC0068 NeuroCore Phase 0 plasticity telemetry")
 
     args = parser.parse_args(argv)
 
@@ -267,6 +270,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     elif args.cmd == "learn":
         print(json.dumps(knowledge.ingest_file(args.path, source=args.source),
                          ensure_ascii=False))
+    elif args.cmd == "neurocore-report":
+        print(json.dumps(neurocore.report(), ensure_ascii=False))
     return 0
 
 

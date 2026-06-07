@@ -236,6 +236,7 @@ individually tested. Grouped by what they do:
 | `core/volition.py` | ✍️ **Memory Volition** — the system writes & rehearses its own memory |
 | `core/velum.py` | 🕸️ **Velum L1.5** — synaptic pre-graph of entity co-occurrence |
 | `core/analogy.py` | 🎨 **Analogy Graph + CREATIVE mode** — metaphors & semantic bridges |
+| `core/neurocore.py` | 🧠 **NeuroCore** (RFC0068, Phase 0) — passive plasticity tracker; off by default, never writes the graph (I68) |
 
 #### 🔌 Ops & integration
 | Module | Role |
@@ -449,7 +450,7 @@ Velantrim ships as **fundable, verifiable deliverables**. See
 
 **⬜ Next**
 - 🌾 **RFC0063+** — more external-ingestion adapters (PDF / YAML / Wikidata RDF); core text/JSON/JSONL/CSV already shipped (`core/knowledge.py`)
-- 🧠 **RFC0068** — NeuroCore plastic memory (feature-flagged, Phase 0 passive)
+- 🧠 **RFC0068 Phase 1+** — active NeuroCore model adaptation; Phase 0 passive tracker already shipped (`core/neurocore.py`)
 - 🩹 **Sprint-A hardening patches** (A1–A10)
 
 ---
