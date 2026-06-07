@@ -21,8 +21,8 @@ from typing import List, Dict, Any, Optional
 from core.trace import build_trace, promote_trace, format_trace
 from core.memory import (
     store_fact, get_fact, transition_esm, SUBJECTIVE_CLAIM_TYPES,
-    enqueue_l3_write, pending_l3_writes, clear_l3_write,
 )
+from core.queue import get_outbox_queue
 from core.l3_graph import get_l3_graph
 from core.embedding import get_embedder, cosine, assert_compatible_embedder
 from core.generation import get_generator
@@ -511,11 +511,12 @@ def drain_l3_outbox(graph=None) -> int:
     Returns the number of successfully re-merged facts.
     """
     graph = graph or get_l3_graph()
+    queue = get_outbox_queue()
     healed = 0
-    for fid in pending_l3_writes():
+    for fid in queue.pending():
         fact = get_fact(fid)
         if fact is None:
-            clear_l3_write(fid)  # the fact vanished from SQLite — drop the stale entry
+            queue.clear(fid)  # the fact vanished from SQLite — drop the stale entry
             continue
         fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"))
         try:
@@ -524,7 +525,7 @@ def drain_l3_outbox(graph=None) -> int:
             logger.warning(
                 "drain_l3_outbox: %s is still waiting (%s)", fid, type(e).__name__)
             break
-        clear_l3_write(fid)
+        queue.clear(fid)
         healed += 1
     return healed
 
@@ -597,8 +598,9 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         logger.error("L3 promotion failed: %s", e)
         adaptation.record_block()
         # We put the failed facts into the outbox — they will be re-merged on the next access.
+        queue = get_outbox_queue()
         for f in facts_pack["facts"]:
-            enqueue_l3_write(f["fact_id"])
+            queue.enqueue(f["fact_id"])
         return _blocked(f"L3 promotion failed: {e}", query, facts_pack, trace)
 
     promote_trace(trace, "Validated")

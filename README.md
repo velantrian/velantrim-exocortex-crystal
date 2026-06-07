@@ -12,7 +12,7 @@
 > unless you explicitly opt in.
 
 > **Scope of this repository.** This repo is the **verified, dependency-free open
-> core** (v8.1.0 — 384 passing tests, 99% coverage): the memory layer, provenance,
+> core** (v8.1.0 — 412 passing tests, 99% coverage): the memory layer, provenance,
 > and GDPR machinery you can run today. It is one component of the broader
 > Velantrim ExoCortex system; extended parts (a browser PWA demo, MCP integration,
 > and further research modules) are in active development and described in the
@@ -77,7 +77,7 @@ content-free audit tombstone), and full auditability of provenance. See
 | `core/observe.py`     | ✅ | Memory observability report over the L3 canonical graph                     |
 | `core/metrics.py`     | ✅ | Lightweight in-process counters (query / ingest / gate)                     |
 | `core/cli.py`         | ✅ | CLI: `ingest`/`ask`/`history`/`report`/`erase`/`erasures`/`restrict`/`unrestrict`/`ropa`/`audit`/`audit-verify`/`redact`/`receipt`/`verify-receipt`/`conflicts` |
-| `tests/`              | ✅ | **384 passing**, 12 skipped, **99% coverage** (gate: 95%) — see [TEST_REPORT.md](./TEST_REPORT.md) |
+| `tests/`              | ✅ | **412 passing**, 12 skipped, **99% coverage** (gate: 95%) — see [TEST_REPORT.md](./TEST_REPORT.md) |
 | `docs/Velantrim_V8_Crystal_Sprint1.jsonl` | 📜 Spec | Full system design (63 chunks) |
 
 **Current status**: the full fact lifecycle runs end-to-end — ingest → classify
@@ -91,7 +91,7 @@ git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
 pip install .                          # stdlib-only runtime; installs the `velantrim` CLI
 python -m core.pipeline                # runs the end-to-end demo, fully local
-pytest                                 # 384 passing, 99% coverage  (pip install -e '.[dev]')
+pytest                                 # 412 passing, 99% coverage  (pip install -e '.[dev]')
 ```
 
 After install the CLI is on your PATH:
@@ -134,6 +134,25 @@ capability-based design, write/curate tools (ingest / validate / supersede /
 erase) are **not registered** at this `reader` capability: a tool a role cannot
 use is never exposed, so a model cannot call it by accident. Capability-gated
 write access **behind the TruthGate** is the next step on the roadmap.
+
+**Embedding in an async app** — `core.aio` exposes event-loop-friendly entry
+points (`arun`, `aingest`, `adrain_l3_outbox`) that offload the sync stores to a
+worker thread, so you can call them from asyncio / FastAPI / an MCP server:
+
+```python
+from core.aio import aingest, arun
+await aingest("Water boils at 100C at sea level")
+result = await arun("how does water behave")
+```
+
+**Scaling the re-merge queue** — the self-healing L3 outbox runs on a persistent,
+dependency-free SQLite queue by default. To share one queue across several
+pipeline workers, point it at Redis (`pip install '.[redis]'`):
+
+```bash
+VELANTRIM_QUEUE_BACKEND=redis VELANTRIM_REDIS_URL=redis://localhost:6379/0 velantrim ask "..."
+# default 'auto' uses Redis when a server answers PING, else the SQLite outbox
+```
 
 ## ESM — Epistemic State Machine (core)
 

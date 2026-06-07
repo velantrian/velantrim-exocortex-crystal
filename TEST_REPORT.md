@@ -7,24 +7,27 @@ numbers: run `pytest` yourself and you will get the figures below.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **384** |
+| **Tests passing** | **412** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **~99%** (gate enforced at 95%) |
-| Test files | 30 (`tests/test_*.py`) |
+| Test files | 32 (`tests/test_*.py`) |
 | Python | 3.11 (3.10+ supported) |
 | Runtime dependencies | standard library only |
 
 The 95% coverage floor is enforced in `pyproject.toml`
 (`--cov-fail-under=95`); the suite fails CI if coverage drops below it.
 The 12 skipped tests cover optional backends (LadybugDB, sentence-transformers,
-Neo4j, Anthropic) that are not installed in the default environment.
+Neo4j, Anthropic) that are not installed in the default environment. The Redis
+queue backend (`core/queue.py`, 91%) is exercised against an in-memory fake; the
+few uncovered lines are the live-server connection path (`redis.from_url` + PING),
+which needs a running Redis and is not part of the dependency-free default.
 
 ## How to reproduce
 
 ```bash
 pip install -r requirements.txt
-pytest                 # 384 passed, 12 skipped
+pytest                 # 412 passed, 12 skipped
 ```
 
 ## Coverage by module (core/)
@@ -33,6 +36,7 @@ pytest                 # 384 passed, 12 skipped
 |--------|------:|------:|
 | `core/_registry.py`    | 18  | 100% |
 | `core/adaptation.py`   | 22  | 100% |
+| `core/aio.py`          | 10  | 100% |
 | `core/audit.py`        | 69  | 100% |
 | `core/cli.py`          | 83  | 100% |
 | `core/compliance.py`   | 43  | 100% |
@@ -40,19 +44,21 @@ pytest                 # 384 passed, 12 skipped
 | `core/contradiction.py`| 53  | 100% |
 | `core/crypto.py`       | 62  | 100% |
 | `core/embedding.py`    | 76  | 100% |
-| `core/erasure.py`      | 42  | 100% |
+| `core/erasure.py`      | 45  | 100% |
 | `core/generation.py`   | 41  | 100% |
 | `core/ingest.py`       | 75  | 100% |
 | `core/l3_graph.py`     | 259 | 99%  |
+| `core/mcp_server.py`   | 104 | 100% |
 | `core/memory.py`       | 183 | 100% |
 | `core/metrics.py`      | 10  | 100% |
 | `core/observe.py`      | 35  | 100% |
 | `core/pii.py`          | 56  | 100% |
-| `core/pipeline.py`     | 241 | 98%  |
+| `core/pipeline.py`     | 244 | 98%  |
 | `core/provenance.py`   | 68  | 100% |
+| `core/queue.py`        | 53  | 91%  |
 | `core/reconcile.py`    | 80  | 96%  |
 | `core/trace.py`        | 26  | 100% |
-| **Total (repo-wide)**  | **2326** | **~99%** |
+| **Total (repo-wide)**  | **2497** | **~99%** |
 
 ## What the tests cover
 
@@ -60,6 +66,7 @@ pytest                 # 384 passed, 12 skipped
 |------|-----------|
 | Memory layers (L0/L1), ESM transitions, Ring Zero (I6) | `test_memory.py`, `test_esm.py` |
 | End-to-end pipeline (retrieve → gate → L3 → answer) | `test_pipeline.py` |
+| Pluggable re-merge queue (SQLite/Redis backends, fallback) & async entry points | `test_queue.py` |
 | L3 canonical graph adapter & backends | `test_l3_graph.py` |
 | On-disk SQLite L3 backend (persistence, erase, vectors, entities) | `test_l3_sqlite.py` |
 | Packaging contract (entry point, version, package surface) | `test_packaging.py` |
