@@ -106,6 +106,15 @@ This document is the **honest truth** about what's implemented vs designed.
   connectivity, and GC caps the edge set. A pure HINT layer — NOT a source of
   facts (I3, Graph = Truth preserved). Fed fire-and-forget from episodic recall;
   CLI `velum-report` / `velum-neighbors`
+- RFC0067 v2.0 Analogy Graph + Semantic Bridge Engine + CREATIVE mode
+  (`core/analogy.py`): explicit METAPHOR_OF / ANALOGOUS_TO associative edges
+  (associations, never :Fact → Graph = Truth preserved); a deterministic Semantic
+  Bridge Engine that connects two nodes via shared neighbours / shared emergent
+  concepts / explicit edges and `suggest_analogies()` via structural (Jaccard)
+  similarity — all without an LLM or Redis; CREATIVE mode `creative_temperature()`
+  (0.6→0.85, advisory for an LLM decoder) with facts kept Validated-only —
+  creativity in framing, accuracy in substance. CLI `analogy-link` / `analogy-of`
+  / `analogy-suggest` / `analogy-bridges`
 
 ## ✅ Implemented (metadata tooling, not runtime)
 
@@ -117,7 +126,6 @@ This document is the **honest truth** about what's implemented vs designed.
 
 | RFC | Component | Sprint target |
 |-----|-----------|---------------|
-| RFC0067 v2.0 | Analogy Graph, Semantic Bridge Engine, Adaptive Decoder | S4 |
 | RFC0068 | NeuroCore (plastic memory, Phase 0 passive tracker) | S5+ |
 | — | Full async/await rewrite of the stores (async entry points already shipped) | S3+ |
 | — | Sprint A patches A1–A10 (documented, not wired) | S3 |
@@ -130,7 +138,8 @@ This document is the **honest truth** about what's implemented vs designed.
 > Memory Layer → `core/fractal.py`, RFC0073 Neurogenesis Dynamic Growth →
 > `core/neurogenesis.py` (issue #7, Hybrid Vision — RFC0070/0071/0072/0073 all done);
 > RFC0066 Concept Emergence → `core/concept.py`; RFC0065 Memory Volition →
-> `core/volition.py`; RFC0016 Velum L1.5 → `core/velum.py`.
+> `core/volition.py`; RFC0016 Velum L1.5 → `core/velum.py`; RFC0067 v2.0 Analogy
+> Graph / Semantic Bridge / CREATIVE mode → `core/analogy.py`.
 
 ## 📊 Invariant enforcement status
 
@@ -150,7 +159,8 @@ This document is the **honest truth** about what's implemented vs designed.
 - **S3**: ✅ RFC0066 Concept Emergence (`core/concept.py`), ✅ RFC0065 Memory
   Volition (`core/volition.py`), ✅ RFC0016 Velum L1.5 (`core/velum.py`);
   remaining: A1–A10 wiring
-- **S4**: RFC0067 Analogy Graph + RFC0063 Ingestion
+- **S4**: ✅ RFC0067 Analogy Graph + Semantic Bridge + CREATIVE mode
+  (`core/analogy.py`); remaining: RFC0063 external Ingestion
 - **S5+**: RFC0068 NeuroCore (feature-flagged, Phase 0 passive)
 
 ## 🌿 NEW: Hybrid Biological Memory Vision (May 2026)

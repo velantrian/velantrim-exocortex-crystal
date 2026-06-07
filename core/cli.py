@@ -23,7 +23,8 @@ from core.compliance import (
     restrict_processing, unrestrict_processing, record_of_processing,
 )
 from core.audit import audit_log, verify_audit_log
-from core import pii, provenance, immune, fractal, neurogenesis, concept, volition, velum
+from core import (pii, provenance, immune, fractal, neurogenesis, concept,
+                  volition, velum, analogy)
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -126,6 +127,23 @@ def main(argv: Optional[List[str]] = None) -> int:
         "velum-neighbors", help="synaptically connected entities (context hint)")
     p_vn.add_argument("entity")
     p_vn.add_argument("--min-weight", type=float, default=0.3)
+    # ─── Analogy Graph / Semantic Bridges / CREATIVE mode (RFC0067) ───────────
+    p_alink = sub.add_parser("analogy-link", help="record an analogy/metaphor edge")
+    p_alink.add_argument("src")
+    p_alink.add_argument("dst")
+    p_alink.add_argument("--kind", choices=[analogy.REL_ANALOGOUS_TO,
+                                            analogy.REL_METAPHOR_OF],
+                         default=analogy.REL_ANALOGOUS_TO)
+    p_alink.add_argument("--weight", type=float, default=1.0)
+    p_aof = sub.add_parser("analogy-of", help="analogies/metaphors of a node")
+    p_aof.add_argument("node")
+    p_asug = sub.add_parser(
+        "analogy-suggest", help="structural analogy candidates (review, no write)")
+    p_asug.add_argument("node")
+    p_abr = sub.add_parser(
+        "analogy-bridges", help="semantic bridges between two nodes")
+    p_abr.add_argument("a")
+    p_abr.add_argument("b")
 
     args = parser.parse_args(argv)
 
@@ -230,6 +248,17 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(json.dumps(
             velum.get_velum().get_neighbors(args.entity, min_weight=args.min_weight),
             ensure_ascii=False))
+    elif args.cmd == "analogy-link":
+        print(json.dumps(
+            analogy.link_analogy(args.src, args.dst, kind=args.kind,
+                                 weight=args.weight, source="cli"),
+            ensure_ascii=False))
+    elif args.cmd == "analogy-of":
+        print(json.dumps(analogy.analogies_for(args.node), ensure_ascii=False))
+    elif args.cmd == "analogy-suggest":
+        print(json.dumps(analogy.suggest_analogies(args.node), ensure_ascii=False))
+    elif args.cmd == "analogy-bridges":
+        print(json.dumps(analogy.find_bridges(args.a, args.b), ensure_ascii=False))
     return 0
 
 
