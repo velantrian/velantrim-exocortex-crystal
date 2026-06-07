@@ -39,9 +39,9 @@ import hashlib
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 
-from core import memory
+from core import memory, evidence
 
-RECEIPT_VERSION = 1
+RECEIPT_VERSION = 2  # v2 embeds source-span evidence in citations when present
 _ENV_KEY = "VELANTRIM_PROVENANCE_KEY"
 
 # ESM states in which a cited fact still "stands" behind the answer.
@@ -90,13 +90,30 @@ def build_receipt(result: Dict[str, Any]) -> Dict[str, Any]:
 
     citations: List[Dict[str, Any]] = []
     for f in result.get("facts", []):
-        citations.append({
+        cit: Dict[str, Any] = {
             "fact_id":         f.get("fact_id"),
             "claim_sha256":    claim_digest(f.get("claim", "")),
             "source":          f.get("source", "unknown"),
             "epistemic_state": f.get("epistemic_state", "Observed"),
             "truth_status":    f.get("truth_status", "UNVERIFIED"),
-        })
+        }
+        # Receipt v2: seal any source-span evidence attached to the cited fact, so
+        # the receipt can later replay against exact sources — not only fact hashes.
+        # Added only when present, keeping evidence-free citations byte-identical.
+        fid = f.get("fact_id")
+        spans = evidence.evidence_for(fid) if fid else []
+        if spans:
+            cit["evidence"] = [{
+                "evidence_id":   s["evidence_id"],
+                "source_uri":    s["source_uri"],
+                "source_kind":   s["source_kind"],
+                "chunk_id":      s["chunk_id"],
+                "span_start":    s["span_start"],
+                "span_end":      s["span_end"],
+                "source_sha256": s["source_sha256"],
+                "claim_sha256":  s["claim_sha256"],
+            } for s in spans]
+        citations.append(cit)
 
     receipt = {
         "version":    RECEIPT_VERSION,
@@ -155,7 +172,27 @@ def verify_receipt(receipt: Dict[str, Any]) -> Dict[str, Any]:
     citations, summary = [], {}
     for cit in receipt.get("citations", []):
         status = _citation_status(cit, tombstoned)
-        citations.append({"fact_id": cit.get("fact_id"), "status": status})
+        out_cit: Dict[str, Any] = {"fact_id": cit.get("fact_id"), "status": status}
+        # Receipt v2: replay sealed source-span evidence against the live store.
+        sealed_spans = cit.get("evidence")
+        if sealed_spans:
+            live_ids = {s["evidence_id"] for s in evidence.evidence_for(cit.get("fact_id"))}
+            ev_report = []
+            for span in sealed_spans:
+                if span.get("evidence_id") not in live_ids:
+                    ev_status = "evidence_missing"   # the source link was removed
+                elif status in ("modified", "erased", "missing"):
+                    ev_status = status               # the underlying fact drifted
+                else:
+                    ev_status = "ok"
+                ev_report.append({"evidence_id": span.get("evidence_id"),
+                                  "source_uri": span.get("source_uri"),
+                                  "status": ev_status})
+            out_cit["evidence"] = ev_report
+            # A citation is only fully "ok" if its evidence still stands.
+            if status == "ok" and any(e["status"] != "ok" for e in ev_report):
+                out_cit["status"] = status = "evidence_missing"
+        citations.append(out_cit)
         summary[status] = summary.get(status, 0) + 1
 
     verified = (

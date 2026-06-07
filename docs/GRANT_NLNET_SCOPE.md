@@ -48,13 +48,17 @@ The current open core already includes:
 - local L3 graph backends (`auto` → LadybugDB → SQLite → mock);
 - type-aware TruthGate and Guardian path;
 - source and source-status tracking;
-- replayable provenance receipts;
+- replayable provenance receipts (Receipt v2 with sealed source-span evidence);
+- a baseline source-span evidence store (`core/evidence.py`) — imported facts
+  auto-attach their source, with content-light source/claim hashes;
+- a baseline evaluation harness (`core/eval.py`) reporting retrieval/trace/receipt
+  metrics;
 - external knowledge ingestion for `.txt`, `.md`, `.json`, `.jsonl`, `.ndjson`,
   and `.csv`;
 - GDPR-relevant erasure, restriction, record-of-processing and audit logging;
 - opt-in encryption at rest for L1 personal-data fields;
 - dependency-free read-only MCP server;
-- 555 passing tests and ~99% coverage.
+- 569 passing tests and ~99% coverage.
 
 ## Why this fits public-interest infrastructure
 
@@ -73,13 +77,15 @@ Crystal is relevant to European public-interest technology because it is:
 
 ### WP1 — Evidence Span Store and Receipt v2
 
-Add source-span provenance:
+A **baseline is already implemented** (`core/evidence.py` + Receipt v2): facts
+carry `source_uri`/kind, chunk id, span offsets and content-light source/claim
+hashes; imported facts auto-attach their source; receipts seal and replay that
+evidence. The funded work extends this to production strength:
 
-- `source_uri` / file path / URL;
-- source hash;
-- line/section/span offsets;
-- original text snippet digest;
-- receipt replay against exact source spans.
+- automatic line/section/character span extraction during PDF/Markdown ingestion;
+- original-snippet retrieval and side-by-side source display;
+- multi-source corroboration and per-span conflict surfacing;
+- receipt replay against exact stored source spans at scale.
 
 **Outcome:** stronger claim-to-source auditability for research, education and
 public-sector use.

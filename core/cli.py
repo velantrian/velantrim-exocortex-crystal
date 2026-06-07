@@ -24,7 +24,8 @@ from core.compliance import (
 )
 from core.audit import audit_log, verify_audit_log
 from core import (pii, provenance, immune, fractal, neurogenesis, concept,
-                  volition, velum, analogy, knowledge, neurocore, eval as _eval)
+                  volition, velum, analogy, knowledge, neurocore, eval as _eval,
+                  evidence)
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -155,6 +156,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     # ─── Evaluation harness (baseline) ─────────────────────────────────────────
     sub.add_parser(
         "eval", help="run the baseline evaluation harness (retrieval/trace/receipt metrics)")
+    # ─── Evidence spans (WP1) ──────────────────────────────────────────────────
+    p_ev = sub.add_parser(
+        "evidence", help="list source-span evidence attached to a fact")
+    p_ev.add_argument("fact_id")
+    p_ev.add_argument("--verify", action="store_true",
+                      help="replay each span against the current canon")
 
     args = parser.parse_args(argv)
 
@@ -277,6 +284,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(json.dumps(neurocore.report(), ensure_ascii=False))
     elif args.cmd == "eval":
         print(json.dumps(_eval.run_baseline(), ensure_ascii=False))
+    elif args.cmd == "evidence":
+        if args.verify:
+            print(json.dumps(evidence.verify_evidence(args.fact_id), ensure_ascii=False))
+        else:
+            print(json.dumps(evidence.evidence_for(args.fact_id), ensure_ascii=False))
     return 0
 
 

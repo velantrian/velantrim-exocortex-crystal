@@ -2,7 +2,7 @@
 
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
-`v0.1.0` · 🧪 **555 tests** · 🎯 **~99% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v0.1.0` · 🧪 **569 tests** · 🎯 **~99% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
 
 > Velantrim Crystal is **not another chatbot**. It is a **verifiable memory layer**
 > that AI systems write to and read from. Every stored fact carries provenance,
@@ -211,7 +211,8 @@ Crystal is a set of small, focused modules, dependency-free by default and teste
 
 | Module | Role |
 |---|---|
-| `core/trace.py` / `core/provenance.py` | Trace chain and tamper-evident replayable receipts |
+| `core/trace.py` / `core/provenance.py` | Trace chain and tamper-evident replayable receipts (Receipt v2) |
+| `core/evidence.py` | Source-span evidence store (WP1): `source_uri`/chunk/span + content-light hashes; `evidence` CLI |
 | `core/reconcile.py` | Reinforce / supersede / contradict / find conflicts |
 | `core/contradiction.py` | Deterministic contradiction classifier |
 | `core/immune.py` | Immune / CRISPR Guard for known harmful or hallucination patterns |
@@ -283,7 +284,7 @@ Default queue behaviour remains dependency-free with SQLite.
 - GDPR-relevant erasure, restriction, record-of-processing, audit and PII tools;
 - read-only MCP server;
 - biological-memory research modules;
-- 555 passing tests and ~99% coverage;
+- 569 passing tests and ~99% coverage;
 - baseline evaluation harness (`core/eval.py`, `velantrim eval`).
 
 **Next / grant-scope candidates**

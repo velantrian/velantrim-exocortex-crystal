@@ -160,6 +160,27 @@ _NEUROCORE_DDL = """
     )
 """
 
+# ─── EVIDENCE SPANS: source-span provenance for a fact (RFC0063 / WP1) ────────
+# Links a canonical fact to where its claim came from — a source URI/file, an
+# optional chunk and character span, the source content hash and the claim hash
+# at attach time. Additive and content-light: the source TEXT is not stored, only
+# hashes, so receipts can replay against exact source spans without re-exposing
+# personal data. A fact may have many evidence spans (independent corroboration).
+_EVIDENCE_DDL = """
+    CREATE TABLE IF NOT EXISTS evidence_spans (
+        evidence_id   TEXT PRIMARY KEY,
+        fact_id       TEXT NOT NULL,
+        source_uri    TEXT NOT NULL,
+        source_kind   TEXT NOT NULL,
+        chunk_id      TEXT,
+        span_start    INTEGER,
+        span_end      INTEGER,
+        source_sha256 TEXT,
+        claim_sha256  TEXT NOT NULL,
+        created_at    TEXT NOT NULL
+    )
+"""
+
 # ─── ERASURE LOG: tombstones of physical deletion (GDPR Art. 17 / Art. 30) ────
 # Contains PROOF of the deletion without the personal data itself: the claim
 # is not stored, only its sha256 hash. This way deletion stays accountable
@@ -227,6 +248,7 @@ def _db():
     conn.execute(_OUTBOX_DDL)
     conn.execute(_IMMUNE_DDL)
     conn.execute(_NEUROCORE_DDL)
+    conn.execute(_EVIDENCE_DDL)
     conn.execute(_TOMBSTONE_DDL)
     conn.execute(_AUDIT_DDL)
     _migrate(conn)

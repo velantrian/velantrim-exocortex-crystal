@@ -4,7 +4,7 @@
 > and tested** and what is **designed but not yet coded**. The README documents
 > only the former; this file tracks both.
 
-**Status:** 🧪 **555 tests passing** · 🎯 **99% coverage** (gate 95%) · 🐍 stdlib-only
+**Status:** 🧪 **569 tests passing** · 🎯 **99% coverage** (gate 95%) · 🐍 stdlib-only
 runtime · every delivered item below ships with tests and a CLI surface.
 
 ---
@@ -44,6 +44,12 @@ runtime · every delivered item below ships with tests and a CLI surface.
   seals answer + query + cited facts under SHA-256 (optional HMAC); `verify_receipt`
   replays each citation and flags facts later erased / restricted / modified /
   contradicted; CLI `receipt` / `verify-receipt`.
+- **Evidence span store + Receipt v2** (`core/evidence.py`, WP1 baseline): attach
+  source-span provenance to a fact (`source_uri`/kind, chunk, span offsets, source
+  & claim SHA-256); content-light. Receipt v2 seals attached evidence into citations
+  and replays it (detects removed/drifted source links). `learn` auto-attaches the
+  source file as evidence; CLI `evidence [--verify]`. Richer auto span-offset
+  extraction (PDF/Markdown) remains future work.
 - **SleepCycle** (`core/consolidate.py`): significance-weighted FSRS-style decay.
 - **Immune / CRISPR Guard** (`core/immune.py`, RFC0072): adaptive threat memory
   that blocks known hallucination/harmful/refuted patterns before the canon;

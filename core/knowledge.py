@@ -25,7 +25,7 @@ import re
 from typing import Dict, Any, List, Optional, Iterable
 
 from core import ingest as _ingest_mod
-from core import metrics
+from core import metrics, evidence
 
 EXTERNAL = "EXTERNAL"
 _SUPPORTED = (".txt", ".md", ".markdown", ".json", ".jsonl", ".ndjson", ".csv")
@@ -137,11 +137,15 @@ def _normalise_record_dict(d: Dict[str, Any]) -> Dict[str, Any]:
 
 def ingest_claims(
     claims: Iterable[Dict[str, Any]], *, source: str = "external",
-    source_status: str = EXTERNAL,
+    source_status: str = EXTERNAL, source_sha256: Optional[str] = None,
+    attach_evidence: bool = True,
 ) -> Dict[str, Any]:
     """
     Route each extracted claim through ingest() (Guardian → TruthGate → L3), with
     source/source_status set for provenance. Returns an aggregate report.
+
+    When `attach_evidence` is set (default), each newly accepted fact also gets a
+    source-span evidence record (WP1) linking it to `source` (+ `source_sha256`).
     """
     accepted = reinforced = blocked = 0
     blocked_reasons: List[Dict[str, str]] = []
@@ -157,9 +161,15 @@ def ingest_claims(
         res = _ingest_mod.ingest(claim, **kwargs)
         if res.get("accepted"):
             accepted += 1
-            fact_ids.append(res["fact"]["fact_id"])
+            fid = res["fact"]["fact_id"]
+            fact_ids.append(fid)
             if res.get("reinforced"):
                 reinforced += 1
+            elif attach_evidence:
+                # New imported fact → record where it came from (WP1).
+                evidence.attach_evidence(
+                    fid, source, source_kind="file", claim=claim,
+                    source_sha256=source_sha256)
         else:
             blocked += 1
             blocked_reasons.append({"claim": claim, "reason": res.get("reason", "")})
@@ -181,7 +191,8 @@ def ingest_text(
 ) -> Dict[str, Any]:
     """Extract claims from in-memory `content` of `fmt` and ingest them."""
     return ingest_claims(extract_claims(content, fmt),
-                         source=source, source_status=source_status)
+                         source=source, source_status=source_status,
+                         source_sha256=evidence.sha256(content))
 
 
 def ingest_file(

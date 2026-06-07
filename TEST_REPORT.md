@@ -7,11 +7,11 @@ numbers: run the commands below and compare the figures.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **555** |
+| **Tests passing** | **569** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **~99%** (gate enforced at 95%) |
-| Test files | 42 (`tests/test_*.py`) |
+| Test files | 43 (`tests/test_*.py`) |
 | Python | 3.11 / 3.12 in CI |
 | Runtime dependencies | standard library only |
 
@@ -40,7 +40,7 @@ pytest tests/ -v --cov=core --cov-fail-under=95
 | `core/analogy.py`      | 86  | 100% |
 | `core/aio.py`          | 10  | 100% |
 | `core/audit.py`        | 69  | 100% |
-| `core/cli.py`          | 177 | 100% |
+| `core/cli.py`          | 187 | 100% |
 | `core/compliance.py`   | 43  | 100% |
 | `core/concept.py`      | 93  | 100% |
 | `core/consolidate.py`  | 45  | 96%  |
@@ -49,27 +49,28 @@ pytest tests/ -v --cov=core --cov-fail-under=95
 | `core/embedding.py`    | 76  | 100% |
 | `core/erasure.py`      | 45  | 100% |
 | `core/eval.py`         | 56  | 100% |
+| `core/evidence.py`     | 36  | 100% |
 | `core/fractal.py`      | 93  | 99%  |
 | `core/generation.py`   | 56  | 98%  |
 | `core/immune.py`       | 94  | 100% |
 | `core/ingest.py`       | 90  | 100% |
-| `core/knowledge.py`    | 122 | 99%  |
+| `core/knowledge.py`    | 125 | 99%  |
 | `core/l3_graph.py`     | 259 | 99%  |
 | `core/mcp_server.py`   | 104 | 100% |
-| `core/memory.py`       | 187 | 100% |
+| `core/memory.py`       | 189 | 100% |
 | `core/metrics.py`      | 10  | 100% |
 | `core/neurocore.py`    | 54  | 100% |
 | `core/neurogenesis.py` | 96  | 99%  |
 | `core/observe.py`      | 35  | 100% |
 | `core/pii.py`          | 56  | 100% |
 | `core/pipeline.py`     | 249 | 98%  |
-| `core/provenance.py`   | 68  | 100% |
+| `core/provenance.py`   | 88  | 99%  |
 | `core/queue.py`        | 53  | 91%  |
 | `core/reconcile.py`    | 80  | 96%  |
 | `core/trace.py`        | 26  | 100% |
 | `core/velum.py`        | 112 | 99%  |
 | `core/volition.py`     | 75  | 99%  |
-| **Total (repo-wide)**  | **3521** | **~99%** |
+| **Total (repo-wide)**  | **3589** | **~99%** |
 
 ## What the tests cover
 
@@ -99,6 +100,7 @@ pytest tests/ -v --cov=core --cov-fail-under=95
 | Consolidation / FSRS-style decay | `test_consolidate.py` |
 | Provenance trace | `test_trace.py` |
 | Verifiable answer receipts (digest, HMAC, replay/drift detection) | `test_provenance.py` |
+| Evidence span store + Receipt v2 (source-span provenance, replay, `evidence` CLI) | `test_evidence.py` |
 | GDPR Art. 17 physical erasure, cascade & tombstones | `test_erasure.py` |
 | GDPR Art. 18 restriction & Art. 30 record-of-processing | `test_compliance.py` |
 | GDPR Art. 32 encryption at rest (round-trip, tamper, at-rest ciphertext) | `test_crypto.py` |
