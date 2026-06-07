@@ -443,6 +443,15 @@ def _link_episode(
         graph.add_edge(a, _EPISODE_REL, b, props)
         graph.add_edge(b, _EPISODE_REL, a, props)
 
+    # L1.5 Velum (RFC0016): feed the co-recalled set to the synaptic pre-graph as a
+    # fire-and-forget hint. Velum is NOT a source of facts (I3) and must never
+    # break the pipeline, so failures are swallowed.
+    try:
+        from core.velum import get_velum
+        get_velum().observe_episode(query, ids)
+    except Exception:  # noqa: BLE001 — a hint layer must not affect the canon
+        pass
+
 
 def recall_episode(fact_id: str) -> List[Dict[str, Any]]:
     """

@@ -12,7 +12,7 @@
 > unless you explicitly opt in.
 
 > **Scope of this repository.** This repo is the **verified, dependency-free open
-> core** (v8.1.0 — 485 passing tests, 99% coverage): the memory layer, provenance,
+> core** (v8.1.0 — 501 passing tests, 99% coverage): the memory layer, provenance,
 > and GDPR machinery you can run today. It is one component of the broader
 > Velantrim ExoCortex system; extended parts (a browser PWA demo, MCP integration,
 > and further research modules) are in active development and described in the
@@ -78,13 +78,14 @@ content-free audit tombstone), and full auditability of provenance. See
 | `core/neurogenesis.py`| ✅ | Neurogenesis Dynamic Growth (RFC0073): plasticity/maturation model, pattern separation (SEPARATED_FROM), growth & capacity reporting, prune candidates |
 | `core/concept.py`     | ✅ | Concept Emergence (RFC0066): ProtoConcepts emerge from Hebbian co-activation (CO_OCCURRED) → CONCEPT nodes with MEMBER_OF links |
 | `core/volition.py`    | ✅ | Memory Volition (RFC0065): `write_voluntary()` (self-authored facts via the gates) + VolitionWorker rehearsal of salient memories |
+| `core/velum.py`       | ✅ | L1.5 Velum synaptic pre-graph (RFC0016): in-memory entity co-occurrence edges (LTP-style) + `_degree_cache`; a hint layer, never a source of facts |
 | `core/adaptation.py`  | ✅ | Adaptive TruthGate threshold (RFC0071): stress ↑ → stricter; healthy → relaxes |
 | `core/queue.py`       | ✅ | Pluggable L3 re-merge outbox: `auto`→Redis (shared, optional) / `sqlite` (persistent, dependency-free default) |
 | `core/aio.py`         | ✅ | Async entry points (`arun`/`aingest`/`adrain_l3_outbox`) for embedding in asyncio/FastAPI/MCP without blocking |
 | `core/observe.py`     | ✅ | Memory observability report over the L3 canonical graph                     |
 | `core/metrics.py`     | ✅ | Lightweight in-process counters (query / ingest / gate)                     |
-| `core/cli.py`         | ✅ | CLI: `ingest`/`ask`/`history`/`report`/`erase`/`erasures`/`restrict`/`unrestrict`/`ropa`/`audit`/`audit-verify`/`redact`/`receipt`/`verify-receipt`/`conflicts`/`immune-*`/`fractal-*`/`neuro-*`/`concepts*`/`volition-*` |
-| `tests/`              | ✅ | **485 passing**, 12 skipped, **99% coverage** (gate: 95%) — see [TEST_REPORT.md](./TEST_REPORT.md) |
+| `core/cli.py`         | ✅ | CLI: `ingest`/`ask`/`history`/`report`/`erase`/`erasures`/`restrict`/`unrestrict`/`ropa`/`audit`/`audit-verify`/`redact`/`receipt`/`verify-receipt`/`conflicts`/`immune-*`/`fractal-*`/`neuro-*`/`concepts*`/`volition-*`/`velum-*` |
+| `tests/`              | ✅ | **501 passing**, 12 skipped, **99% coverage** (gate: 95%) — see [TEST_REPORT.md](./TEST_REPORT.md) |
 | `docs/Velantrim_V8_Crystal_Sprint1.jsonl` | 📜 Spec | Full system design (63 chunks) |
 
 **Current status**: the full fact lifecycle runs end-to-end — ingest → classify
@@ -98,7 +99,7 @@ git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
 pip install .                          # stdlib-only runtime; installs the `velantrim` CLI
 python -m core.pipeline                # runs the end-to-end demo, fully local
-pytest                                 # 485 passing, 99% coverage  (pip install -e '.[dev]')
+pytest                                 # 501 passing, 99% coverage  (pip install -e '.[dev]')
 ```
 
 After install the CLI is on your PATH:
@@ -259,6 +260,24 @@ memory. Two faces, both honouring **Graph = Truth**:
 velantrim volition-write "A self-authored claim"   # through the gates
 velantrim volition-focus                           # the system's attention set
 velantrim volition-cycle                           # rehearse the salient memories
+```
+
+## L1.5 Velum — the synaptic pre-graph (RFC0016)
+
+Between the episode buffer and the canon sits **Velum**, a lightweight in-memory
+layer that notices *which entities keep appearing together* and strengthens a
+synaptic edge between them — the analogue of LTP (long-term potentiation),
+synaptic strengthening that precedes consolidation. When a pair has co-occurred
+enough, Velum emits a hint signal; weak edges decay on session end; a
+`_degree_cache` gives O(1) connectivity.
+
+Velum is **strictly a hint layer — never a source of facts** (Graph = Truth is
+untouched). It is fed fire-and-forget from episodic recall and offers fast
+context expansion:
+
+```bash
+velantrim velum-report                       # edges, strong edges, signals
+velantrim velum-neighbors <entity> --min-weight 0.3
 ```
 
 ## ESM — Epistemic State Machine (core)

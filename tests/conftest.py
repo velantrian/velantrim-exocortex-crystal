@@ -16,9 +16,11 @@ def isolated_db(monkeypatch, tmp_path):
     no long-lived connection to tear down — we only need to redirect the DB
     path and clear the module-level in-memory cache.
     """
-    from core import memory, l3_graph, embedding, generation, metrics, adaptation, queue
+    from core import (memory, l3_graph, embedding, generation, metrics,
+                      adaptation, queue, velum)
 
     memory._L0.clear()
+    velum.reset_velum()
     monkeypatch.setattr(memory, "SQLITE_PATH", str(tmp_path / "test.db"))
     # Pin the deterministic, dependency-free backends so tests never load a
     # neural model, touch disk, or hit the network (production defaults differ:
@@ -33,6 +35,7 @@ def isolated_db(monkeypatch, tmp_path):
     embedding.reset_embedder()
     generation.reset_generator()
     queue.reset_outbox_queue()
+    velum.reset_velum()
     metrics.reset()
     adaptation.reset_adaptation()
     yield
@@ -41,3 +44,4 @@ def isolated_db(monkeypatch, tmp_path):
     embedding.reset_embedder()
     generation.reset_generator()
     queue.reset_outbox_queue()
+    velum.reset_velum()
