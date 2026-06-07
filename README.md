@@ -20,8 +20,111 @@
 
 ---
 
+## 🌍 Why this matters: autonomous local memory
+
+Velantrim Crystal is a **local memory core for AI systems**. It can collect useful
+facts from conversations, documents and curated datasets, keep them in a durable
+local archive, connect them in a graph, and retrieve them later **with or without
+an LLM**.
+
+Think of it as an auditable AI-memory equivalent of an **offline encyclopedia**:
+like an offline Wikipedia/Kiwix-style knowledge base, the verified knowledge can
+remain available when the network is unplugged. The difference is that Crystal is
+not only a document reader: it stores machine-readable facts with source status,
+epistemic state, provenance, conflict handling and replayable receipts.
+
+### 🧠 Memory layers: from working memory to durable canon
+
+Crystal separates fast, temporary memory from persistent knowledge. This is what
+lets it behave like an exocortex rather than a long prompt.
+
+| Layer | Role | What it is for |
+|---|---|---|
+| **L0 — Working cache** | short-lived in-RAM memory | fast recall inside the current process/session |
+| **L1 — Local working store** | SQLite/WAL operational memory | facts, states, updates and local persistence across runs |
+| **L2 — Pending / review path** | pre-canonical zone | claims that need evidence, review, conflict handling or stricter gating |
+| **L3 — Canonical graph** | durable truth graph | verified, source-tracked knowledge retrieved by the system |
+| **Trace / Receipt** | proof layer | shows how an answer connects back to facts and sources |
+
+Stable knowledge does not need to be repeatedly pasted into an LLM context window.
+It can be stored once, retrieved as a small `FactsPack`, and used to answer later
+with traceable evidence.
+
+### ⚡ Lower compute pressure, better context
+
+Crystal is designed to reduce unnecessary LLM load:
+
+- the default runtime is Python standard library only;
+- exact local facts can be retrieved from the graph without an LLM;
+- the default answerer is extractive, deterministic and local;
+- an LLM can be added only for phrasing, summarisation or interface quality;
+- persistent memory reduces the need to resend long histories and large prompts.
+
+As a person, company, school or institution uses the system, it can accumulate a
+more useful local archive of verified knowledge, preferences, procedures and
+context. The system becomes more context-aware **by retrieving better local
+memory**, not by secretly training a black-box model or sending private data to a
+vendor.
+
+### 🇪🇺 Data sovereignty by design
+
+Crystal is built for users, companies and public-sector organisations that need
+control over their data:
+
+- no telemetry by default;
+- no outbound network calls by default;
+- no mandatory cloud service;
+- no mandatory transfer to US-based or other third-party AI providers;
+- local SQLite / embedded graph storage by default;
+- operator-controlled export or sync when the owner explicitly chooses it.
+
+A user or organisation may decide to export, back up or synchronise the database
+to its own infrastructure or cloud account. That is an operator decision; the
+core does not send data anywhere on its own.
+
+The result is not an absolute security guarantee — no software can honestly
+promise that — but a strong foundation for **privacy, auditability and digital
+sovereignty** in Europe and anywhere else where local control matters.
+
+### 🏛️ Where this can be used
+
+| Sector | Example use |
+|---|---|
+| **Private users** | personal knowledge, long-term AI memory, offline notes with trace |
+| **Business** | internal procedures, customer-support memory, compliance-aware copilots |
+| **Government / public sector** | sovereign local AI memory for sensitive institutional data |
+| **Schools / universities** | offline educational knowledge bases and curriculum memory |
+| **Healthcare** | local, auditable knowledge support where privacy is essential |
+| **Research / science** | source-tracked research notes, datasets and claim provenance |
+| **Agriculture / industry / chemistry** | local operational knowledge, procedures, safety facts, field records |
+| **Libraries / archives** | curated corpora that can be served offline with source trails |
+
+### 🧪 Browser/PWA demonstration
+
+Separate browser/PWA prototypes can be used to show the idea visually: import or
+enter knowledge, configure an optional API in settings, and observe how a memory
+layer can extract and reuse facts. A browser-only HTML/PWA demo is not the full
+Crystal core — it cannot provide the same persistent graph, provenance and audit
+semantics unless it is connected to a local backend/API — but it can demonstrate
+the direction: memory first, LLM second.
+
+```mermaid
+flowchart LR
+    A[Conversations / documents / datasets] --> B[Extract key claims]
+    B --> C[claim_type + source_status + provenance]
+    C --> D[Guardian + TruthGate]
+    D --> E[(Local archive: L0/L1 + L3 graph)]
+    E --> F[Retrieve without LLM]
+    E --> G[Retrieve with optional LLM]
+    F --> H[Traceable answer / receipt]
+    G --> H[Traceable answer / receipt]
+```
+
+---
+
 ## 📑 Contents
 
+- [🌍 Why this matters: autonomous local memory](#-why-this-matters-autonomous-local-memory)
 - [🧭 What is this, in one minute](#-what-is-this-in-one-minute)
 - [🎯 What you can build with it](#-what-you-can-build-with-it)
 - [🚀 Quick start](#-quick-start)
