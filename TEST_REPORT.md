@@ -7,11 +7,11 @@ numbers: run `pytest` yourself and you will get the figures below.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **501** |
+| **Tests passing** | **513** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **~99%** (gate enforced at 95%) |
-| Test files | 38 (`tests/test_*.py`) |
+| Test files | 39 (`tests/test_*.py`) |
 | Python | 3.11 (3.10+ supported) |
 | Runtime dependencies | standard library only |
 
@@ -27,7 +27,7 @@ which needs a running Redis and is not part of the dependency-free default.
 
 ```bash
 pip install -r requirements.txt
-pytest                 # 501 passed, 12 skipped
+pytest                 # 513 passed, 12 skipped
 ```
 
 ## Coverage by module (core/)
@@ -36,9 +36,10 @@ pytest                 # 501 passed, 12 skipped
 |--------|------:|------:|
 | `core/_registry.py`    | 18  | 100% |
 | `core/adaptation.py`   | 22  | 100% |
+| `core/analogy.py`      | 86  | 100% |
 | `core/aio.py`          | 10  | 100% |
 | `core/audit.py`        | 69  | 100% |
-| `core/cli.py`          | 149 | 100% |
+| `core/cli.py`          | 169 | 100% |
 | `core/compliance.py`   | 43  | 100% |
 | `core/concept.py`      | 93  | 100% |
 | `core/consolidate.py`  | 45  | 96%  |
@@ -64,7 +65,7 @@ pytest                 # 501 passed, 12 skipped
 | `core/trace.py`        | 26  | 100% |
 | `core/velum.py`        | 112 | 99%  |
 | `core/volition.py`     | 75  | 99%  |
-| **Total (repo-wide)**  | **3154** | **~99%** |
+| **Total (repo-wide)**  | **3260** | **~99%** |
 
 ## What the tests cover
 
@@ -78,6 +79,7 @@ pytest                 # 501 passed, 12 skipped
 | Concept Emergence (RFC0066) — Hebbian weights, union-find clustering, emerge/lookup, CLI | `test_concept.py` |
 | Memory Volition (RFC0065) — salience, voluntary writes through the gates, rehearsal, CLI | `test_volition.py` |
 | L1.5 Velum (RFC0016) — synaptic edges, signals, session decay, GC, degree cache, CLI | `test_velum.py` |
+| Analogy Graph / Bridges / CREATIVE (RFC0067) — edges, structural similarity, bridges, temperature, CLI | `test_analogy.py` |
 | Neurogenesis Dynamic Growth (RFC0073) — plasticity, pattern separation, growth/prune, CLI | `test_neurogenesis.py` |
 | L3 canonical graph adapter & backends | `test_l3_graph.py` |
 | On-disk SQLite L3 backend (persistence, erase, vectors, entities) | `test_l3_sqlite.py` |
