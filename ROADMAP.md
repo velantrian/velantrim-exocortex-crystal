@@ -78,6 +78,13 @@ This document is the **honest truth** about what's implemented vs designed.
   the scales; SleepCycle then protects deeper anchors from decay (CORE is exempt
   → anti-catastrophic-forgetting). Inert until reanchored; CLI `fractal-reanchor`
   / `fractal-report` / `fractal-anchors`
+- RFC0073 Neurogenesis Dynamic Growth (`core/neurogenesis.py`): adult-hippocampal-
+  neurogenesis model over the canon — `plasticity(fact)` is high when young and
+  matures to a stable floor; pattern separation links vectorally-close-but-
+  non-contradictory memories with a SEPARATED_FROM edge (opt-in at ingest,
+  `VELANTRIM_NEURO_SEPARATION`); `growth_report()` exposes plasticity/capacity
+  stats and `prune_candidates()` lists mature, weak, non-CORE-anchored facts that
+  could be reclaimed (advisory). CLI `neuro-report` / `neuro-prune-candidates`
 
 ## ✅ Implemented (metadata tooling, not runtime)
 
@@ -101,8 +108,9 @@ This document is the **honest truth** about what's implemented vs designed.
 > RFC0063 Ingestion → `core/ingest.py`; L3 graph adapter + LadybugDB backend
 > (`core/l3_graph.py`, Kuzu frozen Oct'25 → LadybugDB successor, Neo4j optional);
 > Redis + fallback queue → `core/queue.py`; async entry points → `core/aio.py`;
-> RFC0072 Immune / CRISPR Memory Guard → `core/immune.py` and RFC0070 Fractal
-> Memory Layer → `core/fractal.py` (issue #7, Hybrid Vision).
+> RFC0072 Immune / CRISPR Memory Guard → `core/immune.py`, RFC0070 Fractal
+> Memory Layer → `core/fractal.py`, RFC0073 Neurogenesis Dynamic Growth →
+> `core/neurogenesis.py` (issue #7, Hybrid Vision — RFC0070/0071/0072/0073 all done).
 
 ## 📊 Invariant enforcement status
 

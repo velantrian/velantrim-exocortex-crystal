@@ -20,7 +20,7 @@ from core.l3_graph import get_l3_graph
 from core.embedding import assert_compatible_embedder
 from core.pipeline import guardian, truth_gate, _truth_status_for, _l3_payload
 from core.reconcile import reinforce, find_conflicts, REL_CONTRADICTS, _now
-from core import metrics, adaptation, pii, contradiction, immune
+from core import metrics, adaptation, pii, contradiction, immune, neurogenesis
 
 # Modality markers (RU + EN). Order matters: we check from specific to general.
 _CLAIM_MARKERS = [
@@ -212,6 +212,13 @@ def ingest(
                                 {"at": _now(), "signal": c["signal"], "auto": True})
             result["auto_contradicted"] = [c["fact_id"] for c in contradictions]
             metrics.incr("ingest.contradiction_detected")
+        # Neurogenesis pattern separation (RFC0073, opt-in): keep a vectorally
+        # close but non-contradictory memory distinct via a SEPARATED_FROM edge,
+        # rather than letting similar episodes blur together.
+        if neurogenesis.separation_enabled():
+            separated = neurogenesis.separate(fid, utterance, conflicts=conflicts)
+            if separated:
+                result["separated_from"] = separated
     return result
 
 
