@@ -57,9 +57,59 @@ def test_run_baseline_structure_and_ranges():
         assert 0.0 <= report["retrieval"][key] <= 1.0
     # every ingested fact is fully typed
     assert report["metadata_completeness"] == 1.0
+    # fixture facts get an evidence span attached → full source-span coverage
+    assert report["source_span_coverage"] == 1.0
     # receipts built now must replay against the unchanged canon
     assert report["receipt_replay_survival"] == 1.0
     assert 0.0 <= report["trace_completeness"] <= 1.0
+    # contradiction block present and well-formed
+    c = report["contradiction"]
+    assert c["pairs"] == 4
+    assert 0.0 <= c["precision"] <= 1.0 and 0.0 <= c["recall"] <= 1.0
+
+
+# ─── WP3: source-span coverage ────────────────────────────────────────────────
+
+def test_source_span_coverage():
+    from core.ingest import ingest
+    from core import evidence
+    a = ingest("Mercury is the closest planet to the Sun")["fact"]["fact_id"]
+    b = ingest("Venus is the second planet")["fact"]["fact_id"]
+    evidence.attach_evidence(a, "astro.md")          # only a has evidence
+    assert ev.source_span_coverage([a, b]) == 0.5
+    assert ev.source_span_coverage([]) == 0.0
+
+
+# ─── WP3: contradiction recall/precision ──────────────────────────────────────
+
+def test_contradiction_eval_default_fixture():
+    rep = ev.contradiction_eval()
+    assert rep["pairs"] == 4
+    # different-subject pairs must not be flagged → no false positives
+    assert rep["false_positive_rate"] == 0.0 and rep["precision"] == 1.0
+    # at least one true contradiction (the numeric one) must be caught
+    assert rep["recall"] >= 0.5
+
+
+def test_contradiction_eval_custom_pairs():
+    pairs = [{"base": "The door is open", "probe": "The door is not open",
+              "contradict": True}]
+    rep = ev.contradiction_eval(pairs)
+    assert rep["pairs"] == 1
+    assert 0.0 <= rep["recall"] <= 1.0
+
+
+def test_contradiction_eval_counts_fp_and_fn():
+    pairs = [
+        # negation IS detected, but mislabelled non-contradiction → false positive
+        {"base": "The sky is blue", "probe": "The sky is not blue",
+         "contradict": False},
+        # weekday difference the deterministic classifier won't catch → false negative
+        {"base": "The meeting is on Monday", "probe": "The meeting is on Tuesday",
+         "contradict": True},
+    ]
+    rep = ev.contradiction_eval(pairs)
+    assert rep["fp"] == 1 and rep["fn"] == 1
 
 
 def test_run_baseline_custom_fixture():

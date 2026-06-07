@@ -7,11 +7,11 @@ numbers: run the commands below and compare the figures.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **569** |
+| **Tests passing** | **591** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **~99%** (gate enforced at 95%) |
-| Test files | 43 (`tests/test_*.py`) |
+| Test files | 44 (`tests/test_*.py`) |
 | Python | 3.11 / 3.12 in CI |
 | Runtime dependencies | standard library only |
 
@@ -40,7 +40,7 @@ pytest tests/ -v --cov=core --cov-fail-under=95
 | `core/analogy.py`      | 86  | 100% |
 | `core/aio.py`          | 10  | 100% |
 | `core/audit.py`        | 69  | 100% |
-| `core/cli.py`          | 187 | 100% |
+| `core/cli.py`          | 201 | 100% |
 | `core/compliance.py`   | 43  | 100% |
 | `core/concept.py`      | 93  | 100% |
 | `core/consolidate.py`  | 45  | 96%  |
@@ -48,16 +48,17 @@ pytest tests/ -v --cov=core --cov-fail-under=95
 | `core/crypto.py`       | 62  | 100% |
 | `core/embedding.py`    | 76  | 100% |
 | `core/erasure.py`      | 45  | 100% |
-| `core/eval.py`         | 56  | 100% |
+| `core/eval.py`         | 86  | 100% |
 | `core/evidence.py`     | 36  | 100% |
 | `core/fractal.py`      | 93  | 99%  |
 | `core/generation.py`   | 56  | 98%  |
 | `core/immune.py`       | 94  | 100% |
+| `core/imports.py`      | 82  | 100% |
 | `core/ingest.py`       | 90  | 100% |
 | `core/knowledge.py`    | 125 | 99%  |
 | `core/l3_graph.py`     | 259 | 99%  |
 | `core/mcp_server.py`   | 104 | 100% |
-| `core/memory.py`       | 189 | 100% |
+| `core/memory.py`       | 191 | 100% |
 | `core/metrics.py`      | 10  | 100% |
 | `core/neurocore.py`    | 54  | 100% |
 | `core/neurogenesis.py` | 96  | 99%  |
@@ -70,7 +71,7 @@ pytest tests/ -v --cov=core --cov-fail-under=95
 | `core/trace.py`        | 26  | 100% |
 | `core/velum.py`        | 112 | 99%  |
 | `core/volition.py`     | 75  | 99%  |
-| **Total (repo-wide)**  | **3589** | **~99%** |
+| **Total (repo-wide)**  | **3717** | **~99%** |
 
 ## What the tests cover
 
@@ -88,7 +89,8 @@ pytest tests/ -v --cov=core --cov-fail-under=95
 | Neurogenesis Dynamic Growth (RFC0073) — plasticity, pattern separation, growth/prune, CLI | `test_neurogenesis.py` |
 | NeuroCore Phase 0 (RFC0068) — passive plasticity tracker, threshold, I68 isolation, CLI | `test_neurocore.py` |
 | External knowledge ingestion (RFC0063) — txt/md/json/jsonl/csv parsers, TruthGate routing, `learn` CLI | `test_knowledge.py` |
-| Evaluation harness (baseline) — hit@k/MRR/trace/metadata/receipt-replay metrics, `eval` CLI | `test_eval.py` |
+| Evaluation harness — retrieval/trace/receipt + source-span coverage & contradiction precision/recall, `eval` CLI | `test_eval.py` |
+| Import sessions & dry-run review (WP2) — predict-without-write, session restrict/erase, `learn --dry-run` | `test_imports.py` |
 | L3 canonical graph adapter & backends | `test_l3_graph.py` |
 | On-disk SQLite L3 backend (persistence, erase, vectors, entities) | `test_l3_sqlite.py` |
 | Packaging contract (entry point, version, package surface) | `test_packaging.py` |

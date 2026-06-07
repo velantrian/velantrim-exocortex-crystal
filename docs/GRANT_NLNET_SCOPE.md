@@ -58,7 +58,7 @@ The current open core already includes:
 - GDPR-relevant erasure, restriction, record-of-processing and audit logging;
 - opt-in encryption at rest for L1 personal-data fields;
 - dependency-free read-only MCP server;
-- 569 passing tests and ~99% coverage.
+- 591 passing tests and ~99% coverage.
 
 ## Why this fits public-interest infrastructure
 
@@ -107,13 +107,16 @@ restricted or erased as a batch (`import-session` / `session-restrict` /
 
 ### WP3 — Evaluation Harness
 
-Add reproducible evaluation reports for:
+A **baseline is already implemented** (`core/eval.py`, `velantrim eval`): a
+deterministic report covering retrieval (hit@k / MRR), trace completeness,
+metadata completeness, **source-span coverage**, **contradiction
+precision/recall**, and receipt-replay survival. The funded work scales it to a
+credible quality signal:
 
-- trace completeness;
-- receipt replay survival;
-- retrieval hit@k / MRR on curated fixtures;
-- conflict detection examples;
-- grounding score for answers.
+- curated fixture corpora and per-case `metrics.jsonl` / `eval_report.md`;
+- grounding score for generated answers;
+- CI regression gates so quality cannot silently drop between releases;
+- broader contradiction and retrieval fixtures across domains.
 
 **Outcome:** measurable quality instead of narrative-only claims.
 

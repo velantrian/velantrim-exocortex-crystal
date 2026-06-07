@@ -14,10 +14,12 @@
 
 from typing import Any, Dict, List, Sequence
 
-from core.ingest import ingest
+from core.ingest import ingest, _fact_id
 from core.pipeline import retrieve, run
 from core.memory import get_fact
 from core.provenance import build_receipt, verify_receipt
+from core.reconcile import find_conflicts
+from core import contradiction, evidence
 
 # Metadata every stored fact must carry (typing / provenance completeness).
 _REQUIRED_FIELDS = ("source", "source_status", "claim_type", "epistemic_state")
@@ -65,6 +67,56 @@ def metadata_completeness(fact_ids: Sequence[str]) -> float:
     return round(ok / len(ids), 4)
 
 
+def source_span_coverage(fact_ids: Sequence[str]) -> float:
+    """Fraction of facts that carry at least one source-span evidence record (WP1)."""
+    ids = list(fact_ids)
+    if not ids:
+        return 0.0
+    covered = sum(1 for fid in ids if evidence.evidence_for(fid))
+    return round(covered / len(ids), 4)
+
+
+# ─── Contradiction handling (WP3) ─────────────────────────────────────────────
+
+_CONTRADICTION_FIXTURE: List[Dict[str, Any]] = [
+    {"base": "The sky is blue", "probe": "The sky is not blue", "contradict": True},
+    {"base": "Water boils at 100 degrees Celsius",
+     "probe": "Water boils at 50 degrees Celsius", "contradict": True},
+    {"base": "Paris is the capital of France",
+     "probe": "Berlin is the capital of Germany", "contradict": False},
+    {"base": "Gold is a chemical element",
+     "probe": "Silver is a chemical element", "contradict": False},
+]
+
+
+def contradiction_eval(pairs: List[Dict[str, Any]] | None = None) -> Dict[str, Any]:
+    """
+    Measure the deterministic contradiction classifier on labelled pairs: ingest
+    each `base`, then check whether `probe` is flagged as a CONTRADICTION against
+    the canon. Reports precision, recall and the false-positive rate.
+    """
+    pairs = pairs if pairs is not None else _CONTRADICTION_FIXTURE
+    tp = fp = fn = tn = 0
+    for p in pairs:
+        ingest(p["base"])
+        conflicts = find_conflicts(p["probe"], fact_id=_fact_id(p["probe"]))
+        predicted = any(c["kind"] == contradiction.CONTRADICTION for c in conflicts)
+        actual = bool(p["contradict"])
+        if predicted and actual:
+            tp += 1
+        elif predicted and not actual:
+            fp += 1
+        elif not predicted and actual:
+            fn += 1
+        else:
+            tn += 1
+    precision = round(tp / (tp + fp), 4) if (tp + fp) else 1.0
+    recall = round(tp / (tp + fn), 4) if (tp + fn) else 1.0
+    fpr = round(fp / (fp + tn), 4) if (fp + tn) else 0.0
+    return {"pairs": len(pairs), "tp": tp, "fp": fp, "fn": fn, "tn": tn,
+            "precision": precision, "recall": recall, "false_positive_rate": fpr}
+
+
 # ─── Default fixture (deterministic, dependency-free) ─────────────────────────
 
 _FIXTURE: List[Dict[str, str]] = [
@@ -96,11 +148,15 @@ def run_baseline(fixture: List[Dict[str, str]] | None = None, *, k: int = 5) -> 
     """
     fixture = fixture if fixture is not None else _FIXTURE
 
-    # 1. Ingest the corpus; remember the fact id for each expected claim.
+    # 1. Ingest the corpus; remember the fact id for each expected claim. Attach a
+    #    source-span evidence record so source-span coverage is measured on real data.
     claim_to_id: Dict[str, str] = {}
     for case in fixture:
         res = ingest(case["claim"])
-        claim_to_id[case["claim"]] = res["fact"]["fact_id"]
+        fid = res["fact"]["fact_id"]
+        claim_to_id[case["claim"]] = fid
+        evidence.attach_evidence(fid, "eval-fixture", source_kind="fixture",
+                                 claim=case["claim"])
     fact_ids = list(claim_to_id.values())
 
     # 2. Per-query retrieval ranking + trace + receipt.
@@ -126,6 +182,8 @@ def run_baseline(fixture: List[Dict[str, str]] | None = None, *, k: int = 5) -> 
         "retrieval": aggregate(per_case),
         "trace_completeness": round(traced / n, 4),
         "metadata_completeness": metadata_completeness(fact_ids),
+        "source_span_coverage": source_span_coverage(fact_ids),
         "receipt_replay_survival": round(receipts_ok / n, 4),
+        "contradiction": contradiction_eval(),
     }
     return report

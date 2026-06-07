@@ -8,7 +8,7 @@ whether memory answers remain grounded, replayable and auditable.
 
 The repository currently reports:
 
-- 569 passing tests;
+- 591 passing tests;
 - 12 skipped optional-backend tests;
 - 0 failing tests;
 - ~99% coverage with a 95% gate;
@@ -25,7 +25,9 @@ example:
 
 ```json
 {"cases": 4, "retrieval": {"hit@1": 0.5, "hit@3": 1.0, "hit@5": 1.0, "mrr": 0.75},
- "trace_completeness": 1.0, "metadata_completeness": 1.0, "receipt_replay_survival": 1.0}
+ "trace_completeness": 1.0, "metadata_completeness": 1.0, "source_span_coverage": 1.0,
+ "receipt_replay_survival": 1.0,
+ "contradiction": {"pairs": 4, "precision": 1.0, "recall": 1.0, "false_positive_rate": 0.0}}
 ```
 
 The dimensions below define where this harness is extended next (curated fixtures,
@@ -159,7 +161,7 @@ Each public release should include a small report with:
 ```json
 {
   "version": "0.1.x",
-  "tests_passing": 569,
+  "tests_passing": 591,
   "coverage": "~99%",
   "trace_completeness": null,
   "receipt_replay_survival": null,
@@ -173,15 +175,16 @@ Each public release should include a small report with:
 
 **Delivered (baseline):** `core/eval.py` (`velantrim eval`) ingests a deterministic
 fixture, runs the real retrieval/answer/receipt path, and returns a machine-readable
-report with retrieval (hit@k, MRR), trace completeness, metadata completeness and
+report with retrieval (hit@k, MRR), trace completeness, metadata completeness,
+**source-span coverage** (WP1) and **contradiction precision/recall** (WP3), plus
 receipt-replay survival. Pure metric functions (`hit_at_k`, `reciprocal_rank`,
-`aggregate`) are unit-tested exactly.
+`aggregate`, `source_span_coverage`, `contradiction_eval`) are unit-tested.
 
 **Planned (extensions):**
 
 - `metrics.jsonl` for per-case results and `eval_report.md` for human review;
 - curated fixture corpora under `eval/fixtures/` (beyond the built-in set);
-- contradiction recall and source-span coverage metrics;
+- automatic source-span extraction and additional contradiction cases;
 - CI-friendly regression checks for trace completeness and receipt replay.
 
 ## Non-goals
