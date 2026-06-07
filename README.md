@@ -2,21 +2,19 @@
 
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
-`v0.1.0` · 🧪 **546 tests** · 🎯 **99% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v0.1.0` · 🧪 **546 tests** · 🎯 **~99% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
 
-> Velantrim is **not another chatbot**. It is a **verifiable memory layer** that AI
-> systems write to and read from, where **every stored fact carries its
-> provenance, its epistemic state, and its source** — and where **nothing enters
-> the canonical graph except through a single audited gate** (the *TruthGate*).
-> It runs **locally by default**: no cloud, no telemetry, no external calls unless
-> you explicitly opt in.
+> Velantrim Crystal is **not another chatbot**. It is a **verifiable memory layer**
+> that AI systems write to and read from. Every stored fact carries provenance,
+> epistemic state and source metadata, and nothing enters the canonical graph
+> except through the audited **TruthGate**. It runs locally by default: no cloud,
+> no telemetry and no outbound calls unless the operator explicitly opts in.
 
-> 📦 **Scope of this repository.** This repo is the **verified, dependency-free open
-> core**: the memory engine, provenance, GDPR machinery and biologically-inspired
-> memory layers you can run *today*. It is one tier of the broader Velantrim
-> ExoCortex system; some parts (a browser PWA demo, deeper research builds) live
-> elsewhere. **Honesty rule:** this README documents only what is *implemented and
-> tested in this repository*.
+> 📦 **Scope of this repository.** This repository is the verified, dependency-free
+> open core: memory engine, provenance, GDPR-relevant controls, L3 graph adapter,
+> external ingestion, read-only MCP integration and tested memory layers. Browser
+> PWA demos and deeper research builds may live elsewhere. **Honesty rule:** this
+> README describes implemented and tested repository behaviour only.
 
 ---
 
@@ -28,36 +26,33 @@ local archive, connect them in a graph, and retrieve them later **with or withou
 an LLM**.
 
 Think of it as an auditable AI-memory equivalent of an **offline encyclopedia**:
-like an offline Wikipedia/Kiwix-style knowledge base, the verified knowledge can
-remain available when the network is unplugged. The difference is that Crystal is
-not only a document reader: it stores machine-readable facts with source status,
-epistemic state, provenance, conflict handling and replayable receipts.
+like an offline Wikipedia/Kiwix-style knowledge base, verified knowledge remains
+available when the network is unplugged. The difference is that Crystal stores
+machine-readable facts with source status, epistemic state, provenance, conflict
+handling and replayable receipts.
 
 ### 🧠 Memory layers: from working memory to durable canon
 
-Crystal separates fast, temporary memory from persistent knowledge. This is what
-lets it behave like an exocortex rather than a long prompt.
-
-| Layer | Role | What it is for |
+| Layer | Role | Purpose |
 |---|---|---|
 | **L0 — Working cache** | short-lived in-RAM memory | fast recall inside the current process/session |
 | **L1 — Local working store** | SQLite/WAL operational memory | facts, states, updates and local persistence across runs |
-| **L2 — Pending / review path** | pre-canonical zone | claims that need evidence, review, conflict handling or stricter gating |
+| **L2 — Pending / review path** | pre-canonical zone | claims needing evidence, conflict handling or stricter validation |
 | **L3 — Canonical graph** | durable truth graph | verified, source-tracked knowledge retrieved by the system |
 | **Trace / Receipt** | proof layer | shows how an answer connects back to facts and sources |
 
 Stable knowledge does not need to be repeatedly pasted into an LLM context window.
-It can be stored once, retrieved as a small `FactsPack`, and used to answer later
-with traceable evidence.
+It can be stored once, retrieved as a compact `FactsPack`, and used to answer
+later with traceable evidence.
 
 ### ⚡ Lower compute pressure, better context
 
 Crystal is designed to reduce unnecessary LLM load:
 
-- the default runtime is Python standard library only;
+- default runtime is Python standard library only;
 - exact local facts can be retrieved from the graph without an LLM;
-- the default answerer is extractive, deterministic and local;
-- an LLM can be added only for phrasing, summarisation or interface quality;
+- default answerer is extractive, deterministic and local;
+- LLMs can be added only for phrasing, summarisation or interface quality;
 - persistent memory reduces the need to resend long histories and large prompts.
 
 As a person, company, school or institution uses the system, it can accumulate a
@@ -78,12 +73,12 @@ control over their data:
 - local SQLite / embedded graph storage by default;
 - operator-controlled export or sync when the owner explicitly chooses it.
 
-A user or organisation may decide to export, back up or synchronise the database
-to its own infrastructure or cloud account. That is an operator decision; the
-core does not send data anywhere on its own.
+A user or organisation may export, back up or synchronise the database to its own
+infrastructure or cloud account. That is an operator decision; the core does not
+send data anywhere on its own.
 
-The result is not an absolute security guarantee — no software can honestly
-promise that — but a strong foundation for **privacy, auditability and digital
+This is not an absolute security guarantee — no software can honestly promise
+that — but it is a strong foundation for **privacy, auditability and digital
 sovereignty** in Europe and anywhere else where local control matters.
 
 ### 🏛️ Where this can be used
@@ -97,16 +92,78 @@ sovereignty** in Europe and anywhere else where local control matters.
 | **Healthcare** | local, auditable knowledge support where privacy is essential |
 | **Research / science** | source-tracked research notes, datasets and claim provenance |
 | **Agriculture / industry / chemistry** | local operational knowledge, procedures, safety facts, field records |
-| **Libraries / archives** | curated corpora that can be served offline with source trails |
+| **Libraries / archives** | curated corpora served offline with source trails |
 
 ### 🧪 Browser/PWA demonstration
 
-Separate browser/PWA prototypes can be used to show the idea visually: import or
-enter knowledge, configure an optional API in settings, and observe how a memory
-layer can extract and reuse facts. A browser-only HTML/PWA demo is not the full
-Crystal core — it cannot provide the same persistent graph, provenance and audit
-semantics unless it is connected to a local backend/API — but it can demonstrate
-the direction: memory first, LLM second.
+Separate browser/PWA prototypes can visually demonstrate the same direction:
+local browser memory, notes, files, optional API settings and offline behaviour.
+They are not the same security/provenance boundary as Crystal unless connected to
+a local Crystal backend/API. The correct relationship is:
+
+```text
+Crystal = audited local-first verifiable memory core.
+PWA demo = optional visual companion for memory-first interaction.
+```
+
+---
+
+## 📑 Contents
+
+- [🌍 Why this matters](#-why-this-matters-autonomous-local-memory)
+- [🚀 Quick start](#-quick-start)
+- [🏛️ Architecture](#-architecture)
+- [🧩 Systems](#-systems)
+- [🔌 Integrations](#-integrations)
+- [🗺️ Roadmap](#-roadmap)
+- [📚 Documentation](#-documentation)
+- [⚖️ License](#️-license)
+
+---
+
+## 🚀 Quick start
+
+```bash
+git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
+cd velantrim-exocortex-crystal
+pip install .
+python -m core.pipeline
+```
+
+After install, the `velantrim` CLI is available:
+
+```bash
+velantrim ingest "Water boils at 100C at sea level"
+velantrim ask "how does water behave"
+velantrim receipt "how does water behave" > receipt.json
+velantrim verify-receipt receipt.json
+```
+
+For a dependency-free persistent local canon:
+
+```bash
+VELANTRIM_L3_BACKEND=sqlite \
+VELANTRIM_L3_PATH=./data/canon.db \
+velantrim ask "..."
+```
+
+Development/test setup:
+
+```bash
+pip install -r requirements-dev.txt
+pip install -e .
+pytest tests/ -v --cov=core --cov-fail-under=95
+```
+
+See **[DEMO.md](./DEMO.md)** for the full *ingest → evidence → trace → answer →
+receipt* walkthrough.
+
+---
+
+## 🏛️ Architecture
+
+Every factual query follows an auditable path: **retrieve, trace, validate, then
+answer; never the other way around**.
 
 ```mermaid
 flowchart LR
@@ -120,481 +177,165 @@ flowchart LR
     G --> H[Traceable answer / receipt]
 ```
 
----
+Core invariants:
 
-## 📑 Contents
+- **Graph = Truth** — one canonical knowledge graph is the single source of truth.
+- **TruthGate is the only entry into L3** — direct canonical writes are bugs.
+- **Provenance for every fact** — `source`, `source_status`, trace and receipt.
+- **Epistemic honesty** — statements, observations, hypotheses and verified facts
+  are not collapsed into one undifferentiated memory.
+- **LLM optional** — the LLM may phrase answers, but it is not the source of truth.
 
-- [🌍 Why this matters: autonomous local memory](#-why-this-matters-autonomous-local-memory)
-- [🧭 What is this, in one minute](#-what-is-this-in-one-minute)
-- [🎯 What you can build with it](#-what-you-can-build-with-it)
-- [🚀 Quick start](#-quick-start)
-- [🧠 Why it's different](#-why-its-different)
-- [🔒 Data sovereignty & offline autonomy](#-data-sovereignty--offline-autonomy)
-- [🏛️ How it works](#-how-it-works)
-- [🧩 What's inside — the systems](#-whats-inside--the-systems)
-- [🔬 Deep dives](#-deep-dives)
-- [🔌 Integrations (MCP, async, scaling)](#-integrations)
-- [🗺️ Roadmap](#-roadmap)
-- [📚 Documentation & license](#-documentation)
+See **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** for diagrams covering the
+write path, read path, backend strategy, external ingestion and privacy boundary.
 
 ---
 
-## 🧭 What is this, in one minute
+## 🧩 Systems
 
-Modern AI is **confidently wrong**. It blends what the user *said*, what was
-*observed*, what was *inferred*, and what the model *hallucinated* into one
-undifferentiated stream — with no way to ask *"where did this come from, and how
-sure are we?"*
+Crystal is a set of small, focused modules, dependency-free by default and tested.
 
-**Velantrim Crystal is the layer you put underneath an AI system so its memory can
-be trusted.** Instead of an opaque vector blob, memory is a **graph of verifiable
-facts**: every fact knows its source, its confidence, and its epistemic state;
-nothing becomes "truth" without passing an audited gate; the system can forget
-gracefully, defend itself against hallucinations, and answer with a **receipt you
-can replay**. All of it runs on your machine with **zero mandatory dependencies**.
+### 🏗️ Foundation — store, retrieve, answer
 
-> 🔑 In one line: **a memory engine for AI that you — and a regulator — can audit.**
-
----
-
-## 🎯 What you can build with it
-
-| | Use case | What Velantrim gives you |
-|---|---|---|
-| 🤖 | **Trustworthy agent memory** | Long-term memory an agent can't quietly hallucinate into — every fact gated, sourced, and epistemically typed |
-| 🔎 | **Verifiable RAG / receipts** | Answers sealed into tamper-evident **receipts** that replay back to their exact sources (detects later edits/erasure/contradiction) |
-| ⚖️ | **GDPR-ready AI memory** | Physical erasure + tombstones, processing restriction, Art. 30 record-of-processing, encryption at rest, audit log, PII redaction |
-| 🔐 | **Local-first knowledge base** | An on-disk canon that survives restarts with **no cloud and no telemetry** — your data never leaves the device |
-| 🔌 | **Drop-in MCP memory server** | A pure-stdlib **Model Context Protocol** server for Claude Desktop, Cursor, any MCP client |
-| 🧬 | **Biological-memory research** | A working, tested platform for immune defence, fractal anchoring, neurogenesis, concept emergence, volition & analogy |
-
-**Where it runs:** a laptop, a Raspberry Pi, a server, or CI — it's pure Python
-standard library by default. Heavier backends (LadybugDB graph, Redis queue,
-neural embeddings, an LLM answerer) are **optional add-ons**, never requirements.
-
----
-
-## 🚀 Quick start
-
-```bash
-git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
-cd velantrim-exocortex-crystal
-pip install .                          # stdlib-only runtime; installs the `velantrim` CLI
-python -m core.pipeline                # runs the end-to-end demo, fully local
-pytest                                 # 546 passing, 99% coverage  (pip install -e '.[dev]')
-```
-
-After install the `velantrim` CLI is on your PATH:
-
-```bash
-velantrim ingest "Water boils at 100C at sea level"
-velantrim ask    "how does water behave"
-# Dependency-free, on-disk canon that survives restarts:
-VELANTRIM_L3_BACKEND=sqlite VELANTRIM_L3_PATH=./data/canon.db velantrim ask "..."
-```
-
-🔒 No data leaves your machine. See **[DEMO.md](./DEMO.md)** for a full walkthrough
-of the *ingest → evidence → trace → answer* chain.
-
----
-
-## 🧠 Why it's different
-
-Four principles, enforced in code (not just documented):
-
-- **📊 Graph = Truth** — one canonical knowledge graph is the single source of
-  truth, and the **only** way in is through the TruthGate.
-- **🔗 Provenance for every fact** — each fact records its `source`, its
-  `source_status` (user-reported / observed / derived / external / LLM-output),
-  and a full trace chain.
-- **🎓 Epistemic honesty** — facts move through an **8-state machine**
-  (Observed → … → Validated → ImmutableCore, or → Contradicted → Collapsed), so
-  the system distinguishes *"verified"* from *"someone claimed this"*. A feeling
-  is real *as a feeling* but never becomes a fact about the world.
-- **🏠 Local-first & private by design** — stdlib-only defaults, everything on your
-  machine. See **[PRIVACY.md](./PRIVACY.md)** and **[GDPR.md](./GDPR.md)**.
-
-> 🇪🇺 **Public-benefit framing.** Crystal is built as **open European
-> infrastructure for accountable AI**: privacy-respecting, auditable, and operable
-> without sending personal data to third-party clouds — directly supporting GDPR
-> data minimisation, purpose limitation, rectification and erasure.
-
----
-
-## 🔒 Data sovereignty & offline autonomy
-
-This is the heart of why Crystal exists for the public sector, research and
-regulated organisations.
-
-### 🏠 Your data stays on your device
-
-Personal data — whether it belongs to an individual, a company, or a government
-institution — is stored **locally, on the user's own machine** (an on-disk SQLite
-canon and an in-memory cache). By default **nothing is uploaded anywhere**: no
-cloud, no telemetry, no third-party calls.
-
-- 🗃️ **You own the file.** The canon is a single portable on-disk database you
-  control. If *you* choose to connect a backup or a cloud, you can **export** it
-  there yourself — but it is always an explicit, opt-in action. Data never leaves
-  the device on its own.
-- 🇪🇺 **EU digital sovereignty.** European public bodies increasingly require that
-  citizens', companies' and institutions' data **not flow into external
-  (e.g. US-based) services**, but remain autonomous and resident on their own
-  infrastructure inside the EU. Crystal is built exactly for that: a memory layer
-  that is auditable, GDPR-aligned, and **runs entirely on hardware you control**.
-
-### ⚡ Accurate answers without an LLM — even offline
-
-Because **Graph = Truth**, exact facts come straight from the knowledge graph.
-The default answerer is **extractive** and the default embedder is
-**dependency-free** — so Crystal can return precise, sourced facts with **no LLM
-at all** and **no internet connection**.
-
-- 🛰️ **Works with the network unplugged.** No external API is on the critical
-  path. This means stability and continuity even offline or under network
-  failure — important for **libraries, schools, universities, archives and
-  Wikipedia-style knowledge bases** that must keep serving verified information.
-- 💸 **Low compute, high reliability.** Answering from the graph puts **little to
-  no load on an LLM** (and often needs none), so running costs stay low and
-  results stay deterministic and reproducible. An LLM can be plugged in *on top*
-  for phrasing — but it is never required for correctness.
-
-### 🕸️ Smart interconnections an LLM cannot keep
-
-An LLM keeps knowledge as loose, lossy "notes" in an external scratchpad; if a
-note isn't in its context, the relationship is simply gone. Crystal instead
-maintains **explicit, durable links** between facts — provenance, supersession,
-contradiction, co-occurrence, emergent concepts, analogies and semantic bridges.
-This is **structured, queryable, machine-verifiable knowledge** that survives
-restarts and that a stateless language model cannot reconstruct on its own — the
-guarantee that information, *and its meaning*, is preserved.
-
----
-
-## 🏛️ How it works
-
-Every query flows through one auditable path — **trace first, validate, then
-answer; never the other way around:**
-
-```
-Query ─▶ Retrieve (vector + graph recall) ─▶ FactsPack ─▶ Trace
-      ─▶ 🛡️ Guardian (structure) ─▶ ✅ TruthGate (verification)
-      ─▶ L3 canon (MERGE) ─▶ Answer (+ replayable receipt)
-```
-
-Facts live in an **Epistemic State Machine** — transitions only via
-`transition_esm()`, never a raw write:
-
-```
-Observed → Hypothesized → Supported → Validated → ImmutableCore
-                                    ↘ Contradicted → Deprecated → Collapsed
-```
-
-`claim_type` (world-fact / experience / emotion / opinion / …) is an **orthogonal
-axis** to the ESM: this is how Velantrim refuses to launder subjective input into
-objective truth.
-
----
-
-## 🧩 What's inside — the systems
-
-Crystal is a set of **small, focused modules**, all dependency-free by default and
-individually tested. Grouped by what they do:
-
-#### 🏗️ Foundation — store, retrieve, answer
 | Module | Role |
 |---|---|
-| `core/memory.py` | L0 (in-RAM LRU) + L1 (SQLite/WAL) + the 8-state ESM |
-| `core/l3_graph.py` | Swappable canonical graph: `auto`→LadybugDB / **on-disk SQLite (dependency-free)** / mock / Neo4j |
-| `core/pipeline.py` | Retrieve → FactsPack → Guardian → TruthGate → L3 → Answer; episodic recall |
-| `core/embedding.py` | Swappable embedder: `auto`→sentence-transformers / dependency-free hashing |
-| `core/generation.py` | Swappable answerer: extractive (local default) / Claude (opt-in) |
+| `core/memory.py` | L0 in-RAM cache + L1 SQLite/WAL + 8-state ESM |
+| `core/l3_graph.py` | Swappable L3 graph: `auto` → LadybugDB / SQLite / mock; optional Neo4j |
+| `core/pipeline.py` | Retrieve → FactsPack → Guardian → TruthGate → L3 → Answer |
+| `core/embedding.py` | Swappable embedder: dependency-free hashing or optional dense backend |
+| `core/generation.py` | Extractive local answerer or optional LLM answerer |
 | `core/ingest.py` | Utterance → claim-type classification → gate → L3 |
-| `core/knowledge.py` | 🌾 **External ingestion** — bulk-import `.txt`/`.md`/`.json`/`.jsonl`/`.csv` through the TruthGate (RFC0063) |
+| `core/knowledge.py` | External ingestion for `.txt`, `.md`, `.json`, `.jsonl`, `.ndjson`, `.csv` |
 
-#### 🛡️ Trust & truth
+### 🛡️ Trust, truth and provenance
+
 | Module | Role |
 |---|---|
-| `core/trace.py` · `core/provenance.py` | Provenance chain + tamper-evident **replayable answer receipts** |
-| `core/reconcile.py` | Truth maintenance: reinforce / supersede / contradict / find-conflicts |
-| `core/contradiction.py` | Deterministic contradiction classifier (negation / antonym / numeric) |
-| `core/immune.py` | 🦠 **Immune / CRISPR Guard** — blocks known hallucination/harmful patterns |
-| `core/consolidate.py` · `core/adaptation.py` | FSRS-style decay + adaptive TruthGate threshold |
+| `core/trace.py` / `core/provenance.py` | Trace chain and tamper-evident replayable receipts |
+| `core/reconcile.py` | Reinforce / supersede / contradict / find conflicts |
+| `core/contradiction.py` | Deterministic contradiction classifier |
+| `core/immune.py` | Immune / CRISPR Guard for known harmful or hallucination patterns |
+| `core/consolidate.py` / `core/adaptation.py` | FSRS-style decay and adaptive TruthGate threshold |
 
-#### ⚖️ Privacy & GDPR
+### ⚖️ Privacy and GDPR-relevant controls
+
 | Module | Role |
 |---|---|
-| `core/erasure.py` | Art. 17 physical erasure across L0/L1/L3 + content-free tombstone |
-| `core/compliance.py` | Art. 18 processing restriction + Art. 30 record-of-processing |
-| `core/crypto.py` | Art. 32 opt-in encryption at rest (Fernet/AES or stdlib HMAC) |
-| `core/audit.py` | Tamper-evident hash-chained audit log (optional HMAC signing) |
-| `core/pii.py` | PII detection & redaction at ingest (email/phone/card/IPv4/IBAN) |
+| `core/erasure.py` | Art. 17 physical erasure across L0/L1/L3 + tombstone |
+| `core/compliance.py` | Art. 18 restriction + Art. 30 record-of-processing |
+| `core/crypto.py` | Art. 32 opt-in encryption at rest for L1 personal-data fields |
+| `core/audit.py` | Tamper-evident hash-chained audit log |
+| `core/pii.py` | PII detection and redaction |
 
-#### 🧬 Living memory (biologically-inspired, all implemented & tested)
+### 🧬 Living-memory research modules
+
 | Module | Role |
 |---|---|
-| `core/fractal.py` | 🪟 **Fractal Memory** — multi-scale anchoring; CORE anchors resist forgetting |
-| `core/neurogenesis.py` | 🌱 **Neurogenesis** — plasticity, pattern separation, lifelong capacity |
-| `core/concept.py` | 💡 **Concept Emergence** — ProtoConcepts from Hebbian co-activation |
-| `core/volition.py` | ✍️ **Memory Volition** — the system writes & rehearses its own memory |
-| `core/velum.py` | 🕸️ **Velum L1.5** — synaptic pre-graph of entity co-occurrence |
-| `core/analogy.py` | 🎨 **Analogy Graph + CREATIVE mode** — metaphors & semantic bridges |
-| `core/neurocore.py` | 🧠 **NeuroCore** (RFC0068, Phase 0) — passive plasticity tracker; off by default, never writes the graph (I68) |
-
-#### 🔌 Ops & integration
-| Module | Role |
-|---|---|
-| `core/queue.py` | Self-healing L3 re-merge outbox: `auto`→Redis (shared) / SQLite (default) |
-| `core/aio.py` | Async entry points for asyncio / FastAPI / MCP |
-| `core/mcp_server.py` | Dependency-free read-only **MCP** server |
-| `core/observe.py` · `core/metrics.py` | Memory observability report + in-process counters |
-| `core/cli.py` | The full `velantrim` command-line surface |
-
-> ✅ **Current status:** the full fact lifecycle runs end-to-end — ingest →
-> classify → TruthGate → L3 graph → vector + episodic recall → reinforce /
-> supersede / contradict / decay — with swappable backends and zero-dependency
-> defaults. **546 passing tests, 99% coverage** ([TEST_REPORT.md](./TEST_REPORT.md)).
-
----
-
-## 🔬 Deep dives
-
-### 🦠 Immune / CRISPR Memory Guard (RFC0072)
-
-Inspired by bacterial CRISPR immunity, the guard keeps a **persistent, adaptive
-record of known threat patterns** (hallucination signatures, harmful or
-previously-refuted claims) and screens every incoming claim *before* it can reach
-the canon. **Truth-first and non-destructive by default**: a claim that merely
-contradicts the canon is flagged (`QUARANTINE`) and linked, not silently
-overwritten — only an explicitly recorded threat is blocked.
-
-```bash
-velantrim immune-block "the earth is flat" --type hallucination
-velantrim immune-check "as everyone knows, the earth is flat"   # → {"verdict": "BLOCK"}
-velantrim ingest      "as everyone knows, the earth is flat"    # → blocked (Immune)
-velantrim immune-report
-```
-Opt-in escalations: `VELANTRIM_IMMUNE_STRICT=1` blocks any contradiction;
-`VELANTRIM_IMMUNE_LEARN=1` records each blocked claim as a new spacer. Every
-record/forget is written to the tamper-evident audit log.
-
-### 🪟 Fractal Memory Layer (RFC0070)
-
-Lifelong learning **without catastrophic forgetting**. Facts are anchored across
-self-similar scales — `SHORT → MEDIUM → LONG → CORE` — with fractal capacities
-(`base, base/2, base/4, base/8`), so the deep scales are scarce and hold only the
-strongest knowledge. SleepCycle lengthens the decay half-life by scale, and
-**CORE anchors are exempt from decay entirely** — important memory stops drifting.
-
-```bash
-velantrim fractal-reanchor    # recompute scales over the canon
-velantrim fractal-report
-velantrim fractal-anchors --scale CORE
-```
-A fact's scale is *earned*: significance plus repeated reinforcement graduate it
-toward CORE. The layer is inert until `reanchor()` runs.
-
-### 🌱 Neurogenesis Dynamic Growth (RFC0073)
-
-Modelled on adult hippocampal neurogenesis. Every fact has a **plasticity** that
-is high when young and matures to a stable floor.
-- **Pattern separation** — a new fact that is vectorally close but *not* a
-  contradiction is kept distinct via a `SEPARATED_FROM` edge (opt-in,
-  `VELANTRIM_NEURO_SEPARATION=1`).
-- **Growth & capacity** — `neuro-report` shows young/mature counts, plasticity,
-  and capacity headroom; `neuro-prune-candidates` lists reclaimable facts
-  (advisory; CORE anchors are never candidates).
-
-### 💡 Concept Emergence (RFC0066)
-
-*"Cells that fire together, wire together."* Facts recalled together get
-`CO_OCCURRED` edges — the Hebbian substrate. Concept emergence clusters them
-(deterministic union-find) into **ProtoConcepts**, materialised as `CONCEPT`
-nodes with `MEMBER_OF` links. Computed from the live graph, idempotent, **0 tokens
-/ no LLM**, and never touches fact truth.
-
-```bash
-velantrim concepts            # concepts emerging now (read-only)
-velantrim concepts-emerge     # materialise them as CONCEPT nodes
-velantrim concepts-for <fact_id>
-```
-
-### ✍️ Memory Volition (RFC0065)
-
-*Memory = Agency.* The canon can act on its own memory — without bypassing truth:
-- **Voluntary writes** — `write_voluntary()` authors a fact through the **same
-  Guardian → TruthGate path** (it earns its place or is blocked), tagged
-  `metadata.volition`.
-- **Rehearsal** — the system ranks the canon by salience and **rehearses** its
-  most salient memories (refreshing their decay clock) *without* fabricating
-  evidence (confidence untouched).
-
-```bash
-velantrim volition-write "A self-authored claim"
-velantrim volition-focus
-velantrim volition-cycle
-```
-
-### 🕸️ L1.5 Velum — the synaptic pre-graph (RFC0016)
-
-Between the episode buffer and the canon sits **Velum**, a lightweight in-memory
-layer that notices *which entities keep appearing together* and strengthens a
-synaptic edge between them (the analogue of LTP). It emits a hint when a pair
-co-occurs enough; weak edges decay; a `_degree_cache` gives O(1) connectivity.
-**Strictly a hint layer — never a source of facts.**
-
-```bash
-velantrim velum-report
-velantrim velum-neighbors <entity> --min-weight 0.3
-```
-
-### 🎨 Creative intelligence — Analogy Graph & Semantic Bridges (RFC0067)
-
-Velantrim can map **metaphors and analogies** and build **semantic bridges**
-between distant ideas — dependency-free and deterministic (no LLM, no Redis):
-- **Analogy Graph** — explicit `METAPHOR_OF` (directional) / `ANALOGOUS_TO`
-  (symmetric) edges. *Associations, never facts* — so Graph = Truth is untouched.
-- **Semantic Bridge Engine** — `find_bridges(a, b)` explains how two nodes connect
-  (shared neighbour / shared concept / explicit edge); `analogy-suggest` proposes
-  structurally-similar candidates.
-- **CREATIVE mode** — an advisory `creative_temperature()` (0.6→0.85) for an LLM
-  decoder, while the answer's facts stay **Validated-only**: creativity in framing,
-  accuracy in substance.
-
-```bash
-velantrim analogy-link atom solar-system --kind ANALOGOUS_TO --weight 0.8
-velantrim analogy-bridges atom solar-system
-velantrim analogy-suggest atom
-```
-
-### 🌾 External knowledge ingestion (RFC0063)
-
-Teach Crystal from files — a lesson, a dataset, a reference document — and every
-claim still goes through the **same TruthGate** (nothing is trusted just because
-it came from a file). Imported facts are tagged `source_status = EXTERNAL` with
-the source file as provenance. Dependency-free parsers for `.txt`, `.md`,
-`.json`, `.jsonl` and `.csv`:
-
-```bash
-velantrim learn ./knowledge/astronomy.md --source astro-101
-# → {"accepted": 2, "reinforced": 0, "blocked": 0, ...}
-```
-
-This is what makes Crystal practical for **libraries, schools and universities**:
-load a curated corpus once and serve verified, sourced facts from it forever —
-offline and LLM-free.
+| `core/fractal.py` | Multi-scale anchoring; CORE anchors resist forgetting |
+| `core/neurogenesis.py` | Plasticity, pattern separation, lifelong capacity |
+| `core/concept.py` | ProtoConcepts from Hebbian co-activation |
+| `core/volition.py` | Voluntary writes and rehearsal through the same gates |
+| `core/velum.py` | L1.5 synaptic pre-graph of entity co-occurrence |
+| `core/analogy.py` | Analogy graph and semantic bridges |
+| `core/neurocore.py` | RFC0068 Phase 0 passive plasticity tracker; off by default, never writes L3 |
 
 ---
 
 ## 🔌 Integrations
 
-### 🤝 MCP server (read-only)
-
-A **dependency-free MCP server** (pure stdlib, no SDK) lets agents — Claude
-Desktop, Cursor, any MCP client — query the verifiable memory over stdio:
+### MCP server, read-only by default
 
 ```bash
-python -m core.mcp_server          # JSON-RPC 2.0 over stdio
-```
-```json
-{ "mcpServers": { "velantrim": { "command": "python", "args": ["-m", "core.mcp_server"] } } }
+python -m core.mcp_server
 ```
 
-It exposes **read-only** tools only — `search`, `memory_report`, `get_fact`,
-`fact_history`, `find_conflicts`, `verify_receipt` — so an agent can read and
-*verify* memory but cannot mutate the canon. Capability-gated write access behind
-the TruthGate is on the roadmap.
+It exposes read-only tools such as `search`, `memory_report`, `get_fact`,
+`fact_history`, `find_conflicts` and `verify_receipt`. Agents can inspect and
+verify memory without being granted canonical write access.
 
-### ⚡ Async embedding
+### External knowledge ingestion
 
-```python
-from core.aio import aingest, arun
-await aingest("Water boils at 100C at sea level")
-result = await arun("how does water behave")
+```bash
+velantrim learn ./knowledge/astronomy.md --source astro-101
 ```
 
-### 📈 Scaling the re-merge queue
+Imported claims are tagged `source_status = EXTERNAL` and still pass through the
+same Guardian/TruthGate path.
 
-The self-healing L3 outbox runs on a persistent, dependency-free SQLite queue by
-default. To share one queue across several workers, point it at Redis:
+### Optional queue scaling
 
 ```bash
 pip install '.[redis]'
 VELANTRIM_QUEUE_BACKEND=redis VELANTRIM_REDIS_URL=redis://localhost:6379/0 velantrim ask "..."
-# default 'auto' uses Redis when a server answers PING, else the SQLite outbox
 ```
 
----
-
-## 🛡️ Key invariants
-
-| ID | Name | Status |
-|---|---|---|
-| I1 | Graph = Truth | ✅ real L3 graph; single entry via TruthGate |
-| I6 | Ring Zero Immutable | ✅ enforced (`VALUES_CORE` / `RING_ZERO` cannot transition) |
-| E1 | Epigenetic Adaptation | ✅ wired into adaptive TruthGate (`core/adaptation.py`) |
-| I1-prov | Provenance preserved | ✅ every fact has source + source_status + trace |
+Default queue behaviour remains dependency-free with SQLite.
 
 ---
 
 ## 🗺️ Roadmap
 
-Velantrim ships as **fundable, verifiable deliverables**. See
-**[ROADMAP.md](./ROADMAP.md)** for the full implemented-vs-designed split.
+**Delivered and tested today**
 
-**✅ Delivered (running & tested today)**
-- Verifiable provenance & **replayable answer receipts** (`trace`, `provenance`)
-- Full **GDPR data-subject operations** (`erasure`, `compliance`, `crypto`, `audit`, `pii`)
-- **Local-first persistence & packaging** (dependency-free SQLite L3 backend)
-- **Conflict / hallucination detection** (`contradiction` + Immune Guard)
-- The complete **biological-memory suite** — fractal, neurogenesis, concept
-  emergence, volition, Velum, analogy/creative mode
-- **Ops**: pluggable Redis/SQLite queue, async entry points, read-only MCP server
+- verifiable provenance and replayable receipts;
+- local L0/L1 memory and L3 canonical graph;
+- external knowledge ingestion for text/Markdown/JSON/JSONL/CSV;
+- GDPR-relevant erasure, restriction, record-of-processing, audit and PII tools;
+- read-only MCP server;
+- biological-memory research modules;
+- 546 passing tests and ~99% coverage.
 
-**⬜ Next**
-- 🌾 **RFC0063+** — more external-ingestion adapters (PDF / YAML / Wikidata RDF); core text/JSON/JSONL/CSV already shipped (`core/knowledge.py`)
-- 🧠 **RFC0068 Phase 1+** — active NeuroCore model adaptation; Phase 0 passive tracker already shipped (`core/neurocore.py`)
-- 🩹 **Sprint-A hardening** — A9 (LLM call safety) shipped; A1/A2/A3/A8 already satisfied; A6/A7/A10 apply only to the optional Phase‑1 stack ([status](./docs/SPRINT_A_STATUS.md))
+**Next / grant-scope candidates**
+
+- Evidence Span Store and Receipt v2;
+- dry-run imports and import sessions;
+- line/section/source-span provenance;
+- PDF/YAML/RDF/Wikidata adapters;
+- evaluation harness with trace/retrieval/receipt metrics;
+- capability-gated write APIs;
+- optional browser/PWA companion integration through a local backend/API.
+
+See **[ROADMAP.md](./ROADMAP.md)** and **[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)**.
 
 ---
 
 ## 📚 Documentation
 
-- **[PRIVACY.md](./PRIVACY.md)** — what is stored, where, and what never leaves the device
-- **[GDPR.md](./GDPR.md)** — article-by-article mapping of the design to GDPR
-- **[docs/PERSISTENT_MEMORY.md](./docs/PERSISTENT_MEMORY.md)** — persistent vs canonical vs immutable memory
-- **[SECURITY.md](./SECURITY.md)** — threat model & responsible disclosure
-- **[TEST_REPORT.md](./TEST_REPORT.md)** — current, un-inflated test results
-- **[ROADMAP.md](./ROADMAP.md)** — implemented vs designed, sprint by sprint
-- **[HYBRID_VISION.md](./HYBRID_VISION.md)** · **[FUTURE.md](./FUTURE.md)** — the longer research arc
+| Document | Purpose |
+|---|---|
+| **[DEMO.md](./DEMO.md)** | Verifiable memory walkthrough: ingest → trace → receipt → verify |
+| **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** | Architecture diagrams and memory/backends/privacy boundaries |
+| **[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)** | Grant-facing problem, solution, work packages and success criteria |
+| **[docs/EVAL.md](./docs/EVAL.md)** | Evaluation plan for trace completeness, receipt replay and retrieval quality |
+| **[docs/RELEASE_CHECKLIST.md](./docs/RELEASE_CHECKLIST.md)** | Release/tag/CI/docs/security checklist |
+| **[PRIVACY.md](./PRIVACY.md)** | What is stored, where, and what never leaves the device by default |
+| **[GDPR.md](./GDPR.md)** | Technical mapping to GDPR-relevant controls |
+| **[SECURITY.md](./SECURITY.md)** | Threat model and responsible disclosure |
+| **[TEST_REPORT.md](./TEST_REPORT.md)** | Reproducible test summary |
+| **[CONTRIBUTING.md](./CONTRIBUTING.md)** | Contributor setup and PR expectations |
+| **[GOVERNANCE.md](./GOVERNANCE.md)** | Governance and sustainability model |
+| **[CHANGELOG.md](./CHANGELOG.md)** | Release history |
+| **[HYBRID_VISION.md](./HYBRID_VISION.md)** / **[FUTURE.md](./FUTURE.md)** | Longer research arc |
 
-## 🌿 Research inspiration
-
-The living-memory layers draw on biological memory systems — hippocampal episodic
-memory & neurogenesis, insect associative learning, plant epigenetic adaptation,
-and CRISPR-style immune recognition of contradictions. In Crystal these are **no
-longer just metaphors: they are implemented, dependency-free, tested runtime
-modules** (see the **🧬 Living memory** group and deep dives above). The deeper,
-still-exploratory arc lives in
-[HYBRID_VISION.md](./HYBRID_VISION.md) and [FUTURE.md](./FUTURE.md).
+---
 
 ## 🤝 Contributing
 
-1. Read this README and **[ROADMAP.md](./ROADMAP.md)**, then the
-   **[Contributing guide](./CONTRIBUTING.md)** (dev setup, PR checklist).
-2. Open an issue before large changes.
-3. Keep the **honesty invariant**: `ROADMAP.md` distinguishes *implemented* from
-   *designed* — please preserve that distinction.
+1. Read this README, **[ROADMAP.md](./ROADMAP.md)** and **[CONTRIBUTING.md](./CONTRIBUTING.md)**.
+2. Open an issue before large architectural changes.
+3. Preserve the honesty invariant: implemented/tested work must stay distinct
+   from planned or speculative work.
+4. Preserve the core invariants: Graph = Truth, provenance-first memory,
+   local-first defaults and no silent L3 writes.
 
 By participating you agree to the **[Code of Conduct](./CODE_OF_CONDUCT.md)**.
-How the project is run and stays sustainable: **[GOVERNANCE.md](./GOVERNANCE.md)**.
-Changes are tracked in **[CHANGELOG.md](./CHANGELOG.md)**.
+
+---
 
 ## ⚖️ License
 
 **AGPL-3.0** — see **[LICENSE](./LICENSE)**. The copyleft open core keeps community
-work open (no closed-source cloud re-hosting); integrations may be released under
-permissive terms (Apache-2.0) where noted.
+work open; integrations may be released under permissive terms where noted.
 
 ---
 
