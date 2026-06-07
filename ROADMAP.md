@@ -85,6 +85,12 @@ This document is the **honest truth** about what's implemented vs designed.
   `VELANTRIM_NEURO_SEPARATION`); `growth_report()` exposes plasticity/capacity
   stats and `prune_candidates()` lists mature, weak, non-CORE-anchored facts that
   could be reclaimed (advisory). CLI `neuro-report` / `neuro-prune-candidates`
+- RFC0066 Concept Emergence (`core/concept.py`): ProtoConcepts emerge from
+  Hebbian co-activation — facts repeatedly recalled together (CO_OCCURRED edges
+  from `_link_episode`) are clustered (deterministic union-find over co-occurrence
+  weights ≥ `min_weight`) into concepts materialised as CONCEPT entity nodes with
+  MEMBER_OF links. Computed from the live graph (never stale), idempotent, never
+  alters fact truth; CLI `concepts` / `concepts-emerge` / `concepts-for`
 
 ## ✅ Implemented (metadata tooling, not runtime)
 
@@ -97,7 +103,6 @@ This document is the **honest truth** about what's implemented vs designed.
 | RFC | Component | Sprint target |
 |-----|-----------|---------------|
 | RFC0016 | Velum L1.5 synaptic pre-graph, `_degree_cache` | S2 |
-| RFC0066 | Concept Emergence, ProtoConcept, Hebbian learning | S3 |
 | RFC0065 | Memory Volition, `write_voluntary()`, VolitionWorker | S3 |
 | RFC0067 v2.0 | Analogy Graph, Semantic Bridge Engine, Adaptive Decoder | S4 |
 | RFC0068 | NeuroCore (plastic memory, Phase 0 passive tracker) | S5+ |
@@ -110,7 +115,8 @@ This document is the **honest truth** about what's implemented vs designed.
 > Redis + fallback queue → `core/queue.py`; async entry points → `core/aio.py`;
 > RFC0072 Immune / CRISPR Memory Guard → `core/immune.py`, RFC0070 Fractal
 > Memory Layer → `core/fractal.py`, RFC0073 Neurogenesis Dynamic Growth →
-> `core/neurogenesis.py` (issue #7, Hybrid Vision — RFC0070/0071/0072/0073 all done).
+> `core/neurogenesis.py` (issue #7, Hybrid Vision — RFC0070/0071/0072/0073 all done);
+> RFC0066 Concept Emergence → `core/concept.py`.
 
 ## 📊 Invariant enforcement status
 
@@ -127,7 +133,8 @@ This document is the **honest truth** about what's implemented vs designed.
   backends (LadybugDB default, Neo4j optional), FSRS-style decay, ingestion,
   truth maintenance, pluggable Redis/SQLite re-merge queue (`core/queue.py`),
   async entry points (`core/aio.py`)
-- **S3**: RFC0066 ConceptEmergenceDetector + RFC0065 Volition + A6–A10 wiring
+- **S3**: ✅ RFC0066 Concept Emergence (`core/concept.py`); remaining: RFC0065
+  Volition + RFC0016 Velum L1.5 + A1–A10 wiring
 - **S4**: RFC0067 Analogy Graph + RFC0063 Ingestion
 - **S5+**: RFC0068 NeuroCore (feature-flagged, Phase 0 passive)
 

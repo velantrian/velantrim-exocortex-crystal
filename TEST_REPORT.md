@@ -7,11 +7,11 @@ numbers: run `pytest` yourself and you will get the figures below.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **459** |
+| **Tests passing** | **474** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **~99%** (gate enforced at 95%) |
-| Test files | 35 (`tests/test_*.py`) |
+| Test files | 36 (`tests/test_*.py`) |
 | Python | 3.11 (3.10+ supported) |
 | Runtime dependencies | standard library only |
 
@@ -27,7 +27,7 @@ which needs a running Redis and is not part of the dependency-free default.
 
 ```bash
 pip install -r requirements.txt
-pytest                 # 459 passed, 12 skipped
+pytest                 # 474 passed, 12 skipped
 ```
 
 ## Coverage by module (core/)
@@ -38,8 +38,9 @@ pytest                 # 459 passed, 12 skipped
 | `core/adaptation.py`   | 22  | 100% |
 | `core/aio.py`          | 10  | 100% |
 | `core/audit.py`        | 69  | 100% |
-| `core/cli.py`          | 117 | 100% |
+| `core/cli.py`          | 127 | 100% |
 | `core/compliance.py`   | 43  | 100% |
+| `core/concept.py`      | 93  | 100% |
 | `core/consolidate.py`  | 45  | 96%  |
 | `core/contradiction.py`| 53  | 100% |
 | `core/crypto.py`       | 62  | 100% |
@@ -61,7 +62,7 @@ pytest                 # 459 passed, 12 skipped
 | `core/queue.py`        | 53  | 91%  |
 | `core/reconcile.py`    | 80  | 96%  |
 | `core/trace.py`        | 26  | 100% |
-| **Total (repo-wide)**  | **2837** | **~99%** |
+| **Total (repo-wide)**  | **2940** | **~99%** |
 
 ## What the tests cover
 
@@ -72,6 +73,7 @@ pytest                 # 459 passed, 12 skipped
 | Pluggable re-merge queue (SQLite/Redis backends, fallback) & async entry points | `test_queue.py` |
 | Immune / CRISPR Memory Guard (RFC0072) — threat memory, screening, strict/learn, CLI | `test_immune.py` |
 | Fractal Memory Layer (RFC0070) — anchor strength, reanchor/spill, decay protection, CLI | `test_fractal.py` |
+| Concept Emergence (RFC0066) — Hebbian weights, union-find clustering, emerge/lookup, CLI | `test_concept.py` |
 | Neurogenesis Dynamic Growth (RFC0073) — plasticity, pattern separation, growth/prune, CLI | `test_neurogenesis.py` |
 | L3 canonical graph adapter & backends | `test_l3_graph.py` |
 | On-disk SQLite L3 backend (persistence, erase, vectors, entities) | `test_l3_sqlite.py` |
