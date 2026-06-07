@@ -71,6 +71,13 @@ This document is the **honest truth** about what's implemented vs designed.
   (`VELANTRIM_IMMUNE_STRICT`) and adaptive learning (`VELANTRIM_IMMUNE_LEARN`).
   Accountable via the audit log; CLI `immune-block` / `immune-allow` /
   `immune-check` / `immune-report`
+- RFC0070 Fractal Memory Layer (`core/fractal.py`): recursive anchoring across
+  self-similar scales (SHORT → MEDIUM → LONG → CORE) with fractal capacities
+  (base, base/2, base/4, base/8). `reanchor()` sorts canonical facts by a
+  deterministic `anchor_strength` (significance · reinforcement · confidence) into
+  the scales; SleepCycle then protects deeper anchors from decay (CORE is exempt
+  → anti-catastrophic-forgetting). Inert until reanchored; CLI `fractal-reanchor`
+  / `fractal-report` / `fractal-anchors`
 
 ## ✅ Implemented (metadata tooling, not runtime)
 
@@ -94,7 +101,8 @@ This document is the **honest truth** about what's implemented vs designed.
 > RFC0063 Ingestion → `core/ingest.py`; L3 graph adapter + LadybugDB backend
 > (`core/l3_graph.py`, Kuzu frozen Oct'25 → LadybugDB successor, Neo4j optional);
 > Redis + fallback queue → `core/queue.py`; async entry points → `core/aio.py`;
-> RFC0072 Immune / CRISPR Memory Guard → `core/immune.py` (issue #7, Hybrid Vision).
+> RFC0072 Immune / CRISPR Memory Guard → `core/immune.py` and RFC0070 Fractal
+> Memory Layer → `core/fractal.py` (issue #7, Hybrid Vision).
 
 ## 📊 Invariant enforcement status
 

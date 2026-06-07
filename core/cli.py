@@ -23,7 +23,7 @@ from core.compliance import (
     restrict_processing, unrestrict_processing, record_of_processing,
 )
 from core.audit import audit_log, verify_audit_log
-from core import pii, provenance, immune
+from core import pii, provenance, immune, fractal
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -85,6 +85,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_icheck = sub.add_parser(
         "immune-check", help="screen a claim against the immune guard (no write)")
     p_icheck.add_argument("claim")
+    # ─── Fractal Memory Layer (RFC0070) ───────────────────────────────────────
+    sub.add_parser(
+        "fractal-reanchor", help="recompute fractal memory scales over the canon")
+    sub.add_parser("fractal-report", help="fractal layer status (scales, capacities)")
+    p_fanch = sub.add_parser(
+        "fractal-anchors", help="list canonical facts by memory scale")
+    p_fanch.add_argument(
+        "--scale", choices=fractal.SCALES, default=None,
+        help="filter to a single scale (SHORT/MEDIUM/LONG/CORE)")
 
     args = parser.parse_args(argv)
 
@@ -152,6 +161,12 @@ def main(argv: Optional[List[str]] = None) -> int:
                          ensure_ascii=False))
     elif args.cmd == "immune-check":
         print(json.dumps(immune.screen(args.claim), ensure_ascii=False))
+    elif args.cmd == "fractal-reanchor":
+        print(json.dumps(fractal.reanchor(), ensure_ascii=False))
+    elif args.cmd == "fractal-report":
+        print(json.dumps(fractal.fractal_report(), ensure_ascii=False, indent=2))
+    elif args.cmd == "fractal-anchors":
+        print(json.dumps(fractal.anchors(args.scale), ensure_ascii=False))
     return 0
 
 
