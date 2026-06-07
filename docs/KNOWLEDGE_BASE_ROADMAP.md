@@ -25,6 +25,16 @@ The purpose is not to create another huge encyclopedia. The purpose is to create
 
 ---
 
+## Knowledge resilience reserve
+
+The knowledge base is also intended as a resilience layer: a local reserve of essential knowledge that remains usable when the internet is unavailable, degraded or politically, technically or economically unreliable.
+
+This should not be framed as "all human knowledge". The realistic goal is a curated reserve of high-value knowledge that helps preserve access to important concepts, mechanisms, procedures, scientific facts and practical know-how even during network outages or failures of global information infrastructure.
+
+In this sense, the KB can become a compact knowledge fallback for humans, schools, communities, research teams and local AI systems.
+
+---
+
 ## Current status
 
 The broader project-maintainer knowledge-base effort currently reports up to approximately **30,000 draft facts** under collection and refinement.
@@ -34,6 +44,71 @@ Important boundary:
 - these draft facts are not automatically treated as canonical Crystal memory;
 - they require schema validation, deduplication, provenance, relation typing and import through the Crystal memory pipeline;
 - until validated, they should be described as a developing knowledge-base corpus, not as an audited released dataset.
+
+---
+
+## Scale and storage direction
+
+The knowledge base should be able to grow from a compact gold core into a much larger corpus.
+
+Suggested scaling path:
+
+```text
+1,000 gold facts
+→ 5,000 clean facts
+→ 10,000 high-value facts
+→ 30,000 draft/refined facts
+→ 50,000+ useful facts
+→ larger domain packs when provenance and review workflows are stable
+```
+
+The goal is not maximum size for its own sake. The goal is maximum useful coverage under strict structure: typed claims, source references, relations, qualifiers, evidence spans and traceability.
+
+Large future expansions should be organised as domain packs, for example science, education, medicine reference knowledge, engineering, agriculture, architecture, practical life and public-sector knowledge.
+
+---
+
+## Why not just Wikipedia?
+
+Wikipedia is extremely valuable, but it is written primarily for human reading. It contains narrative context, pedagogy, historical discussion, style variation and long articles.
+
+Velantrim KB aims to be different:
+
+```text
+Wikipedia = broad human encyclopedia
+Velantrim KB = compact source-tracked graph of useful knowledge
+```
+
+The KB should distil useful claims, conditions, mechanisms, procedures and relations into a graph that is easier for local AI systems to retrieve and reason over.
+
+The advantage is not that Velantrim replaces Wikipedia. The advantage is that it can transform selected knowledge into a more compact, typed and traceable graph:
+
+```text
+claim → qualifier → source → relation → evidence → trace
+```
+
+This makes it more suitable for weak and medium AI models running offline.
+
+---
+
+## Societal and professional coverage
+
+Long-term, the KB should help different layers of society orient themselves in reliable knowledge.
+
+Potential domains:
+
+- foundational science;
+- education and pedagogy;
+- research support;
+- medical reference knowledge and public-health education;
+- engineering and mechanisms;
+- construction and architecture;
+- agriculture and ecology;
+- practical household and safety knowledge;
+- institutional procedures and public-sector knowledge;
+- interdisciplinary knowledge for citizens, teachers, students, researchers and professionals.
+
+Important boundary: medical and safety-related content must remain source-tracked, reviewable and clearly separated from professional advice or emergency decision-making.
 
 ---
 
