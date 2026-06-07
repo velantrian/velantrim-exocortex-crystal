@@ -90,6 +90,15 @@ runtime · every delivered item below ships with tests and a CLI surface.
   touched and the L3 graph is never written (invariant **I68**); CLI
   `neurocore-report`. Active adaptation (Phase 1+) remains future work.
 
+### 🩹 Sprint-A hardening (production safety)
+- **A9 — LLM call safety** (`core/generation.py`): bounded retry with exponential
+  backoff on transient API failures (429 / timeout / overload), no retry for
+  non-transient errors, output ceiling, graceful degradation to extractive.
+- **A1 / A2 / A3** already satisfied by the architecture (idempotent ingest,
+  parameterised SQLite, overlap-safe PII); **A8** in its erasure form (Art. 17
+  hard delete + tombstones). Full per-patch triage:
+  **[docs/SPRINT_A_STATUS.md](./docs/SPRINT_A_STATUS.md)**.
+
 ### 🔌 Ops & integration
 - **Pluggable re-merge queue** (`core/queue.py`): self-healing outbox,
   `auto`→Redis (shared, optional `[redis]`) / SQLite (dependency-free default).
@@ -107,7 +116,7 @@ runtime · every delivered item below ships with tests and a CLI surface.
 |---|---|---|
 | 🌾 **RFC0063+** | Additional external-ingestion adapters: PDF / YAML / Wikidata RDF (core text/JSON/JSONL/CSV already shipped in `core/knowledge.py`) | S5+ |
 | 🧠 **RFC0068 Phase 1+** | **NeuroCore** active model adaptation + consolidation (Phase 0 passive tracker already shipped in `core/neurocore.py`) | S6+ |
-| 🩹 **A1–A10** | Sprint-A hardening patches (documented, not wired) | S3 |
+| 🩹 **A6 / A7 / A10** | Sprint-A patches for the optional Phase‑1 stack (Neo4j locks, async EventBus backpressure, aioredis pool) — N/A to the dependency-free core; wired only if those components are activated. See **[docs/SPRINT_A_STATUS.md](./docs/SPRINT_A_STATUS.md)** | S6+ |
 | ⚙️ async core | Full async/await rewrite of the stores (async *entry points* already shipped) | S3+ |
 
 ---

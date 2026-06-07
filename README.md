@@ -451,7 +451,7 @@ Velantrim ships as **fundable, verifiable deliverables**. See
 **⬜ Next**
 - 🌾 **RFC0063+** — more external-ingestion adapters (PDF / YAML / Wikidata RDF); core text/JSON/JSONL/CSV already shipped (`core/knowledge.py`)
 - 🧠 **RFC0068 Phase 1+** — active NeuroCore model adaptation; Phase 0 passive tracker already shipped (`core/neurocore.py`)
-- 🩹 **Sprint-A hardening patches** (A1–A10)
+- 🩹 **Sprint-A hardening** — A9 (LLM call safety) shipped; A1/A2/A3/A8 already satisfied; A6/A7/A10 apply only to the optional Phase‑1 stack ([status](./docs/SPRINT_A_STATUS.md))
 
 ---
 
