@@ -370,6 +370,24 @@ See **[ROADMAP.md](./ROADMAP.md)**, **[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_N
 
 ---
 
+## 💶 Funding
+
+Velantrim has applied to the **NLnet NGI0 Commons Fund** (June 2026 call, ref
+`2026-06-2ea`) for approximately **€50,000** — the maximum grant size for that
+fund. The request is milestone-based: every euro is tied to a concrete,
+independently verifiable deliverable that maps onto the work packages in
+[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md).
+
+The funding would move Velantrim from a tested research-grade core toward a
+reproducible open-source MVP: a deployable local-first prototype, a FastAPI
+service layer, production-strength source-span receipts, an evaluation CI gate,
+knowledge-base expansion, knowledge adapters, and initial multilingual access.
+
+See the full **[Funding Use Plan](./docs/grants/funding-use-plan.md)** for the
+milestone budget, partial-funding plan, and responsible-data position.
+
+---
+
 ## 📚 Documentation
 
 | Document | Purpose |
@@ -379,6 +397,7 @@ See **[ROADMAP.md](./ROADMAP.md)**, **[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_N
 | **[docs/COMPARISON.md](./docs/COMPARISON.md)** | Comparison with vector-only RAG, chatbot memory and agent-memory systems |
 | **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** | Architecture diagrams and memory/backends/privacy boundaries |
 | **[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)** | Grant-facing problem, solution, work packages and success criteria |
+| **[docs/grants/funding-use-plan.md](./docs/grants/funding-use-plan.md)** | Why ~€50,000 was requested and the milestone-based plan for using it |
 | **[docs/KNOWLEDGE_BASE_ROADMAP.md](./docs/KNOWLEDGE_BASE_ROADMAP.md)** | Curated offline knowledge graph roadmap: invariant science, practical knowledge, resilience reserve and multilingual expansion |
 | **[docs/USE_CASES.md](./docs/USE_CASES.md)** | Practical domains: personal, education, research, public sector, business and field operations |
 | **[docs/DIGITAL_SOVEREIGNTY.md](./docs/DIGITAL_SOVEREIGNTY.md)** | Local-first and European digital-sovereignty positioning |
