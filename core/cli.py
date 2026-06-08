@@ -148,7 +148,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_abr.add_argument("b")
     # ─── External knowledge ingestion (RFC0063) ───────────────────────────────
     p_learn = sub.add_parser(
-        "learn", help="import a knowledge file (.txt/.md/.json/.jsonl/.csv) via the TruthGate")
+        "learn",
+        help=("import a knowledge file via the TruthGate "
+              "(stdlib: .txt/.md/.json/.jsonl/.csv; "
+              "with extras: .yaml/.pdf/.ttl/.n3/.nt — see pyproject.toml [adapters])"))
     p_learn.add_argument("path")
     p_learn.add_argument("--source", default=None, help="provenance label (default: filename)")
     p_learn.add_argument("--dry-run", action="store_true",

@@ -18,6 +18,7 @@
 #   - No new entry into the canon — everything still goes through ingest()/TruthGate.
 
 import csv
+import hashlib
 import io
 import json
 import os
@@ -200,18 +201,29 @@ def ingest_file(
     source_status: str = EXTERNAL,
 ) -> Dict[str, Any]:
     """
-    Import a knowledge file (.txt/.md/.json/.jsonl/.csv) into the canon through the
-    TruthGate. `source` defaults to the file's basename; `fmt` is inferred from the
-    extension unless given. Raises on an unsupported extension.
+    Import a knowledge file into the canon through the TruthGate.
+
+    Stdlib formats (.txt/.md/.json/.jsonl/.csv) are handled natively.
+    Optional-dependency formats (.yaml/.pdf/.ttl/…) are handled by WP4
+    adapters auto-loaded from core.adapters when the relevant extra is
+    installed. `source` defaults to the file's basename; `fmt` is inferred
+    from the extension unless given. Raises on an unsupported extension.
     """
     ext = (fmt or os.path.splitext(path)[1]).lower()
     if not ext.startswith("."):
         ext = "." + ext
-    if ext not in _SUPPORTED:
-        raise ValueError(
-            f"ingest_file: unsupported extension {ext!r} (supported: {_SUPPORTED})")
-    with open(path, encoding="utf-8") as fh:
-        content = fh.read()
-    return ingest_text(content, fmt=ext.lstrip("."),
-                       source=source or os.path.basename(path),
-                       source_status=source_status)
+    src = source or os.path.basename(path)
+    if ext in _SUPPORTED:
+        with open(path, encoding="utf-8") as fh:
+            content = fh.read()
+        return ingest_text(content, fmt=ext.lstrip("."),
+                           source=src, source_status=source_status)
+    # Fall back to optional WP4 adapters (yaml / pdf / rdf …).
+    # ImportError is re-raised with an install hint; ValueError for truly unknown.
+    from core.adapters import load as _load_adapter
+    adapter_fn = _load_adapter(ext.lstrip("."))
+    claims = adapter_fn(path)
+    with open(path, "rb") as fh:
+        sha256_hex = hashlib.sha256(fh.read()).hexdigest()
+    return ingest_claims(claims, source=src, source_status=source_status,
+                         source_sha256=sha256_hex)
