@@ -13,8 +13,9 @@
 > 📦 **Scope of this repository.** This repository is the verified, dependency-free
 > open core: memory engine, provenance, GDPR-relevant controls, L3 graph adapter,
 > external ingestion, read-only MCP integration and tested memory layers. Browser
-> PWA demos and deeper research builds may live elsewhere. **Honesty rule:** this
-> README describes implemented and tested repository behaviour only.
+> PWA demos, curated knowledge-base corpora and deeper research builds may live
+> elsewhere. **Honesty rule:** this README describes implemented and tested
+> repository behaviour only; roadmap documents clearly mark planned work.
 
 ---
 
@@ -37,7 +38,7 @@ handling and replayable receipts.
 |---|---|---|
 | **L0 — Working cache** | short-lived in-RAM memory | fast recall inside the current process/session |
 | **L1 — Local working store** | SQLite/WAL operational memory | facts, states, updates and local persistence across runs |
-| **L2 — Pending / review path** | pre-canonical zone *(partial today)* | claims still `Observed` or advisory-quarantined before the gate; a full review queue is planned (grant scope WP2) |
+| **L2 — Pending / review path** | pre-canonical zone *(partial today)* | claims still `Observed` or advisory-quarantined before the gate; a full review queue is planned |
 | **L3 — Canonical graph** | durable truth graph | verified, source-tracked knowledge retrieved by the system |
 | **Trace / Receipt** | proof layer | shows how an answer connects back to facts and sources |
 
@@ -81,6 +82,31 @@ This is not an absolute security guarantee — no software can honestly promise
 that — but it is a strong foundation for **privacy, auditability and digital
 sovereignty** in Europe and anywhere else where local control matters.
 
+### 🛡️ Knowledge resilience reserve
+
+The broader Velantrim roadmap includes a curated **Knowledge Base**: a compact,
+source-aware graph of useful knowledge that can remain available when internet
+access is unavailable, degraded or unreliable.
+
+It is intended as a resilience layer for local AI and human communities: a reserve
+of essential scientific, practical, educational and procedural knowledge that can
+support weak and medium AI models offline.
+
+This is not a claim to store all human knowledge. The realistic goal is a curated,
+expandable, source-tracked knowledge reserve: more compact and machine-actionable
+than long encyclopedia articles, with knowledge represented as claims, qualifiers,
+relations, evidence spans and traceable graph edges.
+
+The developing corpus currently reports up to approximately **30,000 draft facts**
+under collection and refinement. These are **not** automatically part of the
+audited Crystal release boundary; they require schema validation, deduplication,
+provenance, relation typing and import through Crystal's TruthGate and receipt
+mechanisms.
+
+See **[docs/KNOWLEDGE_BASE_ROADMAP.md](./docs/KNOWLEDGE_BASE_ROADMAP.md)** for
+the knowledge-base plan, including invariant science, variant knowledge,
+practical knowledge, multilingual expansion and the path toward 50k+ useful facts.
+
 ### 🏛️ Where this can be used
 
 | Sector | Example use |
@@ -89,7 +115,7 @@ sovereignty** in Europe and anywhere else where local control matters.
 | **Business** | internal procedures, customer-support memory, compliance-aware copilots |
 | **Government / public sector** | sovereign local AI memory for sensitive institutional data |
 | **Schools / universities** | offline educational knowledge bases and curriculum memory |
-| **Healthcare** | local, auditable knowledge support where privacy is essential |
+| **Healthcare** | local, auditable reference knowledge support where privacy is essential |
 | **Research / science** | source-tracked research notes, datasets and claim provenance |
 | **Agriculture / industry / chemistry** | local operational knowledge, procedures, safety facts, field records |
 | **Libraries / archives** | curated corpora served offline with source trails |
@@ -206,15 +232,15 @@ Crystal is a set of small, focused modules, dependency-free by default and teste
 | `core/generation.py` | Extractive local answerer or optional LLM answerer |
 | `core/ingest.py` | Utterance → claim-type classification → gate → L3 |
 | `core/knowledge.py` | External ingestion for `.txt`, `.md`, `.json`, `.jsonl`, `.ndjson`, `.csv` |
-| `core/imports.py` | Import sessions & dry-run review (WP2): `learn --dry-run`, batch restrict/erase |
-| `core/eval.py` | Evaluation harness (`eval`): retrieval/trace/receipt + source-span coverage + contradiction P/R |
+| `core/imports.py` | Import sessions & dry-run review: `learn --dry-run`, batch restrict/erase |
+| `core/eval.py` | Evaluation harness: retrieval/trace/receipt + source-span coverage + contradiction P/R |
 
 ### 🛡️ Trust, truth and provenance
 
 | Module | Role |
 |---|---|
-| `core/trace.py` / `core/provenance.py` | Trace chain and tamper-evident replayable receipts (Receipt v2) |
-| `core/evidence.py` | Source-span evidence store (WP1): `source_uri`/chunk/span + content-light hashes; `evidence` CLI |
+| `core/trace.py` / `core/provenance.py` | Trace chain and tamper-evident replayable receipts |
+| `core/evidence.py` | Source-span evidence store: `source_uri`/chunk/span + content-light hashes |
 | `core/reconcile.py` | Reinforce / supersede / contradict / find conflicts |
 | `core/contradiction.py` | Deterministic contradiction classifier |
 | `core/immune.py` | Immune / CRISPR Guard for known harmful or hallucination patterns |
@@ -289,17 +315,23 @@ Default queue behaviour remains dependency-free with SQLite.
 - 591 passing tests and ~99% coverage;
 - baseline evaluation harness (`core/eval.py`, `velantrim eval`).
 
+**Developing outside the audited release boundary**
+
+- curated Velantrim Knowledge Base with up to ~30k draft facts under refinement;
+- invariant science, variant/contextual knowledge, practical knowledge and procedures;
+- multilingual labels and future localisation after schema stabilisation.
+
 **Next / grant-scope candidates**
 
-- Evidence Span Store and Receipt v2;
+- Evidence Span Store and Receipt v2 hardening;
 - dry-run imports and import sessions;
 - line/section/source-span provenance;
 - PDF/YAML/RDF/Wikidata adapters;
-- evaluation harness extensions (curated fixtures, contradiction recall, source-span coverage) — a baseline harness is already delivered;
+- evaluation harness extensions;
 - capability-gated write APIs;
 - optional browser/PWA companion integration through a local backend/API.
 
-See **[ROADMAP.md](./ROADMAP.md)** and **[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)**.
+See **[ROADMAP.md](./ROADMAP.md)**, **[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)** and **[docs/KNOWLEDGE_BASE_ROADMAP.md](./docs/KNOWLEDGE_BASE_ROADMAP.md)**.
 
 ---
 
@@ -312,6 +344,11 @@ See **[ROADMAP.md](./ROADMAP.md)** and **[docs/GRANT_NLNET_SCOPE.md](./docs/GRAN
 | **[docs/COMPARISON.md](./docs/COMPARISON.md)** | Comparison with vector-only RAG, chatbot memory and agent-memory systems |
 | **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** | Architecture diagrams and memory/backends/privacy boundaries |
 | **[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)** | Grant-facing problem, solution, work packages and success criteria |
+| **[docs/KNOWLEDGE_BASE_ROADMAP.md](./docs/KNOWLEDGE_BASE_ROADMAP.md)** | Curated offline knowledge graph roadmap: invariant science, practical knowledge, resilience reserve and multilingual expansion |
+| **[docs/USE_CASES.md](./docs/USE_CASES.md)** | Practical domains: personal, education, research, public sector, business and field operations |
+| **[docs/DIGITAL_SOVEREIGNTY.md](./docs/DIGITAL_SOVEREIGNTY.md)** | Local-first and European digital-sovereignty positioning |
+| **[docs/COMPARISON.md](./docs/COMPARISON.md)** | Comparison with ChatGPT, RAG, vector DBs and agent-memory frameworks |
+| **[docs/DEMO_UI.md](./docs/DEMO_UI.md)** | Browser/PWA companion demo boundary and screenshot plan |
 | **[docs/EVAL.md](./docs/EVAL.md)** | Evaluation plan for trace completeness, receipt replay and retrieval quality |
 | **[docs/RELEASE_CHECKLIST.md](./docs/RELEASE_CHECKLIST.md)** | Release/tag/CI/docs/security checklist |
 | **[PRIVACY.md](./PRIVACY.md)** | What is stored, where, and what never leaves the device by default |

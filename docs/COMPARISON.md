@@ -1,5 +1,7 @@
 # Comparison — Velantrim Crystal and Other AI Memory Approaches
 
+Velantrim Crystal should be evaluated as a verifiable AI memory core, not as a chatbot product.
+
 Velantrim Crystal is not a chatbot and not a generic RAG application. It is a
 local-first, verifiable memory substrate that can sit underneath agents,
 assistants, knowledge tools or offline applications.
@@ -114,6 +116,16 @@ Crystal is not, by itself:
 For production multi-user deployments, Crystal should be placed behind a proper
 application layer with authentication, authorisation, tenant isolation, backup
 policy, host encryption and operational monitoring.
+
+## Positioning
+
+The project is best described as:
+
+```text
+local-first verifiable memory infrastructure for trustworthy AI systems
+```
+
+It should not be positioned as a full AGI, a social chatbot, or a replacement for human review.
 
 ## Grant-facing takeaway
 
