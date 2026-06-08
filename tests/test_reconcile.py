@@ -65,6 +65,35 @@ def test_supersede_requires_new_fact_id():
         supersede("old", {"claim": "no id"})
 
 
+def test_supersede_rejects_zero_confidence_new_fact():
+    # #70: a supersession may not inject an unvalidated world fact into L3.
+    _validated("old", claim="earth is flat")
+    with pytest.raises(ValueError, match="TruthGate"):
+        supersede("old", {"fact_id": "ungated", "claim": "earth is round",
+                          "source": "s", "confidence": 0.0})  # Guardian blocks zero confidence
+    assert get_fact("ungated")["epistemic_state"] == "Observed"  # never reached L3
+    assert get_fact("old")["epistemic_state"] == "Validated"     # old untouched
+
+
+def test_supersede_rejects_llm_output_as_world_fact():
+    # #70: LLM_OUTPUT cannot become a WORLD_FACT through supersession either.
+    _validated("old2", claim="the sky is green")
+    with pytest.raises(ValueError, match="TruthGate"):
+        supersede("old2", {"fact_id": "llm", "claim": "the sky is blue",
+                           "source": "model", "confidence": 0.9,
+                           "claim_type": "WORLD_FACT", "source_status": "LLM_OUTPUT"})
+    assert get_fact("llm")["epistemic_state"] == "Observed"
+
+
+def test_supersede_enforce_gate_false_skips_gate():
+    # Reserved escape hatch for already-gated callers stays available.
+    _validated("old3", claim="earth is flat")
+    new_id = supersede("old3", {"fact_id": "trusted", "claim": "earth is round"},
+                       enforce_gate=False)
+    assert new_id == "trusted"
+    assert get_fact("trusted")["epistemic_state"] == "Validated"
+
+
 # ─── contradict ─────────────────────────────────────────────────────────────
 
 def test_contradict_marks_validated_fact_and_adds_edge():
