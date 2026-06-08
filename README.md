@@ -399,6 +399,7 @@ milestone budget, partial-funding plan, and responsible-data position.
 | **[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)** | Grant-facing problem, solution, work packages and success criteria |
 | **[docs/grants/funding-use-plan.md](./docs/grants/funding-use-plan.md)** | Why ~€50,000 was requested and the milestone-based plan for using it |
 | **[docs/grants/reviewer-qa.md](./docs/grants/reviewer-qa.md)** | Prepared answers to likely NLnet second-round questions and scope discipline |
+| **[docs/grants/letters-of-support.md](./docs/grants/letters-of-support.md)** | Outreach kit: templates for European endorsements that strengthen the grant's European Dimension |
 | **[docs/KNOWLEDGE_BASE_ROADMAP.md](./docs/KNOWLEDGE_BASE_ROADMAP.md)** | Curated offline knowledge graph roadmap: invariant science, practical knowledge, resilience reserve and multilingual expansion |
 | **[docs/USE_CASES.md](./docs/USE_CASES.md)** | Practical domains: personal, education, research, public sector, business and field operations |
 | **[docs/DIGITAL_SOVEREIGNTY.md](./docs/DIGITAL_SOVEREIGNTY.md)** | Local-first and European digital-sovereignty positioning |
