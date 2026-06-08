@@ -32,6 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Sprint-A A9 — LLM call safety** (`core/generation.py`): bounded retry with
   exponential backoff on transient API failures, no retry for non-transient
   errors, output ceiling, graceful degradation to the extractive generator.
+- **Hands-on demo walkthrough** (`docs/DEMO.md`, grant WP5 baseline): a
+  reproducible CLI tour with real captured output — ingest → ask → provenance
+  receipt + replay → contradiction detection → knowledge import + source-span
+  evidence → GDPR erase + tamper-evident audit → NeuroCore telemetry → eval
+  harness → optional HTTP. Linked from the README and the NLnet scope.
 - Community & governance docs: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`,
   `GOVERNANCE.md`, this `CHANGELOG.md`, `.github/FUNDING.yml`, and
   `docs/SPRINT_A_STATUS.md` (honest A1–A10 triage).
