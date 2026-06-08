@@ -8,7 +8,7 @@ whether memory answers remain grounded, replayable and auditable.
 
 The repository currently reports:
 
-- 591 passing tests;
+- 593 passing tests;
 - 12 skipped optional-backend tests;
 - 0 failing tests;
 - ~99% coverage with a 95% gate;
@@ -163,7 +163,7 @@ fixture metrics** and clearly separated future benchmark extensions:
 ```json
 {
   "version": "0.1.x",
-  "tests_passing": 591,
+  "tests_passing": 593,
   "coverage": "~99%",
   "baseline_fixture": {
     "cases": 4,

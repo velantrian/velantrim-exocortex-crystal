@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://velantrim.dev/schemas/metadata.schema.json",
+  "title": "Velantrim Provenance Metadata",
+  "description": "Provenance envelope attached to any operation that writes to or reads from the canonical graph. source_ref and trace_id are mandatory for any fact that claims to be auditable.",
+  "type": "object",
+  "required": ["schema_version", "source_ref", "trace_id", "created_at"],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Semantic version of the metadata schema used (e.g. '1.0.0')"
+    },
+    "source_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifies the originating artifact, session or document. Missing source_ref is a validation failure for auditable facts."
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Links this record back to the answer-trace receipt that created it. Missing trace_id is a validation failure for auditable facts."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "guardian_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Must default to false. Automatically imported or generated records must not claim guardian_verified=true unless the TruthGate explicitly set it."
+    },
+    "claim_type": {
+      "type": "string",
+      "enum": [
+        "WORLD_FACT",
+        "USER_EXPERIENCE",
+        "EMOTION",
+        "INTERPRETATION",
+        "OPINION",
+        "GOAL",
+        "PREFERENCE"
+      ]
+    },
+    "truth_status": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "USER_CLAIMED",
+        "UNVERIFIED",
+        "HYPOTHESIS",
+        "SUBJECTIVE"
+      ]
+    },
+    "source_status": {
+      "type": "string",
+      "enum": [
+        "USER_REPORTED",
+        "OBSERVED",
+        "DERIVED",
+        "EXTERNAL",
+        "LLM_OUTPUT",
+        "UNKNOWN"
+      ]
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    }
+  }
+}

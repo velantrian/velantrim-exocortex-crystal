@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://velantrim.dev/schemas/fact.schema.json",
+  "title": "Velantrim Fact",
+  "description": "A single knowledge atom stored in the Velantrim memory layer. Every field that influences retrieval or answer generation must be present and valid before the fact is eligible for L3 canonical graph promotion.",
+  "type": "object",
+  "required": ["fact_id", "claim", "source", "epistemic_state", "claim_type", "source_status", "truth_status", "confidence"],
+  "additionalProperties": true,
+  "properties": {
+    "fact_id": {
+      "type": "string",
+      "description": "Globally unique fact identifier (format: <prefix>:<hash12>)"
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The factual claim text (stored encrypted at rest)"
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable origin label (domain, session, document name)"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Model or operator confidence in the claim (0 = no confidence, 1 = certain)"
+    },
+    "significance": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Retrieval priority score; higher values are surfaced first"
+    },
+    "epistemic_state": {
+      "type": "string",
+      "enum": [
+        "Observed",
+        "Hypothesized",
+        "Supported",
+        "Validated",
+        "Contradicted",
+        "Deprecated",
+        "Collapsed",
+        "ImmutableCore"
+      ],
+      "description": "Position in the Epistemic State Machine (ESM). Only Validated and Supported facts are used to ground answers."
+    },
+    "claim_type": {
+      "type": "string",
+      "enum": [
+        "WORLD_FACT",
+        "USER_EXPERIENCE",
+        "EMOTION",
+        "INTERPRETATION",
+        "OPINION",
+        "GOAL",
+        "PREFERENCE"
+      ],
+      "description": "Modality of the claim. WORLD_FACT requires independent evidence to reach VERIFIED truth_status."
+    },
+    "source_status": {
+      "type": "string",
+      "enum": [
+        "USER_REPORTED",
+        "OBSERVED",
+        "DERIVED",
+        "EXTERNAL",
+        "LLM_OUTPUT",
+        "UNKNOWN"
+      ],
+      "description": "Origin channel. LLM_OUTPUT alone never becomes VERIFIED. EXTERNAL/DERIVED/OBSERVED from an independent source can reach VERIFIED."
+    },
+    "truth_status": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "USER_CLAIMED",
+        "UNVERIFIED",
+        "HYPOTHESIS",
+        "SUBJECTIVE"
+      ],
+      "description": "Assigned by TruthGate from (claim_type, source_status). Cannot be set directly by the caller."
+    },
+    "guardian_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "True only when the TruthGate Guardian has validated the fact for L3 promotion. Must default to false for all imported/generated records."
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Arbitrary structured metadata (stored encrypted at rest)"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

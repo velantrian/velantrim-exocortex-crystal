@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://velantrim.dev/schemas/trace.schema.json",
+  "title": "Velantrim Answer Trace",
+  "description": "Replayable receipt that proves how an answer was constructed from stored facts. A trace must be verifiable offline without the LLM that produced the answer.",
+  "type": "object",
+  "required": ["trace_id", "query", "steps"],
+  "additionalProperties": true,
+  "properties": {
+    "trace_id": {
+      "type": "string",
+      "description": "Unique identifier for this trace / receipt"
+    },
+    "query": {
+      "type": "string",
+      "description": "The original user query that triggered retrieval"
+    },
+    "answer": {
+      "type": ["string", "null"],
+      "description": "The generated answer, or null if no Validated/Supported facts were available (insufficient-grounding block)"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Ordered pipeline steps from retrieval through grounding to generation",
+      "items": {
+        "type": "object",
+        "required": ["step", "label"],
+        "additionalProperties": true,
+        "properties": {
+          "step": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Step index (1-based)"
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable step name"
+          },
+          "fact_ids": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "fact_ids of facts used or produced in this step"
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0,
+            "description": "Aggregate confidence at this step"
+          },
+          "note": {
+            "type": "string",
+            "description": "Optional diagnostic note"
+          }
+        }
+      }
+    },
+    "total_facts": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of facts used to ground the answer"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
