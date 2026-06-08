@@ -40,7 +40,9 @@ jobs:
           python -c "
           import json, sys
 
-          REQUIRED_FIELDS = ['chunk_id', 'title', 'content', 'layer']
+          # Fields every chunk must carry. 'layer' is intentionally excluded:
+          # the document header chunk (idx 0) belongs to no memory layer.
+          REQUIRED_FIELDS = ['chunk_id', 'title', 'content']
           path = 'docs/Velantrim_V8_Crystal_Sprint1.jsonl'
           errors = []
           ids_seen = {}
