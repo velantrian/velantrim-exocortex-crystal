@@ -40,5 +40,16 @@ class BackendRegistry:
         return instance
 
     def reset(self) -> None:
-        """Reset the singleton (for tests)."""
+        """Reset the singleton (for tests).
+
+        If the cached instance holds a closable resource (e.g. SqliteL3Graph's
+        connection), close it first so connections do not accumulate across the
+        many resets a test suite performs.
+        """
+        close = getattr(self._instance, "close", None)
+        if callable(close):
+            try:
+                close()
+            except Exception:  # noqa: BLE001 — reset must never raise
+                pass
         self._instance = None

@@ -11,9 +11,9 @@
 # docs/Velantrim_V8_Crystal_Sprint1_toc.md
 #
 # TODO (next):
-#   - HybridRetriever: add graph-walk / PageRank on top of vector-recall
 #   - ESM: full transition matrix + automatic Supported/Hypothesized
 #   - First-class episodic nodes (Person/Place/Time) instead of edge props
+# (Done: HybridRetriever graph-walk over vector-recall — see _graph_walk below.)
 
 import logging
 from datetime import datetime, timezone

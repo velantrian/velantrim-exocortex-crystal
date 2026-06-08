@@ -1012,8 +1012,11 @@ def get_l3_graph(backend: Optional[str] = None) -> L3GraphBackend:
     Return the L3 graph singleton. Backend — via argument or VELANTRIM_L3_BACKEND.
 
     Modes:
-      'auto' (default) — LadybugDB, if installed (the recommended prod engine,
-                        successor to Kuzu); otherwise in-memory mock, dependency-free.
+      'auto' (default) — LadybugDB if installed (the recommended prod engine,
+                        successor to Kuzu); otherwise the dependency-free on-disk
+                        SQLite backend (persists to ./data/velantrim_l3.db); the
+                        in-memory mock only as a last resort if SQLite cannot open.
+      'sqlite'        — always on-disk SQLite (dependency-free, local-first).
       'ladybug'       — always LadybugDB (ImportError if the package is missing).
       'neo4j'         — optional alternative (a running server is required).
       'mock'          — always in-memory (dev / CI).

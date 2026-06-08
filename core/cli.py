@@ -222,7 +222,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(json.dumps(provenance.build_receipt(res), ensure_ascii=False, indent=2))
     elif args.cmd == "verify-receipt":
         import sys
-        raw = sys.stdin.read() if args.file == "-" else open(args.file, encoding="utf-8").read()
+        if args.file == "-":
+            raw = sys.stdin.read()
+        else:
+            with open(args.file, encoding="utf-8") as fh:
+                raw = fh.read()
         print(json.dumps(provenance.verify_receipt(json.loads(raw)), ensure_ascii=False))
     elif args.cmd == "conflicts":
         print(json.dumps(find_conflicts(args.claim), ensure_ascii=False))

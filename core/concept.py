@@ -60,20 +60,23 @@ def hebbian_weights() -> Dict[Tuple[str, str], int]:
     once.
     """
     graph = get_l3_graph()
-    weights: Dict[Tuple[str, str], int] = {}
+    # A co-recall writes both directed edges a→b and b→a. Tally the directed
+    # counts first, then fold each undirected pair to the max of its two
+    # directions. This is robust even if only one direction is present (no
+    # halving, so odd counts are never lost), and matches the symmetric case.
+    directed: Dict[Tuple[str, str], int] = {}
     for fact in graph.all_facts():
         a = fact["fact_id"]
         for edge in graph.get_edges(a, _EPISODE_REL):
             b = edge["target"]
             if a == b:
                 continue
-            key = (a, b) if a <= b else (b, a)
-            # Each co-recall writes a→b AND b→a; count once per directed edge and
-            # halve at the end would lose odd counts, so we take the max of the two
-            # directions instead (they are equal in normal operation).
-            weights[key] = weights.get(key, 0) + 1
-    # We counted both directions; normalise to per-pair co-occurrence count.
-    return {k: v // 2 if v >= 2 else v for k, v in weights.items()}
+            directed[(a, b)] = directed.get((a, b), 0) + 1
+    weights: Dict[Tuple[str, str], int] = {}
+    for (a, b), count in directed.items():
+        key = (a, b) if a <= b else (b, a)
+        weights[key] = max(weights.get(key, 0), count)
+    return weights
 
 
 class _UnionFind:
