@@ -54,7 +54,9 @@ The current open core already includes:
 - a baseline evaluation harness (`core/eval.py`) reporting retrieval/trace/receipt
   metrics;
 - external knowledge ingestion for `.txt`, `.md`, `.json`, `.jsonl`, `.ndjson`,
-  and `.csv`;
+  and `.csv`, with optional adapters for `.yaml`, `.pdf` and RDF/Linked Data
+  (`.ttl`/`.n3`/`.nt`/`.rdf`) that keep the runtime stdlib-only;
+- a curator review queue (`core/review.py`) for `Observed`/quarantined items;
 - GDPR-relevant erasure, restriction, record-of-processing and audit logging;
 - opt-in encryption at rest for L1 personal-data fields;
 - dependency-free read-only MCP server;
@@ -92,15 +94,21 @@ public-sector use.
 
 ### WP2 — Import Sessions and Dry-run Review
 
-A **baseline is already implemented** (`core/imports.py`): a dry-run preview
-(`learn --dry-run`) predicts accept/reinforce/block/conflict through the same
-validators with zero writes; real imports carry a session id and can be
-restricted or erased as a batch (`import-session` / `session-restrict` /
-`session-erase`). The funded work extends this to institutional scale:
+A **baseline is already implemented** (`core/imports.py` + `core/review.py`): a
+dry-run preview (`learn --dry-run`) predicts accept/reinforce/block/conflict
+through the same validators with zero writes; real imports carry a session id and
+can be restricted or erased as a batch (`import-session` / `session-restrict` /
+`session-erase`). A **curator review queue** (`review-queue` / `review-item` /
+`review-approve` / `review-reject`) now surfaces every `Observed`/quarantined
+item that did not reach the canon, re-runs the gates to explain *why* it is
+pending, and lets a librarian approve (promote to canon — with an explicit,
+audited override for still-blocked items) or reject it; every decision is sealed
+in the tamper-evident audit chain. The funded work extends this to institutional
+scale:
 
 - resumable / chunked import summaries for large corpora;
 - intra-batch duplicate and conflict consolidation in the preview;
-- a curator review queue for `Observed`/quarantined items (the full L2 path);
+- a web review UI over the queue API, with role-based curator permissions;
 - per-source licence and provenance metadata capture.
 
 **Outcome:** safer corpus ingestion for institutions.
@@ -127,12 +135,17 @@ credible quality signal:
 
 ### WP4 — Stronger Knowledge Adapters
 
-Add optional adapters while keeping the default runtime dependency-free:
+A **baseline is already implemented** (`core/adapters/`): self-registering,
+optional adapters extend `velantrim learn` to PDF (`pypdf`), YAML (`PyYAML`) and
+RDF/Linked Data (`rdflib`: `.ttl`/`.n3`/`.nt`/`.rdf`) while the default runtime
+stays stdlib-only — a missing adapter dependency raises a clear install hint
+rather than failing the core. Every adapted claim still flows through the same
+Guardian → TruthGate path. The funded work hardens this for real collections:
 
-- PDF text extraction adapter;
-- YAML adapter;
-- RDF/Wikidata import path;
-- license/source metadata handling.
+- automatic source-span offsets during PDF/Markdown extraction (feeds WP1);
+- a full RDF/Wikidata import path with Q-/P-code label resolution;
+- license/source metadata capture per adapted source;
+- adapters for further institutional formats (e.g. EPUB, BibTeX, OAI-PMH).
 
 **Outcome:** better fit for libraries, archives, research datasets and public
 knowledge sources.

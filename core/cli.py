@@ -26,7 +26,7 @@ from core.compliance import (
 from core.audit import audit_log, verify_audit_log
 from core import (pii, provenance, immune, fractal, neurogenesis, concept,
                   volition, velum, analogy, knowledge, neurocore, eval as _eval,
-                  evidence, imports)
+                  evidence, imports, review)
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -164,6 +164,28 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_isr.add_argument("session_id")
     p_ise = sub.add_parser("session-erase", help="erase (Art. 17) a whole import session")
     p_ise.add_argument("session_id")
+    # ─── Curator review queue (WP2) ────────────────────────────────────────────
+    p_rq = sub.add_parser(
+        "review-queue", help="list facts pending curator review (blocked / not yet canon)")
+    p_rq.add_argument("--type", default=None, dest="claim_type",
+                      help="filter by claim_type (e.g. WORLD_FACT)")
+    p_rq.add_argument("--limit", type=int, default=None, help="cap the number of items")
+    sub.add_parser("review-report", help="review-queue health (pending count by claim_type)")
+    p_ri = sub.add_parser(
+        "review-item", help="detail + fresh gate diagnosis for one pending fact")
+    p_ri.add_argument("fact_id")
+    p_ra = sub.add_parser(
+        "review-approve", help="promote a pending fact into the canon (curator decision)")
+    p_ra.add_argument("fact_id")
+    p_ra.add_argument("--actor", default="curator", help="who approved (for the audit log)")
+    p_ra.add_argument("--note", default=None, help="optional note (for the audit log)")
+    p_ra.add_argument("--force", action="store_true",
+                      help="override a still-blocked fact (explicit, audited)")
+    p_rj = sub.add_parser(
+        "review-reject", help="reject a pending fact (Observed → Collapsed)")
+    p_rj.add_argument("fact_id")
+    p_rj.add_argument("--actor", default="curator", help="who rejected (for the audit log)")
+    p_rj.add_argument("--reason", default="curator_rejected", help="reason (for the audit log)")
     # ─── NeuroCore Phase 0 passive tracker (RFC0068) ───────────────────────────
     sub.add_parser(
         "neurocore-report", help="RFC0068 NeuroCore Phase 0 plasticity telemetry")
@@ -311,6 +333,23 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(json.dumps(imports.restrict_session(args.session_id), ensure_ascii=False))
     elif args.cmd == "session-erase":
         print(json.dumps(imports.erase_session(args.session_id), ensure_ascii=False))
+    elif args.cmd == "review-queue":
+        print(json.dumps(
+            review.pending(limit=args.limit, claim_type=args.claim_type),
+            ensure_ascii=False))
+    elif args.cmd == "review-report":
+        print(json.dumps(review.review_report(), ensure_ascii=False))
+    elif args.cmd == "review-item":
+        print(json.dumps(review.review_item(args.fact_id), ensure_ascii=False))
+    elif args.cmd == "review-approve":
+        print(json.dumps(
+            review.approve(args.fact_id, actor=args.actor, note=args.note,
+                           force=args.force),
+            ensure_ascii=False))
+    elif args.cmd == "review-reject":
+        print(json.dumps(
+            review.reject(args.fact_id, actor=args.actor, reason=args.reason),
+            ensure_ascii=False))
     elif args.cmd == "neurocore-report":
         print(json.dumps(neurocore.report(), ensure_ascii=False))
     elif args.cmd == "eval":
