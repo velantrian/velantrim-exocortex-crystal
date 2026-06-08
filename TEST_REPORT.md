@@ -7,7 +7,7 @@ numbers: run the commands below and compare the figures.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **624** |
+| **Tests passing** | **633** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **~99%** (gate enforced at 95%) |

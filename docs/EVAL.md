@@ -8,7 +8,7 @@ whether memory answers remain grounded, replayable and auditable.
 
 The repository currently reports:
 
-- 624 passing tests;
+- 633 passing tests;
 - 12 skipped optional-backend tests;
 - 0 failing tests;
 - ~99% coverage with a 95% gate;
@@ -19,17 +19,27 @@ The repository currently reports:
 See [../TEST_REPORT.md](../TEST_REPORT.md) for the reproducible test summary.
 
 A **baseline evaluation harness now exists** (`core/eval.py`, run with `velantrim
-eval`). On a built-in deterministic fixture it reports retrieval `hit@1/3/5` + MRR,
-trace completeness, metadata completeness, source-span coverage,
-receipt-replay survival and contradiction precision/recall — for example:
+eval`). It runs over a **curated, multi-domain fixture corpus** bundled with the
+package (`core/_eval_fixtures/`): **16 retrieval cases** (physics, geography,
+astronomy, chemistry, biology, history, mathematics) with ranking **distractors**
+so retrieval is non-trivial, and **12 labelled contradiction pairs** including
+hard negatives (same-numeric-value, different-subject, refinement). It reports
+retrieval `hit@1/3/5` + MRR, trace completeness, metadata completeness,
+source-span coverage, receipt-replay survival and contradiction
+precision/recall — the current baseline:
 
 ```json
-{"cases": 4, "retrieval": {"hit@1": 0.5, "hit@3": 1.0, "hit@5": 1.0, "mrr": 0.75},
+{"cases": 16, "retrieval": {"hit@1": 0.875, "hit@3": 0.9375, "hit@5": 1.0, "mrr": 0.9115},
  "trace_completeness": 1.0, "metadata_completeness": 1.0, "source_span_coverage": 1.0,
  "unsupported_provenance": 0,
  "receipt_replay_survival": 1.0,
- "contradiction": {"pairs": 4, "precision": 1.0, "recall": 1.0, "false_positive_rate": 0.0}}
+ "contradiction": {"pairs": 12, "precision": 0.8333, "recall": 0.8333, "false_positive_rate": 0.1667}}
 ```
+
+(The deterministic classifier catches negation, numeric and known-antonym
+signals; rarer antonyms such as *heavier/lighter* are a documented limitation,
+which is why recall is 0.83 rather than 1.0 — the corpus does not cherry-pick
+only easy positives.)
 
 `unsupported_provenance` counts facts that present high-confidence provenance
 (`truth_status == VERIFIED`) while carrying **no** source-span evidence (#61). A
@@ -38,9 +48,31 @@ The complementary receipt-level guard is `verify_receipt(receipt,
 strict_provenance=True)`, which flags such a citation as `unsupported_provenance`
 and fails verification.
 
-This is a **baseline fixture**, not a broad external benchmark. The dimensions
-below define where the harness is extended next: curated corpora, additional
-contradiction cases, larger source-span fixtures and CI regression gates.
+### Quality gate (CI)
+
+`scripts/eval_gate.py` (also `velantrim eval --gate`) runs the harness in an
+isolated, ephemeral canon, writes `metrics.jsonl` + `eval_report.md`, and exits
+non-zero if any metric falls below its regression floor (or above its ceiling).
+A dedicated **`eval-gate` CI job** runs it on every push and pull request, so
+retrieval / grounding / contradiction quality cannot silently drop between
+releases. The thresholds (`core.eval.DEFAULT_GATE` / `_GATE_MAX`) sit just below
+the current baseline and are tightened as the corpus and embedder improve:
+
+| metric | floor | baseline |
+|---|---|---|
+| retrieval.hit@1 | 0.80 | 0.875 |
+| retrieval.hit@3 | 0.85 | 0.9375 |
+| retrieval.mrr | 0.85 | 0.9115 |
+| trace / metadata / source-span / receipt-replay | 1.0 | 1.0 |
+| contradiction.precision | 0.75 | 0.8333 |
+| contradiction.recall | 0.75 | 0.8333 |
+| unsupported_provenance (ceiling) | ≤ 0 | 0 |
+| contradiction.false_positive_rate (ceiling) | ≤ 0.25 | 0.1667 |
+
+This is still a **curated fixture**, not a broad external benchmark. The
+dimensions below define where the harness is extended next: larger corpora across
+more domains and languages, adversarial contradiction cases and a grounding score
+for generated answers.
 
 ## Evaluation dimensions
 
@@ -171,7 +203,7 @@ fixture metrics** and clearly separated future benchmark extensions:
 ```json
 {
   "version": "0.1.x",
-  "tests_passing": 624,
+  "tests_passing": 633,
   "coverage": "~99%",
   "baseline_fixture": {
     "cases": 4,

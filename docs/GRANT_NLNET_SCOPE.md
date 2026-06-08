@@ -58,7 +58,7 @@ The current open core already includes:
 - GDPR-relevant erasure, restriction, record-of-processing and audit logging;
 - opt-in encryption at rest for L1 personal-data fields;
 - dependency-free read-only MCP server;
-- 624 passing tests and ~99% coverage.
+- 633 passing tests and ~99% coverage.
 
 ## Why this fits public-interest infrastructure
 
@@ -110,13 +110,18 @@ restricted or erased as a batch (`import-session` / `session-restrict` /
 A **baseline is already implemented** (`core/eval.py`, `velantrim eval`): a
 deterministic report covering retrieval (hit@k / MRR), trace completeness,
 metadata completeness, **source-span coverage**, **contradiction
-precision/recall**, and receipt-replay survival. The funded work scales it to a
+precision/recall**, and receipt-replay survival. It now runs over a **curated,
+multi-domain fixture corpus** (16 retrieval cases with ranking distractors, 12
+labelled contradiction pairs including hard negatives), emits per-case
+`metrics.jsonl` + `eval_report.md`, and is enforced by a **CI quality gate**
+(`scripts/eval_gate.py`, `velantrim eval --gate`) so retrieval/grounding/
+contradiction quality cannot silently regress. The funded work scales this to a
 credible quality signal:
 
-- curated fixture corpora and per-case `metrics.jsonl` / `eval_report.md`;
+- larger curated corpora across many more domains and languages;
 - grounding score for generated answers;
-- CI regression gates so quality cannot silently drop between releases;
-- broader contradiction and retrieval fixtures across domains.
+- broader contradiction and retrieval fixtures, with adversarial cases;
+- per-release tracking and published quality trend reports.
 
 **Outcome:** measurable quality instead of narrative-only claims.
 

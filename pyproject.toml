@@ -78,6 +78,11 @@ api = [
 packages = ["core"]
 py-modules = ["epigenetic_adaptation_module"]
 
+[tool.setuptools.package-data]
+# Bundle the curated evaluation fixtures (WP3) so `velantrim eval` works from a
+# wheel as well as the repo.
+core = ["_eval_fixtures/*.json"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]

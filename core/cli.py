@@ -12,6 +12,7 @@
 
 import argparse
 import json
+import sys
 from typing import Optional, List
 
 from core.ingest import ingest
@@ -164,8 +165,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     sub.add_parser(
         "neurocore-report", help="RFC0068 NeuroCore Phase 0 plasticity telemetry")
     # ─── Evaluation harness (baseline) ─────────────────────────────────────────
-    sub.add_parser(
+    p_eval = sub.add_parser(
         "eval", help="run the baseline evaluation harness (retrieval/trace/receipt metrics)")
+    p_eval.add_argument("--detail", action="store_true",
+                        help="include a per-case retrieval breakdown")
+    p_eval.add_argument("--md", action="store_true",
+                        help="print a Markdown report instead of JSON")
+    p_eval.add_argument("--gate", action="store_true",
+                        help="enforce the WP3 quality gate; exit non-zero if a metric regresses")
     # ─── Evidence spans (WP1) ──────────────────────────────────────────────────
     p_ev = sub.add_parser(
         "evidence", help="list source-span evidence attached to a fact")
@@ -304,7 +311,18 @@ def main(argv: Optional[List[str]] = None) -> int:
     elif args.cmd == "neurocore-report":
         print(json.dumps(neurocore.report(), ensure_ascii=False))
     elif args.cmd == "eval":
-        print(json.dumps(_eval.run_baseline(), ensure_ascii=False))
+        report = _eval.run_baseline(detail=args.detail or args.md)
+        if args.md:
+            print(_eval.format_report_md(report))
+        else:
+            print(json.dumps(report, ensure_ascii=False))
+        if args.gate:
+            verdict = _eval.gate(report)
+            if not verdict["passed"]:
+                for f in verdict["failures"]:
+                    print(f"gate FAIL: {f['metric']}={f['value']} "
+                          f"(must be {f['op']} {f['threshold']})", file=sys.stderr)
+                return 1
     elif args.cmd == "evidence":
         if args.verify:
             print(json.dumps(evidence.verify_evidence(args.fact_id), ensure_ascii=False))

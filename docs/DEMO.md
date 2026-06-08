@@ -197,24 +197,39 @@ and capturing real surprise data (including zero-hit cold-start queries).
 
 ---
 
-## 7. Baseline evaluation harness — measurable, not narrative
+## 7. Baseline evaluation harness + quality gate — measurable, not narrative
+
+The harness runs over a curated, multi-domain corpus (16 retrieval cases with
+ranking distractors, 12 labelled contradiction pairs incl. hard negatives):
 
 ```bash
 velantrim eval
 ```
 ```json
-{"cases": 4,
- "retrieval": {"hit@1": 1.0, "hit@3": 1.0, "hit@5": 1.0, "mrr": 1.0},
+{"cases": 16,
+ "retrieval": {"hit@1": 0.875, "hit@3": 0.9375, "hit@5": 1.0, "mrr": 0.9115},
  "trace_completeness": 1.0, "metadata_completeness": 1.0,
  "source_span_coverage": 1.0, "unsupported_provenance": 0,
  "receipt_replay_survival": 1.0,
- "contradiction": {"pairs": 4, "tp": 2, "fp": 0, "fn": 0,
-                   "precision": 1.0, "recall": 1.0, "false_positive_rate": 0.0}}
+ "contradiction": {"pairs": 12, "tp": 5, "fp": 1, "fn": 1,
+                   "precision": 0.8333, "recall": 0.8333, "false_positive_rate": 0.1667}}
 ```
 
 A deterministic report over retrieval, trace/metadata completeness, source-span
-coverage, contradiction precision/recall and receipt-replay survival. Scaling
-this to curated fixture corpora with CI quality gates is grant work package WP3.
+coverage, contradiction precision/recall and receipt-replay survival. The
+**CI quality gate** fails the build if any metric regresses below its floor:
+
+```bash
+velantrim eval --gate        # exit 0 if all thresholds met, non-zero otherwise
+python scripts/eval_gate.py  # CI entry point — also writes metrics.jsonl + eval_report.md
+```
+```
+✅ quality gate PASSED
+```
+
+So retrieval/grounding/contradiction quality cannot silently drop between
+releases (grant work package WP3). Larger multi-domain corpora and a grounding
+score for generated answers are the funded extensions.
 
 ---
 

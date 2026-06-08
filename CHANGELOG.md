@@ -32,6 +32,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Sprint-A A9 — LLM call safety** (`core/generation.py`): bounded retry with
   exponential backoff on transient API failures, no retry for non-transient
   errors, output ceiling, graceful degradation to the extractive generator.
+- **Evaluation quality gate** (`scripts/eval_gate.py`, `velantrim eval --gate`,
+  grant WP3 baseline): the harness now runs over a curated, multi-domain fixture
+  corpus bundled with the package (`core/_eval_fixtures/` — 16 retrieval cases
+  with ranking distractors, 12 labelled contradiction pairs incl. hard
+  negatives), emits per-case `metrics.jsonl` + `eval_report.md`, and is enforced
+  by a dedicated `eval-gate` CI job with regression thresholds so retrieval /
+  grounding / contradiction quality cannot silently drop. `velantrim eval` gains
+  `--detail`, `--md` and `--gate`.
 - **Hands-on demo walkthrough** (`docs/DEMO.md`, grant WP5 baseline): a
   reproducible CLI tour with real captured output — ingest → ask → provenance
   receipt + replay → contradiction detection → knowledge import + source-span
@@ -51,7 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `auto` docstring corrected; `concept.hebbian_weights()` folds directed edge
   counts robustly; assorted LOW smells (`verify-receipt` file handle, decimal
   handling in `contradiction._content`).
-- Documentation figures synced to the current suite (**624 tests, ~99% coverage**)
+- Documentation figures synced to the current suite (**633 tests, ~99% coverage**)
   across README, ROADMAP, GDPR, and TEST_REPORT.
 
 ### Removed

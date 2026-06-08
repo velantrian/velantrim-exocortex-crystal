@@ -51,7 +51,7 @@ def test_metadata_completeness_after_ingest():
 
 def test_run_baseline_structure_and_ranges():
     report = ev.run_baseline()
-    assert report["cases"] == 4
+    assert report["cases"] == 16          # curated bundled corpus
     # well-formed retrieval block
     for key in ("hit@1", "hit@3", "hit@5", "mrr"):
         assert 0.0 <= report["retrieval"][key] <= 1.0
@@ -64,7 +64,7 @@ def test_run_baseline_structure_and_ranges():
     assert 0.0 <= report["trace_completeness"] <= 1.0
     # contradiction block present and well-formed
     c = report["contradiction"]
-    assert c["pairs"] == 4
+    assert c["pairs"] == 12
     assert 0.0 <= c["precision"] <= 1.0 and 0.0 <= c["recall"] <= 1.0
 
 
@@ -84,11 +84,11 @@ def test_source_span_coverage():
 
 def test_contradiction_eval_default_fixture():
     rep = ev.contradiction_eval()
-    assert rep["pairs"] == 4
-    # different-subject pairs must not be flagged → no false positives
+    assert rep["pairs"] == 12                      # curated bundled corpus
+    # in isolation the hard negatives must not be flagged → no false positives
     assert rep["false_positive_rate"] == 0.0 and rep["precision"] == 1.0
-    # at least one true contradiction (the numeric one) must be caught
-    assert rep["recall"] >= 0.5
+    # the negation/numeric true contradictions must be caught
+    assert rep["recall"] >= 0.8
 
 
 def test_contradiction_eval_custom_pairs():
@@ -121,10 +121,77 @@ def test_run_baseline_custom_fixture():
     assert report["retrieval"]["hit@5"] == 1.0
 
 
+# ─── WP3: curated corpus, quality gate, reporting ─────────────────────────────
+
+def test_load_retrieval_corpus_is_curated():
+    corpus = ev.load_retrieval_corpus()
+    assert len(corpus["cases"]) == 16
+    assert len(corpus["distractors"]) >= 4
+    # every case is a well-formed (query, claim) pair across multiple domains
+    assert all(c.get("query") and c.get("claim") for c in corpus["cases"])
+    assert len({c.get("domain") for c in corpus["cases"]}) >= 4
+
+
+def test_load_contradiction_pairs_is_curated():
+    pairs = ev.load_contradiction_pairs()
+    assert len(pairs) == 12
+    assert any(p["contradict"] for p in pairs) and any(not p["contradict"] for p in pairs)
+
+
+def test_baseline_passes_the_quality_gate():
+    report = ev.run_baseline()
+    verdict = ev.gate(report)
+    assert verdict["passed"], verdict["failures"]
+
+
+def test_gate_flags_a_regression():
+    report = ev.run_baseline()
+    report["retrieval"]["hit@1"] = 0.1          # simulate a retrieval regression
+    report["contradiction"]["recall"] = 0.0     # and a classifier regression
+    verdict = ev.gate(report)
+    assert not verdict["passed"]
+    metrics = {f["metric"] for f in verdict["failures"]}
+    assert "retrieval.hit@1" in metrics and "contradiction.recall" in metrics
+
+
+def test_gate_ceiling_metric():
+    report = ev.run_baseline()
+    report["unsupported_provenance"] = 3        # ceiling metric: lower is better
+    verdict = ev.gate(report)
+    assert not verdict["passed"]
+    assert any(f["metric"] == "unsupported_provenance" and f["op"] == "<="
+               for f in verdict["failures"])
+
+
+def test_run_baseline_detail_breakdown():
+    report = ev.run_baseline(detail=True)
+    detail = report["cases_detail"]
+    assert len(detail) == report["cases"]
+    row = detail[0]
+    assert {"domain", "query", "expected", "hit@1", "hit@3", "rr"} <= set(row)
+
+
+def test_format_report_md():
+    md = ev.format_report_md(ev.run_baseline())
+    assert "# Velantrim Crystal — Evaluation Report" in md
+    assert "## Retrieval" in md and "## Contradiction classifier" in md
+
+
 # ─── CLI ──────────────────────────────────────────────────────────────────────
 
 def test_cli_eval(capsys):
     from core.cli import main
     assert main(["eval"]) == 0
     report = json.loads(capsys.readouterr().out.strip())
-    assert "retrieval" in report and report["cases"] == 4
+    assert "retrieval" in report and report["cases"] == 16
+
+
+def test_cli_eval_gate_passes(capsys):
+    from core.cli import main
+    assert main(["eval", "--gate"]) == 0
+
+
+def test_cli_eval_md(capsys):
+    from core.cli import main
+    assert main(["eval", "--md"]) == 0
+    assert "## Retrieval" in capsys.readouterr().out
