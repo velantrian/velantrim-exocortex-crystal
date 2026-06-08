@@ -173,6 +173,7 @@ _EVIDENCE_DDL = """
         source_uri    TEXT NOT NULL,
         source_kind   TEXT NOT NULL,
         chunk_id      TEXT,
+        section       TEXT,
         span_start    INTEGER,
         span_end      INTEGER,
         source_sha256 TEXT,
@@ -238,13 +239,22 @@ _MIGRATIONS = [
     ("restricted",    "INTEGER DEFAULT 0"),  # GDPR Art. 18 (processing restriction)
 ]
 
+# Columns added to evidence_spans after its first release (WP1 hardening, #61).
+_EVIDENCE_MIGRATIONS = [
+    ("section", "TEXT"),  # human-readable source location (heading/page/section)
+]
+
 
 def _migrate(conn) -> None:
-    """Add missing columns to the existing facts table (idempotent)."""
-    existing = {row["name"] for row in conn.execute("PRAGMA table_info(facts)")}
+    """Add missing columns to existing tables (idempotent)."""
+    facts_cols = {row["name"] for row in conn.execute("PRAGMA table_info(facts)")}
     for column, ddl in _MIGRATIONS:
-        if column not in existing:
+        if column not in facts_cols:
             conn.execute(f"ALTER TABLE facts ADD COLUMN {column} {ddl}")
+    ev_cols = {row["name"] for row in conn.execute("PRAGMA table_info(evidence_spans)")}
+    for column, ddl in _EVIDENCE_MIGRATIONS:
+        if column not in ev_cols:
+            conn.execute(f"ALTER TABLE evidence_spans ADD COLUMN {column} {ddl}")
 
 
 @contextmanager

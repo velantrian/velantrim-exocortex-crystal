@@ -108,6 +108,7 @@ def build_receipt(result: Dict[str, Any]) -> Dict[str, Any]:
                 "source_uri":    s["source_uri"],
                 "source_kind":   s["source_kind"],
                 "chunk_id":      s["chunk_id"],
+                "section":       s.get("section"),
                 "span_start":    s["span_start"],
                 "span_end":      s["span_end"],
                 "source_sha256": s["source_sha256"],
@@ -146,7 +147,9 @@ def _citation_status(cit: Dict[str, Any], tombstoned: set) -> str:
     return "ok"
 
 
-def verify_receipt(receipt: Dict[str, Any]) -> Dict[str, Any]:
+def verify_receipt(
+    receipt: Dict[str, Any], *, strict_provenance: bool = False
+) -> Dict[str, Any]:
     """
     Verify a receipt and replay its citations against the current canon.
 
@@ -157,6 +160,12 @@ def verify_receipt(receipt: Dict[str, Any]) -> Dict[str, Any]:
       citations       — [{fact_id, status}] per citation (see module docstring)
       summary         — counts by status
       verified        — digest_valid AND signature not failed AND every citation "ok"
+
+    With `strict_provenance=True`, a citation whose sealed `truth_status` is
+    VERIFIED but which carries no source-span evidence is flagged
+    `unsupported_provenance` and fails verification — a high-confidence claim
+    may not stand on zero evidence. The default (False) preserves the lenient
+    contract so existing receipts replay unchanged.
     """
     digest_valid = (
         "digest" in receipt and _digest(receipt) == receipt["digest"]
@@ -173,6 +182,14 @@ def verify_receipt(receipt: Dict[str, Any]) -> Dict[str, Any]:
     for cit in receipt.get("citations", []):
         status = _citation_status(cit, tombstoned)
         out_cit: Dict[str, Any] = {"fact_id": cit.get("fact_id"), "status": status}
+        # Strict provenance (#61): a VERIFIED claim must carry source evidence.
+        if (
+            strict_provenance
+            and status == "ok"
+            and cit.get("truth_status") == "VERIFIED"
+            and not cit.get("evidence")
+        ):
+            out_cit["status"] = status = "unsupported_provenance"
         # Receipt v2: replay sealed source-span evidence against the live store.
         sealed_spans = cit.get("evidence")
         if sealed_spans:
