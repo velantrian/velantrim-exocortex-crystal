@@ -76,6 +76,12 @@ def source_span_coverage(fact_ids: Sequence[str]) -> float:
     return round(covered / len(ids), 4)
 
 
+def unsupported_provenance_count(fact_ids: Sequence[str]) -> int:
+    """Number of VERIFIED facts that present high-confidence provenance with no
+    source-span evidence (#61). A healthy corpus keeps this at zero."""
+    return len(evidence.provenance_gaps(list(fact_ids)))
+
+
 # ─── Contradiction handling (WP3) ─────────────────────────────────────────────
 
 _CONTRADICTION_FIXTURE: List[Dict[str, Any]] = [
@@ -183,6 +189,7 @@ def run_baseline(fixture: List[Dict[str, str]] | None = None, *, k: int = 5) -> 
         "trace_completeness": round(traced / n, 4),
         "metadata_completeness": metadata_completeness(fact_ids),
         "source_span_coverage": source_span_coverage(fact_ids),
+        "unsupported_provenance": unsupported_provenance_count(fact_ids),
         "receipt_replay_survival": round(receipts_ok / n, 4),
         "contradiction": contradiction_eval(),
     }

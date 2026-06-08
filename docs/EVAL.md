@@ -8,7 +8,7 @@ whether memory answers remain grounded, replayable and auditable.
 
 The repository currently reports:
 
-- 593 passing tests;
+- 605 passing tests;
 - 12 skipped optional-backend tests;
 - 0 failing tests;
 - ~99% coverage with a 95% gate;
@@ -26,9 +26,17 @@ receipt-replay survival and contradiction precision/recall — for example:
 ```json
 {"cases": 4, "retrieval": {"hit@1": 0.5, "hit@3": 1.0, "hit@5": 1.0, "mrr": 0.75},
  "trace_completeness": 1.0, "metadata_completeness": 1.0, "source_span_coverage": 1.0,
+ "unsupported_provenance": 0,
  "receipt_replay_survival": 1.0,
  "contradiction": {"pairs": 4, "precision": 1.0, "recall": 1.0, "false_positive_rate": 0.0}}
 ```
+
+`unsupported_provenance` counts facts that present high-confidence provenance
+(`truth_status == VERIFIED`) while carrying **no** source-span evidence (#61). A
+healthy corpus keeps this at zero: a VERIFIED claim must be backed by a source.
+The complementary receipt-level guard is `verify_receipt(receipt,
+strict_provenance=True)`, which flags such a citation as `unsupported_provenance`
+and fails verification.
 
 This is a **baseline fixture**, not a broad external benchmark. The dimensions
 below define where the harness is extended next: curated corpora, additional
@@ -163,7 +171,7 @@ fixture metrics** and clearly separated future benchmark extensions:
 ```json
 {
   "version": "0.1.x",
-  "tests_passing": 593,
+  "tests_passing": 605,
   "coverage": "~99%",
   "baseline_fixture": {
     "cases": 4,

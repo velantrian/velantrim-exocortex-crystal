@@ -63,6 +63,89 @@ def test_verify_no_spans_is_empty():
     assert evidence.verify_evidence(fid) == []
 
 
+# ─── span validation (#61) ────────────────────────────────────────────────────
+
+def test_attach_rejects_inverted_span():
+    fid = ingest("Saturn has rings")["fact"]["fact_id"]
+    with pytest.raises(ValueError):
+        evidence.attach_evidence(fid, "astro.md", span_start=50, span_end=10)
+
+
+def test_attach_rejects_negative_span():
+    fid = ingest("Jupiter is a planet")["fact"]["fact_id"]
+    with pytest.raises(ValueError):
+        evidence.attach_evidence(fid, "astro.md", span_start=-1, span_end=5)
+
+
+def test_attach_rejects_half_span():
+    fid = ingest("Neptune is blue")["fact"]["fact_id"]
+    with pytest.raises(ValueError):
+        evidence.attach_evidence(fid, "astro.md", span_start=10)
+
+
+def test_attach_accepts_valid_span_and_section():
+    fid = ingest("Mars is red")["fact"]["fact_id"]
+    row = evidence.attach_evidence(
+        fid, "astro.md", section="Chapter 2 — Planets",
+        span_start=0, span_end=11)
+    assert row["section"] == "Chapter 2 — Planets"
+    spans = evidence.evidence_for(fid)
+    assert spans[0]["section"] == "Chapter 2 — Planets"
+    assert spans[0]["span_start"] == 0 and spans[0]["span_end"] == 11
+
+
+# ─── stale source detection (#61) ─────────────────────────────────────────────
+
+def test_verify_detects_stale_source():
+    fid = ingest("The Alps are mountains")["fact"]["fact_id"]
+    evidence.attach_evidence(fid, "geo.md", source_text="The Alps are mountains.")
+    # Source content changed since the span was sealed.
+    report = evidence.verify_evidence(
+        fid, current_sources={"geo.md": "The Alps were leveled."})
+    assert report[0]["status"] == "stale_source"
+
+
+def test_verify_source_unchanged_is_ok():
+    fid = ingest("The Nile is a river")["fact"]["fact_id"]
+    evidence.attach_evidence(fid, "geo.md", source_text="The Nile is a river.")
+    report = evidence.verify_evidence(
+        fid, current_sources={"geo.md": "The Nile is a river."})
+    assert report[0]["status"] == "ok"
+
+
+def test_verify_source_not_supplied_is_not_rechecked():
+    fid = ingest("The Sahara is a desert")["fact"]["fact_id"]
+    evidence.attach_evidence(fid, "geo.md", source_text="The Sahara is a desert.")
+    # No current_sources for this uri → span is not re-hashed, stays ok.
+    report = evidence.verify_evidence(fid, current_sources={"other.md": "x"})
+    assert report[0]["status"] == "ok"
+
+
+# ─── provenance-coverage guard (#61) ──────────────────────────────────────────
+
+def test_provenance_gap_for_verified_fact_without_evidence():
+    # An EXTERNAL world fact is promoted to VERIFIED but carries no evidence span.
+    res = ingest("Lisbon is in Portugal", source_status="EXTERNAL")
+    fid = res["fact"]["fact_id"]
+    assert res["fact"]["truth_status"] == "VERIFIED"
+    assert evidence.provenance_gaps([fid]) == [fid]
+
+
+def test_no_provenance_gap_once_evidence_attached():
+    res = ingest("Madrid is in Spain", source_status="EXTERNAL")
+    fid = res["fact"]["fact_id"]
+    evidence.attach_evidence(fid, "geo.md", source_text="Madrid is in Spain.")
+    assert evidence.provenance_gaps([fid]) == []
+
+
+def test_user_claimed_fact_is_not_a_provenance_gap():
+    # USER_REPORTED world facts are USER_CLAIMED, not VERIFIED — no evidence required.
+    res = ingest("My cat is named Mittens", source_status="USER_REPORTED")
+    fid = res["fact"]["fact_id"]
+    assert res["fact"]["truth_status"] != "VERIFIED"
+    assert evidence.provenance_gaps([fid]) == []
+
+
 # ─── knowledge ingestion attaches evidence ────────────────────────────────────
 
 def test_learn_attaches_source_evidence(tmp_path):

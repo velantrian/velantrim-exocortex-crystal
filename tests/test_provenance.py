@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from core import provenance, memory
+from core import provenance, memory, evidence
 from core.pipeline import run
 from core.ingest import ingest
 from core.erasure import erase_fact
@@ -189,3 +189,40 @@ def test_cli_verify_receipt_from_file(tmp_path, capsys):
     path.write_text(receipt_json, encoding="utf-8")
     assert main(["verify-receipt", str(path)]) == 0
     assert json.loads(capsys.readouterr().out.strip())["verified"] is True
+
+
+# ─── strict provenance: VERIFIED claims must carry evidence (#61) ──────────────
+
+def _verified_fact_result():
+    """A pipeline-shaped result citing one VERIFIED fact (no evidence attached)."""
+    res = ingest("Lisbon is the capital of Portugal", source_status="EXTERNAL")
+    fact = res["fact"]
+    assert fact["truth_status"] == "VERIFIED"
+    return fact["fact_id"], {
+        "answer": "Lisbon is the capital of Portugal.",
+        "query": "What is the capital of Portugal?",
+        "facts": [fact],
+    }
+
+
+def test_strict_provenance_flags_verified_without_evidence():
+    _fid, result = _verified_fact_result()
+    receipt = provenance.build_receipt(result)
+    # Lenient (default): the citation replays cleanly.
+    lenient = provenance.verify_receipt(receipt)
+    assert lenient["citations"][0]["status"] == "ok"
+    assert lenient["verified"] is True
+    # Strict: a VERIFIED claim with no evidence is unsupported provenance.
+    strict = provenance.verify_receipt(receipt, strict_provenance=True)
+    assert strict["citations"][0]["status"] == "unsupported_provenance"
+    assert strict["verified"] is False
+
+
+def test_strict_provenance_passes_once_evidence_attached():
+    fid, result = _verified_fact_result()
+    evidence.attach_evidence(
+        fid, "geo.md", source_text="Lisbon is the capital of Portugal.")
+    receipt = provenance.build_receipt(result)
+    strict = provenance.verify_receipt(receipt, strict_provenance=True)
+    assert strict["citations"][0]["status"] == "ok"
+    assert strict["verified"] is True
