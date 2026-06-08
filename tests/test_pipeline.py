@@ -538,6 +538,25 @@ def test_generate_answer_blocks_when_nothing_validated():
     assert out["total_facts"] == 0
 
 
+# ─── demo seed opt-in (issue #65) ─────────────────────────────────────────────
+
+def test_production_default_has_no_seed_corpus(monkeypatch):
+    """Issue #65: without VELANTRIM_DEMO_SEED=1 the retrieval corpus is empty.
+    All facts must enter through ingest(); the production pipeline is clean."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    from core.pipeline import _load_demo_seed
+    assert _load_demo_seed() == []
+
+
+def test_demo_seed_enabled_returns_five_facts(monkeypatch):
+    """With VELANTRIM_DEMO_SEED=1 the seed corpus returns the curated facts."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "1")
+    from core.pipeline import _load_demo_seed
+    facts = _load_demo_seed()
+    assert len(facts) == 5
+    assert all(f.get("source_status") == "EXTERNAL" for f in facts)
+
+
 # ─── build_facts_pack ─────────────────────────────────────────────────────────
 
 def test_build_facts_pack_skips_items_without_id():

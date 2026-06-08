@@ -31,21 +31,28 @@ from core import metrics, adaptation
 logger = logging.getLogger(__name__)
 
 # ─── RETRIEVAL CORPUS (source for retrieve, not L3) ──────────────────────────
-# This is a retrieval corpus, not the canonical graph. The L3 canon lives in
-# core/l3_graph.py and is populated only after the TruthGate (see run, step 6).
+# Issue #65: demo seed facts are opt-in only (VELANTRIM_DEMO_SEED=1).
+# The production pipeline starts with an empty corpus; all facts must enter
+# through ingest() / velantrim learn and pass the normal TruthGate path.
 # A direct MERGE into L3 bypassing the TruthGate is an architectural bug.
-DATABASE = [
-    {"id": "f1", "text": "Water boils at 100°C at sea level",     "source": "physics",    "confidence": 0.99},
-    {"id": "f2", "text": "Quantum entanglement links particles",    "source": "physics",    "confidence": 0.85},
-    {"id": "f3", "text": "Earth revolves around the Sun",          "source": "astronomy",  "confidence": 0.99},
-    {"id": "f4", "text": "The human brain has ~86 billion neurons","source": "neuroscience","confidence": 0.90},
-    {"id": "f5", "text": "DNA encodes genetic information",        "source": "biology",    "confidence": 0.99},
-]
+
+def _load_demo_seed():
+    """Return demo seed facts when VELANTRIM_DEMO_SEED=1, else empty list.
+
+    Called inside retrieve() so the env flag is evaluated at query time, not at
+    module import time. This keeps the production default (no seed) working even
+    when tests monkeypatch the env var after the module has been imported.
+    """
+    import os
+    if os.environ.get("VELANTRIM_DEMO_SEED", "0") == "1":
+        from core.demo_seed import DEMO_FACTS
+        return DEMO_FACTS
+    return []
 
 
 # ─── RETRIEVAL (vector / semantic) ────────────────────────────────────────────
 # Cosine similarity of embeddings over TWO sources:
-#   1) seed corpus DATABASE — external facts "out of the box";
+#   1) demo seed corpus (opt-in via VELANTRIM_DEMO_SEED=1) — curated reference facts;
 #   2) the L3 canon — what the system has already learned and run through the gates.
 # Recall from L3 closes the loop "learned → remembered → recalled": facts accepted
 # via ingest()/pipeline become available for the answer. Dedup by id.
@@ -72,10 +79,10 @@ _WALK_DEFAULT_EDGE_WEIGHT = 1.0
 
 def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
     """
-    Hybrid search: cosine of embeddings over the seed corpus DATABASE and the L3 canon,
-    then a 1-hop graph-walk — facts linked in the graph surface by association
-    (spreading activation). Returns the top-k by score, deduped by id.
-    Corpus facts arrive as Observed, recall from L3 — with its own ESM state.
+    Hybrid search: cosine of embeddings over the demo seed corpus (opt-in) and
+    the L3 canon, then a multi-hop graph-walk (spreading activation).
+    Returns the top-k by score, deduped by id.
+    Seed facts arrive as Observed; recall from L3 uses its stored ESM state.
     """
     embedder = get_embedder()
     graph = get_l3_graph()
@@ -91,8 +98,8 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
         if prev is None or item["_score"] > prev["_score"]:
             by_id[item["id"]] = item
 
-    # Source 1: seed corpus (external facts, raw input → Observed).
-    for item in DATABASE:
+    # Source 1: seed corpus (opt-in demo facts when VELANTRIM_DEMO_SEED=1).
+    for item in _load_demo_seed():
         sim = cosine(q_vec, embedder.embed(item["text"]))
         if sim < _RETRIEVAL_MIN_SIM:
             continue

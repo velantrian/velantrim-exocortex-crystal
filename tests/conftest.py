@@ -30,6 +30,9 @@ def isolated_db(monkeypatch, tmp_path):
     monkeypatch.setenv("VELANTRIM_EMBEDDER", "hashing")
     monkeypatch.setenv("VELANTRIM_GENERATOR", "extractive")
     monkeypatch.setenv("VELANTRIM_QUEUE_BACKEND", "sqlite")
+    # Issue #65: tests opt-in to the demo seed corpus. The production default
+    # is VELANTRIM_DEMO_SEED=0 (empty corpus — all facts must enter via ingest).
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "1")
     # Fresh module-level singletons per test.
     l3_graph.reset_l3_graph()
     embedding.reset_embedder()

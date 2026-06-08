@@ -66,7 +66,7 @@ def _stable_bucket(feature: str) -> tuple[int, float]:
     Deterministic (index, sign) for a feature via md5.
     The signed hashing trick reduces the impact of collisions.
     """
-    h = hashlib.md5(feature.encode("utf-8")).digest()
+    h = hashlib.md5(feature.encode("utf-8"), usedforsecurity=False).digest()
     idx = int.from_bytes(h[:4], "big") % EMBED_DIM
     sign = 1.0 if (h[4] & 1) else -1.0
     return idx, sign

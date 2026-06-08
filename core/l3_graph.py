@@ -494,7 +494,7 @@ class SqliteL3Graph(L3GraphBackend):
         """Reset all state (for tests)."""
         with self._conn:
             for tbl in ("nodes", "vectors", "edges", "entities", "mentions", "meta"):
-                self._conn.execute(f"DELETE FROM {tbl}")
+                self._conn.execute(f"DELETE FROM {tbl}")  # nosec B608 — tbl from hardcoded tuple
 
 
 # ─── LADYBUGDB BACKEND (slot for the spike) ───────────────────────────────────────

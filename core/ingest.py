@@ -64,7 +64,7 @@ def classify_claim(utterance: str) -> tuple[str, str]:
 
 
 def _fact_id(utterance: str) -> str:
-    return "ing:" + hashlib.md5(utterance.encode("utf-8")).hexdigest()[:12]
+    return "ing:" + hashlib.md5(utterance.encode("utf-8"), usedforsecurity=False).hexdigest()[:12]
 
 
 def ingest(

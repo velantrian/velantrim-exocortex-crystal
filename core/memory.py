@@ -418,7 +418,7 @@ def update_fact(fact_id: str, **fields) -> bool:
 
     with _db() as conn:
         conn.execute(
-            f"UPDATE facts SET {', '.join(sets)}, updated_at = :updated_at "
+            f"UPDATE facts SET {', '.join(sets)}, updated_at = :updated_at "  # nosec B608 — keys from _UPDATABLE allowlist
             f"WHERE fact_id = :fact_id",
             params,
         )
