@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - README headline version aligned to the published package version (`0.1.0`).
-- Documentation figures synced to the current suite (**605 tests, ~99% coverage**)
+- Documentation figures synced to the current suite (**610 tests, ~99% coverage**)
   across README, ROADMAP, GDPR, and TEST_REPORT.
 
 ## [0.1.0] — first public release
