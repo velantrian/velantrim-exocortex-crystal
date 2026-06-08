@@ -16,10 +16,12 @@
 # the Apple acquisition). LadybugDB is embedded, Cypher-compatible, with a vector index
 # and full-text search. Standard Cypher → the backend stays portable.
 
+import functools
 import json
 import logging
 import os
 import sqlite3
+import threading
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Any
 
@@ -283,6 +285,21 @@ class MockL3Graph(L3GraphBackend):
 
 # ─── SQLITE BACKEND (on-disk, dependency-free) ─────────────────────────────────
 
+def _synchronized(method):
+    """Serialize a SqliteL3Graph method on the instance's reentrant lock.
+
+    The connection is opened with check_same_thread=False so it can be reused
+    across worker threads (e.g. asyncio.to_thread via core/aio.py); the RLock
+    serializes access so a single sqlite3.Connection is never used concurrently.
+    Reentrant because several methods call others (merge_fact → get_fact, etc.).
+    """
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        with self._lock:
+            return method(self, *args, **kwargs)
+    return wrapper
+
+
 class SqliteL3Graph(L3GraphBackend):
     """
     On-disk L3 canon backed by SQLite (Python standard library — no external
@@ -303,10 +320,18 @@ class SqliteL3Graph(L3GraphBackend):
             db_path = os.environ.get("VELANTRIM_L3_PATH", "./data/velantrim_l3.db")
         if db_path not in (":memory:", "") and os.path.dirname(db_path):
             os.makedirs(os.path.dirname(db_path), exist_ok=True)
-        self._conn = sqlite3.connect(db_path)
+        # check_same_thread=False + an RLock (see _synchronized): the cached
+        # singleton connection is safe to reuse from asyncio worker threads.
+        self._lock = threading.RLock()
+        self._conn = sqlite3.connect(db_path, check_same_thread=False)
         self._conn.row_factory = sqlite3.Row
         self._conn.execute("PRAGMA journal_mode=WAL")
         self._ensure_schema()
+
+    def close(self) -> None:
+        """Close the underlying SQLite connection."""
+        with self._lock:
+            self._conn.close()
 
     def _ensure_schema(self) -> None:
         with self._conn:
@@ -348,11 +373,13 @@ class SqliteL3Graph(L3GraphBackend):
             )
 
     # ─── embedder fingerprint (persisted across restarts) ──────────────────────
+    @_synchronized
     def embedder_fingerprint(self) -> Optional[str]:
         row = self._conn.execute(
             "SELECT value FROM meta WHERE key = 'embedder_fp'").fetchone()
         return row["value"] if row else None
 
+    @_synchronized
     def set_embedder_fingerprint(self, fingerprint: str) -> None:
         with self._conn:
             self._conn.execute(
@@ -361,6 +388,7 @@ class SqliteL3Graph(L3GraphBackend):
                 (fingerprint,))
 
     # ─── facts ─────────────────────────────────────────────────────────────────
+    @_synchronized
     def merge_fact(self, fact: Dict[str, Any]) -> None:
         fact_id = fact.get("fact_id")
         if not fact_id:
@@ -381,15 +409,18 @@ class SqliteL3Graph(L3GraphBackend):
                     "ON CONFLICT(fact_id) DO UPDATE SET vec = excluded.vec",
                     (fact_id, json.dumps(vec)))
 
+    @_synchronized
     def get_fact(self, fact_id: str) -> Optional[Dict[str, Any]]:
         row = self._conn.execute(
             "SELECT data FROM nodes WHERE fact_id = ?", (fact_id,)).fetchone()
         return json.loads(row["data"]) if row else None
 
+    @_synchronized
     def all_facts(self) -> List[Dict[str, Any]]:
         return [json.loads(r["data"])
                 for r in self._conn.execute("SELECT data FROM nodes")]
 
+    @_synchronized
     def erase_fact(self, fact_id: str) -> bool:
         with self._conn:
             cur = self._conn.execute(
@@ -402,6 +433,7 @@ class SqliteL3Graph(L3GraphBackend):
         return existed
 
     # ─── edges ─────────────────────────────────────────────────────────────────
+    @_synchronized
     def add_edge(
         self, src_id: str, rel_type: str, dst_id: str,
         props: Optional[Dict[str, Any]] = None,
@@ -412,6 +444,7 @@ class SqliteL3Graph(L3GraphBackend):
                 "VALUES(?, ?, ?, ?)",
                 (src_id, rel_type, dst_id, json.dumps(props or {}, sort_keys=True)))
 
+    @_synchronized
     def neighbors(
         self, fact_id: str, rel_type: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
@@ -422,6 +455,7 @@ class SqliteL3Graph(L3GraphBackend):
                 out.append(node)
         return out
 
+    @_synchronized
     def get_edges(
         self, fact_id: str, rel_type: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
@@ -434,6 +468,7 @@ class SqliteL3Graph(L3GraphBackend):
                  "props": json.loads(r["props"])}
                 for r in self._conn.execute(q, params)]
 
+    @_synchronized
     def incoming_edges(
         self, fact_id: str, rel_type: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
@@ -447,6 +482,7 @@ class SqliteL3Graph(L3GraphBackend):
                 for r in self._conn.execute(q, params)]
 
     # ─── vectors ───────────────────────────────────────────────────────────────
+    @_synchronized
     def vector_search(
         self, query_vector: List[float], k: int = 5,
     ) -> List[Dict[str, Any]]:
@@ -466,6 +502,7 @@ class SqliteL3Graph(L3GraphBackend):
         return scored[:k]
 
     # ─── entities ──────────────────────────────────────────────────────────────
+    @_synchronized
     def merge_entity(self, entity_id: str, kind: str, label: str) -> None:
         with self._conn:
             self._conn.execute(
@@ -474,12 +511,14 @@ class SqliteL3Graph(L3GraphBackend):
                 "label = excluded.label",
                 (entity_id, kind, label))
 
+    @_synchronized
     def link_fact_to_entity(self, fact_id, entity_id, rel="MENTIONS") -> None:
         with self._conn:
             self._conn.execute(
                 "INSERT OR IGNORE INTO mentions(fact_id, entity_id, rel) "
                 "VALUES(?, ?, ?)", (fact_id, entity_id, rel))
 
+    @_synchronized
     def facts_for_entity(self, entity_id: str) -> List[Dict[str, Any]]:
         rows = self._conn.execute(
             "SELECT fact_id FROM mentions WHERE entity_id = ?", (entity_id,))
@@ -490,6 +529,7 @@ class SqliteL3Graph(L3GraphBackend):
                 out.append(node)
         return out
 
+    @_synchronized
     def clear(self) -> None:
         """Reset all state (for tests)."""
         with self._conn:

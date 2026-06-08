@@ -160,3 +160,49 @@ def test_default_path_creates_dir(monkeypatch, tmp_path):
     g = SqliteL3Graph()
     g.merge_fact(_fact("a", "persisted"))
     assert target.exists()
+
+
+# ─── thread-safety (#71): connection reused across worker threads ──────────────
+
+def test_merge_and_read_from_another_thread(tmp_path):
+    # The cached connection is opened check_same_thread=False; reuse from a
+    # different thread must not raise sqlite3.ProgrammingError.
+    import threading
+    g = _g(tmp_path)
+    g.merge_fact(_fact("a", "Water boils at 100 degrees"))
+
+    result = {}
+    errors = []
+
+    def worker():
+        try:
+            result["node"] = g.get_fact("a")
+            g.merge_fact(_fact("b", "Gold is a metal"))
+            result["all"] = len(g.all_facts())
+        except Exception as e:  # noqa: BLE001 — capture for assertion
+            errors.append(e)
+
+    t = threading.Thread(target=worker)
+    t.start()
+    t.join()
+
+    assert not errors, f"cross-thread access raised: {errors}"
+    assert result["node"]["claim"] == "Water boils at 100 degrees"
+    assert result["all"] == 2
+
+
+def test_concurrent_writes_are_serialized(tmp_path):
+    # Many threads writing through the lock must all land without corruption.
+    import threading
+    g = _g(tmp_path)
+
+    def writer(i):
+        g.merge_fact(_fact(f"f{i}", f"claim number {i}"))
+
+    threads = [threading.Thread(target=writer, args=(i,)) for i in range(20)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    assert len(g.all_facts()) == 20
