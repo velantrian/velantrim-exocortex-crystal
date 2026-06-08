@@ -90,16 +90,15 @@ def _tool_verify_receipt(receipt: Dict[str, Any]) -> Any:
     return verify_receipt(receipt)
 
 
-# ─── Tool registry (capability-aware) ─────────────────────────────────────────
+# ─── Tool registry (read-only) ────────────────────────────────────────────────
 
 class _Tool:
     def __init__(self, name: str, description: str, input_schema: Dict[str, Any],
-                 handler: Callable[[Dict[str, Any]], Any], capability: str = "reader"):
+                 handler: Callable[[Dict[str, Any]], Any]):
         self.name = name
         self.description = description
         self.input_schema = input_schema
         self.handler = handler
-        self.capability = capability
 
     def manifest(self) -> Dict[str, Any]:
         return {

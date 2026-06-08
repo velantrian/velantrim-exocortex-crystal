@@ -126,3 +126,32 @@ def test_cli_neurocore_report(monkeypatch, capsys):
     assert main(["neurocore-report"]) == 0
     rep = json.loads(capsys.readouterr().out.strip())
     assert rep["surprise_events"] == 1 and rep["by_domain"] == {"x": 1}
+
+
+# ─── pipeline wiring (neurocore is actually connected) ─────────────────────────
+
+def test_pipeline_invokes_neurocore_when_enabled(monkeypatch):
+    monkeypatch.setenv("VELANTRIM_NEUROCORE", "1")
+    calls = []
+    real = neurocore.observe
+
+    def spy(surprise_score, **kw):
+        calls.append((surprise_score, kw))
+        return real(surprise_score, **kw)
+
+    monkeypatch.setattr(neurocore, "observe", spy)
+    from core.pipeline import run
+    run("water")  # demo-seed corpus has a water fact → retrieval returns results
+    assert calls, "pipeline.run should call neurocore.observe when enabled"
+    surprise, kw = calls[0]
+    assert 0.0 <= surprise <= 1.0
+    assert kw.get("domain") == "pipeline"
+
+
+def test_pipeline_skips_neurocore_when_disabled(monkeypatch):
+    monkeypatch.setenv("VELANTRIM_NEUROCORE", "0")
+    calls = []
+    monkeypatch.setattr(neurocore, "observe", lambda *a, **k: calls.append(a))
+    from core.pipeline import run
+    run("water")
+    assert calls == [], "neurocore.observe must not be called when disabled"
