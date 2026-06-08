@@ -332,14 +332,26 @@ def truth_gate(
     return True, None
 
 
-def _truth_status_for(claim_type: str) -> str:
+def _truth_status_for(claim_type: str, source_status: Optional[str] = None) -> str:
     """
-    Truth status by claim modality.
-    Significance is separated from truth: everything is validated as memory,
-    but WORLD_FACT is the only thing that becomes VERIFIED.
+    Source-aware truth status by claim modality (issue #63).
+
+    WORLD_FACT truth status depends on origin:
+      EXTERNAL / DERIVED / OBSERVED  → VERIFIED  (independently sourced knowledge)
+      USER_REPORTED                  → USER_CLAIMED (stored as recalled, not yet verified)
+      LLM_OUTPUT                     → UNVERIFIED (blocked by truth_gate, but defensive)
+      UNKNOWN / None                 → UNVERIFIED
+
+    A user saying "Earth orbits the Sun" is a USER_CLAIMED world claim, not a
+    VERIFIED fact — even if it is true. VERIFIED requires an independent external
+    source or evidence span.
     """
     if claim_type == "WORLD_FACT":
-        return "VERIFIED"
+        if source_status in {"EXTERNAL", "DERIVED", "OBSERVED"}:
+            return "VERIFIED"
+        if source_status == "USER_REPORTED":
+            return "USER_CLAIMED"
+        return "UNVERIFIED"
     if claim_type == "INTERPRETATION":
         return "HYPOTHESIS"
     return "SUBJECTIVE"
@@ -371,12 +383,22 @@ def generate_answer(
         if f.get("epistemic_state") in {"Validated", "Supported"}
     ]
     if not validated_facts:
+        # Issue #64: a verifiable memory system must not answer from unvalidated
+        # material. No Validated/Supported facts → insufficient grounding → block.
         logger.warning(
-            "generate_answer: no facts in Validated/Supported state — "
-            "falling back to all %d fact(s)",
+            "generate_answer: no Validated/Supported facts — blocking answer "
+            "(%d unvalidated fact(s) present but not usable as grounding)",
             len(facts_pack["facts"]),
         )
-        validated_facts = facts_pack["facts"]
+        return {
+            "answer":      None,
+            "error":       "insufficient grounding: no Validated or Supported facts available",
+            "query":       facts_pack.get("query", ""),
+            "facts":       [],
+            "trace":       trace,
+            "trace_fmt":   format_trace(trace),
+            "total_facts": 0,
+        }
 
     answer = get_generator().generate(facts_pack.get("query", ""), validated_facts)
 
@@ -527,7 +549,7 @@ def drain_l3_outbox(graph=None) -> int:
         if fact is None:
             queue.clear(fid)  # the fact vanished from SQLite — drop the stale entry
             continue
-        fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"))
+        fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"), fact.get("source_status"))
         try:
             graph.merge_fact(_l3_payload(fact))
         except Exception as e:  # noqa: BLE001 — backend still unavailable, do not lose the queue
@@ -596,7 +618,7 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
                 updated = get_fact(fact["fact_id"])
                 if updated:
                     fact["epistemic_state"] = updated["epistemic_state"]
-            fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"))
+            fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"), fact.get("source_status"))
             # The only entry into L3: the canonical MERGE strictly after the TruthGate.
             # We merge the persistent record (created_at/metadata → for SleepCycle),
             # not the transient fact with _score (see _l3_payload).

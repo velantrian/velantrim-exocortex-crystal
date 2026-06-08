@@ -188,7 +188,7 @@ def ingest(
     updated = get_fact(fid)
     if updated:
         fact["epistemic_state"] = updated["epistemic_state"]
-    fact["truth_status"] = _truth_status_for(ct)
+    fact["truth_status"] = _truth_status_for(ct, source_status)
 
     graph = get_l3_graph()
     # Guard against mixing embedders: merge puts the claim's vector into the store.
