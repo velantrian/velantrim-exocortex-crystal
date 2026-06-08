@@ -584,14 +584,15 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     drain_l3_outbox()
     # 1. Retrieval
     retrieved = retrieve(query)
-    if not retrieved:
-        return _blocked("Retrieval returned 0 results.", query)
 
     # NeuroCore Phase 0 (RFC0068): record the surprise of this retrieval as a
     # passive plasticity tick. Surprise ≈ 1 − top relevance (a weak best match is
-    # novel/surprising). Gated by VELANTRIM_NEUROCORE (off by default); observe()
-    # writes only to its own delta log — never L3 (invariant I68) — and only above
-    # θ. A passive tracker must never break the pipeline, so failures are swallowed.
+    # novel/surprising). Placed BEFORE the zero-hit early return so the most
+    # surprising case — a query with no retrieval hits (surprise = 1.0), e.g. on a
+    # cold-start empty corpus — is also recorded. Gated by VELANTRIM_NEUROCORE
+    # (off by default); observe() writes only to its own delta log — never L3
+    # (invariant I68) — and only above θ. A passive tracker must never break the
+    # pipeline, so failures are swallowed.
     try:
         from core import neurocore
         if neurocore.enabled():
@@ -600,6 +601,9 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
             neurocore.observe(surprise, delta_norm=surprise, domain="pipeline")
     except Exception:  # noqa: BLE001 — Phase 0 tracker must not affect the canon
         pass
+
+    if not retrieved:
+        return _blocked("Retrieval returned 0 results.", query)
 
     # 2. FactsPack
     facts_pack = build_facts_pack(retrieved, query)

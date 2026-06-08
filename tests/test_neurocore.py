@@ -148,6 +148,27 @@ def test_pipeline_invokes_neurocore_when_enabled(monkeypatch):
     assert kw.get("domain") == "pipeline"
 
 
+def test_pipeline_records_zero_hit_query_as_max_surprise(monkeypatch):
+    # A query with no retrieval hits is the most surprising case (surprise=1.0)
+    # and must be recorded BEFORE the zero-hit early return (cold-start telemetry).
+    monkeypatch.setenv("VELANTRIM_NEUROCORE", "1")
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")  # empty corpus → guaranteed 0 hits
+    calls = []
+    real = neurocore.observe
+
+    def spy(surprise_score, **kw):
+        calls.append((surprise_score, kw))
+        return real(surprise_score, **kw)
+
+    monkeypatch.setattr(neurocore, "observe", spy)
+    from core.pipeline import run
+    res = run("anything at all")
+    assert res.get("answer") is None        # blocked: nothing to ground on
+    assert calls and calls[0][0] == 1.0     # but the surprise was still recorded
+    assert calls[0][1].get("domain") == "pipeline"
+    assert neurocore.log_entries(), "zero-hit surprise (1.0 > θ) should be logged"
+
+
 def test_pipeline_skips_neurocore_when_disabled(monkeypatch):
     monkeypatch.setenv("VELANTRIM_NEUROCORE", "0")
     calls = []
