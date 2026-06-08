@@ -340,6 +340,8 @@ See **[ROADMAP.md](./ROADMAP.md)**, **[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_N
 | Document | Purpose |
 |---|---|
 | **[DEMO.md](./DEMO.md)** | Verifiable memory walkthrough: ingest → trace → receipt → verify |
+| **[docs/REVIEWER_NOTES.md](./docs/REVIEWER_NOTES.md)** | One-page reviewer guide: purpose, demo path, implemented scope and grant extensions |
+| **[docs/COMPARISON.md](./docs/COMPARISON.md)** | Comparison with vector-only RAG, chatbot memory and agent-memory systems |
 | **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** | Architecture diagrams and memory/backends/privacy boundaries |
 | **[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)** | Grant-facing problem, solution, work packages and success criteria |
 | **[docs/KNOWLEDGE_BASE_ROADMAP.md](./docs/KNOWLEDGE_BASE_ROADMAP.md)** | Curated offline knowledge graph roadmap: invariant science, practical knowledge, resilience reserve and multilingual expansion |

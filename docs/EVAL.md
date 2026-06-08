@@ -20,8 +20,8 @@ See [../TEST_REPORT.md](../TEST_REPORT.md) for the reproducible test summary.
 
 A **baseline evaluation harness now exists** (`core/eval.py`, run with `velantrim
 eval`). On a built-in deterministic fixture it reports retrieval `hit@1/3/5` + MRR,
-trace completeness, metadata completeness and receipt-replay survival — for
-example:
+trace completeness, metadata completeness, source-span coverage,
+receipt-replay survival and contradiction precision/recall — for example:
 
 ```json
 {"cases": 4, "retrieval": {"hit@1": 0.5, "hit@3": 1.0, "hit@5": 1.0, "mrr": 0.75},
@@ -30,8 +30,9 @@ example:
  "contradiction": {"pairs": 4, "precision": 1.0, "recall": 1.0, "false_positive_rate": 0.0}}
 ```
 
-The dimensions below define where this harness is extended next (curated fixtures,
-contradiction recall, source-span coverage).
+This is a **baseline fixture**, not a broad external benchmark. The dimensions
+below define where the harness is extended next: curated corpora, additional
+contradiction cases, larger source-span fixtures and CI regression gates.
 
 ## Evaluation dimensions
 
@@ -156,18 +157,34 @@ Evaluate:
 
 ## Minimal release evaluation report
 
-Each public release should include a small report with:
+Each public release should include a small report with the **implemented baseline
+fixture metrics** and clearly separated future benchmark extensions:
 
 ```json
 {
   "version": "0.1.x",
   "tests_passing": 591,
   "coverage": "~99%",
-  "trace_completeness": null,
-  "receipt_replay_survival": null,
-  "retrieval_hit_at_3": null,
-  "metadata_completeness": null,
-  "notes": "Metrics marked null are planned evaluation harness outputs."
+  "baseline_fixture": {
+    "cases": 4,
+    "retrieval_hit_at_1": 0.5,
+    "retrieval_hit_at_3": 1.0,
+    "retrieval_hit_at_5": 1.0,
+    "retrieval_mrr": 0.75,
+    "trace_completeness": 1.0,
+    "metadata_completeness": 1.0,
+    "source_span_coverage": 1.0,
+    "receipt_replay_survival": 1.0,
+    "contradiction_precision": 1.0,
+    "contradiction_recall": 1.0,
+    "contradiction_false_positive_rate": 0.0
+  },
+  "future_extensions": [
+    "curated external fixture corpora",
+    "per-case metrics.jsonl",
+    "human-readable eval_report.md",
+    "CI regression gates for trace and receipt survival"
+  ]
 }
 ```
 
