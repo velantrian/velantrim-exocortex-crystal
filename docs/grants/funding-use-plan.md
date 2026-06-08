@@ -11,16 +11,17 @@
 | Requested amount | approx. **€50,000** |
 | Status | Submitted; acknowledged by NLnet; under eligibility review (two rounds, first round ~12–15 weeks) |
 
-> This document explains, transparently and for the public record, **why** the
-> project requested approximately €50,000 and **how** that funding would be used
-> responsibly. It is a rationale document, not a contract. The binding budget, if
-> the project is selected, is the Memorandum of Understanding agreed with NLnet.
+> **This is a planning and transparency document.** It does not represent an
+> approved budget unless and until a grant agreement or Memorandum of Understanding
+> is signed with NLnet. The proposal has been acknowledged as received and is
+> currently under review. This does not imply that funding has been awarded.
 
-`€50,000` is the **maximum grant size** for the NLnet Commons Fund. The request
-is therefore the upper bound of a small, milestone-based fund — not a salary, and
-not a request for open-ended funding. NLnet pays per **completed, independently
-verifiable milestone**, so every euro below is tied to a concrete deliverable
-that can be checked against the public repository.
+For a first NGI0 Commons Fund proposal, **€50,000 is the upper boundary normally
+allowed by the programme**. Larger follow-up funding may become possible only after
+successful completion of earlier funded work and public delivery of the results;
+the programme's lifetime maximum for a single third party is €500,000. NLnet pays
+per **completed, independently verifiable milestone**, so every euro below is tied
+to a concrete deliverable that can be checked against the public repository.
 
 ---
 
