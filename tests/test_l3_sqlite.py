@@ -206,3 +206,21 @@ def test_concurrent_writes_are_serialized(tmp_path):
         t.join()
 
     assert len(g.all_facts()) == 20
+
+
+# ─── reset closes the connection (#73 / M2) ───────────────────────────────────
+
+def test_reset_l3_graph_closes_sqlite_connection(tmp_path, monkeypatch):
+    monkeypatch.setenv("VELANTRIM_L3_BACKEND", "sqlite")
+    monkeypatch.setenv("VELANTRIM_L3_PATH", str(tmp_path / "reset.db"))
+    reset_l3_graph()
+    g = get_l3_graph()            # caches a SqliteL3Graph singleton
+    g.merge_fact(_fact("a", "Water boils"))
+    reset_l3_graph()             # must close g's connection, no accumulation
+    # The old connection is closed; using it now raises ProgrammingError.
+    import sqlite3
+    with pytest.raises(sqlite3.ProgrammingError):
+        g._conn.execute("SELECT 1")
+    # A fresh singleton still works.
+    assert get_l3_graph().get_fact("a") is not None
+    reset_l3_graph()

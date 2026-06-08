@@ -90,11 +90,22 @@ def polarity(text: str) -> int:
     return count % 2
 
 
+def _is_number(token: str) -> bool:
+    """True for a bare integer or decimal (e.g. '100', '90.5'). Numbers are
+    handled by the dedicated numeric signal, so they are not discriminating
+    content tokens — dropping integers but keeping decimals would skew overlap."""
+    try:
+        float(token)
+        return True
+    except ValueError:
+        return False
+
+
 def _content(tokens: List[str]) -> Set[str]:
     """Discriminating tokens: drop stopwords, negation cues and bare numbers."""
     return {
         t for t in tokens
-        if t not in _STOPWORDS and t not in _NEGATIONS and not t.isdigit()
+        if t not in _STOPWORDS and t not in _NEGATIONS and not _is_number(t)
     }
 
 
