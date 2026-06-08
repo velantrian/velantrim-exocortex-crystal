@@ -4,17 +4,17 @@
 
 | Field | Value |
 |---|---|
-| Proposal title | **Velantrim — Verifiable AI Memory Infrastructure for GDPR-Compliant Europe** |
+| Proposal framing | **Verifiable AI memory infrastructure for GDPR-compliant Europe** |
 | Programme | NLnet **NGI0 Commons Fund** |
-| Call | June 2026 |
-| Application reference | `2026-06-2ea` |
 | Requested amount | approx. **€50,000** |
-| Status | Submitted; acknowledged by NLnet; under eligibility review (two rounds, first round ~12–15 weeks) |
+| Status | Submitted to NLnet for review |
 
 > **This is a planning and transparency document.** It does not represent an
 > approved budget unless and until a grant agreement or Memorandum of Understanding
-> is signed with NLnet. The proposal has been acknowledged as received and is
-> currently under review. This does not imply that funding has been awarded.
+> is signed with NLnet. The proposal has been submitted and is under review; this
+> does not imply that funding has been awarded. Private correspondence details
+> (internal application reference, review-timeline specifics) are intentionally
+> kept out of this public repository.
 
 For a first NGI0 Commons Fund proposal, **€50,000 is the upper boundary normally
 allowed by the programme**. Larger follow-up funding may become possible only after

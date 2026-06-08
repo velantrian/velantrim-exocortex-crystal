@@ -1,11 +1,11 @@
 # NLnet Reviewer Q&A — Velantrim Crystal
 
-Internal preparation for likely NGI0 Commons Fund second-round questions
-(application `2026-06-2ea`). NLnet's published review weighs **technical
-excellence / feasibility (30%)**, **relevance / impact / strategic potential
-(40%)** and **cost-effectiveness / value for money (30%)**, with a pass bar
-above 5.0/7. The fund asks applicants to be short and concrete — *what* and
-*how*, not *why* — and pays per completed, independently verifiable milestone.
+Internal preparation for likely NGI0 Commons Fund second-round questions.
+NLnet's published review weighs **technical excellence / feasibility (30%)**,
+**relevance / impact / strategic potential (40%)** and **cost-effectiveness /
+value for money (30%)**, with a pass bar above 5.0/7. The fund asks applicants to
+be short and concrete — *what* and *how*, not *why* — and pays per completed,
+independently verifiable milestone.
 
 These answers are written to be accurate to the repository as it exists today.
 Where something is a grant deliverable rather than existing code, it says so.

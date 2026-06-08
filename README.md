@@ -372,11 +372,11 @@ See **[ROADMAP.md](./ROADMAP.md)**, **[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_N
 
 ## 💶 Funding
 
-Velantrim has applied to the **NLnet NGI0 Commons Fund** (June 2026 call, ref
-`2026-06-2ea`) for approximately **€50,000** — the maximum grant size for that
-fund. The request is milestone-based: every euro is tied to a concrete,
-independently verifiable deliverable that maps onto the work packages in
-[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md).
+Velantrim has been submitted to the **NLnet NGI0 Commons Fund** for review, with a
+request of approximately **€50,000** — the upper boundary normally allowed for a
+first proposal to that fund. The request is milestone-based: every euro is tied to
+a concrete, independently verifiable deliverable that maps onto the work packages
+in [docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md).
 
 The funding would move Velantrim from a tested research-grade core toward a
 reproducible open-source MVP: a deployable local-first prototype, a FastAPI
