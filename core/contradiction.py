@@ -66,6 +66,13 @@ _ANTONYM_PAIRS = [
     ("legal", "illegal"), ("valid", "invalid"), ("expand", "contract"),
     ("faster", "slower"), ("larger", "smaller"), ("bigger", "smaller"),
     ("warm", "cool"), ("good", "bad"), ("start", "stop"), ("begins", "ends"),
+    ("heavy", "light"), ("heavier", "lighter"),
+    ("fast", "slow"), ("wide", "narrow"), ("thick", "thin"),
+    ("tall", "short"), ("young", "old"), ("cheap", "expensive"),
+    ("strong", "weak"), ("hard", "soft"), ("rough", "smooth"),
+    ("dark", "bright"), ("dirty", "clean"), ("sick", "healthy"),
+    ("rich", "poor"), ("happy", "sad"), ("easy", "difficult"),
+    ("simple", "complex"), ("beautiful", "ugly"), ("quiet", "loud"),
 ]
 _ANTONYMS: Dict[str, Set[str]] = {}
 for _a, _b in _ANTONYM_PAIRS:
