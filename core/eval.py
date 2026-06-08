@@ -12,7 +12,9 @@
 # rather than a narrative. Advanced fixtures (source-span coverage, dry-run review)
 # remain future work (grant scope WP2/WP3).
 
-from typing import Any, Dict, List, Sequence
+import json
+from importlib import resources
+from typing import Any, Dict, List, Optional, Sequence
 
 from core.ingest import ingest, _fact_id
 from core.pipeline import retrieve, run
@@ -23,6 +25,10 @@ from core import contradiction, evidence
 
 # Metadata every stored fact must carry (typing / provenance completeness).
 _REQUIRED_FIELDS = ("source", "source_status", "claim_type", "epistemic_state")
+
+# Curated fixture corpora are bundled inside the package (WP3) so `velantrim eval`
+# works from an installed wheel as well as the repo.
+_FIXTURE_PKG = "core._eval_fixtures"
 
 
 # ─── Pure metric functions ────────────────────────────────────────────────────
@@ -82,6 +88,39 @@ def unsupported_provenance_count(fact_ids: Sequence[str]) -> int:
     return len(evidence.provenance_gaps(list(fact_ids)))
 
 
+# ─── Curated fixture loading (WP3) ────────────────────────────────────────────
+# Fixtures live in JSON files bundled with the package; the inline constants below
+# are a robust fallback if the data files are ever missing.
+
+def _load_fixture_json(name: str) -> Optional[Dict[str, Any]]:
+    """Load a bundled fixture JSON by file name, or None if unavailable."""
+    try:
+        text = resources.files(_FIXTURE_PKG).joinpath(name).read_text(encoding="utf-8")
+        return json.loads(text)
+    except (FileNotFoundError, ModuleNotFoundError, OSError, ValueError):
+        return None
+
+
+def load_retrieval_corpus() -> Dict[str, Any]:
+    """The curated retrieval corpus: {"cases": [...], "distractors": [...]}.
+
+    Falls back to the inline `_FIXTURE` (no distractors) if the bundled data file
+    is missing, so the harness always runs.
+    """
+    data = _load_fixture_json("retrieval.json")
+    if not data or not data.get("cases"):
+        return {"cases": list(_FIXTURE), "distractors": []}
+    return {"cases": data["cases"], "distractors": data.get("distractors", [])}
+
+
+def load_contradiction_pairs() -> List[Dict[str, Any]]:
+    """The curated labelled contradiction pairs (falls back to the inline set)."""
+    data = _load_fixture_json("contradictions.json")
+    if not data or not data.get("pairs"):
+        return list(_CONTRADICTION_FIXTURE)
+    return data["pairs"]
+
+
 # ─── Contradiction handling (WP3) ─────────────────────────────────────────────
 
 _CONTRADICTION_FIXTURE: List[Dict[str, Any]] = [
@@ -101,7 +140,7 @@ def contradiction_eval(pairs: List[Dict[str, Any]] | None = None) -> Dict[str, A
     each `base`, then check whether `probe` is flagged as a CONTRADICTION against
     the canon. Reports precision, recall and the false-positive rate.
     """
-    pairs = pairs if pairs is not None else _CONTRADICTION_FIXTURE
+    pairs = pairs if pairs is not None else load_contradiction_pairs()
     tp = fp = fn = tn = 0
     for p in pairs:
         ingest(p["base"])
@@ -139,25 +178,44 @@ _FIXTURE: List[Dict[str, str]] = [
 
 # ─── Baseline run over the real pipeline ──────────────────────────────────────
 
-def run_baseline(fixture: List[Dict[str, str]] | None = None, *, k: int = 5) -> Dict[str, Any]:
+def run_baseline(fixture: List[Dict[str, str]] | None = None, *, k: int = 5,
+                 detail: bool = False) -> Dict[str, Any]:
     """
     Ingest the fixture corpus and measure the live pipeline:
 
     - retrieval: hit@1/3/5 + MRR of the expected fact for each query;
     - trace_completeness: share of answers that carry a non-empty trace;
     - metadata_completeness: share of facts with full typing/provenance;
+    - source_span_coverage: share of facts with attached source-span evidence;
     - receipt_replay_survival: share of receipts that re-verify against the
-      unchanged canon.
+      unchanged canon;
+    - contradiction: precision/recall of the deterministic classifier.
+
+    With no explicit `fixture`, the curated bundled corpus is used and its
+    `distractors` are ingested as ranking noise so the metrics are non-trivial.
+    Pass an explicit list to evaluate a custom corpus (no distractors).
+    Set `detail=True` to include a per-case breakdown (`cases_detail`).
 
     Deterministic with the dependency-free hashing embedder + extractive answerer.
     Returns a machine-readable report (also see docs/EVAL.md).
     """
-    fixture = fixture if fixture is not None else _FIXTURE
+    if fixture is not None:
+        cases: List[Dict[str, str]] = fixture
+        distractors: List[str] = []
+    else:
+        corpus = load_retrieval_corpus()
+        cases = corpus["cases"]
+        distractors = corpus["distractors"]
+
+    # 0. Ingest distractor facts so retrieval ranking is non-trivial (the target
+    #    fact must out-rank unrelated facts that share the same canon).
+    for text in distractors:
+        ingest(text)
 
     # 1. Ingest the corpus; remember the fact id for each expected claim. Attach a
     #    source-span evidence record so source-span coverage is measured on real data.
     claim_to_id: Dict[str, str] = {}
-    for case in fixture:
+    for case in cases:
         res = ingest(case["claim"])
         fid = res["fact"]["fact_id"]
         claim_to_id[case["claim"]] = fid
@@ -167,9 +225,10 @@ def run_baseline(fixture: List[Dict[str, str]] | None = None, *, k: int = 5) -> 
 
     # 2. Per-query retrieval ranking + trace + receipt.
     per_case: List[Dict[str, Any]] = []
+    cases_detail: List[Dict[str, Any]] = []
     traced = 0
     receipts_ok = 0
-    for case in fixture:
+    for case in cases:
         relevant = [claim_to_id[case["claim"]]]
         ranked = [item["id"] for item in retrieve(case["query"], k=k)]
         per_case.append({"ranked": ranked, "relevant": relevant})
@@ -182,9 +241,19 @@ def run_baseline(fixture: List[Dict[str, str]] | None = None, *, k: int = 5) -> 
         if verify_receipt(receipt).get("verified"):
             receipts_ok += 1
 
-    n = len(fixture) or 1
+        if detail:
+            cases_detail.append({
+                "domain": case.get("domain", "default"),
+                "query": case["query"],
+                "expected": relevant[0],
+                "hit@1": hit_at_k(ranked, relevant, 1),
+                "hit@3": hit_at_k(ranked, relevant, 3),
+                "rr": round(reciprocal_rank(ranked, relevant), 4),
+            })
+
+    n = len(cases) or 1
     report = {
-        "cases": len(fixture),
+        "cases": len(cases),
         "retrieval": aggregate(per_case),
         "trace_completeness": round(traced / n, 4),
         "metadata_completeness": metadata_completeness(fact_ids),
@@ -193,4 +262,94 @@ def run_baseline(fixture: List[Dict[str, str]] | None = None, *, k: int = 5) -> 
         "receipt_replay_survival": round(receipts_ok / n, 4),
         "contradiction": contradiction_eval(),
     }
+    if detail:
+        report["cases_detail"] = cases_detail
     return report
+
+
+# ─── Quality gate (WP3) ───────────────────────────────────────────────────────
+# Regression thresholds: the baseline currently scores at or above each of these.
+# CI fails if a change drops a metric below its floor, so quality cannot silently
+# degrade between releases. Tune upward as the corpus and embedder improve.
+
+DEFAULT_GATE: Dict[str, float] = {
+    "retrieval.hit@1": 0.80,           # baseline 0.875
+    "retrieval.hit@3": 0.85,           # baseline 0.9375
+    "retrieval.mrr": 0.85,             # baseline 0.9115
+    "trace_completeness": 1.0,
+    "metadata_completeness": 1.0,
+    "source_span_coverage": 1.0,
+    "receipt_replay_survival": 1.0,
+    "contradiction.precision": 0.75,   # baseline 0.8333
+    "contradiction.recall": 0.75,      # baseline 0.8333
+}
+# Metrics where LOWER is better (ceilings, not floors).
+_GATE_MAX: Dict[str, float] = {
+    "unsupported_provenance": 0,          # baseline 0
+    "contradiction.false_positive_rate": 0.25,   # baseline 0.1667
+}
+
+
+def _dig(report: Dict[str, Any], dotted: str) -> Any:
+    cur: Any = report
+    for part in dotted.split("."):
+        cur = cur[part]
+    return cur
+
+
+def gate(report: Dict[str, Any],
+         thresholds: Optional[Dict[str, float]] = None) -> Dict[str, Any]:
+    """Compare a report against floor/ceiling thresholds.
+
+    Returns {"passed": bool, "failures": [{metric, value, op, threshold}, ...]}.
+    """
+    floors = thresholds if thresholds is not None else DEFAULT_GATE
+    failures: List[Dict[str, Any]] = []
+    for metric, floor in floors.items():
+        value = _dig(report, metric)
+        if value < floor:
+            failures.append({"metric": metric, "value": value,
+                             "op": ">=", "threshold": floor})
+    for metric, ceil in _GATE_MAX.items():
+        value = _dig(report, metric)
+        if value > ceil:
+            failures.append({"metric": metric, "value": value,
+                             "op": "<=", "threshold": ceil})
+    return {"passed": not failures, "failures": failures}
+
+
+def format_report_md(report: Dict[str, Any]) -> str:
+    """Render a report as a human-readable Markdown summary (CI artifact)."""
+    r = report
+    ret = r["retrieval"]
+    con = r["contradiction"]
+    lines = [
+        "# Velantrim Crystal — Evaluation Report",
+        "",
+        f"- **cases:** {r['cases']}",
+        "",
+        "## Retrieval",
+        "",
+        "| hit@1 | hit@3 | hit@5 | MRR |",
+        "|---|---|---|---|",
+        f"| {ret['hit@1']} | {ret['hit@3']} | {ret['hit@5']} | {ret['mrr']} |",
+        "",
+        "## Grounding & provenance",
+        "",
+        "| metric | value |",
+        "|---|---|",
+        f"| trace_completeness | {r['trace_completeness']} |",
+        f"| metadata_completeness | {r['metadata_completeness']} |",
+        f"| source_span_coverage | {r['source_span_coverage']} |",
+        f"| unsupported_provenance | {r['unsupported_provenance']} |",
+        f"| receipt_replay_survival | {r['receipt_replay_survival']} |",
+        "",
+        "## Contradiction classifier",
+        "",
+        "| pairs | precision | recall | FPR |",
+        "|---|---|---|---|",
+        f"| {con['pairs']} | {con['precision']} | {con['recall']} "
+        f"| {con['false_positive_rate']} |",
+        "",
+    ]
+    return "\n".join(lines)

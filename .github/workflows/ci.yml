@@ -78,6 +78,27 @@ jobs:
           print(f'✅ JSONL integrity OK ({len(ids_seen)} chunks, no duplicates, all required fields present)')
           "
 
+  eval-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+      - name: Evaluation quality gate (WP3)
+        run: python scripts/eval_gate.py --out-dir eval-artifacts
+      - name: Upload evaluation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-report
+          path: eval-artifacts/
+
   security:
     runs-on: ubuntu-latest
     steps:
