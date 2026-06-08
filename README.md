@@ -248,7 +248,9 @@ Core invariants:
 - **LLM optional** — the LLM may phrase answers, but it is not the source of truth.
 
 See **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** for diagrams covering the
-write path, read path, backend strategy, external ingestion and privacy boundary.
+write path, read path, backend strategy, external ingestion and privacy boundary,
+and **[docs/DEMO.md](./docs/DEMO.md)** for a hands-on, reproducible CLI walkthrough
+(ingest → ask → receipt → contradiction → GDPR erase → eval) with real output.
 
 ---
 
@@ -418,6 +420,7 @@ milestone budget, partial-funding plan, and responsible-data position.
 |---|---|
 | **[DEMO.md](./DEMO.md)** | Verifiable memory walkthrough: ingest → trace → receipt → verify |
 | **[docs/REVIEWER_NOTES.md](./docs/REVIEWER_NOTES.md)** | One-page reviewer guide: purpose, demo path, implemented scope and grant extensions |
+| **[docs/DEMO.md](./docs/DEMO.md)** | Hands-on, reproducible CLI walkthrough with real captured output (ingest, ask, receipt, contradictions, knowledge import, GDPR erase, NeuroCore telemetry, eval, HTTP) |
 | **[docs/COMPARISON.md](./docs/COMPARISON.md)** | Comparison with vector-only RAG, chatbot memory and agent-memory systems |
 | **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** | Architecture diagrams and memory/backends/privacy boundaries |
 | **[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)** | Grant-facing problem, solution, work packages and success criteria |

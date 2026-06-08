@@ -134,12 +134,15 @@ knowledge sources.
 
 ### WP5 — Documentation, Governance and Demonstrators
 
-Improve public onboarding:
+A **baseline is already implemented**: an architecture diagram set
+(`docs/ARCHITECTURE.md`), a vector-only comparison (`docs/COMPARISON.md`) and a
+hands-on, reproducible CLI demo walkthrough with real captured output
+(`docs/DEMO.md`). The funded work extends public onboarding:
 
-- architecture diagram;
-- grant-facing demo walkthrough;
+- richer architecture diagrams (sequence + deployment views);
+- expanded grant-facing demo walkthrough and screencast;
 - issue and pull-request templates;
-- comparison with vector-only memory systems;
+- deeper comparison with vector-only memory systems;
 - optional browser/PWA companion demo documentation.
 
 **Outcome:** easier adoption by public-interest contributors and reviewers.
