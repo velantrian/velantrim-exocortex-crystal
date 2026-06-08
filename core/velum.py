@@ -26,7 +26,7 @@ from itertools import combinations
 from typing import Dict, List, Tuple, Optional, Any
 
 # ─── Configuration (RFC0016 defaults; env-overridable) ────────────────────────
-_ENV_WINDOW = "VELANTRIM_VELUM_WINDOW"               # observation window (episodes)
+_ENV_WINDOW = "VELANTRIM_VELUM_WINDOW"               # RESERVED scaffolding — see _window() note
 _ENV_COOCCUR = "VELANTRIM_VELUM_COOCCUR"             # co-occurrences to record/signal
 _ENV_PROMOTE = "VELANTRIM_VELUM_PROMOTE_WEIGHT"      # weight → L2/hint signal
 _ENV_MAX_EDGES = "VELANTRIM_VELUM_MAX_EDGES"         # GC ceiling
@@ -47,6 +47,12 @@ def _envf(name: str, default: float) -> float:
         return default
 
 
+# NOTE (#72): the observation window is RESERVED scaffolding. `self._window`
+# records recent episodes but is not yet read by co-occurrence counting (that
+# uses the unbounded per-edge `count`). `VELANTRIM_VELUM_WINDOW` therefore has
+# no effect on emitted signals today; it is kept for a future windowed/decaying
+# co-occurrence mode (RFC0016). Documented as inert rather than removed so the
+# bounded-history hook stays in place.
 def _window() -> int: return _envi(_ENV_WINDOW, 5)
 def _cooccur() -> int: return _envi(_ENV_COOCCUR, 3)
 def _promote() -> float: return _envf(_ENV_PROMOTE, 0.6)

@@ -39,6 +39,12 @@ logger = logging.getLogger("velantrim.mcp")
 _DEFAULT_PROTOCOL = "2024-11-05"
 _SERVER_NAME = "velantrim"
 # This server runs at the read-only capability level.
+# NOTE (#72): `CAPABILITY` and `_Tool.capability` are RESERVED scaffolding for a
+# future write-capable tier — they are set but not yet enforced. There is no
+# capability check in tools/list or tools/call because every registered tool is
+# read-only (READ_ONLY_TOOLS). This is safe today precisely because no write or
+# mutate tool is registered; the field is documented as inert rather than removed
+# so the gating point exists when a write tier is introduced.
 CAPABILITY = "reader"
 
 

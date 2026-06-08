@@ -22,6 +22,14 @@
 #   2 — Consolidation   : NeuroCore → L3 via TruthGate.                   ⏳ pending
 #
 # Disabled by default. Enable the passive tracker with VELANTRIM_NEUROCORE=1.
+#
+# NOTE (#72): observe() is an EXPLICIT hook — the default pipeline (pipeline.run /
+# ingest) does not call it, so VELANTRIM_NEUROCORE=1 on its own does not populate
+# `neurocore_delta_log`. The flag gates the tracker; a caller (an experiment, a
+# harness, or a future Phase-1 integration) must invoke observe() to record ΔW.
+# This is intentional for Phase 0: the tracker stays opt-in and side-effect-free
+# until the Phase-0 metrics justify wiring it into a live path. CLI inspection:
+# `velantrim neurocore-report`.
 
 import math
 import os
