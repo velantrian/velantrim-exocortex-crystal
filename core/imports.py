@@ -113,18 +113,26 @@ def dry_run_text(content: str, *, fmt: str = "txt", source: str = "external",
 
 def dry_run_file(path: str, *, source: Optional[str] = None,
                  fmt: Optional[str] = None) -> Dict[str, Any]:
-    """Preview a knowledge file (.txt/.md/.json/.jsonl/.csv). Writes nothing."""
+    """Preview a knowledge file (stdlib or WP4 adapter formats). Writes nothing."""
     ext = (fmt or os.path.splitext(path)[1]).lower()
     if not ext.startswith("."):
         ext = "." + ext
-    if ext not in knowledge._SUPPORTED:
-        raise ValueError(
-            f"dry_run_file: unsupported extension {ext!r} "
-            f"(supported: {knowledge._SUPPORTED})")
-    with open(path, encoding="utf-8") as fh:
-        content = fh.read()
-    return dry_run_text(content, fmt=ext.lstrip("."),
-                        source=source or os.path.basename(path))
+    src = source or os.path.basename(path)
+    if ext in knowledge._SUPPORTED:
+        with open(path, encoding="utf-8") as fh:
+            content = fh.read()
+        return dry_run_text(content, fmt=ext.lstrip("."), source=src)
+    # Optional WP4 adapter path (yaml / pdf / rdf …).
+    from core.adapters import load as _load_adapter
+    adapter_fn = _load_adapter(ext.lstrip("."))
+    claims = adapter_fn(path)
+    items = [predict_claim(rec.get("claim", ""), source=src,
+                           source_status=knowledge.EXTERNAL,
+                           claim_type=rec.get("claim_type"),
+                           **{k: rec[k] for k in ("confidence", "significance")
+                              if rec.get(k) is not None})
+             for rec in claims]
+    return _summarise(items, source=src)
 
 
 # ─── Real import with a session ───────────────────────────────────────────────

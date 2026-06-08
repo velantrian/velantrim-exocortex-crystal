@@ -69,13 +69,32 @@ api = [
     "fastapi>=0.110.0",
     "uvicorn>=0.27.0",
 ]
+# ── WP4 knowledge adapters ─────────────────────────────────────────────────────
+# Each adapter extends `velantrim learn` to a new file type while keeping the
+# stdlib-only runtime untouched. Adapters are auto-loaded on demand; an
+# ImportError with an install hint is raised if the dep is missing.
+yaml = [
+    "pyyaml>=6.0",
+]
+pdf = [
+    "pypdf>=4.0",
+]
+rdf = [
+    "rdflib>=7.0",
+]
+# Convenience meta-extra: all three WP4 adapters at once.
+adapters = [
+    "pyyaml>=6.0",
+    "pypdf>=4.0",
+    "rdflib>=7.0",
+]
 
 # Explicit package surface — the runtime is the `core` package plus the
 # top-level `epigenetic_adaptation_module` it imports. Declaring them keeps the
 # flat-layout build reproducible (no auto-discovery ambiguity over prototypes/
 # utils/docs, which are not part of the installable runtime).
 [tool.setuptools]
-packages = ["core"]
+packages = ["core", "core.adapters"]
 py-modules = ["epigenetic_adaptation_module"]
 
 [tool.setuptools.package-data]
