@@ -9,9 +9,10 @@
 #
 # This is an honest first step toward the "async/await throughout" roadmap item:
 # the *interface* is async and event-loop friendly today; the underlying I/O is
-# still synchronous and offloaded to a worker thread. Because every operation
-# opens its own short-lived connection (see core.memory._db), running them off
-# the loop thread is safe.
+# still synchronous and offloaded to a worker thread. This is safe across threads
+# because the L0/L1 store opens a short-lived connection per operation
+# (core.memory._db), and the on-disk L3 backend (SqliteL3Graph) opens its cached
+# connection with check_same_thread=False and serializes access with a lock.
 
 import asyncio
 from typing import Any, Dict, Optional
