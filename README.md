@@ -186,6 +186,41 @@ receipt* walkthrough.
 
 ---
 
+## 🔬 Verification and Quality Gates
+
+This repository includes a lightweight but comprehensive quality layer designed to support trustworthy AI memory infrastructure and grant-readiness review.
+
+| Gate | What it checks |
+|---|---|
+| **pytest** (593 tests, ≥ 95% coverage) | Core memory, pipeline, provenance, GDPR controls, ESM transitions |
+| **jsonl-integrity** (CI) | Valid JSON, required fields, no duplicate `chunk_id` in the knowledge corpus |
+| **security** (CI) | `bandit` static security lint + `pip-audit` dependency vulnerability scan |
+| **JSON schemas** (`schemas/`) | Machine-readable canonical definitions of `fact`, `trace` and `metadata` enums |
+
+Run locally:
+
+```bash
+# Tests with coverage gate
+pytest tests/ -v --cov=core --cov-fail-under=95
+
+# Security lint
+bandit -r core/ -ll -q
+
+# Dependency audit
+pip-audit --ignore-vuln PYSEC-2022-42969
+```
+
+These gates do not claim to eliminate all errors. What they do:
+- **reduce unsupported factual promotion** (TruthGate + grounding block)
+- **require traceable source metadata** on every stored fact
+- **support auditable memory operations** via replayable receipts
+- **detect silent corpus corruption** (JSONL integrity)
+- **surface known dependency vulnerabilities** before they reach production
+
+See [docs/grant-readiness-hardening.md](./docs/grant-readiness-hardening.md) for a full explanation and the canonical enum reference.
+
+---
+
 ## 🏛️ Architecture
 
 Every factual query follows an auditable path: **retrieve, trace, validate, then

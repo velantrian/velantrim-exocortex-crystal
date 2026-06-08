@@ -10,15 +10,30 @@ htmlcov/
 # Data (SQLite, local graph, logs)
 data/
 *.db
+*.sqlite
+*.sqlite3
 *.db-journal
 *.db-wal
 *.db-shm
+*.sqlite-wal
+*.sqlite-shm
 *.log
+logs/
+
+# Secrets and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.token
+secrets/
+private/
 
 # Environment
 .venv/
 venv/
-.env
 
 # IDE
 .vscode/
@@ -28,6 +43,12 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+
+# Build and dist artifacts
+build/
+dist/
+exports/
+generated/
 
 # Project-specific: auto-generated reports
 migration_dependency_report.json
