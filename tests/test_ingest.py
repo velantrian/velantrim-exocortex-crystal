@@ -34,11 +34,13 @@ def test_ingest_emotion_is_validated_but_not_world_fact():
     assert f["claim_type"] != "WORLD_FACT"
 
 
-def test_ingest_world_fact_is_verified_and_lands_in_l3():
+def test_ingest_world_fact_lands_in_l3_as_user_claimed():
+    """Issue #63: a user-reported world fact is USER_CLAIMED, not VERIFIED.
+    It is stored and reaches L3, but requires external evidence to become VERIFIED."""
     res = ingest("The Earth orbits the Sun")
     assert res["accepted"] is True
-    assert res["fact"]["truth_status"] == "VERIFIED"
-    # canonical node is in L3
+    assert res["fact"]["truth_status"] == "USER_CLAIMED"
+    # canonical node is in L3 — stored and retrievable, just not VERIFIED
     assert "ing:" in res["fact"]["fact_id"]
     assert get_l3_graph().get_fact(res["fact"]["fact_id"]) is not None
 

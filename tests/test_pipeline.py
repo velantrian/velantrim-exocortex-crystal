@@ -473,9 +473,19 @@ def test_truth_gate_blocks_llm_output_as_world_fact():
 
 
 def test_truth_status_reflects_claim_type():
-    """Promotion must label subjective claims SUBJECTIVE, not VERIFIED."""
+    """Issue #63: truth status is source-aware — user-reported world claims are
+    USER_CLAIMED, not VERIFIED; only externally sourced facts become VERIFIED."""
     from core.pipeline import _truth_status_for
-    assert _truth_status_for("WORLD_FACT") == "VERIFIED"
+    # External / derived sources → independently verified world knowledge
+    assert _truth_status_for("WORLD_FACT", "EXTERNAL") == "VERIFIED"
+    assert _truth_status_for("WORLD_FACT", "DERIVED") == "VERIFIED"
+    assert _truth_status_for("WORLD_FACT", "OBSERVED") == "VERIFIED"
+    # User-reported world claim → stored as recalled, not independently verified
+    assert _truth_status_for("WORLD_FACT", "USER_REPORTED") == "USER_CLAIMED"
+    # No source / unknown → unverified
+    assert _truth_status_for("WORLD_FACT") == "UNVERIFIED"
+    assert _truth_status_for("WORLD_FACT", None) == "UNVERIFIED"
+    # Subjective and interpretive modalities are unaffected by source_status
     assert _truth_status_for("EMOTION") == "SUBJECTIVE"
     assert _truth_status_for("USER_EXPERIENCE") == "SUBJECTIVE"
     assert _truth_status_for("INTERPRETATION") == "HYPOTHESIS"
@@ -507,7 +517,7 @@ def test_canonical_emotion_is_validated_but_not_world_fact():
 
     fact = pack["facts"][0]
     memory.transition_esm(fact["fact_id"], "Validated")
-    fact["truth_status"] = pipeline._truth_status_for(fact["claim_type"])
+    fact["truth_status"] = pipeline._truth_status_for(fact["claim_type"], fact.get("source_status"))
 
     assert fact["truth_status"] == "SUBJECTIVE"   # valid feeling…
     assert fact["claim_type"] != "WORLD_FACT"     # …but not a fact about the world
@@ -515,14 +525,36 @@ def test_canonical_emotion_is_validated_but_not_world_fact():
 
 # ─── generate_answer fallback ─────────────────────────────────────────────────
 
-def test_generate_answer_falls_back_when_nothing_validated():
+def test_generate_answer_blocks_when_nothing_validated():
+    """Issue #64: no Validated/Supported facts → insufficient grounding → block.
+    A verifiable memory system must not answer from unvalidated material."""
     from core.pipeline import generate_answer
     pack = {"facts": [{"fact_id": "a", "claim": "raw", "source": "s",
                        "epistemic_state": "Observed"}]}
     out = generate_answer(pack, trace=[])
-    # No Validated/Supported facts → fall back to all facts rather than empty.
-    assert out["total_facts"] == 1
-    assert "raw" in out["answer"]
+    assert out["answer"] is None
+    assert out.get("error") is not None
+    assert "grounding" in out["error"]
+    assert out["total_facts"] == 0
+
+
+# ─── demo seed opt-in (issue #65) ─────────────────────────────────────────────
+
+def test_production_default_has_no_seed_corpus(monkeypatch):
+    """Issue #65: without VELANTRIM_DEMO_SEED=1 the retrieval corpus is empty.
+    All facts must enter through ingest(); the production pipeline is clean."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    from core.pipeline import _load_demo_seed
+    assert _load_demo_seed() == []
+
+
+def test_demo_seed_enabled_returns_five_facts(monkeypatch):
+    """With VELANTRIM_DEMO_SEED=1 the seed corpus returns the curated facts."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "1")
+    from core.pipeline import _load_demo_seed
+    facts = _load_demo_seed()
+    assert len(facts) == 5
+    assert all(f.get("source_status") == "EXTERNAL" for f in facts)
 
 
 # ─── build_facts_pack ─────────────────────────────────────────────────────────

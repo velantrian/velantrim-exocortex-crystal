@@ -35,13 +35,65 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Validate jsonl is parseable
+      - name: Validate JSONL integrity (parse + schema + duplicate ids)
         run: |
           python -c "
-          import json
-          with open('docs/Velantrim_V8_Crystal_Sprint1.jsonl') as f:
+          import json, sys
+
+          # Fields every chunk must carry. 'layer' is intentionally excluded:
+          # the document header chunk (idx 0) belongs to no memory layer.
+          REQUIRED_FIELDS = ['chunk_id', 'title', 'content']
+          path = 'docs/Velantrim_V8_Crystal_Sprint1.jsonl'
+          errors = []
+          ids_seen = {}
+
+          with open(path) as f:
               for i, line in enumerate(f, 1):
-                  if line.strip():
-                      json.loads(line)
-          print('✅ jsonl integrity OK')
+                  if not line.strip():
+                      continue
+                  try:
+                      obj = json.loads(line)
+                  except json.JSONDecodeError as e:
+                      errors.append(f'Line {i}: JSON parse error: {e}')
+                      continue
+
+                  # Required field presence
+                  for field in REQUIRED_FIELDS:
+                      if not obj.get(field):
+                          errors.append(f'Line {i}: missing required field \"{field}\" in chunk {obj.get(\"chunk_id\", \"?\")}')
+
+                  # Duplicate chunk_id detection
+                  cid = obj.get('chunk_id')
+                  if cid:
+                      if cid in ids_seen:
+                          errors.append(f'Line {i}: duplicate chunk_id \"{cid}\" (first at line {ids_seen[cid]})')
+                      else:
+                          ids_seen[cid] = i
+
+          if errors:
+              print('❌ JSONL validation failed:')
+              for e in errors:
+                  print(' ', e)
+              sys.exit(1)
+          print(f'✅ JSONL integrity OK ({len(ids_seen)} chunks, no duplicates, all required fields present)')
           "
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit pip-audit
+      - name: Python security lint (bandit)
+        run: |
+          bandit -r core/ -ll -q
+      - name: Dependency vulnerability audit (pip-audit)
+        run: |
+          pip install -r requirements-dev.txt
+          pip-audit --ignore-vuln PYSEC-2022-42969
