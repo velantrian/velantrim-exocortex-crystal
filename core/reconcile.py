@@ -73,17 +73,40 @@ def reinforce(fact_id: str, agreement: bool = True) -> Optional[float]:
     return new_conf
 
 
-def supersede(old_id: str, new_fact: Dict[str, Any]) -> str:
+def supersede(old_id: str, new_fact: Dict[str, Any], *, enforce_gate: bool = True) -> str:
     """
     A new fact supersedes the old one. Old: Validated → Contradicted → Deprecated
     (+ an old -SUPERSEDED_BY-> new edge). New: stored and Validated.
     Returns the fact_id of the new fact.
+
+    The new fact is a *fresh* claim, so by default it must clear the same
+    Guardian + TruthGate path as any other entry into L3 — a supersession is not
+    a licence to inject an unvalidated world fact into the canon (Graph = Truth:
+    the gate is the only entry). Raises ValueError if the new fact is rejected.
+    `enforce_gate=False` is reserved for callers that have already gated the fact.
     """
     new_id = new_fact.get("fact_id")
     if not new_id:
         raise ValueError("supersede: new_fact.fact_id is required")
 
     store_fact({**new_fact, "epistemic_state": "Observed"})
+
+    if enforce_gate:
+        # Lazy import: pipeline does not import reconcile, but keep it local to be safe.
+        from core.pipeline import guardian, truth_gate
+        staged = get_fact(new_id)
+        facts_pack = {"facts": [staged], "query": staged.get("claim", ""), "total": 1}
+        trace = [{
+            "fact_id": new_id, "source": staged.get("source"),
+            "origin": "supersede", "epistemic_state": "Observed",
+            "confidence": staged.get("confidence"),
+        }]
+        ok, reason = guardian(facts_pack, trace)
+        if ok:
+            ok, reason = truth_gate(facts_pack)
+        if not ok:
+            raise ValueError(f"supersede: new fact rejected by TruthGate: {reason}")
+
     transition_esm(new_id, "Validated")
     _sync_l3(new_id)
 
