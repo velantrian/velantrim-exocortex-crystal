@@ -2,7 +2,7 @@
 
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
-`v0.1.0` · 🧪 **593 tests** · 🎯 **~99% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v0.1.0` · 🧪 **605 tests** · 🎯 **~99% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
 
 > Velantrim Crystal is **not another chatbot**. It is a **verifiable memory layer**
 > that AI systems write to and read from. Every stored fact carries provenance,
@@ -192,7 +192,7 @@ This repository includes a lightweight but comprehensive quality layer designed 
 
 | Gate | What it checks |
 |---|---|
-| **pytest** (593 tests, ≥ 95% coverage) | Core memory, pipeline, provenance, GDPR controls, ESM transitions |
+| **pytest** (605 tests, ≥ 95% coverage) | Core memory, pipeline, provenance, GDPR controls, ESM transitions |
 | **jsonl-integrity** (CI) | Valid JSON, required fields, no duplicate `chunk_id` in the knowledge corpus |
 | **security** (CI) | `bandit` static security lint + `pip-audit` dependency vulnerability scan |
 | **JSON schemas** (`schemas/`) | Machine-readable canonical definitions of `fact`, `trace` and `metadata` enums |
@@ -347,7 +347,7 @@ Default queue behaviour remains dependency-free with SQLite.
 - GDPR-relevant erasure, restriction, record-of-processing, audit and PII tools;
 - read-only MCP server;
 - biological-memory research modules;
-- 593 passing tests and ~99% coverage;
+- 605 passing tests and ~99% coverage;
 - baseline evaluation harness (`core/eval.py`, `velantrim eval`).
 
 **Developing outside the audited release boundary**
