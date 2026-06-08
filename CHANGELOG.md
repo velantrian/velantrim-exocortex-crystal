@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **FastAPI service layer** (`core/api.py`, optional `pip install '.[api]'`,
+  console script `velantrim-api`): HTTP endpoints `/health`, `/ingest`, `/ask`,
+  `/receipt`, `/verify-receipt`, `/evidence/{fact_id}` — thin async wrappers over
+  `core/aio.py` that mirror the CLI and add no TruthGate-bypassing write path.
+  FastAPI/uvicorn stay an optional extra; the default runtime is standard-library
+  only.
 - **RFC0063 — External knowledge ingestion** (`core/knowledge.py`): bulk-import
   `.txt` / `.md` / `.json` / `.jsonl` / `.csv` knowledge files through the same
   Guardian → TruthGate path as user utterances; imported facts carry
@@ -33,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - README headline version aligned to the published package version (`0.1.0`).
-- Documentation figures synced to the current suite (**610 tests, ~99% coverage**)
+- Documentation figures synced to the current suite (**620 tests, ~99% coverage**)
   across README, ROADMAP, GDPR, and TEST_REPORT.
 
 ## [0.1.0] — first public release
