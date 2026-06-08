@@ -7,11 +7,11 @@ numbers: run the commands below and compare the figures.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **620** |
+| **Tests passing** | **624** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **~99%** (gate enforced at 95%) |
-| Test files | 44 (`tests/test_*.py`) |
+| Test files | 45 (`tests/test_*.py`) |
 | Python | 3.11 / 3.12 in CI |
 | Runtime dependencies | standard library only |
 

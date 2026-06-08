@@ -25,8 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `source_status = EXTERNAL` with the source file as provenance. CLI `learn`.
 - **RFC0068 — NeuroCore Phase 0** (`core/neurocore.py`): a passive plasticity
   tracker that logs the norm of the would-be weight delta (ΔW) when surprise > θ.
-  Off by default (`VELANTRIM_NEUROCORE`); never touches the model and never writes
-  the L3 graph (invariant I68). CLI `neurocore-report`.
+  Now wired into `pipeline.run()` — when enabled (`VELANTRIM_NEUROCORE`) every
+  query records a surprise tick (surprise ≈ 1 − top retrieval relevance, incl.
+  zero-hit cold-start queries). Off by default; never touches the model and never
+  writes the L3 graph (invariant I68). CLI `neurocore-report`.
 - **Sprint-A A9 — LLM call safety** (`core/generation.py`): bounded retry with
   exponential backoff on transient API failures, no retry for non-transient
   errors, output ceiling, graceful degradation to the extractive generator.
@@ -39,8 +41,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - README headline version aligned to the published package version (`0.1.0`).
-- Documentation figures synced to the current suite (**620 tests, ~99% coverage**)
+- Audit cleanup (#73): `BackendRegistry.reset()` now closes a cached L3 instance
+  exposing `close()` (no SQLite connection leak across resets); `get_l3_graph`
+  `auto` docstring corrected; `concept.hebbian_weights()` folds directed edge
+  counts robustly; assorted LOW smells (`verify-receipt` file handle, decimal
+  handling in `contradiction._content`).
+- Documentation figures synced to the current suite (**624 tests, ~99% coverage**)
   across README, ROADMAP, GDPR, and TEST_REPORT.
+
+### Removed
+- Dead research scaffolding: velum's unused observation window
+  (`VELANTRIM_VELUM_WINDOW` env knob — recorded but never read by co-occurrence
+  counting) and the decorative, unenforced `_Tool.capability` field on the
+  read-only MCP server.
 
 ## [0.1.0] — first public release
 
