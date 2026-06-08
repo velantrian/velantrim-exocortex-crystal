@@ -145,7 +145,76 @@ The `session_id` lets a whole import be reviewed, restricted or erased as a batc
 
 ---
 
-## 5. GDPR in practice — erase + tamper-evident audit
+## 5. Curator review queue — the human-in-the-loop
+
+A claim that fails a gate is **not** silently dropped: it stays `Observed` in L1,
+never reaching the canon, and surfaces in the review queue for a human to decide.
+Here a librarian records a threat pattern, an incoming claim is blocked by it, and
+the curator reviews the result.
+
+```bash
+velantrim immune-block "miracle cure" --type hallucination
+velantrim ingest "This miracle cure treats every disease"
+```
+```json
+{"accepted": false, "fact_id": "ing:db8203dfaa81", "claim_type": "WORLD_FACT",
+ "truth_status": "UNVERIFIED", "conflicts": [],
+ "reason": "Immune: matches recorded threat (hallucination, severity 1.0)"}
+```
+
+The blocked claim is now pending review. `review-item` **re-runs the gates** to
+explain *why* it is held:
+
+```bash
+velantrim review-queue
+velantrim review-item ing:db8203dfaa81
+```
+```json
+{"found": true, "fact_id": "ing:db8203dfaa81",
+ "claim": "This miracle cure treats every disease", "claim_type": "WORLD_FACT",
+ "source_status": "USER_REPORTED", "confidence": 0.6,
+ "diagnosis": {"verdict": "blocked",
+   "reason": "Immune: matches recorded threat (hallucination, severity 1.0)"}}
+```
+
+The curator rejects it — `Observed → Collapsed`, sealed in the audit chain:
+
+```bash
+velantrim review-reject ing:db8203dfaa81 --reason "unsafe medical claim"
+```
+```json
+{"found": true, "fact_id": "ing:db8203dfaa81", "rejected": true,
+ "epistemic_state": "Collapsed", "reason": "unsafe medical claim"}
+```
+
+When a curator judges a blocked claim legitimate (e.g. a too-broad threat
+pattern), `--force` promotes it into the canon as an **explicit, audited
+override** — a human, not a heuristic, overrides the gate:
+
+```bash
+velantrim review-approve ing:46a294b5b69f --force --actor curator \
+  --note "historically sourced; threat pattern too broad"
+```
+```json
+{"found": true, "fact_id": "ing:46a294b5b69f", "approved": true,
+ "override": true, "epistemic_state": "Validated",
+ "truth_status": "USER_CLAIMED", "diagnosis": "blocked"}
+```
+
+Every decision is recorded in the tamper-evident chain (content-free — actor,
+note and override flag, never the claim), and the chain still verifies:
+
+```bash
+velantrim audit-verify
+```
+```json
+{"ok": true, "length": 4, "broken_at": null, "error": null,
+ "signed": true, "verified": true}
+```
+
+---
+
+## 6. GDPR in practice — erase + tamper-evident audit
 
 Right to erasure (Art. 17) purges a fact across L0/L1/L3 and the outbox, leaving a
 **content-free tombstone**:
@@ -176,7 +245,7 @@ opt-in.) Related controls: `restrict`/`unrestrict` (Art. 18), `ropa` (Art. 30),
 
 ---
 
-## 6. NeuroCore telemetry — the passive plasticity tracker, live
+## 7. NeuroCore telemetry — the passive plasticity tracker, live
 
 NeuroCore (RFC0068) is off by default. Enable it and the pipeline records a
 **surprise tick per query** (surprise ≈ 1 − top retrieval relevance), writing
@@ -197,7 +266,7 @@ and capturing real surprise data (including zero-hit cold-start queries).
 
 ---
 
-## 7. Baseline evaluation harness + quality gate — measurable, not narrative
+## 8. Baseline evaluation harness + quality gate — measurable, not narrative
 
 The harness runs over a curated, multi-domain corpus (16 retrieval cases with
 ranking distractors, 12 labelled contradiction pairs incl. hard negatives):
@@ -233,7 +302,7 @@ score for generated answers are the funded extensions.
 
 ---
 
-## 8. Same operations over HTTP (optional FastAPI layer)
+## 9. Same operations over HTTP (optional FastAPI layer)
 
 The HTTP layer is an **optional extra** (`pip install ".[api]"`); the default
 runtime stays standard-library only. It exposes the same operations as the CLI —
@@ -267,7 +336,9 @@ curl -s localhost:8000/ask -H 'content-type: application/json' \
 - **Local-first & dependency-free:** the whole tour runs on the Python standard
   library, offline, with no cloud service.
 - **Auditable:** answers carry replayable receipts; facts carry source-span
-  evidence; deletions carry a tamper-evident hash chain.
+  evidence; deletions **and curator decisions** carry a tamper-evident hash chain.
+- **Human-in-the-loop:** blocked claims are held, not lost — a curator reviews,
+  rejects, or promotes them with an explicit, audited override.
 - **Honest about scope:** the evaluation harness, span extraction and adapters
   have working baselines today and clearly-scoped extensions in the grant plan.
 
