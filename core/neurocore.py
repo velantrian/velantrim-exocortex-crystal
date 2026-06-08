@@ -22,6 +22,12 @@
 #   2 — Consolidation   : NeuroCore → L3 via TruthGate.                   ⏳ pending
 #
 # Disabled by default. Enable the passive tracker with VELANTRIM_NEUROCORE=1.
+#
+# Wiring: pipeline.run() calls observe() once per query (surprise ≈ 1 − top
+# retrieval relevance) when VELANTRIM_NEUROCORE=1, so the tracker records real
+# ΔW data during normal operation. Strictly Phase 0 — observe() only logs to
+# `neurocore_delta_log` and never touches the model or L3 (invariant I68).
+# Inspect with `velantrim neurocore-report`.
 
 import math
 import os

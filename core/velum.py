@@ -21,12 +21,10 @@
 # and weak edges decay. A _degree_cache gives O(1) "how connected is this entity".
 
 import os
-from collections import deque
 from itertools import combinations
 from typing import Dict, List, Tuple, Optional, Any
 
 # ─── Configuration (RFC0016 defaults; env-overridable) ────────────────────────
-_ENV_WINDOW = "VELANTRIM_VELUM_WINDOW"               # observation window (episodes)
 _ENV_COOCCUR = "VELANTRIM_VELUM_COOCCUR"             # co-occurrences to record/signal
 _ENV_PROMOTE = "VELANTRIM_VELUM_PROMOTE_WEIGHT"      # weight → L2/hint signal
 _ENV_MAX_EDGES = "VELANTRIM_VELUM_MAX_EDGES"         # GC ceiling
@@ -47,7 +45,6 @@ def _envf(name: str, default: float) -> float:
         return default
 
 
-def _window() -> int: return _envi(_ENV_WINDOW, 5)
 def _cooccur() -> int: return _envi(_ENV_COOCCUR, 3)
 def _promote() -> float: return _envf(_ENV_PROMOTE, 0.6)
 def _max_edges() -> int: return _envi(_ENV_MAX_EDGES, 1000)
@@ -74,7 +71,6 @@ class Velum:
         self._edges: Dict[Tuple[str, str], Dict[str, Any]] = {}
         self._degree: Dict[str, int] = {}          # entity → number of edges (cache)
         self._signaled: set = set()                # pairs already promoted this session
-        self._window: deque = deque(maxlen=_window())
         self.signals_emitted = 0
 
     # ─── Observation ──────────────────────────────────────────────────────────
@@ -85,7 +81,6 @@ class Velum:
         crosses the promotion threshold for the first time this session.
         """
         ents = sorted({e for e in entities if e})
-        self._window.append((episode_id, ents))
         cooccur, promote, inc = _cooccur(), _promote(), _increment()
         signals: List[Dict[str, Any]] = []
         for a, b in combinations(ents, 2):
@@ -124,7 +119,6 @@ class Velum:
                 edge["weight"] = round(edge["weight"] * (1.0 - decay), 4)
                 if edge["weight"] < 1e-6:
                     self._remove(key)
-        self._window.clear()
         self._signaled.clear()
         return signals
 
