@@ -21,6 +21,7 @@ Repository = "https://github.com/velantrian/velantrim-exocortex-crystal"
 [project.scripts]
 velantrim = "core.cli:main"
 velantrim-mcp = "core.mcp_server:main"
+velantrim-api = "core.api:main"
 
 [project.optional-dependencies]
 dev = [
@@ -60,6 +61,13 @@ encryption = [
 # dependency-free SQLite outbox.
 redis = [
     "redis>=5.0.0",
+]
+# HTTP service layer (FastAPI). Run with `velantrim-api` after install, or embed
+# core.api:create_app() in your own ASGI server. Optional: the default surfaces
+# are the CLI (`velantrim`) and the read-only MCP server, both stdlib-only.
+api = [
+    "fastapi>=0.110.0",
+    "uvicorn>=0.27.0",
 ]
 
 # Explicit package surface — the runtime is the `core` package plus the

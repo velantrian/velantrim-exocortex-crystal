@@ -2,7 +2,7 @@
 
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
-`v0.1.0` · 🧪 **610 tests** · 🎯 **~99% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v0.1.0` · 🧪 **620 tests** · 🎯 **~99% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
 
 > Velantrim Crystal is **not another chatbot**. It is a **verifiable memory layer**
 > that AI systems write to and read from. Every stored fact carries provenance,
@@ -192,7 +192,7 @@ This repository includes a lightweight but comprehensive quality layer designed 
 
 | Gate | What it checks |
 |---|---|
-| **pytest** (610 tests, ≥ 95% coverage) | Core memory, pipeline, provenance, GDPR controls, ESM transitions |
+| **pytest** (620 tests, ≥ 95% coverage) | Core memory, pipeline, provenance, GDPR controls, ESM transitions |
 | **jsonl-integrity** (CI) | Valid JSON, required fields, no duplicate `chunk_id` in the knowledge corpus |
 | **security** (CI) | `bandit` static security lint + `pip-audit` dependency vulnerability scan |
 | **JSON schemas** (`schemas/`) | Machine-readable canonical definitions of `fact`, `trace` and `metadata` enums |
@@ -335,6 +335,29 @@ VELANTRIM_QUEUE_BACKEND=redis VELANTRIM_REDIS_URL=redis://localhost:6379/0 velan
 
 Default queue behaviour remains dependency-free with SQLite.
 
+### HTTP service layer (FastAPI), optional
+
+```bash
+pip install '.[api]'
+velantrim-api            # serves on 127.0.0.1:8000 (VELANTRIM_API_HOST/PORT to change)
+```
+
+Endpoints mirror the CLI and nothing more — there is **no write path that
+bypasses the TruthGate**:
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET`  | `/health` | liveness/readiness probe |
+| `POST` | `/ingest` | ingest an utterance through Guardian + TruthGate |
+| `POST` | `/ask` | run the verifiable pipeline (blocked answers return `200` with `answer: null` + `error`) |
+| `GET`  | `/receipt?q=...` | run a query and return a replayable provenance receipt |
+| `POST` | `/verify-receipt` | replay a receipt against the current canon (`strict_provenance` optional) |
+| `GET`  | `/evidence/{fact_id}` | list source-span evidence for a fact |
+
+The layer is a thin async wrapper over `core/aio.py`, so the synchronous core
+never blocks the event loop. FastAPI/uvicorn are an **optional extra** — the
+default runtime (CLI + read-only MCP server) stays standard-library only.
+
 ---
 
 ## 🗺️ Roadmap
@@ -346,8 +369,9 @@ Default queue behaviour remains dependency-free with SQLite.
 - external knowledge ingestion for text/Markdown/JSON/JSONL/CSV;
 - GDPR-relevant erasure, restriction, record-of-processing, audit and PII tools;
 - read-only MCP server;
+- optional FastAPI service layer (`pip install '.[api]'`, `velantrim-api`);
 - biological-memory research modules;
-- 610 passing tests and ~99% coverage;
+- 620 passing tests and ~99% coverage;
 - baseline evaluation harness (`core/eval.py`, `velantrim eval`).
 
 **Developing outside the audited release boundary**

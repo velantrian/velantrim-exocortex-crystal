@@ -6,3 +6,8 @@
 pytest>=8.0.0
 pytest-asyncio>=0.23.0
 pytest-cov>=4.1.0
+
+# For exercising the optional FastAPI service layer (core/api.py) in CI.
+# Not part of the runtime: the default install stays standard-library only.
+fastapi>=0.110.0
+httpx>=0.27.0
