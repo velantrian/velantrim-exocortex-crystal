@@ -168,8 +168,15 @@ def decrypt(value: str) -> str:
             raise ValueError(
                 "crypto: value is Fernet-encrypted but `cryptography` is "
                 "unavailable or the key is wrong")
-        return fernet.decrypt(
-            value[len(_MARK_FERNET):].encode("ascii")).decode("utf-8")
+        try:
+            return fernet.decrypt(
+                value[len(_MARK_FERNET):].encode("ascii")).decode("utf-8")
+        except Exception as exc:  # noqa: BLE001 — Fernet raises InvalidToken; the
+            # public contract is a uniform ValueError on auth failure, regardless
+            # of backend, so callers don't depend on a backend-specific exception.
+            raise ValueError(
+                "crypto: authentication failed (tampered data or wrong key)"
+            ) from exc
     if value.startswith(_MARK_HMAC):
         return _hmac_decrypt(value)
     return value  # legacy plaintext or encryption disabled

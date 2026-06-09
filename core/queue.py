@@ -85,7 +85,7 @@ class RedisOutboxQueue(OutboxQueue):
         self._r.zrem(self.KEY, fact_id)
 
 
-def _redis_client():
+def _redis_client():  # pragma: no cover - needs the redis package + a live server
     """Build a Redis client and verify the server is reachable. Raises
     ImportError if the package is missing, or a redis error if PING fails."""
     import redis  # optional dependency — imported lazily

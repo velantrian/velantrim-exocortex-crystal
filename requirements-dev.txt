@@ -11,3 +11,12 @@ pytest-cov>=4.1.0
 # Not part of the runtime: the default install stays standard-library only.
 fastapi>=0.110.0
 httpx>=0.27.0
+
+# Optional layers exercised by the test suite so coverage reflects the whole
+# codebase (NOT runtime deps — the default install stays standard-library only):
+#   cryptography → core/crypto.py Fernet backend (GDPR Art. 32)
+#   pyyaml/pypdf/rdflib → core/adapters/* knowledge adapters (WP4)
+cryptography>=42.0.0
+pyyaml>=6.0
+pypdf>=4.0
+rdflib>=7.0

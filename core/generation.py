@@ -120,7 +120,7 @@ class AnthropicGenerator(Generator):
             except Exception as e:  # noqa: BLE001 — must not crash the answer
                 if _is_transient(e) and attempt < self._max_retries:
                     attempt += 1
-                    if self._backoff_base:
+                    if self._backoff_base:  # pragma: no cover - real backoff needs a live API
                         time.sleep(self._backoff_base ** attempt)
                     logger.warning(
                         "AnthropicGenerator: transient API failure (%s), "
