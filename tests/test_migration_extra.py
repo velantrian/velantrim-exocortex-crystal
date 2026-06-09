@@ -341,3 +341,49 @@ def test_main_rollback(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr("sys.argv", ["velantrim-migrate", "rollback", backup, target])
     mig.main()
     assert "Restored" in capsys.readouterr().out
+
+
+# ─── final-branch coverage (cycle revisit, blank line, leftover IDs, backup) ────
+
+def test_validate_dependency_chain_revisits_shared_node():
+    # Diamond DAG: a→b, a→c, b→d, c→d. Reaching d twice exercises the
+    # already-visited short-circuit (no cycle, returns False on the revisit).
+    chunks = [
+        {"chunk_id": "a", "depends_on": ["b", "c"]},
+        {"chunk_id": "b", "depends_on": ["d"]},
+        {"chunk_id": "c", "depends_on": ["d"]},
+        {"chunk_id": "d", "depends_on": []},
+    ]
+    report = mig.validate_dependency_chain(chunks)
+    assert report["cycles"] == []
+
+
+def test_build_id_map_streaming_skips_blank_lines(tmp_path):
+    path = _write(tmp_path / "in.jsonl",
+                  [{"chunk_id": "plain_ascii_id"}, "", "   "])
+    # Blank lines are skipped without error; the ASCII id needs no remapping.
+    assert mig._build_id_map_streaming(path) == {}
+
+
+def test_validate_all_warns_on_leftover_old_ids(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)  # validate_all writes a report into cwd
+    id_map = {"мифос_id": "mythos_id"}
+    chunks = [{"chunk_id": "c1", "content": "still references мифос_id here"}]
+    # The old id survives in `content` → the leftover-detection branch runs.
+    assert mig.validate_all(chunks, id_map) is True
+
+
+def test_run_pipeline_creates_backup(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    # Diamond DAG (a→b,c; b→d; c→d): the streaming validator reaches `d` twice,
+    # exercising its already-visited short-circuit alongside the backup path.
+    src = _write(tmp_path / "corpus.jsonl", [
+        {"chunk_id": "a", "depends_on": ["b", "c"]},
+        {"chunk_id": "b", "depends_on": ["d"]},
+        {"chunk_id": "c", "depends_on": ["d"]},
+        {"chunk_id": "d", "depends_on": []},
+    ])
+    assert mig.run_pipeline(src, dry_run=False, skip_backup=False) is True
+    # The post-write rollback backup must have been created alongside the input.
+    assert list(tmp_path.glob("*backup*")) or list(tmp_path.glob("*.bak*")) \
+        or any("backup" in p.name for p in tmp_path.iterdir())

@@ -21,6 +21,16 @@ def enc(monkeypatch):
     return crypto
 
 
+@pytest.fixture
+def enc_stdlib(monkeypatch):
+    """Enable encryption AND force the dependency-free HMAC-SHA256 backend, even
+    where `cryptography` happens to be installed. This keeps the stdlib backend
+    exercised on every machine (not only on CI, which omits `cryptography`)."""
+    monkeypatch.setenv("VELANTRIM_ENCRYPTION_KEY", _KEY)
+    monkeypatch.setattr(crypto, "_fernet", lambda: None)
+    return crypto
+
+
 # ─── crypto module ────────────────────────────────────────────────────────────
 
 def test_disabled_by_default_is_identity(monkeypatch):
@@ -68,6 +78,61 @@ def test_wrong_key_fails(monkeypatch):
     token = crypto.encrypt("secret")
     monkeypatch.setenv("VELANTRIM_ENCRYPTION_KEY", "a different key")
     with pytest.raises(ValueError):
+        crypto.decrypt(token)
+
+
+# ─── stdlib HMAC backend (forced — covers the zero-dependency path everywhere) ──
+
+def test_stdlib_round_trip(enc_stdlib):
+    token = crypto.encrypt("hmac payload")
+    assert token.startswith("enc:h1:")
+    assert crypto.decrypt(token) == "hmac payload"
+
+
+def test_stdlib_backend_name(enc_stdlib):
+    assert crypto.backend_name() == "hmac-sha256"
+
+
+def test_stdlib_tamper_is_detected(enc_stdlib):
+    token = crypto.encrypt("trustworthy")
+    prefix_len = token.index(":", 4) + 1
+    body = list(token)
+    body[prefix_len] = "A" if body[prefix_len] != "A" else "B"
+    with pytest.raises(ValueError, match="authentication failed"):
+        crypto.decrypt("".join(body))
+
+
+def test_stdlib_wrong_key_fails(monkeypatch):
+    monkeypatch.setenv("VELANTRIM_ENCRYPTION_KEY", _KEY)
+    monkeypatch.setattr(crypto, "_fernet", lambda: None)
+    token = crypto.encrypt("secret")
+    monkeypatch.setenv("VELANTRIM_ENCRYPTION_KEY", "a different key")
+    with pytest.raises(ValueError, match="authentication failed"):
+        crypto.decrypt(token)
+
+
+# ─── Fernet backend (only when `cryptography` is installed; CI omits it) ────────
+
+def test_fernet_round_trip_when_available(monkeypatch):
+    pytest.importorskip("cryptography")
+    monkeypatch.setenv("VELANTRIM_ENCRYPTION_KEY", _KEY)
+    if crypto._fernet() is None:
+        pytest.skip("cryptography present but Fernet backend unusable here")
+    token = crypto.encrypt("fernet payload")
+    assert token.startswith("enc:f1:")
+    assert crypto.decrypt(token) == "fernet payload"
+
+
+def test_fernet_wrong_key_raises_uniform_valueerror(monkeypatch):
+    # Regression: the Fernet path used to leak cryptography's InvalidToken; the
+    # contract is a uniform ValueError("authentication failed") like the stdlib path.
+    pytest.importorskip("cryptography")
+    monkeypatch.setenv("VELANTRIM_ENCRYPTION_KEY", _KEY)
+    if crypto._fernet() is None:
+        pytest.skip("cryptography present but Fernet backend unusable here")
+    token = crypto.encrypt("secret")
+    monkeypatch.setenv("VELANTRIM_ENCRYPTION_KEY", "a different key")
+    with pytest.raises(ValueError, match="authentication failed"):
         crypto.decrypt(token)
 
 

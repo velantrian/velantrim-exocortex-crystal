@@ -253,7 +253,6 @@ def main(argv: Optional[List[str]] = None) -> int:
             return 1
         print(json.dumps(provenance.build_receipt(res), ensure_ascii=False, indent=2))
     elif args.cmd == "verify-receipt":
-        import sys
         if args.file == "-":
             raw = sys.stdin.read()
         else:

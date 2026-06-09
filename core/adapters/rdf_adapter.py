@@ -20,7 +20,7 @@ from typing import Any, Dict, List
 
 try:
     import rdflib as _rdflib
-except ImportError as _exc:
+except ImportError as _exc:  # pragma: no cover - install hint when the extra is absent
     raise ImportError(
         "RDF adapter requires rdflib. "
         'Install with: pip install "velantrim-exocortex-crystal[rdf]"'

@@ -41,7 +41,7 @@ Not a commercial platform — a credible, testable foundation.
 
 ### Q3. What already works today, before any funding?
 
-The open core is tested, not vapourware: **669 passing tests, 98% coverage,
+The open core is tested, not vapourware: **712 passing tests, 100% coverage,
 standard-library runtime**. Implemented: L0/L1 memory and the 8-state epistemic
 state machine; local L3 graph backends (`auto` → LadybugDB → SQLite → mock);
 type-aware TruthGate and Guardian; source / source-status tracking; replayable

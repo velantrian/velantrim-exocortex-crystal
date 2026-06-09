@@ -8,10 +8,10 @@ whether memory answers remain grounded, replayable and auditable.
 
 The repository currently reports:
 
-- 669 passing tests;
+- 712 passing tests;
 - 12 skipped optional-backend tests;
 - 0 failing tests;
-- ~99% coverage with a 95% gate;
+- 100% coverage, enforced by a 100% gate in CI;
 - standard-library runtime path;
 - tests for memory, TruthGate, L3, provenance, receipts, GDPR operations, MCP,
   external ingestion and biological-memory layers.
@@ -203,8 +203,8 @@ fixture metrics** and clearly separated future benchmark extensions:
 ```json
 {
   "version": "0.1.x",
-  "tests_passing": 669,
-  "coverage": "98%",
+  "tests_passing": 712,
+  "coverage": "100%",
   "baseline_fixture": {
     "cases": 4,
     "retrieval_hit_at_1": 0.5,

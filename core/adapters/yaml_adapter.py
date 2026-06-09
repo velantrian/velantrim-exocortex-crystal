@@ -17,7 +17,7 @@ from typing import Any, Dict, List
 
 try:
     import yaml as _yaml
-except ImportError as _exc:
+except ImportError as _exc:  # pragma: no cover - install hint when the extra is absent
     raise ImportError(
         "YAML adapter requires PyYAML. "
         'Install with: pip install "velantrim-exocortex-crystal[yaml]"'

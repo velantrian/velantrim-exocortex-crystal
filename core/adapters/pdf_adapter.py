@@ -14,7 +14,7 @@ from typing import Any, Dict, List
 
 try:
     import pypdf as _pypdf
-except ImportError as _exc:
+except ImportError as _exc:  # pragma: no cover - install hint when the extra is absent
     raise ImportError(
         "PDF adapter requires pypdf. "
         'Install with: pip install "velantrim-exocortex-crystal[pdf]"'
