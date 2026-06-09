@@ -60,7 +60,7 @@ The current open core already includes:
 - GDPR-relevant erasure, restriction, record-of-processing and audit logging;
 - opt-in encryption at rest for L1 personal-data fields;
 - dependency-free read-only MCP server;
-- 712 passing tests and 100% coverage (enforced by a 100% CI gate).
+- 716 passing tests and 100% coverage (enforced by a 100% CI gate).
 
 ## Why this fits public-interest infrastructure
 

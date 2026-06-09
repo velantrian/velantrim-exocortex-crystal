@@ -34,7 +34,7 @@ These modules form the audited, dependency-free, grant-ready release boundary.
 
 | Canon concept | Code file(s) | Status | Notes |
 |---|---|---|---|
-| **TruthGate** | `core/pipeline.py`, `core/ingest.py` | `CANONICAL / P0` | Only valid entry into L3. `claim_type`, `source_status`, `epistemic_state` enforced. Direct L3 writes are bugs. |
+| **TruthGate** | `core/pipeline.py`, `core/ingest.py` | `CANONICAL / P0` | Only automatic entry into L3 (sole exception: explicit, audited curator override in `core/review.py`). `claim_type`, `source_status`, `epistemic_state` enforced. Direct unaudited L3 writes are bugs. |
 | **Guardian** | `core/immune.py` + `core/pipeline.py` | `CANONICAL / P0` | CRISPR Guard — blocks hallucination patterns, unsafe writes, Ring Zero violations. |
 | **L0 / L1 memory + 8-state ESM** | `core/memory.py` | `CANONICAL / P0` | In-RAM cache + SQLite/WAL. Full ESM: Observed → Supported → Validated → … |
 | **L3 canonical graph** | `core/l3_graph.py` | `CANONICAL / P0` | Swappable backend: `auto` → LadybugDB / SQLite / mock. Optional Neo4j. Graph = Truth. |
@@ -177,7 +177,7 @@ These rules must not change without architectural review:
 
 ```text
 Graph = Truth                    One canonical L3 graph is the single source of truth.
-TruthGate is the only L3 entry   Direct L3 writes are bugs, not shortcuts.
+TruthGate is the only automatic L3 entry   Sole exception: explicit, audited curator override (review queue). Direct unaudited L3 writes are bugs, not shortcuts.
 Provenance for every fact        source, source_status, trace, receipt — non-negotiable.
 run_context is system-only       Users cannot set PRODUCTION / EVAL_HARNESS / CHAOS_SIM.
 Chaos never touches production   Failure Simulator runs in sandbox / shadow L3 only.

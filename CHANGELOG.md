@@ -12,6 +12,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **P0 cross-audit hardening** (Claude / ChatGPT / Grok review):
+  - `VELANTRIM_DB` is now actually read by `core/memory.py`, so
+    `scripts/eval_gate.py` and the `docs/DEMO.md` instructions truly isolate the
+    L1 SQLite store (previously the variable was set but ignored and L1 always
+    wrote to `./data/velantrim_memory.db`).
+  - `reconcile._sync_l3()` now mirrors the pipeline's self-heal path: on an L3
+    merge failure the fact is queued in the L3 outbox for `drain_l3_outbox()`
+    instead of silently losing the sync.
+  - `core/consolidate.py` no longer calls `merge_fact(None)` when an L1 record
+    was erased while its L3 node lingers (defensive `_remerge` guard).
+  - `PRIVACY.md` now describes the real default L3 backend chain
+    (`auto` → LadybugDB → **on-disk SQLite** → in-memory mock) instead of
+    claiming the in-memory mock is the default.
+  - TruthGate invariant wording made precise across README / ARCHITECTURE /
+    implementation-status: TruthGate is the only **automatic** entry into L3;
+    the sole exception is the explicit, audited curator override in the review
+    queue (`core/review.py`).
+  - Documentation figures re-synced to the verified suite (**716 passing tests,
+    12 skipped optional-backend tests, 100% coverage**) and the coverage gate
+    unified at **100%** across `pyproject.toml`, CI and contributor docs
+    (previously CI enforced 95% while `pyproject.toml` required 100%).
+
 ### Added
 - **FastAPI service layer** (`core/api.py`, optional `pip install '.[api]'`,
   console script `velantrim-api`): HTTP endpoints `/health`, `/ingest`, `/ask`,
@@ -59,8 +82,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `auto` docstring corrected; `concept.hebbian_weights()` folds directed edge
   counts robustly; assorted LOW smells (`verify-receipt` file handle, decimal
   handling in `contradiction._content`).
-- Documentation figures synced to the current suite (**633 tests, ~99% coverage**)
-  across README, ROADMAP, GDPR, and TEST_REPORT.
+- Documentation figures synced to the suite as it stood at the time (**633
+  tests, ~99% coverage**) across README, ROADMAP, GDPR, and TEST_REPORT —
+  superseded by the 716 / 100% re-sync recorded under *Fixed* above.
 
 ### Removed
 - Dead research scaffolding: velum's unused observation window

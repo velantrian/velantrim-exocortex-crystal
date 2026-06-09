@@ -25,6 +25,17 @@ _HALF_LIFE_DAYS = 30.0   # confidence half-life period for an insignificant fact
 _FLOOR = 0.02            # we do not go below this — a fact fades but does not disappear
 
 
+def _remerge(graph, fact_id: str) -> None:
+    """Re-merge the refreshed L1 record into L3 — only if it still exists.
+
+    The L1 fact may have been physically erased (GDPR Art. 17) while its L3 node
+    lingers until the erasure cascade reaches it; merge_fact(None) must not crash
+    the sleep cycle."""
+    updated = get_fact(fact_id)
+    if updated is not None:
+        graph.merge_fact(updated)
+
+
 def consolidate(
     *,
     now: Optional[datetime] = None,
@@ -58,7 +69,7 @@ def consolidate(
             # the node's age is unknown, the count honestly starts "now".
             meta["last_consolidated"] = now.isoformat()
             if update_fact(node["fact_id"], metadata=meta):
-                graph.merge_fact(get_fact(node["fact_id"]))
+                _remerge(graph, node["fact_id"])
             continue
         try:
             last = datetime.fromisoformat(baseline)
@@ -80,7 +91,7 @@ def consolidate(
             # (so a later demotion out of CORE does not trigger a huge one-shot drop).
             meta["last_consolidated"] = now.isoformat()
             update_fact(node["fact_id"], metadata=meta)
-            graph.merge_fact(get_fact(node["fact_id"]))
+            _remerge(graph, node["fact_id"])
             continue
 
         sig = float(node.get("significance", 0.5))
@@ -91,7 +102,7 @@ def consolidate(
 
         meta["last_consolidated"] = now.isoformat()
         update_fact(node["fact_id"], confidence=new_conf, metadata=meta)
-        graph.merge_fact(get_fact(node["fact_id"]))
+        _remerge(graph, node["fact_id"])
         if new_conf < conf:
             decayed += 1
 

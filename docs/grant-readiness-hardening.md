@@ -74,8 +74,8 @@ The schemas make this flow auditable by an external reviewer without running the
 pip install -r requirements-dev.txt
 pip install -e .
 
-# Run the full test suite with coverage gate (>= 95%)
-pytest tests/ -v --cov=core --cov-fail-under=95
+# Run the full test suite with coverage gate (100%)
+pytest tests/ --cov=. --cov-fail-under=100
 
 # Run security lint
 bandit -r core/ -ll -q

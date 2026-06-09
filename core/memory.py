@@ -94,7 +94,10 @@ L0_CAP = 5
 _L0: OrderedDict = OrderedDict()
 
 # ─── L1: SQLite path ──────────────────────────────────────────────────────────
-SQLITE_PATH = "./data/velantrim_memory.db"
+# VELANTRIM_DB redirects the L1 store (read at import time, like the other
+# VELANTRIM_* backend variables). scripts/eval_gate.py and docs/DEMO.md rely on
+# it to isolate the L1 database from real data.
+SQLITE_PATH = os.environ.get("VELANTRIM_DB", "./data/velantrim_memory.db")
 
 _DDL = """
     CREATE TABLE IF NOT EXISTS facts (

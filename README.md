@@ -2,7 +2,7 @@
 
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
-`v0.1.0` · 🧪 **712 tests** · 🎯 **100% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v0.1.0` · 🧪 **716 tests** · 🎯 **100% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
 
 > Velantrim Crystal is **not another chatbot**. It is a **verifiable memory layer**
 > that AI systems write to and read from. Every stored fact carries provenance,
@@ -178,7 +178,7 @@ Development/test setup:
 ```bash
 pip install -r requirements-dev.txt
 pip install -e .
-pytest tests/ -v --cov=core --cov-fail-under=95
+pytest tests/ --cov=. --cov-fail-under=100
 ```
 
 See **[DEMO.md](./DEMO.md)** for the full *ingest → evidence → trace → answer →
@@ -192,7 +192,7 @@ This repository includes a lightweight but comprehensive quality layer designed 
 
 | Gate | What it checks |
 |---|---|
-| **pytest** (712 tests, 100% coverage gate) | Core memory, pipeline, provenance, GDPR controls, ESM transitions, review queue |
+| **pytest** (716 tests, 100% coverage gate) | Core memory, pipeline, provenance, GDPR controls, ESM transitions, review queue |
 | **jsonl-integrity** (CI) | Valid JSON, required fields, no duplicate `chunk_id` in the knowledge corpus |
 | **security** (CI) | `bandit` static security lint + `pip-audit` dependency vulnerability scan |
 | **JSON schemas** (`schemas/`) | Machine-readable canonical definitions of `fact`, `trace` and `metadata` enums |
@@ -201,7 +201,7 @@ Run locally:
 
 ```bash
 # Tests with coverage gate
-pytest tests/ -v --cov=core --cov-fail-under=95
+pytest tests/ --cov=. --cov-fail-under=100
 
 # Security lint
 bandit -r core/ -ll -q
@@ -241,7 +241,9 @@ flowchart LR
 Core invariants:
 
 - **Graph = Truth** — one canonical knowledge graph is the single source of truth.
-- **TruthGate is the only entry into L3** — direct canonical writes are bugs.
+- **TruthGate is the only automatic entry into L3** — the sole exception is an
+  explicit, audited curator override in the review queue (`core/review.py`);
+  direct unaudited canonical writes are bugs.
 - **Provenance for every fact** — `source`, `source_status`, trace and receipt.
 - **Epistemic honesty** — statements, observations, hypotheses and verified facts
   are not collapsed into one undifferentiated memory.
@@ -373,7 +375,7 @@ default runtime (CLI + read-only MCP server) stays standard-library only.
 - read-only MCP server;
 - optional FastAPI service layer (`pip install '.[api]'`, `velantrim-api`);
 - biological-memory research modules;
-- 712 passing tests and 100% coverage;
+- 716 passing tests and 100% coverage;
 - baseline evaluation harness (`core/eval.py`, `velantrim eval`).
 
 **Developing outside the audited release boundary**

@@ -41,7 +41,7 @@ generator), so the suite runs offline with no API keys.
 ## ✅ Pull request checklist
 
 - [ ] Tests added/updated; `pytest` passes locally.
-- [ ] **Coverage stays ≥ 95%** (the gate is enforced in CI via `--cov-fail-under=95`).
+- [ ] **Coverage stays at 100%** (the gate is enforced in CI via `--cov-fail-under=100`).
 - [ ] New runtime deps are optional with a stdlib fallback (or none added).
 - [ ] Docs updated where relevant; `ROADMAP.md` reflects implemented vs designed.
 - [ ] Commits are scoped and clearly described.

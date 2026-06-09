@@ -27,7 +27,7 @@ to a concrete deliverable that can be checked against the public repository.
 
 ## What the funding converts
 
-Velantrim already exists as a tested research-grade core: 712 passing tests, 100%
+Velantrim already exists as a tested research-grade core: 716 passing tests, 100%
 coverage, a standard-library runtime, a local L3 canonical graph, a type-aware
 TruthGate, replayable provenance receipts, GDPR-relevant controls and a read-only
 MCP server. See [REVIEWER_NOTES.md](../REVIEWER_NOTES.md) and
