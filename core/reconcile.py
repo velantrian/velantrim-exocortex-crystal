@@ -17,13 +17,17 @@
 # future hook. The only auto-operation is reinforce on an exact claim repeat
 # (see ingest.ingest), which is safe.
 
+import logging
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional, List
 
 from core.memory import get_fact, store_fact, transition_esm, update_fact
 from core.l3_graph import get_l3_graph
 from core.embedding import get_embedder
+from core.queue import get_outbox_queue
 from core import contradiction
+
+logger = logging.getLogger("velantrim.reconcile")
 
 REL_SUPERSEDED_BY = "SUPERSEDED_BY"
 REL_CONTRADICTS = "CONTRADICTS"
@@ -37,10 +41,21 @@ def _now() -> str:
 
 
 def _sync_l3(fact_id: str) -> Optional[Dict[str, Any]]:
-    """Re-merge the fact from SQLite into L3 so the canon reflects the latest state."""
+    """Re-merge the fact from SQLite into L3 so the canon reflects the latest state.
+
+    L1 and L3 do not share a transaction: if the L3 backend fails here, the L1
+    update has already happened. Mirror the pipeline's self-heal path — enqueue
+    the fact in the L3 outbox so drain_l3_outbox() retries the merge later,
+    instead of silently losing the sync.
+    """
     fact = get_fact(fact_id)
     if fact is not None:
-        get_l3_graph().merge_fact(fact)
+        try:
+            get_l3_graph().merge_fact(fact)
+        except Exception as e:  # noqa: BLE001 — backend down; keep L1, retry via outbox
+            logger.warning("_sync_l3: L3 merge failed for %s (%s); queued for retry",
+                           fact_id, type(e).__name__)
+            get_outbox_queue().enqueue(fact_id)
     return fact
 
 

@@ -24,8 +24,8 @@ jobs:
           pip install -r requirements-dev.txt
       - name: Install package
         run: pip install -e .
-      - name: Run tests with coverage gate
-        run: pytest tests/ -v --cov=core --cov-fail-under=95
+      - name: Run tests with coverage gate (100%, same as pyproject addopts)
+        run: pytest tests/ --cov=. --cov-fail-under=100
 
   jsonl-integrity:
     runs-on: ubuntu-latest

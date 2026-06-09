@@ -15,7 +15,7 @@ to the repository.
 
 - [ ] `pip install -r requirements-dev.txt` succeeds.
 - [ ] `pip install -e .` succeeds.
-- [ ] `pytest tests/ -v --cov=core --cov-fail-under=95` passes locally.
+- [ ] `pytest tests/ --cov=. --cov-fail-under=100` passes locally.
 - [ ] GitHub Actions CI passes on Python 3.11 and 3.12.
 - [ ] `TEST_REPORT.md` matches the latest test count and command.
 

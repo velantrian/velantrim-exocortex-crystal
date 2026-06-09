@@ -10,7 +10,8 @@ The central invariant is:
 Graph = Truth
 LLM = optional language/interface layer
 Trace = proof path
-TruthGate = single audited entry into canon
+TruthGate = the only automatic entry into canon
+            (sole exception: explicit, audited curator override in the review queue)
 ```
 
 ## 1. System overview
@@ -83,8 +84,11 @@ sequenceDiagram
     T->>Q: queue retry if L3 merge fails
 ```
 
-All canonical writes must pass through the validation path. Direct writes to L3
-that bypass Guardian/TruthGate are architectural bugs.
+All canonical writes must pass through the validation path. The one sanctioned
+exception is the curator review queue (`core/review.py`): a human may promote a
+still-blocked item with an explicit `force=True` override, and that override is
+recorded in the tamper-evident audit chain. Any other direct write to L3 that
+bypasses Guardian/TruthGate is an architectural bug.
 
 ## 5. Read path
 

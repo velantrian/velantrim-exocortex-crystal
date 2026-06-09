@@ -20,7 +20,7 @@ legal advice — operators remain responsible for compliant deployment.
 | **Accuracy** | The TruthGate, ESM verification states, and `reconcile.py` (supersede / contradict / find_conflicts) exist specifically to keep stored facts accurate and to flag conflicts. |
 | **Storage limitation** | FSRS-style confidence decay (`core/consolidate.py`) and logical collapse support time-bounded retention. |
 | **Integrity & confidentiality** | Single-entry TruthGate, Ring Zero immutability (I6), validated ESM transitions, and the self-healing L3 outbox. See [SECURITY.md](./SECURITY.md). |
-| **Accountability** | Provenance trace + audit-oriented test suite (~99% coverage; see [TEST_REPORT.md](./TEST_REPORT.md)) demonstrate and document processing. |
+| **Accountability** | Provenance trace + audit-oriented test suite (100% coverage; see [TEST_REPORT.md](./TEST_REPORT.md)) demonstrate and document processing. |
 
 ## Data subject rights (Chapter III)
 

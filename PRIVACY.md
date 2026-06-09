@@ -37,9 +37,14 @@ below).
 ## Where data lives
 
 - **L0** — in-memory LRU cache; exists only for the lifetime of the process.
-- **L1** — local SQLite database at `./data/velantrim_memory.db` (WAL mode).
-- **L3** — embedded canonical graph (in-memory `mock` by default; on-disk
-  LadybugDB if you enable it via `VELANTRIM_L3_PATH`).
+- **L1** — local SQLite database at `./data/velantrim_memory.db` (WAL mode;
+  redirect with `VELANTRIM_DB`).
+- **L3** — embedded canonical graph. The default `auto` mode tries LadybugDB if
+  installed, then falls back to the dependency-free **on-disk SQLite** backend
+  (path via `VELANTRIM_L3_PATH`, default `./data/velantrim_l3.db`), and uses
+  the in-memory `mock` only as a last-resort/dev fallback if no persistent
+  backend can open. In other words: by default the canonical graph **may be
+  persisted on disk**, locally.
 
 The `data/` directory and all `*.db` files are git-ignored and never leave the
 repository or your machine on their own.

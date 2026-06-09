@@ -7,71 +7,81 @@ numbers: run the commands below and compare the figures.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **633** |
+| **Tests passing** | **716** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
-| **Total coverage** | **~99%** (gate enforced at 95%) |
-| Test files | 45 (`tests/test_*.py`) |
+| **Total coverage** | **100%** (gate enforced at 100%, repo-wide `--cov=.`) |
+| Test files | 46 (`tests/test_*.py`) |
 | Python | 3.11 / 3.12 in CI |
 | Runtime dependencies | standard library only |
 
-The 95% coverage floor is enforced in `pyproject.toml`
-(`--cov-fail-under=95`) and in CI. The 12 skipped tests cover optional backends
+The 100% coverage gate is enforced in `pyproject.toml` (`--cov=. --cov-fail-under=100`)
+and in CI with the same flags. The 12 skipped tests cover optional backends
 (LadybugDB, sentence-transformers, Neo4j, Anthropic) that are not installed in
-the default environment. The Redis queue backend (`core/queue.py`, 91%) is
-exercised against an in-memory fake; the few uncovered lines are the live-server
-connection path (`redis.from_url` + PING), which needs a running Redis and is not
-part of the dependency-free default.
+the default environment; their backend-specific code paths are excluded via
+`pragma: no cover`. Reaching the figures below requires the dev environment from
+`requirements-dev.txt` (it installs the optional layers — FastAPI, cryptography,
+PyYAML, pypdf, rdflib — that the suite exercises so coverage reflects the whole
+codebase; none of them are runtime dependencies).
 
 ## How to reproduce
 
 ```bash
 pip install -r requirements-dev.txt
 pip install -e .
-pytest tests/ -v --cov=core --cov-fail-under=95
+pytest tests/ --cov=. --cov-fail-under=100
 ```
 
-## Coverage by module (core/)
+## Coverage by module
 
 | Module | Stmts | Cover |
 |--------|------:|------:|
-| `core/_registry.py`    | 18  | 100% |
+| `core/_registry.py`    | 24  | 100% |
 | `core/adaptation.py`   | 22  | 100% |
-| `core/analogy.py`      | 86  | 100% |
+| `core/adapters/pdf_adapter.py`  | 22 | 100% |
+| `core/adapters/rdf_adapter.py`  | 33 | 100% |
+| `core/adapters/yaml_adapter.py` | 30 | 100% |
 | `core/aio.py`          | 10  | 100% |
+| `core/analogy.py`      | 86  | 100% |
+| `core/api.py`          | 56  | 100% |
 | `core/audit.py`        | 69  | 100% |
-| `core/cli.py`          | 201 | 100% |
+| `core/cli.py`          | 241 | 100% |
 | `core/compliance.py`   | 43  | 100% |
-| `core/concept.py`      | 93  | 100% |
-| `core/consolidate.py`  | 45  | 96%  |
-| `core/contradiction.py`| 53  | 100% |
+| `core/concept.py`      | 96  | 100% |
+| `core/consolidate.py`  | 49  | 100% |
+| `core/contradiction.py`| 59  | 100% |
 | `core/crypto.py`       | 62  | 100% |
+| `core/demo_seed.py`    | 1   | 100% |
 | `core/embedding.py`    | 76  | 100% |
 | `core/erasure.py`      | 45  | 100% |
-| `core/eval.py`         | 86  | 100% |
-| `core/evidence.py`     | 36  | 100% |
-| `core/fractal.py`      | 93  | 99%  |
-| `core/generation.py`   | 56  | 98%  |
+| `core/eval.py`         | 144 | 100% |
+| `core/evidence.py`     | 77  | 100% |
+| `core/fractal.py`      | 93  | 100% |
+| `core/generation.py`   | 54  | 100% |
 | `core/immune.py`       | 94  | 100% |
-| `core/imports.py`      | 82  | 100% |
+| `core/imports.py`      | 87  | 100% |
 | `core/ingest.py`       | 90  | 100% |
-| `core/knowledge.py`    | 125 | 99%  |
-| `core/l3_graph.py`     | 259 | 99%  |
-| `core/mcp_server.py`   | 104 | 100% |
-| `core/memory.py`       | 191 | 100% |
+| `core/knowledge.py`    | 132 | 100% |
+| `core/l3_graph.py`     | 286 | 100% |
+| `core/mcp_server.py`   | 103 | 100% |
+| `core/memory.py`       | 196 | 100% |
 | `core/metrics.py`      | 10  | 100% |
 | `core/neurocore.py`    | 54  | 100% |
-| `core/neurogenesis.py` | 96  | 99%  |
+| `core/neurogenesis.py` | 96  | 100% |
 | `core/observe.py`      | 35  | 100% |
 | `core/pii.py`          | 56  | 100% |
-| `core/pipeline.py`     | 249 | 98%  |
-| `core/provenance.py`   | 88  | 99%  |
-| `core/queue.py`        | 53  | 91%  |
-| `core/reconcile.py`    | 80  | 96%  |
+| `core/pipeline.py`     | 266 | 100% |
+| `core/provenance.py`   | 90  | 100% |
+| `core/queue.py`        | 47  | 100% |
+| `core/reconcile.py`    | 97  | 100% |
+| `core/review.py`       | 81  | 100% |
 | `core/trace.py`        | 26  | 100% |
-| `core/velum.py`        | 112 | 99%  |
-| `core/volition.py`     | 75  | 99%  |
-| **Total (repo-wide)**  | **3717** | **~99%** |
+| `core/velum.py`        | 106 | 100% |
+| `core/volition.py`     | 75  | 100% |
+| root tooling (`audit_metadata`, `check_rfc_duplicates`, `fill_dependencies`, `epigenetic_adaptation_module`, `velantrim_migrate_v3_1`) | 586 | 100% |
+| `prototypes/` (4 research prototypes) | 145 | 100% |
+| `utils/rfc_parser.py`  | 13  | 100% |
+| **Total (repo-wide)**  | **4163** | **100%** |
 
 ## What the tests cover
 
@@ -89,8 +99,12 @@ pytest tests/ -v --cov=core --cov-fail-under=95
 | Neurogenesis Dynamic Growth (RFC0073) — plasticity, pattern separation, growth/prune, CLI | `test_neurogenesis.py` |
 | NeuroCore Phase 0 (RFC0068) — passive plasticity tracker, threshold, I68 isolation, CLI | `test_neurocore.py` |
 | External knowledge ingestion (RFC0063) — txt/md/json/jsonl/csv parsers, TruthGate routing, `learn` CLI | `test_knowledge.py` |
+| Optional knowledge adapters (WP4) — YAML, PDF, RDF/Linked Data | `test_adapters.py` |
 | Evaluation harness — retrieval/trace/receipt + source-span coverage & contradiction precision/recall, `eval` CLI | `test_eval.py` |
 | Import sessions & dry-run review (WP2) — predict-without-write, session restrict/erase, `learn --dry-run` | `test_imports.py` |
+| Curator review queue (WP2) — pending/diagnose/approve/reject, audited force override | `test_review.py` |
+| Optional FastAPI service layer — endpoint parity with the CLI, no gate bypass | `test_api.py` |
+| Read-only MCP server (JSON-RPC over stdio) | `test_mcp_server.py` |
 | L3 canonical graph adapter & backends | `test_l3_graph.py` |
 | On-disk SQLite L3 backend (persistence, erase, vectors, entities) | `test_l3_sqlite.py` |
 | Packaging contract (entry point, version, package surface) | `test_packaging.py` |
@@ -112,7 +126,9 @@ pytest tests/ -v --cov=core --cov-fail-under=95
 | Observability & metrics | `test_observe.py`, `test_metrics.py` |
 | Migration tooling & rollback | `test_migration.py`, `test_migration_extra.py` |
 | Metadata audit scripts | `test_audit_scripts.py`, `test_audit_regressions.py` |
+| P0 cross-audit hardening (`VELANTRIM_DB` isolation, `_sync_l3` outbox recovery, consolidate None guard) | `test_p0_hardening.py` |
 | RFC parsing | `test_rfc_parser.py` |
 | Biological-inspiration prototypes | `test_bio_modules.py`, `test_hybrid_biological_memory.py` |
 
-*Figures reflect the suite as of 2026 and are regenerated by running the commands above.*
+*Figures reflect the suite as of 2026-06-09 and are regenerated by running the
+commands above.*
