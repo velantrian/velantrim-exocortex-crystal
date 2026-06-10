@@ -49,7 +49,11 @@ def test_metadata_completeness_after_ingest():
 
 # ─── Baseline run over the real pipeline ──────────────────────────────────────
 
-def test_run_baseline_structure_and_ranges():
+def test_run_baseline_structure_and_ranges(monkeypatch):
+    # Mirror the real eval gate environment (scripts/eval_gate.py): no demo
+    # seed corpus — strict receipt replay requires every VERIFIED citation to
+    # carry evidence, and demo seed facts intentionally have none.
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
     report = ev.run_baseline()
     assert report["cases"] == 16          # curated bundled corpus
     # well-formed retrieval block
@@ -138,7 +142,8 @@ def test_load_contradiction_pairs_is_curated():
     assert any(p["contradict"] for p in pairs) and any(not p["contradict"] for p in pairs)
 
 
-def test_baseline_passes_the_quality_gate():
+def test_baseline_passes_the_quality_gate(monkeypatch):
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")  # mirror scripts/eval_gate.py
     report = ev.run_baseline()
     verdict = ev.gate(report)
     assert verdict["passed"], verdict["failures"]
@@ -186,7 +191,8 @@ def test_cli_eval(capsys):
     assert "retrieval" in report and report["cases"] == 16
 
 
-def test_cli_eval_gate_passes(capsys):
+def test_cli_eval_gate_passes(capsys, monkeypatch):
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")  # mirror scripts/eval_gate.py
     from core.cli import main
     assert main(["eval", "--gate"]) == 0
 

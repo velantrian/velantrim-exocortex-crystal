@@ -247,13 +247,15 @@ def run_baseline(fixture: List[Dict[str, str]] | None = None, *, k: int = 5,
         result = run(case["query"])
         if result.get("trace"):
             traced += 1
-        # A receipt built now must re-verify against the unchanged canon. A
-        # blocked answer (e.g. a typo query with zero retrieval hits under the
-        # word-level embedder) has no receipt — it scores 0, it must not crash
-        # the harness.
+# A receipt built now must re-verify against the unchanged canon —
+        # strictly: a VERIFIED citation with no source-span evidence fails the
+        # replay (and thus the CI gate), not just the unsupported_provenance
+        # count. A blocked answer (e.g. a typo query with zero retrieval hits
+        # under the word-level embedder) has no receipt — it scores 0, it must
+        # not crash the harness.
         if result.get("answer") is not None:
             receipt = build_receipt(result)
-            if verify_receipt(receipt).get("verified"):
+            if verify_receipt(receipt, strict_provenance=True).get("verified"):
                 receipts_ok += 1
 
         if detail:
