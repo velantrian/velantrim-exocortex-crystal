@@ -12,6 +12,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **P1 cross-audit hardening** (follow-up to the P0 round):
+  - the evaluation harness now replays receipts with `strict_provenance=True`,
+    so a VERIFIED citation without source-span evidence fails
+    `receipt_replay_survival` (and the CI eval gate), not just the
+    `unsupported_provenance` count;
+  - `velantrim verify-receipt` gains `--strict-provenance` (parity with the
+    HTTP API's `strict_provenance` option);
+  - README adds two deployment-honesty notes: the sector table now carries an
+    explicit caveat (local single-user library — no auth/multi-tenant, on-disk
+    L3 not field-encrypted yet) and the FastAPI section a "localhost-only,
+    no auth" warning;
+  - `core/l3_graph.py` comments no longer assert the unverified
+    "successor to Kuzu / Apple acquisition" claims (now: "Kuzu lineage;
+    upstream repository archived Oct. 2025") and the stale "default — mock"
+    header comment matches the real `auto` chain;
+  - removed the duplicated `docs/COMPARISON.md` row in the README
+    documentation table.
+
 ### Fixed
 - **P0 cross-audit hardening** (Claude / ChatGPT / Grok review):
   - `VELANTRIM_DB` is now actually read by `core/memory.py`, so
@@ -30,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     implementation-status: TruthGate is the only **automatic** entry into L3;
     the sole exception is the explicit, audited curator override in the review
     queue (`core/review.py`).
-  - Documentation figures re-synced to the verified suite (**716 passing tests,
+  - Documentation figures re-synced to the verified suite (**717 passing tests,
     12 skipped optional-backend tests, 100% coverage**) and the coverage gate
     unified at **100%** across `pyproject.toml`, CI and contributor docs
     (previously CI enforced 95% while `pyproject.toml` required 100%).
@@ -84,7 +103,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   handling in `contradiction._content`).
 - Documentation figures synced to the suite as it stood at the time (**633
   tests, ~99% coverage**) across README, ROADMAP, GDPR, and TEST_REPORT —
-  superseded by the 716 / 100% re-sync recorded under *Fixed* above.
+  superseded by the 717 / 100% re-sync recorded under *Fixed* above.
 
 ### Removed
 - Dead research scaffolding: velum's unused observation window

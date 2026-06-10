@@ -70,6 +70,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_verify.add_argument(
         "file", nargs="?", default="-",
         help="receipt JSON file, or '-'/omitted to read from stdin")
+    p_verify.add_argument(
+        "--strict-provenance", action="store_true",
+        help="fail a VERIFIED citation that carries no source-span evidence")
     p_conf = sub.add_parser(
         "conflicts", help="find & classify canon facts conflicting with a claim")
     p_conf.add_argument("claim")
@@ -289,7 +292,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         else:
             with open(args.file, encoding="utf-8") as fh:
                 raw = fh.read()
-        print(json.dumps(provenance.verify_receipt(json.loads(raw)), ensure_ascii=False))
+        print(json.dumps(
+            provenance.verify_receipt(json.loads(raw),
+                                      strict_provenance=args.strict_provenance),
+            ensure_ascii=False))
     elif args.cmd == "conflicts":
         print(json.dumps(find_conflicts(args.claim), ensure_ascii=False))
     elif args.cmd == "immune-report":
