@@ -180,7 +180,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_ra.add_argument("--actor", default="curator", help="who approved (for the audit log)")
     p_ra.add_argument("--note", default=None, help="optional note (for the audit log)")
     p_ra.add_argument("--force", action="store_true",
-                      help="override a still-blocked fact (explicit, audited)")
+                      help="override a still-blocked fact (explicit, audited; "
+                           "requires --reason)")
+    p_ra.add_argument("--reason", default=None,
+                      help="why the blocking diagnosis is overridden "
+                           "(required with --force)")
+    p_rd = sub.add_parser(
+        "review-decisions",
+        help="curator decision history (reconstructed from the audit chain)")
+    p_rd.add_argument("--limit", type=int, default=50)
     p_rj = sub.add_parser(
         "review-reject", help="reject a pending fact (Observed → Collapsed)")
     p_rj.add_argument("fact_id")
@@ -366,8 +374,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     elif args.cmd == "review-approve":
         print(json.dumps(
             review.approve(args.fact_id, actor=args.actor, note=args.note,
-                           force=args.force),
+                           force=args.force, reason=args.reason),
             ensure_ascii=False))
+    elif args.cmd == "review-decisions":
+        print(json.dumps(review.decisions(limit=args.limit), ensure_ascii=False))
     elif args.cmd == "review-reject":
         print(json.dumps(
             review.reject(args.fact_id, actor=args.actor, reason=args.reason),

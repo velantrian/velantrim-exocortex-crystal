@@ -122,14 +122,46 @@ def test_approve_blocked_without_force_refuses(monkeypatch):
     assert get_l3_graph().get_fact(fid) is None
 
 
-def test_approve_blocked_with_force_overrides(monkeypatch):
+def test_approve_blocked_with_force_and_reason_overrides(monkeypatch):
     monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
     fid = _blocked_world_fact("A blocked claim a curator insists on")
-    res = review.approve(fid, actor="bob", note="vetted manually", force=True)
+    res = review.approve(fid, actor="bob", note="vetted manually", force=True,
+                         reason="verified against the printed source")
     assert res["approved"] is True
     assert res["override"] is True
     assert get_fact(fid)["epistemic_state"] == "Validated"
     assert get_l3_graph().get_fact(fid) is not None
+
+
+def test_force_without_reason_is_refused(monkeypatch):
+    """Negative test: force approval is a trust-boundary override — without a
+    non-empty reason (or actor) nothing moves and nothing is audited."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    fid = _blocked_world_fact("A blocked claim without a justification")
+    for kwargs in ({"force": True},                      # no reason at all
+                   {"force": True, "reason": "  "},      # blank reason
+                   {"force": True, "reason": "ok", "actor": ""}):  # no actor
+        res = review.approve(fid, **kwargs)
+        assert res["approved"] is False
+        assert "reason" in res["reason"]
+    assert get_fact(fid)["epistemic_state"] == "Observed"
+    assert all(e["event"] != "review_force_approve" for e in audit.audit_log())
+
+
+def test_force_approve_audited_distinctly_and_content_free(monkeypatch):
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    claim = "A very distinctive blocked claim text"
+    fid = _blocked_world_fact(claim)
+    review.approve(fid, actor="bob", force=True, reason="manual vetting")
+    events = [e for e in audit.audit_log()
+              if e["event"] == "review_force_approve"]
+    assert len(events) == 1
+    detail = events[0]["detail"]
+    assert detail["actor"] == "bob"
+    assert detail["reason"] == "manual vetting"
+    # Content-free: decision metadata only — the claim text is not duplicated.
+    assert claim not in str(detail)
+    assert audit.verify_audit_log()["ok"] is True
 
 
 def test_approve_not_found():
@@ -201,6 +233,10 @@ def test_cli_review_flow(monkeypatch, capsys):
     assert "diagnosis" in capsys.readouterr().out
 
     assert main(["review-approve", fid, "--force", "--actor", "cli"]) == 0
+    assert '"approved": false' in capsys.readouterr().out   # force needs --reason
+
+    assert main(["review-approve", fid, "--force", "--actor", "cli",
+                 "--reason", "vetted"]) == 0
     assert '"approved": true' in capsys.readouterr().out
     assert get_fact(fid)["epistemic_state"] == "Validated"
 
@@ -212,3 +248,55 @@ def test_cli_review_reject(monkeypatch, capsys):
     assert main(["review-reject", fid, "--reason", "spam"]) == 0
     assert '"rejected": true' in capsys.readouterr().out
     assert get_fact(fid)["epistemic_state"] == "Collapsed"
+
+
+# ─── Decisions history + diagnose listing ──────────────────────────────────────
+
+def test_decisions_history_from_audit_chain(monkeypatch):
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    ok_id = _ready_pending("Krypton is a noble gas", "ing:ready04")
+    bad_id = _blocked_world_fact("A claim destined for rejection")
+    forced = _blocked_world_fact("A claim promoted by override")
+    review.approve(ok_id, actor="alice")
+    review.reject(bad_id, actor="bob", reason="off-topic")
+    review.approve(forced, actor="carol", force=True, reason="vetted offline")
+    history = review.decisions()
+    kinds = [d["decision"] for d in history[:3]]
+    assert kinds == ["force_approved", "rejected", "approved"]  # newest first
+    forced_entry = history[0]
+    assert forced_entry["actor"] == "carol"
+    assert forced_entry["reason"] == "vetted offline"
+    assert forced_entry["claim"] == "A claim promoted by override"
+    assert review.decisions(limit=1) == [forced_entry]
+
+
+def test_decisions_survive_fact_erasure(monkeypatch):
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    from core.erasure import erase_fact
+    fid = _blocked_world_fact("A rejected then erased claim")
+    review.reject(fid, actor="dave")
+    erase_fact(fid, reason="gdpr_request")
+    entry = [d for d in review.decisions() if d["fact_id"] == fid][0]
+    assert entry["decision"] == "rejected"
+    assert entry["claim"] is None            # content gone, decision record stays
+
+
+def test_pending_diagnose_attaches_verdicts(monkeypatch):
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    _ready_pending("Xenon is a noble gas", "ing:ready05")
+    _blocked_world_fact("A blocked claim for the kanban")
+    items = review.pending(diagnose=True)
+    verdicts = {i["fact_id"]: i["diagnosis"]["verdict"] for i in items}
+    assert "ready" in verdicts.values()
+    assert "blocked" in verdicts.values()
+    assert all("diagnosis" not in i for i in review.pending())   # opt-in only
+
+
+def test_cli_review_decisions(monkeypatch, capsys):
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    from core.cli import main
+    fid = _ready_pending("Radon is a noble gas", "ing:ready06")
+    review.approve(fid, actor="cli-test")
+    assert main(["review-decisions", "--limit", "5"]) == 0
+    out = capsys.readouterr().out
+    assert "cli-test" in out and fid in out

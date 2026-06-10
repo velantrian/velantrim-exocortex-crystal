@@ -25,6 +25,29 @@ Browser/PWA = optional visual companion
 
 The UI is only a demonstration layer unless it is connected to the Crystal backend and uses the same TruthGate, provenance and receipt logic.
 
+## Built-in review UI (Crystal, WP2)
+
+Crystal itself ships one first-party UI: the curator review Kanban at
+`GET /review/ui` on the optional FastAPI service (`pip install ".[api]"`,
+then `velantrim-api`). It is a single static HTML shell
+(`core/_webui/review.html`) with no build step, no external assets and no
+embedded data.
+
+Security boundary:
+
+- the shell contains **no claims, fact ids or local memory content** (tested);
+  everything it displays is fetched client-side from the `/review/*` JSON
+  endpoints;
+- with `VELANTRIM_API_TOKEN` set, those endpoints — GET and POST — require a
+  Bearer token; the UI asks once and keeps it in `sessionStorage` (it dies
+  with the tab), the curator name lives in `localStorage`;
+- the service binds to `127.0.0.1` by default and should stay localhost-only
+  (see [SECURITY.md](../SECURITY.md));
+- there is no drag-and-drop: the only legal "moves" are the audited
+  approve / reject / force-approve transitions, and force approval demands an
+  explicit reason in a confirmation dialog (audited as
+  `review_force_approve`).
+
 ## Recommended demo story
 
 A good demo should show one small workflow:

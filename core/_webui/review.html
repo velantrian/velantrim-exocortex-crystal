@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<!--
+  Velantrim Crystal — curator review Kanban (static shell, grant WP2).
+
+  Security boundary: this file ships as package data and contains NO claims,
+  fact ids or local memory content — only UI. Every piece of data is fetched
+  client-side from the /review/* JSON endpoints, which require a Bearer token
+  whenever the operator sets VELANTRIM_API_TOKEN. The token is asked for once
+  and kept in sessionStorage (gone when the tab closes); the curator name is
+  kept in localStorage. No external assets, no CDN, no telemetry.
+
+  Columns: Pending | Quarantined are a live slice of the Observed queue split
+  by gate diagnosis; Approved | Rejected are reconstructed from the audit
+  chain. There is no drag-and-drop on purpose: the only legal "moves" are the
+  audited approve / reject / force-approve ESM transitions.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Velantrim Crystal — Review Queue</title>
+<style>
+  :root {
+    --bg: #11151c; --panel: #1a212c; --card: #232c3a; --text: #dde5ef;
+    --muted: #8696ab; --accent: #5fb3ff; --ok: #4fcf8f; --warn: #e6b450;
+    --bad: #e06c75; --line: #2e3949;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 14px/1.45 system-ui, sans-serif; }
+  header { display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+           padding: 14px 20px; background: var(--panel);
+           border-bottom: 1px solid var(--line); }
+  header h1 { font-size: 16px; margin: 0; }
+  header .stat { color: var(--muted); font-size: 13px; }
+  header .stat b { color: var(--text); }
+  header input { background: var(--card); border: 1px solid var(--line);
+                 color: var(--text); border-radius: 6px; padding: 5px 9px; }
+  button { background: var(--card); border: 1px solid var(--line);
+           color: var(--text); border-radius: 6px; padding: 5px 10px;
+           cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: #0b1018; border: 0; }
+  button.danger { background: var(--bad); color: #0b1018; border: 0; }
+  button.warn { background: var(--warn); color: #0b1018; border: 0; }
+  #board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+           padding: 16px 20px; align-items: start; }
+  .col { background: var(--panel); border: 1px solid var(--line);
+         border-radius: 10px; padding: 10px; min-height: 120px; }
+  .col h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em;
+            color: var(--muted); margin: 4px 6px 10px; display: flex;
+            justify-content: space-between; }
+  .col h2 .count { color: var(--text); }
+  .card { background: var(--card); border: 1px solid var(--line);
+          border-radius: 8px; padding: 10px; margin-bottom: 8px; }
+  .card .claim { cursor: pointer; word-break: break-word; }
+  .card .claim:hover { color: var(--accent); }
+  .meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;
+          font-size: 11.5px; color: var(--muted); align-items: center; }
+  .badge { border: 1px solid var(--line); border-radius: 999px;
+           padding: 1px 8px; }
+  .badge.type { color: var(--accent); }
+  .badge.ok { color: var(--ok); } .badge.warn { color: var(--warn); }
+  .badge.bad { color: var(--bad); }
+  .reason { margin-top: 6px; font-size: 12px; color: var(--warn); }
+  .actions { display: flex; gap: 6px; margin-top: 10px; }
+  .empty { color: var(--muted); font-size: 12.5px; text-align: center;
+           padding: 18px 4px; }
+  dialog { background: var(--panel); color: var(--text); border: 1px solid
+           var(--line); border-radius: 10px; max-width: 560px; width: 92%; }
+  dialog::backdrop { background: rgba(0,0,0,.55); }
+  dialog h3 { margin-top: 0; }
+  dialog pre { background: var(--card); padding: 10px; border-radius: 8px;
+               white-space: pre-wrap; word-break: break-word; font-size: 12px; }
+  dialog textarea { width: 100%; min-height: 64px; background: var(--card);
+                    border: 1px solid var(--line); color: var(--text);
+                    border-radius: 6px; padding: 8px; }
+  dialog .row { display: flex; gap: 8px; justify-content: flex-end;
+                margin-top: 12px; }
+  .notice { padding: 10px 20px; color: var(--bad); display: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🔱 Crystal Review Queue</h1>
+  <span class="stat">pending <b id="stat-pending">–</b></span>
+  <span class="stat">curator
+    <input id="actor" size="12" placeholder="your name"></span>
+  <button id="refresh">Refresh</button>
+  <span class="stat" id="auth-state"></span>
+</header>
+<div class="notice" id="notice"></div>
+<main id="board">
+  <section class="col"><h2>Pending <span class="count" id="c-pending">0</span></h2>
+    <div id="col-pending"><div class="empty">loading…</div></div></section>
+  <section class="col"><h2>Quarantined <span class="count" id="c-quar">0</span></h2>
+    <div id="col-quar"><div class="empty">loading…</div></div></section>
+  <section class="col"><h2>Approved <span class="count" id="c-appr">0</span></h2>
+    <div id="col-appr"><div class="empty">loading…</div></div></section>
+  <section class="col"><h2>Rejected <span class="count" id="c-rej">0</span></h2>
+    <div id="col-rej"><div class="empty">loading…</div></div></section>
+</main>
+
+<dialog id="detail"><h3>Fact detail</h3><pre id="detail-body"></pre>
+  <div class="row"><button onclick="this.closest('dialog').close()">Close</button></div>
+</dialog>
+
+<dialog id="force-dialog">
+  <h3>⚠️ Force approval</h3>
+  <p>This fact is <b>blocked by a gate diagnosis</b>. Force approval is a
+     curator override of that diagnosis: the fact enters the canonical graph
+     even though the gates reject it. The override is recorded in the
+     tamper-evident audit chain under your name, as
+     <code>review_force_approve</code>.</p>
+  <p><b>A reason is required.</b></p>
+  <textarea id="force-reason" placeholder="Why are you overriding the blocking diagnosis?"></textarea>
+  <div class="row">
+    <button onclick="this.closest('dialog').close()">Cancel</button>
+    <button class="warn" id="force-confirm">Force approve</button>
+  </div>
+</dialog>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const actorBox = $("actor");
+actorBox.value = localStorage.getItem("velantrim.actor") || "";
+actorBox.addEventListener("change", () =>
+  localStorage.setItem("velantrim.actor", actorBox.value.trim()));
+
+function token() { return sessionStorage.getItem("velantrim.token") || ""; }
+
+function headers() {
+  const h = { "Content-Type": "application/json" };
+  if (token()) h["Authorization"] = "Bearer " + token();
+  return h;
+}
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, { headers: headers(), ...opts });
+  if (res.status === 401) {
+    const t = prompt("This service requires an API token (VELANTRIM_API_TOKEN).\nPaste the Bearer token:");
+    if (t) {
+      sessionStorage.setItem("velantrim.token", t.trim());
+      return api(path, opts);
+    }
+    throw new Error("unauthorized");
+  }
+  if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
+  return res.json();
+}
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function card(item, verdict) {
+  const conf = item.confidence != null ? Number(item.confidence).toFixed(2) : "?";
+  const badge = verdict === "ready" ? "ok" : verdict === "conflict" ? "warn" : "bad";
+  const reason = item.diagnosis && item.diagnosis.reason
+    ? `<div class="reason">${esc(item.diagnosis.reason)}</div>` : "";
+  const actions = verdict === "blocked"
+    ? `<button class="warn" data-act="force" data-id="${esc(item.fact_id)}">Force approve…</button>
+       <button class="danger" data-act="reject" data-id="${esc(item.fact_id)}">Reject</button>`
+    : `<button class="primary" data-act="approve" data-id="${esc(item.fact_id)}">Approve</button>
+       <button class="danger" data-act="reject" data-id="${esc(item.fact_id)}">Reject</button>`;
+  return `<div class="card">
+    <div class="claim" data-act="detail" data-id="${esc(item.fact_id)}">${esc(item.claim)}</div>
+    <div class="meta">
+      <span class="badge type">${esc(item.claim_type)}</span>
+      <span class="badge">conf ${esc(conf)}</span>
+      <span class="badge ${badge}">${esc(verdict)}</span>
+    </div>${reason}
+    <div class="actions">${actions}</div></div>`;
+}
+
+function decisionCard(d) {
+  const who = d.actor ? ` — ${esc(d.actor)}` : "";
+  const why = d.reason ? `<div class="reason">${esc(d.reason)}</div>` : "";
+  const forced = d.decision === "force_approved"
+    ? ` <span class="badge warn">override</span>` : "";
+  return `<div class="card">
+    <div class="claim">${esc(d.claim ?? "(fact erased)")}</div>
+    <div class="meta"><span class="badge type">${esc(d.claim_type ?? "?")}</span>
+      <span class="badge">${esc((d.ts || "").slice(0, 16))}${who}</span>${forced}</div>
+    ${why}</div>`;
+}
+
+function fill(el, html, emptyMsg) {
+  el.innerHTML = html || `<div class="empty">${emptyMsg}</div>`;
+}
+
+async function load() {
+  $("notice").style.display = "none";
+  try {
+    const [queue, report, history] = await Promise.all([
+      api("/review/queue?diagnose=true"),
+      api("/review/report"),
+      api("/review/decisions?limit=50"),
+    ]);
+    $("stat-pending").textContent = report.pending;
+    $("auth-state").textContent = token() ? "🔒 token set" : "";
+    const ready = queue.filter((i) => (i.diagnosis || {}).verdict === "ready");
+    const quar = queue.filter((i) => (i.diagnosis || {}).verdict !== "ready");
+    const appr = history.filter((d) => d.decision !== "rejected");
+    const rej = history.filter((d) => d.decision === "rejected");
+    $("c-pending").textContent = ready.length;
+    $("c-quar").textContent = quar.length;
+    $("c-appr").textContent = appr.length;
+    $("c-rej").textContent = rej.length;
+    fill($("col-pending"), ready.map((i) => card(i, "ready")).join(""),
+         "nothing awaiting approval");
+    fill($("col-quar"),
+         quar.map((i) => card(i, (i.diagnosis || {}).verdict || "blocked")).join(""),
+         "no quarantined claims");
+    fill($("col-appr"), appr.map(decisionCard).join(""), "no approvals yet");
+    fill($("col-rej"), rej.map(decisionCard).join(""), "no rejections yet");
+  } catch (e) {
+    $("notice").textContent = "Error: " + e.message;
+    $("notice").style.display = "block";
+  }
+}
+
+function actor() {
+  const a = actorBox.value.trim();
+  if (!a) { actorBox.focus(); throw new Error("set a curator name first"); }
+  return a;
+}
+
+async function decide(path, body) {
+  try {
+    await api(path, { method: "POST", body: JSON.stringify(body) });
+    await load();
+  } catch (e) {
+    $("notice").textContent = "Error: " + e.message;
+    $("notice").style.display = "block";
+  }
+}
+
+document.body.addEventListener("click", async (ev) => {
+  const btn = ev.target.closest("[data-act]");
+  if (!btn) return;
+  const id = btn.dataset.id;
+  if (btn.dataset.act === "detail") {
+    const item = await api("/review/item/" + encodeURIComponent(id));
+    $("detail-body").textContent = JSON.stringify(item, null, 2);
+    $("detail").showModal();
+  } else if (btn.dataset.act === "approve") {
+    decide("/review/approve", { fact_id: id, actor: actor() });
+  } else if (btn.dataset.act === "reject") {
+    const why = prompt("Reason for rejecting:", "curator_rejected");
+    if (why !== null)
+      decide("/review/reject", { fact_id: id, actor: actor(), reason: why });
+  } else if (btn.dataset.act === "force") {
+    actor();                       // validate before opening the dialog
+    $("force-reason").value = "";
+    $("force-dialog").showModal();
+    $("force-confirm").onclick = () => {
+      const reason = $("force-reason").value.trim();
+      if (!reason) { $("force-reason").focus(); return; }
+      $("force-dialog").close();
+      decide("/review/approve",
+             { fact_id: id, actor: actor(), force: true, reason });
+    };
+  }
+});
+
+$("refresh").addEventListener("click", load);
+load();
+</script>
+</body>
+</html>

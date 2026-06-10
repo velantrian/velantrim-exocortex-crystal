@@ -78,6 +78,17 @@ If you enable the Claude generator, the data you send is subject to Anthropic's
 privacy terms; Velantrim has no control over it. Choose local backends to keep
 all processing on-device.
 
+### Optional HTTP API and review UI
+
+The opt-in FastAPI service (`pip install ".[api]"`) exposes stored claims —
+including the pre-canonical review queue with sources, confidence and curator
+decisions — over HTTP to whoever can reach the port. It binds to
+`127.0.0.1` by default, and the `/review/*` endpoints support an opt-in Bearer
+token guard (`VELANTRIM_API_TOKEN`, see [SECURITY.md](./SECURITY.md)). If you
+bind it more widely, you are publishing local memory contents within whatever
+network can reach that address — set the token and front it with TLS/auth
+before doing so.
+
 ## Data subject rights (operational)
 
 - **Access / portability** — `get_all_facts()` and the CLI `report` command
