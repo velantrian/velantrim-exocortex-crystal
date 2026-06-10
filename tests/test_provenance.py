@@ -226,3 +226,21 @@ def test_strict_provenance_passes_once_evidence_attached():
     strict = provenance.verify_receipt(receipt, strict_provenance=True)
     assert strict["citations"][0]["status"] == "ok"
     assert strict["verified"] is True
+
+
+def test_cli_verify_receipt_strict_provenance_flag(tmp_path, capsys):
+    """`velantrim verify-receipt --strict-provenance` flags a VERIFIED citation
+    with no source-span evidence (parity with the API's strict_provenance)."""
+    from core.cli import main
+    _fid, result = _verified_fact_result()
+    path = tmp_path / "receipt.json"
+    path.write_text(json.dumps(provenance.build_receipt(result)), encoding="utf-8")
+
+    assert main(["verify-receipt", str(path)]) == 0
+    lenient = json.loads(capsys.readouterr().out.strip())
+    assert lenient["verified"] is True
+
+    assert main(["verify-receipt", str(path), "--strict-provenance"]) == 0
+    strict = json.loads(capsys.readouterr().out.strip())
+    assert strict["citations"][0]["status"] == "unsupported_provenance"
+    assert strict["verified"] is False
