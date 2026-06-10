@@ -24,7 +24,7 @@ For development and tests:
 ```bash
 pip install -r requirements-dev.txt
 pip install -e .
-pytest tests/ -v --cov=core --cov-fail-under=95
+pytest tests/ --cov=. --cov-fail-under=100
 ```
 
 ## 2. Ingest a fact

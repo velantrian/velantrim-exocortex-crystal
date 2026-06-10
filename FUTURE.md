@@ -99,12 +99,13 @@ where it is genuinely part of the contract — `retrieve()` and
 (`test_run_result_facts_hide_internal_score_field` + blocked variant).
 
 ### 2.6 CI should mirror the local quality gate
-**Why:** `pyproject.toml` enforces `--cov-fail-under=95`, but `.github/workflows/ci.yml`
-runs plain `pytest tests/ -v`. The optional backends (LadybugDB, sbert, Neo4j,
-Anthropic) are excluded only via `# pragma: no cover`, which is brittle — a real
-gap in a non-pragma path could slip if coverage isn't actually gated in CI.
-**Do:** run the same `pytest` invocation in CI (coverage gate included), and add
-an optional matrix leg that installs the extras to exercise the real backends.
+**Why:** the optional backends (LadybugDB, sbert, Neo4j, Anthropic) are excluded
+only via `# pragma: no cover`, which is brittle — a real gap in a non-pragma
+path could slip if coverage isn't exercised against the real extras.
+**Done (first half):** `.github/workflows/ci.yml` now runs
+`pytest tests/ --cov=. --cov-fail-under=100`, the same gate as `pyproject.toml`.
+**Do:** add an optional matrix leg that installs the extras to exercise the
+real backends.
 
 ### 2.7 Relocate the spec/metadata tooling
 **Why:** `audit_metadata.py`, `check_rfc_duplicates.py`, `fill_dependencies.py`,
