@@ -57,7 +57,8 @@ def create_app():
         text: str = Field(..., min_length=1, description="The utterance to ingest.")
         source: str = "api"
         confidence: float = Field(0.6, ge=0.0, le=1.0)
-        significance: float = Field(0.5, ge=0.0, le=1.0)
+        # None → auto-derived from utterance salience; explicit value wins.
+        significance: Optional[float] = Field(None, ge=0.0, le=1.0)
         claim_type: Optional[str] = None
         source_status: Optional[str] = None
 

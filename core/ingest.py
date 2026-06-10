@@ -20,7 +20,8 @@ from core.l3_graph import get_l3_graph
 from core.embedding import assert_compatible_embedder
 from core.pipeline import guardian, truth_gate, _truth_status_for, _l3_payload
 from core.reconcile import reinforce, find_conflicts, REL_CONTRADICTS, _now
-from core import metrics, adaptation, pii, contradiction, immune, neurogenesis
+from core import (metrics, adaptation, pii, contradiction, immune,
+                  neurogenesis, salience)
 
 # Modality markers (RU + EN). Order matters: we check from specific to general.
 _CLAIM_MARKERS = [
@@ -73,7 +74,7 @@ def ingest(
     fact_id: Optional[str] = None,
     source: str = "user",
     confidence: float = 0.6,
-    significance: float = 0.5,
+    significance: Optional[float] = None,
     claim_type: Optional[str] = None,
     episode: Optional[Dict[str, Any]] = None,
     source_status: Optional[str] = None,
@@ -88,6 +89,13 @@ def ingest(
     claim_type can be set explicitly (bypassing the classifier). source_status
     defaults to the classifier's verdict (USER_REPORTED for a user's message); an
     external loader (RFC0063 knowledge ingestion) overrides it, e.g. EXTERNAL.
+
+    significance: an explicit value always wins. When omitted (None) it is
+    auto-derived from utterance salience (core/salience.py): ordinary text gets
+    exactly the historical 0.5; CAPS/"!"/importance keywords lift it toward 1.0,
+    with content-free explainability metadata (significance_source,
+    salience_score, salience_markers — categories only, never raw phrases).
+    Salience touches ranking only — never confidence/truth_status/ESM.
     """
     if not utterance or not utterance.strip():
         raise ValueError("ingest: empty utterance")
@@ -105,6 +113,17 @@ def ingest(
     if claim_type is not None:
         ct = claim_type
     source_status = source_status or classified_status
+
+    salience_meta = None
+    if significance is None:
+        sal = salience.analyze(utterance)
+        significance = sal["significance"]
+        if sal["markers"]:
+            salience_meta = {
+                "significance_source": "auto_salience",
+                "salience_score": sal["salience"],
+                "salience_markers": sal["markers"],
+            }
 
     fid = fact_id or _fact_id(utterance)
 
@@ -128,8 +147,13 @@ def ingest(
         "significance": significance,
         "truth_status": "UNVERIFIED",
     }
+    metadata = {}
     if pii_redacted:
-        fact["metadata"] = {"pii_redacted": pii_redacted}
+        metadata["pii_redacted"] = pii_redacted
+    if salience_meta:
+        metadata.update(salience_meta)
+    if metadata:
+        fact["metadata"] = metadata
 
     # L0/L1: store as raw experience (pending), even if the gates reject it.
     store_fact(fact)
