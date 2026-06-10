@@ -2,7 +2,7 @@
 
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
-`v0.1.0` · 🧪 **716 tests** · 🎯 **100% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v0.1.0` · 🧪 **717 tests** · 🎯 **100% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
 
 > Velantrim Crystal is **not another chatbot**. It is a **verifiable memory layer**
 > that AI systems write to and read from. Every stored fact carries provenance,
@@ -120,6 +120,13 @@ practical knowledge, multilingual expansion and the path toward 50k+ useful fact
 | **Agriculture / industry / chemistry** | local operational knowledge, procedures, safety facts, field records |
 | **Libraries / archives** | curated corpora served offline with source trails |
 
+> ⚠️ **Deployment honesty.** The current release is a **local, single-user
+> library**: there is no authentication or multi-tenant access control, and
+> on-disk L3 backends are not yet covered by field-level encryption (use host
+> full-disk encryption). The sectors above describe the direction; regulated
+> deployments (healthcare, public sector) need those grant-scope hardening
+> layers first — see [SECURITY.md](./SECURITY.md).
+
 ### 🧪 Browser/PWA demonstration
 
 Separate browser/PWA prototypes can visually demonstrate the same direction:
@@ -192,7 +199,7 @@ This repository includes a lightweight but comprehensive quality layer designed 
 
 | Gate | What it checks |
 |---|---|
-| **pytest** (716 tests, 100% coverage gate) | Core memory, pipeline, provenance, GDPR controls, ESM transitions, review queue |
+| **pytest** (717 tests, 100% coverage gate) | Core memory, pipeline, provenance, GDPR controls, ESM transitions, review queue |
 | **jsonl-integrity** (CI) | Valid JSON, required fields, no duplicate `chunk_id` in the knowledge corpus |
 | **security** (CI) | `bandit` static security lint + `pip-audit` dependency vulnerability scan |
 | **JSON schemas** (`schemas/`) | Machine-readable canonical definitions of `fact`, `trace` and `metadata` enums |
@@ -362,6 +369,12 @@ The layer is a thin async wrapper over `core/aio.py`, so the synchronous core
 never blocks the event loop. FastAPI/uvicorn are an **optional extra** — the
 default runtime (CLI + read-only MCP server) stays standard-library only.
 
+> ⚠️ **Localhost-only, no auth.** The service binds to `127.0.0.1` by default
+> and ships **no authentication layer**. It is meant for local demos and
+> same-host integration. Do not expose it to a network without adding
+> authentication, access control and rate limiting in front of it
+> (see [SECURITY.md](./SECURITY.md), "Out of scope").
+
 ---
 
 ## 🗺️ Roadmap
@@ -375,7 +388,7 @@ default runtime (CLI + read-only MCP server) stays standard-library only.
 - read-only MCP server;
 - optional FastAPI service layer (`pip install '.[api]'`, `velantrim-api`);
 - biological-memory research modules;
-- 716 passing tests and 100% coverage;
+- 717 passing tests and 100% coverage;
 - baseline evaluation harness (`core/eval.py`, `velantrim eval`).
 
 **Developing outside the audited release boundary**
@@ -423,7 +436,7 @@ milestone budget, partial-funding plan, and responsible-data position.
 | **[DEMO.md](./DEMO.md)** | Verifiable memory walkthrough: ingest → trace → receipt → verify |
 | **[docs/REVIEWER_NOTES.md](./docs/REVIEWER_NOTES.md)** | One-page reviewer guide: purpose, demo path, implemented scope and grant extensions |
 | **[docs/DEMO.md](./docs/DEMO.md)** | Hands-on, reproducible CLI walkthrough with real captured output (ingest, ask, receipt, contradictions, knowledge import, GDPR erase, NeuroCore telemetry, eval, HTTP) |
-| **[docs/COMPARISON.md](./docs/COMPARISON.md)** | Comparison with vector-only RAG, chatbot memory and agent-memory systems |
+| **[docs/COMPARISON.md](./docs/COMPARISON.md)** | Comparison with ChatGPT-style chatbot memory, vector-only RAG, vector DBs and agent-memory frameworks |
 | **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** | Architecture diagrams and memory/backends/privacy boundaries |
 | **[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)** | Grant-facing problem, solution, work packages and success criteria |
 | **[docs/grants/funding-use-plan.md](./docs/grants/funding-use-plan.md)** | Why ~€50,000 was requested and the milestone-based plan for using it |
@@ -432,7 +445,6 @@ milestone budget, partial-funding plan, and responsible-data position.
 | **[docs/KNOWLEDGE_BASE_ROADMAP.md](./docs/KNOWLEDGE_BASE_ROADMAP.md)** | Curated offline knowledge graph roadmap: invariant science, practical knowledge, resilience reserve and multilingual expansion |
 | **[docs/USE_CASES.md](./docs/USE_CASES.md)** | Practical domains: personal, education, research, public sector, business and field operations |
 | **[docs/DIGITAL_SOVEREIGNTY.md](./docs/DIGITAL_SOVEREIGNTY.md)** | Local-first and European digital-sovereignty positioning |
-| **[docs/COMPARISON.md](./docs/COMPARISON.md)** | Comparison with ChatGPT, RAG, vector DBs and agent-memory frameworks |
 | **[docs/DEMO_UI.md](./docs/DEMO_UI.md)** | Browser/PWA companion demo boundary and screenshot plan |
 | **[docs/EVAL.md](./docs/EVAL.md)** | Evaluation plan for trace completeness, receipt replay and retrieval quality |
 | **[docs/RELEASE_CHECKLIST.md](./docs/RELEASE_CHECKLIST.md)** | Release/tag/CI/docs/security checklist |
