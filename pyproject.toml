@@ -98,9 +98,10 @@ packages = ["core", "core.adapters"]
 py-modules = ["epigenetic_adaptation_module"]
 
 [tool.setuptools.package-data]
-# Bundle the curated evaluation fixtures (WP3) so `velantrim eval` works from a
-# wheel as well as the repo.
-core = ["_eval_fixtures/*.json"]
+# Bundle the curated evaluation fixtures (WP3) and the MOSC classifier weights
+# so `velantrim eval` / ingest classification work from a wheel as well as the
+# repo.
+core = ["_eval_fixtures/*.json", "_mosc/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
