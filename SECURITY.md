@@ -40,11 +40,28 @@ assets and threats:
 | State machine | Illegal epistemic transitions (e.g. Collapsed → Validated) | `ESM_TRANSITIONS` matrix validated in `transition_esm`. |
 | Consistency | L3 write fails after L1 commit → orphaned fact | Persistent **outbox** (`l3_outbox`) drains idempotently on next access. |
 
+### Optional HTTP service layer and the review token guard
+
+The optional FastAPI service (`pip install ".[api]"`, `velantrim-api`) binds to
+**127.0.0.1 by default** and is intended to stay there: it is a localhost-trust
+surface, not an internet-facing service. Do not change `VELANTRIM_API_HOST`
+to a routable address without putting real authentication and TLS in front.
+
+The curator review endpoints (`/review/*`) read and mutate pre-canonical
+claims, sources, confidence and curator decisions, so they carry an opt-in
+token guard: when **`VELANTRIM_API_TOKEN`** is set, every `/review/*` JSON
+endpoint — **GET and POST alike** — requires `Authorization: Bearer <token>`
+(compared with `hmac.compare_digest`, constant-time). `GET /review/ui` stays
+public because it is a static, data-free shell (enforced by test): all data it
+shows is fetched client-side through the guarded JSON endpoints. Set the token
+whenever anything beyond the local user can reach the port.
+
 ### Out of scope (current)
 
-- **Authentication / multi-tenant access control** — Velantrim is currently a
-  single-user, local library; there is no auth layer. Do not expose it as a
-  network service without adding one.
+- **Authentication / multi-tenant access control** — beyond the opt-in
+  review token guard above, Velantrim is a single-user, local library; there
+  is no user/role layer. Do not expose it as a network service without
+  adding one.
 - **Encryption at rest** — *available* as an opt-in: when
   `VELANTRIM_ENCRYPTION_KEY` is set, the personal-data fields (claim, metadata)
   of the L1 SQLite store are encrypted (`core/crypto.py`). On-disk L3 backends

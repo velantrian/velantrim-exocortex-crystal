@@ -52,16 +52,23 @@ def _summary(fact: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def pending(limit: Optional[int] = None,
-            claim_type: Optional[str] = None) -> List[Dict[str, Any]]:
+            claim_type: Optional[str] = None,
+            diagnose: bool = False) -> List[Dict[str, Any]]:
     """The review queue: facts stored in L1 but not yet in the canon (Observed),
-    oldest first. Optionally filter by `claim_type` and cap with `limit`."""
+    oldest first. Optionally filter by `claim_type` and cap with `limit`.
+
+    diagnose=True attaches a fresh gate verdict to every item (the Kanban UI
+    sorts cards into Pending/Quarantined by it). Opt-in: it re-runs the live
+    gates per item, so it is O(queue) and pricier than the plain listing."""
     items = get_all_facts(_PENDING_STATE)
     if claim_type is not None:
         items = [f for f in items if f.get("claim_type") == claim_type]
     items.sort(key=lambda f: (f.get("created_at") or "", f.get("fact_id", "")))
     if limit is not None:
         items = items[:limit]
-    return [_summary(f) for f in items]
+    if not diagnose:
+        return [_summary(f) for f in items]
+    return [{**_summary(f), "diagnosis": _diagnose(f)} for f in items]
 
 
 def _diagnose(fact: Dict[str, Any]) -> Dict[str, Any]:
@@ -119,15 +126,18 @@ def review_report() -> Dict[str, Any]:
 # ─── Curator decisions (accountable) ──────────────────────────────────────────
 
 def approve(fact_id: str, *, actor: str = "curator", note: Optional[str] = None,
-            force: bool = False) -> Dict[str, Any]:
+            force: bool = False, reason: Optional[str] = None) -> Dict[str, Any]:
     """
     Promote a pending fact into the canon (a curator's decision).
 
     Re-runs the gates. A `ready` or `conflict` item is promoted (a conflict is a
     non-destructive advisory — truth-first, we admit and link rather than silently
     drop). A `blocked` item is promoted only with `force=True`: an explicit curator
-    override, recorded as such in the audit chain. Idempotent guard: only an
-    `Observed` fact is a queue item.
+    override of a blocking diagnosis. Force approval is a trust-boundary
+    operation, never a silent action — it requires a non-empty `reason` AND a
+    non-empty `actor`, and is recorded under its own audit event
+    (`review_force_approve`, distinct from a normal `review_approve`).
+    Idempotent guard: only an `Observed` fact is a queue item.
     """
     fact = get_fact(fact_id)
     if fact is None:
@@ -142,6 +152,11 @@ def approve(fact_id: str, *, actor: str = "curator", note: Optional[str] = None,
         if not force:
             return {"found": True, "fact_id": fact_id, "approved": False,
                     "reason": diag["reason"], "diagnosis": diag}
+        if not (reason and reason.strip()) or not (actor and actor.strip()):
+            return {"found": True, "fact_id": fact_id, "approved": False,
+                    "reason": "force approval requires a non-empty reason and "
+                              "actor (it overrides a blocking diagnosis)",
+                    "diagnosis": diag}
         overridden = True
 
     transition_esm(fact_id, "Validated")
@@ -152,11 +167,17 @@ def approve(fact_id: str, *, actor: str = "curator", note: Optional[str] = None,
     get_l3_graph().merge_fact(_l3_payload(promoted))
 
     metrics.incr("review.approved")
+    # Audit detail stays content-free: decision metadata only (actor, reason,
+    # note, gate verdict) — the claim text is never duplicated into the chain.
     if overridden:
         metrics.incr("review.override")
-    audit.append_event("review_approve", fact_id,
-                       {"actor": actor, "note": note, "override": overridden,
-                        "diagnosis": diag["verdict"]})
+        audit.append_event("review_force_approve", fact_id,
+                           {"actor": actor, "reason": reason, "note": note,
+                            "diagnosis": diag["verdict"]})
+    else:
+        audit.append_event("review_approve", fact_id,
+                           {"actor": actor, "note": note, "override": False,
+                            "diagnosis": diag["verdict"]})
     return {"found": True, "fact_id": fact_id, "approved": True,
             "override": overridden, "epistemic_state": "Validated",
             "truth_status": truth_status, "diagnosis": diag["verdict"]}
@@ -181,3 +202,41 @@ def reject(fact_id: str, *, actor: str = "curator",
     audit.append_event("review_reject", fact_id, {"actor": actor, "reason": reason})
     return {"found": True, "fact_id": fact_id, "rejected": True,
             "epistemic_state": "Collapsed", "reason": reason}
+
+
+# ─── Decision history (reconstructed from the audit chain) ────────────────────
+
+_DECISION_EVENTS = {
+    "review_approve": "approved",
+    "review_force_approve": "force_approved",
+    "review_reject": "rejected",
+}
+
+
+def decisions(limit: int = 50) -> List[Dict[str, Any]]:
+    """
+    Curator decision history, newest first, reconstructed from the audit chain
+    (no parallel state store). Each entry carries the content-free audit detail
+    (actor/reason/note/verdict) plus the claim text re-read from L1 for display;
+    an erased fact survives as a decision record with claim=None.
+    """
+    out: List[Dict[str, Any]] = []
+    for entry in reversed(audit.audit_log()):
+        decision = _DECISION_EVENTS.get(entry["event"])
+        if decision is None:
+            continue
+        fact = get_fact(entry["fact_id"]) if entry["fact_id"] else None
+        out.append({
+            "decision": decision,
+            "fact_id": entry["fact_id"],
+            "ts": entry["ts"],
+            "actor": entry["detail"].get("actor"),
+            "reason": entry["detail"].get("reason"),
+            "note": entry["detail"].get("note"),
+            "diagnosis": entry["detail"].get("diagnosis"),
+            "claim": fact.get("claim") if fact else None,
+            "claim_type": fact.get("claim_type") if fact else None,
+        })
+        if len(out) >= limit:
+            break
+    return out

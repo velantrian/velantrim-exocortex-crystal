@@ -60,3 +60,7 @@ migration_dependency_report.json
 *.bak
 validate_dangling.json
 audit_issues.json
+
+# Evaluation harness artifacts (written by scripts/eval_gate.py on every run)
+metrics.jsonl
+eval_report.md

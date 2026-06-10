@@ -18,7 +18,8 @@
 from typing import Any, Dict, List, Optional
 
 try:
-    from fastapi import FastAPI, HTTPException
+    from fastapi import Depends, FastAPI, Header, HTTPException
+    from fastapi.responses import HTMLResponse
     from pydantic import BaseModel, Field
     _HAS_FASTAPI = True
 except ImportError:  # pragma: no cover - exercised on stdlib-only installs
@@ -43,14 +44,38 @@ def create_app():
         raise RuntimeError(_INSTALL_HINT)
 
     import asyncio
+    import hmac
+    import os
+    from importlib import resources
 
-    from core import aio, evidence, provenance
+    from core import aio, evidence, provenance, review
 
     app = FastAPI(
         title="Velantrim Crystal",
         version=__version__,
         description="Verifiable, local-first AI memory — HTTP service layer.",
     )
+
+    # ─── review token guard ────────────────────────────────────────────────────
+    # With VELANTRIM_API_TOKEN set, EVERY /review/* JSON endpoint — GET and POST
+    # alike — requires `Authorization: Bearer <token>`: the read endpoints expose
+    # claims, sources, confidence and curator decisions, so they are no less
+    # sensitive than the write ones. Constant-time comparison (hmac.compare_digest)
+    # avoids token-guessing via timing. Without the env var the service keeps its
+    # historical localhost-trust posture (see SECURITY.md).
+    def _require_review_token(
+            authorization: Optional[str] = Header(None)) -> None:
+        expected = os.environ.get("VELANTRIM_API_TOKEN", "")
+        if not expected:
+            return
+        supplied = ""
+        if authorization and authorization.lower().startswith("bearer "):
+            supplied = authorization[7:]
+        if not hmac.compare_digest(supplied, expected):
+            raise HTTPException(status_code=401,
+                                detail="missing or invalid bearer token")
+
+    _guarded = [Depends(_require_review_token)]
 
     # ─── request models ────────────────────────────────────────────────────────
     class IngestRequest(BaseModel):
@@ -68,6 +93,19 @@ def create_app():
     class VerifyRequest(BaseModel):
         receipt: Dict[str, Any]
         strict_provenance: bool = False
+
+    class ApproveRequest(BaseModel):
+        fact_id: str = Field(..., min_length=1)
+        actor: str = Field("curator", min_length=1)
+        note: Optional[str] = None
+        force: bool = False
+        # Required (non-empty) when force=True — see review.approve().
+        reason: Optional[str] = None
+
+    class RejectRequest(BaseModel):
+        fact_id: str = Field(..., min_length=1)
+        actor: str = Field("curator", min_length=1)
+        reason: str = "curator_rejected"
 
     # ─── endpoints ───────────────────────────────────────────────────────────────
     @app.get("/health")
@@ -123,6 +161,75 @@ def create_app():
     async def evidence_endpoint(fact_id: str) -> List[Dict[str, Any]]:
         """List the source-span evidence records attached to a fact."""
         return await asyncio.to_thread(evidence.evidence_for, fact_id)
+
+    # ─── curator review (WP2) ──────────────────────────────────────────────────
+    # Thin wrappers over core/review.py: the same gates, ESM transitions and
+    # audit events as the CLI — no new write path into L3.
+
+    @app.get("/review/queue", dependencies=_guarded)
+    async def review_queue(limit: Optional[int] = None,
+                           claim_type: Optional[str] = None,
+                           diagnose: bool = False) -> List[Dict[str, Any]]:
+        """Pending (Observed) facts; diagnose=true adds a gate verdict per item."""
+        return await asyncio.to_thread(
+            review.pending, limit=limit, claim_type=claim_type, diagnose=diagnose)
+
+    @app.get("/review/report", dependencies=_guarded)
+    async def review_report_endpoint() -> Dict[str, Any]:
+        """Queue health: pending count and a claim_type breakdown."""
+        return await asyncio.to_thread(review.review_report)
+
+    @app.get("/review/decisions", dependencies=_guarded)
+    async def review_decisions(limit: int = 50) -> List[Dict[str, Any]]:
+        """Curator decision history reconstructed from the audit chain."""
+        return await asyncio.to_thread(review.decisions, limit=limit)
+
+    @app.get("/review/item/{fact_id}", dependencies=_guarded)
+    async def review_item_endpoint(fact_id: str) -> Dict[str, Any]:
+        """One queued fact with a fresh gate diagnosis (404 if unknown)."""
+        item = await asyncio.to_thread(review.review_item, fact_id)
+        if not item.get("found"):
+            raise HTTPException(status_code=404, detail=f"unknown fact {fact_id}")
+        return item
+
+    @app.post("/review/approve", dependencies=_guarded)
+    async def review_approve(req: ApproveRequest) -> Dict[str, Any]:
+        """Promote a pending fact. force=true overrides a blocking diagnosis and
+        requires a non-empty reason (422 otherwise) — audited as
+        review_force_approve."""
+        if req.force and not (req.reason and req.reason.strip()):
+            raise HTTPException(
+                status_code=422,
+                detail="force approval overrides a blocking diagnosis and "
+                       "requires a non-empty 'reason'")
+        res = await asyncio.to_thread(
+            review.approve, req.fact_id, actor=req.actor, note=req.note,
+            force=req.force, reason=req.reason)
+        if not res.get("found"):
+            raise HTTPException(status_code=404,
+                                detail=f"unknown fact {req.fact_id}")
+        return res
+
+    @app.post("/review/reject", dependencies=_guarded)
+    async def review_reject(req: RejectRequest) -> Dict[str, Any]:
+        """Reject a pending fact (Observed → Collapsed), audited."""
+        res = await asyncio.to_thread(
+            review.reject, req.fact_id, actor=req.actor, reason=req.reason)
+        if not res.get("found"):
+            raise HTTPException(status_code=404,
+                                detail=f"unknown fact {req.fact_id}")
+        return res
+
+    @app.get("/review/ui", response_class=HTMLResponse)
+    async def review_ui() -> str:
+        """The static Kanban review shell (core/_webui/review.html).
+
+        Deliberately UNguarded: the HTML embeds no claims, fact ids or any
+        local memory content (tested) — all data is fetched client-side from
+        the token-guarded /review/* JSON endpoints above.
+        """
+        return resources.files("core").joinpath(
+            "_webui/review.html").read_text(encoding="utf-8")
 
     return app
 
