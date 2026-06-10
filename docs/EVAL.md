@@ -96,6 +96,30 @@ export VELANTRIM_RETRIEVAL_CONFIG=tuned.json
 velantrim retrieval-config-show
 ```
 
+### Russian corpus and the opt-in trigram embedder
+
+`core/_eval_fixtures/retrieval_ru.json` is a **report-only** Russian corpus
+(16 cases, 8 distractors) with typo/morphology probes («сталица Австрии» must
+still recall «Вена — столица Австрии»). It is not part of the CI gate — the
+gate thresholds are calibrated on the English corpus, which stays the default.
+
+`VELANTRIM_EMBEDDER=hashing-trigram` selects the character-trigram embedder
+(id `hashing-trigram-2048`). It is expected to improve typo/morphology cases
+in the RU report corpus (current snapshot: hit@1 0.875 → 1.0), but char
+n-grams may increase false positives on very short or noisy queries — which is
+why it stays **opt-in** and the word-level `hashing-2048` remains the default.
+Compare the two on the same corpus:
+
+```bash
+VELANTRIM_EMBEDDER=hashing         velantrim eval --lang ru --md
+VELANTRIM_EMBEDDER=hashing-trigram velantrim eval --lang ru --md
+```
+
+⚠️ Vectors from the two embedders are not cosine-comparable: switching an
+existing L3 store to trigram requires re-embedding/rebuilding it. The embedder
+mismatch guard warns on a mixed store and hard-fails with
+`VELANTRIM_EMBEDDER_STRICT=1`.
+
 ## Evaluation dimensions
 
 ### 1. Trace completeness

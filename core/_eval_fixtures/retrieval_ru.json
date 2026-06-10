@@ -1,0 +1,95 @@
+{
+  "description": "Curated Russian retrieval corpus (report-only, WP3). Same shape as retrieval.json: (query, claim) pairs plus distractors ingested into the same canon. Includes typo/morphology probes (misspelled or inflected query words) where character-trigram embeddings are expected to outperform whole-word hashing. Not part of the CI gate: used for comparative reports, e.g. VELANTRIM_EMBEDDER=hashing-trigram velantrim eval --lang ru.",
+  "distractors": [
+    "Эльбрус — высочайшая вершина России и Европы",
+    "Тихий океан — крупнейший океан на Земле",
+    "Фотосинтез превращает солнечный свет в химическую энергию",
+    "Великая Китайская стена строилась несколько столетий",
+    "Амазонка — самая полноводная река в мире",
+    "Пчёлы опыляют большинство цветковых растений",
+    "Антарктида — самый холодный континент планеты",
+    "Транссибирская магистраль соединяет Москву и Владивосток"
+  ],
+  "cases": [
+    {
+      "domain": "geography",
+      "query": "какой город является столицей Австрии",
+      "claim": "Вена — столица Австрии"
+    },
+    {
+      "domain": "geography-typo",
+      "query": "сталица Австрии",
+      "claim": "Вена — столица Австрии"
+    },
+    {
+      "domain": "physics",
+      "query": "при какой температуре закипает вода на уровне моря",
+      "claim": "Вода кипит при 100 градусах Цельсия на уровне моря"
+    },
+    {
+      "domain": "physics-morphology",
+      "query": "кипение воды температура",
+      "claim": "Вода кипит при 100 градусах Цельсия на уровне моря"
+    },
+    {
+      "domain": "astronomy",
+      "query": "сколько спутников у Марса",
+      "claim": "У Марса два спутника — Фобос и Деймос"
+    },
+    {
+      "domain": "astronomy-typo",
+      "query": "спутнеки Марса",
+      "claim": "У Марса два спутника — Фобос и Деймос"
+    },
+    {
+      "domain": "biology",
+      "query": "сколько сердец у осьминога",
+      "claim": "У осьминога три сердца"
+    },
+    {
+      "domain": "chemistry",
+      "query": "химический символ золота",
+      "claim": "Золото обозначается химическим символом Au"
+    },
+    {
+      "domain": "history",
+      "query": "в каком году человек впервые высадился на Луну",
+      "claim": "Человек впервые высадился на Луну в 1969 году"
+    },
+    {
+      "domain": "geography",
+      "query": "самое глубокое озеро в мире",
+      "claim": "Байкал — самое глубокое озеро в мире"
+    },
+    {
+      "domain": "geography-morphology",
+      "query": "глубина Байкала озеро",
+      "claim": "Байкал — самое глубокое озеро в мире"
+    },
+    {
+      "domain": "medicine",
+      "query": "какой орган вырабатывает инсулин",
+      "claim": "Инсулин вырабатывается поджелудочной железой"
+    },
+    {
+      "domain": "technology",
+      "query": "кто изобрёл печатный станок",
+      "claim": "Иоганн Гутенберг изобрёл печатный станок"
+    },
+    {
+      "domain": "technology-typo",
+      "query": "печатний станок изобретатель",
+      "claim": "Иоганн Гутенберг изобрёл печатный станок"
+    },
+    {
+      "domain": "music",
+      "query": "сколько струн у классической гитары",
+      "claim": "У классической гитары шесть струн"
+    },
+    {
+      "domain": "mathematics",
+      "query": "чему примерно равно число пи",
+      "claim": "Число пи примерно равно 3.14159"
+    }
+  ]
+}
