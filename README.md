@@ -38,7 +38,7 @@ handling and replayable receipts.
 |---|---|---|
 | **L0 — Working cache** | short-lived in-RAM memory | fast recall inside the current process/session |
 | **L1 — Local working store** | SQLite/WAL operational memory | facts, states, updates and local persistence across runs |
-| **L2 — Pending / review path** | pre-canonical zone *(partial today)* | claims still `Observed` or advisory-quarantined before the gate; a full review queue is planned |
+| **L2 — Pending / review path** | pre-canonical zone *(baseline implemented)* | claims still `Observed` or advisory-quarantined before the gate; baseline import sessions, dry-run review and the curator review queue exist today — institutional UI, roles and resumable review are grant-scope hardening |
 | **L3 — Canonical graph** | durable truth graph | verified, source-tracked knowledge retrieved by the system |
 | **Trace / Receipt** | proof layer | shows how an answer connects back to facts and sources |
 
@@ -383,7 +383,9 @@ default runtime (CLI + read-only MCP server) stays standard-library only.
 
 - verifiable provenance and replayable receipts;
 - local L0/L1 memory and L3 canonical graph;
-- external knowledge ingestion for text/Markdown/JSON/JSONL/CSV;
+- external knowledge ingestion for text/Markdown/JSON/JSONL/CSV, with baseline
+  PDF/YAML/RDF adapters, dry-run imports and import sessions;
+- baseline Evidence Span Store and curator review queue;
 - GDPR-relevant erasure, restriction, record-of-processing, audit and PII tools;
 - read-only MCP server;
 - optional FastAPI service layer (`pip install '.[api]'`, `velantrim-api`);
@@ -399,11 +401,11 @@ default runtime (CLI + read-only MCP server) stays standard-library only.
 
 **Next / grant-scope candidates**
 
-- Evidence Span Store and Receipt v2 hardening;
-- dry-run imports and import sessions;
-- line/section/source-span provenance;
-- PDF/YAML/RDF/Wikidata adapters;
-- evaluation harness extensions;
+- harden the baseline Evidence Span Store and deliver Receipt v2;
+- scale dry-run imports and import sessions to resumable, institutional-grade review;
+- extend provenance with automatic line/section/source-span extraction;
+- harden the baseline PDF/YAML/RDF adapters and add Wikidata;
+- extend the evaluation harness;
 - capability-gated write APIs;
 - optional browser/PWA companion integration through a local backend/API.
 

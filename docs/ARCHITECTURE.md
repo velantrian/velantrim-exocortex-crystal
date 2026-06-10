@@ -41,7 +41,7 @@ not become the source of truth.
 |---|---|---|
 | **L0** | in-RAM cache | fast working recall inside the current process |
 | **L1** | SQLite/WAL | local working memory, ESM state, facts before/around gate processing |
-| **L2** | pending/review path *(partial today)* | `Observed`/advisory-quarantined claims before the gate; a full review queue is planned (see grant scope WP2) |
+| **L2** | pending/review path *(baseline implemented)* | `Observed`/advisory-quarantined claims before the gate; baseline import sessions, dry-run review and the curator review queue exist today — institutional UI, roles and resumable review are grant-scope hardening (see grant scope WP2) |
 | **L3** | graph backend | canonical source-tracked graph after the gate |
 | **Trace / Receipt** | JSON/HMAC/digest material | replayable grounding proof for answers |
 
