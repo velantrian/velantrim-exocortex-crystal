@@ -17,10 +17,14 @@ def isolated_db(monkeypatch, tmp_path):
     path and clear the module-level in-memory cache.
     """
     from core import (memory, l3_graph, embedding, generation, metrics,
-                      adaptation, queue, velum)
+                      adaptation, queue, velum, retrieval_config)
 
     memory._L0.clear()
     velum.reset_velum()
+    # Retrieval knobs: every test starts from the historical defaults, never
+    # from a config file left in the caller's environment.
+    monkeypatch.delenv("VELANTRIM_RETRIEVAL_CONFIG", raising=False)
+    retrieval_config.reset_retrieval_config()
     monkeypatch.setattr(memory, "SQLITE_PATH", str(tmp_path / "test.db"))
     # Pin the deterministic, dependency-free backends so tests never load a
     # neural model, touch disk, or hit the network (production defaults differ:
@@ -48,3 +52,4 @@ def isolated_db(monkeypatch, tmp_path):
     generation.reset_generator()
     queue.reset_outbox_queue()
     velum.reset_velum()
+    retrieval_config.reset_retrieval_config()

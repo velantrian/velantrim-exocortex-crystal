@@ -26,7 +26,7 @@ from core.compliance import (
 from core.audit import audit_log, verify_audit_log
 from core import (pii, provenance, immune, fractal, neurogenesis, concept,
                   volition, velum, analogy, knowledge, neurocore, eval as _eval,
-                  evidence, imports, review)
+                  evidence, imports, review, retrieval_config)
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -207,6 +207,19 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_ev.add_argument("fact_id")
     p_ev.add_argument("--verify", action="store_true",
                       help="replay each span against the current canon")
+    # ─── Retrieval config ──────────────────────────────────────────────────────
+    sub.add_parser("retrieval-config-show",
+                   help="active retrieval config (defaults or "
+                        "VELANTRIM_RETRIEVAL_CONFIG)")
+    p_rcs = sub.add_parser(
+        "retrieval-config-set",
+        help="write a validated retrieval config JSON (audited by sha256)")
+    p_rcs.add_argument("pairs", nargs="+", metavar="key=value",
+                       help="knobs to override, e.g. k=5 min_similarity=0.1")
+    p_rcs.add_argument("--out", required=True, help="output JSON path")
+    p_rcs.add_argument("--source", default="manual",
+                       choices=["manual", "imported"],
+                       help="provenance label stored in the config")
 
     args = parser.parse_args(argv)
 
@@ -375,6 +388,28 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(json.dumps(evidence.verify_evidence(args.fact_id), ensure_ascii=False))
         else:
             print(json.dumps(evidence.evidence_for(args.fact_id), ensure_ascii=False))
+    elif args.cmd == "retrieval-config-show":
+        cfg = retrieval_config.get_retrieval_config()
+        print(json.dumps(cfg.to_dict(), ensure_ascii=False, indent=2))
+    elif args.cmd == "retrieval-config-set":
+        base = retrieval_config.get_retrieval_config().to_dict()
+        base.pop("_source", None)
+        base.pop("_savedAt", None)
+        for pair in args.pairs:
+            key, sep, value = pair.partition("=")
+            if not sep:
+                print(f"expected key=value, got {pair!r}", file=sys.stderr)
+                return 1
+            base[key] = int(value) if value.lstrip("-").isdigit() else float(value)
+        try:
+            cfg = retrieval_config.RetrievalConfig(**base)
+            res = retrieval_config.save_config(cfg, args.out, source=args.source)
+        except (TypeError, ValueError) as exc:
+            print(f"invalid retrieval config: {exc}", file=sys.stderr)
+            return 1
+        print(json.dumps(res, ensure_ascii=False, indent=2))
+        print(f"# validate before adopting: VELANTRIM_RETRIEVAL_CONFIG={args.out} "
+              f"velantrim eval --gate", file=sys.stderr)
     return 0
 
 

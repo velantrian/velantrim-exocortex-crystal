@@ -25,6 +25,7 @@ from core.memory import (
 from core.queue import get_outbox_queue
 from core.l3_graph import get_l3_graph
 from core.embedding import get_embedder, cosine, assert_compatible_embedder
+from core.retrieval_config import get_retrieval_config
 from core.generation import get_generator
 from core import metrics, adaptation
 
@@ -59,12 +60,10 @@ def _load_demo_seed():
 # The embedder is pluggable (core/embedding.py): default HashingEmbedder, sbert optional.
 # Hybrid: vector-recall + multi-hop graph-walk (spreading activation / HippoRAG-lite).
 
-# Cutoff threshold for noise from hash collisions: below this — not relevant.
-_RETRIEVAL_MIN_SIM = 0.05
-# Activation damping per graph-walk hop (PageRank propagation).
-_GRAPH_WALK_DECAY = 0.5
-# Graph-walk depth (number of hops from vector hits).
-_GRAPH_WALK_HOPS = 2
+# The numeric knobs (top-k, similarity cutoff, walk depth/damping) live in
+# core/retrieval_config.py: bounded, validated, optionally loaded from
+# VELANTRIM_RETRIEVAL_CONFIG. Defaults are bit-identical to the historical
+# constants (k=3, min_similarity=0.05, hops=2, decay=0.5).
 # Activation propagation weights by edge type. Truth-maintenance edges do NOT
 # carry relevance: a fact is not "more relevant" because it is refuted
 # (CONTRADICTS) or because it is replaced (SUPERSEDED_BY) — otherwise graph-walk would lift
@@ -77,13 +76,18 @@ _WALK_EDGE_WEIGHTS = {
 _WALK_DEFAULT_EDGE_WEIGHT = 1.0
 
 
-def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
+def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
     """
     Hybrid search: cosine of embeddings over the demo seed corpus (opt-in) and
     the L3 canon, then a multi-hop graph-walk (spreading activation).
     Returns the top-k by score, deduped by id.
     Seed facts arrive as Observed; recall from L3 uses its stored ESM state.
+    An explicit k wins over the configured default (retrieval_config.k).
     """
+    cfg = get_retrieval_config()
+    if k is None:
+        k = cfg.k
+    min_sim = cfg.min_similarity
     embedder = get_embedder()
     graph = get_l3_graph()
     # Guard against mixing embedders: we catch an embedder swap on a persistent
@@ -101,7 +105,7 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
     # Source 1: seed corpus (opt-in demo facts when VELANTRIM_DEMO_SEED=1).
     for item in _load_demo_seed():
         sim = cosine(q_vec, embedder.embed(item["text"]))
-        if sim < _RETRIEVAL_MIN_SIM:
+        if sim < min_sim:
             continue
         _offer({
             **item,
@@ -128,7 +132,7 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
     vector_hits = []
     for node in graph.vector_search(q_vec, k=k):
         sim = node.get("_relevance", 0.0)
-        if sim < _RETRIEVAL_MIN_SIM:
+        if sim < min_sim:
             continue
         if node.get("restricted"):
             continue  # GDPR Art. 18: restricted facts do not take part in processing
@@ -142,7 +146,7 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
     # truth-maintenance edges weight 0 — do not propagate). What is reachable via SEVERAL
     # paths is summed — well-connected "hubs" rise. Only Validated nodes
     # propagate and are returned; activation is not poured into seed hits (they have
-    # an authoritative vector score). Depth — _GRAPH_WALK_HOPS, damping <1 +
+    # an authoritative vector score). Depth — cfg.graph_walk_hops, damping <1 +
     # the hop limit guarantee convergence without blowing up on cycles.
     seeds = {hit["fact_id"] for hit in vector_hits}
     graph_score: Dict[str, float] = {}
@@ -151,7 +155,7 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
         hit["fact_id"]: hit.get("_relevance", 0.0) * hit.get("confidence", 1.0)
         for hit in vector_hits
     }
-    for _hop in range(_GRAPH_WALK_HOPS):
+    for _hop in range(cfg.graph_walk_hops):
         nxt: Dict[str, float] = {}
         for fid, act in current.items():
             # Outgoing edges by type → weight; only edges with
@@ -177,7 +181,7 @@ def retrieve(query: str, k: int = 3) -> List[Dict[str, Any]]:
                 nid = node["fact_id"]
                 if nid in seeds:
                     continue  # do not pour activation into vector hits
-                share = act * _GRAPH_WALK_DECAY * (weight / total_weight)
+                share = act * cfg.graph_walk_decay * (weight / total_weight)
                 nxt[nid] = nxt.get(nid, 0.0) + share
                 node_cache[nid] = node
         if not nxt:

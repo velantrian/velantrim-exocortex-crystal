@@ -29,13 +29,14 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Any
 
 from core._registry import BackendRegistry
+from core.retrieval_config import get_retrieval_config
 
 logger = logging.getLogger(__name__)
 
 # Contribution of salience to vector_search ranking: final score =
 # similarity × (1 + W × significance). Relevance dominates, significance
 # lifts important memories when cosines are close. significance ≠ truth.
-_SIGNIFICANCE_WEIGHT = 0.5
+# W comes from core/retrieval_config.py (default 0.5, bounded [0, 2]).
 
 
 def _salience_score(similarity: float, significance: Any) -> float:
@@ -44,7 +45,7 @@ def _salience_score(similarity: float, significance: Any) -> float:
         sig = float(significance)
     except (TypeError, ValueError):
         sig = 0.5
-    return similarity * (1.0 + _SIGNIFICANCE_WEIGHT * sig)
+    return similarity * (1.0 + get_retrieval_config().significance_weight * sig)
 
 
 # ─── BACKEND INTERFACE ────────────────────────────────────────────────────────
