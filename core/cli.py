@@ -201,6 +201,9 @@ def main(argv: Optional[List[str]] = None) -> int:
                         help="print a Markdown report instead of JSON")
     p_eval.add_argument("--gate", action="store_true",
                         help="enforce the WP3 quality gate; exit non-zero if a metric regresses")
+    p_eval.add_argument("--lang", default="en", choices=["en", "ru"],
+                        help="fixture corpus: en (CI-gated default) or ru "
+                             "(report-only, typo/morphology probes)")
     # ─── Evidence spans (WP1) ──────────────────────────────────────────────────
     p_ev = sub.add_parser(
         "evidence", help="list source-span evidence attached to a fact")
@@ -371,12 +374,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     elif args.cmd == "neurocore-report":
         print(json.dumps(neurocore.report(), ensure_ascii=False))
     elif args.cmd == "eval":
-        report = _eval.run_baseline(detail=args.detail or args.md)
+        report = _eval.run_baseline(detail=args.detail or args.md, lang=args.lang)
         if args.md:
             print(_eval.format_report_md(report))
         else:
             print(json.dumps(report, ensure_ascii=False))
         if args.gate:
+            if args.lang != "en":
+                print("gate thresholds are calibrated on the English corpus; "
+                      "--lang ru is report-only", file=sys.stderr)
+                return 1
             verdict = _eval.gate(report)
             if not verdict["passed"]:
                 for f in verdict["failures"]:

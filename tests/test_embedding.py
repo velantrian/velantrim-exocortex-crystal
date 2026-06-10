@@ -142,3 +142,57 @@ def test_retrieve_stamps_store_fingerprint():
     from core.l3_graph import get_l3_graph
     retrieve("quantum entanglement")
     assert get_l3_graph().embedder_fingerprint() == f"hashing-{EMBED_DIM}"
+
+
+# ─── Trigram embedder (opt-in, morphology-tolerant) ───────────────────────────
+
+def test_trigram_embedder_has_unique_id_and_word_id_is_frozen():
+    from core.embedding import TrigramHashingEmbedder
+    assert get_embedder("hashing").id == f"hashing-{EMBED_DIM}"   # unchanged
+    assert TrigramHashingEmbedder().id == f"hashing-trigram-{EMBED_DIM}"
+    assert TrigramHashingEmbedder().id != HashingEmbedder().id
+
+
+def test_trigram_embedder_is_deterministic_and_normalized():
+    import math
+    emb = get_embedder("hashing-trigram")
+    v1, v2 = emb.embed("Вена — столица Австрии"), emb.embed("Вена — столица Австрии")
+    assert v1 == v2 and len(v1) == EMBED_DIM
+    assert abs(math.sqrt(sum(x * x for x in v1)) - 1.0) < 1e-9
+
+
+def test_trigram_survives_typo_where_word_hashing_fails():
+    word, tri = get_embedder("hashing"), get_embedder("hashing-trigram")
+    a, b = "сталица Австрии", "Вена — столица Австрии"   # typo: сталица
+    assert cosine(word.embed(a), word.embed(b)) < 0.5    # only 'австрии' overlaps
+    assert cosine(tri.embed(a), tri.embed(b)) > 0.6      # 'сталица'~'столица' trigrams
+    # Morphology: inflected form shares most trigrams, no whole-word match.
+    m1, m2 = "кипение воды", "вода кипит"
+    assert cosine(word.embed(m1), word.embed(m2)) == 0.0
+    assert cosine(tri.embed(m1), tri.embed(m2)) > 0.2
+
+
+def test_trigram_short_tokens_and_ru_stopwords():
+    emb = get_embedder("hashing-trigram")
+    assert emb._features("он ли же") == []               # RU stop words dropped
+    assert emb._features("ab xy") == ["ab", "xy"]        # <3 chars kept whole
+    assert emb.embed("он же") == [0.0] * EMBED_DIM       # pure stop words → zero
+
+
+def test_trigram_env_selection(monkeypatch):
+    monkeypatch.setenv("VELANTRIM_EMBEDDER", "hashing-trigram")
+    reset_embedder()
+    assert get_embedder().id == f"hashing-trigram-{EMBED_DIM}"
+
+
+def test_trigram_mismatch_guard_blocks_old_store(monkeypatch):
+    """Negative test: a store built with hashing-2048 + active trigram embedder
+    must hard-fail in strict mode — switching requires re-embedding L3."""
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    g.set_embedder_fingerprint(f"hashing-{EMBED_DIM}")   # old word-level store
+    monkeypatch.setenv("VELANTRIM_EMBEDDER", "hashing-trigram")
+    reset_embedder()
+    monkeypatch.setenv("VELANTRIM_EMBEDDER_STRICT", "1")
+    with pytest.raises(EmbedderMismatchError):
+        assert_compatible_embedder(g)

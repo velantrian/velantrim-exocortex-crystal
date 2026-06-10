@@ -201,3 +201,74 @@ def test_cli_eval_md(capsys):
     from core.cli import main
     assert main(["eval", "--md"]) == 0
     assert "## Retrieval" in capsys.readouterr().out
+
+
+# ─── Russian corpus (report-only, WP3) ─────────────────────────────────────────
+
+def test_load_retrieval_corpus_ru_via_package_resources():
+    """The RU fixture must load through importlib.resources (package data), not
+    a repo-relative path — guards against a wheel that forgets the JSON."""
+    from importlib import resources
+    raw = resources.files("core").joinpath(
+        "_eval_fixtures/retrieval_ru.json").read_text(encoding="utf-8")
+    import json as _json
+    assert _json.loads(raw)["cases"]
+    corpus = ev.load_retrieval_corpus("ru")
+    assert len(corpus["cases"]) >= 12
+    assert len(corpus["distractors"]) >= 8
+    assert any("typo" in c["domain"] or "morphology" in c["domain"]
+               for c in corpus["cases"])
+
+
+def test_load_retrieval_corpus_unknown_lang_raises():
+    import pytest as _pytest
+    with _pytest.raises(ValueError, match="lang"):
+        ev.load_retrieval_corpus("de")
+
+
+def test_run_baseline_ru_smoke():
+    report = ev.run_baseline(lang="ru")
+    assert report["cases"] == 16
+    assert 0.0 <= report["retrieval"]["hit@3"] <= 1.0
+    # Blocked answers (typo query, zero hits) must not crash the harness.
+    assert 0.0 <= report["receipt_replay_survival"] <= 1.0
+
+
+def test_trigram_beats_word_hashing_on_ru_typo_probes(monkeypatch):
+    from core import embedding
+    def probe_hits() -> float:
+        report = ev.run_baseline(lang="ru", detail=True)
+        probes = [c for c in report["cases_detail"]
+                  if "typo" in c["domain"] or "morphology" in c["domain"]]
+        return sum(c["hit@1"] for c in probes) / len(probes)
+
+    word_score = probe_hits()
+    monkeypatch.setenv("VELANTRIM_EMBEDDER", "hashing-trigram")
+    embedding.reset_embedder()
+    # Fresh canon for the second embedder: vectors are not comparable.
+    from core import memory, l3_graph
+    memory._L0.clear()
+    l3_graph.reset_l3_graph()
+    trigram_score = probe_hits()
+    assert trigram_score > word_score
+
+
+def test_cli_eval_lang_ru(capsys):
+    from core.cli import main
+    assert main(["eval", "--lang", "ru"]) == 0
+    out = json.loads(capsys.readouterr().out)
+    assert out["cases"] == 16
+
+
+def test_cli_eval_gate_refuses_ru(capsys):
+    """Negative test: gate thresholds are EN-calibrated — RU is report-only."""
+    from core.cli import main
+    assert main(["eval", "--lang", "ru", "--gate"]) == 1
+    assert "report-only" in capsys.readouterr().err
+
+
+def test_missing_ru_fixture_raises(monkeypatch):
+    monkeypatch.setattr(ev, "_load_fixture_json", lambda name: None)
+    import pytest as _pytest
+    with _pytest.raises(FileNotFoundError, match="retrieval_ru.json"):
+        ev.load_retrieval_corpus("ru")

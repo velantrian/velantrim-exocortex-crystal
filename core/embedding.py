@@ -132,6 +132,67 @@ class HashingEmbedder(Embedder):
         return vec
 
 
+# ─── TRIGRAM HASHING EMBEDDER (opt-in, morphology-tolerant) ───────────────────
+
+# Russian function words, used by the trigram embedder only: the word-level
+# HashingEmbedder is frozen (same id ⇒ same vectors — the mismatch guard cannot
+# see a drift behind an unchanged id), so its stop list must not change either.
+STOPWORDS_RU = {
+    "и", "в", "во", "не", "на", "с", "со", "что", "как", "это", "этот", "эта",
+    "то", "та", "но", "а", "по", "к", "у", "о", "об", "от", "до", "из", "за",
+    "для", "же", "ли", "бы", "был", "была", "было", "были", "есть", "я", "ты",
+    "он", "она", "оно", "они", "мы", "вы", "мне", "меня", "его", "её", "их",
+    "там", "тут", "где", "когда", "почему", "зачем", "какой", "какая", "какие",
+}
+
+
+class TrigramHashingEmbedder(Embedder):
+    """
+    Character-trigram hashing embedder (opt-in: VELANTRIM_EMBEDDER=hashing-trigram).
+
+    Each token (stop words removed, RU+EN lists) is padded and split into char
+    trigrams — "москва" → ^мо мос оск скв ква ва$ — hashed with the same signed
+    trick as HashingEmbedder. Tokens shorter than 3 chars contribute whole.
+    Shared trigrams survive typos and Russian morphology ("сталица"~"столица",
+    "москве"~"москва"), where whole-word hashing yields cosine ≈ 0. The flip
+    side is collision noise between unrelated short/noisy texts, so this stays
+    opt-in and the English CI gate keeps the word-level default.
+
+    ⚠️ Vectors are NOT comparable with HashingEmbedder's: switching an existing
+    L3 store to trigram requires re-embedding/rebuilding it (the embedder
+    mismatch guard enforces this — see assert_compatible_embedder).
+    """
+
+    dim = EMBED_DIM
+    id = f"hashing-trigram-{EMBED_DIM}"
+
+    def _features(self, text: str) -> List[str]:
+        feats: List[str] = []
+        for word in _WORD_RE.findall(text):
+            word = word.lower()
+            if word in STOPWORDS or word in STOPWORDS_RU:
+                continue
+            if len(word) < 3:
+                feats.append(word)
+                continue
+            padded = f"^{word}$"
+            feats.extend(padded[i:i + 3] for i in range(len(padded) - 2))
+        return feats
+
+    def embed(self, text: str) -> List[float]:
+        vec = [0.0] * EMBED_DIM
+        feats = self._features(text)
+        if not feats:
+            return vec
+        for feat in feats:
+            idx, sign = _stable_bucket(feat)
+            vec[idx] += sign
+        norm = math.sqrt(sum(x * x for x in vec))
+        if norm > 0.0:
+            vec = [x / norm for x in vec]
+        return vec
+
+
 # ─── SENTENCE-TRANSFORMER EMBEDDER (optional dependency) ──────────────────────
 
 class SentenceTransformerEmbedder(Embedder):  # pragma: no cover
@@ -168,6 +229,7 @@ class SentenceTransformerEmbedder(Embedder):  # pragma: no cover
 
 _EMBEDDERS = {
     "hashing": HashingEmbedder,
+    "hashing-trigram": TrigramHashingEmbedder,
     "sbert": SentenceTransformerEmbedder,
 }
 

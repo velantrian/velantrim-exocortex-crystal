@@ -101,14 +101,23 @@ def _load_fixture_json(name: str) -> Optional[Dict[str, Any]]:
         return None
 
 
-def load_retrieval_corpus() -> Dict[str, Any]:
+def load_retrieval_corpus(lang: str = "en") -> Dict[str, Any]:
     """The curated retrieval corpus: {"cases": [...], "distractors": [...]}.
 
-    Falls back to the inline `_FIXTURE` (no distractors) if the bundled data file
-    is missing, so the harness always runs.
+    lang="en" is the canonical CI-gated corpus; lang="ru" is the report-only
+    Russian corpus (typo/morphology probes for embedder comparison). The English
+    corpus falls back to the inline `_FIXTURE` (no distractors) if the bundled
+    data file is missing, so the harness always runs; the Russian corpus has no
+    inline fallback and raises if its fixture is absent.
     """
-    data = _load_fixture_json("retrieval.json")
+    if lang not in ("en", "ru"):
+        raise ValueError(f"load_retrieval_corpus: unknown lang '{lang}' "
+                         f"(available: en, ru)")
+    name = "retrieval.json" if lang == "en" else "retrieval_ru.json"
+    data = _load_fixture_json(name)
     if not data or not data.get("cases"):
+        if lang == "ru":
+            raise FileNotFoundError(f"bundled fixture {name} is missing")
         return {"cases": list(_FIXTURE), "distractors": []}
     return {"cases": data["cases"], "distractors": data.get("distractors", [])}
 
@@ -179,7 +188,7 @@ _FIXTURE: List[Dict[str, str]] = [
 # ─── Baseline run over the real pipeline ──────────────────────────────────────
 
 def run_baseline(fixture: List[Dict[str, str]] | None = None, *, k: int = 5,
-                 detail: bool = False) -> Dict[str, Any]:
+                 detail: bool = False, lang: str = "en") -> Dict[str, Any]:
     """
     Ingest the fixture corpus and measure the live pipeline:
 
@@ -191,10 +200,12 @@ def run_baseline(fixture: List[Dict[str, str]] | None = None, *, k: int = 5,
       unchanged canon;
     - contradiction: precision/recall of the deterministic classifier.
 
-    With no explicit `fixture`, the curated bundled corpus is used and its
-    `distractors` are ingested as ranking noise so the metrics are non-trivial.
-    Pass an explicit list to evaluate a custom corpus (no distractors).
-    Set `detail=True` to include a per-case breakdown (`cases_detail`).
+    With no explicit `fixture`, the curated bundled corpus for `lang` is used
+    ("en" — the CI-gated default; "ru" — report-only, with typo/morphology
+    probes) and its `distractors` are ingested as ranking noise so the metrics
+    are non-trivial. Pass an explicit list to evaluate a custom corpus (no
+    distractors). Set `detail=True` to include a per-case breakdown
+    (`cases_detail`).
 
     Deterministic with the dependency-free hashing embedder + extractive answerer.
     Returns a machine-readable report (also see docs/EVAL.md).
@@ -203,7 +214,7 @@ def run_baseline(fixture: List[Dict[str, str]] | None = None, *, k: int = 5,
         cases: List[Dict[str, str]] = fixture
         distractors: List[str] = []
     else:
-        corpus = load_retrieval_corpus()
+        corpus = load_retrieval_corpus(lang)
         cases = corpus["cases"]
         distractors = corpus["distractors"]
 
@@ -236,12 +247,16 @@ def run_baseline(fixture: List[Dict[str, str]] | None = None, *, k: int = 5,
         result = run(case["query"])
         if result.get("trace"):
             traced += 1
-        # A receipt built now must re-verify against the unchanged canon —
+# A receipt built now must re-verify against the unchanged canon —
         # strictly: a VERIFIED citation with no source-span evidence fails the
-        # replay (and thus the CI gate), not just the unsupported_provenance count.
-        receipt = build_receipt(result)
-        if verify_receipt(receipt, strict_provenance=True).get("verified"):
-            receipts_ok += 1
+        # replay (and thus the CI gate), not just the unsupported_provenance
+        # count. A blocked answer (e.g. a typo query with zero retrieval hits
+        # under the word-level embedder) has no receipt — it scores 0, it must
+        # not crash the harness.
+        if result.get("answer") is not None:
+            receipt = build_receipt(result)
+            if verify_receipt(receipt, strict_provenance=True).get("verified"):
+                receipts_ok += 1
 
         if detail:
             cases_detail.append({
