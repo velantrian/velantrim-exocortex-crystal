@@ -21,7 +21,7 @@ from core.embedding import assert_compatible_embedder
 from core.pipeline import guardian, truth_gate, _truth_status_for, _l3_payload
 from core.reconcile import reinforce, find_conflicts, REL_CONTRADICTS, _now
 from core import (metrics, adaptation, pii, contradiction, immune,
-                  neurogenesis, salience)
+                  neurogenesis, salience, mosc)
 
 # Modality markers (RU + EN). Order matters: we check from specific to general.
 _CLAIM_MARKERS = [
@@ -51,17 +51,27 @@ _CLAIM_MARKERS = [
 ]
 
 
-def classify_claim(utterance: str) -> tuple[str, str]:
-    """
-    (claim_type, source_status) for a user's utterance.
-    An utterance is always USER_REPORTED; the type — by linguistic markers,
-    otherwise WORLD_FACT (a claim about the world).
-    """
+def _regex_classify(utterance: str) -> str:
+    """The historical marker-based claim_type (fallback when MOSC abstains)."""
     text = utterance.lower()
     for claim_type, patterns in _CLAIM_MARKERS:
         if any(re.search(p, text) for p in patterns):
-            return claim_type, "USER_REPORTED"
-    return "WORLD_FACT", "USER_REPORTED"
+            return claim_type
+    return "WORLD_FACT"
+
+
+def classify_claim(utterance: str) -> tuple[str, str]:
+    """
+    (claim_type, source_status) for a user's utterance.
+    An utterance is always USER_REPORTED. The type: MOSC (core/mosc.py,
+    weighted RU/EN keywords) suggests first; below its threshold it abstains
+    (None) and the historical regex markers decide, otherwise WORLD_FACT.
+    MOSC is advisory only — the suggestion faces the same gates as before.
+    """
+    suggested = mosc.classify(utterance)
+    if suggested is not None:
+        return suggested, "USER_REPORTED"
+    return _regex_classify(utterance), "USER_REPORTED"
 
 
 def _fact_id(utterance: str) -> str:

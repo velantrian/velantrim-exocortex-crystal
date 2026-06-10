@@ -25,6 +25,10 @@ def isolated_db(monkeypatch, tmp_path):
     # from a config file left in the caller's environment.
     monkeypatch.delenv("VELANTRIM_RETRIEVAL_CONFIG", raising=False)
     retrieval_config.reset_retrieval_config()
+    # MOSC weights: every test starts from the bundled package defaults.
+    from core import mosc
+    monkeypatch.delenv("VELANTRIM_MOSC_PATH", raising=False)
+    mosc.reset_mosc()
     monkeypatch.setattr(memory, "SQLITE_PATH", str(tmp_path / "test.db"))
     # Pin the deterministic, dependency-free backends so tests never load a
     # neural model, touch disk, or hit the network (production defaults differ:

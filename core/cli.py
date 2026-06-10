@@ -26,7 +26,7 @@ from core.compliance import (
 from core.audit import audit_log, verify_audit_log
 from core import (pii, provenance, immune, fractal, neurogenesis, concept,
                   volition, velum, analogy, knowledge, neurocore, eval as _eval,
-                  evidence, imports, review, retrieval_config)
+                  evidence, imports, review, retrieval_config, mosc)
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -220,6 +220,13 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_rcs.add_argument("--source", default="manual",
                        choices=["manual", "imported"],
                        help="provenance label stored in the config")
+    # ─── MOSC advisory claim-type classifier ───────────────────────────────────
+    p_mc = sub.add_parser(
+        "mosc-classify",
+        help="diagnose how an utterance's claim_type would be suggested")
+    p_mc.add_argument("text")
+    sub.add_parser("mosc-report",
+                   help="active MOSC weights provenance (source, sha256, counts)")
 
     args = parser.parse_args(argv)
 
@@ -411,6 +418,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(json.dumps(res, ensure_ascii=False, indent=2))
         print(f"# validate before adopting: VELANTRIM_RETRIEVAL_CONFIG={args.out} "
               f"velantrim eval --gate", file=sys.stderr)
+    elif args.cmd == "mosc-classify":
+        print(json.dumps(mosc.classify_detailed(args.text), ensure_ascii=False))
+    elif args.cmd == "mosc-report":
+        print(json.dumps(mosc.report(), ensure_ascii=False, indent=2))
     return 0
 
 
