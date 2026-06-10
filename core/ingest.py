@@ -76,6 +76,7 @@ def ingest(
     significance: float = 0.5,
     claim_type: Optional[str] = None,
     episode: Optional[Dict[str, Any]] = None,
+    source_status: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Accept an utterance, classify it, run it through the gates, write it to L3.
@@ -84,8 +85,9 @@ def ingest(
     - accepted=True  → the fact passed the TruthGate, transitioned to Validated, MERGE into L3.
     - accepted=False → blocked (reason). In SQLite it remains as Observed.
 
-    claim_type can be set explicitly (bypassing the classifier); source_status is always
-    USER_REPORTED — this is the user's message.
+    claim_type can be set explicitly (bypassing the classifier). source_status
+    defaults to the classifier's verdict (USER_REPORTED for a user's message); an
+    external loader (RFC0063 knowledge ingestion) overrides it, e.g. EXTERNAL.
     """
     if not utterance or not utterance.strip():
         raise ValueError("ingest: empty utterance")
@@ -99,9 +101,10 @@ def ingest(
         if _found:
             pii_redacted = pii.summary(_found)
 
-    ct, source_status = classify_claim(utterance)
+    ct, classified_status = classify_claim(utterance)
     if claim_type is not None:
         ct = claim_type
+    source_status = source_status or classified_status
 
     fid = fact_id or _fact_id(utterance)
 

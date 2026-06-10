@@ -26,6 +26,10 @@ runtime · every delivered item below ships with tests and a CLI surface.
   (`auto`→sentence-transformers / dependency-free hashing) and **answerer**
   (extractive default / Claude LLM opt-in).
 - **Ingestion** (`core/ingest.py`): utterance → claim_type → gate → L3.
+- **External knowledge ingestion** (`core/knowledge.py`, RFC0063): bulk-import
+  `.txt` / `.md` / `.json` / `.jsonl` / `.csv` knowledge files through the SAME
+  TruthGate; imported facts carry `source_status = EXTERNAL` + the source file as
+  provenance. Stdlib-only parsers (PDF/YAML/RDF left to optional adapters); CLI `learn`.
 - **Packaging**: `pip install .` exposes the `velantrim` console script
   (`pyproject.toml`, PEP 440 version, explicit package surface).
 
@@ -96,8 +100,8 @@ runtime · every delivered item below ships with tests and a CLI surface.
 
 | RFC / item | What it adds | Target |
 |---|---|---|
-| 🌾 **RFC0063** | External **knowledge ingestion** — import from PDF / JSON / YAML / Wikidata RDF / plain text through the TruthGate (distinct from the current utterance ingestion in `core/ingest.py`) | S4 |
 | 🧠 **RFC0068** | **NeuroCore** plastic memory (feature-flagged, Phase 0 passive tracker) | S5+ |
+| 🌾 **RFC0063+** | Additional external-ingestion adapters: PDF / YAML / Wikidata RDF (core text/JSON/JSONL/CSV already shipped in `core/knowledge.py`) | S5+ |
 | 🩹 **A1–A10** | Sprint-A hardening patches (documented, not wired) | S3 |
 | ⚙️ async core | Full async/await rewrite of the stores (async *entry points* already shipped) | S3+ |
 
@@ -110,9 +114,10 @@ runtime · every delivered item below ships with tests and a CLI surface.
   ingestion, truth maintenance, Redis/SQLite queue, async entry points.
 - **S3** ✅ — RFC0066 Concept Emergence, RFC0065 Memory Volition, RFC0016 Velum
   L1.5. *(remaining: A1–A10 wiring)*
-- **S4** ✅ — RFC0067 Analogy Graph + Semantic Bridge + CREATIVE mode.
-  *(remaining: RFC0063 external ingestion)*
-- **S5+** ⬜ — RFC0068 NeuroCore (feature-flagged, Phase 0 passive).
+- **S4** ✅ — RFC0067 Analogy Graph + Semantic Bridge + CREATIVE mode; RFC0063
+  external knowledge ingestion (`core/knowledge.py`).
+- **S5+** ⬜ — RFC0068 NeuroCore (feature-flagged, Phase 0 passive); extra
+  ingestion adapters (PDF / YAML / RDF).
 
 ---
 

@@ -7,11 +7,11 @@ numbers: run `pytest` yourself and you will get the figures below.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **513** |
+| **Tests passing** | **531** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **~99%** (gate enforced at 95%) |
-| Test files | 39 (`tests/test_*.py`) |
+| Test files | 40 (`tests/test_*.py`) |
 | Python | 3.11 (3.10+ supported) |
 | Runtime dependencies | standard library only |
 
@@ -27,7 +27,7 @@ which needs a running Redis and is not part of the dependency-free default.
 
 ```bash
 pip install -r requirements.txt
-pytest                 # 513 passed, 12 skipped
+pytest                 # 531 passed, 12 skipped
 ```
 
 ## Coverage by module (core/)
@@ -39,7 +39,7 @@ pytest                 # 513 passed, 12 skipped
 | `core/analogy.py`      | 86  | 100% |
 | `core/aio.py`          | 10  | 100% |
 | `core/audit.py`        | 69  | 100% |
-| `core/cli.py`          | 169 | 100% |
+| `core/cli.py`          | 174 | 100% |
 | `core/compliance.py`   | 43  | 100% |
 | `core/concept.py`      | 93  | 100% |
 | `core/consolidate.py`  | 45  | 96%  |
@@ -50,7 +50,8 @@ pytest                 # 513 passed, 12 skipped
 | `core/fractal.py`      | 93  | 99%  |
 | `core/generation.py`   | 41  | 100% |
 | `core/immune.py`       | 94  | 100% |
-| `core/ingest.py`       | 89  | 100% |
+| `core/ingest.py`       | 90  | 100% |
+| `core/knowledge.py`    | 122 | 100% |
 | `core/l3_graph.py`     | 259 | 99%  |
 | `core/mcp_server.py`   | 104 | 100% |
 | `core/memory.py`       | 185 | 100% |
@@ -65,7 +66,7 @@ pytest                 # 513 passed, 12 skipped
 | `core/trace.py`        | 26  | 100% |
 | `core/velum.py`        | 112 | 99%  |
 | `core/volition.py`     | 75  | 99%  |
-| **Total (repo-wide)**  | **3260** | **~99%** |
+| **Total (repo-wide)**  | **3388** | **~99%** |
 
 ## What the tests cover
 
@@ -80,6 +81,7 @@ pytest                 # 513 passed, 12 skipped
 | Memory Volition (RFC0065) — salience, voluntary writes through the gates, rehearsal, CLI | `test_volition.py` |
 | L1.5 Velum (RFC0016) — synaptic edges, signals, session decay, GC, degree cache, CLI | `test_velum.py` |
 | Analogy Graph / Bridges / CREATIVE (RFC0067) — edges, structural similarity, bridges, temperature, CLI | `test_analogy.py` |
+| External knowledge ingestion (RFC0063) — text/md/json/jsonl/csv parsers, gate routing, CLI | `test_knowledge.py` |
 | Neurogenesis Dynamic Growth (RFC0073) — plasticity, pattern separation, growth/prune, CLI | `test_neurogenesis.py` |
 | L3 canonical graph adapter & backends | `test_l3_graph.py` |
 | On-disk SQLite L3 backend (persistence, erase, vectors, entities) | `test_l3_sqlite.py` |

@@ -2,7 +2,7 @@
 
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
-`v8.1.0` · 🧪 **513 tests** · 🎯 **99% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v8.1.0` · 🧪 **531 tests** · 🎯 **99% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
 
 > Velantrim is **not another chatbot**. It is a **verifiable memory layer** that AI
 > systems write to and read from, where **every stored fact carries its
@@ -78,7 +78,7 @@ git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
 pip install .                          # stdlib-only runtime; installs the `velantrim` CLI
 python -m core.pipeline                # runs the end-to-end demo, fully local
-pytest                                 # 513 passing, 99% coverage  (pip install -e '.[dev]')
+pytest                                 # 531 passing, 99% coverage  (pip install -e '.[dev]')
 ```
 
 After install the `velantrim` CLI is on your PATH:
@@ -207,6 +207,7 @@ individually tested. Grouped by what they do:
 | `core/embedding.py` | Swappable embedder: `auto`→sentence-transformers / dependency-free hashing |
 | `core/generation.py` | Swappable answerer: extractive (local default) / Claude (opt-in) |
 | `core/ingest.py` | Utterance → claim-type classification → gate → L3 |
+| `core/knowledge.py` | 🌾 **External ingestion** — bulk-import `.txt`/`.md`/`.json`/`.jsonl`/`.csv` through the TruthGate (RFC0063) |
 
 #### 🛡️ Trust & truth
 | Module | Role |
@@ -248,7 +249,7 @@ individually tested. Grouped by what they do:
 > ✅ **Current status:** the full fact lifecycle runs end-to-end — ingest →
 > classify → TruthGate → L3 graph → vector + episodic recall → reinforce /
 > supersede / contradict / decay — with swappable backends and zero-dependency
-> defaults. **513 passing tests, 99% coverage** ([TEST_REPORT.md](./TEST_REPORT.md)).
+> defaults. **531 passing tests, 99% coverage** ([TEST_REPORT.md](./TEST_REPORT.md)).
 
 ---
 
@@ -361,6 +362,23 @@ velantrim analogy-link atom solar-system --kind ANALOGOUS_TO --weight 0.8
 velantrim analogy-bridges atom solar-system
 velantrim analogy-suggest atom
 ```
+
+### 🌾 External knowledge ingestion (RFC0063)
+
+Teach Crystal from files — a lesson, a dataset, a reference document — and every
+claim still goes through the **same TruthGate** (nothing is trusted just because
+it came from a file). Imported facts are tagged `source_status = EXTERNAL` with
+the source file as provenance. Dependency-free parsers for `.txt`, `.md`,
+`.json`, `.jsonl` and `.csv`:
+
+```bash
+velantrim learn ./knowledge/astronomy.md --source astro-101
+# → {"accepted": 2, "reinforced": 0, "blocked": 0, ...}
+```
+
+This is what makes Crystal practical for **libraries, schools and universities**:
+load a curated corpus once and serve verified, sourced facts from it forever —
+offline and LLM-free.
 
 ---
 
