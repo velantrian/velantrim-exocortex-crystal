@@ -74,6 +74,28 @@ dimensions below define where the harness is extended next: larger corpora acros
 more domains and languages, adversarial contradiction cases and a grounding score
 for generated answers.
 
+### Tuning retrieval against the gate
+
+Retrieval knobs (top-k, similarity cutoff, graph-walk depth/decay, significance
+weight) live in `core/retrieval_config.py`: bounded, validated, and loaded from
+an optional JSON file. The defaults are bit-identical to the historical
+constants, so without a config file nothing changes. Workflow:
+
+```bash
+# 1. Write a candidate config (validated; out-of-range values are rejected;
+#    the save is recorded in the audit chain as a content-free sha256 event):
+velantrim retrieval-config-set k=5 min_similarity=0.1 --out tuned.json
+
+# 2. Validate the candidate against the quality gate BEFORE adopting it:
+VELANTRIM_RETRIEVAL_CONFIG=tuned.json velantrim eval --gate
+
+# 3. Adopt it only if the gate passes (export the env var in your service):
+export VELANTRIM_RETRIEVAL_CONFIG=tuned.json
+
+# Inspect the active config at any time:
+velantrim retrieval-config-show
+```
+
 ## Evaluation dimensions
 
 ### 1. Trace completeness
