@@ -11,10 +11,13 @@
 #                             ESM stages Observed/Hypothesized before the gate.
 #   L3 graph (this module)  — canon after the gate: nodes + edges (links, episodes, schemas).
 #
-# Pluggable backend. Default — MockL3Graph (in-memory, dependency-free).
-# Prod target — LadybugDB: successor to Kuzu (Kuzu was frozen in Oct. 2025 after
-# the Apple acquisition). LadybugDB is embedded, Cypher-compatible, with a vector index
-# and full-text search. Standard Cypher → the backend stays portable.
+# Pluggable backend. Default `auto`: LadybugDB if installed, then the
+# dependency-free on-disk SQLite backend, then the in-memory mock as a
+# last-resort/dev fallback.
+# Optional prod engine — LadybugDB: an embedded, Cypher-compatible graph DB in
+# the Kuzu lineage (the upstream Kuzu repository was archived in Oct. 2025).
+# It ships a vector index and full-text search. Standard Cypher → the backend
+# stays portable.
 
 import functools
 import json
@@ -542,8 +545,9 @@ class SqliteL3Graph(L3GraphBackend):
 
 class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
     """
-    Backend on LadybugDB — an embedded, Cypher-compatible successor to Kuzu
-    (Kuzu frozen Oct.2025). Fact nodes + generalized EDGE edges with a type property.
+    Backend on LadybugDB — an embedded, Cypher-compatible graph DB in the Kuzu
+    lineage (upstream Kuzu repository archived Oct. 2025). Fact nodes +
+    generalized EDGE edges with a type property.
 
     API verified by a spike (v0.17.0): Database/Connection, MERGE-upsert by
     PRIMARY KEY, REL tables, vector index (INSTALL vector / CREATE_VECTOR_INDEX).
@@ -972,7 +976,7 @@ class Neo4jL3Graph(L3GraphBackend):  # pragma: no cover
 _BACKENDS = {
     "mock": MockL3Graph,        # in-memory, dependency-free (dev / CI)
     "sqlite": SqliteL3Graph,    # on-disk, dependency-free (local-first persistence)
-    "ladybug": LadybugL3Graph,  # recommended prod default (successor to Kuzu)
+    "ladybug": LadybugL3Graph,  # optional embedded prod engine (Kuzu lineage)
     "neo4j": Neo4jL3Graph,      # optional alternative (server required)
 }
 
@@ -1013,8 +1017,8 @@ def get_l3_graph(backend: Optional[str] = None) -> L3GraphBackend:
     Return the L3 graph singleton. Backend — via argument or VELANTRIM_L3_BACKEND.
 
     Modes:
-      'auto' (default) — LadybugDB if installed (the recommended prod engine,
-                        successor to Kuzu); otherwise the dependency-free on-disk
+      'auto' (default) — LadybugDB if installed (optional embedded prod engine,
+                        Kuzu lineage); otherwise the dependency-free on-disk
                         SQLite backend (persists to ./data/velantrim_l3.db); the
                         in-memory mock only as a last resort if SQLite cannot open.
       'sqlite'        — always on-disk SQLite (dependency-free, local-first).
