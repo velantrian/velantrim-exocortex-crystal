@@ -96,11 +96,14 @@ def create_app():
 
     class ApproveRequest(BaseModel):
         fact_id: str = Field(..., min_length=1)
-        actor: str = Field("curator", min_length=1)
+        # No default identity: force=True demands an explicit actor (422
+        # otherwise); a non-force approve falls back to "curator" in
+        # review.approve() for backward compatibility.
+        actor: Optional[str] = Field(None, min_length=1)
         note: Optional[str] = None
         force: bool = False
-        # Required (non-empty) when force=True — see review.approve().
-        reason: Optional[str] = None
+        # Required (non-empty, <=500 chars) when force=True — see review.approve().
+        reason: Optional[str] = Field(None, max_length=500)
 
     class RejectRequest(BaseModel):
         fact_id: str = Field(..., min_length=1)
@@ -180,9 +183,12 @@ def create_app():
         return await asyncio.to_thread(review.review_report)
 
     @app.get("/review/decisions", dependencies=_guarded)
-    async def review_decisions(limit: int = 50) -> List[Dict[str, Any]]:
-        """Curator decision history reconstructed from the audit chain."""
-        return await asyncio.to_thread(review.decisions, limit=limit)
+    async def review_decisions(limit: int = 50,
+                               include_claim: bool = True) -> List[Dict[str, Any]]:
+        """Curator decision history reconstructed from the audit chain.
+        include_claim=false keeps entries content-free (no L1 rehydration)."""
+        return await asyncio.to_thread(review.decisions, limit=limit,
+                                       include_claim=include_claim)
 
     @app.get("/review/item/{fact_id}", dependencies=_guarded)
     async def review_item_endpoint(fact_id: str) -> Dict[str, Any]:
@@ -195,13 +201,18 @@ def create_app():
     @app.post("/review/approve", dependencies=_guarded)
     async def review_approve(req: ApproveRequest) -> Dict[str, Any]:
         """Promote a pending fact. force=true overrides a blocking diagnosis and
-        requires a non-empty reason (422 otherwise) — audited as
-        review_force_approve."""
+        requires a non-empty reason AND an explicit actor (422 otherwise) —
+        audited as review_force_approve."""
         if req.force and not (req.reason and req.reason.strip()):
             raise HTTPException(
                 status_code=422,
                 detail="force approval overrides a blocking diagnosis and "
                        "requires a non-empty 'reason'")
+        if req.force and not (req.actor and req.actor.strip()):
+            raise HTTPException(
+                status_code=422,
+                detail="force approval requires an explicit non-empty 'actor' "
+                       "(no default identity for an override)")
         res = await asyncio.to_thread(
             review.approve, req.fact_id, actor=req.actor, note=req.note,
             force=req.force, reason=req.reason)

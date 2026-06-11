@@ -42,6 +42,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     dependency-free `core/_webui/review.html` shell that embeds no memory
     content.
 
+### Security
+- **Post-merge hardening round** (cross-audit follow-up to PR #93–#98):
+  - force-approve now demands an **explicit** non-empty actor — the
+    backward-compatible default identity `curator` applies only to normal
+    (non-force) approves and can no longer sign a blocking-diagnosis override
+    (library refusal + HTTP 422 + CLI `--actor` without a default);
+  - force-approve reason is capped at 500 characters (library + pydantic);
+  - MOSC weights `threshold` is bounded to `(0, 5]` — an absurdly large
+    threshold would silently mute the classifier;
+  - `save_config()` sha256 now covers the **exact file bytes** (including the
+    trailing newline), so `sha256sum <file>` matches the audit event;
+  - `review.decisions(include_claim=False)` and
+    `GET /review/decisions?include_claim=false` return content-free decision
+    records without rehydrating claim text/claim_type from L1 (the review UI
+    keeps the default `true`);
+  - PII-negative pin test: salience explainability metadata carries only
+    marker categories and numeric scores, never raw emails/phones/text.
+
 ### Changed
 - **P1 cross-audit hardening** (follow-up to the P0 round):
   - the evaluation harness now replays receipts with `strict_provenance=True`,

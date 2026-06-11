@@ -117,9 +117,11 @@ def save_config(cfg: RetrievalConfig, path: str, *,
         "saved_at": datetime.now(timezone.utc).isoformat(),
     })
     payload = json.dumps(stamped.to_dict(), ensure_ascii=False, sort_keys=True,
-                         indent=2)
+                         indent=2) + "\n"
     with open(path, "w", encoding="utf-8") as fh:
-        fh.write(payload + "\n")
+        fh.write(payload)
+    # Hash the EXACT bytes written, so `sha256sum <file>` matches the audit
+    # event (the trailing newline is part of the file).
     sha = hashlib.sha256(payload.encode("utf-8")).hexdigest()
     from core.audit import append_event  # lazy: keep this module a leaf
     receipt = append_event("retrieval_config_saved", None, {

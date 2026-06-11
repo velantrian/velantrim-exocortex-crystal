@@ -180,11 +180,13 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_ra = sub.add_parser(
         "review-approve", help="promote a pending fact into the canon (curator decision)")
     p_ra.add_argument("fact_id")
-    p_ra.add_argument("--actor", default="curator", help="who approved (for the audit log)")
+    p_ra.add_argument("--actor", default=None,
+                      help="who approved (for the audit log; defaults to "
+                           "'curator' — required explicitly with --force)")
     p_ra.add_argument("--note", default=None, help="optional note (for the audit log)")
     p_ra.add_argument("--force", action="store_true",
                       help="override a still-blocked fact (explicit, audited; "
-                           "requires --reason)")
+                           "requires --reason and an explicit --actor)")
     p_ra.add_argument("--reason", default=None,
                       help="why the blocking diagnosis is overridden "
                            "(required with --force)")

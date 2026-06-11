@@ -96,6 +96,28 @@ def test_auto_salience_never_touches_truth_fields():
     assert loud["epistemic_state"] == quiet["epistemic_state"]
 
 
+def test_salience_metadata_never_carries_raw_pii():
+    """PII-negative invariant: an utterance carrying an email and a phone
+    number plus salience markers must yield explainability metadata made of
+    marker CATEGORIES and numbers only — never the raw contact data or any
+    fragment of the utterance text."""
+    email, phone = "jane.doe@example.org", "+49 170 1234567"
+    res = ingest(f"ВАЖНО: always reach {email} or {phone} first!")
+    fact = res["fact"]
+    meta = fact["metadata"]
+    assert meta["significance_source"] == "auto_salience"
+    assert set(meta["salience_markers"]) <= {CAPS, EXCLAMATION, IMPORTANCE_RU,
+                                             IMPORTANCE_EN}
+    assert isinstance(meta["salience_score"], float)
+    # The salience keys carry only fixed categories + a number — no PII, no
+    # utterance text (the claim itself lives in the fact body, not here).
+    salience_blob = str({k: v for k, v in meta.items()
+                         if k.startswith("salience") or k == "significance_source"})
+    assert email not in salience_blob
+    assert "1234567" not in salience_blob
+    assert "reach" not in salience_blob
+
+
 def test_anchor_strength_grows_with_auto_significance():
     from core import fractal
     loud = ingest("CRITICAL: backups run nightly, always verify them!")["fact"]

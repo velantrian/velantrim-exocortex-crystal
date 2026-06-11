@@ -156,6 +156,44 @@ def test_review_force_without_reason_is_422(client, monkeypatch):
     assert r2.status_code == 422
 
 
+def test_review_force_without_explicit_actor_is_422(client, monkeypatch):
+    """force=true demands an explicit actor — no default identity may sign a
+    blocking-diagnosis override; a reason longer than 500 chars is also 422."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    fid = _pending_blocked("A claim force-approved by nobody")
+    r = client.post("/review/approve",
+                    json={"fact_id": fid, "force": True, "reason": "vetted"})
+    assert r.status_code == 422
+    assert "actor" in r.json()["detail"]
+    r2 = client.post("/review/approve",
+                     json={"fact_id": fid, "actor": "  ", "force": True,
+                           "reason": "vetted"})
+    assert r2.status_code == 422
+    r3 = client.post("/review/approve",
+                     json={"fact_id": fid, "actor": "x", "force": True,
+                           "reason": "x" * 501})
+    assert r3.status_code == 422  # pydantic max_length on reason
+    # The fact never moved.
+    from core.memory import get_fact
+    assert get_fact(fid)["epistemic_state"] == "Observed"
+
+
+def test_review_decisions_include_claim_false_is_content_free(client, monkeypatch):
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    claim = "A privacy-sensitive http claim"
+    fid = _pending_blocked(claim)
+    ok = client.post("/review/approve",
+                     json={"fact_id": fid, "actor": "api-curator",
+                           "force": True, "reason": "vetted by hand"})
+    assert ok.status_code == 200
+    full = client.get("/review/decisions").json()
+    assert full[0]["claim"] == claim            # default keeps the UI working
+    lean = client.get("/review/decisions",
+                      params={"include_claim": "false"}).json()
+    assert "claim" not in lean[0] and "claim_type" not in lean[0]
+    assert claim not in str(lean)
+
+
 def test_review_reject_endpoint_and_404(client, monkeypatch):
     monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
     fid = _pending_blocked("A claim rejected over http")

@@ -83,6 +83,17 @@ def test_save_then_load_round_trip(tmp_path):
     assert res["sha256"]
 
 
+def test_save_sha256_matches_exact_file_bytes(tmp_path):
+    """The audited sha256 must equal `sha256sum <file>` — the hash covers the
+    exact bytes written (including the trailing newline), so an operator can
+    verify the file against the audit chain with standard tooling."""
+    import hashlib
+    path = str(tmp_path / "cfg.json")
+    res = save_config(RetrievalConfig(k=7), path)
+    with open(path, "rb") as fh:
+        assert res["sha256"] == hashlib.sha256(fh.read()).hexdigest()
+
+
 def test_save_audit_event_is_content_free(tmp_path):
     path = str(tmp_path / "cfg.json")
     save_config(RetrievalConfig(k=42), path)
