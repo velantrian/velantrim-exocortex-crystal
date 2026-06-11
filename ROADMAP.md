@@ -135,6 +135,7 @@ runtime · every delivered item below ships with tests and a CLI surface.
 | 🧠 **RFC0068 Phase 1+** | **NeuroCore** active model adaptation + consolidation (Phase 0 passive tracker already shipped in `core/neurocore.py`) | S6+ |
 | 🩹 **A6 / A7 / A10** | Sprint-A patches for the optional Phase‑1 stack (Neo4j locks, async EventBus backpressure, aioredis pool) — N/A to the dependency-free core; wired only if those components are activated. See **[docs/SPRINT_A_STATUS.md](./docs/SPRINT_A_STATUS.md)** | S6+ |
 | ⚙️ async core | Full async/await rewrite of the stores (async *entry points* already shipped) | S3+ |
+| 🔁 **Harness Replay / Meta-Optimization** | RFC-only: trajectory recording, controlled replay, Pareto candidate evaluation with ContractGuard + human approval — optimization never touches TruthGate/canon. See **[docs/RFC_HARNESS_REPLAY_OPTIMIZATION.md](./docs/RFC_HARNESS_REPLAY_OPTIMIZATION.md)** | RFC only |
 
 ---
 

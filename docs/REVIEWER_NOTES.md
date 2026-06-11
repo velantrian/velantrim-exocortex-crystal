@@ -127,7 +127,10 @@ A reviewer can evaluate the project by checking:
 - `DEMO.md` for the ingest -> trace -> receipt flow;
 - `TEST_REPORT.md` and CI for reproducibility;
 - `GDPR.md`, `PRIVACY.md` and `SECURITY.md` for privacy/security boundaries;
-- `docs/EVAL.md` for baseline metrics and planned evaluation extensions.
+- `docs/EVAL.md` for baseline metrics and planned evaluation extensions;
+- `docs/RFC_HARNESS_REPLAY_OPTIMIZATION.md` for the future (RFC-only, not
+  implemented) auditable trajectory-replay / harness-optimization design
+  with a mandatory human approval loop.
 
 Review provenance note: automated Codex code review was unavailable for
 PR #93–#98 due to usage limits; those changes were manually audited and

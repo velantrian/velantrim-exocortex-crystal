@@ -87,3 +87,4 @@ that already governs `LLM_OUTPUT` today (see
 | RFC_MODE_LAYER | Modes, fallback, explicit triggers | Future |
 | RFC_PROVENANCE_GRADES | BRONZE/SILVER/GOLD evidence tiers | Future |
 | RFC_TEMPORAL_LAYER | Bi-temporal claim fields and temporal reasoning | Future |
+| [RFC_HARNESS_REPLAY_OPTIMIZATION](./RFC_HARNESS_REPLAY_OPTIMIZATION.md) | Trajectory record/replay + human-approved harness optimization | Proposed (drafted, RFC-only) |

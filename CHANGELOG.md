@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **RFC: Harness Replay and Meta-Optimization**
+  (`docs/RFC_HARNESS_REPLAY_OPTIMIZATION.md`, documentation-only): a future,
+  not-implemented design for auditable trajectory recording, controlled replay
+  of candidate harness configurations, Pareto-based multi-objective evaluation,
+  an immutable ContractGuard (candidates can never disable TruthGate/Guardian/
+  trace or write to L3) and a mandatory human curator approval loop. RFC-only:
+  no runtime code, schemas or dependencies; short pointers added to ROADMAP,
+  IMPLEMENTATION_STATUS and REVIEWER_NOTES.
 - **EITI → Crystal audit series (PR #93–#98)** — six sequential, gate-preserving
   PRs porting sterilized EITI concepts into the verifiable core:
   - *PR #93* — documentation consistency pass: canonical repo-wide coverage
