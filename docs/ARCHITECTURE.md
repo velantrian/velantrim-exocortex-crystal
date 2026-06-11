@@ -14,6 +14,32 @@ TruthGate = the only automatic entry into canon
             (sole exception: explicit, audited curator override in the review queue)
 ```
 
+**Precision note on "Graph = Truth".** The slogan is a design shorthand, not a
+claim that every physical graph node is verified truth. The physical L3 graph
+may contain facts in multiple truth statuses — `VERIFIED`, `USER_CLAIMED`,
+`UNVERIFIED`, `HYPOTHESIS`, `SUBJECTIVE` — because the gate is type-aware and
+admits, for example, a subjective claim *as* a subjective claim. The **canon in
+the strict sense is the VERIFIED, trace-valid subgraph**: pending, hypothetical
+and subjective material stays labelled as such and is never silently upgraded.
+In one formula:
+
+```text
+Physical graph = structured memory space (typed, source-tracked, multi-status).
+Canon          = the VERIFIED + trace-valid subgraph of it.
+```
+
+**Ring Zero.** The fixed safety/integrity kernel of the system — the
+non-bypassable invariants beneath every feature:
+
+- TruthGate is the only automatic write path into L3 canon;
+- a confident factual answer requires a trace (grounding) — otherwise abstain;
+- `LLM_OUTPUT` cannot become a `VERIFIED` `WORLD_FACT` without an independent
+  source passing through ingest/review/TruthGate;
+- curator overrides exist but are explicit, attributed and audited
+  (`review_force_approve`), never silent;
+- immutable Ring Zero facts are protected by the `ImmutableCore` guard in
+  `core/memory.py` and cannot be transitioned by normal flows.
+
 ## 1. System overview
 
 ```mermaid
@@ -55,14 +81,17 @@ auto → LadybugDB if installed → on-disk SQLite → in-memory mock
 
 | Backend | Role | Dependency profile |
 |---|---|---|
-| `sqlite` | dependency-free persistent local canon | Python standard library |
-| `ladybug` | embedded graph/vector backend for scale | optional extra |
+| `sqlite` | dependency-free **default**: local canon, plus metadata, evidence, receipts, audit and operational state | Python standard library |
+| `ladybug` | active embedded graph backend **candidate** for future graph-storage work (Kuzu lineage) | optional extra |
 | `mock` | in-memory test/dev fallback | standard library |
-| `neo4j` | optional server backend | optional service + driver |
+| `neo4j` | **optional** server backend — inspector/demo/audit tooling, never required runtime | optional service + driver |
 
 SQLite provides the dependency-free, local-first persistence path. LadybugDB is
-used when installed and suitable. The mock backend is a fallback for tests and
-development, not the recommended persistent deployment mode.
+used when installed and suitable — it is a community continuation in the Kuzu
+lineage; **KuzuDB itself is a legacy/archived predecessor** (upstream repository
+archived Oct. 2025): existing releases may remain usable, but it is not the
+primary future dependency of this project. The mock backend is a fallback for
+tests and development, not the recommended persistent deployment mode.
 
 ## 4. Write path
 
@@ -113,6 +142,20 @@ The answer can be produced without an LLM when the local graph contains enough
 information. If an LLM is attached, it should use the retrieved FactsPack and
 trace as grounding.
 
+**Future FactsPack conflict policy (roadmap, documentation only).** If two
+VERIFIED claims contradict each other, the answer layer must not silently pick
+one: it should surface both claims with their trace paths, mark the answer as
+contested and flag the case for curator review, unless a reconciliation/
+supersession rule applies. Today contradictions are detected and linked
+non-destructively (`core/contradiction.py`, `core/reconcile.py`); the formal
+answer-layer policy is a future RFC (see `docs/IMPLEMENTATION_STATUS.md`).
+
+**Future receipt hardening (roadmap, documentation only).** Where an optional
+LLM phrases the final answer, receipts should additionally record the language
+layer used — provider/model identifiers, generation mode, timestamp and relevant
+decoding parameters — to make the *speech* layer reproducible without ever
+making the LLM a truth source. No such fields are added today.
+
 ## 6. External knowledge ingestion
 
 ```mermaid
@@ -153,6 +196,14 @@ flowchart TB
 By default the runtime has no mandatory cloud service and no outbound network
 call requirement. Optional providers extend the trust boundary and must be
 enabled deliberately by the operator.
+
+**Future GDPR-oriented erasure edge case (roadmap, documentation only).** A
+future policy must distinguish between deleting/restricting *personal-data
+sources* and preserving *independently supported non-personal world facts*.
+When a trace path depends on restricted or erased personal data, receipts
+should state that the source was restricted/deleted rather than silently
+breaking provenance. The controls here are "GDPR-oriented"; this project does
+not claim legal certification of compliance.
 
 ## 8. Browser/PWA companion demos
 

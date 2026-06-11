@@ -121,6 +121,8 @@ A reviewer can evaluate the project by checking:
 
 - `README.md` for positioning and quick start;
 - `docs/ARCHITECTURE.md` for the memory and truth boundary;
+- `docs/IMPLEMENTATION_STATUS.md` for the honest implemented-vs-RFC-vs-vision
+  status map (Crystal core vs full Exo-Cortex vs Velantrim Culture);
 - `docs/GRANT_NLNET_SCOPE.md` for work packages;
 - `DEMO.md` for the ingest -> trace -> receipt flow;
 - `TEST_REPORT.md` and CI for reproducibility;

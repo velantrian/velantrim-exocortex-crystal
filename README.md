@@ -241,6 +241,11 @@ flowchart LR
 Core invariants:
 
 - **Graph = Truth** — one canonical knowledge graph is the single source of truth.
+  Precision note: this is a design shorthand, not a claim that every stored node
+  is verified — the physical graph carries explicit truth statuses (`VERIFIED`,
+  `USER_CLAIMED`, `UNVERIFIED`, `HYPOTHESIS`, `SUBJECTIVE`); the canon in the
+  strict sense is the **VERIFIED, trace-valid subgraph** (see
+  [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)).
 - **TruthGate is the only automatic entry into L3** — the sole exception is an
   explicit, audited curator override in the review queue (`core/review.py`);
   direct unaudited canonical writes are bugs.
@@ -438,6 +443,7 @@ milestone budget, partial-funding plan, and responsible-data position.
 | **[docs/DEMO.md](./docs/DEMO.md)** | Hands-on, reproducible CLI walkthrough with real captured output (ingest, ask, receipt, contradictions, knowledge import, GDPR erase, NeuroCore telemetry, eval, HTTP) |
 | **[docs/COMPARISON.md](./docs/COMPARISON.md)** | Comparison with vector-only RAG, chatbot memory and agent-memory systems |
 | **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** | Architecture diagrams and memory/backends/privacy boundaries |
+| **[docs/IMPLEMENTATION_STATUS.md](./docs/IMPLEMENTATION_STATUS.md)** | Honest status map: implemented Crystal core vs RFC/roadmap vs Exo-Cortex/Culture vision |
 | **[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)** | Grant-facing problem, solution, work packages and success criteria |
 | **[docs/grants/funding-use-plan.md](./docs/grants/funding-use-plan.md)** | Why ~€50,000 was requested and the milestone-based plan for using it |
 | **[docs/grants/reviewer-qa.md](./docs/grants/reviewer-qa.md)** | Prepared answers to likely NLnet second-round questions and scope discipline |
