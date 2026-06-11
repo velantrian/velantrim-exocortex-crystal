@@ -126,3 +126,7 @@ A reviewer can evaluate the project by checking:
 - `TEST_REPORT.md` and CI for reproducibility;
 - `GDPR.md`, `PRIVACY.md` and `SECURITY.md` for privacy/security boundaries;
 - `docs/EVAL.md` for baseline metrics and planned evaluation extensions.
+
+Review provenance note: automated Codex code review was unavailable for
+PR #93–#98 due to usage limits; those changes were manually audited and
+CI-gated (full test suite, coverage gate and eval gate on every merge).

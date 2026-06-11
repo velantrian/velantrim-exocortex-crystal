@@ -90,7 +90,7 @@ whenever anything beyond the local user can reach the port.
   dependency-free HMAC-SHA256 keystream (CTR) with encrypt-then-MAC. Tokens are
   tamper-evident — a wrong key or modified ciphertext fails authentication.
   Disabled by default (identity), so the default runtime stays stdlib-only.
-- Test suite of **717 passing tests** at 100% coverage guards the invariants above
+- Test suite of **813 passing tests** at 100% coverage guards the invariants above
   (see [TEST_REPORT.md](./TEST_REPORT.md)).
 
 ## Dependencies
