@@ -61,6 +61,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     marker categories and numeric scores, never raw emails/phones/text.
 
 ### Changed
+- **Docs honesty hotfix (P0, documentation-only):** clarified architecture
+  status boundaries — Crystal core vs full Exo-Cortex vision vs Velantrim
+  Culture (`docs/IMPLEMENTATION_STATUS.md`); made "Graph = Truth" technically
+  precise (physical graph = multi-status memory space; canon = the VERIFIED,
+  trace-valid subgraph); added a concise technical Ring Zero definition;
+  clarified graph-backend roles (SQLite default, LadybugDB candidate in the
+  Kuzu lineage, KuzuDB legacy/archived predecessor, Neo4j optional
+  inspector/demo tooling — never required runtime).
 - **TruthGate extracted into `core/truth_gate.py`** (move-only, behaviour
   preserved bit-for-bit): the verification boundary is now visible as a
   first-class module; `core/pipeline.py` re-exports `truth_gate`, so every
