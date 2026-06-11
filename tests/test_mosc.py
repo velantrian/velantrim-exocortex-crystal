@@ -46,6 +46,24 @@ def test_structural_problems_raise(tmp_path, monkeypatch, doc):
         mosc.get_mosc()
 
 
+@pytest.mark.parametrize("threshold", [0, -0.5, 5.1, 1e9, "0.6", True, None])
+def test_threshold_outside_bounds_raises(tmp_path, monkeypatch, threshold):
+    """threshold must be a number in (0, 5] — an absurdly large threshold would
+    silently mute MOSC and look like a working classifier that never fires."""
+    path = _write_weights(tmp_path, {
+        "threshold": threshold, "keywords": {"foo": {"EMOTION": 0.7}}})
+    monkeypatch.setenv("VELANTRIM_MOSC_PATH", path)
+    with pytest.raises(ValueError, match="threshold"):
+        mosc.get_mosc()
+
+
+def test_threshold_upper_bound_inclusive(tmp_path, monkeypatch):
+    path = _write_weights(tmp_path, {
+        "threshold": 5.0, "keywords": {"foo": {"EMOTION": 0.7}}})
+    monkeypatch.setenv("VELANTRIM_MOSC_PATH", path)
+    assert mosc.get_mosc().threshold == 5.0
+
+
 # ─── Scoring / classification ─────────────────────────────────────────────────
 
 def test_scores_sum_over_matched_keywords():

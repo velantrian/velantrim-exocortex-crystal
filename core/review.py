@@ -125,7 +125,11 @@ def review_report() -> Dict[str, Any]:
 
 # ─── Curator decisions (accountable) ──────────────────────────────────────────
 
-def approve(fact_id: str, *, actor: str = "curator", note: Optional[str] = None,
+_FORCE_REASON_MAX = 500  # accountability text, not an essay — keep audit lean
+
+
+def approve(fact_id: str, *, actor: Optional[str] = None,
+            note: Optional[str] = None,
             force: bool = False, reason: Optional[str] = None) -> Dict[str, Any]:
     """
     Promote a pending fact into the canon (a curator's decision).
@@ -134,9 +138,11 @@ def approve(fact_id: str, *, actor: str = "curator", note: Optional[str] = None,
     non-destructive advisory — truth-first, we admit and link rather than silently
     drop). A `blocked` item is promoted only with `force=True`: an explicit curator
     override of a blocking diagnosis. Force approval is a trust-boundary
-    operation, never a silent action — it requires a non-empty `reason` AND a
-    non-empty `actor`, and is recorded under its own audit event
+    operation, never a silent action — it requires a non-empty `reason`
+    (1–500 chars) AND an EXPLICIT non-empty `actor` (no default identity for an
+    override), and is recorded under its own audit event
     (`review_force_approve`, distinct from a normal `review_approve`).
+    A normal approve keeps the backward-compatible default actor `curator`.
     Idempotent guard: only an `Observed` fact is a queue item.
     """
     fact = get_fact(fact_id)
@@ -155,9 +161,17 @@ def approve(fact_id: str, *, actor: str = "curator", note: Optional[str] = None,
         if not (reason and reason.strip()) or not (actor and actor.strip()):
             return {"found": True, "fact_id": fact_id, "approved": False,
                     "reason": "force approval requires a non-empty reason and "
-                              "actor (it overrides a blocking diagnosis)",
+                              "an explicit actor (it overrides a blocking "
+                              "diagnosis; no default identity)",
+                    "diagnosis": diag}
+        if len(reason.strip()) > _FORCE_REASON_MAX:
+            return {"found": True, "fact_id": fact_id, "approved": False,
+                    "reason": f"force approval reason exceeds "
+                              f"{_FORCE_REASON_MAX} characters",
                     "diagnosis": diag}
         overridden = True
+    if actor is None or not actor.strip():
+        actor = "curator"  # backward-compatible default for non-force approve
 
     transition_esm(fact_id, "Validated")
     ct = fact.get("claim_type", "WORLD_FACT")
@@ -213,20 +227,23 @@ _DECISION_EVENTS = {
 }
 
 
-def decisions(limit: int = 50) -> List[Dict[str, Any]]:
+def decisions(limit: int = 50, *,
+              include_claim: bool = True) -> List[Dict[str, Any]]:
     """
     Curator decision history, newest first, reconstructed from the audit chain
     (no parallel state store). Each entry carries the content-free audit detail
-    (actor/reason/note/verdict) plus the claim text re-read from L1 for display;
-    an erased fact survives as a decision record with claim=None.
+    (actor/reason/note/verdict); with `include_claim=True` (default, used by the
+    review UI) the claim text is re-read from L1 for display — an erased fact
+    survives as a decision record with claim=None. With `include_claim=False`
+    no memory content is rehydrated at all: the entry stays as content-free as
+    the audit chain itself (no `claim`/`claim_type` keys).
     """
     out: List[Dict[str, Any]] = []
     for entry in reversed(audit.audit_log()):
         decision = _DECISION_EVENTS.get(entry["event"])
         if decision is None:
             continue
-        fact = get_fact(entry["fact_id"]) if entry["fact_id"] else None
-        out.append({
+        item = {
             "decision": decision,
             "fact_id": entry["fact_id"],
             "ts": entry["ts"],
@@ -234,9 +251,12 @@ def decisions(limit: int = 50) -> List[Dict[str, Any]]:
             "reason": entry["detail"].get("reason"),
             "note": entry["detail"].get("note"),
             "diagnosis": entry["detail"].get("diagnosis"),
-            "claim": fact.get("claim") if fact else None,
-            "claim_type": fact.get("claim_type") if fact else None,
-        })
+        }
+        if include_claim:
+            fact = get_fact(entry["fact_id"]) if entry["fact_id"] else None
+            item["claim"] = fact.get("claim") if fact else None
+            item["claim_type"] = fact.get("claim_type") if fact else None
+        out.append(item)
         if len(out) >= limit:
             break
     return out

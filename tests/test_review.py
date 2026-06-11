@@ -133,19 +133,45 @@ def test_approve_blocked_with_force_and_reason_overrides(monkeypatch):
     assert get_l3_graph().get_fact(fid) is not None
 
 
-def test_force_without_reason_is_refused(monkeypatch):
+def test_force_without_reason_or_actor_is_refused(monkeypatch):
     """Negative test: force approval is a trust-boundary override — without a
-    non-empty reason (or actor) nothing moves and nothing is audited."""
+    non-empty reason AND an explicit actor (no default identity for an
+    override) nothing moves and nothing is audited."""
     monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
     fid = _blocked_world_fact("A blocked claim without a justification")
     for kwargs in ({"force": True},                      # no reason at all
                    {"force": True, "reason": "  "},      # blank reason
-                   {"force": True, "reason": "ok", "actor": ""}):  # no actor
+                   {"force": True, "reason": "ok"},      # no explicit actor
+                   {"force": True, "reason": "ok", "actor": ""},   # empty actor
+                   {"force": True, "reason": "ok", "actor": " "}):  # blank actor
         res = review.approve(fid, **kwargs)
         assert res["approved"] is False
-        assert "reason" in res["reason"]
+        assert "reason" in res["reason"] or "actor" in res["reason"]
     assert get_fact(fid)["epistemic_state"] == "Observed"
     assert all(e["event"] != "review_force_approve" for e in audit.audit_log())
+
+
+def test_force_reason_over_500_chars_is_refused(monkeypatch):
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    fid = _blocked_world_fact("A blocked claim with an essay for a reason")
+    res = review.approve(fid, actor="bob", force=True, reason="x" * 501)
+    assert res["approved"] is False
+    assert "500" in res["reason"]
+    assert get_fact(fid)["epistemic_state"] == "Observed"
+    # Boundary: exactly 500 characters is still a valid reason.
+    res = review.approve(fid, actor="bob", force=True, reason="x" * 500)
+    assert res["approved"] is True
+
+
+def test_non_force_approve_keeps_default_actor(monkeypatch):
+    """Backward compatibility: a normal approve without an actor is still
+    audited under the historical default identity 'curator'."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    fid = _ready_pending("Krypton is a noble gas", "ing:ready-default-actor")
+    res = review.approve(fid)
+    assert res["approved"] is True
+    entry = [e for e in audit.audit_log() if e["event"] == "review_approve"][-1]
+    assert entry["detail"]["actor"] == "curator"
 
 
 def test_force_approve_audited_distinctly_and_content_free(monkeypatch):
@@ -241,6 +267,18 @@ def test_cli_review_flow(monkeypatch, capsys):
     assert get_fact(fid)["epistemic_state"] == "Validated"
 
 
+def test_cli_force_without_explicit_actor_is_refused(monkeypatch, capsys):
+    """--force without an explicit --actor must not promote: the CLI no longer
+    supplies a default identity that could sign an override."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    from core.cli import main
+    fid = _blocked_world_fact("A CLI override missing its actor")
+    assert main(["review-approve", fid, "--force", "--reason", "vetted"]) == 0
+    out = capsys.readouterr().out
+    assert '"approved": false' in out and "actor" in out
+    assert get_fact(fid)["epistemic_state"] == "Observed"
+
+
 def test_cli_review_reject(monkeypatch, capsys):
     monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
     from core.cli import main
@@ -279,6 +317,20 @@ def test_decisions_survive_fact_erasure(monkeypatch):
     entry = [d for d in review.decisions() if d["fact_id"] == fid][0]
     assert entry["decision"] == "rejected"
     assert entry["claim"] is None            # content gone, decision record stays
+
+
+def test_decisions_without_claim_stay_content_free(monkeypatch):
+    """include_claim=False must not rehydrate memory content from L1: the
+    entries carry decision metadata only — no claim text, no claim_type."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    claim = "A privacy-sensitive claim text"
+    fid = _blocked_world_fact(claim)
+    review.approve(fid, actor="carol", force=True, reason="vetted offline")
+    entry = [d for d in review.decisions(include_claim=False)
+             if d["fact_id"] == fid][0]
+    assert "claim" not in entry and "claim_type" not in entry
+    assert claim not in str(entry)
+    assert entry["actor"] == "carol"
 
 
 def test_pending_diagnose_attaches_verdicts(monkeypatch):

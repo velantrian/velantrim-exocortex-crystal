@@ -44,8 +44,9 @@ def _validate(data: Any) -> Dict[str, Any]:
                          "non-empty 'keywords' mapping")
     threshold = data.get("threshold", 0.6)
     if isinstance(threshold, bool) or not isinstance(threshold, (int, float)) \
-            or not (0.0 < threshold):
-        raise ValueError(f"mosc: threshold={threshold!r} must be a number > 0")
+            or not (0.0 < threshold <= 5.0):
+        raise ValueError(f"mosc: threshold={threshold!r} must be a number "
+                         f"in (0, 5]")
     for keyword, mapping in data["keywords"].items():
         if not isinstance(keyword, str) or not keyword.strip():
             raise ValueError(f"mosc: empty keyword {keyword!r}")

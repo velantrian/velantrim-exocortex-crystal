@@ -4,7 +4,7 @@
 > and tested** and what is **designed but not yet coded**. The README documents
 > only the former; this file tracks both.
 
-**Status:** 🧪 **813 tests passing** · 🎯 **100% coverage** (gate 100%) · 🐍 stdlib-only
+**Status:** 🧪 **829 tests passing** · 🎯 **100% coverage** (gate 100%) · 🐍 stdlib-only
 runtime · every delivered item below ships with tests and a CLI surface.
 
 ---

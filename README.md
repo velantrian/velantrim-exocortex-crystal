@@ -2,7 +2,7 @@
 
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
-`v0.1.0` · 🧪 **813 tests** · 🎯 **100% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v0.1.0` · 🧪 **829 tests** · 🎯 **100% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
 
 > Velantrim Crystal is **not another chatbot**. It is a **verifiable memory layer**
 > that AI systems write to and read from. Every stored fact carries provenance,
@@ -192,7 +192,7 @@ This repository includes a lightweight but comprehensive quality layer designed 
 
 | Gate | What it checks |
 |---|---|
-| **pytest** (813 tests, 100% coverage gate) | Core memory, pipeline, provenance, GDPR controls, ESM transitions, review queue |
+| **pytest** (829 tests, 100% coverage gate) | Core memory, pipeline, provenance, GDPR controls, ESM transitions, review queue |
 | **jsonl-integrity** (CI) | Valid JSON, required fields, no duplicate `chunk_id` in the knowledge corpus |
 | **security** (CI) | `bandit` static security lint + `pip-audit` dependency vulnerability scan |
 | **JSON schemas** (`schemas/`) | Machine-readable canonical definitions of `fact`, `trace` and `metadata` enums |
@@ -386,7 +386,7 @@ default runtime (CLI + read-only MCP server) stays standard-library only.
 - opt-in character-trigram embedder for morphology-tolerant retrieval, plus a
   report-only Russian evaluation corpus (the English eval gate stays CI-enforced);
 - biological-memory research modules;
-- 813 passing tests and 100% coverage;
+- 829 passing tests and 100% coverage;
 - baseline evaluation harness (`core/eval.py`, `velantrim eval --lang {en,ru}`).
 
 **Developing outside the audited release boundary**
