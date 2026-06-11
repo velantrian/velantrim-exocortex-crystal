@@ -2,7 +2,7 @@
 
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
-`v0.1.0` · 🧪 **829 tests** · 🎯 **100% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v0.1.0` · 🧪 **838 tests** · 🎯 **100% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
 
 > Velantrim Crystal is **not another chatbot**. It is a **verifiable memory layer**
 > that AI systems write to and read from. Every stored fact carries provenance,
@@ -192,7 +192,7 @@ This repository includes a lightweight but comprehensive quality layer designed 
 
 | Gate | What it checks |
 |---|---|
-| **pytest** (829 tests, 100% coverage gate) | Core memory, pipeline, provenance, GDPR controls, ESM transitions, review queue |
+| **pytest** (838 tests, 100% coverage gate) | Core memory, pipeline, provenance, GDPR controls, ESM transitions, review queue |
 | **jsonl-integrity** (CI) | Valid JSON, required fields, no duplicate `chunk_id` in the knowledge corpus |
 | **security** (CI) | `bandit` static security lint + `pip-audit` dependency vulnerability scan |
 | **JSON schemas** (`schemas/`) | Machine-readable canonical definitions of `fact`, `trace` and `metadata` enums |
@@ -267,6 +267,7 @@ Crystal is a set of small, focused modules, dependency-free by default and teste
 | `core/memory.py` | L0 in-RAM cache + L1 SQLite/WAL + 8-state ESM |
 | `core/l3_graph.py` | Swappable L3 graph: `auto` → LadybugDB / SQLite / mock; optional Neo4j |
 | `core/pipeline.py` | Retrieve → FactsPack → Guardian → TruthGate → L3 → Answer |
+| `core/truth_gate.py` | The TruthGate verification boundary as a first-class module (re-exported by `core/pipeline.py`) |
 | `core/embedding.py` | Swappable embedder: dependency-free hashing or optional dense backend |
 | `core/generation.py` | Extractive local answerer or optional LLM answerer |
 | `core/ingest.py` | Utterance → claim-type classification → gate → L3 |
@@ -386,7 +387,7 @@ default runtime (CLI + read-only MCP server) stays standard-library only.
 - opt-in character-trigram embedder for morphology-tolerant retrieval, plus a
   report-only Russian evaluation corpus (the English eval gate stays CI-enforced);
 - biological-memory research modules;
-- 829 passing tests and 100% coverage;
+- 838 passing tests and 100% coverage;
 - baseline evaluation harness (`core/eval.py`, `velantrim eval --lang {en,ru}`).
 
 **Developing outside the audited release boundary**
