@@ -38,7 +38,7 @@ handling and replayable receipts.
 |---|---|---|
 | **L0 — Working cache** | short-lived in-RAM memory | fast recall inside the current process/session |
 | **L1 — Local working store** | SQLite/WAL operational memory | facts, states, updates and local persistence across runs |
-| **L2 — Pending / review path** | pre-canonical zone *(baseline implemented)* | claims still `Observed` or advisory-quarantined before the gate; baseline import sessions, dry-run review and the curator review queue exist today — institutional UI, roles and resumable review are grant-scope hardening |
+| **L2 — Pending / review path** | pre-canonical zone *(baseline implemented)* | claims still `Observed` or advisory-quarantined before the gate; baseline import sessions, dry-run review, the curator review queue and a static web review UI (token-guarded HTTP API) exist today — roles, multi-curator workflows and resumable review are grant-scope hardening |
 | **L3 — Canonical graph** | durable truth graph | verified, source-tracked knowledge retrieved by the system |
 | **Trace / Receipt** | proof layer | shows how an answer connects back to facts and sources |
 
@@ -372,13 +372,22 @@ default runtime (CLI + read-only MCP server) stays standard-library only.
 - local L0/L1 memory and L3 canonical graph;
 - external knowledge ingestion for text/Markdown/JSON/JSONL/CSV, with baseline
   PDF/YAML/RDF adapters, dry-run imports and import sessions;
-- baseline Evidence Span Store and curator review queue;
+- baseline Evidence Span Store and curator review queue, with a review HTTP API
+  and a static, dependency-free web review UI (Kanban) behind a token guard;
 - GDPR-relevant erasure, restriction, record-of-processing, audit and PII tools;
 - read-only MCP server;
 - optional FastAPI service layer (`pip install '.[api]'`, `velantrim-api`);
+- tunable retrieval configuration (`core/retrieval_config.py`) — bounded,
+  validated knobs with a content-free audit trail;
+- salience-derived significance for live utterances (`core/salience.py`) —
+  explainable, ranking-only, never touching confidence or truth status;
+- MOSC advisory claim-type classifier (`core/mosc.py`) — keyword-weight
+  suggestions ahead of the historical regex fallback, never authoritative;
+- opt-in character-trigram embedder for morphology-tolerant retrieval, plus a
+  report-only Russian evaluation corpus (the English eval gate stays CI-enforced);
 - biological-memory research modules;
 - 813 passing tests and 100% coverage;
-- baseline evaluation harness (`core/eval.py`, `velantrim eval`).
+- baseline evaluation harness (`core/eval.py`, `velantrim eval --lang {en,ru}`).
 
 **Developing outside the audited release boundary**
 

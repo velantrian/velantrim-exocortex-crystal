@@ -60,7 +60,7 @@ The current open core already includes:
 - GDPR-relevant erasure, restriction, record-of-processing and audit logging;
 - opt-in encryption at rest for L1 personal-data fields;
 - dependency-free read-only MCP server;
-- 717 passing tests and 100% coverage (enforced by a 100% CI gate).
+- 813 passing tests and 100% coverage (enforced by a 100% CI gate).
 
 ## Why this fits public-interest infrastructure
 
@@ -103,12 +103,17 @@ can be restricted or erased as a batch (`import-session` / `session-restrict` /
 item that did not reach the canon, re-runs the gates to explain *why* it is
 pending, and lets a librarian approve (promote to canon — with an explicit,
 audited override for still-blocked items) or reject it; every decision is sealed
-in the tamper-evident audit chain. The funded work extends this to institutional
-scale:
+in the tamper-evident audit chain. A **baseline web review UI is also already
+delivered**: a static, dependency-free Kanban board (`core/_webui/review.html`)
+served by the optional HTTP API over the same audited queue operations, with a
+token guard on every review endpoint. The funded work extends this to
+institutional scale:
 
 - resumable / chunked import summaries for large corpora;
 - intra-batch duplicate and conflict consolidation in the preview;
-- a web review UI over the queue API, with role-based curator permissions;
+- institutional hardening of the review UI: role-based curator permissions,
+  multi-curator workflows, operator guidance, accessibility and
+  deployment/security hardening;
 - per-source licence and provenance metadata capture.
 
 **Outcome:** safer corpus ingestion for institutions.
@@ -123,10 +128,14 @@ multi-domain fixture corpus** (16 retrieval cases with ranking distractors, 12
 labelled contradiction pairs including hard negatives), emits per-case
 `metrics.jsonl` + `eval_report.md`, and is enforced by a **CI quality gate**
 (`scripts/eval_gate.py`, `velantrim eval --gate`) so retrieval/grounding/
-contradiction quality cannot silently regress. The funded work scales this to a
+contradiction quality cannot silently regress. The harness also ships a
+**report-only Russian corpus** (typo/morphology probes) and an **opt-in
+character-trigram embedder** for morphology-tolerant retrieval — the English
+gate remains the only CI-enforced threshold. The funded work scales this to a
 credible quality signal:
 
-- larger curated corpora across many more domains and languages;
+- larger curated corpora across many more domains and European languages,
+  promoted from report-only to gated once thresholds are calibrated;
 - grounding score for generated answers;
 - broader contradiction and retrieval fixtures, with adversarial cases;
 - per-release tracking and published quality trend reports.

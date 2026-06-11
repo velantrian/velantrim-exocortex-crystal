@@ -12,6 +12,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **EITI → Crystal audit series (PR #93–#98)** — six sequential, gate-preserving
+  PRs porting sterilized EITI concepts into the verifiable core:
+  - *PR #93* — documentation consistency pass: canonical repo-wide coverage
+    command in `DEMO.md`, honest L2 baseline status in README/ARCHITECTURE,
+    delivered baselines moved out of the roadmap's future-work list.
+  - *PR #94* — **tunable retrieval configuration** (`core/retrieval_config.py`):
+    five bounded, validated knobs (defaults bit-identical to the historical
+    constants), `VELANTRIM_RETRIEVAL_CONFIG` env loading, content-free
+    `retrieval_config_saved` audit event, `retrieval-config-show`/`-set` CLI.
+  - *PR #95* — **salience-derived significance** (`core/salience.py`):
+    auto-significance for live utterances from CAPS/exclamation/importance
+    markers (RU+EN), explainability metadata with fixed marker categories only;
+    ranking-only — never touches confidence, truth_status or epistemic state.
+  - *PR #96* — **opt-in trigram embedder + Russian eval corpus**:
+    `hashing-trigram-2048` for morphology-tolerant retrieval (the default
+    word-level embedder and its id stay frozen), report-only
+    `velantrim eval --lang ru` corpus with typo/morphology probes; the English
+    CI eval gate is unchanged.
+  - *PR #97* — **MOSC advisory claim-type classifier** (`core/mosc.py`):
+    validated keyword weights (package data, audited content-free overrides via
+    `VELANTRIM_MOSC_PATH`), abstains below threshold in favour of the
+    historical regex fallback; never suggests WORLD_FACT, never writes to L3.
+  - *PR #98* — **review HTTP API + static Kanban review UI**: token-guarded
+    `/review/*` endpoints (constant-time Bearer comparison), force-approve
+    uses a mandatory reason and a dedicated `review_force_approve` audit
+    event (explicit actor accountability hardening follows in the next PR),
+    dependency-free `core/_webui/review.html` shell that embeds no memory
+    content.
+
 ### Changed
 - **P1 cross-audit hardening** (follow-up to the P0 round):
   - the evaluation harness now replays receipts with `strict_provenance=True`,
