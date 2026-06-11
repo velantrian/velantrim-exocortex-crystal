@@ -43,8 +43,8 @@ the local graph plus provenance, not model confidence.
   tamper-evident audit log, opt-in field-level encryption and PII redaction.
 - Read-only MCP server for agent inspection without canonical write access.
 - Baseline evaluation harness (`velantrim eval`).
-- 838 passing tests, 12 skipped optional-backend tests, 0 failing tests and 100%
-  coverage with a 100% gate.
+- A fully passing test suite at 100% coverage with a 100% gate (current
+  audited baseline in `TEST_REPORT.md`).
 
 ## Why this is public-interest infrastructure
 

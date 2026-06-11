@@ -69,7 +69,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   unchanged. `_truth_status_for()` intentionally stays in `pipeline.py`.
   New pin tests freeze the gate semantics (LLM_OUTPUT-as-WORLD_FACT blocked,
   subjective pass, low-confidence and missing-source blocked, adaptive
-  threshold via `core/adaptation`).
+  threshold via `core/adaptation`). Test baseline after the extraction: 838.
+  Counter hygiene: exact test counts now live only in `TEST_REPORT.md` and the
+  README badge; every other document references the report instead of carrying
+  a number that can drift.
 - **P1 cross-audit hardening** (follow-up to the P0 round):
   - the evaluation harness now replays receipts with `strict_provenance=True`,
     so a VERIFIED citation without source-span evidence fails

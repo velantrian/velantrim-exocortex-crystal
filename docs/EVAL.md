@@ -8,9 +8,8 @@ whether memory answers remain grounded, replayable and auditable.
 
 The repository currently reports:
 
-- 838 passing tests;
-- 12 skipped optional-backend tests;
-- 0 failing tests;
+- the full test suite passing, 0 failing tests (current audited baseline:
+  [TEST_REPORT.md](../TEST_REPORT.md));
 - 100% coverage, enforced by a 100% gate in CI;
 - standard-library runtime path;
 - tests for memory, TruthGate, L3, provenance, receipts, GDPR operations, MCP,
@@ -249,7 +248,7 @@ fixture metrics** and clearly separated future benchmark extensions:
 ```json
 {
   "version": "0.1.x",
-  "tests_passing": 838,
+  "tests_passing": "(current audited baseline — see TEST_REPORT.md)",
   "coverage": "100%",
   "baseline_fixture": {
     "cases": 4,
