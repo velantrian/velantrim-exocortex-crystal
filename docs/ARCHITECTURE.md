@@ -88,7 +88,9 @@ All canonical writes must pass through the validation path. The one sanctioned
 exception is the curator review queue (`core/review.py`): a human may promote a
 still-blocked item with an explicit `force=True` override, and that override is
 recorded in the tamper-evident audit chain. Any other direct write to L3 that
-bypasses Guardian/TruthGate is an architectural bug.
+bypasses Guardian/TruthGate is an architectural bug. The verification boundary
+is visible as a first-class module: `core/truth_gate.py` (re-exported by
+`core/pipeline.py` for backward compatibility).
 
 ## 5. Read path
 

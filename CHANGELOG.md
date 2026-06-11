@@ -61,6 +61,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     marker categories and numeric scores, never raw emails/phones/text.
 
 ### Changed
+- **TruthGate extracted into `core/truth_gate.py`** (move-only, behaviour
+  preserved bit-for-bit): the verification boundary is now visible as a
+  first-class module; `core/pipeline.py` re-exports `truth_gate`, so every
+  existing import path (`ingest`/`review`/`reconcile`/`imports`) and the
+  `monkeypatch.setattr(pipeline, "truth_gate", …)` test idiom keep working
+  unchanged. `_truth_status_for()` intentionally stays in `pipeline.py`.
+  New pin tests freeze the gate semantics (LLM_OUTPUT-as-WORLD_FACT blocked,
+  subjective pass, low-confidence and missing-source blocked, adaptive
+  threshold via `core/adaptation`).
 - **P1 cross-audit hardening** (follow-up to the P0 round):
   - the evaluation harness now replays receipts with `strict_provenance=True`,
     so a VERIFIED citation without source-span evidence fails
