@@ -37,9 +37,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     historical regex fallback; never suggests WORLD_FACT, never writes to L3.
   - *PR #98* — **review HTTP API + static Kanban review UI**: token-guarded
     `/review/*` endpoints (constant-time Bearer comparison), force-approve
-    guarded by mandatory reason+actor with its own `review_force_approve`
-    audit event, dependency-free `core/_webui/review.html` shell that embeds
-    no memory content.
+    uses a mandatory reason and a dedicated `review_force_approve` audit
+    event (explicit actor accountability hardening follows in the next PR),
+    dependency-free `core/_webui/review.html` shell that embeds no memory
+    content.
 
 ### Changed
 - **P1 cross-audit hardening** (follow-up to the P0 round):
