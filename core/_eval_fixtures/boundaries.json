@@ -1,0 +1,167 @@
+{
+  "description": "T3 trust-boundary behaviour corpus. Each case exercises an epistemic boundary of the existing runtime: abstention on unsupported queries, the LLM_OUTPUT promotion ban, subjective-claim typing, and no-trace refusal. Case order matters: abstention cases run first on a fresh, empty canon; llm_output setups are expected to be BLOCKED (so the canon stays empty for their queries); subjective setups are accepted and become ranking noise for the trailing no-trace cases, whose queries share no tokens with any prior setup. boundary_eval() in core/eval.py consumes this file; expectations describe CURRENT pinned behaviour — never aspirations.",
+  "cases": [
+    {
+      "id": "t3-b-01",
+      "category": "abstention",
+      "setup": [],
+      "query": "what is the melting point of unobtanium alloy",
+      "expected": {"answer": "abstain"}
+    },
+    {
+      "id": "t3-b-02",
+      "category": "abstention",
+      "setup": [],
+      "query": "annual rainfall on the kerguelen plateau",
+      "expected": {"answer": "abstain"}
+    },
+    {
+      "id": "t3-b-03",
+      "category": "abstention",
+      "setup": [],
+      "query": "who composed the silent fjord symphony",
+      "expected": {"answer": "abstain"}
+    },
+    {
+      "id": "t3-b-04",
+      "category": "abstention",
+      "setup": [],
+      "query": "maximum depth of the calypso trench",
+      "expected": {"answer": "abstain"}
+    },
+    {
+      "id": "t3-b-05",
+      "category": "abstention",
+      "setup": [],
+      "query": "average lifespan of the andean condor",
+      "expected": {"answer": "abstain"}
+    },
+    {
+      "id": "t3-c-01",
+      "category": "llm_output_boundary",
+      "setup": [
+        {"utterance": "The lost city of Atlantis lies near Cyprus",
+         "claim_type": "WORLD_FACT", "source_status": "LLM_OUTPUT", "confidence": 0.9}
+      ],
+      "query": "where does the lost city of Atlantis lie",
+      "expected": {
+        "setup_accepted": [false],
+        "setup_truth_status": ["UNVERIFIED"],
+        "setup_truth_status_not": ["VERIFIED"],
+        "answer": "abstain"
+      }
+    },
+    {
+      "id": "t3-c-02",
+      "category": "llm_output_boundary",
+      "setup": [
+        {"utterance": "The human appendix stores emergency digestive bacteria",
+         "claim_type": "WORLD_FACT", "source_status": "LLM_OUTPUT", "confidence": 0.95}
+      ],
+      "query": "what does the human appendix store",
+      "expected": {
+        "setup_accepted": [false],
+        "setup_truth_status": ["UNVERIFIED"],
+        "setup_truth_status_not": ["VERIFIED"],
+        "answer": "abstain"
+      }
+    },
+    {
+      "id": "t3-c-03",
+      "category": "llm_output_boundary",
+      "setup": [
+        {"utterance": "Jupiter has exactly ninety-five confirmed moons",
+         "claim_type": "WORLD_FACT", "source_status": "LLM_OUTPUT", "confidence": 0.9}
+      ],
+      "query": "how many confirmed moons does Jupiter have",
+      "expected": {
+        "setup_accepted": [false],
+        "setup_truth_status": ["UNVERIFIED"],
+        "setup_truth_status_not": ["VERIFIED"],
+        "answer": "abstain"
+      }
+    },
+    {
+      "id": "t3-c-04",
+      "category": "llm_output_boundary",
+      "setup": [
+        {"utterance": "The Great Wall remains visible from lunar orbit",
+         "claim_type": "WORLD_FACT", "source_status": "LLM_OUTPUT", "confidence": 0.85}
+      ],
+      "query": "is the Great Wall visible from lunar orbit",
+      "expected": {
+        "setup_accepted": [false],
+        "setup_truth_status": ["UNVERIFIED"],
+        "setup_truth_status_not": ["VERIFIED"],
+        "answer": "abstain"
+      }
+    },
+    {
+      "id": "t3-d-01",
+      "category": "subjective_boundary",
+      "setup": [
+        {"utterance": "I think the new interface design is elegant", "claim_type": "OPINION"}
+      ],
+      "query": null,
+      "expected": {
+        "setup_accepted": [true],
+        "setup_truth_status": ["SUBJECTIVE"],
+        "setup_truth_status_not": ["VERIFIED"]
+      }
+    },
+    {
+      "id": "t3-d-02",
+      "category": "subjective_boundary",
+      "setup": [
+        {"utterance": "In my opinion the meeting schedule is far too crowded", "claim_type": "OPINION"}
+      ],
+      "query": null,
+      "expected": {
+        "setup_accepted": [true],
+        "setup_truth_status": ["SUBJECTIVE"],
+        "setup_truth_status_not": ["VERIFIED"]
+      }
+    },
+    {
+      "id": "t3-d-03",
+      "category": "subjective_boundary",
+      "setup": [
+        {"utterance": "I feel anxious about the upcoming deadline", "claim_type": "EMOTION"}
+      ],
+      "query": null,
+      "expected": {
+        "setup_accepted": [true],
+        "setup_truth_status": ["SUBJECTIVE"],
+        "setup_truth_status_not": ["VERIFIED"]
+      }
+    },
+    {
+      "id": "t3-d-04",
+      "category": "subjective_boundary",
+      "setup": [
+        {"utterance": "Perhaps the power outage was caused by the thunderstorm",
+         "claim_type": "INTERPRETATION", "source_status": "USER_REPORTED", "confidence": 0.7}
+      ],
+      "query": null,
+      "expected": {
+        "setup_accepted": [true],
+        "setup_truth_status": ["HYPOTHESIS"],
+        "setup_truth_status_not": ["VERIFIED"]
+      }
+    },
+    {
+      "id": "t3-h-01",
+      "category": "no_trace_refusal",
+      "setup": [],
+      "query": "glacier core sodium concentration levels",
+      "expected": {"answer": "abstain"}
+    },
+    {
+      "id": "t3-h-02",
+      "category": "no_trace_refusal",
+      "setup": [],
+      "query": "brontosaurus exhibit ticket cost",
+      "expected": {"answer": "abstain"}
+    }
+  ]
+}

@@ -130,6 +130,103 @@ def load_contradiction_pairs() -> List[Dict[str, Any]]:
     return data["pairs"]
 
 
+def load_boundary_cases() -> List[Dict[str, Any]]:
+    """The curated T3 trust-boundary behaviour corpus (boundaries.json).
+
+    Returns an empty list if the bundled fixture is missing, so the harness
+    degrades to "no boundary cases" instead of crashing.
+    """
+    data = _load_fixture_json("boundaries.json")
+    if not data or not data.get("cases"):
+        return []
+    return list(data["cases"])
+
+
+def boundary_eval(cases: List[Dict[str, Any]] | None = None) -> Dict[str, Any]:
+    """
+    Behaviour-level trust-boundary checks (T3): replay each boundary case
+    against the LIVE pipeline and verify the *existing* pinned behaviour —
+    abstention on unsupported queries, the LLM_OUTPUT→VERIFIED promotion ban,
+    subjective-claim typing, and no-trace refusal. This is an eval-layer
+    measurement only: it never modifies TruthGate/pipeline/ingest behaviour,
+    and a failing case is a metric (`violations`), never a runtime change.
+
+    Cases assume a fresh canon (no demo seed): the bundled abstention cases
+    rely on retrieval finding nothing for their queries, so run this BEFORE
+    ingesting any corpus (run_baseline() does exactly that). Case order inside
+    the fixture is significant — see boundaries.json `description`.
+
+    Reports:
+      - cases:               number of boundary cases evaluated;
+      - refusal_correctness: correct abstentions / cases expecting abstention
+                             (1.0 when no case expects abstention);
+      - violations:          number of cases whose expectations failed;
+      - violations_detail:   [{id, category, problems}, ...];
+      - cases_detail:        [{id, category, passed}, ...].
+    """
+    if cases is None:
+        cases = load_boundary_cases()
+    refusal_total = 0
+    refusal_ok = 0
+    violations: List[Dict[str, Any]] = []
+    detail: List[Dict[str, Any]] = []
+    for case in cases:
+        problems: List[str] = []
+        exp = case.get("expected", {})
+
+        # 1. Setup claims go through the real ingest path (gates included).
+        setup_results: List[Dict[str, Any]] = []
+        for spec in case.get("setup", []):
+            kwargs = {k: spec[k] for k in ("claim_type", "source_status", "confidence")
+                      if k in spec}
+            setup_results.append(ingest(spec["utterance"], **kwargs))
+
+        # 2. Pin the gate verdict and the assigned truth_status per setup claim.
+        #    Defensive .get(): on a non-fresh canon a re-ingested utterance can
+        #    take the reinforcement path and return a fact without truth_status
+        #    — that surfaces as an honest violation, never a crash.
+        for i, want in enumerate(exp.get("setup_accepted", [])):
+            got = bool(setup_results[i].get("accepted"))
+            if got is not bool(want):
+                problems.append(f"setup[{i}]: accepted={got}, expected {want}")
+        for i, want in enumerate(exp.get("setup_truth_status", [])):
+            got = (setup_results[i].get("fact") or {}).get("truth_status")
+            if want is not None and got != want:
+                problems.append(f"setup[{i}]: truth_status={got}, expected {want}")
+        for i, banned in enumerate(exp.get("setup_truth_status_not", [])):
+            got = (setup_results[i].get("fact") or {}).get("truth_status")
+            if banned is not None and got == banned:
+                problems.append(f"setup[{i}]: truth_status must not be {banned}")
+
+        # 3. Pin the answer-path behaviour (abstain = answer is None).
+        query = case.get("query")
+        if query:
+            result = run(query)
+            if exp.get("answer") == "abstain":
+                refusal_total += 1
+                if result.get("answer") is None:
+                    refusal_ok += 1
+                else:
+                    problems.append("expected abstain, got a confident answer")
+
+        if problems:
+            violations.append({"id": case.get("id", "?"),
+                               "category": case.get("category", "?"),
+                               "problems": problems})
+        detail.append({"id": case.get("id", "?"),
+                       "category": case.get("category", "?"),
+                       "passed": not problems})
+    return {
+        "cases": len(cases),
+        "refusal_correctness": (round(refusal_ok / refusal_total, 4)
+                                if refusal_total else 1.0),
+        "violations": len(violations),
+        "violations_detail": violations,
+        "cases_detail": detail,
+    }
+
+
+
 # ─── Contradiction handling (WP3) ─────────────────────────────────────────────
 
 _CONTRADICTION_FIXTURE: List[Dict[str, Any]] = [
@@ -213,7 +310,14 @@ def run_baseline(fixture: List[Dict[str, str]] | None = None, *, k: int = 5,
     if fixture is not None:
         cases: List[Dict[str, str]] = fixture
         distractors: List[str] = []
+        boundary: Optional[Dict[str, Any]] = None
     else:
+        # T3 trust-boundary corpus runs FIRST, on the still-empty canon: its
+        # abstention cases require retrieval to find nothing for their queries.
+        # Accepted boundary setup facts then remain as extra ranking noise for
+        # the retrieval corpus below. Custom fixtures skip the boundary corpus
+        # (their report carries no "boundary" block; gate() skips accordingly).
+        boundary = boundary_eval()
         corpus = load_retrieval_corpus(lang)
         cases = corpus["cases"]
         distractors = corpus["distractors"]
@@ -279,6 +383,8 @@ def run_baseline(fixture: List[Dict[str, str]] | None = None, *, k: int = 5,
         "receipt_replay_survival": round(receipts_ok / n, 4),
         "contradiction": contradiction_eval(),
     }
+    if boundary is not None:
+        report["boundary"] = boundary
     if detail:
         report["cases_detail"] = cases_detail
     return report
@@ -299,11 +405,13 @@ DEFAULT_GATE: Dict[str, float] = {
     "receipt_replay_survival": 1.0,
     "contradiction.precision": 0.75,   # baseline 0.8333
     "contradiction.recall": 0.75,      # baseline 0.8333
+    "boundary.refusal_correctness": 1.0,   # T3: every expected abstention happens
 }
 # Metrics where LOWER is better (ceilings, not floors).
 _GATE_MAX: Dict[str, float] = {
     "unsupported_provenance": 0,          # baseline 0
     "contradiction.false_positive_rate": 0.25,   # baseline 0.1667
+    "boundary.violations": 0,             # T3: no trust-boundary expectation may fail
 }
 
 
@@ -323,11 +431,18 @@ def gate(report: Dict[str, Any],
     floors = thresholds if thresholds is not None else DEFAULT_GATE
     failures: List[Dict[str, Any]] = []
     for metric, floor in floors.items():
+        # Boundary metrics exist only for the bundled-corpus run; a custom
+        # fixture report carries no "boundary" block, so those thresholds are
+        # skipped rather than crashing the gate.
+        if metric.startswith("boundary.") and "boundary" not in report:
+            continue
         value = _dig(report, metric)
         if value < floor:
             failures.append({"metric": metric, "value": value,
                              "op": ">=", "threshold": floor})
     for metric, ceil in _GATE_MAX.items():
+        if metric.startswith("boundary.") and "boundary" not in report:
+            continue
         value = _dig(report, metric)
         if value > ceil:
             failures.append({"metric": metric, "value": value,
@@ -369,4 +484,15 @@ def format_report_md(report: Dict[str, Any]) -> str:
         f"| {con['false_positive_rate']} |",
         "",
     ]
+    bnd = r.get("boundary")
+    if bnd is not None:
+        lines += [
+            "## Trust-boundary behaviour (T3)",
+            "",
+            "| cases | refusal_correctness | violations |",
+            "|---|---|---|",
+            f"| {bnd['cases']} | {bnd['refusal_correctness']} "
+            f"| {bnd['violations']} |",
+            "",
+        ]
     return "\n".join(lines)

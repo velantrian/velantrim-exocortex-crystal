@@ -71,6 +71,11 @@ def main() -> int:
           f"unsupported={report['unsupported_provenance']}")
     print(f"  contradiction: precision={con['precision']} recall={con['recall']} "
           f"fpr={con['false_positive_rate']}")
+    bnd = report.get("boundary", {})
+    if bnd:
+        print(f"  boundary:     cases={bnd['cases']} "
+              f"refusal_correctness={bnd['refusal_correctness']} "
+              f"violations={bnd['violations']}")
 
     if verdict["passed"]:
         print("✅ quality gate PASSED")

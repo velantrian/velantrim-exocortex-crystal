@@ -78,7 +78,7 @@ Statuses follow [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md)
 | Guardian / Ring Zero | Partial (baseline) + docs | Boundary function runs before the gate; formal contract document is future work; Ring Zero invariants documented in [ARCHITECTURE.md](./ARCHITECTURE.md) |
 | Local-first storage | Implemented | SQLite/WAL working memory; dependency-free SQLite default for the canonical graph; pluggable graph-backend direction (see IMPLEMENTATION_STATUS for backend roles) |
 | GDPR-oriented design goals | Partial | Local-first storage, erasure/restriction, tamper-evident audit, PII redaction as design targets — explicitly **not** a certification claim |
-| CI / tests / eval gate | Implemented | CI jobs: tests (3.11/3.12), eval gate, security, JSONL integrity. Latest reported baseline: 838 tests passing, 12 skipped, 100% coverage gate preserved, eval gate passed ([TEST_REPORT.md](../TEST_REPORT.md)) |
+| CI / tests / eval gate | Implemented | CI jobs: tests (3.11/3.12), eval gate, security, JSONL integrity. Latest reported baseline: see [TEST_REPORT.md](../TEST_REPORT.md) (exact counts live there and in the README badge only); 100% coverage gate preserved, eval gate passed |
 | P0 / P0.1 documentation honesty cleanup | Completed | Implementation-status map, canon semantics, overclaim wording removed (PR #103, #105) |
 | T2 schema alignment | Completed | KB/schema vocabulary aligned with runtime reality (PR #106) |
 | Harness Replay / Meta-Optimization | RFC only | [RFC_HARNESS_REPLAY_OPTIMIZATION.md](./RFC_HARNESS_REPLAY_OPTIMIZATION.md) — documentation only, no runtime |

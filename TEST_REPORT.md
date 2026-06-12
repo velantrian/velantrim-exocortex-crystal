@@ -3,15 +3,16 @@
 Honest, reproducible test results for Velantrim ExoCortex — Crystal. No inflated
 numbers: run the commands below and compare the figures.
 
-**Current audited baseline after PR #101: 838 passed / 12 skipped.** This file
-and the README badge are the only places that carry the exact count; all other
-documents reference this report so the number cannot silently drift.
+**Current audited baseline after the T3 eval-corpus expansion: 850 passed /
+12 skipped.** This file and the README badge are the only places that carry
+the exact count; all other documents reference this report so the number
+cannot silently drift.
 
 ## Summary
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **838** |
+| **Tests passing** | **850** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **100%** (gate enforced at 100%, repo-wide `--cov=.`) |

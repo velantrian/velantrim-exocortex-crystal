@@ -13,6 +13,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **T3 — Eval corpus expansion: trust-boundary behaviour corpus** (eval-only
+  core addition; TruthGate/pipeline/ingest behaviour untouched):
+  - new `core/_eval_fixtures/boundaries.json` — 15 behaviour cases pinning the
+    existing trust boundaries in the eval gate: abstention on unsupported
+    queries, the LLM_OUTPUT→VERIFIED promotion ban, subjective-claim typing
+    (OPINION/EMOTION → SUBJECTIVE, INTERPRETATION → HYPOTHESIS), and no-trace
+    refusal;
+  - new `core/eval.boundary_eval()` replays the corpus against the live
+    pipeline and reports two **enforcing** gate metrics:
+    `boundary.refusal_correctness = 1.0` (floor) and
+    `boundary.violations = 0` (ceiling); `run_baseline()` runs the boundary
+    corpus first on the fresh canon (custom fixtures skip it and the gate
+    skips the thresholds accordingly);
+  - retrieval corpus 16 → 22 cases (6 new domains), contradiction corpus
+    12 → 15 labelled pairs (negation, numeric, hard negative) — aggregate
+    metrics improved (hit@1 0.875 → 0.9091, precision 0.857 → 0.8889);
+  - T2 vocabulary guard tests: schema enums must stay bit-identical to
+    `core/memory.py` (and `FACT` must never appear as a machine
+    truth_status), fixture vocabulary must stay canonical;
+  - narrow, negation-aware research-status guard test: reviewer/status docs
+    must never present ProfSearch / Causal Spine / Meta-Cognitive Monitor /
+    Training Substrate / Temporal Layer as implemented runtime;
+  - test baseline: see `TEST_REPORT.md` (counter hygiene).
 - **Research-inspirations boundary** (docs-only, reviewer-package follow-up):
   explicit boundary that research inspirations (memory science, human-computer
   augmentation, cybernetics, biological patterns) are **non-normative** and
