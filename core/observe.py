@@ -5,7 +5,7 @@
 # A window into L3 canonical memory: how many facts, in which ESM states, of which
 # modalities and truth statuses, how many contradictions/obsolete, which
 # have dropped in confidence (forgotten by SleepCycle), and edges by type. Supports the goal
-# of "transparent memory without hallucinations" — the state of truth is visible in one call.
+# of transparent, source-grounded memory observability — the state of truth is visible in one call.
 
 from collections import Counter
 from typing import Dict, Any, List

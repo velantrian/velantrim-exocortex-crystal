@@ -15,6 +15,12 @@
   implemented `core/` modules are based.
 -->
 
+> **Historical note:** This is a legacy internal sprint/design document. It may
+> contain older planning language that does not represent the current
+> implemented status of Velantrim Crystal. For the canonical
+> implemented-vs-RFC-vs-vision status map, see
+> [`docs/IMPLEMENTATION_STATUS.md`](./IMPLEMENTATION_STATUS.md).
+
 # 💠 Velantrim V8 Crystal — Full Edition + Sprint 1
 ## Specification: Fractal Graph Memory for an Autonomous AI Agent
 ### (v8.0.2-sprint1 · Full audit · P0–P4 + Sprint 1+1.1 patches applied · April 2026)
@@ -44,7 +50,7 @@
 - [🧬 Integrated Components (from HYPERIA v5.20)](#integrated-components-from-hyperia-v520)
 - [📐 Token Contract and Promote/Demote Protocol](#token-contract-and-promotedemote-protocol)
 - [🔄 Full Integration: Main Agent](#full-integration-main-agent)
-- [🔍 Production-Ready Components](#production-ready-components)
+- [🔍 Historical Sprint Components](#historical-sprint-components)
 - [📈 Monitoring and Metrics](#monitoring-and-metrics)
 - [📐 SLO Contract (Service Level Objectives)](#slo-contract-service-level-objectives)
 - [🔌 MCP Server — Connecting to External Clients](#mcp-server-connecting-to-external-clients)
@@ -2489,7 +2495,7 @@ class SQLiteFallbackQueue:
 
 class RobustEventBus:
     """
-    Production-ready Event Bus with:
+    Resilient Event Bus design with:
     - Retry mechanism
     - Dead Letter Queue (DLQ)
     - Fallback to a local queue
@@ -6957,8 +6963,8 @@ tracer = trace.get_tracer(__name__)
 
 class AutonomousSelfLearningAgent:
     """
-    Fully autonomous agent with fractal memory and self-learning
-    Production-ready version with:
+    Bounded agent workflow concept with fractal memory and self-learning
+    Hardened sprint design with:
     - Circuit breakers for resilience
     - OpenTelemetry for observability
     - Adaptive consolidation
@@ -7275,7 +7281,7 @@ class AutonomousSelfLearningAgent:
 
 ---
 
-## 🔍 Production-Ready Components
+## 🔍 Historical Sprint Components
 
 ### 7. OpenTelemetry: Observability and tracing
 

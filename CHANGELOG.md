@@ -12,6 +12,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **P0.1 docs honesty cleanup** (docs/comment-only, no runtime change):
+  neutralized the remaining affirmative overclaim wording — `core/observe.py`
+  header comment no longer says "without hallucinations" (now:
+  source-grounded memory observability); the legacy design spec
+  `docs/Velantrim_V8_Crystal_Sprint1_toc.md` gains a visible historical-status
+  banner pointing to `docs/IMPLEMENTATION_STATUS.md`, and its
+  "Production-Ready Components" / "Fully autonomous agent" /
+  "Production-ready …" phrases are reworded to historical/bounded design
+  language. The GitHub repository description still requires a manual update
+  in settings (tracked in the PR).
+
 ### Added
 - **RFC: Harness Replay and Meta-Optimization**
   (`docs/RFC_HARNESS_REPLAY_OPTIMIZATION.md`, documentation-only): a future,
