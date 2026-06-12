@@ -1,29 +1,95 @@
 {
   "description": "Curated labelled corpus for the deterministic contradiction classifier (WP3). For each pair the `base` claim is ingested, then `probe` is checked against the canon; `contradict` is the expected label (true → should be flagged CONTRADICTION). Includes hard negatives: same-numeric-value, different-subject, and refinement claims that must NOT be flagged, so precision is measured against realistic distractors rather than only easy positives.",
   "pairs": [
-    {"domain": "physics",   "base": "Water boils at 100 degrees Celsius",
-     "probe": "Water does not boil at 100 degrees Celsius", "contradict": true},
-    {"domain": "physics",   "base": "Water boils at 100 degrees Celsius",
-     "probe": "Water boils at 50 degrees Celsius", "contradict": true},
-    {"domain": "weather",   "base": "The sky is blue",
-     "probe": "The sky is not blue", "contradict": true},
-    {"domain": "geography", "base": "Mount Everest is the highest mountain",
-     "probe": "Mount Everest is not the highest mountain", "contradict": true},
-    {"domain": "astronomy", "base": "The Earth orbits the Sun",
-     "probe": "The Earth does not orbit the Sun", "contradict": true},
-    {"domain": "chemistry", "base": "Gold is heavier than aluminium",
-     "probe": "Gold is lighter than aluminium", "contradict": true},
-    {"domain": "physics",   "base": "Water boils at 100 degrees Celsius",
-     "probe": "Water boils at 100 degrees Celsius", "contradict": false},
-    {"domain": "geography", "base": "Paris is the capital of France",
-     "probe": "Berlin is the capital of Germany", "contradict": false},
-    {"domain": "chemistry", "base": "Gold is a chemical element",
-     "probe": "Silver is a chemical element", "contradict": false},
-    {"domain": "astronomy", "base": "The solar system has eight planets",
-     "probe": "The Milky Way contains billions of stars", "contradict": false},
-    {"domain": "biology",   "base": "The human heart has four chambers",
-     "probe": "The human heart pumps blood through the body", "contradict": false},
-    {"domain": "physics",   "base": "Light travels at 299792 kilometres per second",
-     "probe": "Light travels at about 299792 kilometres per second", "contradict": false}
+    {
+      "domain": "physics",
+      "base": "Water boils at 100 degrees Celsius",
+      "probe": "Water does not boil at 100 degrees Celsius",
+      "contradict": true
+    },
+    {
+      "domain": "physics",
+      "base": "Water boils at 100 degrees Celsius",
+      "probe": "Water boils at 50 degrees Celsius",
+      "contradict": true
+    },
+    {
+      "domain": "weather",
+      "base": "The sky is blue",
+      "probe": "The sky is not blue",
+      "contradict": true
+    },
+    {
+      "domain": "geography",
+      "base": "Mount Everest is the highest mountain",
+      "probe": "Mount Everest is not the highest mountain",
+      "contradict": true
+    },
+    {
+      "domain": "astronomy",
+      "base": "The Earth orbits the Sun",
+      "probe": "The Earth does not orbit the Sun",
+      "contradict": true
+    },
+    {
+      "domain": "chemistry",
+      "base": "Gold is heavier than aluminium",
+      "probe": "Gold is lighter than aluminium",
+      "contradict": true
+    },
+    {
+      "domain": "physics",
+      "base": "Water boils at 100 degrees Celsius",
+      "probe": "Water boils at 100 degrees Celsius",
+      "contradict": false
+    },
+    {
+      "domain": "geography",
+      "base": "Paris is the capital of France",
+      "probe": "Berlin is the capital of Germany",
+      "contradict": false
+    },
+    {
+      "domain": "chemistry",
+      "base": "Gold is a chemical element",
+      "probe": "Silver is a chemical element",
+      "contradict": false
+    },
+    {
+      "domain": "astronomy",
+      "base": "The solar system has eight planets",
+      "probe": "The Milky Way contains billions of stars",
+      "contradict": false
+    },
+    {
+      "domain": "biology",
+      "base": "The human heart has four chambers",
+      "probe": "The human heart pumps blood through the body",
+      "contradict": false
+    },
+    {
+      "domain": "physics",
+      "base": "Light travels at 299792 kilometres per second",
+      "probe": "Light travels at about 299792 kilometres per second",
+      "contradict": false
+    },
+    {
+      "domain": "city",
+      "base": "The library opens at nine in the morning",
+      "probe": "The library does not open at nine in the morning",
+      "contradict": true
+    },
+    {
+      "domain": "engineering",
+      "base": "The suspension bridge is 1200 meters long",
+      "probe": "The suspension bridge is 800 meters long",
+      "contradict": true
+    },
+    {
+      "domain": "culture",
+      "base": "The music festival takes place in Lisbon every summer",
+      "probe": "The music festival in Lisbon attracts many visitors",
+      "contradict": false
+    }
   ]
 }

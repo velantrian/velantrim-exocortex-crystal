@@ -11,37 +11,115 @@
     "The Amazon is the largest rainforest in the world"
   ],
   "cases": [
-    {"domain": "physics",   "query": "what temperature does water boil at sea level",
-     "claim": "Water boils at 100 degrees Celsius at sea level"},
-    {"domain": "physics",   "query": "how fast does light travel in a vacuum",
-     "claim": "Light travels at about 299792 kilometres per second in a vacuum"},
-    {"domain": "physics",   "query": "what temperature does water freeze at",
-     "claim": "Water freezes at 0 degrees Celsius at standard pressure"},
-    {"domain": "geography", "query": "what is the capital of Austria",
-     "claim": "Vienna is the capital of Austria"},
-    {"domain": "geography", "query": "what is the capital of Japan",
-     "claim": "Tokyo is the capital of Japan"},
-    {"domain": "geography", "query": "what is the longest river in the world",
-     "claim": "The Nile is the longest river in the world"},
-    {"domain": "astronomy", "query": "what does the Earth orbit",
-     "claim": "The Earth orbits the Sun once per year"},
-    {"domain": "astronomy", "query": "how many planets are in the solar system",
-     "claim": "The solar system has eight planets"},
-    {"domain": "astronomy", "query": "what is the closest star to Earth",
-     "claim": "The Sun is the closest star to Earth"},
-    {"domain": "chemistry", "query": "what is gold",
-     "claim": "Gold is a chemical element and a metal"},
-    {"domain": "chemistry", "query": "what gas do plants absorb from the air",
-     "claim": "Plants absorb carbon dioxide from the air"},
-    {"domain": "chemistry", "query": "what is the chemical symbol for water",
-     "claim": "The chemical formula for water is H2O"},
-    {"domain": "biology",   "query": "what carries oxygen in human blood",
-     "claim": "Red blood cells carry oxygen in human blood"},
-    {"domain": "biology",   "query": "what is the powerhouse of the cell",
-     "claim": "The mitochondria is the powerhouse of the cell"},
-    {"domain": "history",   "query": "when did the Second World War end",
-     "claim": "The Second World War ended in 1945"},
-    {"domain": "mathematics", "query": "what is the value of pi to two decimals",
-     "claim": "The value of pi is approximately 3.14"}
+    {
+      "domain": "physics",
+      "query": "what temperature does water boil at sea level",
+      "claim": "Water boils at 100 degrees Celsius at sea level"
+    },
+    {
+      "domain": "physics",
+      "query": "how fast does light travel in a vacuum",
+      "claim": "Light travels at about 299792 kilometres per second in a vacuum"
+    },
+    {
+      "domain": "physics",
+      "query": "what temperature does water freeze at",
+      "claim": "Water freezes at 0 degrees Celsius at standard pressure"
+    },
+    {
+      "domain": "geography",
+      "query": "what is the capital of Austria",
+      "claim": "Vienna is the capital of Austria"
+    },
+    {
+      "domain": "geography",
+      "query": "what is the capital of Japan",
+      "claim": "Tokyo is the capital of Japan"
+    },
+    {
+      "domain": "geography",
+      "query": "what is the longest river in the world",
+      "claim": "The Nile is the longest river in the world"
+    },
+    {
+      "domain": "astronomy",
+      "query": "what does the Earth orbit",
+      "claim": "The Earth orbits the Sun once per year"
+    },
+    {
+      "domain": "astronomy",
+      "query": "how many planets are in the solar system",
+      "claim": "The solar system has eight planets"
+    },
+    {
+      "domain": "astronomy",
+      "query": "what is the closest star to Earth",
+      "claim": "The Sun is the closest star to Earth"
+    },
+    {
+      "domain": "chemistry",
+      "query": "what is gold",
+      "claim": "Gold is a chemical element and a metal"
+    },
+    {
+      "domain": "chemistry",
+      "query": "what gas do plants absorb from the air",
+      "claim": "Plants absorb carbon dioxide from the air"
+    },
+    {
+      "domain": "chemistry",
+      "query": "what is the chemical symbol for water",
+      "claim": "The chemical formula for water is H2O"
+    },
+    {
+      "domain": "biology",
+      "query": "what carries oxygen in human blood",
+      "claim": "Red blood cells carry oxygen in human blood"
+    },
+    {
+      "domain": "biology",
+      "query": "what is the powerhouse of the cell",
+      "claim": "The mitochondria is the powerhouse of the cell"
+    },
+    {
+      "domain": "history",
+      "query": "when did the Second World War end",
+      "claim": "The Second World War ended in 1945"
+    },
+    {
+      "domain": "mathematics",
+      "query": "what is the value of pi to two decimals",
+      "claim": "The value of pi is approximately 3.14"
+    },
+    {
+      "domain": "geography",
+      "query": "which strait separates Europe from Africa",
+      "claim": "The Strait of Gibraltar separates Europe from Africa"
+    },
+    {
+      "domain": "biology",
+      "query": "which amphibian can regenerate entire limbs",
+      "claim": "The axolotl can regenerate entire limbs"
+    },
+    {
+      "domain": "computing",
+      "query": "how much did the ENIAC computer weigh",
+      "claim": "The ENIAC computer weighed about thirty tons"
+    },
+    {
+      "domain": "economics",
+      "query": "which agreement established fixed exchange rates",
+      "claim": "The Bretton Woods agreement established fixed exchange rates"
+    },
+    {
+      "domain": "astronomy",
+      "query": "where is the tallest volcano located",
+      "claim": "Olympus Mons on Mars is the tallest known volcano"
+    },
+    {
+      "domain": "history",
+      "query": "where was the Rosetta Stone discovered",
+      "claim": "The Rosetta Stone was discovered in Egypt in 1799"
+    }
   ]
 }
