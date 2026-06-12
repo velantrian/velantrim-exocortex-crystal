@@ -12,6 +12,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **T4 — Reproducible MVP packaging** (no runtime behaviour change): the
+  documented reviewer path (`pip install -e '.[dev]'` → `pytest` →
+  `eval_gate`) now actually reproduces the audited state from a clean clone —
+  the `[dev]` extra was missing six test-exercised optional layers
+  (fastapi/httpx/cryptography/pyyaml/pypdf/rdflib) and is now aligned with
+  `requirements-dev.txt` (cross-referenced as a single documented path; CI
+  workflows untouched); the YAML-adapter edge test gains a missing
+  `importorskip` guard (skips instead of erroring without pyyaml); generated
+  evaluation artifacts (`eval_report.md`, `metrics.jsonl`) are no longer
+  tracked, so running the validation no longer dirties the working tree;
+  README and REVIEWER_NOTES gain a "clean clone → green run → clean tree"
+  reviewer-validation block; RELEASE_CHECKLIST adds fresh-venv,
+  artifact-hygiene and `python -m build` (manual) smoke checks; the two
+  remaining legacy root documents carry historical-status banners.
+
 ### Added
 - **T3 — Eval corpus expansion: trust-boundary behaviour corpus** (eval-only
   core addition; TruthGate/pipeline/ingest behaviour untouched):

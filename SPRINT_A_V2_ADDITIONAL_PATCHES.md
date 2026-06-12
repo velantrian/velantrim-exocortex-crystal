@@ -1,4 +1,11 @@
-# Velantrim V8 · Sprint A v2+ — Additional Production-Hardened Patches
+# Velantrim V8 · Sprint A v2+ — Additional Hardening Patches (historical)
+
+> **Historical note:** This is a legacy internal sprint/patch document. It may
+> contain older planning language ("production-hardened" etc.) that does not
+> represent the current implemented status of Velantrim Crystal. For the
+> canonical implemented-vs-RFC-vs-vision status map, see
+> [`docs/IMPLEMENTATION_STATUS.md`](./docs/IMPLEMENTATION_STATUS.md); for the
+> honest A1–A10 triage, see [`docs/SPRINT_A_STATUS.md`](./docs/SPRINT_A_STATUS.md).
 
 > Extensions to A1–A5. Focus: Event Bus, Graph transactions, Resource bounds, LLM safety, Redis ops.
 

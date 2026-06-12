@@ -2,6 +2,10 @@
 #
 # The runtime package intentionally has no mandatory third-party dependencies.
 # Use this file only for local development, tests and CI.
+#
+# This file MUST stay aligned with the `[dev]` extra in pyproject.toml:
+# `pip install -r requirements-dev.txt` and `pip install -e '.[dev]'` are the
+# same documented path (CI uses this file; contributor docs use the extra).
 
 pytest>=8.0.0
 pytest-asyncio>=0.23.0

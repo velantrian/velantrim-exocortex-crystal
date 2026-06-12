@@ -173,13 +173,35 @@ VELANTRIM_L3_PATH=./data/canon.db \
 velantrim ask "..."
 ```
 
-Development/test setup:
+Development/test setup (`requirements-dev.txt` mirrors the `[dev]` extra —
+either path installs the same environment):
 
 ```bash
-pip install -r requirements-dev.txt
-pip install -e .
+pip install -e '.[dev]'
 pytest tests/ --cov=. --cov-fail-under=100
 ```
+
+### 🧾 Reviewer validation (clean clone → green run → clean tree)
+
+Everything an external reviewer needs to reproduce the audited state, with no
+hidden local state:
+
+```bash
+git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
+cd velantrim-exocortex-crystal
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -e '.[dev]'
+python -m pytest -q                              # full suite, 100% coverage gate
+python scripts/eval_gate.py --out-dir eval-artifacts   # CI-gated evaluation
+git status --short                               # stays clean
+```
+
+Expected: tests pass at the baseline recorded in
+[TEST_REPORT.md](./TEST_REPORT.md), the eval gate prints `PASSED`, and the
+working tree stays clean — generated evaluation artifacts are written to
+`eval-artifacts/` (ignored) and are not tracked by git.
 
 See **[DEMO.md](./DEMO.md)** for the full *ingest → evidence → trace → answer →
 receipt* walkthrough.

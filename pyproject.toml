@@ -24,10 +24,21 @@ velantrim-mcp = "core.mcp_server:main"
 velantrim-api = "core.api:main"
 
 [project.optional-dependencies]
+# Development/test environment. MUST stay aligned with requirements-dev.txt
+# (the file CI installs): `pip install -e '.[dev]'` and
+# `pip install -r requirements-dev.txt` are the same documented path, and the
+# full suite (100% coverage gate) needs every optional layer below.
 dev = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.1.0",
+    # optional layers exercised by the test suite (NOT runtime deps):
+    "fastapi>=0.110.0",       # core/api.py service layer tests
+    "httpx>=0.27.0",          # FastAPI test client
+    "cryptography>=42.0.0",   # core/crypto.py Fernet backend (GDPR Art. 32)
+    "pyyaml>=6.0",            # core/adapters yaml adapter (WP4)
+    "pypdf>=4.0",             # core/adapters pdf adapter (WP4)
+    "rdflib>=7.0",            # core/adapters rdf adapter (WP4)
 ]
 # L3 canonical graph backend. Default mode 'auto' uses LadybugDB when installed
 # (recommended production engine, Kuzu successor) and falls back to the

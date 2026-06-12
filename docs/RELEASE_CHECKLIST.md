@@ -13,9 +13,16 @@ to the repository.
 
 ## 2. Tests and CI
 
-- [ ] `pip install -r requirements-dev.txt` succeeds.
-- [ ] `pip install -e .` succeeds.
+- [ ] `pip install -e '.[dev]'` succeeds from a **fresh venv** (the `[dev]`
+      extra and `requirements-dev.txt` must stay aligned).
+- [ ] `pip install -r requirements-dev.txt` succeeds (CI path).
+- [ ] `pip install -e .` succeeds (bare stdlib-only install).
 - [ ] `pytest tests/ --cov=. --cov-fail-under=100` passes locally.
+- [ ] `python scripts/eval_gate.py --out-dir eval-artifacts` passes and the
+      working tree stays **clean** afterwards (`git status --short` is empty —
+      no generated artifact is tracked).
+- [ ] `python -m build` produces an sdist + wheel without errors (manual smoke
+      step, not part of CI).
 - [ ] GitHub Actions CI passes on Python 3.11 and 3.12.
 - [ ] `TEST_REPORT.md` matches the latest test count and command.
 
