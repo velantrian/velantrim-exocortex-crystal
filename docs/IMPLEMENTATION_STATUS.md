@@ -62,6 +62,9 @@ For external reviewers and grant/university evaluation:
 - [Failure Modes and Mitigations](FAILURE_MODES.md)
 - [Evaluation Metrics](EVALUATION_METRICS.md)
 
+Research inspirations are tracked separately as non-normative context and must
+not be treated as implementation status (ADR-006).
+
 ## Imagination Mode boundary (RFC-level, stated early on purpose)
 
 Mode Layer and Imagination Mode are documented here as **RFC-level architecture

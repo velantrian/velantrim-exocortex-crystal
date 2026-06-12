@@ -83,7 +83,19 @@ Statuses follow [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md)
 | T2 schema alignment | Completed | KB/schema vocabulary aligned with runtime reality (PR #106) |
 | Harness Replay / Meta-Optimization | RFC only | [RFC_HARNESS_REPLAY_OPTIMIZATION.md](./RFC_HARNESS_REPLAY_OPTIMIZATION.md) — documentation only, no runtime |
 
-## 6. Roadmap
+## 6. Research context
+
+Velantrim is informed by a long tradition of work on memory, human-computer
+augmentation, and trustworthy knowledge systems. Vannevar Bush's Memex
+introduced the idea of associative knowledge trails; Licklider and Engelbart
+framed computers as tools for augmenting human intellect rather than replacing
+judgment. In Crystal, these ideas are translated into a verifiable
+architecture: TRACE formalizes evidence paths, TruthGate separates unsupported
+claims from verified canon, and the LLM remains a speech layer rather than a
+source of truth. These references are architectural inspirations, not claims
+that Crystal is brain-like, conscious, or biologically accurate.
+
+## 7. Roadmap
 
 | Step | Scope | Status |
 |---|---|---|
@@ -94,8 +106,9 @@ Statuses follow [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md)
 | T4 | Reproducible MVP packaging | Planned |
 | T5 | Reviewer demo package | Planned |
 | T6+ | Larger traceable KB and research tracks | Research |
+| Follow-up | Research Inspirations document (non-normative context, not implementation status) | Planned follow-up |
 
-## 7. Grant and university value
+## 8. Grant and university value
 
 The project is positioned as infrastructure for scientific knowledge
 management, education technology, agent evaluation, and digital sovereignty
@@ -108,7 +121,7 @@ trustworthy AI (verification boundary, controlled factual promotion), AI safety
 source-tracked claims), GDPR-oriented auditability, and education/research
 demonstrators.
 
-## 8. What Crystal is not
+## 9. What Crystal is not
 
 - Not a chatbot.
 - Not an AGI claim.
@@ -116,14 +129,19 @@ demonstrators.
 - Not a guarantee of perfect truth.
 - Not a replacement for expert judgment.
 - Not a self-improving autonomous agent.
+- Not a brain-like or biologically conscious system.
 
-## 9. Research-grade future (not current runtime)
+## 10. Research-grade future (not current runtime)
 
 All items below are future / research roadmap / not current runtime: a
 10k–100k traceable-facts demonstrator, ProfSearch, Causal Spine, Essence
 Distiller, Harness Replay runtime and ReplayBench (RFC only today), the
 FactsPack Conflict Policy, and a Meta-Cognitive Monitor as a future research
 umbrella over evaluation and boundary-monitoring concepts (see
-[EVALUATION_METRICS.md](./EVALUATION_METRICS.md)). Biological analogies in
-project materials are used only as architectural inspiration patterns, not as
-claims that the system is brain-like, conscious, or biologically accurate.
+[EVALUATION_METRICS.md](./EVALUATION_METRICS.md)). Research inspirations
+(memory science, human-computer augmentation, cybernetics, knowledge graphs,
+trustworthy-AI research) are tracked as non-normative context — intellectual
+foundations and architectural patterns, never implementation claims (see
+ADR-006 in [ADR.md](./ADR.md)). Biological analogies in project materials are
+used only as architectural inspiration patterns, not as claims that the system
+is brain-like, conscious, or biologically accurate.
