@@ -146,6 +146,7 @@ def test_velum_remove_missing_key_is_noop():
 # ─── YAML adapter — empty-claim dict and non-collection scalar ──────────────────
 
 def test_yaml_norm_empty_claim_and_scalar():
+    pytest.importorskip("yaml")   # optional WP4 dep — skip, don't error, without it
     from core.adapters import yaml_adapter
     assert yaml_adapter._norm({"claim": "   "}) == []   # blank claim → dropped
     assert yaml_adapter._norm({"meta": "x"}) == []      # dict w/o claim/claims → []

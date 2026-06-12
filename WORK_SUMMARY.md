@@ -1,5 +1,11 @@
 # Velantrim V8 Crystal Sprint1 — Archived Work Summary
 
+> **Historical note:** This is an archived internal work summary. It may
+> contain older planning language that does not represent the current
+> implemented status of Velantrim Crystal. For the canonical
+> implemented-vs-RFC-vs-vision status map, see
+> [`docs/IMPLEMENTATION_STATUS.md`](./docs/IMPLEMENTATION_STATUS.md).
+
 **Original branch**: `claude/fix-velantrim-metadata-OkanP`  
 **Original date**: 2026-04-19  
 **Current status**: archived historical summary, not a current production-readiness claim

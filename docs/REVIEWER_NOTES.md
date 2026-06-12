@@ -62,6 +62,25 @@ The project is especially relevant where the reviewer needs to inspect:
 - whether an answer can be replayed against the facts that supported it;
 - whether an external LLM is optional rather than mandatory.
 
+## How to reproduce the audited state
+
+From a clean clone, with no hidden local state:
+
+```bash
+git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
+cd velantrim-exocortex-crystal
+python -m venv .venv && source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -e '.[dev]'
+python -m pytest -q                                    # full suite, 100% gate
+python scripts/eval_gate.py --out-dir eval-artifacts   # CI-gated evaluation
+git status --short                                     # stays clean
+```
+
+Expected: tests pass at the baseline in `TEST_REPORT.md`, the eval gate prints
+`PASSED`, and the working tree stays clean (generated artifacts land in the
+ignored `eval-artifacts/`).
+
 ## How to run a minimal local demo
 
 ```bash
