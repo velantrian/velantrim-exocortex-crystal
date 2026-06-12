@@ -119,6 +119,8 @@ source-aware and harder to corrupt silently.
 
 A reviewer can evaluate the project by checking:
 
+- `docs/REVIEWER_OVERVIEW.md` for the one-page reviewer-facing summary
+  (problem, solution, invariants, status, roadmap, non-goals);
 - `README.md` for positioning and quick start;
 - `docs/ARCHITECTURE.md` for the memory and truth boundary;
 - `docs/IMPLEMENTATION_STATUS.md` for the honest implemented-vs-RFC-vs-vision
