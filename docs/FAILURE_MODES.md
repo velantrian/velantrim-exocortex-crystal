@@ -21,6 +21,8 @@ evidence, traceability, and boundary behaviour.
 | Graph contains hypotheses mistaken for canon | Multi-status memory read as all-true | Canon is defined as the VERIFIED + trace-valid subgraph; statuses are explicit fields; the "Graph = Truth" precision note documents this distinction | implemented (docs + fields) |
 | Guardian policy weakened by future optimizer | Optimization erodes safety boundaries | ContractGuard (RFC): candidate configurations cannot disable TruthGate/Guardian/TRACE; immutable, non-searchable rules; human approval loop | RFC |
 | Personal data lingers in memory | GDPR-oriented erasure obligations unmet | Erasure with cascade and tombstones, processing restriction, tamper-evident audit, PII redaction — design targets, not certification | partial |
+| Research inspiration mistaken for implemented feature | Reviewers or users read inspiration/roadmap material as runtime capability | ADR-006 (research inspirations are non-normative); `IMPLEMENTATION_STATUS.md` is the only source of implementation claims; status labels (historical / analogue / future research) mandatory | implemented (docs boundary) |
+| Biological metaphor mistaken for consciousness claim | Bio-inspired language reads as a brain-like / conscious-system claim | Explicit non-goals in reviewer docs; fixed wording: analogies are architectural inspiration patterns only, never claims of consciousness or biological accuracy | implemented (docs boundary) |
 
 Notes:
 

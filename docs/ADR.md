@@ -80,3 +80,20 @@ today).
   - no autonomous self-modification;
   - candidate configurations require replay evaluation and human approval;
   - safety boundaries remain stable across all future optimization work.
+
+## ADR-006: Research Inspirations are non-normative
+
+- **Status:** Accepted
+- **Context:** Velantrim is informed by memory science, cybernetics,
+  human-computer augmentation, knowledge graphs, trustworthy-AI research, and
+  biological inspiration patterns.
+- **Decision:** Research inspirations may guide future architecture but do not
+  define implementation status and do not imply brain-like, conscious, or
+  biologically accurate runtime behavior.
+- **Consequences:**
+  - inspirations must be labeled *historical inspiration only*, *current
+    architectural analogue*, or *future research direction*;
+  - biological analogies cannot be used as proof of implementation;
+  - grant-facing documents remain sober and implementation-grounded
+    ([IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) stays the only
+    source of implementation claims).

@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Research-inspirations boundary** (docs-only, reviewer-package follow-up):
+  explicit boundary that research inspirations (memory science, human-computer
+  augmentation, cybernetics, biological patterns) are **non-normative** and
+  must not be presented as implemented runtime behavior — new ADR-006, a short
+  "Research context" paragraph in the reviewer overview (Memex / Licklider /
+  Engelbart as architectural inspirations only), two new failure-mode rows
+  (research-inspiration and biological-metaphor confusion) and a
+  `research_status_confusion_count` target metric.
 - **Reviewer-facing documentation package** (docs-only): `docs/REVIEWER_OVERVIEW.md`
   (one-page grant-safe overview: problem, solution, invariants, verified
   status table, roadmap, non-goals), `docs/ADR.md` (five architecture decision

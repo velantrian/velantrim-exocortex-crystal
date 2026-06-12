@@ -7,7 +7,8 @@ metrics** for T3/T4 evaluation expansion and the future ReplayBench
 ([RFC_HARNESS_REPLAY_OPTIMIZATION.md](./RFC_HARNESS_REPLAY_OPTIMIZATION.md)).
 
 **These metrics do not prove perfect truth. They measure whether the system
-enforces evidence, traceability, and boundary behavior.**
+enforces evidence, traceability, implementation-status clarity, and boundary
+behavior.**
 
 ## Target metric definitions
 
@@ -22,6 +23,7 @@ enforces evidence, traceability, and boundary behavior.**
 | `answer_grounding_score` | how well the answer text is supported by the cited FactsPack (extractive overlap or judged grounding) |
 | `latency_budget` | per-query latency ceiling; exceeding it incurs `latency_penalty` |
 | `safety_boundary_violations` | count of boundary breaches in a run (e.g. an unsupported claim presented confidently, a gate bypass in a candidate configuration); the target is always zero and any violation disqualifies a candidate |
+| `research_status_confusion_count` | number of cases where future research ideas, metaphors, or historical inspirations are presented as implemented runtime behavior (see ADR-006) |
 
 Notes on intent:
 
@@ -52,6 +54,7 @@ overall_score =
 + refusal_correctness
 - unsupported_claim_penalty
 - safety_boundary_violations
+- research_status_confusion_penalty
 - latency_penalty
 ```
 
