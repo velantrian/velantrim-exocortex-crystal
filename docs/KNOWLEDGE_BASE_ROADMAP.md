@@ -130,14 +130,24 @@ Each knowledge unit should declare what kind of knowledge it represents.
 
 A minimal knowledge unit should contain enough metadata to be useful for graph retrieval and audit.
 
+The shared epistemic fields (`fact_id`, `claim`, `claim_type`, `source_status`,
+`truth_status`, `confidence`, `significance`, `source`) use exactly the
+canonical machine vocabulary pinned in [`schemas/fact.schema.json`](../schemas/fact.schema.json)
+and `core/memory.py`. Note on wording: **"fact" is a human-facing alias only —
+the machine `truth_status` value is `VERIFIED`**, never `FACT`. The remaining
+fields (`title`, `knowledge_type`, `domain`, `level`, `qualifiers`,
+`relations`, `evidence_span`) are **KB-layer extensions**: they are not part of
+`fact.schema.json` and would be mapped onto Crystal's evidence/relation
+structures at import time.
+
 ```json
 {
-  "id": "fact_000001",
+  "fact_id": "kb:000000000001",
   "title": "Water boiling point",
   "claim": "Water boils at 100°C at 1 atm pressure.",
   "knowledge_type": "INVARIANT_SCIENCE",
   "claim_type": "WORLD_FACT",
-  "truth_status": "FACT",
+  "truth_status": "VERIFIED",
   "source_status": "EXTERNAL",
   "domain": "chemistry",
   "level": "basic",

@@ -1,5 +1,10 @@
 # Velantrim ExoCortex — Implementation Status
 
+> **Superseded note:** This historical implementation-status bridge has been
+> superseded by [`docs/IMPLEMENTATION_STATUS.md`](../IMPLEMENTATION_STATUS.md),
+> which is the canonical implemented-vs-RFC-vs-vision status map. Keep this
+> file only as historical context unless explicitly updated.
+
 > **Purpose of this document.** This is the canonical bridge between the
 > [Notion Canonical Index / Status Map](https://notion.so) and the GitHub
 > codebase. It answers one question: *for every architecture concept in the
@@ -10,8 +15,9 @@
 > is implied to be done that is not done.
 >
 > **Sync discipline**: when a new module is implemented, update the table below
-> and remove it from the "Planned" section. This file is the single truth for
-> the canon ↔ code mapping.
+> and remove it from the "Planned" section. (Historical: this file previously
+> served as the single truth for the canon ↔ code mapping — that role now
+> belongs to `docs/IMPLEMENTATION_STATUS.md`, see the superseded note above.)
 
 ---
 

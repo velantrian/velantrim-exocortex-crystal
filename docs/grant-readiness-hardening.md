@@ -8,7 +8,7 @@ Every fact stored in Velantrim carries `claim_type`, `source_status`, `truth_sta
 
 A fact without `source_status` cannot be routed to the correct `truth_status` by TruthGate. A fact without `epistemic_state` cannot be filtered for the `Validated` / `Supported` grounding gate that blocks answer generation when evidence is insufficient. A fact without `confidence` cannot be ranked during retrieval.
 
-The JSON schemas in `schemas/` pin the canonical enum values for these fields as they exist in the codebase (`core/memory.py`). They serve as machine-readable documentation and allow external tools to validate exported or imported data without reading the Python source.
+The JSON schemas in `schemas/` pin the canonical **enum values** for these fields as they exist in the codebase (`core/memory.py`). They serve as machine-readable documentation and allow external tools to validate exported or imported data without reading the Python source. Structurally, the schemas were aligned with the actual runtime artifacts in the T2 schema pass: `trace.schema.json` describes the trace items and sealed receipts the runtime really emits, while `metadata.schema.json` is explicitly labeled a **target** provenance envelope (current-vs-target fields are marked in the schema descriptions, and reserved fields such as `guardian_verified` are labeled as not yet emitted by the runtime).
 
 ## Why JSONL validation exists
 
@@ -94,7 +94,7 @@ pip-audit --ignore-vuln PYSEC-2022-42969
 
 ## Canonical enum values
 
-These values are defined in `core/memory.py` and enforced at every `store_fact` call. The schemas in `schemas/` use exactly these values — no aliases, no abbreviations.
+These values are defined in `core/memory.py` (`claim_type` and `source_status` are enforced at every `store_fact` call; `truth_status` is assigned by the pipeline's source-aware mapping, never set directly by the caller). The schemas in `schemas/` use exactly these enum values — no aliases, no abbreviations. In particular, `FACT` is a human-facing alias only: the machine `truth_status` value is `VERIFIED`.
 
 ### epistemic_state (ESM)
 

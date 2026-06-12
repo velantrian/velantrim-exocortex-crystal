@@ -13,6 +13,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **T2 — KB schema and vocabulary alignment** (docs/schema only, no runtime
+  behaviour change): the KB roadmap example now uses the canonical machine
+  vocabulary (`truth_status: VERIFIED` — `FACT` is a human-facing alias only;
+  `fact_id` instead of `id`; KB-layer extension fields explicitly labeled);
+  `guardian_verified` is marked **reserved / not emitted by the runtime yet**
+  in both schemas; `metadata.schema.json` is labeled a **target** provenance
+  envelope (current runtime provenance lives in trace/receipt/audit);
+  `trace.schema.json` now describes the artifacts the runtime actually emits
+  (trace items from `core/trace.py` and sealed v2 receipts from
+  `core/provenance.py`, identified by content digest — no separate
+  receipt_id); `docs/grant-readiness-hardening.md` wording made precise
+  (enums aligned; structure aligned by this pass); the old
+  `docs/architecture/implementation-status.md` bridge carries a superseded
+  banner pointing to `docs/IMPLEMENTATION_STATUS.md`. No new truth_status
+  values were added (no REJECTED/DEPRECATED).
 - **P0.1 docs honesty cleanup** (docs/comment-only, no runtime change):
   neutralized the remaining affirmative overclaim wording — `core/observe.py`
   header comment no longer says "without hallucinations" (now:
