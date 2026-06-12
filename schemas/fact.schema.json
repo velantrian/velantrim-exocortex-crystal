@@ -86,7 +86,7 @@
     "guardian_verified": {
       "type": "boolean",
       "default": false,
-      "description": "True only when the TruthGate Guardian has validated the fact for L3 promotion. Must default to false for all imported/generated records."
+      "description": "Reserved field. Not currently emitted or consumed by the Crystal runtime. Must default to false unless an explicit future review workflow sets it."
     },
     "metadata": {
       "type": "object",

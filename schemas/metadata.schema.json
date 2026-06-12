@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://velantrim.dev/schemas/metadata.schema.json",
-  "title": "Velantrim Provenance Metadata",
-  "description": "Provenance envelope attached to any operation that writes to or reads from the canonical graph. source_ref and trace_id are mandatory for any fact that claims to be auditable.",
+  "title": "Velantrim Provenance Metadata (target envelope)",
+  "description": "Target provenance metadata envelope for canonical-graph operations. This is a forward-looking contract: the current runtime represents provenance through the trace / receipt / audit structures (see trace.schema.json and core/audit.py), and does not yet emit this envelope (no schema_version / source_ref / trace_id fields are produced today). The enum blocks below mirror the canonical vocabulary in core/memory.py and fact.schema.json.",
   "type": "object",
   "required": ["schema_version", "source_ref", "trace_id", "created_at"],
   "additionalProperties": true,
@@ -14,12 +14,12 @@
     "source_ref": {
       "type": "string",
       "minLength": 1,
-      "description": "Identifies the originating artifact, session or document. Missing source_ref is a validation failure for auditable facts."
+      "description": "Target field: identifies the originating artifact, session or document. Today the runtime stores the origin in the fact's 'source' field and evidence spans ('source_uri')."
     },
     "trace_id": {
       "type": "string",
       "minLength": 1,
-      "description": "Links this record back to the answer-trace receipt that created it. Missing trace_id is a validation failure for auditable facts."
+      "description": "Target field: would link this record back to the answer trace/receipt that created it. Today receipts are identified by their sealed content digest, not a separate id."
     },
     "created_at": {
       "type": "string",
@@ -32,7 +32,7 @@
     "guardian_verified": {
       "type": "boolean",
       "default": false,
-      "description": "Must default to false. Automatically imported or generated records must not claim guardian_verified=true unless the TruthGate explicitly set it."
+      "description": "Reserved field. Not currently emitted or consumed by the Crystal runtime. Must default to false unless an explicit future review workflow sets it."
     },
     "claim_type": {
       "type": "string",
