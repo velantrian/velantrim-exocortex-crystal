@@ -203,7 +203,8 @@ Expected: tests pass at the baseline recorded in
 working tree stays clean — generated evaluation artifacts are written to
 `eval-artifacts/` (ignored) and are not tracked by git.
 
-See **[DEMO.md](./DEMO.md)** for the full *ingest → evidence → trace → answer →
+Start hands-on with **[docs/REVIEWER_DEMO.md](./docs/REVIEWER_DEMO.md)** (the
+10-minute reviewer demo) or see **[DEMO.md](./DEMO.md)** for the full *ingest → evidence → trace → answer →
 receipt* walkthrough.
 
 ---
@@ -460,7 +461,8 @@ milestone budget, partial-funding plan, and responsible-data position.
 
 | Document | Purpose |
 |---|---|
-| **[DEMO.md](./DEMO.md)** | Verifiable memory walkthrough: ingest → trace → receipt → verify |
+| **[DEMO.md](./DEMO.md)** | Demo index: which walkthrough to pick |
+| **[docs/REVIEWER_DEMO.md](./docs/REVIEWER_DEMO.md)** | 10-minute reviewer demo: ingest → evidence → trace → answer → sealed receipt → strict replay → tamper check → eval gate |
 | **[docs/REVIEWER_NOTES.md](./docs/REVIEWER_NOTES.md)** | One-page reviewer guide: purpose, demo path, implemented scope and grant extensions |
 | **[docs/DEMO.md](./docs/DEMO.md)** | Hands-on, reproducible CLI walkthrough with real captured output (ingest, ask, receipt, contradictions, knowledge import, GDPR erase, NeuroCore telemetry, eval, HTTP) |
 | **[docs/COMPARISON.md](./docs/COMPARISON.md)** | Comparison with vector-only RAG, chatbot memory and agent-memory systems |

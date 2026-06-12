@@ -9,6 +9,8 @@ htmlcov/
 
 # Data (SQLite, local graph, logs)
 data/
+demo-data/
+eval-artifacts/
 *.db
 *.sqlite
 *.sqlite3
