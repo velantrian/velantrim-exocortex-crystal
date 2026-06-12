@@ -12,6 +12,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **T5 — Reviewer demo package** (docs-only, no runtime change):
+  `docs/REVIEWER_DEMO.md` — a 10-minute hands-on reviewer path with output
+  captured at the audited baseline: isolated setup → ingest (USER_CLAIMED
+  honesty) → answer without an LLM → typed-canon report → sourced import with
+  evidence spans (VERIFIED) → sealed receipt → strict-provenance replay →
+  controlled receipt-integrity check on a copy (tampered receipt is detected)
+  → evaluation gate with enforcing boundary metrics. Root `DEMO.md` becomes a
+  thin demo index pointing at the maintained walkthroughs (REVIEWER_DEMO /
+  docs/DEMO / DEMO_UI) so the demos cannot drift apart; links added in
+  README, REVIEWER_OVERVIEW and REVIEWER_NOTES; `demo-data/` and
+  `eval-artifacts/` added to `.gitignore` so the demo leaves the tree clean.
+
 ### Changed
 - **T4 — Reproducible MVP packaging** (no runtime behaviour change): the
   documented reviewer path (`pip install -e '.[dev]'` → `pytest` →

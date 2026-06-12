@@ -8,6 +8,9 @@ AI systems.*
 > canonical implemented-vs-RFC-vs-vision map, see
 > [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md); for the audited test
 > baseline, see [TEST_REPORT.md](../TEST_REPORT.md).
+> **Start hands-on:** [REVIEWER_DEMO.md](./REVIEWER_DEMO.md) — a 10-minute
+> demo of the full trust loop (ingest → evidence → receipt → tamper check →
+> eval gate).
 
 ## 1. Executive Summary
 

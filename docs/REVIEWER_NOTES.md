@@ -145,7 +145,9 @@ A reviewer can evaluate the project by checking:
 - `docs/IMPLEMENTATION_STATUS.md` for the honest implemented-vs-RFC-vs-vision
   status map (Crystal core vs full Exo-Cortex vs Velantrim Culture);
 - `docs/GRANT_NLNET_SCOPE.md` for work packages;
-- `DEMO.md` for the ingest -> trace -> receipt flow;
+- `docs/REVIEWER_DEMO.md` for the 10-minute hands-on demo (ingest ->
+  evidence -> trace -> answer -> receipt -> strict replay -> tamper check ->
+  eval gate); `docs/DEMO.md` for the full technical walkthrough;
 - `TEST_REPORT.md` and CI for reproducibility;
 - `GDPR.md`, `PRIVACY.md` and `SECURITY.md` for privacy/security boundaries;
 - `docs/EVAL.md` for baseline metrics and planned evaluation extensions;
