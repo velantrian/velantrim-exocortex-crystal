@@ -12,6 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Reviewer-facing documentation package** (docs-only): `docs/REVIEWER_OVERVIEW.md`
+  (one-page grant-safe overview: problem, solution, invariants, verified
+  status table, roadmap, non-goals), `docs/ADR.md` (five architecture decision
+  records incl. truth-vs-speech separation and the Ring Zero optimization
+  boundary), `docs/FAILURE_MODES.md` (honest risk matrix with
+  implemented/partial/RFC statuses) and `docs/EVALUATION_METRICS.md` (target
+  metrics for T3/T4 and future ReplayBench; Meta-Cognitive Monitor explicitly
+  marked future research umbrella, not runtime). Linked from README,
+  IMPLEMENTATION_STATUS and REVIEWER_NOTES.
+
 ### Changed
 - **T2 — KB schema and vocabulary alignment** (docs/schema only, no runtime
   behaviour change): the KB roadmap example now uses the canonical machine

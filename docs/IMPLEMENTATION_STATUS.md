@@ -53,6 +53,15 @@ of Crystal).
 If a component is not in this table, assume it is **not** an implemented
 Crystal feature unless `core/` and `tests/` demonstrably contain it.
 
+## Reviewer Package
+
+For external reviewers and grant/university evaluation:
+
+- [Reviewer Overview](REVIEWER_OVERVIEW.md)
+- [Architecture Decision Records](ADR.md)
+- [Failure Modes and Mitigations](FAILURE_MODES.md)
+- [Evaluation Metrics](EVALUATION_METRICS.md)
+
 ## Imagination Mode boundary (RFC-level, stated early on purpose)
 
 Mode Layer and Imagination Mode are documented here as **RFC-level architecture
