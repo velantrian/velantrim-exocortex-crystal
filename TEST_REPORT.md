@@ -32,6 +32,15 @@ codebase; none of them are runtime dependencies).
 ## How to reproduce
 
 ```bash
+# Recommended: single-step editable install (aligns with the [dev] extra)
+pip install -e '.[dev]'
+pytest tests/ --cov=. --cov-fail-under=100
+```
+
+The `requirements-dev.txt` file is the equivalent CI path and stays aligned with
+the `[dev]` extra; either installs the same environment. On CI:
+
+```bash
 pip install -r requirements-dev.txt
 pip install -e .
 pytest tests/ --cov=. --cov-fail-under=100

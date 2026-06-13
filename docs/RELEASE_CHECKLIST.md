@@ -56,14 +56,15 @@ to the repository.
 Suggested release title:
 
 ```text
-Velantrim Crystal v0.1.0 — Verifiable local-first AI memory core
+Velantrim Crystal v0.1.1 — Reviewer-ready release checkpoint
 ```
 
 Suggested release summary:
 
 ```text
-This release provides a dependency-free, local-first open core for verifiable AI
-memory: L0/L1 working memory, L3 canonical graph, TruthGate, source tracking,
-replayable receipts, external knowledge ingestion, GDPR-relevant controls,
-read-only MCP integration, and an evaluation/documentation baseline.
+Docs and packaging synchronisation pass after T3/T4/T5: eval metrics updated to
+the T3 baseline (22 retrieval cases, 15 contradiction pairs, boundary corpus),
+REVIEWER_OVERVIEW roadmap statuses updated to Completed, TEST_REPORT install path
+aligned with pip install -e '.[dev]', version bumped to 0.1.1.
+No runtime behaviour change.
 ```

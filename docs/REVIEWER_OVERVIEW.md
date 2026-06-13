@@ -105,9 +105,9 @@ that Crystal is brain-like, conscious, or biologically accurate.
 | P0 | Architecture honesty / implementation status | Completed |
 | P0.1 | Overclaim cleanup / grant-safe wording | Completed |
 | T2 | KB schema alignment | Completed (PR #106 merged) |
-| T3 | Eval corpus expansion | Next |
-| T4 | Reproducible MVP packaging | Planned |
-| T5 | Reviewer demo package | Planned |
+| T3 | Eval corpus expansion | Completed |
+| T4 | Reproducible MVP packaging | Completed |
+| T5 | Reviewer demo package | Completed |
 | T6+ | Larger traceable KB and research tracks | Research |
 | Follow-up | Research Inspirations document (non-normative context, not implementation status) | Planned follow-up |
 
