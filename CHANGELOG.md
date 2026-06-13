@@ -13,6 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `core/invariant_check.py`: read-only machine-executable invariant checker —
+  verifies selected epistemic invariants over the current L3 canonical state and
+  emits a machine-readable JSON report; 3 implemented checks
+  (`no_llm_output_verified`, `verified_requires_source`,
+  `verified_requires_evidence`) + 2 `SKIPPED_UNSUPPORTED` checks with honest
+  explanations; exit codes 0=PASS / 1=WARN / 2=FAIL
+- `velantrim invariant-check` CLI command
+- `docs/INVARIANT_CHECK.md`: documentation (what it does, what it does NOT do,
+  SKIPPED_UNSUPPORTED semantics, exit codes, example outputs)
+- `examples/invariant_check_pass.json`, `examples/invariant_check_fail.json`:
+  reference output examples
 - `core/trace_visualize.py`: read-only TRACE / Receipt visualization formatter (Markdown + DOT output) for reviewer tooling
 - `scripts/trace_visualize.py`: CLI wrapper for trace visualization
 - `docs/TRACE_VISUALIZATION.md`: documentation for the visualization helper
