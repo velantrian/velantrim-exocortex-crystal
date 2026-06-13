@@ -244,6 +244,209 @@ def test_cli_learn_unsupported_raises(tmp_path, monkeypatch):
         main(["learn", str(path)])
 
 
+# ─── BibTeX adapter ───────────────────────────────────────────────────────────
+# No optional dep — bibtex adapter is stdlib-only; no importorskip needed.
+
+def test_bibtex_adapter_registers_on_import():
+    import core.adapters.bibtex_adapter  # noqa: F401
+    assert _get_adapter("bib") is not None
+
+
+_BIB_TWO_ENTRIES = """\
+@article{einstein1905,
+  title = {On the Electrodynamics of Moving Bodies},
+  author = {Albert Einstein},
+  year = {1905},
+  abstract = {This paper introduces the special theory of relativity.}
+}
+@book{darwin1859,
+  title = {On the Origin of Species},
+  author = {Charles Darwin},
+  year = {1859}
+}
+"""
+
+_BIB_ALL_CITATION_FORMS = """\
+@article{authoronly,
+  title = {A Paper With Author Only},
+  author = {Some Author}
+}
+@article{yearonly,
+  title = {A Paper With Year Only},
+  year = {2000}
+}
+@article{titleonly,
+  title = {Just A Title}
+}
+@article{notitle,
+  author = {Nobody},
+  year = {2020}
+}
+@article{quotedfields,
+  title = "Quoted Title",
+  author = "Quoted Author",
+  year = "2021"
+}
+"""
+
+
+def test_bibtex_two_entries_with_abstract(tmp_path):
+    """Two entries; the first has an abstract → 3 total claims."""
+    import core.adapters.bibtex_adapter  # noqa: F401
+    from core.adapters.bibtex_adapter import extract_bibtex_claims
+    bib = tmp_path / "refs.bib"
+    bib.write_text(_BIB_TWO_ENTRIES, encoding="utf-8")
+    claims = extract_bibtex_claims(str(bib))
+    # einstein1905: citation claim + abstract claim; darwin1859: citation only
+    assert len(claims) == 3
+    chunk_ids = [c["chunk_id"] for c in claims]
+    assert chunk_ids.count("einstein1905") == 2
+    assert chunk_ids.count("darwin1859") == 1
+    # citation format: "title" (author, year)
+    einstein_citation = next(c["claim"] for c in claims if c["chunk_id"] == "einstein1905"
+                             and "abstract" not in c["claim"].lower()[:20])
+    assert "Einstein" in einstein_citation
+    assert "1905" in einstein_citation
+    # abstract stored separately
+    abstract_claim = next(c["claim"] for c in claims if c["chunk_id"] == "einstein1905"
+                          and "relativity" in c["claim"].lower())
+    assert "relativity" in abstract_claim.lower()
+
+
+def test_bibtex_empty_file(tmp_path):
+    """Empty .bib → empty list."""
+    import core.adapters.bibtex_adapter  # noqa: F401
+    from core.adapters.bibtex_adapter import extract_bibtex_claims
+    bib = tmp_path / "empty.bib"
+    bib.write_text("", encoding="utf-8")
+    assert extract_bibtex_claims(str(bib)) == []
+
+
+def test_bibtex_all_citation_forms(tmp_path):
+    """Exercise all branches of _build_citation_claim."""
+    import core.adapters.bibtex_adapter  # noqa: F401
+    from core.adapters.bibtex_adapter import extract_bibtex_claims
+    bib = tmp_path / "forms.bib"
+    bib.write_text(_BIB_ALL_CITATION_FORMS, encoding="utf-8")
+    claims = extract_bibtex_claims(str(bib))
+    claims_by_key: dict = {}
+    for c in claims:
+        claims_by_key.setdefault(c["chunk_id"], []).append(c["claim"])
+
+    # author only (no year)
+    assert any("Some Author" in cl and "2" not in cl for cl in claims_by_key["authoronly"])
+    # year only (no author)
+    assert any("2000" in cl and "Author" not in cl for cl in claims_by_key["yearonly"])
+    # title only (no author, no year)
+    assert any(cl == '"Just A Title"' for cl in claims_by_key["titleonly"])
+    # no title → no claim for that key
+    assert "notitle" not in claims_by_key
+    # quoted-field syntax ("...") parsed the same as brace syntax ({...})
+    assert any("Quoted Title" in cl for cl in claims_by_key["quotedfields"])
+    assert any("Quoted Author" in cl for cl in claims_by_key["quotedfields"])
+    assert any("2021" in cl for cl in claims_by_key["quotedfields"])
+
+
+def test_bibtex_ingest_file(tmp_path, monkeypatch):
+    """End-to-end: ingest_file accepts .bib extension."""
+    _reset_env(monkeypatch)
+    import core.adapters.bibtex_adapter  # noqa: F401
+    bib = tmp_path / "refs.bib"
+    bib.write_text(_BIB_TWO_ENTRIES, encoding="utf-8")
+    from core import knowledge
+    rep = knowledge.ingest_file(str(bib))
+    assert "accepted" in rep
+    assert rep["source"] == "refs.bib"
+
+
+# ─── EPUB adapter ─────────────────────────────────────────────────────────────
+
+ebooklib = pytest.importorskip("ebooklib", reason="ebooklib not installed — skip EPUB adapter tests")
+
+
+def _make_minimal_epub(tmp: Path) -> str:
+    """Build a minimal valid EPUB in-memory using ebooklib's EpubBook API."""
+    from ebooklib import epub
+    book = epub.EpubBook()
+    book.set_identifier("test-epub-001")
+    book.set_title("Test Book")
+    book.set_language("en")
+
+    # Chapter with paragraphs long enough to become claims.
+    c1 = epub.EpubHtml(title="Chapter 1", file_name="chapter01.xhtml", lang="en")
+    c1.content = (
+        b"<html><body>"
+        b"<p>The quick brown fox jumps over the lazy dog near the river bank.</p>"
+        b"\n\n"
+        b"<p>Short</p>"
+        b"\n\n"
+        b"<p>This is another sufficiently long paragraph for testing claim extraction.</p>"
+        b"</body></html>"
+    )
+    book.add_item(c1)
+
+    # Chapter whose content intentionally triggers the latin-1 fallback.
+    c2 = epub.EpubHtml(title="Chapter 2", file_name="chapter02.xhtml", lang="en")
+    # latin-1 bytes that are not valid UTF-8
+    latin1_text = "Caf\xe9 culture is a cornerstone of Parisian daily life indeed.".encode("latin-1")
+    c2.content = b"<html><body><p>" + latin1_text + b"</p></body></html>"
+    book.add_item(c2)
+
+    # Required navigation items for a valid EPUB
+    book.toc = (epub.Link("chapter01.xhtml", "Chapter 1", "chapter01"),
+                epub.Link("chapter02.xhtml", "Chapter 2", "chapter02"))
+    book.add_item(epub.EpubNcx())
+    book.add_item(epub.EpubNav())
+    book.spine = ["nav", c1, c2]
+
+    path = tmp / "test.epub"
+    epub.write_epub(str(path), book)
+    return str(path)
+
+
+def test_epub_adapter_registers_on_import():
+    import core.adapters.epub_adapter  # noqa: F401
+    assert _get_adapter("epub") is not None
+
+
+def test_epub_extract_returns_claims_with_chunk_id(tmp_path):
+    """Minimal valid EPUB → claims have correct chunk_ids; short paragraphs skipped."""
+    import core.adapters.epub_adapter  # noqa: F401
+    from core.adapters.epub_adapter import extract_epub_claims
+    path = _make_minimal_epub(tmp_path)
+    claims = extract_epub_claims(path)
+    assert isinstance(claims, list)
+    assert len(claims) >= 2  # at least the two long paragraphs
+    chunk_ids = {c["chunk_id"] for c in claims}
+    # Both chapters should produce at least one claim
+    assert len(chunk_ids) >= 1
+    # Every claim must have a chunk_id and a non-empty claim string
+    for c in claims:
+        assert "chunk_id" in c
+        assert "claim" in c
+        assert len(c["claim"]) >= 30
+
+
+def test_epub_html_to_text_latin1_fallback(tmp_path):
+    """_html_to_text falls back to latin-1 when bytes are not valid UTF-8."""
+    import core.adapters.epub_adapter  # noqa: F401
+    from core.adapters.epub_adapter import _html_to_text
+    # bytes that are invalid UTF-8 but valid latin-1
+    latin1_bytes = b"Caf\xe9 au lait is a very pleasant morning drink indeed."
+    result = _html_to_text(latin1_bytes)
+    assert "Caf" in result  # decoded without crash
+
+
+def test_epub_ingest_file(tmp_path, monkeypatch):
+    """End-to-end: ingest_file accepts .epub extension."""
+    _reset_env(monkeypatch)
+    import core.adapters.epub_adapter  # noqa: F401
+    path = _make_minimal_epub(tmp_path)
+    from core import knowledge
+    rep = knowledge.ingest_file(path)
+    assert "accepted" in rep
+
+
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
 def _reset_env(monkeypatch) -> None:
