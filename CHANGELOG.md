@@ -13,6 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **PR4 — KB Dry-Run Batch Manifest** (grant WP2/WP4 hardening):
+  - `core/kb_ingest.py` — `dry_run_batch(claims)` and
+    `dry_run_manifest_file(path)` predict accept/reinforce/blocked/conflict
+    for every claim in a JSONL or JSON-array manifest WITHOUT writing
+    anything to memory; reuses the same Guardian + TruthGate pipeline as
+    the live ingest path so preview matches reality.
+  - `core/cli.py` — `velantrim kb-ingest <manifest.jsonl>` CLI command.
+  - `tests/test_kb_dryrun.py` — 16 behaviour-pinned tests: manifest shape,
+    LLM_OUTPUT blocking, EXTERNAL accept, reinforce detection, empty claim,
+    no-write invariant, JSONL/JSON/NDJSON file I/O, FileNotFoundError,
+    ValueError on non-array JSON, custom source, empty file, CLI round-trip.
 - `docs/SPARK_RFC.md` (new) — Future RFC for the Spark Layer: sandboxed
   generative/exploratory reasoning within the Velantrim Exo-Cortex; covers
   Imagination Mode, the Spark-to-Crystal Bridge (plausibility pre-filter),
