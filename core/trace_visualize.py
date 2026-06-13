@@ -5,17 +5,21 @@
 # inspection. Pure read-only formatter — no writes, no TruthGate calls,
 # no L3 access, no truth verification.
 
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, List, Tuple, Union
 
 
 def _extract_receipt_and_verify(
-    data: Dict[str, Any],
+    data: Union[Dict[str, Any], List[Any]],
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """Extract receipt and verify dicts from either a combined or plain receipt dict.
+    """Extract receipt and verify dicts from a combined, plain, or trace-array input.
 
-    If data has a "receipt" key, treat it as a combined dict and return
-    (data["receipt"], data.get("verify", {})).  Otherwise return (data, {}).
+    Handles three forms:
+    - list (trace array from build_trace): uses data[0] as the receipt dict.
+    - dict with "receipt" key (combined receipt+verify): returns (receipt, verify).
+    - plain receipt dict: returns (data, {}).
     """
+    if isinstance(data, list):
+        data = data[0] if data else {}
     if "receipt" in data:
         return data["receipt"], data.get("verify", {})
     return data, {}
@@ -54,6 +58,14 @@ def to_markdown(data: Dict[str, Any]) -> str:
 
     citations = receipt.get("citations") or []
 
+    # Build per-citation verify-status lookup from verify["citations"] (if present).
+    verify_citations = verify.get("citations") or []
+    verify_map: Dict[str, str] = {
+        str(c["fact_id"]): c.get("status", "")
+        for c in verify_citations
+        if "fact_id" in c
+    }
+
     lines: list = [
         "# TRACE Visualization",
         "",
@@ -78,8 +90,10 @@ def to_markdown(data: Dict[str, Any]) -> str:
         raw_fact_id = cit.get("fact_id")
         if raw_fact_id is None:
             fact_id_display = "(unknown)"
+            verify_status = ""
         else:
             fact_id_str = str(raw_fact_id)
+            verify_status = verify_map.get(fact_id_str, "")
             if len(fact_id_str) > 20:
                 fact_id_display = fact_id_str[:20] + "…"
             else:
@@ -90,10 +104,13 @@ def to_markdown(data: Dict[str, Any]) -> str:
         evidence_list = cit.get("evidence")
         evidence_present = "present" if evidence_list else "absent"
 
-        lines.append(
+        line = (
             f"  - {fact_id_display}: truth_status={truth_status},"
             f" source={source}, evidence={evidence_present}"
         )
+        if verify_status:
+            line += f", verify={verify_status}"
+        lines.append(line)
 
     lines += [
         "",
@@ -131,7 +148,7 @@ def to_dot(data: Dict[str, Any]) -> str:
         receipt_label = "Receipt"
 
     def _escape(s: str) -> str:
-        return str(s).replace('"', '\\"')
+        return str(s).replace("\\", "\\\\").replace('"', '\\"')
 
     lines = [
         "digraph trace {",
