@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://velantrim.local/schemas/personal_overlay.schema.json",
+  "title": "Velantrim Personal Overlay Record",
+  "description": "Schema for future private Personal Overlay records. This is documentation/schema only and must not contain real sensitive identifiers in public samples.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "type",
+    "title",
+    "claim_type",
+    "source_status",
+    "truth_status",
+    "sensitivity",
+    "created_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 3,
+      "pattern": "^[a-zA-Z0-9_.:-]+$"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "PersonProfile",
+        "IdentityAnchor",
+        "ProjectNode",
+        "GoalNode",
+        "PreferenceNode",
+        "ConstraintNode",
+        "HealthContext",
+        "LegalContext",
+        "DocumentPointer",
+        "EmotionalContext",
+        "CultureContext",
+        "RiskFlag",
+        "KnownUnknown"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "summary": {
+      "type": "string",
+      "maxLength": 2000
+    },
+    "claim_type": {
+      "type": "string",
+      "enum": [
+        "PREFERENCE",
+        "GOAL",
+        "USER_REPORTED_CONTEXT",
+        "PRIVATE_CONTEXT",
+        "SENSITIVE_CONTEXT",
+        "EMOTION",
+        "INTERPRETATION",
+        "PROJECT_CONTEXT",
+        "CULTURE_CONTEXT",
+        "KNOWN_UNKNOWN"
+      ]
+    },
+    "source_status": {
+      "type": "string",
+      "enum": [
+        "USER_REPORTED",
+        "OBSERVED",
+        "DERIVED",
+        "EXTERNAL",
+        "UNKNOWN"
+      ]
+    },
+    "truth_status": {
+      "type": "string",
+      "enum": [
+        "PERSONAL_ACTIVE",
+        "PRIVATE_CONTEXT",
+        "SUBJECTIVE_VALID",
+        "UNVERIFIED",
+        "HYPOTHESIS",
+        "KNOWN_UNKNOWN",
+        "ARCHIVED"
+      ]
+    },
+    "sensitivity": {
+      "type": "string",
+      "enum": ["public", "private", "sensitive", "highly_sensitive"]
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "requires_user_confirmation_before_use": {
+      "type": "boolean",
+      "default": false
+    },
+    "store_full_numbers": {
+      "type": "boolean",
+      "default": false
+    },
+    "store_full_address": {
+      "type": "boolean",
+      "default": false
+    },
+    "not_world_fact": {
+      "type": "boolean",
+      "default": true
+    },
+    "tags": {
+      "type": "array",
+      "items": {"type": "string", "maxLength": 64},
+      "uniqueItems": true
+    },
+    "links": {
+      "type": "array",
+      "items": {"type": "string", "maxLength": 128},
+      "uniqueItems": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"sensitivity": {"const": "highly_sensitive"}},
+        "required": ["sensitivity"]
+      },
+      "then": {
+        "properties": {
+          "store_full_numbers": {"const": false},
+          "store_full_address": {"const": false},
+          "requires_user_confirmation_before_use": {"const": true}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"claim_type": {"enum": ["EMOTION", "INTERPRETATION", "PRIVATE_CONTEXT", "SENSITIVE_CONTEXT"]}},
+        "required": ["claim_type"]
+      },
+      "then": {
+        "properties": {
+          "not_world_fact": {"const": true}
+        }
+      }
+    }
+  ]
+}
