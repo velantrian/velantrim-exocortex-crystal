@@ -225,7 +225,7 @@ def test_load_retrieval_corpus_ru_via_package_resources():
 def test_load_retrieval_corpus_unknown_lang_raises():
     import pytest as _pytest
     with _pytest.raises(ValueError, match="lang"):
-        ev.load_retrieval_corpus("de")
+        ev.load_retrieval_corpus("zz")
 
 
 def test_run_baseline_ru_smoke():
@@ -274,6 +274,100 @@ def test_missing_ru_fixture_raises(monkeypatch):
     import pytest as _pytest
     with _pytest.raises(FileNotFoundError, match="retrieval_ru.json"):
         ev.load_retrieval_corpus("ru")
+
+
+# ─── German corpus (report-only, WP3) ──────────────────────────────────────────
+
+def test_load_retrieval_corpus_de():
+    """DE fixture loads through importlib.resources, has 8+ cases across 4+ domains."""
+    from importlib import resources
+    import json as _json
+    raw = resources.files("core").joinpath(
+        "_eval_fixtures/retrieval_de.json").read_text(encoding="utf-8")
+    assert _json.loads(raw)["cases"]
+    corpus = ev.load_retrieval_corpus("de")
+    assert len(corpus["cases"]) >= 8
+    assert len(corpus["distractors"]) >= 3
+    assert all(c.get("query") and c.get("claim") for c in corpus["cases"])
+    assert len({c.get("domain") for c in corpus["cases"]}) >= 4
+
+
+def test_run_baseline_de():
+    report = ev.run_baseline(lang="de")
+    assert report["cases"] >= 8
+    for key in ("hit@1", "hit@3", "hit@5", "mrr"):
+        assert 0.0 <= report["retrieval"][key] <= 1.0
+    assert 0.0 <= report["receipt_replay_survival"] <= 1.0
+    assert "contradiction" in report
+
+
+def test_cli_eval_lang_de(capsys):
+    from core.cli import main
+    assert main(["eval", "--lang", "de"]) == 0
+    out = json.loads(capsys.readouterr().out)
+    assert out["cases"] >= 8
+    assert "retrieval" in out
+
+
+def test_cli_eval_gate_refuses_de(capsys):
+    """gate thresholds are EN-calibrated — DE is report-only."""
+    from core.cli import main
+    assert main(["eval", "--lang", "de", "--gate"]) == 1
+    assert "report-only" in capsys.readouterr().err
+
+
+def test_missing_de_fixture_raises(monkeypatch):
+    monkeypatch.setattr(ev, "_load_fixture_json", lambda name: None)
+    import pytest as _pytest
+    with _pytest.raises(FileNotFoundError, match="retrieval_de.json"):
+        ev.load_retrieval_corpus("de")
+
+
+# ─── French corpus (report-only, WP3) ──────────────────────────────────────────
+
+def test_load_retrieval_corpus_fr():
+    """FR fixture loads through importlib.resources, has 8+ cases across 4+ domains."""
+    from importlib import resources
+    import json as _json
+    raw = resources.files("core").joinpath(
+        "_eval_fixtures/retrieval_fr.json").read_text(encoding="utf-8")
+    assert _json.loads(raw)["cases"]
+    corpus = ev.load_retrieval_corpus("fr")
+    assert len(corpus["cases"]) >= 8
+    assert len(corpus["distractors"]) >= 3
+    assert all(c.get("query") and c.get("claim") for c in corpus["cases"])
+    assert len({c.get("domain") for c in corpus["cases"]}) >= 4
+
+
+def test_run_baseline_fr():
+    report = ev.run_baseline(lang="fr")
+    assert report["cases"] >= 8
+    for key in ("hit@1", "hit@3", "hit@5", "mrr"):
+        assert 0.0 <= report["retrieval"][key] <= 1.0
+    assert 0.0 <= report["receipt_replay_survival"] <= 1.0
+    assert "contradiction" in report
+
+
+def test_cli_eval_lang_fr(capsys):
+    from core.cli import main
+    assert main(["eval", "--lang", "fr"]) == 0
+    out = json.loads(capsys.readouterr().out)
+    assert out["cases"] >= 8
+    assert "retrieval" in out
+
+
+def test_cli_eval_gate_refuses_fr(capsys):
+    """gate thresholds are EN-calibrated — FR is report-only."""
+    from core.cli import main
+    assert main(["eval", "--lang", "fr", "--gate"]) == 1
+    assert "report-only" in capsys.readouterr().err
+
+
+def test_missing_fr_fixture_raises(monkeypatch):
+    monkeypatch.setattr(ev, "_load_fixture_json", lambda name: None)
+    import pytest as _pytest
+    with _pytest.raises(FileNotFoundError, match="retrieval_fr.json"):
+        ev.load_retrieval_corpus("fr")
 
 
 # ─── T3: trust-boundary behaviour corpus ──────────────────────────────────────

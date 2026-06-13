@@ -1,0 +1,51 @@
+{
+  "description": "Corpus de récupération français sélectionné (rapport uniquement, WP3). Même structure que retrieval.json : paires (requête, affirmation) plus des distracteurs ingérés dans le même canon. Pas inclus dans la porte CI : utilisé pour des rapports comparatifs, par exemple VELANTRIM_EMBEDDER=hashing-trigram velantrim eval --lang fr.",
+  "distractors": [
+    "Le mont Everest est la plus haute montagne au-dessus du niveau de la mer",
+    "Le Pacifique est le plus grand océan du monde",
+    "La photosynthèse convertit l'énergie lumineuse en énergie chimique",
+    "La Grande Muraille de Chine a été construite sur plusieurs siècles"
+  ],
+  "cases": [
+    {
+      "domain": "physics",
+      "query": "à quelle température l'eau bout-elle",
+      "claim": "L'eau bout à 100 degrés Celsius au niveau de la mer"
+    },
+    {
+      "domain": "physics",
+      "query": "à quelle température l'eau gèle-t-elle",
+      "claim": "L'eau gèle à 0 degré Celsius sous pression normale"
+    },
+    {
+      "domain": "geography",
+      "query": "quelle est la capitale de la France",
+      "claim": "Paris est la capitale de la France"
+    },
+    {
+      "domain": "geography",
+      "query": "quelle est la capitale de l'Allemagne",
+      "claim": "Berlin est la capitale de l'Allemagne"
+    },
+    {
+      "domain": "geography",
+      "query": "quel est le fleuve le plus long du monde",
+      "claim": "Le Nil est le fleuve le plus long du monde"
+    },
+    {
+      "domain": "astronomy",
+      "query": "combien de planètes y a-t-il dans le système solaire",
+      "claim": "Le système solaire comprend huit planètes"
+    },
+    {
+      "domain": "history",
+      "query": "quand s'est terminée la Seconde Guerre mondiale",
+      "claim": "La Seconde Guerre mondiale s'est terminée en 1945"
+    },
+    {
+      "domain": "biology",
+      "query": "combien de chambres a le cœur humain",
+      "claim": "Le cœur humain possède quatre chambres"
+    }
+  ]
+}
