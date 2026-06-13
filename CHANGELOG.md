@@ -17,6 +17,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `scripts/trace_visualize.py`: CLI wrapper for trace visualization
 - `docs/TRACE_VISUALIZATION.md`: documentation for the visualization helper
 
+### Fixed
+- **CI coverage gap** (PR #130): `ebooklib` and `requests` were missing from
+  `requirements-dev.txt` and `pyproject.toml [dev]`; their absence caused
+  `tests/test_adapters.py` to be skipped wholesale in CI (39 tests, including
+  YAML/PDF/RDF/BibTeX coverage), dropping coverage below 100%.
+- **TRACE viz — list input** (PR #130): `_extract_receipt_and_verify` now handles
+  trace-array (`list[dict]`) input from `build_trace()`; previously crashed with
+  `AttributeError` on `.get()`.
+- **TRACE viz — DOT backslash escape** (PR #130): `_escape()` in `to_dot` now
+  escapes `\` before `"`, producing valid DOT when fact_ids contain backslashes.
+- **TRACE viz — per-citation verify status** (PR #130): `to_markdown` now
+  surfaces `verify["citations"]` status next to each citation (e.g. `, verify=ok`).
+- **scripts/trace_visualize.py direct execution** (PR #130): added
+  `sys.path.insert(0, repo_root)` bootstrap so the script works when run
+  directly as `python scripts/trace_visualize.py ...`.
+
 ## [0.2.0] — 2026-06-13
 
 ### Added
