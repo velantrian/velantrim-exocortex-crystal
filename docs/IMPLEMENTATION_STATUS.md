@@ -100,3 +100,4 @@ that already governs `LLM_OUTPUT` today (see
 | RFC_PROVENANCE_GRADES | BRONZE/SILVER/GOLD evidence tiers | Future |
 | RFC_TEMPORAL_LAYER | Bi-temporal claim fields and temporal reasoning | Future |
 | [RFC_HARNESS_REPLAY_OPTIMIZATION](./RFC_HARNESS_REPLAY_OPTIMIZATION.md) | Trajectory record/replay + human-approved harness optimization | Proposed (drafted, RFC-only) |
+| [EPISTEMIC_INFRASTRUCTURE_UPGRADE](./EPISTEMIC_INFRASTRUCTURE_UPGRADE.md) | Temporal Layer, Context/Scope, Conflict Resolution, Negative Knowledge, Known Unknowns, Plausibility Pre-Filter, Confidence Calibration, Epistemic Debt | Future RFC / v0.3.0+ research roadmap / no runtime feature / no schema fields today |

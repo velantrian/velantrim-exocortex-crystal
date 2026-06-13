@@ -70,7 +70,7 @@ control over their data:
 - no telemetry by default;
 - no outbound network calls by default;
 - no mandatory cloud service;
-- no mandatory transfer to US-based or other third-party AI providers;
+- no mandatory transfer to external third-party AI or cloud providers outside operator-controlled infrastructure;
 - local SQLite / embedded graph storage by default;
 - operator-controlled export or sync when the owner explicitly chooses it.
 
@@ -115,7 +115,7 @@ practical knowledge, multilingual expansion and the path toward 50k+ useful fact
 | **Business** | internal procedures, customer-support memory, compliance-aware copilots |
 | **Government / public sector** | sovereign local AI memory for sensitive institutional data |
 | **Schools / universities** | offline educational knowledge bases and curriculum memory |
-| **Healthcare** | local, auditable reference knowledge support where privacy is essential |
+| **Healthcare** | local, auditable reference knowledge support and educational aid where privacy is essential — not for clinical decision-making, diagnosis, or treatment |
 | **Research / science** | source-tracked research notes, datasets and claim provenance |
 | **Agriculture / industry / chemistry** | local operational knowledge, procedures, safety facts, field records |
 | **Libraries / archives** | curated corpora served offline with source trails |

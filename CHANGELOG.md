@@ -12,6 +12,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Future RFC document `docs/EPISTEMIC_INFRASTRUCTURE_UPGRADE.md` — Temporal Layer,
+  Context/Scope, Conflict Resolution, Negative Knowledge, Known Unknowns, Plausibility
+  Pre-Filter, Confidence Calibration and Epistemic Debt; explicitly marked as
+  non-runtime / v0.3.0+ research roadmap.
+- `docs/DIGITAL_SOVEREIGNTY.md` — "Efficient AI" section with future evaluation
+  metrics (`llm_calls_avoided_per_query`, `tokens_saved_per_answer`, etc.);
+  no performance guarantees claimed.
+
+### Changed
+- `README.md` — geopolitical wording tightened: "US-based or other third-party
+  AI providers" → "external third-party AI or cloud providers outside
+  operator-controlled infrastructure"; healthcare row clarified to add
+  "not for clinical decision-making, diagnosis, or treatment".
+- `SECURITY.md` — supported-version table split: `0.1.x` (active Crystal line)
+  separated from `8.x` (historical/separate research archive, not the
+  grant-facing support target).
+- `docs/IMPLEMENTATION_STATUS.md` — `EPISTEMIC_INFRASTRUCTURE_UPGRADE` added
+  to Future RFC backlog.
+
 ## [0.1.1] — 2026-06-13
 
 ### Added
