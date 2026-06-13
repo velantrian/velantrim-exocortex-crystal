@@ -138,6 +138,7 @@
         "required": ["sensitivity"]
       },
       "then": {
+        "required": ["store_full_numbers", "store_full_address", "requires_user_confirmation_before_use"],
         "properties": {
           "store_full_numbers": {"const": false},
           "store_full_address": {"const": false},
@@ -151,6 +152,7 @@
         "required": ["claim_type"]
       },
       "then": {
+        "required": ["not_world_fact"],
         "properties": {
           "not_world_fact": {"const": true}
         }
