@@ -141,6 +141,17 @@ Two things to notice: the externally sourced claim reached **`VERIFIED`**
 content hash plus its exact evidence span. The receipt is identified by its
 content digest — there is no separate receipt id to spoof.
 
+## Step 5b — Visualize the receipt (optional, reviewer tooling)
+
+```bash
+python scripts/trace_visualize.py demo-data/receipt.json --format markdown
+```
+
+This renders the receipt as a human-readable evidence path: query → answer →
+citations with `truth_status`, evidence present/absent, and per-citation
+verification status.  Pass `--format dot` for a Graphviz DOT digraph.
+The script is **read-only** — no writes, no TruthGate calls, no L3 access.
+
 ## Step 6 — Strict replay: re-verify the receipt against the canon
 
 ```bash

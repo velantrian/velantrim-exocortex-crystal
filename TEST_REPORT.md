@@ -3,7 +3,7 @@
 Honest, reproducible test results for Velantrim ExoCortex — Crystal. No inflated
 numbers: run the commands below and compare the figures.
 
-**Current audited baseline after the v0.2.0 Grant MVP Hardening + WP1 Source Span release: 934 passed /
+**Current audited baseline after v0.2.0 + TRACE Visualization v0 + CI coverage fixes: 1017 passed /
 12 skipped.** This file and the README badge are the only places that carry
 the exact count; all other documents reference this report so the number
 cannot silently drift.
@@ -12,11 +12,11 @@ cannot silently drift.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **934** |
+| **Tests passing** | **1017** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **100%** (gate enforced at 100%, repo-wide `--cov=.`) |
-| Test files | 58 (`tests/test_*.py`) |
+| Test files | 60 (`tests/test_*.py`) |
 | Python | 3.11 / 3.12 in CI |
 | Runtime dependencies | standard library only |
 
@@ -26,8 +26,8 @@ and in CI with the same flags. The 12 skipped tests cover optional backends
 the default environment; their backend-specific code paths are excluded via
 `pragma: no cover`. Reaching the figures below requires the dev environment from
 `requirements-dev.txt` (it installs the optional layers — FastAPI, cryptography,
-PyYAML, pypdf, rdflib — that the suite exercises so coverage reflects the whole
-codebase; none of them are runtime dependencies).
+PyYAML, pypdf, rdflib, ebooklib, requests — that the suite exercises so coverage
+reflects the whole codebase; none of them are runtime dependencies).
 
 ## How to reproduce
 
@@ -52,9 +52,12 @@ pytest tests/ --cov=. --cov-fail-under=100
 |--------|------:|------:|
 | `core/_registry.py`    | 24  | 100% |
 | `core/adaptation.py`   | 22  | 100% |
-| `core/adapters/pdf_adapter.py`  | 22 | 100% |
-| `core/adapters/rdf_adapter.py`  | 33 | 100% |
-| `core/adapters/yaml_adapter.py` | 30 | 100% |
+| `core/adapters/bibtex_adapter.py`   | 45 | 100% |
+| `core/adapters/epub_adapter.py`     | 27 | 100% |
+| `core/adapters/pdf_adapter.py`      | 22 | 100% |
+| `core/adapters/rdf_adapter.py`      | 33 | 100% |
+| `core/adapters/wikidata_adapter.py` | 62 | 100% |
+| `core/adapters/yaml_adapter.py`     | 30 | 100% |
 | `core/aio.py`          | 10  | 100% |
 | `core/analogy.py`      | 86  | 100% |
 | `core/api.py`          | 56  | 100% |
@@ -91,13 +94,16 @@ pytest tests/ --cov=. --cov-fail-under=100
 | `core/queue.py`        | 47  | 100% |
 | `core/reconcile.py`    | 97  | 100% |
 | `core/review.py`       | 162 | 100% |
-| `core/trace.py`        | 26  | 100% |
-| `core/velum.py`        | 106 | 100% |
-| `core/volition.py`     | 75  | 100% |
+| `core/trace.py`             | 26  | 100% |
+| `core/trace_visualize.py`   | 73  | 100% |
+| `core/velum.py`             | 106 | 100% |
+| `core/volition.py`          | 75  | 100% |
+| `scripts/eval_track.py`     | 48  | 100% |
+| `scripts/trace_visualize.py`| 22  | 100% |
 | root tooling (`audit_metadata`, `check_rfc_duplicates`, `fill_dependencies`, `epigenetic_adaptation_module`, `velantrim_migrate_v3_1`) | 586 | 100% |
 | `prototypes/` (4 research prototypes) | 145 | 100% |
-| `utils/rfc_parser.py`  | 13  | 100% |
-| **Total (repo-wide)**  | **4755** | **100%** |
+| `utils/rfc_parser.py`       | 13  | 100% |
+| **Total (repo-wide)**       | **5035** | **100%** |
 
 ## What the tests cover
 
@@ -115,10 +121,12 @@ pytest tests/ --cov=. --cov-fail-under=100
 | Neurogenesis Dynamic Growth (RFC0073) — plasticity, pattern separation, growth/prune, CLI | `test_neurogenesis.py` |
 | NeuroCore Phase 0 (RFC0068) — passive plasticity tracker, threshold, I68 isolation, CLI | `test_neurocore.py` |
 | External knowledge ingestion (RFC0063) — txt/md/json/jsonl/csv parsers, TruthGate routing, `learn` CLI | `test_knowledge.py` |
-| Optional knowledge adapters (WP4) — YAML, PDF, RDF/Linked Data | `test_adapters.py` |
+| Optional knowledge adapters (WP4) — YAML, PDF, RDF/Linked Data, EPUB, BibTeX, Wikidata | `test_adapters.py` |
 | Source span offsets (WP1) — `locate_claim`, `extract_section`, `snippet_around` pure utilities | `test_span_extract.py` |
 | Source span offsets (WP1) integration — `ingest_text` / `ingest_claims` span recording, adapter-supplied spans, PDF page chunks | `test_wp1_spans.py` |
 | Evaluation harness — retrieval/trace/receipt + source-span coverage & contradiction precision/recall, `eval` CLI | `test_eval.py` |
+| Per-release eval tracking (WP3) — trend logging, Markdown trend report, `eval_track` CLI | `test_eval_track.py` |
+| TRACE Visualization v0 — read-only receipt formatter (Markdown + DOT), per-citation verify status, trace-array input, CLI | `test_trace_visualize.py` |
 | Import sessions & dry-run review (WP2) — predict-without-write, session restrict/erase, `learn --dry-run` | `test_imports.py` |
 | Curator review queue (WP2) — pending/diagnose/approve/reject, audited force override | `test_review.py` |
 | Resumable review sessions (WP2) — create/resume/record/complete, stable-order batch, no-write invariant | `test_review_resumable.py` |
@@ -151,5 +159,5 @@ pytest tests/ --cov=. --cov-fail-under=100
 | RFC parsing | `test_rfc_parser.py` |
 | Biological-inspiration prototypes | `test_bio_modules.py`, `test_hybrid_biological_memory.py` |
 
-*Figures reflect the suite as of 2026-06-13 (v0.2.0 + WP1 span offsets) and are regenerated by running the
+*Figures reflect the suite as of 2026-06-13 (v0.2.0 + TRACE Visualization v0 + CI coverage fixes) and are regenerated by running the
 commands above.*
