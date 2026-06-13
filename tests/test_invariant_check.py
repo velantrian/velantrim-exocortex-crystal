@@ -3,6 +3,7 @@
 import json
 
 import core.invariant_check as ic
+import core.refusal_reasons as rr
 from core.invariant_check import _aggregate_status, exit_code, run_checks
 
 
@@ -290,3 +291,81 @@ class TestCLI:
         data = json.loads(captured.out)
         assert "status" in data
         assert "checks" in data
+
+
+# ─── reason_code integration ──────────────────────────────────────────────────
+
+
+class TestReasonCodeIntegration:
+    def test_llm_fail_check_has_reason_code(self):
+        facts = [_fact("f:llm", "VERIFIED", "LLM_OUTPUT")]
+        report = run_checks(facts, _has_evidence=lambda fid: True)
+        by_id = {c["id"]: c for c in report["checks"]}
+        assert by_id[ic.ID_NO_LLM_VERIFIED]["reason_code"] == rr.LLM_OUTPUT_NOT_EVIDENCE
+
+    def test_llm_fail_issue_has_reason_code(self):
+        facts = [_fact("f:llm", "VERIFIED", "LLM_OUTPUT")]
+        report = run_checks(facts, _has_evidence=lambda fid: True)
+        issues = [i for i in report["issues"] if i["check_id"] == ic.ID_NO_LLM_VERIFIED]
+        assert issues
+        assert issues[0]["reason_code"] == rr.LLM_OUTPUT_NOT_EVIDENCE
+
+    def test_missing_source_check_has_reason_code(self):
+        facts = [_fact("f:ns", "VERIFIED", "EXTERNAL", source="")]
+        report = run_checks(facts, _has_evidence=lambda fid: True)
+        by_id = {c["id"]: c for c in report["checks"]}
+        assert by_id[ic.ID_VERIFIED_SOURCE]["reason_code"] == rr.MISSING_SOURCE
+
+    def test_missing_source_issue_has_reason_code(self):
+        facts = [_fact("f:ns", "VERIFIED", "EXTERNAL", source="")]
+        report = run_checks(facts, _has_evidence=lambda fid: True)
+        issues = [i for i in report["issues"] if i["check_id"] == ic.ID_VERIFIED_SOURCE]
+        assert issues
+        assert issues[0]["reason_code"] == rr.MISSING_SOURCE
+
+    def test_missing_evidence_check_has_reason_code(self):
+        facts = [_fact("f:ne", "VERIFIED", "EXTERNAL")]
+        report = run_checks(facts, _has_evidence=lambda fid: False)
+        by_id = {c["id"]: c for c in report["checks"]}
+        assert by_id[ic.ID_VERIFIED_EVIDENCE]["reason_code"] == rr.MISSING_EVIDENCE
+
+    def test_missing_evidence_issue_has_reason_code(self):
+        facts = [_fact("f:ne", "VERIFIED", "EXTERNAL")]
+        report = run_checks(facts, _has_evidence=lambda fid: False)
+        issues = [i for i in report["issues"] if i["check_id"] == ic.ID_VERIFIED_EVIDENCE]
+        assert issues
+        assert issues[0]["reason_code"] == rr.MISSING_EVIDENCE
+
+    def test_receipt_integrity_skipped_has_reason_code(self):
+        report = run_checks([], _has_evidence=lambda fid: True)
+        by_id = {c["id"]: c for c in report["checks"]}
+        assert by_id[ic.ID_RECEIPT_INTEGRITY]["reason_code"] == rr.UNSUPPORTED_SCHEMA_CHECK
+
+    def test_no_l3_bypass_skipped_has_reason_code(self):
+        report = run_checks([], _has_evidence=lambda fid: True)
+        by_id = {c["id"]: c for c in report["checks"]}
+        assert by_id[ic.ID_NO_L3_BYPASS]["reason_code"] == rr.UNSUPPORTED_SCHEMA_CHECK
+
+    def test_pass_check_has_no_reason_code(self):
+        facts = [_fact("f:ok", "VERIFIED", "EXTERNAL", source="wiki")]
+        report = run_checks(facts, _has_evidence=lambda fid: True)
+        by_id = {c["id"]: c for c in report["checks"]}
+        # PASS checks must not carry a reason_code field
+        assert "reason_code" not in by_id[ic.ID_NO_LLM_VERIFIED]
+        assert "reason_code" not in by_id[ic.ID_VERIFIED_SOURCE]
+        assert "reason_code" not in by_id[ic.ID_VERIFIED_EVIDENCE]
+
+    def test_reason_codes_are_valid_rr_codes(self):
+        facts = [
+            _fact("f:llm", "VERIFIED", "LLM_OUTPUT"),
+            _fact("f:ns", "VERIFIED", "EXTERNAL", source=""),
+        ]
+        report = run_checks(facts, _has_evidence=lambda fid: False)
+        for check in report["checks"]:
+            rc = check.get("reason_code")
+            if rc:
+                assert rr.is_valid_reason(rc), f"Invalid reason_code in check: {rc}"
+        for issue in report["issues"]:
+            rc = issue.get("reason_code")
+            if rc:
+                assert rr.is_valid_reason(rc), f"Invalid reason_code in issue: {rc}"

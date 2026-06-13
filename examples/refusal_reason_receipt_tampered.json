@@ -1,0 +1,15 @@
+{
+  "reason_code": "RECEIPT_TAMPERED",
+  "title": "Receipt integrity check failed",
+  "severity": "CRITICAL",
+  "description": "The sealed receipt for this claim failed integrity verification. The digest or signature does not match the stored answer.",
+  "suggestion": "Run 'velantrim verify-receipt <file>' for details. Do not promote this claim. Investigate the source of tampering.",
+  "context": {
+    "command": "velantrim verify-receipt receipts/ing_abc123def456.json",
+    "fact_id": "ing:abc123def456",
+    "receipt_version": "1.0",
+    "expected_digest": "sha256:a1b2c3d4e5f6...",
+    "actual_digest": "sha256:000000000000...",
+    "note": "This example illustrates RECEIPT_TAMPERED from the refusal reasons taxonomy. It is not the output of velantrim invariant-check — receipt integrity is SKIPPED_UNSUPPORTED at the invariant-check level. Use 'velantrim verify-receipt' to replay individual receipts."
+  }
+}

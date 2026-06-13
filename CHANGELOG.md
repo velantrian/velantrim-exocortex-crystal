@@ -13,6 +13,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `core/refusal_reasons.py`: stable machine-readable Refusal Reasons Taxonomy v0.1 —
+  13 reason codes (`NO_VERIFIED_CLAIM`, `LLM_OUTPUT_NOT_EVIDENCE`, `MISSING_SOURCE`,
+  `MISSING_PROVENANCE`, `MISSING_EVIDENCE`, `MISSING_TRACE`, `RECEIPT_TAMPERED`,
+  `CONTRADICTION_UNRESOLVED`, `UNSUPPORTED_SCHEMA_CHECK`, `TRUTHGATE_REJECTED`,
+  `GUARDIAN_BLOCKED`, `REQUIRES_HUMAN_REVIEW`, `OUT_OF_SCOPE`) with `code`, `title`,
+  `severity` (INFO/WARN/ERROR/CRITICAL), `description`, and `suggestion` fields;
+  API: `get_reason()`, `is_valid_reason()`, `list_reasons()`, `format_reason()`
+- `core/invariant_check.py` now populates `reason_code` on failing and SKIPPED
+  check entries and issue entries (PASS entries carry no `reason_code`)
+- `docs/REFUSAL_REASONS.md`: full taxonomy documentation (codes, severities,
+  integration with `invariant-check`, stability guarantee, what it does NOT do)
+- `examples/refusal_reason_llm_output.json`,
+  `examples/refusal_reason_missing_source.json`,
+  `examples/refusal_reason_receipt_tampered.json`: reference JSON examples
 - `core/invariant_check.py`: read-only machine-executable invariant checker —
   verifies selected epistemic invariants over the current L3 canonical state and
   emits a machine-readable JSON report; 3 implemented checks
