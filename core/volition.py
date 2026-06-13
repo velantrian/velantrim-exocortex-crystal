@@ -1,6 +1,5 @@
 # core/volition.py
 # Velantrim ExoCortex — Memory Volition (RFC0065)
-# v8.19.0-sprint3
 #
 # "Memory = Agency." So far memory only stores what it is TOLD (ingest) or what a
 # query pulls up (pipeline). Volition gives the canon a will of its own: it can

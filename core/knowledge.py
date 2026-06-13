@@ -1,6 +1,5 @@
 # core/knowledge.py
 # Velantrim ExoCortex — External Knowledge Ingestion (RFC0063)
-# v8.22.0-sprint4
 #
 # The utterance ingestion in core/ingest.py turns a single user message into a
 # fact. RFC0063 is the *bulk* counterpart: it imports external knowledge — a text

@@ -1,6 +1,5 @@
 # core/metrics.py
 # Velantrim ExoCortex — lightweight in-process metrics
-# v8.8.0-sprint2
 #
 # Counters for memory operations (queries, ingest, gates) — observability without external
 # dependencies. The structure is simple (name → count), easily exported to

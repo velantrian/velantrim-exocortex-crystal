@@ -1,6 +1,5 @@
 # core/compliance.py
 # Velantrim ExoCortex — GDPR Compliance Operations
-# v8.9.0-sprint2
 #
 # Two accountability operations not related to deletion (Art. 17 → erasure.py):
 #

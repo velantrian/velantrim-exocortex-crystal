@@ -12,7 +12,7 @@ vulnerabilities.
 
 | Version | Supported |
 |---------|-----------|
-| `0.1.x` | ✅ active — receives security updates |
+| `0.2.x` | ✅ active — receives security updates |
 
 **Legacy / historical lines** (separate research archives, not the grant-facing Crystal core):
 
@@ -21,7 +21,7 @@ vulnerabilities.
 | `8.x`   | ⚠️ historical / separate research line — not the main grant-facing support target |
 | `< 8.0` | ❌ |
 
-Only the latest minor Crystal line (`0.1.x`) receives active security updates unless otherwise stated. Do not rely on `8.x` archive lines for production or grant-facing deployments.
+Only the latest minor Crystal line (`0.2.x`) receives active security updates unless otherwise stated. Do not rely on `8.x` archive lines for production or grant-facing deployments.
 
 ## Reporting a vulnerability
 
@@ -101,8 +101,7 @@ whenever anything beyond the local user can reach the port.
   tamper-evident — a wrong key or modified ciphertext fails authentication.
   Disabled by default (identity), so the default runtime stays stdlib-only.
 - The full test suite at 100% coverage guards the invariants above (current
-  audited baseline in [TEST_REPORT.md](./TEST_REPORT.md))
-  (see [TEST_REPORT.md](./TEST_REPORT.md)).
+  audited baseline in [TEST_REPORT.md](./TEST_REPORT.md)).
 
 ## Dependencies
 

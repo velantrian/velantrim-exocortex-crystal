@@ -1,6 +1,5 @@
 # core/contradiction.py
 # Velantrim ExoCortex — Contradiction Detection (immune layer)
-# v8.14.0-sprint2
 #
 # find_conflicts() surfaces canonical facts that are semantically CLOSE to a new
 # claim — but closeness alone cannot tell a *contradiction* ("water boils at

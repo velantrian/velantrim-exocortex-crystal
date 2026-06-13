@@ -1,6 +1,5 @@
 # core/eval.py
 # Velantrim ExoCortex — Evaluation Harness (baseline)
-# v8.24.0-sprint5
 #
 # Beyond unit-test coverage, this module MEASURES whether memory answers stay
 # grounded, replayable and well-typed. It is deterministic and dependency-free:

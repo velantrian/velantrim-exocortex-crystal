@@ -1,6 +1,5 @@
 # core/ingest.py
 # Velantrim ExoCortex — Ingestion Layer
-# v8.4.0-sprint2
 #
 # Purpose: turn a user's utterance into a fact with the right modality
 # (claim_type) and origin (source_status), run it through the same gates

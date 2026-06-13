@@ -325,13 +325,96 @@ def test_fill_dependencies_skips_blank_lines(tmp_path):
     inp = tmp_path / "in.jsonl"
     inp.write_text(
         '{"chunk_id": "a", "content": "See RFC0004", "rfc": "RFC0001", "depends_on": []}\n'
-        '\n',                                       # blank line is skipped (line 23)
+        '\n',                                       # blank line is skipped
         encoding="utf-8",
     )
     out = tmp_path / "out.jsonl"
     fixes = fill_dependencies(str(inp), str(out))
     assert fixes["total_chunks"] == 1
     assert fixes["depends_on_populated"] == 1
+
+
+# ── Hardening tests (C2) ────────────────────────────────────────────────────
+
+def test_fill_dependencies_output_path_beside_input(tmp_path):
+    """_default_output_path must produce a sibling of the input."""
+    from fill_dependencies import _default_output_path
+    inp = tmp_path / "subdir" / "my_corpus.jsonl"
+    out = _default_output_path(inp)
+    assert out.parent == inp.parent
+    assert out.name == "my_corpus_deps.jsonl"
+
+
+def test_fill_dependencies_missing_input_raises(tmp_path):
+    """Missing input must raise FileNotFoundError, not a raw open() traceback."""
+    from fill_dependencies import fill_dependencies
+    with pytest.raises(FileNotFoundError):
+        fill_dependencies(tmp_path / "nonexistent.jsonl", tmp_path / "out.jsonl")
+
+
+def test_fill_dependencies_malformed_json_does_not_overwrite_original(tmp_path):
+    """On malformed JSON, fill_dependencies must raise and leave original intact."""
+    from fill_dependencies import fill_dependencies
+
+    original_content = (
+        '{"chunk_id": "a", "content": "See RFC0004", "rfc": "RFC0001", "depends_on": []}\n'
+        "{bad json line\n"
+        '{"chunk_id": "b", "content": "ok", "rfc": "RFC0002", "depends_on": []}\n'
+    )
+    inp = tmp_path / "corpus.jsonl"
+    inp.write_text(original_content, encoding="utf-8")
+    out = tmp_path / "corpus_deps.jsonl"
+
+    with pytest.raises(Exception):
+        fill_dependencies(inp, out)
+
+    # Original must be unchanged
+    assert inp.read_text(encoding="utf-8") == original_content
+    # Output must not have been written
+    assert not out.exists()
+
+
+def test_fill_dependencies_valid_input_populates_depends_on(tmp_path):
+    """Valid JSONL: depends_on is populated and output written beside input."""
+    from fill_dependencies import fill_dependencies, _default_output_path
+
+    inp = tmp_path / "corpus.jsonl"
+    inp.write_text(
+        '{"chunk_id": "a", "content": "See RFC0004 and RFC0016", "rfc": "RFC0001", "depends_on": []}\n',
+        encoding="utf-8",
+    )
+    out = _default_output_path(inp)
+    fixes = fill_dependencies(inp, out)
+
+    assert fixes["total_chunks"] == 1
+    assert fixes["depends_on_populated"] == 1
+    assert out.parent == inp.parent
+    assert out.exists()
+
+
+def test_fill_dependencies_dry_run_writes_no_final_file(tmp_path):
+    """fill_dependencies itself never writes the final output — dry-run callers
+    use a temp file and discard it; the library function just needs to succeed."""
+    import tempfile, os
+    from fill_dependencies import fill_dependencies
+
+    inp = tmp_path / "corpus.jsonl"
+    inp.write_text(
+        '{"chunk_id": "a", "content": "ref RFC0004", "rfc": "RFC0001", "depends_on": []}\n',
+        encoding="utf-8",
+    )
+    with tempfile.NamedTemporaryFile(
+        delete=False, suffix=".jsonl", dir=tmp_path
+    ) as tmp:
+        tmp_path_str = tmp.name
+
+    try:
+        fixes = fill_dependencies(str(inp), tmp_path_str)
+    finally:
+        os.unlink(tmp_path_str)
+
+    # Original should be unchanged, no extra file created
+    assert fixes["depends_on_populated"] > 0
 
 
 def test_main_rollback(tmp_path, monkeypatch, capsys):

@@ -7,5 +7,7 @@
 
 # github: velantrian            # GitHub Sponsors username (uncomment when enabled)
 # open_collective:              # Open Collective slug (uncomment when enabled)
-custom:
-  - "https://nlnet.nl"
+# Grant-funding context is documented in docs/grants/funding-use-plan.md.
+# Uncomment the line below only if/when a project-specific sponsor page exists.
+# custom:
+#   - "https://nlnet.nl"

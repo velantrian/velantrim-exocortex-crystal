@@ -1,6 +1,5 @@
 # core/pii.py
 # Velantrim ExoCortex — PII Detection & Redaction (GDPR Art. 5 data minimisation)
-# v8.12.0-sprint2
 #
 # Detects and redacts common personal data in free text before it is stored, so
 # the memory keeps only what it needs ("data minimisation", Art. 5(1)(c)) and

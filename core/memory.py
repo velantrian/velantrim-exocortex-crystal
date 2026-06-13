@@ -1,6 +1,5 @@
 # core/memory.py
 # Velantrim ExoCortex — Memory Layer
-# v8.7.0-sprint2
 #
 # Memory levels:
 #   L0: LRU in-memory cache (CAP=5, OrderedDict)

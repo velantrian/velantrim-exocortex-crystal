@@ -1,6 +1,5 @@
 # core/observe.py
 # Velantrim ExoCortex — Memory Observability
-# v8.8.0-sprint2
 #
 # A window into L3 canonical memory: how many facts, in which ESM states, of which
 # modalities and truth statuses, how many contradictions/obsolete, which

@@ -1,6 +1,5 @@
 # core/consolidate.py
 # Velantrim ExoCortex — SleepCycle (background consolidation)
-# v8.7.0-sprint2
 #
 # Memory physiology: "use it or lose it". reinforce() raises confidence on
 # use; consolidate() — a time-based decay on forgetting. The significant

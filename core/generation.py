@@ -1,6 +1,5 @@
 # core/generation.py
 # Velantrim ExoCortex — Answer Generation (pluggable abstraction)
-# v8.5.0-sprint2
 #
 # Principle: LLM = Language, Graph = Truth. The generator phrases the answer ONLY
 # from facts that passed the TruthGate — it adds no external knowledge (anti-hallucination).

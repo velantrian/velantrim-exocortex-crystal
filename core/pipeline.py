@@ -1,6 +1,5 @@
 # core/pipeline.py
 # Velantrim ExoCortex — Core Pipeline
-# v8.7.0-sprint2
 #
 # Principle: Graph = Truth · LLM = Language · Memory = Physiology
 # Pipeline: Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer

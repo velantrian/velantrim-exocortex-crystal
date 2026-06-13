@@ -53,6 +53,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   no real sensitive identifiers
 
 ### Fixed
+- **README docs-table duplicate**: removed the remaining duplicate
+  `docs/COMPARISON.md` row from the README documentation table (a previous
+  changelog entry claimed this was already done; the duplicate was in fact still
+  present and is corrected in this hygiene pass).
 - **CI coverage gap** (PR #130): `ebooklib` and `requests` were missing from
   `requirements-dev.txt` and `pyproject.toml [dev]`; their absence caused
   `tests/test_adapters.py` to be skipped wholesale in CI (39 tests, including

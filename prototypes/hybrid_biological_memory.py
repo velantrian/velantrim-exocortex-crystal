@@ -53,12 +53,9 @@ class HybridBiologicalMemory:
         self.neurogenesis_module = NeurogenesisDynamicGrowth()
         self.memory_log: List[Dict[str, Any]] = []
 
-        # Seed the known contradictions directly (without a noisy record_threat log).
+        # Seed the known contradictions directly.
         for pattern in _DEFAULT_CONTRADICTIONS:
             self.immune_guard.blocked_patterns.add(pattern)
-
-        print(f"🌿🧠 HybridBiologicalMemory '{self.name}' initialized "
-              f"(4 biological layers)")
 
     def add_memory(self, text: str, importance: float = 0.5) -> str:
         """Store a memory in the fractal and neurogenesis layers. Returns the id."""

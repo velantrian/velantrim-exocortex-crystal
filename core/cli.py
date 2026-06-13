@@ -1,6 +1,5 @@
 # core/cli.py
 # Velantrim ExoCortex — Command-line interface
-# v8.8.0-sprint2
 #
 # A thin wrapper over the core: ingest / ask / history / report.
 #   python -m core.cli ingest "Water boils at 100C"

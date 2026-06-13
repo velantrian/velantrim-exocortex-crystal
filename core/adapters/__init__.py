@@ -1,6 +1,5 @@
 # core/adapters/__init__.py
 # Velantrim ExoCortex — Optional knowledge-source adapters (grant WP4)
-# v8.27.0-sprint6
 #
 # The stdlib runtime (core/knowledge.py) handles .txt/.md/.json/.jsonl/.csv.
 # WP4 adds optional adapters for heavier formats. Each adapter module

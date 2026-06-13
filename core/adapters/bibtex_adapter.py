@@ -1,6 +1,5 @@
 # core/adapters/bibtex_adapter.py
 # Velantrim ExoCortex — BibTeX knowledge adapter (grant WP4)
-# v8.27.0-sprint6
 #
 # Parses .bib files using a minimal stdlib-only regex-based parser (no bibtexparser
 # dependency). Extracts @type{key, ...} entries and builds human-readable claim

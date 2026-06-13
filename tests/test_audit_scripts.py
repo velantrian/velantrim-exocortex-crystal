@@ -141,3 +141,73 @@ def test_check_duplicates_smoke(tmp_path, capsys):
     out = capsys.readouterr().out
     assert "RFC0067 v2.0" in out
     assert "chunks at indices" in out
+
+
+# ── Hardening tests (C1) ────────────────────────────────────────────────────
+
+def test_check_duplicates_short_jsonl_does_not_crash(tmp_path, capsys):
+    """Short JSONL: out-of-range indices are warned, not raised."""
+    records = [
+        {"chunk_id": f"c{i}", "title": f"T{i}", "content": f"x{i}"}
+        for i in range(5)  # max index in duplicates dict is 62; all OOB
+    ]
+    path = _write_jsonl(tmp_path / "short.jsonl", records)
+    # Must not raise IndexError or KeyError
+    check_rfc_duplicates.check_duplicates(path)
+    err = capsys.readouterr().err
+    assert "out of range" in err
+
+
+def test_check_duplicates_missing_chunk_id_does_not_crash(tmp_path, capsys):
+    """Chunks with no chunk_id field must not raise KeyError."""
+    records = [
+        {"title": f"T{i}", "content": f"x{i}"}  # no chunk_id
+        for i in range(63)
+    ]
+    path = _write_jsonl(tmp_path / "no_id.jsonl", records)
+    check_rfc_duplicates.check_duplicates(path)
+    out = capsys.readouterr().out
+    assert "<missing>" in out
+
+
+def test_check_duplicates_missing_title_does_not_crash(tmp_path, capsys):
+    """Chunks with no title field must not raise KeyError."""
+    records = [
+        {"chunk_id": f"c{i}", "content": f"x{i}"}  # no title
+        for i in range(63)
+    ]
+    path = _write_jsonl(tmp_path / "no_title.jsonl", records)
+    check_rfc_duplicates.check_duplicates(path)
+    out = capsys.readouterr().out
+    assert "<missing>" in out
+
+
+def test_check_duplicates_malformed_json_reports_line_number(tmp_path, capsys):
+    """A malformed JSON line should be reported with its line number."""
+    records = [
+        {"chunk_id": f"c{i}", "title": f"T{i}", "content": f"x{i}"}
+        for i in range(5)
+    ]
+    records.insert(2, "{bad json")  # raw string → malformed line
+    path = _write_jsonl(tmp_path / "mal.jsonl", records)
+    # load_chunks prints to stderr on bad lines but should not raise
+    check_rfc_duplicates.load_chunks(path)
+    err = capsys.readouterr().err
+    assert "Line 3" in err or "line" in err.lower()
+
+
+def test_check_duplicates_missing_input_raises(tmp_path):
+    """Missing input file must raise FileNotFoundError, not a raw open() error."""
+    with pytest.raises(FileNotFoundError):
+        check_rfc_duplicates.load_chunks(tmp_path / "nonexistent.jsonl")
+
+
+def test_load_chunks_skips_blank_lines(tmp_path):
+    """Blank lines in JSONL must be skipped silently."""
+    p = tmp_path / "blanks.jsonl"
+    p.write_text(
+        '\n{"chunk_id": "a", "title": "T"}\n\n{"chunk_id": "b", "title": "T2"}\n',
+        encoding="utf-8",
+    )
+    chunks = check_rfc_duplicates.load_chunks(p)
+    assert len(chunks) == 2

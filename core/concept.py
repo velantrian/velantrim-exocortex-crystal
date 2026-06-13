@@ -1,6 +1,5 @@
 # core/concept.py
 # Velantrim ExoCortex — Concept Emergence (RFC0066)
-# v8.18.0-sprint3
 #
 # "Cells that fire together, wire together." Facts recalled together already get
 # CO_OCCURRED episodic edges (pipeline._link_episode) — the Hebbian substrate.
