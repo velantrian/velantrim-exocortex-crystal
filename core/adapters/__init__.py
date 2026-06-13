@@ -11,6 +11,8 @@
 #   pip install "velantrim-exocortex-crystal[yaml]"   → .yaml / .yml
 #   pip install "velantrim-exocortex-crystal[pdf]"    → .pdf
 #   pip install "velantrim-exocortex-crystal[rdf]"    → .ttl / .n3 / .nt / .rdf
+#   pip install "velantrim-exocortex-crystal[epub]"   → .epub
+#   pip install "velantrim-exocortex-crystal[bib]"    → .bib (stdlib-only, no extra)
 #   pip install "velantrim-exocortex-crystal[adapters]" → all three
 
 from typing import Any, Callable, Dict, List, Optional
@@ -30,6 +32,8 @@ _MODULE_FOR: Dict[str, str] = {
     "nt":   "core.adapters.rdf_adapter",
     "rdf":  "core.adapters.rdf_adapter",
     "owl":  "core.adapters.rdf_adapter",
+    "epub": "core.adapters.epub_adapter",
+    "bib":  "core.adapters.bibtex_adapter",
 }
 
 
