@@ -10,7 +10,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 try:
     import pypdf as _pypdf
@@ -27,18 +27,51 @@ _MIN_LEN = 15  # skip header/footer fragments shorter than this
 
 
 def extract_pdf_claims(path: str) -> List[Dict[str, Any]]:
-    """Extract text paragraphs from a PDF and return them as claim dicts."""
+    """Extract text paragraphs from a PDF and return them as claim dicts.
+
+    Each claim dict carries span_start/span_end (character offsets into the
+    concatenated full text) and chunk_id (1-based page number) so that
+    ingest_claims can attach precise WP1 source-span evidence without a second
+    locate_claim scan.
+    """
     reader = _pypdf.PdfReader(path)
-    pages: List[str] = []
+    page_texts: List[str] = []
     for page in reader.pages:
-        text = page.extract_text() or ""
-        pages.append(text)
-    full_text = "\n".join(pages)
+        page_texts.append(page.extract_text() or "")
+    full_text = "\n".join(page_texts)
+
+    # Build a map: cumulative char offset at the start of each page.
+    page_offsets: List[int] = []
+    offset = 0
+    for i, pt in enumerate(page_texts):
+        page_offsets.append(offset)
+        offset += len(pt) + (1 if i < len(page_texts) - 1 else 0)  # +1 for "\n"
+
     claims: List[Dict[str, Any]] = []
-    for para in _PARA.split(full_text):
-        para = " ".join(para.split())  # collapse internal whitespace
-        if len(para) >= _MIN_LEN:
-            claims.append({"claim": para})
+    for raw_para in _PARA.split(full_text):
+        collapsed = " ".join(raw_para.split())
+        if len(collapsed) < _MIN_LEN:
+            continue
+        # Locate the raw paragraph in full_text to get its character span.
+        para_start = full_text.find(raw_para)
+        para_end = para_start + len(raw_para) if para_start != -1 else None
+        # Determine which page this paragraph starts on (1-based).
+        chunk: Optional[str] = None
+        if para_start != -1:
+            page_num = 1
+            for pg_idx, pg_off in enumerate(page_offsets):
+                if pg_off <= para_start:
+                    page_num = pg_idx + 1
+                else:
+                    break
+            chunk = str(page_num)
+        rec: Dict[str, Any] = {"claim": collapsed}
+        if para_start != -1:
+            rec["span_start"] = para_start
+            rec["span_end"] = para_end
+        if chunk is not None:
+            rec["chunk_id"] = chunk
+        claims.append(rec)
     return claims
 
 
