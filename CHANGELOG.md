@@ -13,6 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `docs/SPARK_RFC.md` (new) — Future RFC for the Spark Layer: sandboxed
+  generative/exploratory reasoning within the Velantrim Exo-Cortex; covers
+  Imagination Mode, the Spark-to-Crystal Bridge (plausibility pre-filter),
+  Spark output types and their canon eligibility, Mode Layer integration,
+  and an explicit boundary distinguishing Spark (a technology component) from
+  Velantrim Culture (a human/social layer, out of scope for Crystal).
+  Status: Future RFC / v0.3.0+ research roadmap / no runtime feature.
+- `docs/IMPLEMENTATION_STATUS.md` — Imagination Mode / Spark row updated with
+  link to SPARK_RFC.md; SPARK_RFC added to Future RFC backlog.
 - **PR3 — Resumable Review Sessions** (grant WP2 hardening):
   - `core/memory.py` — `review_sessions` SQLite table with DDL auto-migration
     on `_db()` open; `save_review_session`, `get_review_session`,
