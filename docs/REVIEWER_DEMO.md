@@ -163,7 +163,11 @@ in the copy and replay it.
 
 ```bash
 cp demo-data/receipt.json demo-data/tampered.json
-sed -i 's/100 degrees/50 degrees/' demo-data/tampered.json
+python - <<'PY'
+from pathlib import Path
+p = Path("demo-data/tampered.json")
+p.write_text(p.read_text().replace("100 degrees", "50 degrees"), encoding="utf-8")
+PY
 velantrim verify-receipt demo-data/tampered.json --strict-provenance
 ```
 ```json
