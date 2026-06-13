@@ -1,44 +1,38 @@
 ## Summary
 
-<!-- What does this change do? -->
+<!--
+What does this change do, and why?  Focus on the what and why — not the how.
+The diff shows the how.
+-->
 
-## Type of change
+## Grant alignment
 
-- [ ] Documentation only
-- [ ] Tests only
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Refactor / maintenance
-- [ ] Security / privacy hardening
+<!--
+Optional.  If this PR addresses a funded work package, note it here.
+Examples: WP1 (Evidence Span Store), WP2 (Import Sessions), WP3 (Evaluation Harness),
+          WP4 (Knowledge Adapters), WP5 (Documentation & Demonstrators)
+Leave blank if not applicable.
+-->
 
-## Truth / memory invariants
+- WP addressed (if any):
 
-- [ ] This change does not bypass Guardian or TruthGate for L3 writes.
-- [ ] This change preserves `source`, `source_status`, `claim_type` and epistemic state handling.
-- [ ] This change does not promote subjective input or LLM output into world facts without evidence.
-- [ ] This change does not weaken erasure, restriction, audit, receipt or provenance behaviour.
+## Test plan
 
-## Local-first / privacy check
+- [ ] New tests added (or existing tests updated) to cover the change.
+- [ ] Coverage gate passes (`python -m pytest tests/ --cov=. --cov-fail-under=100 -q`).
+- [ ] Coverage gate was not bypassed (no `# pragma: no cover` added without justification).
 
-- [ ] No new outbound network call is introduced by default.
-- [ ] No telemetry is introduced.
-- [ ] Optional external services are opt-in and documented.
-- [ ] No secrets, logs, databases or personal data are committed.
+## Security checklist
 
-## Tests
+- [ ] No direct write to L3 canon that bypasses Guardian/TruthGate.
+- [ ] TruthGate remains the only automatic canon write path.
+- [ ] No new bypass of stdlib-level integrity controls (`ImmutableCore`, HMAC chain, audit log).
+- [ ] No secrets, personal data, private datasets or API keys are committed.
+- [ ] Any new optional external service is opt-in and documented.
 
-Commands run:
+## Notes for reviewer
 
-```bash
-# paste commands here
-```
-
-## Documentation
-
-- [ ] README updated if user-facing behaviour changed.
-- [ ] ROADMAP updated if delivered/planned status changed.
-- [ ] TEST_REPORT / EVAL docs updated if evaluation behaviour changed.
-
-## Notes for reviewers
-
-<!-- Anything that deserves special attention. -->
+<!--
+Anything that deserves special attention: subtle logic, known trade-offs,
+follow-up issues filed, or areas where you are uncertain.
+-->

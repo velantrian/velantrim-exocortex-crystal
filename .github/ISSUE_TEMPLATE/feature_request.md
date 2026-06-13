@@ -1,49 +1,33 @@
 ---
 name: Feature request
-description: Propose a feature or improvement for Velantrim Crystal
-title: "feat: "
-labels: ["enhancement"]
-body:
-  - type: markdown
-    attributes:
-      value: |
-        Please keep proposals aligned with the core invariants: Graph = Truth, local-first defaults, provenance-first memory and no silent L3 writes.
-  - type: textarea
-    id: problem
-    attributes:
-      label: Problem / use case
-      description: What problem does this solve?
-    validations:
-      required: true
-  - type: textarea
-    id: proposal
-    attributes:
-      label: Proposed solution
-      description: What should change?
-    validations:
-      required: true
-  - type: dropdown
-    id: area
-    attributes:
-      label: Area
-      options:
-        - Evidence / provenance
-        - External ingestion
-        - Evaluation
-        - Local-first storage
-        - GDPR / privacy
-        - MCP / integration
-        - Documentation
-        - Optional backend
-        - Browser/PWA companion demo
-        - Other
-  - type: textarea
-    id: invariants
-    attributes:
-      label: Invariant impact
-      description: Does this affect TruthGate, L3 writes, source tracking, privacy, receipts or optional external services?
-  - type: textarea
-    id: alternatives
-    attributes:
-      label: Alternatives considered
+about: Propose a feature or improvement for Velantrim Crystal
+labels: enhancement
 ---
+
+<!--
+Please keep proposals aligned with the core invariants:
+Graph = Truth, local-first defaults, provenance-first memory, no silent L3 writes.
+-->
+
+## Problem statement
+
+<!-- What problem does this solve?  Who is affected and how? -->
+
+## Proposed solution
+
+<!-- What should change?  A brief description of the desired behaviour is enough — implementation details can come later. -->
+
+## Grant alignment
+
+<!--
+Optional.  If this feature maps to a funded work package, note it here.
+Examples: WP1 (Evidence Span Store), WP2 (Import Sessions), WP3 (Evaluation Harness),
+          WP4 (Knowledge Adapters), WP5 (Documentation & Demonstrators)
+Leave blank if not applicable.
+-->
+
+- WP addressed (if any):
+
+## Alternatives considered
+
+<!-- What other approaches did you consider, and why did you rule them out? -->
