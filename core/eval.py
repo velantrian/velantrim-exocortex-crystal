@@ -104,19 +104,25 @@ def _load_fixture_json(name: str) -> Optional[Dict[str, Any]]:
 def load_retrieval_corpus(lang: str = "en") -> Dict[str, Any]:
     """The curated retrieval corpus: {"cases": [...], "distractors": [...]}.
 
-    lang="en" is the canonical CI-gated corpus; lang="ru" is the report-only
-    Russian corpus (typo/morphology probes for embedder comparison). The English
-    corpus falls back to the inline `_FIXTURE` (no distractors) if the bundled
-    data file is missing, so the harness always runs; the Russian corpus has no
-    inline fallback and raises if its fixture is absent.
+    lang="en" is the canonical CI-gated corpus; lang="ru"/"de"/"fr" are the
+    report-only corpora (typo/morphology probes and multilingual coverage for
+    embedder comparison). The English corpus falls back to the inline `_FIXTURE`
+    (no distractors) if the bundled data file is missing, so the harness always
+    runs; the non-English corpora have no inline fallback and raise if absent.
     """
-    if lang not in ("en", "ru"):
+    _REPORT_ONLY_LANGS = {"ru": "retrieval_ru.json",
+                          "de": "retrieval_de.json",
+                          "fr": "retrieval_fr.json"}
+    if lang not in ("en", "ru", "de", "fr"):
         raise ValueError(f"load_retrieval_corpus: unknown lang '{lang}' "
-                         f"(available: en, ru)")
-    name = "retrieval.json" if lang == "en" else "retrieval_ru.json"
+                         f"(available: en, ru, de, fr)")
+    if lang == "en":
+        name = "retrieval.json"
+    else:
+        name = _REPORT_ONLY_LANGS[lang]
     data = _load_fixture_json(name)
     if not data or not data.get("cases"):
-        if lang == "ru":
+        if lang != "en":
             raise FileNotFoundError(f"bundled fixture {name} is missing")
         return {"cases": list(_FIXTURE), "distractors": []}
     return {"cases": data["cases"], "distractors": data.get("distractors", [])}

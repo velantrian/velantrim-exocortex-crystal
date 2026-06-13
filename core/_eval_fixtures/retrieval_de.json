@@ -1,0 +1,51 @@
+{
+  "description": "Kuratiertes deutsches Retrieval-Korpus (nur Bericht, WP3). Gleiche Struktur wie retrieval.json: (Anfrage, Behauptung)-Paare plus Ablenkungsfakten im selben Kanon. Nicht Teil des CI-Gates: wird für Vergleichsberichte verwendet, z. B. VELANTRIM_EMBEDDER=hashing-trigram velantrim eval --lang de.",
+  "distractors": [
+    "Der Mount Everest ist der höchste Berg über dem Meeresspiegel",
+    "Der Pazifik ist der größte Ozean der Erde",
+    "Die Fotosynthese wandelt Lichtenergie in chemische Energie um",
+    "Die Große Chinesische Mauer wurde über viele Jahrhunderte gebaut"
+  ],
+  "cases": [
+    {
+      "domain": "physics",
+      "query": "bei welcher Temperatur kocht Wasser",
+      "claim": "Wasser kocht bei 100 Grad Celsius auf Meereshöhe"
+    },
+    {
+      "domain": "physics",
+      "query": "bei welcher Temperatur gefriert Wasser",
+      "claim": "Wasser gefriert bei 0 Grad Celsius unter Normaldruck"
+    },
+    {
+      "domain": "geography",
+      "query": "was ist die Hauptstadt von Deutschland",
+      "claim": "Berlin ist die Hauptstadt Deutschlands"
+    },
+    {
+      "domain": "geography",
+      "query": "was ist die Hauptstadt von Österreich",
+      "claim": "Wien ist die Hauptstadt Österreichs"
+    },
+    {
+      "domain": "geography",
+      "query": "welcher Fluss ist der längste der Welt",
+      "claim": "Der Nil ist der längste Fluss der Welt"
+    },
+    {
+      "domain": "astronomy",
+      "query": "wie viele Planeten hat das Sonnensystem",
+      "claim": "Das Sonnensystem hat acht Planeten"
+    },
+    {
+      "domain": "history",
+      "query": "wann endete der Zweite Weltkrieg",
+      "claim": "Der Zweite Weltkrieg endete im Jahr 1945"
+    },
+    {
+      "domain": "biology",
+      "query": "wie viele Herzkammern hat das menschliche Herz",
+      "claim": "Das menschliche Herz hat vier Kammern"
+    }
+  ]
+}
