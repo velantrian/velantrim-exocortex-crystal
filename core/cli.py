@@ -26,7 +26,8 @@ from core.compliance import (
 from core.audit import audit_log, verify_audit_log
 from core import (pii, provenance, immune, fractal, neurogenesis, concept,
                   volition, velum, analogy, knowledge, neurocore, eval as _eval,
-                  evidence, imports, review, retrieval_config, mosc, kb_ingest)
+                  evidence, imports, review, retrieval_config, mosc, kb_ingest,
+                  invariant_check as _invariant_check)
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -249,6 +250,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_mc.add_argument("text")
     sub.add_parser("mosc-report",
                    help="active MOSC weights provenance (source, sha256, counts)")
+    # ─── Invariant checker (read-only conformance tooling) ────────────────────
+    sub.add_parser(
+        "invariant-check",
+        help=(
+            "read-only machine-executable invariant check — verifies selected "
+            "epistemic invariants over the current L3 state and emits a JSON report; "
+            "exit 0 = PASS, 1 = WARN, 2 = FAIL"
+        ),
+    )
 
     args = parser.parse_args(argv)
 
@@ -453,6 +463,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(json.dumps(mosc.classify_detailed(args.text), ensure_ascii=False))
     elif args.cmd == "mosc-report":
         print(json.dumps(mosc.report(), ensure_ascii=False, indent=2))
+    elif args.cmd == "invariant-check":
+        report = _invariant_check.run_checks()
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        return _invariant_check.exit_code(report["status"])
     return 0
 
 
