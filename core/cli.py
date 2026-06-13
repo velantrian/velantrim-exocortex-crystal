@@ -26,7 +26,7 @@ from core.compliance import (
 from core.audit import audit_log, verify_audit_log
 from core import (pii, provenance, immune, fractal, neurogenesis, concept,
                   volition, velum, analogy, knowledge, neurocore, eval as _eval,
-                  evidence, imports, review, retrieval_config, mosc)
+                  evidence, imports, review, retrieval_config, mosc, kb_ingest)
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -160,6 +160,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_learn.add_argument("--dry-run", action="store_true",
                          help="preview accept/block/conflict without writing (WP2)")
     p_learn.add_argument("--session", default=None, help="import session id (WP2)")
+    # ─── KB Dry-Run Batch Manifest (WP2/WP4) ──────────────────────────────────
+    p_kbi = sub.add_parser(
+        "kb-ingest",
+        help=("dry-run a knowledge-base manifest (JSONL/JSON) — predict "
+              "accept/reinforce/blocked/conflict per claim without writing"))
+    p_kbi.add_argument("manifest", help="path to JSONL or JSON manifest file")
+    p_kbi.add_argument("--source", default=None,
+                       help="provenance label (default: manifest filename)")
     # ─── Import sessions (WP2) ─────────────────────────────────────────────────
     p_isf = sub.add_parser("import-session", help="list facts in an import session")
     p_isf.add_argument("session_id")
@@ -365,6 +373,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(json.dumps(imports.import_file(
             args.path, source=args.source, session_id=args.session,
             dry_run=args.dry_run), ensure_ascii=False))
+    elif args.cmd == "kb-ingest":
+        print(json.dumps(
+            kb_ingest.dry_run_manifest_file(args.manifest, source=args.source),
+            ensure_ascii=False))
     elif args.cmd == "import-session":
         print(json.dumps(imports.session_facts(args.session_id), ensure_ascii=False))
     elif args.cmd == "session-restrict":
