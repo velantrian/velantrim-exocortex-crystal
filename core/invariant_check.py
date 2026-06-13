@@ -10,6 +10,8 @@
 import datetime
 from typing import Any, Callable, Dict, List, Optional
 
+from core import refusal_reasons as _rr
+
 # ─── Vocabulary constants (match the repo's actual enums) ────────────────────
 _SOURCE_LLM = "LLM_OUTPUT"
 _TS_VERIFIED = "VERIFIED"
@@ -22,20 +24,31 @@ ID_RECEIPT_INTEGRITY = "receipt_integrity"
 ID_NO_L3_BYPASS = "no_direct_l3_bypass"
 
 
-def _check(check_id: str, status: str, violations: int, why: str) -> Dict[str, Any]:
-    return {"id": check_id, "status": status, "violations": violations, "why": why}
+def _check(
+    check_id: str, status: str, violations: int, why: str, reason_code: str = ""
+) -> Dict[str, Any]:
+    d: Dict[str, Any] = {
+        "id": check_id, "status": status, "violations": violations, "why": why,
+    }
+    if reason_code:
+        d["reason_code"] = reason_code
+    return d
 
 
 def _issue(
-    check_id: str, severity: str, fact_id: str, why: str, suggestion: str
+    check_id: str, severity: str, fact_id: str, why: str, suggestion: str,
+    reason_code: str = "",
 ) -> Dict[str, Any]:
-    return {
+    d: Dict[str, Any] = {
         "check_id": check_id,
         "severity": severity,
         "fact_id": fact_id,
         "why": why,
         "suggestion": suggestion,
     }
+    if reason_code:
+        d["reason_code"] = reason_code
+    return d
 
 
 def run_checks(
@@ -82,12 +95,14 @@ def run_checks(
         checks.append(_check(
             ID_NO_LLM_VERIFIED, "FAIL", len(llm_v),
             "A VERIFIED claim must not have source_status=LLM_OUTPUT.",
+            reason_code=_rr.LLM_OUTPUT_NOT_EVIDENCE,
         ))
         for fid in llm_v:
             issues.append(_issue(
                 ID_NO_LLM_VERIFIED, "ERROR", fid,
                 "truth_status=VERIFIED but source_status=LLM_OUTPUT",
                 "Demote to UNVERIFIED or attach external evidence and review.",
+                reason_code=_rr.LLM_OUTPUT_NOT_EVIDENCE,
             ))
     else:
         checks.append(_check(
@@ -107,12 +122,14 @@ def run_checks(
         checks.append(_check(
             ID_VERIFIED_SOURCE, "FAIL", len(src_v),
             "Every VERIFIED claim must have a non-empty source field.",
+            reason_code=_rr.MISSING_SOURCE,
         ))
         for fid in src_v:
             issues.append(_issue(
                 ID_VERIFIED_SOURCE, "ERROR", fid,
                 "truth_status=VERIFIED but source is absent or empty",
                 "Attach a source label or demote to UNVERIFIED.",
+                reason_code=_rr.MISSING_SOURCE,
             ))
     else:
         checks.append(_check(
@@ -134,12 +151,14 @@ def run_checks(
             ID_VERIFIED_EVIDENCE, "FAIL", len(ev_v),
             "VERIFIED claims should carry at least one source-span evidence record. "
             "(Receipt-linkage sub-check is SKIPPED_UNSUPPORTED — no global receipt registry.)",
+            reason_code=_rr.MISSING_EVIDENCE,
         ))
         for fid in ev_v:
             issues.append(_issue(
                 ID_VERIFIED_EVIDENCE, "WARN", fid,
                 "truth_status=VERIFIED but no source-span evidence record found",
                 "Attach evidence via 'velantrim learn' with an external sourced file.",
+                reason_code=_rr.MISSING_EVIDENCE,
             ))
     else:
         checks.append(_check(
@@ -153,6 +172,7 @@ def run_checks(
         ID_RECEIPT_INTEGRITY, "SKIPPED_UNSUPPORTED", 0,
         "No global receipt registry in L3. "
         "Use 'velantrim verify-receipt <file>' to replay individual receipts.",
+        reason_code=_rr.UNSUPPORTED_SCHEMA_CHECK,
     ))
 
     # ── Check 5: no_direct_l3_bypass — SKIPPED_UNSUPPORTED ───────────────────
@@ -160,6 +180,7 @@ def run_checks(
         ID_NO_L3_BYPASS, "SKIPPED_UNSUPPORTED", 0,
         "Audit log captures compliance events (erase/restrict) but not L3 write events. "
         "Structural enforcement is provided by TruthGate and Guardian at write time.",
+        reason_code=_rr.UNSUPPORTED_SCHEMA_CHECK,
     ))
 
     overall = _aggregate_status({c["status"] for c in checks})

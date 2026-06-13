@@ -1,0 +1,49 @@
+{
+  "status": "FAIL",
+  "checked_at": "2026-06-13T12:00:00Z",
+  "checks": [
+    {
+      "id": "no_llm_output_verified",
+      "status": "PASS",
+      "violations": 0,
+      "why": "No VERIFIED claim is sourced only from LLM_OUTPUT."
+    },
+    {
+      "id": "verified_requires_source",
+      "status": "FAIL",
+      "violations": 1,
+      "why": "Every VERIFIED claim must have a non-empty source field.",
+      "reason_code": "MISSING_SOURCE"
+    },
+    {
+      "id": "verified_requires_evidence",
+      "status": "PASS",
+      "violations": 0,
+      "why": "All VERIFIED claims carry at least one source-span evidence record. (Receipt-linkage sub-check is SKIPPED_UNSUPPORTED — no global receipt registry.)"
+    },
+    {
+      "id": "receipt_integrity",
+      "status": "SKIPPED_UNSUPPORTED",
+      "violations": 0,
+      "why": "No global receipt registry in L3. Use 'velantrim verify-receipt <file>' to replay individual receipts.",
+      "reason_code": "UNSUPPORTED_SCHEMA_CHECK"
+    },
+    {
+      "id": "no_direct_l3_bypass",
+      "status": "SKIPPED_UNSUPPORTED",
+      "violations": 0,
+      "why": "Audit log captures compliance events (erase/restrict) but not L3 write events. Structural enforcement is provided by TruthGate and Guardian at write time.",
+      "reason_code": "UNSUPPORTED_SCHEMA_CHECK"
+    }
+  ],
+  "issues": [
+    {
+      "check_id": "verified_requires_source",
+      "severity": "ERROR",
+      "fact_id": "ing:def789abc012",
+      "why": "truth_status=VERIFIED but source is absent or empty",
+      "suggestion": "Attach a source label or demote to UNVERIFIED.",
+      "reason_code": "MISSING_SOURCE"
+    }
+  ]
+}
