@@ -225,3 +225,52 @@ Crystal does not claim:
 
 Its goal is narrower and testable: **make AI memory local, auditable, replayable
 and harder to corrupt silently**.
+
+## Deployment view
+
+A simplified view of the components a typical operator interacts with and how
+they connect at runtime.  Optional paths are shown with dashed arrows.
+
+```mermaid
+graph TD
+    User([User])
+    CLI[velantrim CLI]
+    FastAPI[FastAPI service<br/><i>optional</i>]
+    MCP[MCP server<br/><i>optional, read-only</i>]
+    Pipeline[Core Pipeline<br/>Guardian → TruthGate]
+    L1[(L1 SQLite<br/>operational store)]
+    L3[(L3 Canon<br/>SQLite default / LadybugDB optional)]
+    Evidence[Evidence Spans]
+    Audit[Audit Log]
+    ExtKB[External Knowledge<br/>txt / md / json / csv]
+    Learn[velantrim learn]
+    Guardian[Guardian]
+    TruthGate[TruthGate]
+
+    User --> CLI
+    CLI --> Pipeline
+    FastAPI -. optional .-> Pipeline
+    MCP -. optional read-only .-> L3
+
+    Pipeline --> L1
+    Pipeline --> L3
+    Pipeline --> Evidence
+    Pipeline --> Audit
+
+    ExtKB --> Learn
+    Learn --> Guardian
+    Guardian --> TruthGate
+    TruthGate --> L3
+```
+
+Key invariants visible in this diagram:
+
+- **TruthGate is the only automatic write path into L3 canon.**  The CLI,
+  FastAPI service and MCP server all reach the canon exclusively through the
+  Guardian → TruthGate path.
+- **MCP server is read-only** by design (see section 7 for the privacy
+  boundary).
+- **LadybugDB** is an optional drop-in replacement for the SQLite L3 backend;
+  the rest of the pipeline is identical either way.
+- The audit log and evidence spans are written unconditionally by the pipeline,
+  independent of which L3 backend is active.
