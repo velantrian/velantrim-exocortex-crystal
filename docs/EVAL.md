@@ -29,8 +29,10 @@ survival, contradiction precision/recall, and trust-boundary enforcement — the
 current T3 baseline:
 
 ```json
-{"cases": 22, "retrieval": {"hit@1": 0.9091, "hit@3": 0.9545, "hit@5": 1.0, "mrr": 0.9356},
- "grounding": {"trace": 1.0, "metadata": 1.0, "span": 1.0, "receipts": 1.0, "unsupported": 0},
+{"kind": "aggregate", "cases": 22,
+ "retrieval": {"hit@1": 0.9091, "hit@3": 0.9545, "hit@5": 1.0, "mrr": 0.9356},
+ "trace_completeness": 1.0, "metadata_completeness": 1.0, "source_span_coverage": 1.0,
+ "unsupported_provenance": 0, "receipt_replay_survival": 1.0,
  "contradiction": {"pairs": 15, "precision": 0.8889, "recall": 1.0, "false_positive_rate": 0.1429},
  "boundary": {"cases": 15, "refusal_correctness": 1.0, "violations": 0}}
 ```
