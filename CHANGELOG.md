@@ -16,6 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `core/trace_visualize.py`: read-only TRACE / Receipt visualization formatter (Markdown + DOT output) for reviewer tooling
 - `scripts/trace_visualize.py`: CLI wrapper for trace visualization
 - `docs/TRACE_VISUALIZATION.md`: documentation for the visualization helper
+- `docs/PERSONAL_OVERLAY_RFC.md`: Future RFC for a personal-deployment overlay layer
+  (status: design artifact only, not Crystal runtime — no TruthGate/Guardian/L3 changes)
+- `schemas/personal_overlay.schema.json`: JSON Schema for future personal overlay records;
+  enforces redaction rules (`store_full_numbers: false`, `not_world_fact: true` for sensitive
+  claim types) at schema level
+- `examples/personal_overlay.redacted.sample.jsonl`: five synthetic redacted sample records
+  (preference, goal, legal context pointer, health caution flag, emotional context);
+  no real sensitive identifiers
 
 ### Fixed
 - **CI coverage gap** (PR #130): `ebooklib` and `requests` were missing from
