@@ -24,3 +24,5 @@ cryptography>=42.0.0
 pyyaml>=6.0
 pypdf>=4.0
 rdflib>=7.0
+ebooklib>=0.18      # EPUB adapter (WP4) — optional runtime, required for full CI coverage
+requests>=2.28      # Wikidata adapter (WP4) — optional runtime, required for full CI coverage

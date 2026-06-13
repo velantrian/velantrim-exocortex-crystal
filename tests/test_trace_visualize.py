@@ -76,6 +76,18 @@ class TestExtractReceiptAndVerify:
         assert receipt is FULL_RECEIPT
         assert verify == {}
 
+    def test_list_input_single_element(self):
+        """Trace-array (list[dict]) input: first element used as receipt."""
+        receipt, verify = _extract_receipt_and_verify([FULL_RECEIPT])
+        assert receipt is FULL_RECEIPT
+        assert verify == {}
+
+    def test_list_input_empty(self):
+        """Empty list yields empty receipt and empty verify."""
+        receipt, verify = _extract_receipt_and_verify([])
+        assert receipt == {}
+        assert verify == {}
+
 
 # ---------------------------------------------------------------------------
 # to_markdown
@@ -142,6 +154,23 @@ class TestToMarkdown:
         result = to_markdown(COMBINED)
         assert "digest_valid: True" in result
         assert "verified: True" in result
+
+    def test_per_citation_verify_status_shown(self):
+        """verify['citations'] statuses are surfaced next to each citation."""
+        result = to_markdown(COMBINED)
+        # VERIFY_RESULT has citations=[{fact_id: "f:abc123", status: "ok"}]
+        assert "verify=ok" in result
+
+    def test_per_citation_verify_status_absent_when_no_verify(self):
+        """When verify dict is absent, no verify= field appears in citation lines."""
+        result = to_markdown(FULL_RECEIPT)
+        assert "verify=" not in result
+
+    def test_list_input_works(self):
+        """Trace arrays (list[dict]) are handled without crashing."""
+        result = to_markdown([FULL_RECEIPT])
+        assert "## Query" in result
+        assert "Where is the Eiffel Tower?" in result
 
     def test_without_verify_shows_dash(self):
         result = to_markdown(FULL_RECEIPT)
@@ -270,6 +299,21 @@ class TestToDot:
         result = to_dot(receipt)
         assert "…" in result
         assert long_id not in result
+
+    def test_backslash_escaped_in_dot(self):
+        """Backslashes in fact_id are escaped as \\\\ in DOT output."""
+        receipt = {
+            "citations": [
+                {"fact_id": r"f:back\slash", "truth_status": "VERIFIED", "source": "s"}
+            ]
+        }
+        result = to_dot(receipt)
+        assert "\\\\" in result
+
+    def test_list_input_works_in_dot(self):
+        """Trace arrays (list[dict]) are handled by to_dot without crashing."""
+        result = to_dot([FULL_RECEIPT])
+        assert "digraph trace {" in result
 
 
 # ---------------------------------------------------------------------------
