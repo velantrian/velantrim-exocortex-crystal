@@ -24,11 +24,16 @@
 # chain (core/audit.py), so the canon's human edits are as accountable as its
 # erasures (GDPR Art. 5(2) / 24 / 30).
 
+import uuid
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from core import audit, contradiction, immune, metrics
 from core.l3_graph import get_l3_graph
-from core.memory import get_all_facts, get_fact, transition_esm
+from core.memory import (
+    get_all_facts, get_fact, transition_esm,
+    get_review_session, list_review_sessions, save_review_session,
+)
 from core.pipeline import _l3_payload, _truth_status_for, guardian, truth_gate
 from core.reconcile import find_conflicts
 
@@ -216,6 +221,116 @@ def reject(fact_id: str, *, actor: str = "curator",
     audit.append_event("review_reject", fact_id, {"actor": actor, "reason": reason})
     return {"found": True, "fact_id": fact_id, "rejected": True,
             "epistemic_state": "Collapsed", "reason": reason}
+
+
+# ─── Resumable review sessions ────────────────────────────────────────────────
+
+def create_session(batch_size: Optional[int] = None) -> Dict[str, Any]:
+    """Snapshot the current pending queue into a resumable session.
+
+    The session captures which fact_ids were pending at creation time so a
+    curator can pause and resume without losing their place. No claim text is
+    stored — only IDs and progress counters.
+    """
+    pending_facts = get_all_facts(_PENDING_STATE)
+    pending_facts.sort(key=lambda f: (f.get("created_at") or "", f.get("fact_id", "")))
+    claim_ids = [f["fact_id"] for f in pending_facts]
+    if batch_size is not None:
+        claim_ids = claim_ids[:batch_size]
+    now = datetime.now(timezone.utc).isoformat()
+    session: Dict[str, Any] = {
+        "session_id": str(uuid.uuid4()),
+        "status": "pending",
+        "batch_size": batch_size,
+        "claim_ids": claim_ids,
+        "reviewed_ids": [],
+        "deferred_ids": [],
+        "approved_count": 0,
+        "rejected_count": 0,
+        "created_at": now,
+        "updated_at": now,
+    }
+    save_review_session(session)
+    return session
+
+
+def get_session(session_id: str) -> Optional[Dict[str, Any]]:
+    """Fetch a session by ID, or None if not found."""
+    return get_review_session(session_id)
+
+
+def list_sessions(status: Optional[str] = None) -> List[Dict[str, Any]]:
+    """List sessions, newest first. Optionally filter by status."""
+    return list_review_sessions(status)
+
+
+def resume_session(session_id: str) -> Dict[str, Any]:
+    """Return the unresolved pending items for a session, in stable order.
+
+    Only fact_ids that are still in `Observed` state AND not yet in
+    reviewed_ids are included. This is the core resumability guarantee:
+    a curator who pauses mid-batch sees the same unresolved items on return.
+    """
+    session = get_review_session(session_id)
+    if session is None:
+        return {"found": False, "session_id": session_id}
+    if session["status"] == "completed":
+        return {"found": True, "session_id": session_id, "status": "completed",
+                "pending_items": [], "remaining": 0}
+
+    reviewed = set(session["reviewed_ids"])
+    unresolved = []
+    for fid in session["claim_ids"]:
+        if fid in reviewed:
+            continue
+        fact = get_fact(fid)
+        if fact is None or fact.get("epistemic_state") != _PENDING_STATE:
+            continue
+        unresolved.append(_summary(fact))
+
+    session["status"] = "in_progress"
+    save_review_session(session)
+    return {
+        "found": True,
+        "session_id": session_id,
+        "status": "in_progress",
+        "pending_items": unresolved,
+        "remaining": len(unresolved),
+    }
+
+
+def record_session_decision(session_id: str, fact_id: str,
+                            decision: str) -> Dict[str, Any]:
+    """Mark a fact as reviewed within a session (after approve/reject is called).
+
+    `decision` must be 'approved' or 'rejected'. Does NOT perform the
+    approve/reject itself — callers must call review.approve / review.reject
+    first, then record the session progress here.
+    """
+    if decision not in ("approved", "rejected"):
+        return {"ok": False, "reason": "decision must be 'approved' or 'rejected'"}
+    session = get_review_session(session_id)
+    if session is None:
+        return {"ok": False, "reason": f"session {session_id!r} not found"}
+    if fact_id not in session["reviewed_ids"]:
+        session["reviewed_ids"].append(fact_id)
+    if decision == "approved":
+        session["approved_count"] += 1
+    else:
+        session["rejected_count"] += 1
+    save_review_session(session)
+    return {"ok": True, "session_id": session_id, "fact_id": fact_id,
+            "decision": decision}
+
+
+def complete_session(session_id: str) -> Dict[str, Any]:
+    """Mark a session as completed."""
+    session = get_review_session(session_id)
+    if session is None:
+        return {"ok": False, "reason": f"session {session_id!r} not found"}
+    session["status"] = "completed"
+    save_review_session(session)
+    return {"ok": True, "session_id": session_id, "status": "completed"}
 
 
 # ─── Decision history (reconstructed from the audit chain) ────────────────────

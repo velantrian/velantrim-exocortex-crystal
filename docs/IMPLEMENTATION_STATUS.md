@@ -36,6 +36,7 @@ of Crystal).
 | Guardian | Partial | Baseline | Boundary function in `core/pipeline.py` runs before the gate; a formal detect → flag/block/pass contract document is future work |
 | FactsPack | Partial | Baseline | Grounding pack used by the answer path; explicit conflict/contestation policy is a future RFC |
 | Review queue + web UI | Implemented | Yes | `core/review.py`, token-guarded HTTP API, static Kanban UI; roles/multi-curator workflows are grant-scope hardening |
+| Resumable Review Sessions | Implemented | Yes | `core/review.py` (`create_session`, `resume_session`, `record_session_decision`, `complete_session`); `core/memory.py` `review_sessions` table; 14 behaviour-pinned tests in `tests/test_review_resumable.py` |
 | GDPR-oriented controls | Partial | Baseline | Erasure, restriction, record-of-processing, tamper-evident audit, PII redaction, opt-in field encryption; "GDPR-oriented", **not** a certification claim |
 | Eval gate | Implemented | Yes | English corpus CI-gated; Russian corpus report-only; expansion planned |
 | Memory observability | Implemented | Yes | `core/observe.py` — read-only `memory_report` over L3 (states, statuses, contradictions) |

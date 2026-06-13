@@ -15,7 +15,7 @@ import json
 from collections import OrderedDict
 from contextlib import contextmanager
 from datetime import datetime, timezone
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from core import crypto  # field-level encryption at rest (GDPR Art. 32; off by default)
 
@@ -199,6 +199,25 @@ _IMPORT_SESSION_DDL = """
     )
 """
 
+# ─── REVIEW SESSIONS: resumable curator review batches ───────────────────────
+# Stores session progress as fact-ID lists only — no claim text is copied into
+# this table. The review queue (Observed facts in L1) is the source of truth;
+# sessions track which IDs were included in a batch and which have been resolved.
+_REVIEW_SESSION_DDL = """
+    CREATE TABLE IF NOT EXISTS review_sessions (
+        session_id     TEXT PRIMARY KEY,
+        status         TEXT NOT NULL DEFAULT 'pending',
+        batch_size     INTEGER,
+        claim_ids      TEXT NOT NULL DEFAULT '[]',
+        reviewed_ids   TEXT NOT NULL DEFAULT '[]',
+        deferred_ids   TEXT NOT NULL DEFAULT '[]',
+        approved_count INTEGER NOT NULL DEFAULT 0,
+        rejected_count INTEGER NOT NULL DEFAULT 0,
+        created_at     TEXT NOT NULL,
+        updated_at     TEXT NOT NULL
+    )
+"""
+
 # ─── ERASURE LOG: tombstones of physical deletion (GDPR Art. 17 / Art. 30) ────
 # Contains PROOF of the deletion without the personal data itself: the claim
 # is not stored, only its sha256 hash. This way deletion stays accountable
@@ -277,6 +296,7 @@ def _db():
     conn.execute(_NEUROCORE_DDL)
     conn.execute(_EVIDENCE_DDL)
     conn.execute(_IMPORT_SESSION_DDL)
+    conn.execute(_REVIEW_SESSION_DDL)
     conn.execute(_TOMBSTONE_DDL)
     conn.execute(_AUDIT_DDL)
     _migrate(conn)
@@ -596,3 +616,69 @@ def get_tombstones() -> list:
     with _db() as conn:
         return [dict(r) for r in conn.execute(
             "SELECT * FROM erasure_log ORDER BY erased_at, fact_id")]
+
+
+# ─── Review session storage ───────────────────────────────────────────────────
+
+def _rs_to_dict(row) -> Dict:
+    d = dict(row)
+    d["claim_ids"] = json.loads(d["claim_ids"])
+    d["reviewed_ids"] = json.loads(d["reviewed_ids"])
+    d["deferred_ids"] = json.loads(d["deferred_ids"])
+    return d
+
+
+def save_review_session(session: Dict[str, Any]) -> None:
+    """Upsert a review session record (ID + progress metadata, no claim text)."""
+    now = datetime.now(timezone.utc).isoformat()
+    with _db() as conn:
+        conn.execute(
+            """INSERT INTO review_sessions
+               (session_id, status, batch_size, claim_ids, reviewed_ids,
+                deferred_ids, approved_count, rejected_count, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+               ON CONFLICT(session_id) DO UPDATE SET
+                 status         = excluded.status,
+                 reviewed_ids   = excluded.reviewed_ids,
+                 deferred_ids   = excluded.deferred_ids,
+                 approved_count = excluded.approved_count,
+                 rejected_count = excluded.rejected_count,
+                 updated_at     = excluded.updated_at
+            """,
+            (
+                session["session_id"],
+                session.get("status", "pending"),
+                session.get("batch_size"),
+                json.dumps(session.get("claim_ids", [])),
+                json.dumps(session.get("reviewed_ids", [])),
+                json.dumps(session.get("deferred_ids", [])),
+                session.get("approved_count", 0),
+                session.get("rejected_count", 0),
+                session.get("created_at", now),
+                now,
+            ),
+        )
+
+
+def get_review_session(session_id: str) -> Optional[Dict]:
+    """Fetch one review session by ID, or None if not found."""
+    with _db() as conn:
+        row = conn.execute(
+            "SELECT * FROM review_sessions WHERE session_id = ?", (session_id,)
+        ).fetchone()
+        return _rs_to_dict(row) if row else None
+
+
+def list_review_sessions(status: Optional[str] = None) -> list:
+    """List review sessions, newest first. Optionally filter by status."""
+    with _db() as conn:
+        if status is not None:
+            rows = conn.execute(
+                "SELECT * FROM review_sessions WHERE status = ? "
+                "ORDER BY created_at DESC", (status,)
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM review_sessions ORDER BY created_at DESC"
+            ).fetchall()
+        return [_rs_to_dict(r) for r in rows]
