@@ -465,7 +465,6 @@ milestone budget, partial-funding plan, and responsible-data position.
 | **[docs/REVIEWER_DEMO.md](./docs/REVIEWER_DEMO.md)** | 10-minute reviewer demo: ingest → evidence → trace → answer → sealed receipt → strict replay → tamper check → eval gate |
 | **[docs/REVIEWER_NOTES.md](./docs/REVIEWER_NOTES.md)** | One-page reviewer guide: purpose, demo path, implemented scope and grant extensions |
 | **[docs/DEMO.md](./docs/DEMO.md)** | Hands-on, reproducible CLI walkthrough with real captured output (ingest, ask, receipt, contradictions, knowledge import, GDPR erase, NeuroCore telemetry, eval, HTTP) |
-| **[docs/COMPARISON.md](./docs/COMPARISON.md)** | Comparison with vector-only RAG, chatbot memory and agent-memory systems |
 | **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** | Architecture diagrams and memory/backends/privacy boundaries |
 | **[docs/IMPLEMENTATION_STATUS.md](./docs/IMPLEMENTATION_STATUS.md)** | Honest status map: implemented Crystal core vs RFC/roadmap vs Exo-Cortex/Culture vision |
 | **[docs/REVIEWER_OVERVIEW.md](./docs/REVIEWER_OVERVIEW.md)** | Reviewer package: one-page overview, ADRs, failure modes, evaluation metrics |
@@ -476,10 +475,11 @@ milestone budget, partial-funding plan, and responsible-data position.
 | **[docs/KNOWLEDGE_BASE_ROADMAP.md](./docs/KNOWLEDGE_BASE_ROADMAP.md)** | Curated offline knowledge graph roadmap: invariant science, practical knowledge, resilience reserve and multilingual expansion |
 | **[docs/USE_CASES.md](./docs/USE_CASES.md)** | Practical domains: personal, education, research, public sector, business and field operations |
 | **[docs/DIGITAL_SOVEREIGNTY.md](./docs/DIGITAL_SOVEREIGNTY.md)** | Local-first and European digital-sovereignty positioning |
-| **[docs/COMPARISON.md](./docs/COMPARISON.md)** | Comparison with ChatGPT, RAG, vector DBs and agent-memory frameworks |
+| **[docs/COMPARISON.md](./docs/COMPARISON.md)** | Comparison with ChatGPT, vector-only RAG, vector DBs, chatbot memory and agent-memory frameworks |
 | **[docs/DEMO_UI.md](./docs/DEMO_UI.md)** | Browser/PWA companion demo boundary and screenshot plan |
 | **[docs/EVAL.md](./docs/EVAL.md)** | Evaluation plan for trace completeness, receipt replay and retrieval quality |
 | **[docs/RELEASE_CHECKLIST.md](./docs/RELEASE_CHECKLIST.md)** | Release/tag/CI/docs/security checklist |
+| **[docs/PERSISTENT_MEMORY.md](./docs/PERSISTENT_MEMORY.md)** | Persistence vs canonical truth vs immutability — L0/L1/L3 model |
 | **[PRIVACY.md](./PRIVACY.md)** | What is stored, where, and what never leaves the device by default |
 | **[GDPR.md](./GDPR.md)** | Technical mapping to GDPR-relevant controls |
 | **[SECURITY.md](./SECURITY.md)** | Threat model and responsible disclosure |

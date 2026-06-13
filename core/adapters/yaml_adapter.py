@@ -1,6 +1,5 @@
 # core/adapters/yaml_adapter.py
 # Velantrim ExoCortex — YAML knowledge adapter (grant WP4)
-# v8.27.0-sprint6
 #
 # Parses YAML files into claim dicts that core/knowledge.py can ingest.
 # Supported top-level shapes (mirrors the JSON shapes in _normalise_records):

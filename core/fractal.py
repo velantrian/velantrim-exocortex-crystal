@@ -1,6 +1,5 @@
 # core/fractal.py
 # Velantrim ExoCortex — Fractal Memory Layer (RFC0070)
-# v8.16.0-sprint3
 #
 # Recursive anchoring across self-similar time scales (SHORT → MEDIUM → LONG →
 # CORE), inspired by FractalNet and the brain's short/medium/long-term memory

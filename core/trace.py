@@ -1,6 +1,5 @@
 # core/trace.py
 # Velantrim ExoCortex — Trace / Provenance Layer
-# v8.7.0-sprint2
 #
 # Purpose: builds the provenance chain for each fact.
 # Principle: Trace → Validation → Answer (not the other way around).

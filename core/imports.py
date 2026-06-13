@@ -1,6 +1,5 @@
 # core/imports.py
 # Velantrim ExoCortex — Import Sessions & Dry-run Review (grant WP2)
-# v8.26.0-sprint5
 #
 # External ingestion (core/knowledge.py) routes a corpus through the TruthGate.
 # WP2 makes that safe for institutions importing curated corpora:

@@ -1,6 +1,5 @@
 # core/adapters/wikidata_adapter.py
 # Velantrim ExoCortex — Wikidata knowledge adapter (grant WP4)
-# v8.27.0-sprint6
 #
 # Fetches entity labels and descriptions from the Wikidata API for a list of
 # Q-codes and converts them to claim dicts that core/knowledge.py can ingest.

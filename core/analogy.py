@@ -1,6 +1,5 @@
 # core/analogy.py
 # Velantrim ExoCortex — Analogy Graph, Semantic Bridge Engine, CREATIVE mode (RFC0067 v2.0)
-# v8.21.0-sprint4
 #
 # "Creative intelligence." Before RFC0067 the system had no explicit map of
 # metaphors and could not build semantic bridges between distant domains. This

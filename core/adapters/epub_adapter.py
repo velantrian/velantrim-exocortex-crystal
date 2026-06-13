@@ -1,6 +1,5 @@
 # core/adapters/epub_adapter.py
 # Velantrim ExoCortex — EPUB knowledge adapter (grant WP4)
-# v8.27.0-sprint6
 #
 # Extracts text from each chapter/document item in an EPUB, splits on double
 # newlines, and returns each non-trivial paragraph as a candidate claim.

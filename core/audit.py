@@ -1,6 +1,5 @@
 # core/audit.py
 # Velantrim ExoCortex — Tamper-Evident Audit Log (GDPR Art. 5(2) / 24 / 30)
-# v8.11.0-sprint2
 #
 # An append-only, hash-chained ledger of compliance events (erase / restrict /
 # unrestrict). Each entry seals its own content and links to the previous one:

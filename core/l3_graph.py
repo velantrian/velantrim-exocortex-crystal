@@ -1,6 +1,5 @@
 # core/l3_graph.py
 # Velantrim ExoCortex — L3 Canonical Graph (adapter)
-# v8.2.0-sprint2
 #
 # Principle: Graph = Truth. L3 is the single source of canonical truth.
 # The only entry into L3 is via the TruthGate (see pipeline.run). A direct MERGE

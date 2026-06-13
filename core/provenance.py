@@ -1,6 +1,5 @@
 # core/provenance.py
 # Velantrim ExoCortex — Verifiable Answer Provenance (replayable receipts)
-# v8.13.0-sprint2
 #
 # "Every answer can be replayed back to its sources." The pipeline already builds
 # a trace; this layer turns an answer into a portable, tamper-evident *receipt*

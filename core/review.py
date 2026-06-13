@@ -1,6 +1,5 @@
 # core/review.py
 # Velantrim ExoCortex — Curator Review Queue (grant WP2)
-# v8.28.0-sprint6
 #
 # Import sessions and the dry-run preview (core/imports.py) make a bulk import
 # SAFE. The curator review queue closes the human-in-the-loop: every claim that

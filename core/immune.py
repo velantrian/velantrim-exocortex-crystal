@@ -1,6 +1,5 @@
 # core/immune.py
 # Velantrim ExoCortex — Immune / CRISPR Memory Guard (RFC0072)
-# v8.15.0-sprint3
 #
 # Bacterial CRISPR immunity in three moves: a cell records a fragment of an
 # invading virus (a "spacer"), and on re-exposure recognises and cuts the matching

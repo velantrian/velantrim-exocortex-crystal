@@ -1,6 +1,5 @@
 # core/adapters/rdf_adapter.py
 # Velantrim ExoCortex — RDF / Linked Data adapter (grant WP4)
-# v8.27.0-sprint6
 #
 # Parses RDF graphs (Turtle .ttl, N-Triples .nt, N3 .n3, RDF/XML .rdf, OWL
 # .owl) via rdflib and converts each triple to a natural-language claim string

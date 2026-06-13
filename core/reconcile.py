@@ -1,6 +1,5 @@
 # core/reconcile.py
 # Velantrim ExoCortex — Truth Maintenance (reconcile)
-# v8.6.0-sprint2
 #
 # What happens when a new fact meets the existing canon:
 #   reinforce()  — repeated independent evidence → confidence rises

@@ -1,6 +1,5 @@
 # core/neurogenesis.py
 # Velantrim ExoCortex — Neurogenesis-inspired Dynamic Growth (RFC0073)
-# v8.17.0-sprint3
 #
 # Adult Hippocampal Neurogenesis (AHN): the mammalian hippocampus keeps minting
 # new neurons throughout life. Young neurons are highly PLASTIC (they learn fast),

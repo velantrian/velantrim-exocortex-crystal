@@ -1,6 +1,5 @@
 # core/embedding.py
 # Velantrim ExoCortex — Embedding Layer (pluggable abstraction)
-# v8.3.0-sprint2
 #
 # Purpose: turn the text of a claim / query into a vector for semantic search
 # (vector retrieval) — a cure for "understanding via surface tokens".

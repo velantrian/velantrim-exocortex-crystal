@@ -37,13 +37,21 @@ These were genuine bugs, not future work — listed so the history is clear.
 
 ## 2. Engineering improvements (near-term hardening)
 
-### 2.1 Single source of version truth
-**Why:** versions disagree across the repo — `pyproject.toml` says `0.1.0-mvp`,
-`README.md` says `v8.1.0-hybrid`, module headers say `v8.7.0`/`v8.9.0`. A reader
-can't tell what they're running.
-**Do:** keep the version only in `pyproject.toml`; derive it at runtime
-(`importlib.metadata.version`) and reference it from the README. Drop the
-per-file `vX.Y.Z` header comments (they rot on every edit).
+### 2.1 Single source of version truth — mostly resolved, header residue cleanup
+
+**Status:** `pyproject.toml` is now the public package-version source of truth
+for the Crystal line (`0.2.x`). Earlier drift between `0.1.0-mvp`,
+`v8.1.0-hybrid`, and the published README has been resolved — the public
+package, README badge, and CHANGELOG all consistently read `0.2.0`.
+
+**Remaining issue:** some source files still carry historical internal `# v8.x`
+header comments from the pre-public Crystal design line. These are not runtime
+version values, but they confuse readers and grant reviewers.
+
+**Do:** remove or normalize non-executable stale `# v8.x-sprint...` header
+comments in active `core/*.py` files. Do not change runtime strings, migration
+artifacts, historical archive documents, or compatibility text without a
+separate review.
 
 ### 2.2 Embedder-mismatch guard on a persistent L3 store — in-process guard DONE ✅
 **Why:** hashing vectors and sbert vectors are not cosine-comparable. Mixing

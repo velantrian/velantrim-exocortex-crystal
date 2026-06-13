@@ -24,13 +24,11 @@ class ImmuneCRISPRMemoryGuard:
         if len(self.crispr_memory) > self.max_memory:
             self.crispr_memory.pop(0)
         self.blocked_patterns.add(pattern)
-        print(f"🚨 Threat recorded: {threat_type} | Severity: {severity}")
 
     def check_and_block(self, input_text: str) -> bool:
         """ Check the input for blocked patterns. Returns True if blocked. """
         for blocked in self.blocked_patterns:
             if blocked.lower() in input_text.lower():
-                print(f"🔒 Blocked by CRISPR guard: {blocked}")
                 return True
         return False
 

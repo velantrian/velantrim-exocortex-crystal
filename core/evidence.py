@@ -1,6 +1,5 @@
 # core/evidence.py
 # Velantrim ExoCortex — Evidence Span Store (RFC0063 / grant WP1)
-# v8.25.0-sprint5
 #
 # A canonical fact answers "what do we believe". Evidence spans answer
 # "where did it come from": a source URI/file, an optional chunk and character

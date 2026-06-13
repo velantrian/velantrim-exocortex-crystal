@@ -1,6 +1,5 @@
 # core/velum.py
 # Velantrim ExoCortex — L1.5 Velum, the Synaptic Pre-Graph (RFC0016)
-# v8.20.0-sprint3
 #
 # Velum sits between L1 (episodes) and L3 (the canon). It is the synaptic
 # pre-graph: it *notices which entities keep appearing together* and strengthens a

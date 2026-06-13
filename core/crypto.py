@@ -1,6 +1,5 @@
 # core/crypto.py
 # Velantrim ExoCortex — Encryption at Rest (GDPR Art. 32)
-# v8.10.0-sprint2
 #
 # Application-level (field-level) encryption for personal-data columns in the L1
 # SQLite store. The claim and metadata of a fact are encrypted before they touch

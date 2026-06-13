@@ -1,6 +1,5 @@
 # core/neurocore.py
 # Velantrim ExoCortex — NeuroCore Plastic Memory Layer (RFC0068, Phase 0)
-# v8.23.0-sprint5
 #
 # NeuroCore is a plastic layer that, in later phases, will adapt an SSM model
 # (Mamba-3 / RWKV-7 class) DURING a dialogue via a Hebbian update governed by the

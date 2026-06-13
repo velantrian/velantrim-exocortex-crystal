@@ -1,6 +1,5 @@
 # core/erasure.py
 # Velantrim ExoCortex — Right to Erasure (GDPR Art. 17)
-# v8.9.0-sprint2
 #
 # Physical deletion of a fact across all memory fabrics + accountability.
 #

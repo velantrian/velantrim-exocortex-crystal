@@ -1,6 +1,5 @@
 # core/adapters/pdf_adapter.py
 # Velantrim ExoCortex — PDF knowledge adapter (grant WP4)
-# v8.27.0-sprint6
 #
 # Extracts text from a PDF via pypdf, splits on blank lines, and returns each
 # non-trivial paragraph as a candidate claim. One claim per paragraph keeps

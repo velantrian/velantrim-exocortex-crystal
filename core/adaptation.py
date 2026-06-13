@@ -1,6 +1,5 @@
 # core/adaptation.py
 # Velantrim ExoCortex — Epigenetic Adaptation wiring (RFC0071)
-# v8.9.0-sprint2
 #
 # Brings the epigenetic_adaptation_module prototype to life in the core: gate blocks
 # are "stress"; as it accumulates, it raises the verification tag, which tightens
