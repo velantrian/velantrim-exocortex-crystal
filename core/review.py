@@ -25,6 +25,7 @@
 # erasures (GDPR Art. 5(2) / 24 / 30).
 
 import uuid
+import warnings
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -175,6 +176,13 @@ def approve(fact_id: str, *, actor: Optional[str] = None,
                               f"{_FORCE_REASON_MAX} characters",
                     "diagnosis": diag}
         overridden = True
+        warnings.warn(
+            f"Force override: curator '{actor}' approved a blocked fact "
+            f"(fact_id={fact_id!r}, diagnosis={diag['verdict']!r}). "
+            f"This override is recorded in the audit chain.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
     if actor is None or not actor.strip():
         actor = "curator"  # backward-compatible default for non-force approve
 
