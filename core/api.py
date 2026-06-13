@@ -25,7 +25,7 @@ try:
 except ImportError:  # pragma: no cover - exercised on stdlib-only installs
     _HAS_FASTAPI = False
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 _INSTALL_HINT = (
     "The FastAPI service layer is an optional extra. Install it with:\n"

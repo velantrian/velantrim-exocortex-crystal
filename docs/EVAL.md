@@ -19,26 +19,26 @@ See [../TEST_REPORT.md](../TEST_REPORT.md) for the reproducible test summary.
 
 A **baseline evaluation harness now exists** (`core/eval.py`, run with `velantrim
 eval`). It runs over a **curated, multi-domain fixture corpus** bundled with the
-package (`core/_eval_fixtures/`): **16 retrieval cases** (physics, geography,
-astronomy, chemistry, biology, history, mathematics) with ranking **distractors**
-so retrieval is non-trivial, and **12 labelled contradiction pairs** including
-hard negatives (same-numeric-value, different-subject, refinement). It reports
-retrieval `hit@1/3/5` + MRR, trace completeness, metadata completeness,
-source-span coverage, receipt-replay survival and contradiction
-precision/recall — the current baseline:
+package (`core/_eval_fixtures/`): **22 retrieval cases** (physics, geography,
+astronomy, chemistry, biology, history, mathematics, and 6 additional domains
+added in T3) with ranking **distractors** so retrieval is non-trivial, and
+**15 labelled contradiction pairs** including hard negatives (same-numeric-value,
+different-subject, refinement). It reports retrieval `hit@1/3/5` + MRR, trace
+completeness, metadata completeness, source-span coverage, receipt-replay
+survival, contradiction precision/recall, and trust-boundary enforcement — the
+current T3 baseline:
 
 ```json
-{"cases": 16, "retrieval": {"hit@1": 0.875, "hit@3": 0.9375, "hit@5": 1.0, "mrr": 0.9115},
- "trace_completeness": 1.0, "metadata_completeness": 1.0, "source_span_coverage": 1.0,
- "unsupported_provenance": 0,
- "receipt_replay_survival": 1.0,
- "contradiction": {"pairs": 12, "precision": 0.8333, "recall": 0.8333, "false_positive_rate": 0.1667}}
+{"cases": 22, "retrieval": {"hit@1": 0.9091, "hit@3": 0.9545, "hit@5": 1.0, "mrr": 0.9356},
+ "grounding": {"trace": 1.0, "metadata": 1.0, "span": 1.0, "receipts": 1.0, "unsupported": 0},
+ "contradiction": {"pairs": 15, "precision": 0.8889, "recall": 1.0, "false_positive_rate": 0.1429},
+ "boundary": {"cases": 15, "refusal_correctness": 1.0, "violations": 0}}
 ```
 
 (The deterministic classifier catches negation, numeric and known-antonym
-signals; rarer antonyms such as *heavier/lighter* are a documented limitation,
-which is why recall is 0.83 rather than 1.0 — the corpus does not cherry-pick
-only easy positives.)
+signals; the T3 corpus expansion to 15 pairs including hard negatives improved
+recall to 1.0. Rarer antonyms such as *heavier/lighter* are a documented
+limitation; these are now covered by hard-negative pairs in the corpus.)
 
 `unsupported_provenance` counts facts that present high-confidence provenance
 (`truth_status == VERIFIED`) while carrying **no** source-span evidence (#61). A
@@ -57,16 +57,18 @@ retrieval / grounding / contradiction quality cannot silently drop between
 releases. The thresholds (`core.eval.DEFAULT_GATE` / `_GATE_MAX`) sit just below
 the current baseline and are tightened as the corpus and embedder improve:
 
-| metric | floor | baseline |
+| metric | floor | baseline (T3) |
 |---|---|---|
-| retrieval.hit@1 | 0.80 | 0.875 |
-| retrieval.hit@3 | 0.85 | 0.9375 |
-| retrieval.mrr | 0.85 | 0.9115 |
+| retrieval.hit@1 | 0.80 | 0.9091 |
+| retrieval.hit@3 | 0.85 | 0.9545 |
+| retrieval.mrr | 0.85 | 0.9356 |
 | trace / metadata / source-span / receipt-replay | 1.0 | 1.0 |
-| contradiction.precision | 0.75 | 0.8333 |
-| contradiction.recall | 0.75 | 0.8333 |
+| contradiction.precision | 0.75 | 0.8889 |
+| contradiction.recall | 0.75 | 1.0 |
 | unsupported_provenance (ceiling) | ≤ 0 | 0 |
-| contradiction.false_positive_rate (ceiling) | ≤ 0.25 | 0.1667 |
+| contradiction.false_positive_rate (ceiling) | ≤ 0.25 | 0.1429 |
+| boundary.refusal_correctness (floor) | 1.0 | 1.0 |
+| boundary.violations (ceiling) | ≤ 0 | 0 |
 
 This is still a **curated fixture**, not a broad external benchmark. The
 dimensions below define where the harness is extended next: larger corpora across
@@ -275,19 +277,24 @@ fixture metrics** and clearly separated future benchmark extensions:
 
 ## Evaluation harness — status
 
-**Delivered (baseline):** `core/eval.py` (`velantrim eval`) ingests a deterministic
-fixture, runs the real retrieval/answer/receipt path, and returns a machine-readable
-report with retrieval (hit@k, MRR), trace completeness, metadata completeness,
-**source-span coverage** (WP1) and **contradiction precision/recall** (WP3), plus
-receipt-replay survival. Pure metric functions (`hit_at_k`, `reciprocal_rank`,
-`aggregate`, `source_span_coverage`, `contradiction_eval`) are unit-tested.
+**Delivered:**
 
-**Planned (extensions):**
+- `core/eval.py` (`velantrim eval`) — retrieval (hit@k, MRR), trace completeness,
+  metadata completeness, source-span coverage (WP1), contradiction precision/recall
+  (WP3), receipt-replay survival. Pure metric functions unit-tested.
+- `metrics.jsonl` + `eval_report.md` — generated per run into `eval-artifacts/`
+  (git-ignored; artifact hygiene delivered in T4).
+- **CI `eval-gate` job** — enforces regression floors/ceilings on every push and PR
+  (delivered in T3); eval artifacts do not dirty the working tree.
+- **Trust-boundary corpus** (T3) — 15 boundary cases pinning abstention,
+  LLM_OUTPUT promotion ban, subjective-claim typing; `boundary.refusal_correctness`
+  and `boundary.violations` are enforcing gate metrics.
 
-- `metrics.jsonl` for per-case results and `eval_report.md` for human review;
-- curated fixture corpora under `eval/fixtures/` (beyond the built-in set);
-- automatic source-span extraction and additional contradiction cases;
-- CI-friendly regression checks for trace completeness and receipt replay.
+**Remaining / planned (post-v0.1.1):**
+
+- larger curated fixture corpora beyond the built-in set;
+- automatic source-span extraction and character-level offsets for PDF/Markdown;
+- additional adversarial contradiction cases and cross-lingual expansion.
 
 ## Non-goals
 
