@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > `ROADMAP.md`); the published package version in `pyproject.toml` is the single
 > source of truth for releases.
 
+## [Unreleased]
+
+### Added
+- `core/trace_visualize.py`: read-only TRACE / Receipt visualization formatter (Markdown + DOT output) for reviewer tooling
+- `scripts/trace_visualize.py`: CLI wrapper for trace visualization
+- `docs/TRACE_VISUALIZATION.md`: documentation for the visualization helper
+
 ## [0.2.0] — 2026-06-13
 
 ### Added
