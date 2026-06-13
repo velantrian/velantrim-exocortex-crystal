@@ -447,6 +447,199 @@ def test_epub_ingest_file(tmp_path, monkeypatch):
     assert "accepted" in rep
 
 
+# ─── Wikidata adapter ─────────────────────────────────────────────────────────
+
+requests_lib = pytest.importorskip("requests", reason="requests not installed — skip Wikidata adapter tests")
+
+_WIKIDATA_MOCK_RESPONSE = {
+    "entities": {
+        "Q42": {
+            "id": "Q42",
+            "labels": {"en": {"value": "Douglas Adams"}},
+            "descriptions": {"en": {"value": "English author and humorist"}},
+        },
+        "Q937": {
+            "id": "Q937",
+            "labels": {"en": {"value": "Albert Einstein"}},
+            "descriptions": {"en": {"value": "German-born theoretical physicist"}},
+        },
+    }
+}
+
+
+def _mock_requests_get(monkeypatch, response_json: dict, status_code: int = 200):
+    """Patch requests.get inside wikidata_adapter to return a fake response."""
+    import unittest.mock as _mock
+
+    mock_resp = _mock.MagicMock()
+    mock_resp.status_code = status_code
+    mock_resp.json.return_value = response_json
+
+    monkeypatch.setattr(
+        "core.adapters.wikidata_adapter._requests.get",
+        _mock.MagicMock(return_value=mock_resp),
+    )
+    return mock_resp
+
+
+def test_wikidata_adapter_registers_on_import():
+    import core.adapters.wikidata_adapter  # noqa: F401
+    assert _get_adapter("qids") is not None
+    assert _get_adapter("wikidata") is not None
+
+
+def test_wikidata_extract_from_json_array(tmp_path, monkeypatch):
+    _reset_env(monkeypatch)
+    qids_file = tmp_path / "entities.qids"
+    qids_file.write_text('["Q42", "Q937"]', encoding="utf-8")
+    _mock_requests_get(monkeypatch, _WIKIDATA_MOCK_RESPONSE)
+    from core.adapters.wikidata_adapter import extract_wikidata_claims
+    claims = extract_wikidata_claims(str(qids_file))
+    assert len(claims) == 2
+    chunk_ids = {c["chunk_id"] for c in claims}
+    assert chunk_ids == {"Q42", "Q937"}
+    claim_by_qid = {c["chunk_id"]: c["claim"] for c in claims}
+    assert claim_by_qid["Q42"] == "Douglas Adams: English author and humorist"
+    assert claim_by_qid["Q937"] == "Albert Einstein: German-born theoretical physicist"
+
+
+def test_wikidata_extract_from_text_lines(tmp_path, monkeypatch):
+    _reset_env(monkeypatch)
+    qids_file = tmp_path / "entities.qids"
+    qids_file.write_text("Q42\nQ937\n", encoding="utf-8")
+    _mock_requests_get(monkeypatch, _WIKIDATA_MOCK_RESPONSE)
+    from core.adapters.wikidata_adapter import extract_wikidata_claims
+    claims = extract_wikidata_claims(str(qids_file))
+    assert len(claims) == 2
+    chunk_ids = {c["chunk_id"] for c in claims}
+    assert chunk_ids == {"Q42", "Q937"}
+
+
+def test_wikidata_extract_skips_missing_label(tmp_path, monkeypatch):
+    _reset_env(monkeypatch)
+    qids_file = tmp_path / "entities.qids"
+    qids_file.write_text("Q42\nQ999\n", encoding="utf-8")
+    # Q999 has no English label
+    mock_response = {
+        "entities": {
+            "Q42": {
+                "id": "Q42",
+                "labels": {"en": {"value": "Douglas Adams"}},
+                "descriptions": {"en": {"value": "English author and humorist"}},
+            },
+            "Q999": {
+                "id": "Q999",
+                "labels": {},
+                "descriptions": {},
+            },
+        }
+    }
+    _mock_requests_get(monkeypatch, mock_response)
+    from core.adapters.wikidata_adapter import extract_wikidata_claims
+    claims = extract_wikidata_claims(str(qids_file))
+    assert len(claims) == 1
+    assert claims[0]["chunk_id"] == "Q42"
+
+
+def test_wikidata_extract_label_only_no_description(tmp_path, monkeypatch):
+    _reset_env(monkeypatch)
+    qids_file = tmp_path / "entities.qids"
+    qids_file.write_text("Q42\n", encoding="utf-8")
+    mock_response = {
+        "entities": {
+            "Q42": {
+                "id": "Q42",
+                "labels": {"en": {"value": "Douglas Adams"}},
+                "descriptions": {},
+            },
+        }
+    }
+    _mock_requests_get(monkeypatch, mock_response)
+    from core.adapters.wikidata_adapter import extract_wikidata_claims
+    claims = extract_wikidata_claims(str(qids_file))
+    assert len(claims) == 1
+    assert claims[0]["claim"] == "Douglas Adams"
+    assert claims[0]["chunk_id"] == "Q42"
+
+
+def test_wikidata_extract_deduplicates_qids(tmp_path, monkeypatch):
+    _reset_env(monkeypatch)
+    qids_file = tmp_path / "entities.qids"
+    qids_file.write_text("Q42\nQ42\n", encoding="utf-8")
+    import unittest.mock as _mock
+    mock_get = _mock.MagicMock()
+    mock_resp = _mock.MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "entities": {
+            "Q42": {
+                "id": "Q42",
+                "labels": {"en": {"value": "Douglas Adams"}},
+                "descriptions": {"en": {"value": "English author and humorist"}},
+            }
+        }
+    }
+    mock_get.return_value = mock_resp
+    monkeypatch.setattr("core.adapters.wikidata_adapter._requests.get", mock_get)
+    from core.adapters.wikidata_adapter import extract_wikidata_claims
+    claims = extract_wikidata_claims(str(qids_file))
+    assert len(claims) == 1
+    assert mock_get.call_count == 1
+    # The single API call should contain Q42 only once
+    call_params = mock_get.call_args[1]["params"]
+    assert call_params["ids"] == "Q42"
+
+
+def test_wikidata_http_error_raises(tmp_path, monkeypatch):
+    _reset_env(monkeypatch)
+    qids_file = tmp_path / "entities.qids"
+    qids_file.write_text("Q42\n", encoding="utf-8")
+    import unittest.mock as _mock
+    import requests as _reqs
+    monkeypatch.setattr(
+        "core.adapters.wikidata_adapter._requests.get",
+        _mock.MagicMock(side_effect=_reqs.exceptions.RequestException("network error")),
+    )
+    from core.adapters.wikidata_adapter import extract_wikidata_claims
+    with pytest.raises(RuntimeError, match="Wikidata API request failed"):
+        extract_wikidata_claims(str(qids_file))
+
+
+def test_wikidata_non_200_response_raises(tmp_path, monkeypatch):
+    _reset_env(monkeypatch)
+    qids_file = tmp_path / "entities.qids"
+    qids_file.write_text("Q42\n", encoding="utf-8")
+    _mock_requests_get(monkeypatch, {}, status_code=503)
+    from core.adapters.wikidata_adapter import extract_wikidata_claims
+    with pytest.raises(RuntimeError, match="Wikidata API returned HTTP 503"):
+        extract_wikidata_claims(str(qids_file))
+
+
+def test_wikidata_ingest_file_qids_extension(tmp_path, monkeypatch):
+    _reset_env(monkeypatch)
+    qids_file = tmp_path / "entities.qids"
+    qids_file.write_text('["Q42", "Q937"]', encoding="utf-8")
+    _mock_requests_get(monkeypatch, _WIKIDATA_MOCK_RESPONSE)
+    import core.adapters.wikidata_adapter  # noqa: F401
+    from core import knowledge
+    rep = knowledge.ingest_file(str(qids_file))
+    assert "accepted" in rep
+    assert rep["accepted"] >= 1
+
+
+def test_wikidata_empty_file_returns_empty(tmp_path, monkeypatch):
+    _reset_env(monkeypatch)
+    qids_file = tmp_path / "entities.qids"
+    qids_file.write_text("", encoding="utf-8")
+    import unittest.mock as _mock
+    mock_get = _mock.MagicMock()
+    monkeypatch.setattr("core.adapters.wikidata_adapter._requests.get", mock_get)
+    from core.adapters.wikidata_adapter import extract_wikidata_claims
+    claims = extract_wikidata_claims(str(qids_file))
+    assert claims == []
+    mock_get.assert_not_called()
+
+
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
 def _reset_env(monkeypatch) -> None:
