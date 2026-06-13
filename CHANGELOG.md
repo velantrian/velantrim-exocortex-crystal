@@ -19,8 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `docs/PERSONAL_OVERLAY_RFC.md`: Future RFC for a personal-deployment overlay layer
   (status: design artifact only, not Crystal runtime — no TruthGate/Guardian/L3 changes)
 - `schemas/personal_overlay.schema.json`: JSON Schema for future personal overlay records;
-  enforces redaction rules (`store_full_numbers: false`, `not_world_fact: true` for sensitive
-  claim types) at schema level
+  `allOf` conditionals make `store_full_numbers`, `store_full_address`, and
+  `requires_user_confirmation_before_use` **required and constrained** when
+  `sensitivity: highly_sensitive`, and make `not_world_fact: true` **required**
+  for `EMOTION`, `INTERPRETATION`, `PRIVATE_CONTEXT`, and `SENSITIVE_CONTEXT` claim types
 - `examples/personal_overlay.redacted.sample.jsonl`: five synthetic redacted sample records
   (preference, goal, legal context pointer, health caution flag, emotional context);
   no real sensitive identifiers
