@@ -118,6 +118,17 @@ def test_dry_run_batch_custom_source(monkeypatch):
     assert result["source"] == "my-corpus-v1"
 
 
+def test_dry_run_batch_confidence_and_significance_fields(monkeypatch):
+    """confidence and significance fields must be forwarded to predict_claim."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    claims = [{"claim": "Platinum is a precious metal",
+               "confidence": 0.95, "significance": 0.8,
+               "source_status": "EXTERNAL"}]
+    result = kb_ingest.dry_run_batch(claims)
+    assert result["total"] == 1
+    assert result["items"][0]["verdict"] in ("accept", "reinforce", "blocked", "conflict")
+
+
 # ─── dry_run_manifest_file — JSONL ────────────────────────────────────────────
 
 def test_dry_run_manifest_file_jsonl(monkeypatch):
@@ -225,3 +236,19 @@ def test_cli_kb_ingest(monkeypatch):
         assert result["total"] == 1
     finally:
         os.unlink(path)
+
+
+def test_cli_kb_ingest_in_process(monkeypatch, capsys, tmp_path):
+    """In-process CLI kb-ingest exercises the main() dispatch branch."""
+    from core.cli import main
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    p = tmp_path / "manifest.jsonl"
+    p.write_text(
+        json.dumps({"claim": "Manganese is a metal", "source_status": "EXTERNAL"}) + "\n",
+        encoding="utf-8",
+    )
+    rc = main(["kb-ingest", str(p)])
+    assert rc == 0
+    out = json.loads(capsys.readouterr().out.strip())
+    assert out["dry_run"] is True
+    assert out["total"] == 1

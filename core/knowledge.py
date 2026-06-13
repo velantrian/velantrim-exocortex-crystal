@@ -26,7 +26,7 @@ import re
 from typing import Dict, Any, List, Optional, Iterable
 
 from core import ingest as _ingest_mod
-from core import metrics, evidence
+from core import metrics, evidence, span_extract
 
 EXTERNAL = "EXTERNAL"
 _SUPPORTED = (".txt", ".md", ".markdown", ".json", ".jsonl", ".ndjson", ".csv")
@@ -140,6 +140,7 @@ def ingest_claims(
     claims: Iterable[Dict[str, Any]], *, source: str = "external",
     source_status: str = EXTERNAL, source_sha256: Optional[str] = None,
     attach_evidence: bool = True,
+    source_content: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Route each extracted claim through ingest() (Guardian → TruthGate → L3), with
@@ -147,6 +148,11 @@ def ingest_claims(
 
     When `attach_evidence` is set (default), each newly accepted fact also gets a
     source-span evidence record (WP1) linking it to `source` (+ `source_sha256`).
+
+    When `source_content` is provided, character-level span offsets and the
+    nearest Markdown section heading are detected and stored in the evidence
+    record (WP1 span extraction). Records that already carry `span_start` /
+    `span_end` (e.g. from the PDF adapter) are used as-is.
     """
     accepted = reinforced = blocked = 0
     blocked_reasons: List[Dict[str, str]] = []
@@ -167,10 +173,23 @@ def ingest_claims(
             if res.get("reinforced"):
                 reinforced += 1
             elif attach_evidence:
-                # New imported fact → record where it came from (WP1).
+                # Resolve span offsets: prefer adapter-supplied values, then
+                # detect from source_content, else fall back to doc-level ref.
+                sp_start = rec.get("span_start")
+                sp_end = rec.get("span_end")
+                section = rec.get("section")
+                chunk_id = rec.get("chunk_id")
+                if sp_start is None and source_content is not None:
+                    sp_start, sp_end = span_extract.locate_claim(
+                        source_content, claim)
+                    if sp_start is not None and section is None:
+                        section = span_extract.extract_section(
+                            source_content, sp_start)
                 evidence.attach_evidence(
                     fid, source, source_kind="file", claim=claim,
-                    source_sha256=source_sha256)
+                    source_sha256=source_sha256,
+                    span_start=sp_start, span_end=sp_end,
+                    section=section, chunk_id=chunk_id)
         else:
             blocked += 1
             blocked_reasons.append({"claim": claim, "reason": res.get("reason", "")})
@@ -193,7 +212,8 @@ def ingest_text(
     """Extract claims from in-memory `content` of `fmt` and ingest them."""
     return ingest_claims(extract_claims(content, fmt),
                          source=source, source_status=source_status,
-                         source_sha256=evidence.sha256(content))
+                         source_sha256=evidence.sha256(content),
+                         source_content=content)
 
 
 def ingest_file(
