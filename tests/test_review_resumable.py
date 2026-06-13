@@ -194,3 +194,37 @@ def test_list_sessions_filter_by_status(monkeypatch):
     assert s1["session_id"] in sids_completed
     assert s2["session_id"] in sids_pending
     assert s2["session_id"] not in sids_completed
+
+
+def test_list_sessions_no_filter(monkeypatch):
+    """list_sessions() with no status arg returns all sessions (covers else branch)."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    _blocked_fact("Nullium has infinite density")
+    s1 = review.create_session()
+    review.complete_session(s1["session_id"])
+    s2 = review.create_session()
+
+    all_sessions = review.list_sessions()
+    sids = [s["session_id"] for s in all_sessions]
+    assert s1["session_id"] in sids
+    assert s2["session_id"] in sids
+
+
+def test_resume_skips_fact_no_longer_observed(monkeypatch):
+    """resume_session skips facts that left Observed state outside the session."""
+    import uuid
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    fid = str(uuid.uuid4())
+    # A ready fact (EXTERNAL, passes truth_gate) stored directly as Observed.
+    _ready_pending("Tritium has a half-life of 12 years", fid)
+
+    session = review.create_session()
+    assert fid in session["claim_ids"]
+
+    # Approve outside session tracking — fact moves to Validated, not in reviewed_ids.
+    review.approve(fid, actor="curator")
+
+    # resume must skip the now-Validated fact (line 287-288 in review.py).
+    result = review.resume_session(session["session_id"])
+    ids = {item["fact_id"] for item in result["pending_items"]}
+    assert fid not in ids
