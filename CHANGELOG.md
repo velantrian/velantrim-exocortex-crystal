@@ -13,6 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **PR5 — Force Override Audit Pinning** (grant WP2 hardening):
+  - `core/review.py` — `approve(..., force=True, ...)` now emits a
+    `RuntimeWarning` when a blocked fact is force-approved; message is
+    content-free (fact_id, actor, diagnosis — no claim text). All existing
+    guards preserved: explicit non-empty actor required, non-empty reason
+    required, 500-char reason limit enforced, `review_force_approve` audit
+    event and `review.override` metric unchanged.
+  - `tests/test_force_override_audit.py` — 11 behaviour-pinned tests:
+    rejection without actor/reason, RuntimeWarning emission, content-free
+    warning and audit event, normal approve emits no warning, metric
+    increment.
 - **PR4 — KB Dry-Run Batch Manifest** (grant WP2/WP4 hardening):
   - `core/kb_ingest.py` — `dry_run_batch(claims)` and
     `dry_run_manifest_file(path)` predict accept/reinforce/blocked/conflict
