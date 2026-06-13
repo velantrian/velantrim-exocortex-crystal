@@ -8,10 +8,20 @@ vulnerabilities.
 
 ## Supported versions
 
-| Version          | Supported |
-|------------------|-----------|
-| `0.1.x` / `8.x`  | ✅        |
-| `< 8.0`          | ❌        |
+**Current Crystal line** (grant-facing open core):
+
+| Version | Supported |
+|---------|-----------|
+| `0.1.x` | ✅ active — receives security updates |
+
+**Legacy / historical lines** (separate research archives, not the grant-facing Crystal core):
+
+| Version | Supported |
+|---------|-----------|
+| `8.x`   | ⚠️ historical / separate research line — not the main grant-facing support target |
+| `< 8.0` | ❌ |
+
+Only the latest minor Crystal line (`0.1.x`) receives active security updates unless otherwise stated. Do not rely on `8.x` archive lines for production or grant-facing deployments.
 
 ## Reporting a vulnerability
 

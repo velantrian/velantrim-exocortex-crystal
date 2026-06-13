@@ -12,6 +12,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **PR3 — Resumable Review Sessions** (grant WP2 hardening):
+  - `core/memory.py` — `review_sessions` SQLite table with DDL auto-migration
+    on `_db()` open; `save_review_session`, `get_review_session`,
+    `list_review_sessions` storage helpers.
+  - `core/review.py` — `create_session`, `get_session`, `list_sessions`,
+    `resume_session`, `record_session_decision`, `complete_session` — a
+    session snapshots pending claim IDs at creation; `resume_session` returns
+    only unresolved Observed items in stable order (the curator sees the same
+    batch on return). No claim text stored in session records.
+  - `tests/test_review_resumable.py` — 14 behaviour-pinned tests covering
+    session lifecycle, the core resumability invariant
+    (`test_review_resume_shows_same_pending_claims`), decision recording,
+    batch_size cap and status filtering.
+- Future RFC document `docs/EPISTEMIC_INFRASTRUCTURE_UPGRADE.md` — Temporal Layer,
+  Context/Scope, Conflict Resolution, Negative Knowledge, Known Unknowns, Plausibility
+  Pre-Filter, Confidence Calibration and Epistemic Debt; explicitly marked as
+  non-runtime / v0.3.0+ research roadmap.
+- `docs/DIGITAL_SOVEREIGNTY.md` — "Efficient AI" section with future evaluation
+  metrics (`llm_calls_avoided_per_query`, `tokens_saved_per_answer`, etc.);
+  no performance guarantees claimed.
+
+### Changed
+- `README.md` — geopolitical wording tightened: "US-based or other third-party
+  AI providers" → "external third-party AI or cloud providers outside
+  operator-controlled infrastructure"; healthcare row clarified to add
+  "not for clinical decision-making, diagnosis, or treatment".
+- `SECURITY.md` — supported-version table split: `0.1.x` (active Crystal line)
+  separated from `8.x` (historical/separate research archive, not the
+  grant-facing support target).
+- `docs/IMPLEMENTATION_STATUS.md` — `EPISTEMIC_INFRASTRUCTURE_UPGRADE` added
+  to Future RFC backlog; Resumable Review Sessions marked Implemented.
+
 ## [0.1.1] — 2026-06-13
 
 ### Added
