@@ -43,7 +43,7 @@ of Crystal).
 | Fractal Memory (multi-scale anchoring) | Implemented (baseline) | Yes | `core/fractal.py` (RFC0070): SHORT→MEDIUM→LONG→CORE anchoring, CORE exempt from decay; `fractal-*` CLI |
 | Observer **action policy** (flag → action routing) | RFC / roadmap | No | Observability exists (read-only); a policy that routes flags to receivers/actions does not |
 | Mode Layer | RFC / roadmap | No runtime feature | Policy-boundary concept only; nothing in code or tests |
-| Imagination Mode | RFC / roadmap | No runtime feature | Creative-sandbox concept only; see boundary note below |
+| Imagination Mode / Spark | RFC / roadmap | No runtime feature | Sandboxed creative/exploratory reasoning layer; see [SPARK_RFC.md](./SPARK_RFC.md) and boundary note below |
 | Mode Router | RFC / roadmap | No runtime feature | Future explicit/rule-based design |
 | Temporal reasoning / bi-temporal claims | RFC / roadmap | No | Future RFC; no schema fields today |
 | Provenance grades (BRONZE/SILVER/GOLD) | RFC / roadmap | No | Future RFC; no schema fields today |
@@ -102,3 +102,4 @@ that already governs `LLM_OUTPUT` today (see
 | RFC_TEMPORAL_LAYER | Bi-temporal claim fields and temporal reasoning | Future |
 | [RFC_HARNESS_REPLAY_OPTIMIZATION](./RFC_HARNESS_REPLAY_OPTIMIZATION.md) | Trajectory record/replay + human-approved harness optimization | Proposed (drafted, RFC-only) |
 | [EPISTEMIC_INFRASTRUCTURE_UPGRADE](./EPISTEMIC_INFRASTRUCTURE_UPGRADE.md) | Temporal Layer, Context/Scope, Conflict Resolution, Negative Knowledge, Known Unknowns, Plausibility Pre-Filter, Confidence Calibration, Epistemic Debt | Future RFC / v0.3.0+ research roadmap / no runtime feature / no schema fields today |
+| [SPARK_RFC](./SPARK_RFC.md) | Spark Layer (sandboxed generative/exploratory reasoning), Imagination Mode, Spark-to-Crystal Bridge, Mode Layer integration; explicit boundary from Velantrim Culture | Future RFC / v0.3.0+ research roadmap / no runtime feature |
