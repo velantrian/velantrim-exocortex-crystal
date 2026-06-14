@@ -106,11 +106,15 @@ def _html_to_text(html_bytes: bytes) -> str:
     except Exception:
         text = ""
 
-    # If no <body> was found (fragment or malformed input), strip tags from whole doc.
-    if not text.strip():
-        text = _TAG_RE.sub(" ", raw)
+    if text.strip():
+        # The parser path already decoded entities in handle_entityref/charref;
+        # do NOT unescape again or literal entity examples (e.g. "&amp;copy;")
+        # would be decoded a second time into "©".
+        return text
 
-    return html.unescape(text)
+    # No <body> found (fragment or malformed input): strip tags from the whole
+    # document and decode entities once.
+    return html.unescape(_TAG_RE.sub(" ", raw))
 
 
 def extract_epub_claims(path: str) -> List[Dict[str, Any]]:
@@ -125,7 +129,11 @@ def extract_epub_claims(path: str) -> List[Dict[str, Any]]:
     claims: List[Dict[str, Any]] = []
     for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
         # Skip navigation / cover / TOC items — process only real chapters.
-        if not item.is_chapter():
+        # Plain EpubItem documents (e.g. a non-xhtml media type) do not implement
+        # is_chapter(); treat those as processable rather than aborting with
+        # AttributeError, preserving the pre-filter behaviour for such files.
+        is_chapter = getattr(item, "is_chapter", None)
+        if callable(is_chapter) and not is_chapter():
             continue
         chunk_id = item.get_id()
         text = _html_to_text(item.get_content())

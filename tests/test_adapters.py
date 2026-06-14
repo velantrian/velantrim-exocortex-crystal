@@ -425,6 +425,32 @@ def test_bibtex_parse_fields_no_match_break(tmp_path):
     assert "A Paper With Comment" in claims[0]["claim"]
 
 
+def test_bibtex_indented_multiline_field_preserves_later_fields(tmp_path):
+    """A multiline field closing on its own indented line must not end the entry.
+
+    Regression: a regex entry-terminator treated the abstract's indented closing
+    brace as the end of the whole entry, dropping the title/year that follow.
+    The brace-counter walks to the entry's true matching '}'.
+    """
+    from core.adapters.bibtex_adapter import extract_bibtex_claims
+    bib = tmp_path / "multiline.bib"
+    bib.write_text(
+        "@article{ml1,\n"
+        "  abstract = {This abstract spans\n"
+        "  multiple lines and then closes\n"
+        "  },\n"
+        "  title = {The Real Title},\n"
+        "  year = 2021\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    claims = extract_bibtex_claims(str(bib))
+    citation = [c for c in claims if "The Real Title" in c["claim"]]
+    assert citation, "title field was lost — entry terminated early"
+    assert "2021" in citation[0]["claim"], "year after multiline abstract was lost"
+    assert any("spans" in c["claim"] for c in claims), "abstract not preserved"
+
+
 # ─── EPUB adapter ─────────────────────────────────────────────────────────────
 
 ebooklib = pytest.importorskip("ebooklib", reason="ebooklib not installed — skip EPUB adapter tests")
@@ -567,6 +593,47 @@ def test_epub_html_to_text_no_body_fallback(tmp_path):
     html_bytes = b"<p>Fragment content without a body wrapper, long enough to check.</p>"
     result = _html_to_text(html_bytes)
     assert "Fragment content" in result
+
+
+def test_epub_html_to_text_preserves_literal_entity_examples(tmp_path):
+    """Body entities are decoded exactly once — escaped examples stay literal.
+
+    Regression: the parser handlers decode entities once, then a final
+    html.unescape decoded again, turning "&amp;copy;" (literal "&copy;") into "©".
+    """
+    from core.adapters.epub_adapter import _html_to_text
+    html_bytes = (
+        b"<html><body><p>Write &amp;copy; to display a copyright entity example.</p></body></html>"
+    )
+    result = _html_to_text(html_bytes)
+    assert "&copy;" in result  # literal entity example preserved (single decode)
+    assert "©" not in result  # not double-decoded into ©
+
+
+def test_epub_processes_document_item_without_is_chapter(tmp_path, monkeypatch):
+    """A plain document item lacking is_chapter() is processed, not crashed on.
+
+    Regression: an unconditional item.is_chapter() raised AttributeError for
+    plain EpubItem documents (e.g. a non-xhtml media type).
+    """
+    import core.adapters.epub_adapter as mod
+
+    class _PlainItem:  # mimics a base EpubItem — no is_chapter() method
+        def get_id(self):
+            return "doc1"
+
+        def get_content(self):
+            return (
+                b"<html><body><p>Plain document content long enough to be a claim.</p></body></html>"
+            )
+
+    class _FakeBook:
+        def get_items_of_type(self, _type):
+            return [_PlainItem()]
+
+    monkeypatch.setattr(mod._epub, "read_epub", lambda path: _FakeBook())
+    claims = mod.extract_epub_claims("ignored.epub")
+    assert any("Plain document content" in c["claim"] for c in claims)
 
 
 # ─── Wikidata adapter ─────────────────────────────────────────────────────────

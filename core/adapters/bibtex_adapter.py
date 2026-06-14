@@ -17,13 +17,11 @@ from typing import Any, Dict, List, Optional
 
 from core.adapters import register
 
-# Match an @type{key, ...} BibTeX entry.  The closing `}` may have optional
-# leading whitespace (some generators indent it; single-line entries end with
-# `}\n` which also matches after the fix).
-_ENTRY_RE = re.compile(
-    r"@\w+\s*\{\s*([^,\s]+)\s*,\s*(.*?)\n[ \t]*\}",
-    re.DOTALL,
-)
+# Match the START of an @type{key, ... entry.  The true end of the entry is
+# found by walking braces (see _parse_entries), not by regex — otherwise an
+# indented closing brace of a multiline field (e.g. abstract = {...\n  },) is
+# mistaken for the end of the whole entry and later fields are lost.
+_ENTRY_START_RE = re.compile(r"@\w+\s*\{\s*([^,\s]+)\s*,", re.DOTALL)
 # Match a field: fieldname = {value}, fieldname = "value", or bare integer/token
 # The brace form is handled by _extract_brace_value to support nested braces.
 _FIELD_RE = re.compile(
@@ -101,9 +99,15 @@ def _parse_fields(body: str) -> Dict[str, str]:
 def _parse_entries(text: str) -> List[Dict[str, str]]:
     """Return a list of dicts mapping lowercase field names → values, plus '_key'."""
     entries: List[Dict[str, str]] = []
-    for m in _ENTRY_RE.finditer(text):
+    for m in _ENTRY_START_RE.finditer(text):
         key = m.group(1).strip()
-        body = m.group(2)
+        # Walk braces from the entry's opening '{' to its true matching '}', so
+        # nested/indented field braces never terminate the entry early.
+        brace_pos = text.find("{", m.start())
+        full, _end = _extract_brace_value(text, brace_pos)
+        # full == "key, <fields...>"; drop the key and its trailing comma.
+        comma = full.find(",")
+        body = full[comma + 1:]
         fields: Dict[str, str] = {"_key": key}
         fields.update(_parse_fields(body))
         entries.append(fields)
