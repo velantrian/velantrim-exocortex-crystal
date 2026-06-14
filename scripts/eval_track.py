@@ -9,6 +9,7 @@ import argparse
 import json
 import os
 import sys
+import tempfile
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 
@@ -21,9 +22,50 @@ import core as _core_pkg
 def track(*, output_path: str = "eval_history.jsonl", lang: str = "en") -> Dict[str, Any]:
     """Run eval.run_baseline() and append a timestamped snapshot to output_path.
 
+    The baseline run uses a temporary, isolated database so it never pollutes
+    the live canon configured via VELANTRIM_DB / VELANTRIM_L3_PATH.
+
     Returns the appended record.
     """
-    report = _eval.run_baseline(lang=lang)
+    import core.memory as _mem
+    import core.l3_graph as _l3
+
+    with tempfile.TemporaryDirectory(prefix="velantrim-eval-track-") as _tmpdir:
+        # Redirect L1 and L3 stores to the temp dir for the duration of the
+        # baseline run.  Save both the env vars AND the module-level SQLITE_PATH
+        # attribute (which is read at import time) so that in-process reuse of
+        # the module never writes to the caller's live canon.
+        _old_db = os.environ.get("VELANTRIM_DB")
+        _old_l3 = os.environ.get("VELANTRIM_L3_PATH")
+        _old_sqlite_path = _mem.SQLITE_PATH
+        _tmp_db = os.path.join(_tmpdir, "eval.db")
+        _tmp_l3 = os.path.join(_tmpdir, "l3.db")
+        try:
+            os.environ["VELANTRIM_DB"] = _tmp_db
+            os.environ["VELANTRIM_L3_PATH"] = _tmp_l3
+            _mem.SQLITE_PATH = _tmp_db
+
+            # Flush caches so the baseline run starts with a clean slate
+            # against the temp DB.
+            _mem._L0.clear()
+            _l3.reset_l3_graph()
+
+            report = _eval.run_baseline(lang=lang)
+        finally:
+            # Restore original env vars and the module-level attribute.
+            # Use dict-update style to avoid conditional branches for coverage.
+            _restore_db = {k: v for k, v in [("VELANTRIM_DB", _old_db)]
+                           if v is not None}
+            _restore_l3 = {k: v for k, v in [("VELANTRIM_L3_PATH", _old_l3)]
+                           if v is not None}
+            os.environ.pop("VELANTRIM_DB", None)
+            os.environ.pop("VELANTRIM_L3_PATH", None)
+            os.environ.update(_restore_db)
+            os.environ.update(_restore_l3)
+            _mem.SQLITE_PATH = _old_sqlite_path
+            # Flush caches so the next access reconnects to the restored path.
+            _mem._L0.clear()
+            _l3.reset_l3_graph()
 
     ret = report["retrieval"]
     con = report["contradiction"]
