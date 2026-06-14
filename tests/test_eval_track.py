@@ -174,3 +174,33 @@ def test_track_record_has_version(tmp_path):
     out = str(tmp_path / "h.jsonl")
     record = eval_track.track(output_path=out)
     assert record["version"] == _core_pkg.__version__
+
+
+def test_track_does_not_pollute_live_canon(tmp_path, monkeypatch):
+    """eval_track.track() must not write eval fixtures into the configured DB.
+
+    Regression: run_baseline() was called without switching to a temp DB, so
+    it ingested the eval corpus into whatever VELANTRIM_DB was active.  The fix
+    wraps run_baseline() in a TemporaryDirectory context that redirects both
+    VELANTRIM_DB and VELANTRIM_L3_PATH.
+    (Codex P2 fix: scripts/eval_track.py)
+    """
+    from core.memory import get_all_facts
+    import core.memory as _mem
+    import core.l3_graph as _l3
+
+    # Snapshot the fact count BEFORE the eval run.
+    before_count = len(get_all_facts())
+
+    out = str(tmp_path / "h.jsonl")
+    eval_track.track(output_path=out)
+
+    # Reset singletons so we read from the same DB that was active before.
+    _mem._L0.clear()
+    _l3.reset_l3_graph()
+
+    after_count = len(get_all_facts())
+    assert after_count == before_count, (
+        f"track() wrote {after_count - before_count} fact(s) into the live canon; "
+        "it must use a temp DB instead."
+    )

@@ -28,6 +28,10 @@ from core.adapters import register
 
 _WIKIDATA_API = "https://www.wikidata.org/w/api.php"
 _BATCH_SIZE = 50
+_USER_AGENT = (
+    "velantrim-exocortex-crystal/0.2.0 "
+    "(https://github.com/velantrian/velantrim-exocortex-crystal)"
+)
 
 
 def _read_qids(path: str) -> List[str]:
@@ -67,7 +71,12 @@ def _fetch_entities(qids: List[str]) -> Dict[str, Any]:
             "format": "json",
         }
         try:
-            resp = _requests.get(_WIKIDATA_API, params=params, timeout=30)
+            resp = _requests.get(
+                _WIKIDATA_API,
+                params=params,
+                timeout=30,
+                headers={"User-Agent": _USER_AGENT},
+            )
         except _requests.exceptions.RequestException as exc:
             raise RuntimeError(
                 f"Wikidata API request failed for batch {batch}: {exc}"
@@ -79,6 +88,15 @@ def _fetch_entities(qids: List[str]) -> Dict[str, Any]:
             )
 
         data = resp.json()
+        # Wikidata returns HTTP 200 with {"error": {...}} for application errors
+        # (e.g. invalid QID format, API throttling). Treat these as fatal so they
+        # surface immediately rather than silently importing 0 claims.
+        if "error" in data:
+            err = data["error"]
+            raise RuntimeError(
+                f"Wikidata API error for batch {batch}: "
+                f"{err.get('code', 'unknown')} — {err.get('info', str(err))}"
+            )
         all_entities.update(data.get("entities", {}))
 
     return all_entities

@@ -640,6 +640,59 @@ def test_wikidata_empty_file_returns_empty(tmp_path, monkeypatch):
     mock_get.assert_not_called()
 
 
+def test_wikidata_http200_json_error_raises(tmp_path, monkeypatch):
+    """Wikidata returns HTTP 200 with {"error": {...}} for application errors.
+    The adapter must raise RuntimeError rather than silently importing 0 claims.
+    (Codex P2 fix: core/adapters/wikidata_adapter.py)
+    """
+    _reset_env(monkeypatch)
+    qids_file = tmp_path / "entities.qids"
+    qids_file.write_text("Q-INVALID\n", encoding="utf-8")
+    error_response = {
+        "error": {
+            "code": "invalid-json",
+            "info": "Invalid JSON: malformed QID",
+            "*": "See https://www.wikidata.org/w/api.php for API usage",
+        }
+    }
+    _mock_requests_get(monkeypatch, error_response, status_code=200)
+    from core.adapters.wikidata_adapter import extract_wikidata_claims
+    with pytest.raises(RuntimeError, match="Wikidata API error"):
+        extract_wikidata_claims(str(qids_file))
+
+
+def test_wikidata_request_includes_user_agent(tmp_path, monkeypatch):
+    """Every Wikidata API request must include a Wikimedia-compliant User-Agent
+    header.  Generic python-requests/... can get rate-limited.
+    (Codex P2 fix: core/adapters/wikidata_adapter.py)
+    """
+    _reset_env(monkeypatch)
+    qids_file = tmp_path / "entities.qids"
+    qids_file.write_text("Q42\n", encoding="utf-8")
+    import unittest.mock as _mock
+    mock_get = _mock.MagicMock()
+    mock_resp = _mock.MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "entities": {
+            "Q42": {
+                "id": "Q42",
+                "labels": {"en": {"value": "Douglas Adams"}},
+                "descriptions": {"en": {"value": "English author and humorist"}},
+            }
+        }
+    }
+    mock_get.return_value = mock_resp
+    monkeypatch.setattr("core.adapters.wikidata_adapter._requests.get", mock_get)
+    from core.adapters.wikidata_adapter import extract_wikidata_claims
+    extract_wikidata_claims(str(qids_file))
+    assert mock_get.call_count == 1
+    call_kwargs = mock_get.call_args[1]
+    assert "headers" in call_kwargs
+    ua = call_kwargs["headers"].get("User-Agent", "")
+    assert "velantrim-exocortex-crystal" in ua
+
+
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
 def _reset_env(monkeypatch) -> None:

@@ -24,6 +24,7 @@ from typing import Any, Dict, List, Optional
 
 from core.imports import predict_claim
 from core import knowledge as _kb
+from core.memory import SOURCE_STATUSES, CLAIM_TYPES
 
 _VERDICT_KEYS = ("accept", "reinforce", "blocked", "conflict")
 
@@ -50,10 +51,37 @@ def dry_run_batch(
     for rec in claims:
         claim_text = (rec.get("claim") or "").strip()
         kwargs: Dict[str, Any] = {"source": rec.get("source", source)}
+
+        # Validate enum fields before passing to predict_claim so that typos
+        # like source_status="OUIJA_BOARD" return a clear block verdict here
+        # rather than silently being accepted in dry-run but failing on real
+        # ingest (which validates via core/memory.py enum checks).
         if rec.get("source_status"):
-            kwargs["source_status"] = rec["source_status"]
+            ss = rec["source_status"]
+            if ss not in SOURCE_STATUSES:
+                items.append({
+                    "claim": claim_text,
+                    "verdict": "blocked",
+                    "reason": (
+                        f"invalid source_status {ss!r}; "
+                        f"valid values: {sorted(SOURCE_STATUSES)}"
+                    ),
+                })
+                continue
+            kwargs["source_status"] = ss
         if rec.get("claim_type"):
-            kwargs["claim_type"] = rec["claim_type"]
+            ct = rec["claim_type"]
+            if ct not in CLAIM_TYPES:
+                items.append({
+                    "claim": claim_text,
+                    "verdict": "blocked",
+                    "reason": (
+                        f"invalid claim_type {ct!r}; "
+                        f"valid values: {sorted(CLAIM_TYPES)}"
+                    ),
+                })
+                continue
+            kwargs["claim_type"] = ct
         if rec.get("confidence") is not None:
             kwargs["confidence"] = rec["confidence"]
         if rec.get("significance") is not None:

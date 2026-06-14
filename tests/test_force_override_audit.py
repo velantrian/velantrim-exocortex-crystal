@@ -178,3 +178,52 @@ def test_force_approve_increments_override_metric(monkeypatch):
                        actor="metric-curator")
     after = _metrics.value("review.override")
     assert after == before + 1
+
+
+# ─── PYTHONWARNINGS=error safety (Codex P2 fix) ──────────────────────────────
+
+def test_force_approve_esm_and_audit_survive_warnings_as_errors(monkeypatch):
+    """ESM transition and audit append must complete BEFORE the warning is emitted.
+
+    When RuntimeWarning is treated as an error (PYTHONWARNINGS=error), the warning
+    raises inside the caller's frame.  The fix emits the warning as the LAST action
+    in approve(), after transition_esm() and audit.append_event() have already
+    committed.  So even if the warning is re-raised by the caller, the fact is
+    already Validated and the audit record already exists.
+
+    Regression: the warning was previously emitted BEFORE the ESM transition and
+    audit append, so raising would leave the fact in Observed with no audit record.
+    """
+    from core.memory import get_fact
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    fid = _blocked_fact("Thermium ignites at absolute zero under no pressure")
+
+    # Simulate PYTHONWARNINGS=error: catch the RuntimeWarning as an exception.
+    # The fact MUST be Validated and the audit record MUST exist even though
+    # the warning raised — because the warning is emitted last.
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        try:
+            review.approve(fid, force=True, reason="pythonwarnings-error test",
+                           actor="safety-admin")
+        except RuntimeWarning:
+            # The warning raised — but transition_esm + audit should have run first.
+            pass
+        else:
+            # The warning did NOT raise (e.g. if it was suppressed elsewhere).
+            pass
+
+    # Regardless of whether the warning raised, the ESM transition and audit
+    # must have completed because they now happen BEFORE warnings.warn().
+    assert get_fact(fid)["epistemic_state"] == "Validated", (
+        "Fact must be Validated even when RuntimeWarning is treated as an error; "
+        "the warning should be emitted AFTER transition_esm()."
+    )
+    log = _audit.audit_log()
+    force_events = [e for e in log
+                    if e["event"] == "review_force_approve"
+                    and e["fact_id"] == fid]
+    assert len(force_events) == 1, (
+        "Audit record must exist even when RuntimeWarning is treated as an error; "
+        "audit.append_event() should run BEFORE warnings.warn()."
+    )

@@ -175,13 +175,6 @@ def approve(fact_id: str, *, actor: Optional[str] = None,
                               f"{_FORCE_REASON_MAX} characters",
                     "diagnosis": diag}
         overridden = True
-        warnings.warn(
-            f"Force override: curator '{actor}' approved a blocked fact "
-            f"(fact_id={fact_id!r}, diagnosis={diag['verdict']!r}). "
-            f"This override is recorded in the audit chain.",
-            RuntimeWarning,
-            stacklevel=2,
-        )
     if actor is None or not actor.strip():
         actor = "curator"  # backward-compatible default for non-force approve
 
@@ -200,6 +193,16 @@ def approve(fact_id: str, *, actor: Optional[str] = None,
         audit.append_event("review_force_approve", fact_id,
                            {"actor": actor, "reason": reason, "note": note,
                             "diagnosis": diag["verdict"]})
+        # Emit the warning AFTER the ESM transition and audit append so that
+        # PYTHONWARNINGS=error (or warnings.simplefilter('error', RuntimeWarning))
+        # cannot prevent the fact from being promoted and recorded.
+        warnings.warn(
+            f"Force override: curator '{actor}' approved a blocked fact "
+            f"(fact_id={fact_id!r}, diagnosis={diag['verdict']!r}). "
+            f"This override is recorded in the audit chain.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
     else:
         audit.append_event("review_approve", fact_id,
                            {"actor": actor, "note": note, "override": False,

@@ -252,3 +252,55 @@ def test_cli_kb_ingest_in_process(monkeypatch, capsys, tmp_path):
     out = json.loads(capsys.readouterr().out.strip())
     assert out["dry_run"] is True
     assert out["total"] == 1
+
+
+# ─── Enum field validation (Codex P2 fix) ─────────────────────────────────────
+
+def test_dry_run_batch_invalid_source_status_blocks(monkeypatch):
+    """An invalid source_status value must return a block verdict with a clear
+    error message in dry-run, not silently pass as accept (and then fail on
+    real ingest).
+    """
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    claims = [
+        {"claim": "Bismuth is a heavy metal", "source_status": "OUIJA_BOARD"},
+    ]
+    result = kb_ingest.dry_run_batch(claims)
+    assert result["total"] == 1
+    item = result["items"][0]
+    assert item["verdict"] == "blocked"
+    assert "source_status" in item["reason"]
+    assert "OUIJA_BOARD" in item["reason"]
+    assert result["would_block"] == 1
+    assert result["would_accept"] == 0
+
+
+def test_dry_run_batch_invalid_claim_type_blocks(monkeypatch):
+    """An invalid claim_type value must return a block verdict with a clear
+    error message, not silently pass and fail on real ingest.
+    """
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    claims = [
+        {"claim": "Antimony is a metalloid", "claim_type": "PROPHECY"},
+    ]
+    result = kb_ingest.dry_run_batch(claims)
+    assert result["total"] == 1
+    item = result["items"][0]
+    assert item["verdict"] == "blocked"
+    assert "claim_type" in item["reason"]
+    assert "PROPHECY" in item["reason"]
+    assert result["would_block"] == 1
+    assert result["would_accept"] == 0
+
+
+def test_dry_run_batch_valid_enum_values_accepted(monkeypatch):
+    """Valid enum values must not be blocked by the enum validation path."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    claims = [
+        {"claim": "Selenium is a nonmetal",
+         "source_status": "EXTERNAL", "claim_type": "WORLD_FACT"},
+    ]
+    result = kb_ingest.dry_run_batch(claims)
+    assert result["total"] == 1
+    assert result["items"][0]["verdict"] in ("accept", "reinforce", "conflict")
+    assert result["would_block"] == 0
