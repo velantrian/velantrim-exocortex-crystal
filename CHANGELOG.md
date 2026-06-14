@@ -47,7 +47,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `allOf` conditionals make `store_full_numbers`, `store_full_address`, and
   `requires_user_confirmation_before_use` **required and constrained** when
   `sensitivity: highly_sensitive`, and make `not_world_fact: true` **required**
-  for `EMOTION`, `INTERPRETATION`, `PRIVATE_CONTEXT`, and `SENSITIVE_CONTEXT` claim types
+  for `EMOTION`, `INTERPRETATION`, `PRIVATE_CONTEXT`, and `SENSITIVE_CONTEXT` claim types.
+  Note: `store_full_numbers: false` and `not_world_fact: true` are **default-annotated**
+  (recommended) values for all records; records omitting these fields still validate
+  unless the conditional triggers apply — operators must enforce the privacy policy at
+  application level for records that do not match the conditional conditions
 - `examples/personal_overlay.redacted.sample.jsonl`: five synthetic redacted sample records
   (preference, goal, legal context pointer, health caution flag, emotional context);
   no real sensitive identifiers

@@ -250,7 +250,7 @@ graph TD
     User --> CLI
     CLI --> Pipeline
     FastAPI -. optional .-> Pipeline
-    MCP -. optional read-only .-> L3
+    MCP -. optional read-only .-> L1
 
     Pipeline --> L1
     Pipeline --> L3
@@ -267,10 +267,16 @@ Key invariants visible in this diagram:
 
 - **TruthGate is the only automatic write path into L3 canon.**  The CLI,
   FastAPI service and MCP server all reach the canon exclusively through the
-  Guardian → TruthGate path.
+  Guardian → TruthGate path.  Exception: curator force-approve
+  (`review.approve(force=True)`) can bypass TruthGate for blocked items; this
+  is recorded as a `review_force_approve` audit event.
 - **MCP server is read-only** by design (see section 7 for the privacy
-  boundary).
+  boundary).  MCP reads L0/L1 working memory (via `memory.get_fact`) — pre-canonical
+  facts may be visible, not only L3-canon items.
 - **LadybugDB** is an optional drop-in replacement for the SQLite L3 backend;
   the rest of the pipeline is identical either way.
-- The audit log and evidence spans are written unconditionally by the pipeline,
-  independent of which L3 backend is active.
+- Evidence and audit writes occur only on the specific paths that trigger them
+  (file import, review, erasure, config changes) — not on every `pipeline.run()`.
+  Evidence spans are attached only by `knowledge.ingest_claims` (file import
+  path); audit events are emitted only for review/erasure/config operations, not
+  for ordinary CLI/API queries.  Both are independent of which L3 backend is active.

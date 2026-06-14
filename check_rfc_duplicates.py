@@ -26,6 +26,11 @@ def load_chunks(jsonl_path: Path) -> list[dict]:
                     f"[ERROR] Line {lineno}: JSON parse error — {exc}",
                     file=sys.stderr,
                 )
+                raise SystemExit(
+                    f"Aborting: malformed JSON on line {lineno} shifts all subsequent "
+                    f"indices and would produce a misleading duplicate report. "
+                    f"Fix the JSONL file before re-running."
+                ) from exc
     return chunks
 
 

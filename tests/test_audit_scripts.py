@@ -183,17 +183,19 @@ def test_check_duplicates_missing_title_does_not_crash(tmp_path, capsys):
 
 
 def test_check_duplicates_malformed_json_reports_line_number(tmp_path, capsys):
-    """A malformed JSON line should be reported with its line number."""
+    """A malformed JSON line must abort with a clear error and include the line number."""
     records = [
         {"chunk_id": f"c{i}", "title": f"T{i}", "content": f"x{i}"}
         for i in range(5)
     ]
-    records.insert(2, "{bad json")  # raw string → malformed line
+    records.insert(2, "{bad json")  # raw string → malformed line at line 3
     path = _write_jsonl(tmp_path / "mal.jsonl", records)
-    # load_chunks prints to stderr on bad lines but should not raise
-    check_rfc_duplicates.load_chunks(path)
+    # load_chunks aborts (SystemExit) on malformed JSON to prevent misleading reports
+    with pytest.raises(SystemExit) as exc_info:
+        check_rfc_duplicates.load_chunks(path)
     err = capsys.readouterr().err
-    assert "Line 3" in err or "line" in err.lower()
+    assert "Line 3" in err
+    assert "line 3" in str(exc_info.value).lower() or "line 3" in err.lower()
 
 
 def test_check_duplicates_missing_input_raises(tmp_path):
