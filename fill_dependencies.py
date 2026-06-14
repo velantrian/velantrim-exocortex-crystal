@@ -99,9 +99,10 @@ if __name__ == "__main__":
     print("Filling depends_on from content analysis...")
 
     if args.dry_run:
-        # Dry-run: compute changes using a temp file, discard result.
+        # Dry-run: compute changes using a temp file in the system temp directory
+        # (not the input directory, which may be read-only), then discard result.
         with tempfile.NamedTemporaryFile(
-            delete=False, suffix=".jsonl", dir=input_path.parent
+            delete=False, suffix=".jsonl", dir=tempfile.gettempdir()
         ) as tmp:
             tmp_path = Path(tmp.name)
         try:

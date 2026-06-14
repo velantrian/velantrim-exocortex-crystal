@@ -40,8 +40,12 @@ def track(*, output_path: str = "eval_history.jsonl", lang: str = "en") -> Dict[
         "metadata_completeness": report["metadata_completeness"],
         "source_span_coverage": report["source_span_coverage"],
         "receipt_replay_survival": report["receipt_replay_survival"],
+        "unsupported_provenance": report["unsupported_provenance"],
         "contradiction_precision": con["precision"],
         "contradiction_recall": con["recall"],
+        "contradiction_false_positive_rate": con["false_positive_rate"],
+        "violations": report.get("boundary", {}).get("violations"),
+        "refusal_correctness": report.get("boundary", {}).get("refusal_correctness"),
     }
 
     with open(output_path, "a", encoding="utf-8") as fh:
@@ -71,8 +75,10 @@ def format_trend_md(history: List[Dict[str, Any]]) -> str:
     if not history:
         return "No eval history found."
 
-    header = "| version | date | lang | hit@1 | hit@3 | mrr | contradiction_P | contradiction_R |"
-    sep    = "|---|---|---|---|---|---|---|---|"
+    header = ("| version | date | lang | hit@1 | hit@3 | hit@5 | mrr"
+              " | trace_completeness | metadata_completeness | source_span_coverage"
+              " | receipt_replay_survival | contradiction_P | contradiction_R |")
+    sep    = "|---|---|---|---|---|---|---|---|---|---|---|---|---|"
     rows = []
     for rec in history:
         # Truncate ISO timestamp to date portion for readability
@@ -84,7 +90,12 @@ def format_trend_md(history: List[Dict[str, Any]]) -> str:
             f"| {rec.get('lang', '')} "
             f"| {rec.get('hit_at_1', '')} "
             f"| {rec.get('hit_at_3', '')} "
+            f"| {rec.get('hit_at_5', '')} "
             f"| {rec.get('mrr', '')} "
+            f"| {rec.get('trace_completeness', '')} "
+            f"| {rec.get('metadata_completeness', '')} "
+            f"| {rec.get('source_span_coverage', '')} "
+            f"| {rec.get('receipt_replay_survival', '')} "
             f"| {rec.get('contradiction_precision', '')} "
             f"| {rec.get('contradiction_recall', '')} |"
         )

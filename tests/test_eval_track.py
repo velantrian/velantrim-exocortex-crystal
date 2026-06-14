@@ -47,6 +47,10 @@ def test_track_appends_record(tmp_path):
         "hit_at_1", "hit_at_3", "hit_at_5", "mrr",
         "trace_completeness", "metadata_completeness",
         "source_span_coverage", "receipt_replay_survival",
+        # Bug A safety gate fields
+        "unsupported_provenance",
+        "contradiction_false_positive_rate",
+        "violations", "refusal_correctness",
         "contradiction_precision", "contradiction_recall",
     }
     assert expected_keys <= set(record.keys())
@@ -98,6 +102,11 @@ def test_format_trend_md_with_records():
     md = eval_track.format_trend_md(records)
     assert "version" in md
     assert "hit@1" in md
+    assert "hit@5" in md
+    assert "trace_completeness" in md
+    assert "metadata_completeness" in md
+    assert "source_span_coverage" in md
+    assert "receipt_replay_survival" in md
     assert "0.1.0" in md
     assert "0.2.0" in md
     assert "0.75" in md
