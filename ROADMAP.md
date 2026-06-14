@@ -30,7 +30,9 @@ runtime · every delivered item below ships with tests and a CLI surface.
 - **External knowledge ingestion** (`core/knowledge.py`, RFC0063): bulk-import
   `.txt` / `.md` / `.json` / `.jsonl` / `.csv` knowledge files through the SAME
   TruthGate; imported facts carry `source_status = EXTERNAL` + the source file as
-  provenance. Stdlib-only parsers (PDF/YAML/RDF left to optional adapters); CLI `learn`.
+  provenance. Stdlib-only core parsers; CLI `learn`. **Optional adapter baselines
+  for PDF / YAML / RDF / EPUB / BibTeX / Wikidata are implemented and tested**
+  (`core/adapters/`, WP4) and keep the runtime stdlib-only.
 - **Import sessions & dry-run review** (`core/imports.py`, WP2): preview a corpus
   (`learn --dry-run`) — predict accept/reinforce/block/conflict through the SAME
   validators with **zero writes**; real imports get a session id so a whole batch
@@ -131,7 +133,7 @@ runtime · every delivered item below ships with tests and a CLI surface.
 
 | RFC / item | What it adds | Target |
 |---|---|---|
-| 🌾 **RFC0063+** | Additional external-ingestion adapters: PDF / YAML / Wikidata RDF (core text/JSON/JSONL/CSV already shipped in `core/knowledge.py`) | S5+ |
+| 🌾 **RFC0063+** | Adapter **hardening** beyond the shipped baselines (PDF / YAML / RDF / EPUB / BibTeX / Wikidata already implemented in `core/adapters/`): stronger source-span extraction, per-source licence metadata, OAI-PMH, and further institutional formats | S5+ |
 | 🧠 **RFC0068 Phase 1+** | **NeuroCore** active model adaptation + consolidation (Phase 0 passive tracker already shipped in `core/neurocore.py`) | S6+ |
 | 🩹 **A6 / A7 / A10** | Sprint-A patches for the optional Phase‑1 stack (Neo4j locks, async EventBus backpressure, aioredis pool) — N/A to the dependency-free core; wired only if those components are activated. See **[docs/SPRINT_A_STATUS.md](./docs/SPRINT_A_STATUS.md)** | S6+ |
 | ⚙️ async core | Full async/await rewrite of the stores (async *entry points* already shipped) | S3+ |
@@ -150,7 +152,8 @@ runtime · every delivered item below ships with tests and a CLI surface.
   external knowledge ingestion (`core/knowledge.py`).
 - **S5** ✅ — RFC0068 NeuroCore Phase 0 passive tracker (`core/neurocore.py`).
 - **S6+** ⬜ — RFC0068 Phase 1+ (active NeuroCore adaptation + consolidation);
-  extra ingestion adapters (PDF / YAML / RDF); A1–A10 wiring.
+  ingestion-adapter hardening beyond the shipped PDF / YAML / RDF / EPUB / BibTeX /
+  Wikidata baselines (source-span extraction, licence metadata, OAI-PMH); A1–A10 wiring.
 
 ---
 

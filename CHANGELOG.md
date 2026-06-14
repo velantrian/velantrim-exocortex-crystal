@@ -72,6 +72,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `sys.path.insert(0, repo_root)` bootstrap so the script works when run
   directly as `python scripts/trace_visualize.py ...`.
 
+### Changed
+- Synchronized the README badge and `TEST_REPORT.md` baseline after the PR #137
+  safe repo hygiene pass (1130 → 1141 tests, 5130 → 5158 statements; 100%
+  coverage preserved). The full per-module coverage table was regenerated so its
+  rows and total agree with a live `--cov=.` run.
+- Clarified in `docs/IMPLEMENTATION_STATUS.md` and `ROADMAP.md` that the
+  implemented Crystal **Fractal Memory baseline** (multi-scale anchoring) is a
+  memory anchoring mechanism, distinct from the broader private Personal Research
+  Mode concept ("Fractal Memory = Structure + Attention + Consolidation") and
+  from Fractal Attention; recorded the implemented optional knowledge adapters as
+  shipped baselines rather than future work.
+
 ## [0.2.0] — 2026-06-13
 
 ### Added

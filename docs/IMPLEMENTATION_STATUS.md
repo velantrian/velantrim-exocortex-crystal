@@ -40,7 +40,7 @@ of Crystal).
 | GDPR-oriented controls | Partial | Baseline | Erasure, restriction, record-of-processing, tamper-evident audit, PII redaction, opt-in field encryption; "GDPR-oriented", **not** a certification claim |
 | Eval gate | Implemented | Yes | English corpus CI-gated; Russian corpus report-only; expansion planned |
 | Memory observability | Implemented | Yes | `core/observe.py` — read-only `memory_report` over L3 (states, statuses, contradictions) |
-| Fractal Memory (multi-scale anchoring) | Implemented (baseline) | Yes | `core/fractal.py` (RFC0070): SHORT→MEDIUM→LONG→CORE anchoring, CORE exempt from decay; `fractal-*` CLI |
+| Fractal Memory baseline (multi-scale anchoring) | Implemented (baseline) | Yes | `core/fractal.py` (RFC0070) implements SHORT→MEDIUM→LONG→CORE anchoring with CORE exempt from decay and `fractal-*` CLI support. This refers only to the Crystal baseline implementation — a memory **anchoring** mechanism, **not** a cognitive Fractal Attention system — and not to the broader Personal Research Mode concept "Fractal Memory = Structure + Attention + Consolidation". |
 | Observer **action policy** (flag → action routing) | RFC / roadmap | No | Observability exists (read-only); a policy that routes flags to receivers/actions does not |
 | Mode Layer | RFC / roadmap | No runtime feature | Policy-boundary concept only; nothing in code or tests |
 | Imagination Mode / Spark | RFC / roadmap | No runtime feature | Sandboxed creative/exploratory reasoning layer; see [SPARK_RFC.md](./SPARK_RFC.md) and boundary note below |
@@ -53,6 +53,28 @@ of Crystal).
 
 If a component is not in this table, assume it is **not** an implemented
 Crystal feature unless `core/` and `tests/` demonstrably contain it.
+
+## Out of Scope for v0.2.0 Grant
+
+The following are **not** current Crystal runtime deliverables and must not be
+presented as implemented grant features:
+
+- Fractal Attention;
+- broader Personal Research Mode Fractal Memory beyond the implemented Crystal
+  multi-scale anchoring baseline;
+- Memory Reconsolidation Queue;
+- Essence Engine runtime;
+- Sleep Cycle v2 as a meaning/reconsolidation engine;
+- World-Relation Layer / Umwelt / Innenwelt / Habitus / Habitat;
+- Habitus Tracker;
+- autonomous personality rewriting;
+- artificial consciousness, AGI, or brain-like implementation claims;
+- production multi-tenant hosting without a dedicated auth/security layer.
+
+Crystal v0.2.0 may include tested baseline components, such as read-only
+observability, trace/receipt tooling, and the implemented Fractal Memory
+anchoring layer. These must not be confused with the broader private research
+architecture.
 
 ## Reviewer Package
 
