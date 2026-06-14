@@ -32,7 +32,9 @@ runtime · every delivered item below ships with tests and a CLI surface.
   TruthGate; imported facts carry `source_status = EXTERNAL` + the source file as
   provenance. Stdlib-only core parsers; CLI `learn`. **Optional adapter baselines
   for PDF / YAML / RDF / EPUB / BibTeX / Wikidata are implemented and tested**
-  (`core/adapters/`, WP4) and keep the runtime stdlib-only.
+  (`core/adapters/`, WP4) and keep the runtime stdlib-only. The Wikidata adapter
+  covers QID → English label/description fetch only; full Q/P-code resolution and
+  RDF statement import remain future work (see ⬜ Next).
 - **Import sessions & dry-run review** (`core/imports.py`, WP2): preview a corpus
   (`learn --dry-run`) — predict accept/reinforce/block/conflict through the SAME
   validators with **zero writes**; real imports get a session id so a whole batch
@@ -133,7 +135,7 @@ runtime · every delivered item below ships with tests and a CLI surface.
 
 | RFC / item | What it adds | Target |
 |---|---|---|
-| 🌾 **RFC0063+** | Adapter **hardening** beyond the shipped baselines (PDF / YAML / RDF / EPUB / BibTeX / Wikidata already implemented in `core/adapters/`): stronger source-span extraction, per-source licence metadata, OAI-PMH, and further institutional formats | S5+ |
+| 🌾 **RFC0063+** | Adapter **hardening** beyond the shipped baselines (PDF / YAML / RDF / EPUB / BibTeX / Wikidata QID-label baseline implemented in `core/adapters/`): stronger source-span extraction, per-source licence metadata, OAI-PMH, full Wikidata Q/P-code resolution and RDF statement import, and further institutional formats | S5+ |
 | 🧠 **RFC0068 Phase 1+** | **NeuroCore** active model adaptation + consolidation (Phase 0 passive tracker already shipped in `core/neurocore.py`) | S6+ |
 | 🩹 **A6 / A7 / A10** | Sprint-A patches for the optional Phase‑1 stack (Neo4j locks, async EventBus backpressure, aioredis pool) — N/A to the dependency-free core; wired only if those components are activated. See **[docs/SPRINT_A_STATUS.md](./docs/SPRINT_A_STATUS.md)** | S6+ |
 | ⚙️ async core | Full async/await rewrite of the stores (async *entry points* already shipped) | S3+ |
