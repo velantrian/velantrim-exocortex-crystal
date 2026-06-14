@@ -3,16 +3,20 @@
 Honest, reproducible test results for Velantrim ExoCortex — Crystal. No inflated
 numbers: run the commands below and compare the figures.
 
-**Current audited baseline after v0.2.0 + TRACE Visualization v0 + CI coverage fixes + Crystal Invariant Checker + Refusal Reasons Taxonomy v0.1: 1130 passed /
+**Current audited baseline after v0.2.0 + TRACE Visualization v0 + CI coverage fixes + Crystal Invariant Checker + Refusal Reasons Taxonomy v0.1 + PR #137 safe repo hygiene/toolchain hardening: 1141 passed /
 12 skipped.** This file and the README badge are the only places that carry
 the exact count; all other documents reference this report so the number
 cannot silently drift.
+
+> **PR #137 note.** The safe repo hygiene / toolchain hardening pass added 11
+> tests (1130 → 1141) and grew the measured surface by 28 statements
+> (5130 → 5158) while preserving the 100% coverage gate.
 
 ## Summary
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **1130** |
+| **Tests passing** | **1141** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **100%** (gate enforced at 100%, repo-wide `--cov=.`) |
@@ -54,58 +58,62 @@ pytest tests/ --cov=. --cov-fail-under=100
 | `core/adaptation.py`   | 22  | 100% |
 | `core/adapters/bibtex_adapter.py`   | 45 | 100% |
 | `core/adapters/epub_adapter.py`     | 27 | 100% |
-| `core/adapters/pdf_adapter.py`      | 22 | 100% |
+| `core/adapters/pdf_adapter.py`      | 43 | 100% |
 | `core/adapters/rdf_adapter.py`      | 33 | 100% |
 | `core/adapters/wikidata_adapter.py` | 62 | 100% |
 | `core/adapters/yaml_adapter.py`     | 30 | 100% |
 | `core/aio.py`          | 10  | 100% |
 | `core/analogy.py`      | 86  | 100% |
-| `core/api.py`          | 56  | 100% |
+| `core/api.py`          | 114 | 100% |
 | `core/audit.py`        | 69  | 100% |
-| `core/cli.py`          | 284 | 100% |
-| `core/kb_ingest.py`    | 33  | 100% |
+| `core/cli.py`          | 294 | 100% |
 | `core/compliance.py`   | 43  | 100% |
 | `core/concept.py`      | 96  | 100% |
 | `core/consolidate.py`  | 49  | 100% |
 | `core/contradiction.py`| 59  | 100% |
 | `core/crypto.py`       | 62  | 100% |
 | `core/demo_seed.py`    | 1   | 100% |
-| `core/embedding.py`    | 76  | 100% |
+| `core/embedding.py`    | 104 | 100% |
 | `core/erasure.py`      | 45  | 100% |
-| `core/eval.py`         | 144 | 100% |
+| `core/eval.py`         | 207 | 100% |
 | `core/evidence.py`     | 77  | 100% |
 | `core/fractal.py`      | 93  | 100% |
 | `core/generation.py`   | 54  | 100% |
 | `core/immune.py`       | 94  | 100% |
 | `core/imports.py`      | 87  | 100% |
-| `core/ingest.py`       | 90  | 100% |
+| `core/ingest.py`       | 106 | 100% |
+| `core/invariant_check.py`   | 64  | 100% |
+| `core/kb_ingest.py`    | 40  | 100% |
 | `core/knowledge.py`    | 140 | 100% |
-| `core/span_extract.py` | 22  | 100% |
 | `core/l3_graph.py`     | 286 | 100% |
 | `core/mcp_server.py`   | 103 | 100% |
 | `core/memory.py`       | 218 | 100% |
 | `core/metrics.py`      | 10  | 100% |
+| `core/mosc.py`         | 93  | 100% |
 | `core/neurocore.py`    | 54  | 100% |
 | `core/neurogenesis.py` | 96  | 100% |
 | `core/observe.py`      | 35  | 100% |
 | `core/pii.py`          | 56  | 100% |
-| `core/pipeline.py`     | 266 | 100% |
+| `core/pipeline.py`     | 252 | 100% |
 | `core/provenance.py`   | 90  | 100% |
 | `core/queue.py`        | 47  | 100% |
 | `core/reconcile.py`    | 97  | 100% |
-| `core/review.py`       | 162 | 100% |
-| `core/invariant_check.py`   | 40  | 100% |
-| `core/refusal_reasons.py`   | 55  | 100% |
+| `core/refusal_reasons.py`   | 26  | 100% |
+| `core/retrieval_config.py`  | 69  | 100% |
+| `core/review.py`       | 163 | 100% |
+| `core/salience.py`     | 19  | 100% |
+| `core/span_extract.py` | 22  | 100% |
 | `core/trace.py`             | 26  | 100% |
 | `core/trace_visualize.py`   | 73  | 100% |
+| `core/truth_gate.py`        | 20  | 100% |
 | `core/velum.py`             | 106 | 100% |
 | `core/volition.py`          | 75  | 100% |
 | `scripts/eval_track.py`     | 48  | 100% |
 | `scripts/trace_visualize.py`| 22  | 100% |
-| root tooling (`audit_metadata`, `check_rfc_duplicates`, `fill_dependencies`, `epigenetic_adaptation_module`, `velantrim_migrate_v3_1`) | 586 | 100% |
-| `prototypes/` (4 research prototypes) | 145 | 100% |
+| root tooling (`audit_metadata` 109, `check_rfc_duplicates` 43, `fill_dependencies` 43, `epigenetic_adaptation_module` 29, `velantrim_migrate_v3_1` 393) | 617 | 100% |
+| `prototypes/` (4 research prototypes) | 142 | 100% |
 | `utils/rfc_parser.py`       | 13  | 100% |
-| **Total (repo-wide)**       | **5130** | **100%** |
+| **Total (repo-wide)**       | **5158** | **100%** |
 
 ## What the tests cover
 
@@ -163,5 +171,7 @@ pytest tests/ --cov=. --cov-fail-under=100
 | RFC parsing | `test_rfc_parser.py` |
 | Biological-inspiration prototypes | `test_bio_modules.py`, `test_hybrid_biological_memory.py` |
 
-*Figures reflect the suite as of 2026-06-13 (v0.2.0 + TRACE Visualization v0 + CI coverage fixes + Crystal Invariant Checker + Refusal Reasons Taxonomy v0.1) and are regenerated by running the
-commands above.*
+*Audited baseline regenerated on 2026-06-14 after PR #137 (which merged on
+2026-06-13: v0.2.0 + TRACE Visualization v0 + CI coverage fixes + Crystal
+Invariant Checker + Refusal Reasons Taxonomy v0.1 + safe repo hygiene/toolchain
+hardening). Figures are reproduced by running the commands above.*

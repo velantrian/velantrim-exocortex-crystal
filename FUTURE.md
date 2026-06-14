@@ -37,21 +37,26 @@ These were genuine bugs, not future work — listed so the history is clear.
 
 ## 2. Engineering improvements (near-term hardening)
 
-### 2.1 Single source of version truth — mostly resolved, header residue cleanup
+### 2.1 Single source of version truth — resolved
 
 **Status:** `pyproject.toml` is now the public package-version source of truth
 for the Crystal line (`0.2.x`). Earlier drift between `0.1.0-mvp`,
 `v8.1.0-hybrid`, and the published README has been resolved — the public
 package, README badge, and CHANGELOG all consistently read `0.2.0`.
 
-**Remaining issue:** some source files still carry historical internal `# v8.x`
-header comments from the pre-public Crystal design line. These are not runtime
-version values, but they confuse readers and grant reviewers.
+**Resolved (PR #137):** the safe repo hygiene pass removed the 40 stale internal
+`# v8.x-sprint...` header comments from every active `core/*.py` and
+`core/adapters/*.py` file. A re-audit confirms the runtime, tests and scripts
+are now clean:
 
-**Do:** remove or normalize non-executable stale `# v8.x-sprint...` header
-comments in active `core/*.py` files. Do not change runtime strings, migration
-artifacts, historical archive documents, or compatibility text without a
-separate review.
+```bash
+grep -RIn "v8\.x-sprint\|v8\.\|v8_" core tests scripts *.py
+# 0 matches
+```
+
+The only remaining `v8` strings live in the historical knowledge corpus
+(`docs/Velantrim_V8_Crystal_Sprint1.jsonl` + `_toc.md`) — these are legitimate
+dataset names, not stale runtime headers, and are intentionally preserved.
 
 ### 2.2 Embedder-mismatch guard on a persistent L3 store — in-process guard DONE ✅
 **Why:** hashing vectors and sbert vectors are not cosine-comparable. Mixing
