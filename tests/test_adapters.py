@@ -359,6 +359,98 @@ def test_bibtex_ingest_file(tmp_path, monkeypatch):
     assert rep["source"] == "refs.bib"
 
 
+def test_bibtex_nested_braces(tmp_path):
+    """title = {An {Important} Result} preserves full text including nested brace content."""
+    from core.adapters.bibtex_adapter import extract_bibtex_claims, _extract_brace_value
+    bib = tmp_path / "nested.bib"
+    bib.write_text(
+        "@article{nested1,\n"
+        "  title = {An {Important} Result},\n"
+        "  year = {2020}\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    claims = extract_bibtex_claims(str(bib))
+    assert len(claims) == 1
+    # The brace-counter preserves inner text; inner {} appear as literal chars in output
+    assert "Important" in claims[0]["claim"]
+    assert "2020" in claims[0]["claim"]
+
+    # _extract_brace_value: depth>0 inner '{' appended to buf (line 46)
+    val, end = _extract_brace_value("{outer {inner} text}", 0)
+    assert "inner" in val
+    assert "outer" in val
+
+    # _extract_brace_value: depth>1 inner '}' appended to buf (line 52)
+    val2, _ = _extract_brace_value("{A {B {deeply nested} end} final}", 0)
+    assert "deeply nested" in val2
+
+    # _extract_brace_value: unclosed brace returns partial content (line 57)
+    val3, end3 = _extract_brace_value("{unclosed content", 0)
+    assert "unclosed content" in val3
+
+
+def test_bibtex_bare_integer_year(tmp_path):
+    """year = 1905 (unquoted integer) is parsed correctly."""
+    from core.adapters.bibtex_adapter import extract_bibtex_claims
+    bib = tmp_path / "bare.bib"
+    bib.write_text(
+        "@article{bare1,\n"
+        "  title = {A Famous Paper},\n"
+        "  year = 1905\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    claims = extract_bibtex_claims(str(bib))
+    assert len(claims) == 1
+    assert "1905" in claims[0]["claim"]
+
+
+def test_bibtex_parse_fields_no_match_break(tmp_path):
+    """Cover _parse_fields break (line 73): body with non-field trailing content."""
+    from core.adapters.bibtex_adapter import extract_bibtex_claims
+    # A BibTeX entry with a comment line after the last field. The comment
+    # text ends up in 'body' but matches nothing in _FIELD_RE → line 73 (break).
+    bib = tmp_path / "comment.bib"
+    bib.write_text(
+        "@article{commented,\n"
+        "  title = {A Paper With Comment},\n"
+        "  % trailing comment that forces the break path\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    claims = extract_bibtex_claims(str(bib))
+    # Should still extract the title claim despite the comment
+    assert len(claims) == 1
+    assert "A Paper With Comment" in claims[0]["claim"]
+
+
+def test_bibtex_indented_multiline_field_preserves_later_fields(tmp_path):
+    """A multiline field closing on its own indented line must not end the entry.
+
+    Regression: a regex entry-terminator treated the abstract's indented closing
+    brace as the end of the whole entry, dropping the title/year that follow.
+    The brace-counter walks to the entry's true matching '}'.
+    """
+    from core.adapters.bibtex_adapter import extract_bibtex_claims
+    bib = tmp_path / "multiline.bib"
+    bib.write_text(
+        "@article{ml1,\n"
+        "  abstract = {This abstract spans\n"
+        "  multiple lines and then closes\n"
+        "  },\n"
+        "  title = {The Real Title},\n"
+        "  year = 2021\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    claims = extract_bibtex_claims(str(bib))
+    citation = [c for c in claims if "The Real Title" in c["claim"]]
+    assert citation, "title field was lost — entry terminated early"
+    assert "2021" in citation[0]["claim"], "year after multiline abstract was lost"
+    assert any("spans" in c["claim"] for c in claims), "abstract not preserved"
+
+
 # ─── EPUB adapter ─────────────────────────────────────────────────────────────
 
 ebooklib = pytest.importorskip("ebooklib", reason="ebooklib not installed — skip EPUB adapter tests")
@@ -445,6 +537,103 @@ def test_epub_ingest_file(tmp_path, monkeypatch):
     from core import knowledge
     rep = knowledge.ingest_file(path)
     assert "accepted" in rep
+
+
+def test_epub_html_to_text_html_entities(tmp_path):
+    """_html_to_text decodes HTML entities (&amp;, &nbsp;, &#x2019;) correctly."""
+    from core.adapters.epub_adapter import _html_to_text
+    # Named entity (&amp;) and numeric charref (&#x2019; = right single quote)
+    html_bytes = (
+        b"<html><body><p>Fish &amp; chips &#x2019;tis great!</p></body></html>"
+    )
+    result = _html_to_text(html_bytes)
+    assert "&" in result  # &amp; decoded
+    assert "’" in result  # &#x2019; decoded
+
+
+def test_epub_html_to_text_skips_head_and_script(tmp_path):
+    """Content inside <head>, <style>, and <script> is excluded from output."""
+    from core.adapters.epub_adapter import _html_to_text
+    html_bytes = (
+        b"<html>"
+        b"<head><style>body { color: red; }</style><title>My Title</title></head>"
+        b"<body>"
+        b"<script>var x = 1;</script>"
+        b"<p>Only this paragraph should appear in output text.</p>"
+        b"</body></html>"
+    )
+    result = _html_to_text(html_bytes)
+    assert "color" not in result
+    assert "var x" not in result
+    assert "My Title" not in result
+    assert "Only this paragraph" in result
+
+
+def test_epub_html_to_text_parser_exception_fallback(tmp_path):
+    """When the HTML parser raises, _html_to_text falls back to regex tag-stripping."""
+    import unittest.mock as _mock
+    from core.adapters.epub_adapter import _html_to_text, _BodyExtractor
+
+    # Patch _BodyExtractor.feed to raise so we hit the except branch
+    original_feed = _BodyExtractor.feed
+
+    def bad_feed(self, data):
+        raise RuntimeError("simulated parser failure")
+
+    with _mock.patch.object(_BodyExtractor, "feed", bad_feed):
+        result = _html_to_text(b"<p>Hello world fallback text</p>")
+    # Fallback strips tags via regex — should still contain the text
+    assert "Hello world" in result
+
+
+def test_epub_html_to_text_no_body_fallback(tmp_path):
+    """When XHTML has no <body>, tag-stripping fallback is used."""
+    from core.adapters.epub_adapter import _html_to_text
+    # Fragment with no <body> tag at all
+    html_bytes = b"<p>Fragment content without a body wrapper, long enough to check.</p>"
+    result = _html_to_text(html_bytes)
+    assert "Fragment content" in result
+
+
+def test_epub_html_to_text_preserves_literal_entity_examples(tmp_path):
+    """Body entities are decoded exactly once — escaped examples stay literal.
+
+    Regression: the parser handlers decode entities once, then a final
+    html.unescape decoded again, turning "&amp;copy;" (literal "&copy;") into "©".
+    """
+    from core.adapters.epub_adapter import _html_to_text
+    html_bytes = (
+        b"<html><body><p>Write &amp;copy; to display a copyright entity example.</p></body></html>"
+    )
+    result = _html_to_text(html_bytes)
+    assert "&copy;" in result  # literal entity example preserved (single decode)
+    assert "©" not in result  # not double-decoded into ©
+
+
+def test_epub_processes_document_item_without_is_chapter(tmp_path, monkeypatch):
+    """A plain document item lacking is_chapter() is processed, not crashed on.
+
+    Regression: an unconditional item.is_chapter() raised AttributeError for
+    plain EpubItem documents (e.g. a non-xhtml media type).
+    """
+    import core.adapters.epub_adapter as mod
+
+    class _PlainItem:  # mimics a base EpubItem — no is_chapter() method
+        def get_id(self):
+            return "doc1"
+
+        def get_content(self):
+            return (
+                b"<html><body><p>Plain document content long enough to be a claim.</p></body></html>"
+            )
+
+    class _FakeBook:
+        def get_items_of_type(self, _type):
+            return [_PlainItem()]
+
+    monkeypatch.setattr(mod._epub, "read_epub", lambda path: _FakeBook())
+    claims = mod.extract_epub_claims("ignored.epub")
+    assert any("Plain document content" in c["claim"] for c in claims)
 
 
 # ─── Wikidata adapter ─────────────────────────────────────────────────────────

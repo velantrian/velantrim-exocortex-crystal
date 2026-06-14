@@ -17,30 +17,99 @@ from typing import Any, Dict, List, Optional
 
 from core.adapters import register
 
-# Match an @type{key, ...} BibTeX entry (non-greedy, handles nested braces poorly
-# but covers the common flat-field case reliably without a full parser).
-_ENTRY_RE = re.compile(
-    r"@\w+\s*\{\s*([^,\s]+)\s*,\s*(.*?)\n\}",
-    re.DOTALL,
-)
-# Match a field: fieldname = {value} or fieldname = "value"
+# Match the START of an @type{key, ... entry.  The true end of the entry is
+# found by walking braces (see _parse_entries), not by regex — otherwise an
+# indented closing brace of a multiline field (e.g. abstract = {...\n  },) is
+# mistaken for the end of the whole entry and later fields are lost.
+_ENTRY_START_RE = re.compile(r"@\w+\s*\{\s*([^,\s]+)\s*,", re.DOTALL)
+# Match a field: fieldname = {value}, fieldname = "value", or bare integer/token
+# The brace form is handled by _extract_brace_value to support nested braces.
 _FIELD_RE = re.compile(
-    r"(\w+)\s*=\s*(?:\{([^}]*)\}|\"([^\"]*)\")",
+    r'(\w+)\s*=\s*(?:\{|"([^"]*)"|([\w\d./-]+))',
     re.DOTALL,
 )
+
+
+def _extract_brace_value(text: str, start: int) -> tuple[str, int]:
+    """Return the content of a top-level {...} starting at *start* (the '{')
+    and the index one past the closing '}'.  Handles arbitrarily nested braces.
+    """
+    depth = 0
+    buf: list[str] = []
+    i = start
+    while i < len(text):
+        ch = text[i]
+        if ch == "{":
+            if depth > 0:
+                buf.append(ch)
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                return "".join(buf), i + 1
+            buf.append(ch)
+        else:
+            buf.append(ch)
+        i += 1
+    # Unclosed brace — return what we have
+    return "".join(buf), i
+
+
+def _parse_fields(body: str) -> Dict[str, str]:
+    """Parse all BibTeX fields from an entry body string.
+
+    Handles three value syntaxes:
+      - Brace-delimited:  field = {value with {nested} braces}
+      - Quote-delimited:  field = "value"
+      - Bare token:       year = 1905
+    """
+    fields: Dict[str, str] = {}
+    i = 0
+    while i < len(body):
+        m = _FIELD_RE.search(body, i)
+        if m is None:
+            break
+        name = m.group(1).lower()
+        if body[m.start(0):].lstrip()[len(name):].lstrip().startswith("="):
+            # Determine which syntax matched
+            after_eq = m.end(0)
+            if m.group(2) is not None:
+                # Quoted string — group(2) captured content
+                value = m.group(2).strip()
+                i = after_eq
+            elif m.group(3) is not None:
+                # Bare token (e.g. year = 1905)
+                value = m.group(3).strip()
+                i = after_eq
+            else:
+                # Brace-delimited — find the opening '{' then walk nested braces
+                brace_pos = body.find("{", m.start(0) + len(name))
+                if brace_pos == -1:  # pragma: no cover — regex guarantees '{' present
+                    i = after_eq
+                    continue
+                value, end_pos = _extract_brace_value(body, brace_pos)
+                value = value.strip()
+                i = end_pos
+            fields[name] = value
+        else:  # pragma: no cover — _FIELD_RE always includes '=' so condition is always True
+            i = m.end(0)
+    return fields
 
 
 def _parse_entries(text: str) -> List[Dict[str, str]]:
     """Return a list of dicts mapping lowercase field names → values, plus '_key'."""
     entries: List[Dict[str, str]] = []
-    for m in _ENTRY_RE.finditer(text):
+    for m in _ENTRY_START_RE.finditer(text):
         key = m.group(1).strip()
-        body = m.group(2)
+        # Walk braces from the entry's opening '{' to its true matching '}', so
+        # nested/indented field braces never terminate the entry early.
+        brace_pos = text.find("{", m.start())
+        full, _end = _extract_brace_value(text, brace_pos)
+        # full == "key, <fields...>"; drop the key and its trailing comma.
+        comma = full.find(",")
+        body = full[comma + 1:]
         fields: Dict[str, str] = {"_key": key}
-        for fm in _FIELD_RE.finditer(body):
-            name = fm.group(1).lower()
-            value = (fm.group(2) or fm.group(3) or "").strip()
-            fields[name] = value
+        fields.update(_parse_fields(body))
         entries.append(fields)
     return entries
 

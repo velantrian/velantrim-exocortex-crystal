@@ -95,11 +95,19 @@ pdf = [
 rdf = [
     "rdflib>=7.0",
 ]
-# Convenience meta-extra: all three WP4 adapters at once.
+epub = [
+    "ebooklib>=0.18",
+]
+wikidata = [
+    "requests>=2.28",
+]
+# Convenience meta-extra: all WP4 adapters at once.
 adapters = [
     "pyyaml>=6.0",
     "pypdf>=4.0",
     "rdflib>=7.0",
+    "ebooklib>=0.18",
+    "requests>=2.28",
 ]
 
 # Explicit package surface — the runtime is the `core` package plus the
