@@ -9,13 +9,16 @@
 # Scope: this is the READ-ONLY gateway. Every exposed tool is non-mutating
 # (search, observability report, fact lookup, truth-maintenance history,
 # conflict candidates, receipt verification). Write/curate tools (ingest,
-# validate, supersede, erase) are deliberately NOT registered here — they belong
-# behind capability roles and the TruthGate, and are the next, capability-gated
-# step on the roadmap.
+# validate, supersede, erase) are deliberately NOT registered here. Role-based
+# capability gating for write tools is a future roadmap step, not an implemented
+# mechanism today.
 #
-# Capability model: a tool a role cannot use is simply NOT registered for that
-# role, so a client never sees it and a model cannot call it by accident. This
-# server runs at the "reader" capability.
+# Enforcement model (what actually protects the canon today): allowlist-based
+# read-only registration. Only the tools in READ_ONLY_TOOLS exist, and
+# `tools/call` refuses any name that is not in that registry — so a client never
+# sees a write tool and a model cannot call one by accident. There is no runtime
+# capability/role check; safety comes from the fact that no mutating tool is
+# registered at all.
 #
 # Transport: newline-delimited JSON-RPC 2.0 over stdin/stdout (the MCP stdio
 # transport). Run as:
@@ -38,7 +41,9 @@ logger = logging.getLogger("velantrim.mcp")
 # Protocol version advertised if the client does not specify one.
 _DEFAULT_PROTOCOL = "2024-11-05"
 _SERVER_NAME = "velantrim"
-# This server runs at the read-only capability level.
+# Informational advertised mode label only — NOT an enforcement mechanism.
+# Read-only safety is provided by allowlist-based registration (READ_ONLY_TOOLS),
+# not by checking this value anywhere. Kept as a public label for clients/imports.
 CAPABILITY = "reader"
 
 

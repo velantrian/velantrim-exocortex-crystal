@@ -106,7 +106,7 @@ class Velum:
         """
         On a session change: strong edges (weight ≥ promote) emit a SESSION_END
         signal (hint for accelerated promotion); weak edges decay by DECAY. Edges
-        that fade to ~0 are pruned. Clears the window and the per-session signal set.
+        that fade to ~0 are pruned. Clears the per-session signal set.
         """
         promote, decay = _promote(), _decay()
         signals: List[Dict[str, Any]] = []
