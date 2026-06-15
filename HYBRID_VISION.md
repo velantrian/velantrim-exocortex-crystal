@@ -1,5 +1,12 @@
 # Hybrid Biological Memory Vision for Velantrim ExoCortex Crystal
 
+> **Status: Historical / Research Vision.** This document is not the current Crystal
+> runtime specification. Biological language here is metaphorical and inspirational.
+> Current implementation status is defined by `docs/IMPLEMENTATION_STATUS.md` and
+> `docs/METAPHOR_VS_MECHANISM.md`. Crystal does not claim biological cognition, AGI,
+> consciousness, a brain model, zero hallucinations, or production-ready autonomous
+> intelligence.
+
 **Status**: Strategic Vision Document (2026)
 **Inspiration**: Human, Dolphin, Bird, Octopus, Insect, Plant, Tree, Bacteria + Fractal Brain Principles
 

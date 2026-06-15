@@ -1,9 +1,9 @@
 # GDPR Alignment
 
-Velantrim is designed as **GDPR-compliant memory infrastructure for Europe**.
+Velantrim is designed as **GDPR-oriented memory infrastructure for Europe**.
 This document maps the architecture to the relevant articles and principles of
-Regulation (EU) 2016/679 (GDPR). It is an engineering self-assessment, not
-legal advice — operators remain responsible for compliant deployment.
+Regulation (EU) 2016/679 (GDPR). It is an engineering self-assessment and **not
+a legal certification** — operators remain responsible for compliant deployment.
 
 > **Key point:** Velantrim is a **local-first library**, not a hosted service.
 > In the default configuration the data controller is the operator running it
