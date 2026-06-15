@@ -54,6 +54,11 @@ of Crystal).
 If a component is not in this table, assume it is **not** an implemented
 Crystal feature unless `core/` and `tests/` demonstrably contain it.
 
+For biological or cognitive naming conventions, see
+[`METAPHOR_VS_MECHANISM.md`](./METAPHOR_VS_MECHANISM.md); names such as CRISPR
+Guard or Neurogenesis are engineering metaphors unless explicitly implemented as
+software mechanisms.
+
 ## Out of Scope for v0.2.0 Grant
 
 The following are **not** current Crystal runtime deliverables and must not be

@@ -96,4 +96,6 @@ today).
   - biological analogies cannot be used as proof of implementation;
   - grant-facing documents remain sober and implementation-grounded
     ([IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) stays the only
-    source of implementation claims).
+    source of implementation claims);
+  - biologically inspired component names are documented as engineering
+    metaphors in [METAPHOR_VS_MECHANISM.md](./METAPHOR_VS_MECHANISM.md).

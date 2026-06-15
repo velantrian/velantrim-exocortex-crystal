@@ -336,6 +336,9 @@ Crystal is a set of small, focused modules, dependency-free by default and teste
 | `core/analogy.py` | Analogy graph and semantic bridges |
 | `core/neurocore.py` | RFC0068 Phase 0 passive plasticity tracker; off by default, never writes L3 |
 
+Biologically inspired component names are engineering metaphors, not biological
+implementation claims; see [Metaphor vs Mechanism](docs/METAPHOR_VS_MECHANISM.md).
+
 ---
 
 ## 🔌 Integrations
