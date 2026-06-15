@@ -68,7 +68,7 @@ override path is also available; see core/review.py). Answers carry TRACE
 provenance; verifiable receipts are generated separately via `velantrim receipt`
 and can be replayed and verified offline.
 
-Baseline: 1158 passed / 12 skipped / 100% coverage (Python 3.11 and 3.12),
+Baseline: 1168 passed / 12 skipped / 100% coverage (Python 3.11 and 3.12),
 following the safe repo-hygiene / toolchain-hardening pass and the documentation
 synchronisation that aligned README, TEST_REPORT and ROADMAP with the current
 state. Fractal Memory is documented as the shipped multi-scale anchoring
