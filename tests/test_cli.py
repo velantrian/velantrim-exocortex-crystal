@@ -1,4 +1,5 @@
 """Tests for core/cli.py — the command-line interface."""
+import io
 import json
 import pytest
 
@@ -39,3 +40,69 @@ def test_cli_report_renders(capsys):
 def test_cli_requires_subcommand():
     with pytest.raises(SystemExit):
         main([])
+
+
+# ─── Reviewer tooling: trace (read-only pretty-printer) ───────────────────────
+
+def test_cli_trace_from_receipt_file_human(tmp_path, capsys):
+    receipt = {"citations": [
+        {"fact_id": "f1", "source": "src", "epistemic_state": "Validated",
+         "truth_status": "VERIFIED"}]}
+    p = tmp_path / "receipt.json"
+    p.write_text(json.dumps(receipt), encoding="utf-8")
+    rc = main(["trace", str(p)])
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "TRACE:" in out
+    assert "f1" in out
+
+
+def test_cli_trace_json_flag_from_trace_list(tmp_path, capsys):
+    trace = [{"fact_id": "f1", "source": "s", "epistemic_state": "Observed",
+              "confidence": 0.5}]
+    p = tmp_path / "trace.json"
+    p.write_text(json.dumps(trace), encoding="utf-8")
+    rc = main(["trace", str(p), "--json"])
+    assert rc == 0
+    assert json.loads(capsys.readouterr().out) == trace
+
+
+def test_cli_trace_dict_with_trace_key(tmp_path, capsys):
+    payload = {"trace": [{"fact_id": "f9", "source": "s",
+                          "epistemic_state": "Validated", "confidence": 0.9}]}
+    p = tmp_path / "payload.json"
+    p.write_text(json.dumps(payload), encoding="utf-8")
+    rc = main(["trace", str(p), "--json"])
+    assert rc == 0
+    assert json.loads(capsys.readouterr().out)[0]["fact_id"] == "f9"
+
+
+def test_cli_trace_from_stdin(monkeypatch, capsys):
+    trace = [{"fact_id": "fx", "source": "s", "epistemic_state": "Observed",
+              "confidence": 0.3}]
+    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(trace)))
+    rc = main(["trace"])                      # default file == "-"
+    assert rc == 0
+    assert "fx" in capsys.readouterr().out
+
+
+def test_cli_trace_unrecognized_payload(tmp_path, capsys):
+    p = tmp_path / "bad.json"
+    p.write_text("123", encoding="utf-8")     # int — not a trace/receipt
+    rc = main(["trace", str(p)])
+    assert rc == 1
+    assert "error" in json.loads(capsys.readouterr().out)
+
+
+# ─── Reviewer tooling: health (read-only diagnostic score) ────────────────────
+
+def test_cli_health_score(capsys):
+    main(["ingest", "Water boils at 100 degrees"])
+    capsys.readouterr()                       # discard ingest output
+    rc = main(["health"])
+    assert rc == 0
+    out = json.loads(capsys.readouterr().out)
+    assert "health_score" in out
+    assert "components" in out
+    assert out["meaning"].startswith("diagnostic")
+    assert 0.0 <= out["health_score"] <= 1.0
