@@ -62,9 +62,11 @@ Velantrim Crystal v0.2.0 — Verifiable local-first AI memory core
 Suggested release summary:
 
 ```text
-Local-first, verifiable AI memory core. Every write into the L3 canon passes a
-single enforced entry — TruthGate / Guardian — and answers carry TRACE +
-Receipt provenance that can be replayed and verified offline.
+Local-first, verifiable AI memory core. Automatic writes to the L3 canon pass a
+single enforced entry — TruthGate / Guardian (an audited curator force-approve
+override path is also available; see core/review.py). Answers carry TRACE
+provenance; verifiable receipts are generated separately via `velantrim receipt`
+and can be replayed and verified offline.
 
 Baseline: 1158 passed / 12 skipped / 100% coverage (Python 3.11 and 3.12),
 following the safe repo-hygiene / toolchain-hardening pass and the documentation
@@ -74,6 +76,5 @@ baseline (core/fractal.py) and is explicitly distinct from the broader private
 Research Mode "Fractal Memory / Fractal Attention" concept.
 
 Scope is deliberately bounded: no production-ready, zero-hallucination, or
-AGI/consciousness claims. This release checkpoint is documentation/packaging
-only — no runtime behaviour change when the release PR is docs-only.
+AGI/consciousness claims.
 ```
