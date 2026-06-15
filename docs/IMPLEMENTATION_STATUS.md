@@ -47,6 +47,7 @@ of Crystal).
 | Mode Router | RFC / roadmap | No runtime feature | Future explicit/rule-based design |
 | Temporal reasoning / bi-temporal claims | RFC / roadmap | No | Future RFC; no schema fields today |
 | Provenance grades (BRONZE/SILVER/GOLD) | RFC / roadmap | No | Future RFC; no schema fields today |
+| Essence Routes / Essence Routing Layer | RFC / roadmap | No runtime feature | Future meaning-aware route-selection layer that may classify query essence, produce RoutePlan, constrain retrievers / edge types, and document route choice in TRACE. Not implemented in Crystal current core. See [ESSENCE_ROUTES_RFC.md](./ESSENCE_ROUTES_RFC.md). |
 | Essence Engine | Vision | No | Meaning-oriented future layer |
 | Umwelt / Lens Layer | Vision | No | Multi-view knowledge-graph concept |
 | Velantrim Culture | Out of scope | No | Separate culture/vision layer, intentionally outside the grant core |
@@ -130,3 +131,4 @@ that already governs `LLM_OUTPUT` today (see
 | [RFC_HARNESS_REPLAY_OPTIMIZATION](./RFC_HARNESS_REPLAY_OPTIMIZATION.md) | Trajectory record/replay + human-approved harness optimization | Proposed (drafted, RFC-only) |
 | [EPISTEMIC_INFRASTRUCTURE_UPGRADE](./EPISTEMIC_INFRASTRUCTURE_UPGRADE.md) | Temporal Layer, Context/Scope, Conflict Resolution, Negative Knowledge, Known Unknowns, Plausibility Pre-Filter, Confidence Calibration, Epistemic Debt | Future RFC / v0.3.0+ research roadmap / no runtime feature / no schema fields today |
 | [SPARK_RFC](./SPARK_RFC.md) | Spark Layer (sandboxed generative/exploratory reasoning), Imagination Mode, Spark-to-Crystal Bridge, Mode Layer integration; explicit boundary from Velantrim Culture | Future RFC / v0.3.0+ research roadmap / no runtime feature |
+| [ESSENCE_ROUTES_RFC](./ESSENCE_ROUTES_RFC.md) | Meaning-aware query route selection: query_type, RoutePlan, route-specific epistemic warnings, and route-aware TRACE | Future RFC / no runtime feature |

@@ -438,6 +438,10 @@ default runtime (CLI + read-only MCP server) stays standard-library only.
 - capability-gated write APIs;
 - optional browser/PWA companion integration through a local backend/API.
 
+**Future research (RFC only — not current runtime)**
+
+- [Essence Routes RFC](./docs/ESSENCE_ROUTES_RFC.md) — future research concept for meaning-aware route selection (query type → RoutePlan → route-aware TRACE); sits below TruthGate/Guardian, not current Crystal runtime.
+
 See **[ROADMAP.md](./ROADMAP.md)**, **[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)** and **[docs/KNOWLEDGE_BASE_ROADMAP.md](./docs/KNOWLEDGE_BASE_ROADMAP.md)**.
 
 ---

@@ -68,6 +68,7 @@ is merely proposed.
 | **Fractal Attention** | RFC / Vision | Multi-scale attention / salience prioritization. Distinct from the implemented Fractal Memory **anchoring** baseline. | Multi-scale attention metaphor | Not human attention simulation |
 | **Spark / Imagination** | RFC | Sandboxed speculative generation that never writes directly to L3 (`docs/SPARK_RFC.md`) | Imagination / creativity metaphor | Not consciousness, soul, AGI, autonomous mind, or truth engine |
 | **Pulse / Substrate** | RFC / Vision | A typed event-envelope / coordination-protocol concept | Pulse / signalling metaphor | Not a biological pulse, nervous system, or unified brain |
+| **Essence Routes** | RFC / Vision | Meaning-aware route selection layer that may choose factual, causal, memory, contradiction, architecture, gap or creative processing paths before retrieval | Cognitive-navigation metaphor | Not consciousness, not brain-like reasoning, not autonomous understanding, not implemented runtime |
 
 Status vocabulary, used precisely: `Implemented` · `Partially implemented
 (baseline)` · `RFC` · `Future research` · `Not in Crystal runtime`. Nothing is
