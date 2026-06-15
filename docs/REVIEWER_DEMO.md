@@ -24,6 +24,11 @@ deterministic; timestamps will differ on your machine.
 - The same trust boundaries are **enforced in an evaluation gate**, not only
   described in documentation.
 
+> **Reviewer tooling note.** PR #152 also adds `velantrim trace` for read-only
+> trace/receipt pretty-printing and `velantrim health` for a diagnostic
+> memory-health score. These commands do not write to L3 and do not change
+> TruthGate/Receipt semantics.
+
 ## Prerequisites
 
 Python 3.11+, git, a POSIX shell (on Windows, use WSL or adapt the

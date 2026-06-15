@@ -3,7 +3,7 @@
 Honest, reproducible test results for Velantrim ExoCortex — Crystal. No inflated
 numbers: run the commands below and compare the figures.
 
-**Current audited baseline after v0.2.0 + TRACE Visualization v0 + CI coverage fixes + Crystal Invariant Checker + Refusal Reasons Taxonomy v0.1 + PR #137 safe repo hygiene/toolchain hardening + PRs #142–#144 Codex P2 hardening: 1158 passed /
+**Current audited baseline after v0.2.0 + TRACE Visualization v0 + CI coverage fixes + Crystal Invariant Checker + Refusal Reasons Taxonomy v0.1 + PR #137 safe repo hygiene/toolchain hardening + PRs #142–#144 Codex P2 hardening + PR #152 reviewer tooling: 1168 passed /
 12 skipped.** This file and the README badge are the only places that carry
 the exact count; all other documents reference this report so the number
 cannot silently drift.
@@ -17,15 +17,19 @@ cannot silently drift.
 > tests (1141 → 1158) and grew the measured surface by 134 statements
 > (5158 → 5292) while preserving the 100% coverage gate.
 
+> **PR #152 note.** PR #152 added read-only reviewer tooling for `velantrim trace`
+> and `velantrim health`, adding 10 tests (1158 → 1168) and growing the measured
+> surface by 42 statements (5292 → 5334) while preserving the 100% coverage gate.
+
 ## Summary
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **1158** |
+| **Tests passing** | **1168** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **100%** (gate enforced at 100%, repo-wide `--cov=.`) |
-| Test files | 62 (`tests/test_*.py`) |
+| Test files | 63 (`tests/test_*.py`) |
 | Python | 3.11 / 3.12 in CI |
 | Runtime dependencies | standard library only |
 
@@ -71,7 +75,7 @@ pytest tests/ --cov=. --cov-fail-under=100
 | `core/analogy.py`      | 86  | 100% |
 | `core/api.py`          | 114 | 100% |
 | `core/audit.py`        | 69  | 100% |
-| `core/cli.py`          | 294 | 100% |
+| `core/cli.py`          | 322 | 100% |
 | `core/compliance.py`   | 43  | 100% |
 | `core/concept.py`      | 96  | 100% |
 | `core/consolidate.py`  | 49  | 100% |
@@ -84,6 +88,7 @@ pytest tests/ --cov=. --cov-fail-under=100
 | `core/evidence.py`     | 77  | 100% |
 | `core/fractal.py`      | 93  | 100% |
 | `core/generation.py`   | 54  | 100% |
+| `core/health.py`       | 14  | 100% |
 | `core/immune.py`       | 94  | 100% |
 | `core/imports.py`      | 87  | 100% |
 | `core/ingest.py`       | 106 | 100% |
@@ -118,7 +123,7 @@ pytest tests/ --cov=. --cov-fail-under=100
 | root tooling (`audit_metadata` 109, `check_rfc_duplicates` 44, `fill_dependencies` 43, `epigenetic_adaptation_module` 29, `velantrim_migrate_v3_1` 393) | 618 | 100% |
 | `prototypes/` (4 research prototypes) | 142 | 100% |
 | `utils/rfc_parser.py`       | 13  | 100% |
-| **Total (repo-wide)**       | **5292** | **100%** |
+| **Total (repo-wide)**       | **5334** | **100%** |
 
 ## What the tests cover
 
@@ -144,6 +149,7 @@ pytest tests/ --cov=. --cov-fail-under=100
 | TRACE Visualization v0 — read-only receipt formatter (Markdown + DOT), per-citation verify status, trace-array input, CLI | `test_trace_visualize.py` |
 | Crystal Invariant Checker — read-only at-rest invariant scan, 3 implemented checks + 2 SKIPPED_UNSUPPORTED, exit codes, reason_code integration | `test_invariant_check.py` |
 | Refusal Reasons Taxonomy v0.1 — 13 reason codes, severity levels, API (get/list/is_valid/format), module constants | `test_refusal_reasons.py` |
+| Reviewer tooling (PR #152) — `velantrim trace` read-only receipt/trace pretty-printer (file/stdin, `--json`, unrecognized→exit 1) and `velantrim health` diagnostic memory-health score | `test_cli.py`, `test_health.py` |
 | Import sessions & dry-run review (WP2) — predict-without-write, session restrict/erase, `learn --dry-run` | `test_imports.py` |
 | Curator review queue (WP2) — pending/diagnose/approve/reject, audited force override | `test_review.py` |
 | Resumable review sessions (WP2) — create/resume/record/complete, stable-order batch, no-write invariant | `test_review_resumable.py` |
