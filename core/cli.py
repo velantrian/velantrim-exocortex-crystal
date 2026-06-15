@@ -18,6 +18,7 @@ from core.ingest import ingest
 from core.pipeline import run
 from core.reconcile import fact_history, find_conflicts
 from core.observe import memory_report, format_report
+from core.trace import format_trace
 from core.erasure import erase_fact, erasure_log
 from core.compliance import (
     restrict_processing, unrestrict_processing, record_of_processing,
@@ -26,7 +27,37 @@ from core.audit import audit_log, verify_audit_log
 from core import (pii, provenance, immune, fractal, neurogenesis, concept,
                   volition, velum, analogy, knowledge, neurocore, eval as _eval,
                   evidence, imports, review, retrieval_config, mosc, kb_ingest,
-                  invariant_check as _invariant_check)
+                  invariant_check as _invariant_check, health)
+
+
+def _trace_elements(data: object) -> Optional[List[dict]]:
+    """
+    Normalize an already-existing receipt/trace JSON payload into a list of
+    trace elements for display. Read-only: never runs the pipeline or touches
+    storage. Returns None if the payload is not a recognized trace/receipt.
+
+    Accepts:
+      - a trace list (as produced by core.trace.build_trace);
+      - a dict carrying a "trace" list;
+      - a receipt dict carrying a "citations" list (mapped to trace elements).
+    """
+    if isinstance(data, list):
+        return data
+    if isinstance(data, dict):
+        if isinstance(data.get("trace"), list):
+            return data["trace"]
+        if isinstance(data.get("citations"), list):
+            return [
+                {
+                    "fact_id": c.get("fact_id"),
+                    "source": c.get("source"),
+                    "epistemic_state": c.get("epistemic_state"),
+                    "confidence": c.get("confidence"),
+                    "truth_status": c.get("truth_status"),
+                }
+                for c in data["citations"]
+            ]
+    return None
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -259,6 +290,23 @@ def main(argv: Optional[List[str]] = None) -> int:
         ),
     )
 
+    # ─── Reviewer tooling (read-only) ─────────────────────────────────────────
+    p_trace = sub.add_parser(
+        "trace",
+        help=(
+            "pretty-print an existing receipt/trace JSON (read-only); reads a FILE "
+            "or '-'/omitted for stdin. Does NOT run the pipeline or touch storage"
+        ),
+    )
+    p_trace.add_argument(
+        "file", nargs="?", default="-",
+        help="receipt or trace JSON file, or '-'/omitted to read from stdin")
+    p_trace.add_argument(
+        "--json", action="store_true", dest="as_json",
+        help="emit normalized trace JSON instead of human-readable text")
+    sub.add_parser(
+        "health", help="one read-only diagnostic memory-health score (JSON)")
+
     args = parser.parse_args(argv)
 
     if args.cmd == "ingest":
@@ -466,6 +514,25 @@ def main(argv: Optional[List[str]] = None) -> int:
         report = _invariant_check.run_checks()
         print(json.dumps(report, ensure_ascii=False, indent=2))
         return _invariant_check.exit_code(report["status"])
+    elif args.cmd == "trace":
+        if args.file == "-":
+            raw = sys.stdin.read()
+        else:
+            with open(args.file, encoding="utf-8") as fh:
+                raw = fh.read()
+        elements = _trace_elements(json.loads(raw))
+        if elements is None:
+            print(json.dumps(
+                {"error": "unrecognized payload: expected a trace list or a "
+                          "receipt with 'citations'/'trace'"},
+                ensure_ascii=False))
+            return 1
+        if args.as_json:
+            print(json.dumps(elements, ensure_ascii=False, indent=2))
+        else:
+            print(format_trace(elements))
+    elif args.cmd == "health":
+        print(json.dumps(health.health_score(), ensure_ascii=False, indent=2))
     return 0
 
 
