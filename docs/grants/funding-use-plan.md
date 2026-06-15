@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Proposal framing | **Verifiable AI memory infrastructure for GDPR-compliant Europe** |
+| Proposal framing | **Verifiable AI memory infrastructure for European use cases (GDPR-oriented)** |
 | Programme | NLnet **NGI0 Commons Fund** |
 | Requested amount | approx. **€50,000** |
 | Status | Submitted to NLnet for review |
@@ -117,7 +117,8 @@ workplace adaptation, the following are non-negotiable:
 - memory export and deletion are first-class features.
 
 This project supports **knowledge and workflow assistance with consent and
-GDPR-compliant governance** — not employee surveillance. Any deployment in
+GDPR-oriented governance (GDPR-relevant controls, not a legal certification)** —
+not employee surveillance. Any deployment in
 schools, research, public administration or healthcare-adjacent settings must be
 designed around privacy, consent, auditability and the right to erasure.
 

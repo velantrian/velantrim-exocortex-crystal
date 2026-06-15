@@ -1,5 +1,12 @@
 # Hybrid Biological Memory Vision for Velantrim ExoCortex Crystal
 
+> **Status: Historical / Research Vision.** This document is not the current Crystal
+> runtime specification. Biological language here is metaphorical and inspirational.
+> Current implementation status is defined by `docs/IMPLEMENTATION_STATUS.md` and
+> `docs/METAPHOR_VS_MECHANISM.md`. Crystal does not claim biological cognition, AGI,
+> consciousness, a brain model, zero hallucinations, or production-ready autonomous
+> intelligence.
+
 **Status**: Strategic Vision Document (2026)
 **Inspiration**: Human, Dolphin, Bird, Octopus, Insect, Plant, Tree, Bacteria + Fractal Brain Principles
 
@@ -45,7 +52,7 @@ We combine:
 
 ### Layer 4: Epigenetic + Immune Layer (Plants + Bacteria)
 - **Epigenetic switches**: Dynamic behavior change without full retraining (like plants passing stress memory to seeds)
-- **CRISPR-style immune memory**: Instant recording and blocking of hallucinations, contradictions, or attacks
+- **CRISPR-style immune memory** *(metaphor / aspiration)*: aims to record and flag contradictions or suspect inputs — not a guarantee against hallucinations
 - Collective signaling: modules warn each other (like trees warning neighbors)
 
 ## ⚡ Key Advantages Over Current AI Memory
@@ -55,7 +62,7 @@ We combine:
 | Lifelong learning          | Human + Neurogenesis       | No catastrophic forgetting                     |
 | Energy efficiency          | Plants + Fish              | 10-100x lower power than GPUs                  |
 | Self-healing & adaptation  | Epigenetics + Immune       | System "learns" from stress automatically    |
-| Truth & hallucination guard| CRISPR + TruthGate         | Built-in immunity to errors                    |
+| Truth & hallucination guard| CRISPR + TruthGate         | Aspirational error-flagging (metaphor, not a guarantee) |
 | Collective intelligence    | Mycorrhizal networks       | Distributed knowledge across modules           |
 | Scalable resilience        | Fractal brain              | Grows without breaking                         |
 
@@ -79,7 +86,7 @@ We combine:
 
 ## Conclusion
 
-Velantrim ExoCortex Crystal is evolving from a truth-first graph memory system into a **true biological hybrid intelligence**. By 2027 we aim to have the first working prototype that combines all six natural memory strategies.
+Velantrim ExoCortex Crystal is evolving from a truth-first graph memory system toward a **biologically *inspired* hybrid memory architecture** (a metaphor, not literal biological cognition). By 2027 we aim to have the first working prototype that combines all six natural memory strategies.
 
 This is not just better AI — this is the next step in human-AI symbiosis.
 
