@@ -56,15 +56,24 @@ to the repository.
 Suggested release title:
 
 ```text
-Velantrim Crystal v0.1.1 — Reviewer-ready release checkpoint
+Velantrim Crystal v0.2.0 — Verifiable local-first AI memory core
 ```
 
 Suggested release summary:
 
 ```text
-Docs and packaging synchronisation pass after T3/T4/T5: eval metrics updated to
-the T3 baseline (22 retrieval cases, 15 contradiction pairs, boundary corpus),
-REVIEWER_OVERVIEW roadmap statuses updated to Completed, TEST_REPORT install path
-aligned with pip install -e '.[dev]', version bumped to 0.1.1.
-No runtime behaviour change.
+Local-first, verifiable AI memory core. Every write into the L3 canon passes a
+single enforced entry — TruthGate / Guardian — and answers carry TRACE +
+Receipt provenance that can be replayed and verified offline.
+
+Baseline: 1158 passed / 12 skipped / 100% coverage (Python 3.11 and 3.12),
+following the safe repo-hygiene / toolchain-hardening pass and the documentation
+synchronisation that aligned README, TEST_REPORT and ROADMAP with the current
+state. Fractal Memory is documented as the shipped multi-scale anchoring
+baseline (core/fractal.py) and is explicitly distinct from the broader private
+Research Mode "Fractal Memory / Fractal Attention" concept.
+
+Scope is deliberately bounded: no production-ready, zero-hallucination, or
+AGI/consciousness claims. This release checkpoint is documentation/packaging
+only — no runtime behaviour change when the release PR is docs-only.
 ```
