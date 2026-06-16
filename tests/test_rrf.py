@@ -66,6 +66,14 @@ def test_ties_keep_first_seen_order():
     assert rrf_fuse([["a"], ["b"]], k=1) == ["a", "b"]
 
 
+def test_one_shot_iterable_rankings_are_materialized():
+    # rrf_fuse consumes each ranking twice (scoring + representative pass), so a
+    # generator inner ranking must be materialized rather than exhausted to [].
+    assert rrf_fuse([(c for c in ["a", "b"])]) == ["a", "b"]
+    gen = ({"id": i} for i in ["x", "y"])
+    assert [d["id"] for d in rrf_fuse([gen], key=lambda d: d["id"])] == ["x", "y"]
+
+
 # ─── Edge cases & validation ──────────────────────────────────────────────────
 
 def test_empty_inputs():

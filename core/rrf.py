@@ -97,7 +97,10 @@ def rrf_fuse(
     original payload and are returned unmodified. Ordering is by descending
     fused RRF score; ties keep first-seen order (the sort is stable).
     """
-    rankings = list(rankings)
+    # Materialize each inner ranking once: rrf_scores consumes them and the
+    # representative pass below iterates them again, so a one-shot iterable
+    # (e.g. a generator) would otherwise be exhausted and yield nothing.
+    rankings = [list(ranking) for ranking in rankings]
     scores = rrf_scores(rankings, k=k, key=key, weights=weights)
     identity = key if key is not None else (lambda item: item)
 
