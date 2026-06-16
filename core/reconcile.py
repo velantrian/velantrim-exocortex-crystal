@@ -13,8 +13,11 @@
 #
 # Everything is deterministic and explicit. Auto-detection of semantic contradictions (NLI/LLM)
 # is intentionally NOT done here — it would produce false positives; left as a
-# future hook. The only auto-operation is reinforce on an exact claim repeat
-# (see ingest.ingest), which is safe.
+# future hook. The only auto-operation on an exact claim repeat is occurrence
+# tracking (record_occurrence) — it updates frequency metadata only and never
+# touches confidence/truth_status/ESM (see ingest exact-dedup). A same- or
+# different-source repeat is a frequency signal, NOT independent evidence;
+# raising confidence stays an explicit reinforce() decision.
 
 import logging
 from datetime import datetime, timezone
@@ -85,6 +88,53 @@ def reinforce(fact_id: str, agreement: bool = True) -> Optional[float]:
     update_fact(fact_id, confidence=new_conf, metadata=meta)
     _sync_l3(fact_id)
     return new_conf
+
+
+def record_occurrence(
+    fact_id: str,
+    *,
+    source: Optional[str] = None,
+    fingerprint: Optional[str] = None,
+) -> Optional[int]:
+    """
+    Register that identical content was ingested again (an exact-duplicate
+    sighting). This is a FREQUENCY signal only: it updates occurrence metadata
+    and NEVER changes confidence, truth_status or the ESM state — a repeat is
+    not independent evidence. Returns the new occurrence count, or None if the
+    fact does not exist.
+
+    Occurrence bookkeeping is kept deliberately SEPARATE from
+    metadata['observations'] (which reinforce() folds into the confidence
+    formula) so frequency and evidentiary weight are never conflated:
+      occurrences        — int, times this exact content has been seen (≥2 here)
+      last_seen          — ISO timestamp of the most recent sighting
+      sources_seen       — sorted list of distinct source labels
+      fingerprint_sha256 — sha256 of the normalized content (audit)
+    """
+    fact = get_fact(fact_id)
+    if fact is None:
+        return None
+
+    meta = dict(fact.get("metadata") or {})
+    occurrences = int(meta.get("occurrences", 1)) + 1
+    meta["occurrences"] = occurrences
+    meta["last_seen"] = _now()
+    if fingerprint:
+        meta["fingerprint_sha256"] = fingerprint
+    seen = set(meta.get("sources_seen") or [])
+    if fact.get("source"):
+        seen.add(fact["source"])
+    if source:
+        seen.add(source)
+    meta["sources_seen"] = sorted(seen)
+
+    update_fact(fact_id, metadata=meta)
+    # Guardrail: occurrence tracking must never promote a fact into the canon.
+    # Sync the metadata to L3 ONLY when the fact is already Validated (already in
+    # the canon); a non-Validated fact is never merged into L3 from here.
+    if fact.get("epistemic_state") == "Validated":
+        _sync_l3(fact_id)
+    return occurrences
 
 
 def supersede(old_id: str, new_fact: Dict[str, Any], *, enforce_gate: bool = True) -> str:

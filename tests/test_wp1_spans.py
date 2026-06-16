@@ -148,18 +148,18 @@ def test_ingest_claims_claim_not_in_source_content_span_is_none():
     assert spans[0]["span_end"] is None
 
 
-# ─── ingest_text: reinforce path does not double-attach evidence ──────────────
+# ─── ingest_text: duplicate path does not double-attach evidence ──────────────
 
-def test_ingest_text_reinforce_no_duplicate_evidence():
-    """Reinforced (duplicate) facts must not get a second evidence span."""
+def test_ingest_text_duplicate_no_duplicate_evidence():
+    """Duplicate (already-known) facts must not get a second evidence span."""
     content = "Titanium is lightweight and strong."
     rep1 = knowledge.ingest_text(content, fmt="txt", source="mat.txt")
     assert rep1["accepted"] >= 1
     fid = rep1["fact_ids"][0]
 
     rep2 = knowledge.ingest_text(content, fmt="txt", source="mat.txt")
-    assert rep2["reinforced"] >= 1
-    # After reinforce, exactly ONE span must exist (the original).
+    assert rep2["duplicates"] >= 1
+    # After a duplicate, exactly ONE span must exist (the original).
     spans = evidence.evidence_for(fid)
     assert len(spans) == 1
 

@@ -61,16 +61,28 @@ def test_ingest_empty_raises():
         ingest("   ")
 
 
-def test_ingest_exact_repeat_reinforces_confidence():
-    """An exact re-assertion is independent evidence → reinforce, not duplicate."""
+def test_ingest_exact_repeat_records_occurrence_without_reinforcing():
+    """Variant B: an exact repeat is a frequency sighting, NOT independent
+    evidence — occurrence metadata updates; confidence/truth_status/ESM do not."""
+    from core.l3_graph import get_l3_graph
     first = ingest("Water boils at 100 degrees Celsius")
-    assert first["accepted"] and not first.get("reinforced")
+    assert first["accepted"] and not first.get("duplicate")
+    fid = first["fact"]["fact_id"]
     c1 = first["fact"]["confidence"]
+    ts1 = get_l3_graph().get_fact(fid).get("truth_status")   # canonical truth_status
 
     second = ingest("Water boils at 100 degrees Celsius")
-    assert second["reinforced"] is True
-    assert second["fact"]["confidence"] > c1
-    assert second["fact"]["metadata"]["observations"] == 2
+    assert second["duplicate"] is True
+    assert second["occurrences"] == 2
+    f2 = second["fact"]
+    assert f2["confidence"] == c1                  # confidence unchanged
+    assert f2["epistemic_state"] == "Validated"    # ESM unchanged
+    assert f2["metadata"]["occurrences"] == 2
+    # Occurrence tracking must NOT touch the evidentiary observations counter.
+    assert "observations" not in f2["metadata"]
+    assert "fingerprint_sha256" in f2["metadata"]
+    # The canonical truth_status in L3 is preserved (the sync does not clobber it).
+    assert get_l3_graph().get_fact(fid).get("truth_status") == ts1
 
 
 def test_ingest_surfaces_conflict_candidates_for_world_facts():

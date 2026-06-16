@@ -92,10 +92,10 @@ def test_ingest_text_end_to_end():
     assert rep["total"] == 2 and rep["accepted"] == 2
 
 
-def test_duplicate_claims_reinforce():
+def test_duplicate_claims_record_occurrence():
     knowledge.ingest_claims([{"claim": "Gold is a metal"}], source="s")
     rep = knowledge.ingest_claims([{"claim": "Gold is a metal"}], source="s")
-    assert rep["reinforced"] == 1
+    assert rep["duplicates"] == 1
 
 
 # ─── File ingestion ───────────────────────────────────────────────────────────

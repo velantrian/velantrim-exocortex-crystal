@@ -22,11 +22,11 @@ def test_query_counters_answered_and_blocked():
     assert metrics.value("query.blocked") == 1
 
 
-def test_ingest_counters_accepted_reinforced_blocked():
+def test_ingest_counters_accepted_duplicate_blocked():
     ingest("Water boils at 100 degrees")          # accepted
-    ingest("Water boils at 100 degrees")          # exact repeat → reinforced
+    ingest("Water boils at 100 degrees")          # exact repeat → duplicate
     ingest("Shaky claim", confidence=0.0)         # WORLD_FACT below gate → blocked
     assert metrics.value("ingest.total") == 3
     assert metrics.value("ingest.accepted") == 1
-    assert metrics.value("ingest.reinforced") == 1
+    assert metrics.value("ingest.duplicate") == 1
     assert metrics.value("ingest.blocked") == 1

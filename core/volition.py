@@ -97,7 +97,7 @@ def write_voluntary(
     result = ingest(claim, source=source, significance=significance,
                     confidence=confidence, claim_type=claim_type)
     result["volition"] = True
-    if result.get("accepted") and not result.get("reinforced"):
+    if result.get("accepted") and not result.get("duplicate"):
         fid = result["fact"]["fact_id"]
         current = get_fact(fid)
         if current is not None:

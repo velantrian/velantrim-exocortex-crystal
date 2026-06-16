@@ -314,7 +314,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         fact = res["fact"]
         print(json.dumps({
             "accepted": res["accepted"],
-            "reinforced": res.get("reinforced", False),
+            "duplicate": res.get("duplicate", False),
             "fact_id": fact["fact_id"],
             "claim_type": fact.get("claim_type"),
             "truth_status": fact.get("truth_status"),

@@ -36,10 +36,10 @@ def test_predict_immune_blocked():
     assert res["verdict"] == "blocked" and res["reason"].startswith("Immune")
 
 
-def test_predict_reinforce_for_existing_validated():
+def test_predict_duplicate_for_existing_validated():
     ingest("Gold is a metal")
     res = imports.predict_claim("Gold is a metal")
-    assert res["verdict"] == "reinforce"
+    assert res["verdict"] == "duplicate"
 
 
 def test_predict_conflict_against_canon():
