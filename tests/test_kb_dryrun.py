@@ -1,6 +1,6 @@
 """Tests for KB Dry-Run Batch Manifest (core/kb_ingest.py, PR4 — grant WP2/WP4).
 
-A batch manifest dry-run predicts accept/reinforce/blocked/conflict for every
+A batch manifest dry-run predicts accept/duplicate/blocked/conflict for every
 claim in a corpus WITHOUT writing anything to memory. The TruthGate and all
 guards are exercised; the canon is untouched.
 """
@@ -41,7 +41,7 @@ def test_dry_run_batch_returns_manifest_shape(monkeypatch):
     assert result["total"] == 1
     assert "would_accept" in result
     assert "would_block" in result
-    assert "would_reinforce" in result
+    assert "would_duplicate" in result
     assert "conflicts" in result
     assert len(result["items"]) == 1
 
@@ -66,15 +66,15 @@ def test_dry_run_batch_accept_external(monkeypatch):
     assert result["would_accept"] == 1
 
 
-def test_dry_run_batch_reinforce_existing(monkeypatch):
-    """A claim already Validated in canon is predicted as reinforce, not accept."""
+def test_dry_run_batch_duplicate_existing(monkeypatch):
+    """A claim already Validated in canon is predicted as duplicate, not accept."""
     monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
     claim = "The Earth orbits the Sun once per year"
     ingest(claim, source="test", source_status="EXTERNAL", claim_type="WORLD_FACT")
     claims = [{"claim": claim, "source_status": "EXTERNAL"}]
     result = kb_ingest.dry_run_batch(claims)
     verdicts = {it["verdict"] for it in result["items"]}
-    assert "reinforce" in verdicts or "accept" in verdicts
+    assert "duplicate" in verdicts or "accept" in verdicts
 
 
 def test_dry_run_batch_empty_claim_blocked(monkeypatch):
@@ -126,7 +126,7 @@ def test_dry_run_batch_confidence_and_significance_fields(monkeypatch):
                "source_status": "EXTERNAL"}]
     result = kb_ingest.dry_run_batch(claims)
     assert result["total"] == 1
-    assert result["items"][0]["verdict"] in ("accept", "reinforce", "blocked", "conflict")
+    assert result["items"][0]["verdict"] in ("accept", "duplicate", "blocked", "conflict")
 
 
 # ─── dry_run_manifest_file — JSONL ────────────────────────────────────────────
@@ -302,5 +302,5 @@ def test_dry_run_batch_valid_enum_values_accepted(monkeypatch):
     ]
     result = kb_ingest.dry_run_batch(claims)
     assert result["total"] == 1
-    assert result["items"][0]["verdict"] in ("accept", "reinforce", "conflict")
+    assert result["items"][0]["verdict"] in ("accept", "duplicate", "conflict")
     assert result["would_block"] == 0

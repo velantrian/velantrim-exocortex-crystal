@@ -8,7 +8,7 @@
 #
 # Verdicts per item (same as imports.predict_claim):
 #   accept    — would pass Guardian + TruthGate and be stored
-#   reinforce — an identical claim already exists in canon (idempotent)
+#   duplicate — an identical claim already exists in canon (occurrence only)
 #   blocked   — rejected by Immune guard, Guardian, or TruthGate
 #   conflict  — passes gates but contradicts one or more canonical facts
 #
@@ -26,7 +26,7 @@ from core.imports import predict_claim
 from core import knowledge as _kb
 from core.memory import SOURCE_STATUSES, CLAIM_TYPES
 
-_VERDICT_KEYS = ("accept", "reinforce", "blocked", "conflict")
+_VERDICT_KEYS = ("accept", "duplicate", "blocked", "conflict")
 
 
 # ─── Batch dry-run ────────────────────────────────────────────────────────────
@@ -129,7 +129,7 @@ def _manifest_result(items: List[Dict[str, Any]], *, source: str) -> Dict[str, A
         "source": source,
         "total": len(items),
         "would_accept": counts["accept"],
-        "would_reinforce": counts["reinforce"],
+        "would_duplicate": counts["duplicate"],
         "would_block": counts["blocked"],
         "conflicts": counts["conflict"],
         "items": items,

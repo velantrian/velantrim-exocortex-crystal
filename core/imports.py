@@ -4,7 +4,7 @@
 # External ingestion (core/knowledge.py) routes a corpus through the TruthGate.
 # WP2 makes that safe for institutions importing curated corpora:
 #
-#   - DRY RUN: predict what an import WOULD do — accept / reinforce / block /
+#   - DRY RUN: predict what an import WOULD do — accept / duplicate / block /
 #     conflict — WITHOUT writing anything to the canon (no L0/L1/L3, no evidence).
 #   - IMPORT SESSIONS: every real import gets a session id; the facts it accepts
 #     are recorded so the whole batch can be reviewed, restricted or erased
@@ -40,7 +40,7 @@ def predict_claim(
 ) -> Dict[str, Any]:
     """
     Predict the verdict for a single claim WITHOUT persisting anything.
-    Verdicts: accept | reinforce | blocked | conflict.
+    Verdicts: accept | duplicate | blocked | conflict.
     """
     claim = (claim or "").strip()
     if not claim:
@@ -52,10 +52,11 @@ def predict_claim(
     ss = source_status or classified
     fid = _fact_id(claim)
 
-    # Already-Validated exact duplicate → the live path would reinforce.
+    # Already-Validated exact duplicate → the live path records an occurrence
+    # (frequency only; no reinforce, no confidence change) — see ingest dedup.
     prior = memory.get_fact(fid)
     if prior is not None and prior.get("epistemic_state") == "Validated":
-        return {"claim": claim, "verdict": "reinforce", "fact_id": fid,
+        return {"claim": claim, "verdict": "duplicate", "fact_id": fid,
                 "claim_type": ct}
 
     fact = {
@@ -87,12 +88,12 @@ def predict_claim(
 
 
 def _summarise(items: List[Dict[str, Any]], *, source: str) -> Dict[str, Any]:
-    counts = {"accept": 0, "reinforce": 0, "blocked": 0, "conflict": 0}
+    counts = {"accept": 0, "duplicate": 0, "blocked": 0, "conflict": 0}
     for it in items:
         counts[it["verdict"]] = counts.get(it["verdict"], 0) + 1
     return {
         "dry_run": True, "source": source, "total": len(items),
-        "would_accept": counts["accept"], "would_reinforce": counts["reinforce"],
+        "would_accept": counts["accept"], "would_duplicate": counts["duplicate"],
         "would_block": counts["blocked"], "conflicts": counts["conflict"],
         "items": items,
     }
