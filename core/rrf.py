@@ -43,9 +43,18 @@ def rrf_scores(
 
     `key` extracts a hashable identity from an item (default: the item itself,
     which therefore must be hashable). `weights` scales each ranking's
-    contribution (default: all 1.0) and must have one entry per ranking. Only an
-    item's best (first) position within a given ranking counts; later duplicates
-    in the same list are ignored. Returns {identity: score}; higher is better.
+    contribution (default: all 1.0) and must have one entry per ranking.
+
+    Duplicate semantics — compressed unique ranks: duplicates within a single
+    ranking are removed *before* ranks are assigned. An item is scored at its
+    first (best) appearance, and each later duplicate of it is skipped so the
+    next distinct item takes the next rank. Ranks therefore count distinct
+    items, not physical list positions — e.g. ["a", "a", "b"] scores a at
+    rank 1 and b at rank 2 (not 3). Rankings are expected to be deduplicated
+    upstream anyway; this only makes the behaviour well-defined if they are not.
+    (For classic physical-position ranks, pass already-deduplicated lists.)
+
+    Returns {identity: score}; higher is better.
     """
     if k < 0:
         raise ValueError("rrf: k must be >= 0")
@@ -63,7 +72,10 @@ def rrf_scores(
         for item in ranking:
             ident = identity(item)
             if ident in seen:
-                continue          # an item's rank is its first appearance only
+                # Compressed unique-rank: skip the duplicate so the next
+                # distinct item takes the next rank (ranks count distinct
+                # items, not physical positions). See the docstring.
+                continue
             seen.add(ident)
             rank += 1
             scores[ident] = scores.get(ident, 0.0) + weight / (k + rank)
