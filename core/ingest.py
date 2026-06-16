@@ -12,13 +12,14 @@
 
 import hashlib
 import re
+import unicodedata
 from typing import Dict, Any, Optional
 
 from core.memory import store_fact, get_fact, transition_esm
 from core.l3_graph import get_l3_graph
 from core.embedding import assert_compatible_embedder
 from core.pipeline import guardian, truth_gate, _truth_status_for, _l3_payload
-from core.reconcile import reinforce, find_conflicts, REL_CONTRADICTS, _now
+from core.reconcile import record_occurrence, find_conflicts, REL_CONTRADICTS, _now
 from core import (metrics, adaptation, pii, contradiction, immune,
                   neurogenesis, salience, mosc)
 
@@ -73,8 +74,36 @@ def classify_claim(utterance: str) -> tuple[str, str]:
     return _regex_classify(utterance), "USER_REPORTED"
 
 
+def _normalize(text: str) -> str:
+    """Canonical form for content identity: NFC, trimmed, internal whitespace
+    collapsed, case-folded. Used ONLY for the fact_id / fingerprint — the stored
+    claim keeps its original casing. Deterministic and stdlib-only; this is
+    exact normalized equality, never near-duplicate or semantic matching."""
+    text = unicodedata.normalize("NFC", text).strip()
+    text = re.sub(r"\s+", " ", text)
+    return text.casefold()
+
+
 def _fact_id(utterance: str) -> str:
+    """The canonical auto fact_id for a claim, derived from its NORMALIZED
+    content so trivial casing / whitespace variants map to the same id (and
+    therefore deduplicate). This is the single source of truth for "the id of
+    this claim" — imports/eval rely on it matching what ingest() stores."""
+    norm = _normalize(utterance)
+    return "ing:" + hashlib.md5(norm.encode("utf-8"), usedforsecurity=False).hexdigest()[:12]
+
+
+def _legacy_fact_id(utterance: str) -> str:
+    """The pre-normalization id (md5 of the RAW utterance). Kept only as a
+    dedupe fallback so facts stored before normalization still match instead of
+    spawning a second node for identical content."""
     return "ing:" + hashlib.md5(utterance.encode("utf-8"), usedforsecurity=False).hexdigest()[:12]
+
+
+def _fingerprint(utterance: str) -> str:
+    """Full sha256 of the normalized content, kept in occurrence metadata for
+    audit/transparency (the 12-char fact_id is for identity, this is the proof)."""
+    return hashlib.sha256(_normalize(utterance).encode("utf-8")).hexdigest()
 
 
 def ingest(
@@ -135,15 +164,29 @@ def ingest(
             }
 
     fid = fact_id or _fact_id(utterance)
-
-    # An exact repeat of an already accepted fact (same content-hash id, Validated) —
-    # this is independent evidence: we reinforce confidence rather than create a duplicate.
     metrics.incr("ingest.total")
+
+    # Legacy fallback (auto-id path only): facts stored before content
+    # normalization used a raw-text id. If the normalized id has no fact yet but
+    # a legacy one does, adopt the legacy id so we update that node instead of
+    # creating a second one for identical content.
+    if fact_id is None and get_fact(fid) is None:
+        legacy = _legacy_fact_id(utterance)
+        if legacy != fid and get_fact(legacy) is not None:
+            fid = legacy
+
+    # Exact-duplicate dedup (Variant B): a repeat of an already-Validated fact is
+    # NOT independent evidence. It only records an occurrence (frequency) via
+    # reconcile.record_occurrence — never confidence, truth_status or ESM. Genuine
+    # independent corroboration is a separate, explicit reconcile.reinforce()
+    # decision, deliberately out of scope for the dedup path.
     prior = get_fact(fid)
     if prior is not None and prior.get("epistemic_state") == "Validated":
-        reinforce(fid)
-        metrics.incr("ingest.reinforced")
-        return {"accepted": True, "reinforced": True, "fact": get_fact(fid)}
+        occurrences = record_occurrence(fid, source=source,
+                                        fingerprint=_fingerprint(utterance))
+        metrics.incr("ingest.duplicate")
+        return {"accepted": True, "duplicate": True,
+                "occurrences": occurrences, "fact": get_fact(fid)}
 
     fact = {
         "fact_id": fid,

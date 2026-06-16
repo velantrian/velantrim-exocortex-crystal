@@ -153,7 +153,7 @@ def ingest_claims(
     record (WP1 span extraction). Records that already carry `span_start` /
     `span_end` (e.g. from the PDF adapter) are used as-is.
     """
-    accepted = reinforced = blocked = 0
+    accepted = duplicates = blocked = 0
     blocked_reasons: List[Dict[str, str]] = []
     fact_ids: List[str] = []
     for rec in claims:
@@ -169,8 +169,8 @@ def ingest_claims(
             accepted += 1
             fid = res["fact"]["fact_id"]
             fact_ids.append(fid)
-            if res.get("reinforced"):
-                reinforced += 1
+            if res.get("duplicate"):
+                duplicates += 1
             elif attach_evidence:
                 # Resolve span offsets: prefer adapter-supplied values, then
                 # detect from source_content, else fall back to doc-level ref.
@@ -197,7 +197,7 @@ def ingest_claims(
         "source": source,
         "total": accepted + blocked,
         "accepted": accepted,
-        "reinforced": reinforced,
+        "duplicates": duplicates,
         "blocked": blocked,
         "fact_ids": fact_ids,
         "blocked_reasons": blocked_reasons,
