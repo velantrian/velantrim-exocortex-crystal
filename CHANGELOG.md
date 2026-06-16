@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `core/rrf.py` (PR #163): pure-stdlib Reciprocal Rank Fusion helper for rank
+  fusion / retrieval ordering. Implemented as a standalone helper — it does not
+  assign `truth_status`, does not change `confidence`, and does not bypass
+  TruthGate or Guardian. Not yet wired into `retrieve()`.
 - `core/refusal_reasons.py`: stable machine-readable Refusal Reasons Taxonomy v0.1 —
   13 reason codes (`NO_VERIFIED_CLAIM`, `LLM_OUTPUT_NOT_EVIDENCE`, `MISSING_SOURCE`,
   `MISSING_PROVENANCE`, `MISSING_EVIDENCE`, `MISSING_TRACE`, `RECEIPT_TAMPERED`,
@@ -57,6 +61,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   no real sensitive identifiers
 
 ### Fixed
+- **Exact-duplicate ingest dedup — repeat is frequency, not evidence** (PR #164,
+  Variant B): previously an exact repeat of an already-`Validated` fact was
+  treated as independent evidence and auto-reinforced (`confidence++`). Now an
+  exact repeat updates occurrence metadata only — `occurrences` / `last_seen` /
+  `sources_seen` / `fingerprint_sha256` (kept separate from `observations`) — via
+  the new `core/reconcile.record_occurrence`. It does not call `reinforce()`,
+  does not increase `confidence`, and does not count as independent evidence.
+  `core/ingest._fact_id` now hashes normalized content (NFC + trim + collapse
+  whitespace + casefold) with a legacy raw-text id fallback; dry-run verdicts in
+  `imports.py` / `kb_ingest.py` were synced (`reinforce` → `duplicate`). Legacy
+  normalized-id migration / normalized-claim index is tracked separately in #165
+  and is not implemented in this change.
 - **README docs-table duplicate**: removed the remaining duplicate
   `docs/COMPARISON.md` row from the README documentation table (a previous
   changelog entry claimed this was already done; the duplicate was in fact still
