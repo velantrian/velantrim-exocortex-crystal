@@ -465,6 +465,7 @@ milestone budget, partial-funding plan, and responsible-data position.
 | Document | Purpose |
 |---|---|
 | **[DEMO.md](./DEMO.md)** | Demo index: which walkthrough to pick |
+| **[docs/REVIEWER_GUIDE.md](./docs/REVIEWER_GUIDE.md)** | Reviewer entry point: what Crystal is/isn't, status, how to run tests + Docker securely, how to verify TruthGate/Receipt/Provenance, audit-hardening tracks merged (#168/#170/#171/#172/#175), and deferred work |
 | **[docs/REVIEWER_DEMO.md](./docs/REVIEWER_DEMO.md)** | 10-minute reviewer demo: ingest → evidence → trace → answer → sealed receipt → strict replay → tamper check → eval gate |
 | **[docs/REVIEWER_NOTES.md](./docs/REVIEWER_NOTES.md)** | One-page reviewer guide: purpose, demo path, implemented scope and grant extensions |
 | **[docs/DEMO.md](./docs/DEMO.md)** | Hands-on, reproducible CLI walkthrough with real captured output (ingest, ask, receipt, contradictions, knowledge import, GDPR erase, NeuroCore telemetry, eval, HTTP) |
