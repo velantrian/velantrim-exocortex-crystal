@@ -203,9 +203,14 @@ Expected: tests pass at the baseline recorded in
 working tree stays clean — generated evaluation artifacts are written to
 `eval-artifacts/` (ignored) and are not tracked by git.
 
-Start hands-on with **[docs/REVIEWER_DEMO.md](./docs/REVIEWER_DEMO.md)** (the
-10-minute reviewer demo) or see **[DEMO.md](./DEMO.md)** for the full *ingest → evidence → trace → answer →
-receipt* walkthrough.
+**Reviewers — start here (in order):**
+
+1. **[docs/REVIEWER_GUIDE.md](./docs/REVIEWER_GUIDE.md)** — canonical reviewer entry point (what Crystal is/isn't, status, how to verify TruthGate / Receipt / Provenance).
+2. **[docs/REVIEWER_DEMO.md](./docs/REVIEWER_DEMO.md)** — 10-minute hands-on demo.
+3. **[TEST_REPORT.md](./TEST_REPORT.md)** — exact test and coverage baseline.
+4. **[docs/STATUS.md](./docs/STATUS.md)** — short current status / release state.
+
+For the full *ingest → evidence → trace → answer → receipt* walkthrough, see **[DEMO.md](./DEMO.md)**.
 
 ---
 
@@ -467,11 +472,11 @@ milestone budget, partial-funding plan, and responsible-data position.
 | **[DEMO.md](./DEMO.md)** | Demo index: which walkthrough to pick |
 | **[docs/REVIEWER_GUIDE.md](./docs/REVIEWER_GUIDE.md)** | Reviewer entry point: what Crystal is/isn't, status, how to run tests + Docker securely, how to verify TruthGate/Receipt/Provenance, audit-hardening tracks merged (#168/#170/#171/#172/#175), and deferred work |
 | **[docs/REVIEWER_DEMO.md](./docs/REVIEWER_DEMO.md)** | 10-minute reviewer demo: ingest → evidence → trace → answer → sealed receipt → strict replay → tamper check → eval gate |
-| **[docs/REVIEWER_NOTES.md](./docs/REVIEWER_NOTES.md)** | One-page reviewer guide: purpose, demo path, implemented scope and grant extensions |
+| **[docs/REVIEWER_NOTES.md](./docs/REVIEWER_NOTES.md)** | Secondary — one-page reviewer notes (canonical entry point is docs/REVIEWER_GUIDE.md): purpose, demo path, implemented scope and grant extensions |
 | **[docs/DEMO.md](./docs/DEMO.md)** | Hands-on, reproducible CLI walkthrough with real captured output (ingest, ask, receipt, contradictions, knowledge import, GDPR erase, NeuroCore telemetry, eval, HTTP) |
 | **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** | Architecture diagrams and memory/backends/privacy boundaries |
 | **[docs/IMPLEMENTATION_STATUS.md](./docs/IMPLEMENTATION_STATUS.md)** | Honest status map: implemented Crystal core vs RFC/roadmap vs Exo-Cortex/Culture vision |
-| **[docs/REVIEWER_OVERVIEW.md](./docs/REVIEWER_OVERVIEW.md)** | Reviewer package: one-page overview, ADRs, failure modes, evaluation metrics |
+| **[docs/REVIEWER_OVERVIEW.md](./docs/REVIEWER_OVERVIEW.md)** | Secondary — reviewer package (canonical entry point is docs/REVIEWER_GUIDE.md): one-page overview, ADRs, failure modes, evaluation metrics |
 | **[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)** | Grant-facing problem, solution, work packages and success criteria |
 | **[docs/grants/funding-use-plan.md](./docs/grants/funding-use-plan.md)** | Why ~€50,000 was requested and the milestone-based plan for using it |
 | **[docs/grants/reviewer-qa.md](./docs/grants/reviewer-qa.md)** | Prepared answers to likely NLnet second-round questions and scope discipline |

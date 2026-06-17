@@ -1,5 +1,11 @@
 # Velantrim ExoCortex — Future Work & Research
 
+> **Historical / internal note.**
+> This document is preserved for project history and design context.
+> It is **not** the current implementation status and should not be read as a runtime claim.
+> Current public status lives in [README.md](./README.md), [docs/REVIEWER_GUIDE.md](./docs/REVIEWER_GUIDE.md),
+> [docs/STATUS.md](./docs/STATUS.md), [docs/IMPLEMENTATION_STATUS.md](./docs/IMPLEMENTATION_STATUS.md), and [TEST_REPORT.md](./TEST_REPORT.md).
+
 This document captures **deferred improvements** and **research directions** that
 came out of the code audit. It is intentionally honest: each item explains *why*
 it matters and *where* in the code it bites, so future work starts from facts,
