@@ -13,6 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Write-path TruthGate audit** (Track 3B): `core/review.py` now records
+  `gate_reason` (the specific blocking reason from the gate diagnosis) in the
+  `review_force_approve` audit detail, so a curator override is accountable
+  against *why* the gate blocked — not just that it did. Content-free (no claim
+  text). New behaviour pins in `tests/test_write_path_gate.py` and
+  `tests/test_api.py`: force-approve still calls TruthGate; the override audit
+  carries `gate_reason`; `POST /ingest` with `LLM_OUTPUT + WORLD_FACT` is
+  blocked (`accepted=False`); a bulk dry-run predicts a `blocked` verdict for
+  the same case. Behaviour-pinning + audit detail only — no new write paths and
+  no `/facts` endpoint.
 - **Strict TruthPolicy production default** (Track 3A): `core/truth_gate.py` now
   reads `ENABLE_TRUTH_POLICY` (at call time, so it is test-overridable) to make
   the strict policy the explicit, documented default — `unset` and `on` both

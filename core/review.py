@@ -192,7 +192,8 @@ def approve(fact_id: str, *, actor: Optional[str] = None,
         metrics.incr("review.override")
         audit.append_event("review_force_approve", fact_id,
                            {"actor": actor, "reason": reason, "note": note,
-                            "diagnosis": diag["verdict"]})
+                            "diagnosis": diag["verdict"],
+                            "gate_reason": diag.get("reason")})
         # Emit the warning AFTER the ESM transition and audit append so that
         # PYTHONWARNINGS=error (or warnings.simplefilter('error', RuntimeWarning))
         # cannot prevent the fact from being promoted and recorded.
