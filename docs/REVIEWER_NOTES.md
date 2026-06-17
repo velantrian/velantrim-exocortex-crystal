@@ -1,5 +1,9 @@
 # Reviewer Notes — Velantrim Crystal
 
+> **Secondary reviewer document.** The canonical reviewer entry point is
+> [docs/REVIEWER_GUIDE.md](./REVIEWER_GUIDE.md). These notes are a condensed,
+> historical one-pager kept for context.
+
 Velantrim Crystal is a local-first, AGPL-licensed memory core for AI systems. It
 is not a chatbot and not a hosted SaaS product. Its purpose is to make AI memory
 inspectable, source-tracked, replayable, erasable and harder to corrupt silently.

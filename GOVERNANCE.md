@@ -45,7 +45,7 @@ stewardship over time.
 - **No hosted infrastructure is required** to run or maintain the core — it is a
   stdlib-only library with optional backends, so there is no server to keep alive.
 - **Reproducibility** is part of governance: CI runs the full test suite on every
-  change, and the coverage gate (95%) is enforced, so the project's health is
+  change, and the coverage gate (100%) is enforced, so the project's health is
   verifiable by anyone at any time.
 - **Continuity:** documentation, tests, and the honesty invariant are maintained
   so that the project remains understandable and operable independently of any one

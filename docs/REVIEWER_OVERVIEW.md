@@ -1,5 +1,9 @@
 # Velantrim Exo-Cortex Crystal — Reviewer Overview
 
+> **Secondary reviewer document.** The canonical reviewer entry point is
+> [docs/REVIEWER_GUIDE.md](./REVIEWER_GUIDE.md). This overview is supplementary
+> (ADRs, failure modes, metrics) and historical context.
+
 *Local-first, traceable AI memory infrastructure for source-grounded, auditable
 AI systems.*
 
