@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Strict TruthPolicy production default** (Track 3A): `core/truth_gate.py` now
+  reads `ENABLE_TRUTH_POLICY` (at call time, so it is test-overridable) to make
+  the strict policy the explicit, documented default — `unset` and `on` both
+  mean strict ON; only `ENABLE_TRUTH_POLICY=off` opts into the legacy bypass of
+  the `LLM_OUTPUT`→`WORLD_FACT` rule (the fact is then judged on source +
+  confidence alone). Secure-by-default: any value other than `off` is strict.
+  3 behaviour tests in `tests/test_truth_gate.py` pin on / off / unset. The
+  source requirement and confidence threshold are unchanged in all modes.
 - `core/provenance_chain.py`: per-fact, append-only, hash-chained provenance log
   (Sprint1 P1-5, invariant I89 ProvenanceAppendOnly). Distinct from the **global**
   compliance ledger (`core/audit.py`) and the per-**answer** receipt provenance
