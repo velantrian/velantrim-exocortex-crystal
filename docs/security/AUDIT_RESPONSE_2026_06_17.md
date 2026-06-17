@@ -13,25 +13,45 @@ Titan contains valuable research and implementation material.
 The public Crystal line needs status clarity, deployment hardening, data-quality boundaries and provenance verification.
 ```
 
+## Correction after Claude Code plan
+
+Claude Code reviewed the Crystal repository plan and clarified several points:
+
+1. The Titan `_compute_hash(actor/reason)` failure should not be treated as a confirmed Crystal runtime regression unless reproduced in this repository.
+2. In Crystal, the per-fact `ProvenanceChain` is a planned/absent feature to implement from Sprint1 P1-5 / I89.
+3. Docker files are Track 2 creation targets.
+4. Crystal API token variable is `VELANTRIM_API_TOKEN`, not `VELANTRIM_API_KEY`.
+5. TruthPolicy work is split into Track 3A and Track 3B.
+6. No `/facts` POST endpoint should be assumed for Track 3B.
+
+## Current track map
+
+| Track | Scope | Status |
+|---|---|---|
+| Track 1 | per-fact ProvenanceChain + DB table + erasure integration + 7 tests | code task for Claude Code |
+| Track 2 | Dockerfile, docker-compose.yml, .dockerignore from scratch | code/deploy task for Claude Code |
+| Track 3A | TruthPolicy strict production default | code/test task for Claude Code |
+| Track 3B | write-path TruthGate audit tests + `gate_reason` | code/test task for Claude Code |
+
 ## Immediate findings to track
 
 | Priority | Finding | Required response |
 |---|---|---|
-| P0 | Possible provenance-chain actor/reason regression reported in Titan audit | reproduce in Crystal if applicable; add append/verify/tamper tests |
-| P0 | Unsafe Docker/compose defaults reported in Titan audit | require explicit API key; bind local by default; non-root image |
-| P1 | TruthPolicy may be optional in some paths | decide production profile and add contract tests |
-| P1 | Knowledge graph evidence gap | label unverified/autolinker data correctly; add verifier rules |
+| P0 | Per-fact ProvenanceChain not yet implemented in Crystal | implement Track 1, do not claim per-fact chain before tests |
+| P0 | Deployment needs fail-closed Docker defaults | create Docker files with required `VELANTRIM_API_TOKEN` |
+| P1 | TruthPolicy default must be explicit and testable | Track 3A |
+| P1 | Write-path gate behaviour should be pinned | Track 3B |
+| P1 | Knowledge graph evidence gap | label unverified/autolinker data correctly; add verifier later |
 | P1 | Documentation drift across Crystal/Titan/V9/V10 | maintain `docs/STATUS.md` as current reading rule |
-| P1 | Health/MHI fallback semantics | missing store should be degraded/safe, not healthy |
 
 ## What this repository should do next
 
-1. Keep `docs/STATUS.md` current.
-2. Add or verify provenance-chain contract tests.
-3. Harden deployment defaults.
-4. Add claim type/origin type documentation before runtime changes.
-5. Add ingest and dedup contracts.
-6. Add knowledge graph status and verifier rules before making data-quality claims.
+1. Merge Track 1 as a small PR.
+2. Merge Track 2 as a separate PR.
+3. Update `STATUS.md` / implementation status after Tracks 1–2 if needed.
+4. Merge Track 3A.
+5. Merge Track 3B.
+6. Only then consider data verifier and canonical write path expansion.
 
 ## Boundary
 
