@@ -1,109 +1,190 @@
 # Claude Code Handoff — 2026-06-17
 
 > Scope: work that requires code inspection, tests or controlled runtime changes.
-> Status: handoff only. ChatGPT added docs; Claude Code should handle code with tests.
+> Status: handoff only. ChatGPT added and corrected docs; Claude Code should handle code with tests.
 
-## Context
+## Current implementation plan
 
-ChatGPT performed the safe docs-only extraction from the Titan/Crystal audits. Runtime code was not intentionally changed.
-
-Docs added:
+Use the Claude Code Track 1–3B plan as the current source of implementation order.
 
 ```text
-docs/STATUS.md
-docs/security/DEPLOYMENT_SECURITY.md
-docs/security/AUDIT_RESPONSE_2026_06_17.md
-docs/data/KNOWLEDGE_GRAPH_STATUS.md
-docs/core/CLAIM_TYPE_AND_ORIGIN.md
-docs/core/INGEST_SCHEMA.md
-docs/core/DEDUP_AND_SCALE.md
-docs/core/PROVENANCE_CHAIN_CONTRACT.md
-docs/core/ANSWER_CONTRACT.md
-docs/architecture/ARCHITECTURE_RECONCILIATION.md
-docs/architecture/BACKENDS.md
+Track 1  — ProvenanceChain per-fact event chain
+Track 2  — Docker hardening from scratch
+Track 3A — TruthPolicy production default
+Track 3B — Write-path TruthGate audit/tests
 ```
+
+Each track must be a separate branch and PR. No bundling.
+
+## Important corrections to earlier docs
+
+### Crystal token variable
+
+Crystal API uses:
+
+```text
+VELANTRIM_API_TOKEN
+```
+
+Do not use Titan-oriented `VELANTRIM_API_KEY` wording for Crystal Docker/API unless code support is changed.
+
+### ProvenanceChain
+
+Do not treat the Titan `_compute_hash(actor/reason)` TypeError as a confirmed Crystal regression.
+
+Claude Code identified the Crystal task as:
+
+```text
+implement missing per-fact ProvenanceChain from Sprint1 P1-5 / I89 spec
+```
+
+Crystal already has other provenance/audit mechanisms, but they are not the same thing:
+
+```text
+core/audit.py       = global audit chain
+core/provenance.py  = per-answer receipt provenance
+core/provenance_chain.py = planned per-fact event chain
+```
+
+### Docker
+
+Docker files are creation targets:
+
+```text
+Dockerfile
+docker-compose.yml
+.dockerignore
+```
+
+Do not assume they already exist.
+
+### TruthPolicy
+
+Track 3A and Track 3B are separate:
+
+```text
+Track 3A = env default strict behaviour
+Track 3B = write-path behavioural tests + gate_reason in review audit
+```
+
+Claude Code reported that major write paths already route through TruthGate and no `/facts` POST endpoint exists. Do not frame Track 3B as “all write gates are missing.”
+
+## Track 1 — ProvenanceChain
+
+Create/modify:
+
+```text
+CREATE core/provenance_chain.py
+MODIFY core/memory.py      # provenance_chain table + index
+MODIFY core/erasure.py     # append per-fact provenance after existing audit event
+CREATE tests/test_provenance_chain.py
+```
+
+Required behaviour:
+
+- `_GENESIS = "0" * 64`;
+- per-fact sequence starts at genesis;
+- `_compute_hash(..., actor="system", reason="")` hashes all fields consistently;
+- `append()` returns bool and never raises into erasure;
+- `verify()` returns `empty_chain` with `ok=False` for empty chains;
+- non-empty verified chains return `status="ok", ok=True`;
+- tampered payload/actor/reason returns `ok=False`.
+
+Required tests:
+
+1. append succeeds for a normal event;
+2. verify on non-empty chain succeeds;
+3. payload tamper fails;
+4. actor tamper fails;
+5. reason tamper fails;
+6. `erase_fact()` creates an erase event with actor/reason;
+7. empty chain is `empty_chain`, not `ok`.
+
+## Track 2 — Docker hardening from scratch
+
+Create:
+
+```text
+Dockerfile
+docker-compose.yml
+.dockerignore
+```
+
+Primary required compose line:
+
+```yaml
+VELANTRIM_API_TOKEN=${VELANTRIM_API_TOKEN:?Set VELANTRIM_API_TOKEN before running}
+```
+
+Required defaults:
+
+```yaml
+ports:
+  - "127.0.0.1:8000:8000"
+VELANTRIM_API_HOST=127.0.0.1
+VELANTRIM_DB=/app/data/velantrim_memory.db
+```
+
+Dockerfile requirements:
+
+- multi-stage builder -> runtime;
+- `pip install '.[api]'`, not `[dev]`;
+- create non-root user `velantrim` and run as that user;
+- copy any required top-level py-module listed in `pyproject.toml`.
+
+Manual verification:
+
+```bash
+docker compose up
+# without token: must fail
+
+VELANTRIM_API_TOKEN=dev-local-token docker compose up
+curl http://127.0.0.1:8000/health
+
+docker inspect <image> | jq '.[0].Config.User'
+# expected: velantrim
+```
+
+## Track 3A — TruthPolicy production default
+
+Modify `core/truth_gate.py` inside the `truth_gate()` function body.
+
+Expected behaviour:
+
+```text
+ENABLE_TRUTH_POLICY unset -> strict ON
+ENABLE_TRUTH_POLICY=on  -> strict ON
+ENABLE_TRUTH_POLICY=off -> legacy bypass
+```
+
+Tests:
+
+1. ON blocks LLM-origin world fact;
+2. OFF permits legacy bypass;
+3. unset defaults strict.
+
+## Track 3B — Write-path TruthGate audit/tests
+
+Modify/create:
+
+```text
+MODIFY core/review.py                 # add gate_reason to review_force_approve audit detail
+CREATE tests/test_write_path_gate.py
+MODIFY tests/test_api.py              # POST /ingest gate-block test
+```
+
+Tests:
+
+1. force approve still calls TruthGate;
+2. force approve audit includes `gate_reason`;
+3. `/ingest` blocks LLM-origin world fact;
+4. bulk import dry-run blocks LLM-origin world fact.
 
 ## Do not do
 
 - Do not import Titan wholesale into Crystal.
-- Do not add Noetic/Attention/Research PWA as current runtime.
-- Do not weaken TruthGate, Guardian, TRACE or Receipt semantics.
-- Do not promote unverified graph data to verified canon.
-- Do not make Graphiti/Neo4j/OpenAI mandatory for the public core.
-
-## P0 tasks
-
-### 1. Provenance chain verification
-
-Inspect current Crystal code for any provenance-chain implementation.
-
-If actor/reason are part of the hash contract:
-
-- ensure `_compute_hash` accepts them;
-- ensure append and verify use the same fields;
-- add tests for append -> verify;
-- add tamper tests for payload, actor and reason;
-- ensure empty chain is not reported as equivalent to verified non-empty chain.
-
-### 2. Deployment defaults
-
-Inspect `docker-compose.yml`, `Dockerfile` and `.dockerignore`.
-
-Target direction:
-
-```yaml
-VELANTRIM_API_KEY=${VELANTRIM_API_KEY:?Set VELANTRIM_API_KEY}
-ports:
-  - "127.0.0.1:8000:8000"
-```
-
-Also verify:
-
-- non-root container user where practical;
-- no `.env`, `.git`, cache or local DB in images;
-- production image does not install dev/research extras unnecessarily.
-
-## P1 tasks
-
-### 3. TruthPolicy production profile
-
-If Crystal has claim-type/origin-type or truth-policy mechanisms, verify default behaviour.
-
-Target:
-
-```text
-production profile = strict epistemic enforcement
-legacy behaviour = explicit dev/test only
-```
-
-### 4. Knowledge graph verifier
-
-If this repository contains data import/graph tooling, add a verifier only after confirming schema.
-
-Verifier should check:
-
-- allowed type vocabulary;
-- source field is meaningful;
-- evidence_ref where required by policy;
-- self-contained claims;
-- no heuristic edge promoted as verified truth.
-
-### 5. Canonical write path
-
-Verify that single write, batch write and async write paths share validation, dedup, source/evidence handling and index-sync rules.
-
-## P2 tasks
-
-- Link `docs/STATUS.md` from README if appropriate.
-- Add CI/doc checks if useful.
-- Mark superseded docs or old baseline numbers where found.
-
-## Expected output
-
-Open small PRs, not one large PR:
-
-1. provenance-chain tests/fix;
-2. deployment hardening;
-3. TruthPolicy/profile decision;
-4. data verifier;
-5. README/status link and doc sync.
+- Do not add NoeticCore / AttentionRouter / Research PWA as current runtime.
+- Do not add BICA runtime.
+- Do not make Graphiti mandatory.
+- Do not claim a verified universal graph.
+- Do not combine tracks into one PR.
