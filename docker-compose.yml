@@ -1,0 +1,35 @@
+# Velantrim ExoCortex — Crystal: local-first, fail-closed API deployment (Track 2).
+#
+# Usage:
+#   export VELANTRIM_API_TOKEN=$(python -c "import secrets;print(secrets.token_urlsafe(32))")
+#   docker compose up --build
+#
+# Without VELANTRIM_API_TOKEN set, `docker compose up` fails fast (see the
+# `:?` interpolation below) — the service is never started unprotected.
+#
+# Security boundary: the API is published ONLY on host loopback
+# (127.0.0.1:8000). Public exposure must be an explicit, separate decision
+# (override file + reverse proxy + TLS), never the default.
+
+services:
+  velantrim-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: velantrim-exocortex-crystal:local
+    # Fail fast on the HOST before the container even starts if the operator
+    # has not provided a token. No baked-in fallback token by design.
+    environment:
+      VELANTRIM_API_TOKEN: "${VELANTRIM_API_TOKEN:?Set VELANTRIM_API_TOKEN before running}"
+      # 0.0.0.0 INSIDE the container so the published port can reach uvicorn.
+      # The loopback restriction lives on the host port mapping below.
+      VELANTRIM_API_HOST: "0.0.0.0"
+      VELANTRIM_API_PORT: "8000"
+      VELANTRIM_DB: "/app/data/velantrim_memory.db"
+    # Reachable only from the host's loopback interface — not the LAN/internet.
+    ports:
+      - "127.0.0.1:8000:8000"
+    # Persistent local-first store on the host.
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
