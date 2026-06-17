@@ -22,13 +22,18 @@
 *.pem
 *.key
 *.token
+**/*.token
 secrets/
 private/
+**/secrets/
+**/private/
 
 # Local databases and data artifacts (never bake state into an image).
-# Includes SQLite/WAL sidecar files, which can hold recent in-memory pages even
-# when the main .db lives outside data/.
+# Includes SQLite/WAL sidecar files (-wal/-shm/-journal), which can hold recent
+# in-memory pages even when the main .db lives outside data/. Both top-level and
+# recursive (**/) forms are listed because .dockerignore globs do not cross "/".
 data/
+**/data/
 *.db
 *.db-wal
 *.db-shm
@@ -38,7 +43,23 @@ data/
 *.sqlite-wal
 *.sqlite-shm
 *.sqlite-journal
+*.sqlite3-wal
+*.sqlite3-shm
+*.sqlite3-journal
 *.kuzu
+**/*.db
+**/*.db-wal
+**/*.db-shm
+**/*.db-journal
+**/*.sqlite
+**/*.sqlite3
+**/*.sqlite-wal
+**/*.sqlite-shm
+**/*.sqlite-journal
+**/*.sqlite3-wal
+**/*.sqlite3-shm
+**/*.sqlite3-journal
+**/*.kuzu
 demo-data/
 demo_data/
 
