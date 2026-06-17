@@ -1,0 +1,78 @@
+# Build-context hygiene for the Crystal API image.
+#
+# Goal: ship ONLY the installable runtime surface declared in pyproject.toml
+# (the `core` package + the top-level `epigenetic_adaptation_module` module +
+# packaging metadata). Everything else — tests, docs, local databases, secrets,
+# caches, build artifacts — must never enter the image build context.
+#
+# Keep in the context (do NOT add these here): pyproject.toml, README.md,
+# LICENSE, core/, epigenetic_adaptation_module.py.
+
+# Version control / CI
+.git/
+.gitignore
+.github/
+
+# Secrets / local environment
+.env
+.env.*
+*.pem
+*.key
+
+# Local databases and data artifacts (never bake state into an image)
+data/
+*.db
+*.sqlite
+*.sqlite3
+*.kuzu
+demo-data/
+demo_data/
+
+# Python caches / bytecode
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Test / type / lint / coverage caches and reports
+tests/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+
+# Virtualenvs
+venv/
+.venv/
+env/
+ENV/
+
+# Build / packaging artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Source material not part of the installable runtime
+docs/
+examples/
+prototypes/
+schemas/
+scripts/
+utils/
+
+# Editor / OS noise
+.vscode/
+.idea/
+*.swp
+.DS_Store
+*.log
+
+# The container/orchestration files themselves
+Dockerfile
+docker-compose.yml
+.dockerignore
