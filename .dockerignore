@@ -14,16 +14,30 @@
 .github/
 
 # Secrets / local environment
+# (Docker uploads ALL non-ignored context files to the daemon even if the
+# Dockerfile never COPYs them, so credential paths must be excluded here too.
+# Mirrors the sensitive patterns already in .gitignore.)
 .env
 .env.*
 *.pem
 *.key
+*.token
+secrets/
+private/
 
-# Local databases and data artifacts (never bake state into an image)
+# Local databases and data artifacts (never bake state into an image).
+# Includes SQLite/WAL sidecar files, which can hold recent in-memory pages even
+# when the main .db lives outside data/.
 data/
 *.db
+*.db-wal
+*.db-shm
+*.db-journal
 *.sqlite
 *.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite-journal
 *.kuzu
 demo-data/
 demo_data/

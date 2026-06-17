@@ -39,14 +39,16 @@ RUN pip install ".[api]"
 # ── Stage 2: runtime ─────────────────────────────────────────────────────────
 FROM python:3.12-slim AS runtime
 
-# Runtime defaults. VELANTRIM_API_HOST is 0.0.0.0 INSIDE the container so the
-# published port can reach uvicorn; the loopback security boundary is enforced
-# on the HOST side by the compose port mapping ("127.0.0.1:8000:8000"). Binding
-# 0.0.0.0 within an isolated container is not a public exposure on its own.
+# Runtime defaults. The IMAGE default for VELANTRIM_API_HOST is the SAFE value
+# 127.0.0.1, so a bare `docker run -p 8000:8000 <image>` cannot accidentally
+# expose the API on all host interfaces (only /review/* is token-gated; /ingest,
+# /ask, /receipt, /evidence are not — see core/api.py). docker-compose.yml
+# explicitly overrides this to 0.0.0.0 so Docker bridge publishing can reach
+# uvicorn, while restricting host exposure to loopback via "127.0.0.1:8000:8000".
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH="/opt/venv/bin:$PATH" \
-    VELANTRIM_API_HOST=0.0.0.0 \
+    VELANTRIM_API_HOST=127.0.0.1 \
     VELANTRIM_API_PORT=8000 \
     VELANTRIM_DB=/app/data/velantrim_memory.db
 
