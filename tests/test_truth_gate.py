@@ -76,3 +76,32 @@ def test_default_threshold_comes_from_adaptation(monkeypatch):
     monkeypatch.setattr(adaptation, "verification_threshold", lambda: 0.95)
     ok, reason = truth_gate({"facts": [_fact(confidence=0.9)]})
     assert ok is False and "0.95" in reason
+
+
+# ─── Track 3A: ENABLE_TRUTH_POLICY production default ─────────────────────────
+
+def test_truth_policy_on_blocks_llm_output_world_fact(monkeypatch):
+    """ENABLE_TRUTH_POLICY=on enforces the strict rule: an LLM_OUTPUT cannot be
+    admitted as a WORLD_FACT."""
+    monkeypatch.setenv("ENABLE_TRUTH_POLICY", "on")
+    ok, reason = truth_gate(
+        {"facts": [_fact(source_status="LLM_OUTPUT")]}, min_confidence=0.0)
+    assert ok is False and "LLM_OUTPUT cannot be WORLD_FACT" in reason
+
+
+def test_truth_policy_off_is_legacy_bypass(monkeypatch):
+    """ENABLE_TRUTH_POLICY=off is the legacy bypass: the SAME LLM_OUTPUT +
+    WORLD_FACT case is no longer blocked by the policy and is judged on
+    source + confidence alone (here: present + sufficient → passes)."""
+    monkeypatch.setenv("ENABLE_TRUTH_POLICY", "off")
+    ok, reason = truth_gate(
+        {"facts": [_fact(source_status="LLM_OUTPUT")]}, min_confidence=0.0)
+    assert ok is True and reason is None
+
+
+def test_truth_policy_unset_defaults_to_strict(monkeypatch):
+    """An unset ENABLE_TRUTH_POLICY defaults to strict ON (secure by default)."""
+    monkeypatch.delenv("ENABLE_TRUTH_POLICY", raising=False)
+    ok, reason = truth_gate(
+        {"facts": [_fact(source_status="LLM_OUTPUT")]}, min_confidence=0.0)
+    assert ok is False and "LLM_OUTPUT cannot be WORLD_FACT" in reason
