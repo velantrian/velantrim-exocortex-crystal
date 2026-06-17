@@ -3,7 +3,10 @@
 Honest, reproducible test results for Velantrim ExoCortex — Crystal. No inflated
 numbers: run the commands below and compare the figures.
 
-**Current audited baseline after v0.2.0 + TRACE Visualization v0 + CI coverage fixes + Crystal Invariant Checker + Refusal Reasons Taxonomy v0.1 + PR #137 safe repo hygiene/toolchain hardening + PRs #142–#144 Codex P2 hardening + PR #152 reviewer tooling: 1168 passed /
+**Current audited baseline after v0.2.0 + TRACE Visualization v0 + CI coverage fixes + Crystal Invariant Checker + Refusal Reasons Taxonomy v0.1 + PR #137 safe repo hygiene/toolchain hardening + PRs #142–#144 Codex P2 hardening + PR #152 reviewer tooling, then the v0.3.0 reviewer-preview audit-hardening
+milestone (RRF helper #163, exact-dedup #164, per-fact ProvenanceChain #168,
+Docker hardening #170/#171, strict TruthPolicy default #172, write-path
+TruthGate audit #175): 1209 passed /
 12 skipped.** This file and the README badge are the only places that carry
 the exact count; all other documents reference this report so the number
 cannot silently drift.
@@ -21,11 +24,19 @@ cannot silently drift.
 > and `velantrim health`, adding 10 tests (1158 → 1168) and growing the measured
 > surface by 42 statements (5292 → 5334) while preserving the 100% coverage gate.
 
+> **v0.3.0 reviewer-preview note.** The audit-hardening milestone — RRF helper
+> (#163), exact-duplicate ingest dedup (#164), per-fact ProvenanceChain (#168),
+> Docker hardening (#170/#171), strict TruthPolicy production default (#172) and
+> the write-path TruthGate audit (#175) — took the suite 1168 → 1209 tests and
+> the measured surface 5334 → 5461 statements while preserving the 100% coverage
+> gate. After this milestone the runtime is frozen (reviewer-facing packaging
+> only).
+
 ## Summary
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **1168** |
+| **Tests passing** | **1209** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **100%** (gate enforced at 100%, repo-wide `--cov=.`) |
@@ -83,7 +94,7 @@ pytest tests/ --cov=. --cov-fail-under=100
 | `core/crypto.py`       | 62  | 100% |
 | `core/demo_seed.py`    | 1   | 100% |
 | `core/embedding.py`    | 104 | 100% |
-| `core/erasure.py`      | 45  | 100% |
+| `core/erasure.py`      | 47  | 100% |
 | `core/eval.py`         | 207 | 100% |
 | `core/evidence.py`     | 77  | 100% |
 | `core/fractal.py`      | 93  | 100% |
@@ -91,13 +102,13 @@ pytest tests/ --cov=. --cov-fail-under=100
 | `core/health.py`       | 14  | 100% |
 | `core/immune.py`       | 94  | 100% |
 | `core/imports.py`      | 87  | 100% |
-| `core/ingest.py`       | 106 | 100% |
+| `core/ingest.py`       | 120 | 100% |
 | `core/invariant_check.py`   | 64  | 100% |
 | `core/kb_ingest.py`    | 49  | 100% |
 | `core/knowledge.py`    | 140 | 100% |
 | `core/l3_graph.py`     | 286 | 100% |
 | `core/mcp_server.py`   | 103 | 100% |
-| `core/memory.py`       | 218 | 100% |
+| `core/memory.py`       | 222 | 100% |
 | `core/metrics.py`      | 10  | 100% |
 | `core/mosc.py`         | 93  | 100% |
 | `core/neurocore.py`    | 54  | 100% |
@@ -106,16 +117,18 @@ pytest tests/ --cov=. --cov-fail-under=100
 | `core/pii.py`          | 56  | 100% |
 | `core/pipeline.py`     | 252 | 100% |
 | `core/provenance.py`   | 90  | 100% |
+| `core/provenance_chain.py`  | 46  | 100% |
 | `core/queue.py`        | 47  | 100% |
-| `core/reconcile.py`    | 97  | 100% |
+| `core/reconcile.py`    | 117 | 100% |
 | `core/refusal_reasons.py`   | 26  | 100% |
 | `core/retrieval_config.py`  | 69  | 100% |
 | `core/review.py`       | 163 | 100% |
+| `core/rrf.py`          | 37  | 100% |
 | `core/salience.py`     | 19  | 100% |
 | `core/span_extract.py` | 22  | 100% |
 | `core/trace.py`             | 26  | 100% |
 | `core/trace_visualize.py`   | 73  | 100% |
-| `core/truth_gate.py`        | 20  | 100% |
+| `core/truth_gate.py`        | 24  | 100% |
 | `core/velum.py`             | 106 | 100% |
 | `core/volition.py`          | 75  | 100% |
 | `scripts/eval_track.py`     | 72  | 100% |
@@ -123,7 +136,7 @@ pytest tests/ --cov=. --cov-fail-under=100
 | root tooling (`audit_metadata` 109, `check_rfc_duplicates` 44, `fill_dependencies` 43, `epigenetic_adaptation_module` 29, `velantrim_migrate_v3_1` 393) | 618 | 100% |
 | `prototypes/` (4 research prototypes) | 142 | 100% |
 | `utils/rfc_parser.py`       | 13  | 100% |
-| **Total (repo-wide)**       | **5334** | **100%** |
+| **Total (repo-wide)**       | **5461** | **100%** |
 
 ## What the tests cover
 
@@ -182,7 +195,9 @@ pytest tests/ --cov=. --cov-fail-under=100
 | RFC parsing | `test_rfc_parser.py` |
 | Biological-inspiration prototypes | `test_bio_modules.py`, `test_hybrid_biological_memory.py` |
 
-*Audited baseline regenerated on 2026-06-14 after PR #137 (which merged on
-2026-06-13: v0.2.0 + TRACE Visualization v0 + CI coverage fixes + Crystal
-Invariant Checker + Refusal Reasons Taxonomy v0.1 + safe repo hygiene/toolchain
-hardening). Figures are reproduced by running the commands above.*
+*Audited baseline regenerated on 2026-06-17 for the v0.3.0 reviewer preview
+(audit-hardening milestone: RRF #163, exact-dedup #164, ProvenanceChain #168,
+Docker hardening #170/#171, strict TruthPolicy default #172, write-path TruthGate
+audit #175). The per-module table and total were regenerated from a live
+`--cov=.` run (1209 passed / 12 skipped / 5461 statements / 100%). Figures are
+reproduced by running the commands above.*

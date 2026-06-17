@@ -506,7 +506,8 @@ Initial public release of the verifiable, local-first memory core:
 - **Ops & integration:** pluggable Redis/SQLite re-merge queue, async entry
   points, a dependency-free read-only MCP server, observability, and the CLI.
 
-[Unreleased]: https://github.com/velantrian/velantrim-exocortex-crystal/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/velantrian/velantrim-exocortex-crystal/compare/v0.3.0-reviewer-preview...HEAD
+[0.3.0]: https://github.com/velantrian/velantrim-exocortex-crystal/compare/v0.2.0...v0.3.0-reviewer-preview
 [0.2.0]: https://github.com/velantrian/velantrim-exocortex-crystal/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/velantrian/velantrim-exocortex-crystal/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/velantrian/velantrim-exocortex-crystal/releases/tag/v0.1.0

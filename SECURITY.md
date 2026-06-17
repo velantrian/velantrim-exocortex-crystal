@@ -12,7 +12,8 @@ vulnerabilities.
 
 | Version | Supported |
 |---------|-----------|
-| `0.2.x` | ✅ active — receives security updates |
+| `0.3.x` | ✅ active — receives security updates |
+| `0.2.x` | ⚠️ previous line — superseded by `0.3.x` |
 
 **Legacy / historical lines** (separate research archives, not the grant-facing Crystal core):
 
@@ -21,7 +22,7 @@ vulnerabilities.
 | `8.x`   | ⚠️ historical / separate research line — not the main grant-facing support target |
 | `< 8.0` | ❌ |
 
-Only the latest minor Crystal line (`0.2.x`) receives active security updates unless otherwise stated. Do not rely on `8.x` archive lines for production or grant-facing deployments.
+Only the latest minor Crystal line (`0.3.x`) receives active security updates unless otherwise stated. Do not rely on `8.x` archive lines for production or grant-facing deployments.
 
 ## Reporting a vulnerability
 
