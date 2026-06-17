@@ -23,6 +23,7 @@ Do not treat Titan, V9, V10, Noetic, Research PWA, BICA, or private Full Exo-Cor
 | `IMPLEMENTED` | Present in the Crystal runtime and covered by tests or reviewer tooling. |
 | `FEATURE_FLAGGED` | Code exists but is off by default or requires explicit configuration. |
 | `DOCUMENTED_ONLY` | Architecture/specification only; no runtime claim. |
+| `PLANNED` | Accepted implementation plan, not yet current runtime. |
 | `RESEARCH` | Private or future research direction; not a public Crystal deliverable. |
 | `LEGACY` | Historical material retained for context. |
 | `SUPERSEDED` | Old statement replaced by newer repository status. |
@@ -32,10 +33,10 @@ Do not treat Titan, V9, V10, Noetic, Research PWA, BICA, or private Full Exo-Cor
 Crystal may safely claim:
 
 - local-first verifiable AI memory infrastructure;
-- source-grounded / provenance-oriented memory boundaries;
+- source-grounded / provenance-oriented memory boundaries where implemented;
 - TruthGate / Guardian / TRACE / Receipt-oriented design where implemented;
 - explicit separation of memory, evidence, retrieval, truth, reasoning, and speech;
-- LLM output is not treated as truth by default;
+- LLM output is not treated as truth by default where the relevant gates are active;
 - research directions are separated from current runtime claims.
 
 Crystal must not claim:
@@ -47,33 +48,45 @@ Crystal must not claim:
 - Graphiti, Neo4j, OpenAI, or cloud LLMs as mandatory Crystal dependencies;
 - verified World Knowledge Core unless source/evidence requirements are met.
 
+## Current Track 1–3B plan
+
+The current implementation plan is:
+
+```text
+Track 1  — ProvenanceChain per-fact event chain
+Track 2  — Docker hardening from scratch
+Track 3A — TruthPolicy production default
+Track 3B — Write-path TruthGate audit/tests
+```
+
+Each track must be a separate branch and PR.
+
 ## Implementation reality matrix
 
 | Component / area | Current status | Public claim | Risk / note | Next action |
 |---|---|---|---|---|
 | Crystal public core | IMPLEMENTED | local-first verifiable memory core | Keep narrow; avoid Titan scope creep | Maintain `TEST_REPORT.md` as source of truth |
-| TruthGate / epistemic boundary | IMPLEMENTED / evolving | verifies admissibility where wired | Ensure no read/write bypasses are introduced | Add contract tests when changing write/read paths |
+| TruthGate / epistemic boundary | IMPLEMENTED / evolving | verifies admissibility where wired | Track 3A defines strict production default; Track 3B pins write-path behaviour | Separate PRs for 3A and 3B |
 | TRACE / Receipt | IMPLEMENTED | replayable proof path where generated | Keep receipt semantics stable | Document threat model and replay assumptions |
-| Claim type / origin type | CANDIDATE FOR PORT / FEATURE DESIGN | separates fact, opinion, experience, LLM output | Do not imply all Crystal paths already enforce it unless verified | Add dedicated docs/spec before runtime changes |
-| Ingest schema | DOCUMENTED / CANDIDATE | source-first ingestion contract | No source must mean no confident answer | Add `docs/core/INGEST_SCHEMA.md` |
-| Dedup / scale design | DOCUMENTED / CANDIDATE | exact/semantic dedup roadmap | Frequency is not independent evidence | Add `docs/core/DEDUP_AND_SCALE.md` |
+| Per-fact ProvenanceChain | PLANNED | planned per-fact event chain, not current runtime claim | Titan had a reported actor/reason regression; Crystal task is implementation from Sprint1 spec | Track 1 |
+| Claim type / origin type | CANDIDATE / FEATURE DESIGN | separates fact, opinion, experience, LLM output | Do not imply all Crystal paths already enforce it unless verified | Track 3A/3B plus future tests |
+| Ingest schema | DOCUMENTED / CANDIDATE | source-first ingestion contract | No source must mean no confident answer | Keep docs, add verifier later |
+| Dedup / scale design | DOCUMENTED / CANDIDATE | exact/semantic dedup roadmap | Frequency is not independent evidence | Future separate work |
+| Docker deployment | PLANNED | secure local-first deployment defaults | Docker files are to be created from scratch; Crystal token is `VELANTRIM_API_TOKEN` | Track 2 |
 | Titan console | RESEARCH / TITAN ONLY | demo/research UI | Not production Crystal UI | Keep outside Crystal runtime claim |
 | Noetic Orchestration | RESEARCH | future external attention / cognitive routing | Not wired into `/query` as Crystal runtime | Keep as RFC only |
 | BICA Alignment | RESEARCH / GRANT LANGUAGE | BICA-informed mapping only | Not a BICA implementation | Use only as cautious framing |
 | Graphiti / Neo4j | OPTIONAL / RESEARCH | optional advanced backend inspiration | Not Crystal truth authority | Keep stdlib/local-first Crystal core |
-| Knowledge graph / WSC data | RESEARCH / UNVERIFIED unless sourced | draft graph / autolinker prototype if no evidence | Do not call verified canon without real sources/evidence_refs | Add `docs/data/KNOWLEDGE_GRAPH_STATUS.md` |
-| Docker / deployment defaults | NEEDS HARDENING REVIEW | local deployment should fail closed | Known dev-key defaults or public bind would weaken auth | Track in `docs/security/DEPLOYMENT_SECURITY.md` |
-| Provenance chain | NEEDS CODE VERIFICATION | hash-chain provenance where tests pass | Recent audit claims possible actor/reason regression in Titan | Claude Code must verify/fix with tests |
+| Knowledge graph / WSC data | RESEARCH / UNVERIFIED unless sourced | draft graph / autolinker prototype if no evidence | Do not call verified canon without real sources/evidence_refs | Data verifier after schema confirmation |
 
 ## Immediate Crystal hardening sequence
 
-1. Keep this status page and future Reality Matrix current.
-2. Add deployment security documentation and then patch Docker/compose if needed.
-3. Add claim type / origin type documentation before runtime changes.
-4. Add ingest schema and dedup/scale docs.
-5. Verify provenance-chain contract in code and tests.
-6. Decide production profile for TruthPolicy / strict epistemic enforcement.
-7. Add knowledge graph status and data-quality verifier rules before claiming verified graph knowledge.
+1. Track 1: implement per-fact ProvenanceChain and tests.
+2. Track 2: create Dockerfile, docker-compose.yml and .dockerignore with fail-closed `VELANTRIM_API_TOKEN`.
+3. Track 3A: define strict TruthPolicy production default.
+4. Track 3B: add write-path TruthGate behavioural tests and `gate_reason` audit detail.
+5. Keep this status page and Reality Matrix current after each PR.
+6. Add knowledge graph status / data-quality verifier rules before claiming verified graph knowledge.
 
 ## Relationship to Titan
 
