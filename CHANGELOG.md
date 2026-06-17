@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-06-17 (reviewer preview)
+
+> Audit-hardening milestone (Tracks 1–3B) + reviewer packaging. Tagged
+> `v0.3.0-reviewer-preview`. Runtime freeze after this release: no new features,
+> only reviewer-facing packaging. Test baseline: 1209 passed, 12 skipped, 100%
+> coverage. Deferred (not in this release): knowledge-graph data verifier,
+> broader ProvenanceChain lifecycle wiring, canonical write-path expansion.
+
 ### Added
 - **Write-path TruthGate audit** (Track 3B): `core/review.py` now records
   `gate_reason` (the specific blocking reason from the gate diagnosis) in the
@@ -498,7 +506,8 @@ Initial public release of the verifiable, local-first memory core:
 - **Ops & integration:** pluggable Redis/SQLite re-merge queue, async entry
   points, a dependency-free read-only MCP server, observability, and the CLI.
 
-[Unreleased]: https://github.com/velantrian/velantrim-exocortex-crystal/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/velantrian/velantrim-exocortex-crystal/compare/v0.3.0-reviewer-preview...HEAD
+[0.3.0]: https://github.com/velantrian/velantrim-exocortex-crystal/compare/v0.2.0...v0.3.0-reviewer-preview
 [0.2.0]: https://github.com/velantrian/velantrim-exocortex-crystal/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/velantrian/velantrim-exocortex-crystal/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/velantrian/velantrim-exocortex-crystal/releases/tag/v0.1.0

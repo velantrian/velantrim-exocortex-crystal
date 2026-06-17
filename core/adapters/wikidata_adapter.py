@@ -29,7 +29,7 @@ from core.adapters import register
 _WIKIDATA_API = "https://www.wikidata.org/w/api.php"
 _BATCH_SIZE = 50
 _USER_AGENT = (
-    "velantrim-exocortex-crystal/0.2.0 "
+    "velantrim-exocortex-crystal/0.3.0 "
     "(https://github.com/velantrian/velantrim-exocortex-crystal)"
 )
 
