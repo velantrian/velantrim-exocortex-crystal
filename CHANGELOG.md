@@ -13,6 +13,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `core/provenance_chain.py`: per-fact, append-only, hash-chained provenance log
+  (Sprint1 P1-5, invariant I89 ProvenanceAppendOnly). Distinct from the **global**
+  compliance ledger (`core/audit.py`) and the per-**answer** receipt provenance
+  (`core/provenance.py`): this chain records the ordered lifecycle events of a
+  single fact. Each entry seals `sha256(prev_hash|event_type|fact_id|from_state|
+  to_state|payload_str|created_at|actor|reason)` and links to the previous entry
+  for the same `fact_id`, so editing/deleting/reordering any past entry is
+  detectable. `append()` is content-light (hash/marker, never claim text) and
+  never raises (returns `False` on failure, so a provenance-write problem cannot
+  block a critical-path caller); `verify()` reports an empty chain as
+  `empty_chain`/`no_events` — never as a verified non-empty chain. New SQLite
+  table `provenance_chain` in `core/memory.py`. Currently wired into the GDPR
+  erasure path (`core/erasure.py::erase_fact` records an `erase` event); broader
+  lifecycle wiring (ingest/promote/restrict) is follow-up.
 - `core/rrf.py` (PR #163): pure-stdlib Reciprocal Rank Fusion helper for rank
   fusion / retrieval ordering. Implemented as a standalone helper — it does not
   assign `truth_status`, does not change `confidence`, and does not bypass

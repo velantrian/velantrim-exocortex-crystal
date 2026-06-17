@@ -33,6 +33,7 @@ of Crystal).
 | Local-first storage | Implemented | Yes | SQLite/WAL L1; dependency-free SQLite default for L3 canon, evidence, receipts, audit and operational state |
 | TruthGate | Implemented | Yes | `core/truth_gate.py` (extracted, behaviour-pinned); type-aware; the only automatic entry into L3 |
 | Trace / Receipt | Implemented | Yes | `core/trace.py`, `core/provenance.py`; sealed, replayable receipts with strict-provenance replay |
+| Per-fact Provenance Chain | Implemented (baseline) | Yes | `core/provenance_chain.py` (Sprint1 P1-5 / I89); per-`fact_id` append-only hash chain, distinct from the global `audit.py` ledger and per-answer `provenance.py` receipts. Tamper-evident `verify()`; empty chain reported as `empty_chain` (never a verified non-empty chain). Currently wired into the GDPR erasure path only; broader lifecycle wiring (ingest/promote/restrict) is follow-up. |
 | Guardian | Partial | Baseline | Boundary function in `core/pipeline.py` runs before the gate; a formal detect → flag/block/pass contract document is future work |
 | FactsPack | Partial | Baseline | Grounding pack used by the answer path; explicit conflict/contestation policy is a future RFC |
 | Review queue + web UI | Implemented | Yes | `core/review.py`, token-guarded HTTP API, static Kanban UI; roles/multi-curator workflows are grant-scope hardening |

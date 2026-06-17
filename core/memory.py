@@ -250,6 +250,36 @@ _AUDIT_DDL = """
     )
 """
 
+# ─── PROVENANCE CHAIN: per-fact, append-only lifecycle log (Sprint1 P1-5 / I89) ─
+# A hash-chained log SCOPED TO ONE fact_id (distinct from the GLOBAL audit_log).
+# Each row links to the previous row FOR THE SAME fact via prev_hash and seals
+# its own content in hash = sha256(prev_hash|event_type|fact_id|from_state|
+# to_state|payload_str|created_at|actor|reason), so editing, deleting or
+# reordering any past entry of that fact is detectable (see core/provenance_chain).
+# Content-light: payload_str holds a hash/marker, never the claim text.
+# UNIQUE(fact_id, seq) prevents two appends writing the same position.
+_PROVENANCE_CHAIN_DDL = """
+    CREATE TABLE IF NOT EXISTS provenance_chain (
+        id           INTEGER PRIMARY KEY AUTOINCREMENT,
+        fact_id      TEXT NOT NULL,
+        seq          INTEGER NOT NULL,
+        event_type   TEXT NOT NULL,
+        from_state   TEXT NOT NULL DEFAULT '',
+        to_state     TEXT NOT NULL DEFAULT '',
+        payload_str  TEXT NOT NULL DEFAULT '',
+        created_at   TEXT NOT NULL,
+        actor        TEXT NOT NULL DEFAULT 'system',
+        reason       TEXT NOT NULL DEFAULT '',
+        prev_hash    TEXT NOT NULL,
+        hash         TEXT NOT NULL,
+        UNIQUE(fact_id, seq)
+    )
+"""
+_PROVENANCE_CHAIN_INDEX_DDL = (
+    "CREATE INDEX IF NOT EXISTS idx_pc_fact_id "
+    "ON provenance_chain(fact_id, seq)"
+)
+
 # ─── Migration: columns added after the first schema release ────────────────
 # CREATE TABLE IF NOT EXISTS does not touch an already existing DB, so old
 # velantrim_memory.db files must be brought up to date via ALTER TABLE ADD COLUMN (idempotent).
@@ -298,6 +328,8 @@ def _db():
     conn.execute(_REVIEW_SESSION_DDL)
     conn.execute(_TOMBSTONE_DDL)
     conn.execute(_AUDIT_DDL)
+    conn.execute(_PROVENANCE_CHAIN_DDL)
+    conn.execute(_PROVENANCE_CHAIN_INDEX_DDL)
     _migrate(conn)
     conn.commit()
     try:
