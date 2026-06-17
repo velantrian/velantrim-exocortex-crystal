@@ -29,7 +29,21 @@ services:
     # Reachable only from the host's loopback interface — not the LAN/internet.
     ports:
       - "127.0.0.1:8000:8000"
-    # Persistent local-first store on the host.
+    # Persistent local-first store. A NAMED VOLUME is the default so `docker
+    # compose up` works out-of-the-box with the non-root `velantrim` user:
+    # Docker initializes a named volume with the image directory's ownership, so
+    # there are no first-run SQLite permission errors. The data stays local
+    # (never leaves the machine) and is inspectable/exportable via `docker volume`.
+    #
+    # Power-user alternative — repo-visible files under ./data — replace the line
+    # below with a bind mount, but you MUST pre-create it writable by uid 1000:
+    #   mkdir -p data && chown 1000:1000 data
+    #   - ./data:/app/data
     volumes:
-      - ./data:/app/data
+      - velantrim-data:/app/data
     restart: unless-stopped
+
+# Named volumes are local Docker-managed persistence (still local-first):
+#   docker volume inspect velantrim-exocortex-crystal_velantrim-data
+volumes:
+  velantrim-data:
