@@ -31,6 +31,7 @@ from core.memory import (
 from core.l3_graph import get_l3_graph
 from core.queue import get_outbox_queue
 from core import audit
+from core.provenance_chain import ProvenanceChain
 
 # Provenance edge: derived -DERIVED_FROM-> source. Marks that a fact is derived
 # from another. Used by cascade deletion: erasing the source can also erase
@@ -114,6 +115,15 @@ def erase_fact(
     audit.append_event("erase", fact_id, {
         "reason": reason, "actor": actor,
         "content_hash": content_hash, "erased_now": erased_now})
+
+    # Also record an "erase" event on this fact's per-fact provenance chain
+    # (Sprint1 P1-5 / I89). Additive and non-blocking: append() never raises, so
+    # a provenance-write problem cannot prevent the erasure from completing.
+    ProvenanceChain().append(
+        fact_id=fact_id, event_type="erase",
+        from_state=(fact.get("epistemic_state", "") if fact else ""),
+        to_state="erased", payload_str=(content_hash or ""),
+        actor=actor, reason=reason)
 
     receipt: Dict[str, Any] = {
         "fact_id": fact_id,
