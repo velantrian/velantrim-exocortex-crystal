@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "velantrim-exocortex-crystal"
-version = "0.2.0"
+version = "0.3.0"
 description = "Verifiable, local-first memory infrastructure for trustworthy AI systems"
 readme = "README.md"
 requires-python = ">=3.11"

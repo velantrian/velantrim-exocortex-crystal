@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-06-17 (reviewer preview)
+
+> Audit-hardening milestone (Tracks 1–3B) + reviewer packaging. Tagged
+> `v0.3.0-reviewer-preview`. Runtime freeze after this release: no new features,
+> only reviewer-facing packaging. Test baseline: 1209 passed, 12 skipped, 100%
+> coverage. Deferred (not in this release): knowledge-graph data verifier,
+> broader ProvenanceChain lifecycle wiring, canonical write-path expansion.
+
 ### Added
 - **Write-path TruthGate audit** (Track 3B): `core/review.py` now records
   `gate_reason` (the specific blocking reason from the gate diagnosis) in the
