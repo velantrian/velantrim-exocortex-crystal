@@ -40,6 +40,22 @@ def test_ingest_then_ask(client):
     assert r2.json()["answer"] is not None
 
 
+def test_ingest_blocks_llm_output_world_fact(client):
+    """Write-path gate (Track 3B pin): POST /ingest with an LLM_OUTPUT
+    WORLD_FACT is a valid request (200) but the gate blocks promotion —
+    accepted is False with the gate reason. An LLM output cannot become a
+    WORLD_FACT through the HTTP write path."""
+    r = client.post("/ingest", json={
+        "text": "Krellium absorbs all wavelengths of light at room temperature",
+        "source": "test", "claim_type": "WORLD_FACT",
+        "source_status": "LLM_OUTPUT", "confidence": 0.9,
+    })
+    assert r.status_code == 200
+    body = r.json()
+    assert body["accepted"] is False
+    assert "LLM_OUTPUT cannot be WORLD_FACT" in body["reason"]
+
+
 def test_ingest_rejects_empty_text(client):
     # pydantic min_length=1 → 422 before the pipeline is touched.
     assert client.post("/ingest", json={"text": ""}).status_code == 422
