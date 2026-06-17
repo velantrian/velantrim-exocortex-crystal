@@ -31,15 +31,15 @@ Track 3B — Write-path TruthGate audit/tests
 |---|---|---|---|---|
 | Crystal local memory core | IMPLEMENTED | `TEST_REPORT.md`, CI | keep status synced | Crystal |
 | TruthGate / Guardian boundary | IMPLEMENTED / evolving | tests for all relevant write/read paths | bypass risk if alternate paths exist | Crystal |
-| TruthPolicy production default | PLANNED | Track 3A tests for ON/OFF/unset behaviour | unsafe if legacy mode becomes default | Crystal hardening |
+| TruthPolicy production default | IMPLEMENTED | `ENABLE_TRUTH_POLICY` on/off/unset behaviour pinned in `tests/test_truth_gate.py` (Track 3A, #172) | strict is the secure default; the legacy bypass must be opted into via `ENABLE_TRUTH_POLICY=off` | Crystal hardening |
 | Write-path TruthGate audit | PLANNED | Track 3B behavioural tests | force-approve path needs pinned audit detail | Crystal hardening |
 | TRACE / Receipt | IMPLEMENTED | receipt replay tests | overclaim if replay scope unclear | Crystal |
-| Per-fact ProvenanceChain | PLANNED | Track 1 implementation + 7 tests | absent per-fact chain may be mistaken for implemented I89 | Crystal hardening |
+| Per-fact ProvenanceChain | IMPLEMENTED | `core/provenance_chain.py` (append-only, hash-chained) + tests; wired into the erase path (Track 1, #168) | per-fact chain exists and the GDPR erase path records events; broader lifecycle wiring (other state transitions) remains follow-up | Crystal hardening |
 | Claim type / origin type | DOCUMENTED / candidate | validators + FactsPack + promotion tests | subjective material may leak into facts if unenforced | Crystal candidate |
 | Ingest schema | DOCUMENTED | verifier + import tests | weak source/evidence metadata | Crystal candidate |
 | Dedup/scale | DOCUMENTED | exact/semantic dedup tests | duplicate frequency mistaken for evidence | Crystal roadmap |
 | Knowledge graph data | NEEDS_VERIFICATION | source/evidence coverage report | unverified graph may be presented as canon | Crystal data note |
-| Docker deployment | PLANNED | Dockerfile/compose/.dockerignore + manual verification | unsafe if token is optional or public bind used | Track 2 |
+| Docker deployment | IMPLEMENTED | `Dockerfile`/`docker-compose.yml`/`.dockerignore` + manual verification (Track 2, #170; Codex follow-up fixes #171) | fail-fast `VELANTRIM_API_TOKEN`, named-volume default, non-root `velantrim`, image default host `127.0.0.1`; compose binds the container to `0.0.0.0` behind host loopback publish `127.0.0.1:8000:8000` | Crystal hardening |
 | Titan console | RESEARCH | not needed for Crystal claim | production UI overclaim | Titan/Full |
 | Noetic Orchestration | RESEARCH | feature flag + tests | future layer presented as runtime | Full Research |
 | BICA Alignment | RESEARCH / grant framing | no runtime claim | AGI/brain-like overclaim | Notion/Research |
@@ -48,8 +48,8 @@ Track 3B — Write-path TruthGate audit/tests
 ## Correction notes
 
 - Crystal deployment uses `VELANTRIM_API_TOKEN`, not Titan-oriented `VELANTRIM_API_KEY`.
-- Docker files are Track 2 creation targets, not assumed existing files.
-- Per-fact ProvenanceChain is planned/absent in Crystal; Titan reported a separate regression.
+- Docker files were created from scratch in Track 2 (#170) with Codex follow-up fixes (#171); they now exist in the repo.
+- Per-fact ProvenanceChain is implemented in Crystal (Track 1, #168: `core/provenance_chain.py`, wired into the erase path); the separate Titan regression is unrelated.
 - No `/facts` POST endpoint should be assumed for Track 3B.
 - Major write paths are believed to route through TruthGate; Track 3B pins behaviour and audit detail with tests.
 
