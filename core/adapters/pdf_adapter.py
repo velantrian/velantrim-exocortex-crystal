@@ -47,13 +47,18 @@ def extract_pdf_claims(path: str) -> List[Dict[str, Any]]:
         offset += len(pt) + (1 if i < len(page_texts) - 1 else 0)  # +1 for "\n"
 
     claims: List[Dict[str, Any]] = []
+    cursor = 0  # advance past each matched paragraph so duplicates map to distinct spans
     for raw_para in _PARA.split(full_text):
         collapsed = " ".join(raw_para.split())
         if len(collapsed) < _MIN_LEN:
             continue
         # Locate the raw paragraph in full_text to get its character span.
-        para_start = full_text.find(raw_para)
+        # Search from cursor (not 0) so a paragraph repeated verbatim resolves to
+        # its actual occurrence instead of always the first one.
+        para_start = full_text.find(raw_para, cursor)
         para_end = para_start + len(raw_para) if para_start != -1 else None
+        if para_start != -1:
+            cursor = para_end
         # Determine which page this paragraph starts on (1-based).
         chunk: Optional[str] = None
         if para_start != -1:
