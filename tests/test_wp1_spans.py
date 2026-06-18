@@ -282,3 +282,30 @@ def test_pdf_adapter_short_fragments_excluded(tmp_path):
     claim_texts = [c["claim"] for c in claims]
     assert "Hi." not in claim_texts
     assert any("definitely long enough" in ct for ct in claim_texts)
+
+
+def test_pdf_adapter_duplicate_paragraphs_distinct_spans(tmp_path):
+    """A verbatim-repeated paragraph must map to its own occurrence, not the first.
+
+    Regression: extract_pdf_claims used full_text.find(raw_para) (offset 0), so a
+    paragraph appearing twice gave both claims the *first* occurrence's span. The
+    cursor-based search must resolve the second claim to the second occurrence.
+    """
+    import core.adapters.pdf_adapter as pdf_mod
+    para = "The Earth orbits the Sun in an elliptical path."
+    page_text = para + "\n\n" + para  # same paragraph twice, blank line between
+    with patch.object(pdf_mod._pypdf, "PdfReader",
+                      return_value=_mock_reader([page_text])):
+        claims = pdf_mod.extract_pdf_claims(
+            _make_text_pdf(tmp_path, [page_text]))
+    assert len(claims) == 2, "both duplicate paragraphs must yield a claim"
+    assert claims[0]["claim"] == para
+    assert claims[1]["claim"] == para
+    # First occurrence at offset 0; second after "<para>\n\n".
+    assert claims[0]["span_start"] == 0
+    assert claims[1]["span_start"] == len(para) + 2
+    assert claims[0]["span_start"] != claims[1]["span_start"]
+    # Each span must slice the actual paragraph text out of full_text.
+    full_text = page_text  # single page → full_text == page_text
+    for c in claims:
+        assert full_text[c["span_start"]:c["span_end"]] == para
