@@ -1,0 +1,30 @@
+# Velantrim Exo-Cortex Crystal
+
+> Local-first, stdlib-only, verifiable AI memory infrastructure. Crystal stores
+> source-grounded facts in a canonical graph, admits new knowledge only through a
+> TruthGate, and emits replayable traces/receipts so answers can be audited.
+> This is the public, grant-facing open core (reviewer-preview) — not Titan,
+> Full Exo-Cortex, or Research Mode.
+
+Version: v0.3.0 (reviewer-preview). License: AGPL-3.0.
+
+Core formula: Graph/Canon = Truth | Index/Retrieval = Find | TruthGate = Admission |
+Trace/Receipt = Proof | LLM = Speech | Human = Final Judgment.
+
+Quality: 100% line-coverage enforced as a CI gate on Python 3.11 / 3.12; security
+checks include bandit and pip-audit. For current pass/skip counts and the
+reproducible baseline, see TEST_REPORT.md and the latest CI run (counts are not
+duplicated here to avoid drift).
+
+## Start here
+- [README.md](./README.md): what Crystal is and is not, quick start, positioning.
+- [docs/REVIEWER_GUIDE.md](./docs/REVIEWER_GUIDE.md): canonical reviewer entry point.
+
+## Verify
+- [TEST_REPORT.md](./TEST_REPORT.md): reproducible test/coverage baseline; authoritative for exact test counts.
+- [docs/STATUS.md](./docs/STATUS.md): short current status / release state.
+
+## Evaluation & benchmarks
+- [docs/EVAL.md](./docs/EVAL.md): existing evaluation harness, bundled fixture corpus, metrics, and CI eval gate (authoritative for harness, metric definitions, and thresholds).
+- [docs/benchmarks/BENCHMARK_METHODOLOGY.md](./docs/benchmarks/BENCHMARK_METHODOLOGY.md): verifiability benchmark framing — retrieval-only vs +TruthGate vs +Trace/Receipt.
+- [docs/benchmarks/CASE_FORMAT.md](./docs/benchmarks/CASE_FORMAT.md): minimal evaluation-case schema using existing core/eval.py metric names.
