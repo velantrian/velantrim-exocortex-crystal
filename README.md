@@ -487,6 +487,9 @@ milestone budget, partial-funding plan, and responsible-data position.
 | **[docs/COMPARISON.md](./docs/COMPARISON.md)** | Comparison with ChatGPT, vector-only RAG, vector DBs, chatbot memory and agent-memory frameworks |
 | **[docs/DEMO_UI.md](./docs/DEMO_UI.md)** | Browser/PWA companion demo boundary and screenshot plan |
 | **[docs/EVAL.md](./docs/EVAL.md)** | Evaluation plan for trace completeness, receipt replay and retrieval quality |
+| **[llms.txt](./llms.txt)** | Machine-readable project map for AI/reviewer tools; links to canonical docs |
+| **[docs/benchmarks/BENCHMARK_METHODOLOGY.md](./docs/benchmarks/BENCHMARK_METHODOLOGY.md)** | Verifiability benchmark framing: retrieval-only vs +TruthGate vs +Trace/Receipt (defers metrics/thresholds to docs/EVAL.md) |
+| **[docs/benchmarks/CASE_FORMAT.md](./docs/benchmarks/CASE_FORMAT.md)** | Minimal evaluation-case schema using existing `core/eval.py` metric names |
 | **[docs/RELEASE_CHECKLIST.md](./docs/RELEASE_CHECKLIST.md)** | Release/tag/CI/docs/security checklist |
 | **[docs/PERSISTENT_MEMORY.md](./docs/PERSISTENT_MEMORY.md)** | Persistence vs canonical truth vs immutability — L0/L1/L3 model |
 | **[PRIVACY.md](./PRIVACY.md)** | What is stored, where, and what never leaves the device by default |
