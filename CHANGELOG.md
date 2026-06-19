@@ -14,9 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **PDF adapter span preservation** (#182): repeated identical paragraphs now
-  keep distinct source spans (`core/adapters/pdf_adapter.py`). Adds 1 test in
-  `tests/test_wp1_spans.py`, taking the suite baseline 1209 → 1210 while
-  preserving the 100% coverage gate.
+  keep distinct source spans (`core/adapters/pdf_adapter.py`). Adds a regression
+  test in `tests/test_wp1_spans.py`; the suite stays at 100% coverage (exact
+  count lives in the README badge / `TEST_REPORT.md`).
 
 ### Documentation
 - **Epistemic dogfooding cases log** (#183): added

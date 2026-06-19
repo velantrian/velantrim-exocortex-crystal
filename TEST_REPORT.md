@@ -200,9 +200,11 @@ pytest tests/ --cov=. --cov-fail-under=100
 | RFC parsing | `test_rfc_parser.py` |
 | Biological-inspiration prototypes | `test_bio_modules.py`, `test_hybrid_biological_memory.py` |
 
-*Audited baseline regenerated on 2026-06-17 for the v0.3.0 reviewer preview
-(audit-hardening milestone: RRF #163, exact-dedup #164, ProvenanceChain #168,
-Docker hardening #170/#171, strict TruthPolicy default #172, write-path TruthGate
-audit #175), with the post-tag PDF span fix #182 adding 1 test. The per-module
-table and total were regenerated from a live `--cov=.` run (1210 passed /
-12 skipped / 100%). Figures are reproduced by running the commands above.*
+*The per-module table below was regenerated on 2026-06-17 for the v0.3.0 reviewer
+preview (audit-hardening milestone: RRF #163, exact-dedup #164, ProvenanceChain
+#168, Docker hardening #170/#171, strict TruthPolicy default #172, write-path
+TruthGate audit #175) from a live `--cov=.` run at 1209 passed / 12 skipped /
+100%. The post-tag PDF span fix #182 then added one test in
+`tests/test_wp1_spans.py`; the current total is 1210 passed / 12 skipped / 100%
+(confirmed by CI). The per-module rows predate #182 and will be regenerated at the
+next full audit. All figures are reproduced by running the commands above.*
