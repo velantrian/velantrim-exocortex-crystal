@@ -1,7 +1,11 @@
 # Audit Response — 2026-06-17
 
 > Scope: response to combined document/static/code/data/deploy audits.
-> Status: docs-only. This file records follow-up work; it does not claim fixes are complete.
+> Status: docs-only. This file records follow-up work.
+>
+> **Update:** the Track 1–3B follow-ups below are now merged — Track 1 (#168),
+> Track 2 (#170/#171), Track 3A (#172), Track 3B (#175). For current status see
+> `docs/IMPLEMENTATION_REALITY_MATRIX.md` and `TEST_REPORT.md`.
 
 ## Summary
 

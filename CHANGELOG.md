@@ -12,6 +12,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **PDF adapter span preservation** (#182): repeated identical paragraphs now
+  keep distinct source spans (`core/adapters/pdf_adapter.py`). Adds 1 test in
+  `tests/test_wp1_spans.py`, taking the suite baseline 1209 → 1210 while
+  preserving the 100% coverage gate.
+
+### Documentation
+- **Epistemic dogfooding cases log** (#183): added
+  `docs/dogfooding/EPISTEMIC_CASES.md` (KNOWN / PARTIAL / UNKNOWN cases).
+  Docs-only; evaluation input, not a source of truth.
+- Status / grant docs synced to the post-#182/#183 baseline. The exact test count
+  now lives only in the README badge and `TEST_REPORT.md`; other docs point there.
+  Bio-inspired `core/` modules are clarified as tested baseline mechanisms /
+  engineering metaphors — not biological cognition and not the full Personal
+  Research Mode (which is tracked separately, outside this repository).
+
 ## [0.3.0] — 2026-06-17 (reviewer preview)
 
 > Audit-hardening milestone (Tracks 1–3B) + reviewer packaging. Tagged

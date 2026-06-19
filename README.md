@@ -2,7 +2,7 @@
 
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
-`v0.3.0` · 🧪 **1209 tests** · 🎯 **100% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v0.3.0` · 🧪 **1210 tests** · 🎯 **100% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
 
 > Velantrim Crystal is **not another chatbot**. It is a **verifiable memory layer**
 > that AI systems write to and read from. Every stored fact carries provenance,
@@ -341,8 +341,12 @@ Crystal is a set of small, focused modules, dependency-free by default and teste
 | `core/analogy.py` | Analogy graph and semantic bridges |
 | `core/neurocore.py` | RFC0068 Phase 0 passive plasticity tracker; off by default, never writes L3 |
 
-Biologically inspired component names are engineering metaphors, not biological
-implementation claims; see [Metaphor vs Mechanism](docs/METAPHOR_VS_MECHANISM.md).
+These are **tested baseline mechanisms** — biologically inspired component names
+are engineering metaphors, **not** biological-cognition claims and **not** the
+full Personal Research Mode. The broader bio-inspired research agenda / full
+personal exocortex is out of scope for the current grant phase and is tracked
+separately (Notion / local research builds), not as current Crystal runtime. See
+[Metaphor vs Mechanism](docs/METAPHOR_VS_MECHANISM.md).
 
 ---
 
@@ -408,7 +412,9 @@ default runtime (CLI + read-only MCP server) stays standard-library only.
 - verifiable provenance and replayable receipts;
 - local L0/L1 memory and L3 canonical graph;
 - external knowledge ingestion for text/Markdown/JSON/JSONL/CSV, with baseline
-  PDF/YAML/RDF adapters, dry-run imports and import sessions;
+  PDF/EPUB/YAML/RDF/BibTeX/Wikidata adapters, dry-run imports and import sessions
+  (future work is hardening: stronger source spans, license metadata, full
+  Wikidata Q/P resolution, OAI-PMH and institutional formats);
 - baseline Evidence Span Store and curator review queue, with a review HTTP API
   and a static, dependency-free web review UI (Kanban) behind a token guard;
 - GDPR-relevant erasure, restriction, record-of-processing, audit and PII tools;
@@ -422,7 +428,8 @@ default runtime (CLI + read-only MCP server) stays standard-library only.
   suggestions ahead of the historical regex fallback, never authoritative;
 - opt-in character-trigram embedder for morphology-tolerant retrieval, plus a
   report-only Russian evaluation corpus (the English eval gate stays CI-enforced);
-- biological-memory research modules;
+- biological-memory research modules (tested baseline mechanisms / engineering
+  metaphors — not biological cognition and not the full Personal Research Mode);
 - a fully passing test suite at 100% coverage (current audited baseline:
   [TEST_REPORT.md](./TEST_REPORT.md));
 - baseline evaluation harness (`core/eval.py`, `velantrim eval --lang {en,ru}`).
