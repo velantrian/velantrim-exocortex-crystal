@@ -10,5 +10,6 @@ Start here:
 4. `security/DEPLOYMENT_SECURITY.md` — deployment hardening requirements.
 5. `data/KNOWLEDGE_GRAPH_STATUS.md` — knowledge graph/data-quality boundary.
 6. `CLAUDE_CODE_HANDOFF_2026_06_17.md` — tasks requiring code inspection and tests.
+7. `dogfooding/EPISTEMIC_CASES.md` — dogfooding log of KNOWN/PARTIAL/UNKNOWN cases (evaluation input, not a source of truth).
 
 These files are documentation only. They do not change runtime behaviour.
