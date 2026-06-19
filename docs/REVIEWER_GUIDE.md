@@ -31,7 +31,12 @@ Crystal makes **no** claim to be (see [`docs/STATUS.md`](./STATUS.md)):
 - NoeticCore / AttentionRouter / BICA as current runtime;
 - Graphiti, Neo4j, OpenAI, or cloud LLMs as *mandatory* dependencies;
 - a verified universal World Knowledge Core (graph entries are gated, not
-  presumed-true canon).
+  presumed-true canon);
+- the full Personal Research Mode / Full Velantrim Exo-Cortex (tracked separately
+  in Notion and local research builds) as current Crystal runtime or a grant
+  deliverable. The bio-inspired modules that *are* in `core/` are tested baseline
+  mechanisms / engineering metaphors, not biological cognition and not that full
+  research mode.
 
 Research-Mode / cognitive concepts are **research / RFC-level**, not Crystal
 runtime. The canonical separation lives in
@@ -58,9 +63,10 @@ pip install -e '.[dev]'
 python -m pytest                     # full suite, 100% coverage gate
 ```
 
-Baseline at the time of this guide: **1209 passed, 12 skipped, 100% coverage**
-(see [`../TEST_REPORT.md`](../TEST_REPORT.md) for the canonical baseline, which
-is the source of truth if these numbers drift).
+See [`../TEST_REPORT.md`](../TEST_REPORT.md) for the canonical current baseline
+(passing tests, skips, coverage). It and the README badge are the only places
+that carry the exact count; this guide intentionally does not repeat the number
+so it cannot drift.
 
 ## 5. How to run Crystal securely with Docker
 

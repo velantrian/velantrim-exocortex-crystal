@@ -1,7 +1,11 @@
 # Audit Response — 2026-06-17
 
 > Scope: response to combined document/static/code/data/deploy audits.
-> Status: docs-only. This file records follow-up work; it does not claim fixes are complete.
+> Status: docs-only. This file records follow-up work.
+>
+> **Update:** the Track 1–3B follow-ups below are now merged — Track 1 (#168),
+> Track 2 (#170/#171), Track 3A (#172), Track 3B (#175). For current status see
+> `docs/IMPLEMENTATION_REALITY_MATRIX.md` and `TEST_REPORT.md`.
 
 ## Summary
 
@@ -24,16 +28,23 @@ Claude Code reviewed the Crystal repository plan and clarified several points:
 5. TruthPolicy work is split into Track 3A and Track 3B.
 6. No `/facts` POST endpoint should be assumed for Track 3B.
 
-## Current track map
+## Track map (historical — all merged)
+
+> The rows below were the original task plan. All four tracks are now merged;
+> see `docs/IMPLEMENTATION_REALITY_MATRIX.md` and `TEST_REPORT.md` for live status.
 
 | Track | Scope | Status |
 |---|---|---|
-| Track 1 | per-fact ProvenanceChain + DB table + erasure integration + 7 tests | code task for Claude Code |
-| Track 2 | Dockerfile, docker-compose.yml, .dockerignore from scratch | code/deploy task for Claude Code |
-| Track 3A | TruthPolicy strict production default | code/test task for Claude Code |
-| Track 3B | write-path TruthGate audit tests + `gate_reason` | code/test task for Claude Code |
+| Track 1 | per-fact ProvenanceChain + DB table + erasure integration + tests | MERGED (#168) |
+| Track 2 | Dockerfile, docker-compose.yml, .dockerignore from scratch | MERGED (#170/#171) |
+| Track 3A | TruthPolicy strict production default | MERGED (#172) |
+| Track 3B | write-path TruthGate audit tests + `gate_reason` | MERGED (#175) |
 
-## Immediate findings to track
+## Findings (historical — addressed)
+
+> All P0/P1 items below are addressed in the merged tracks
+> (#168 / #170-171 / #172 / #175). Retained as the historical audit record;
+> see `docs/IMPLEMENTATION_REALITY_MATRIX.md` for live status.
 
 | Priority | Finding | Required response |
 |---|---|---|
@@ -44,14 +55,14 @@ Claude Code reviewed the Crystal repository plan and clarified several points:
 | P1 | Knowledge graph evidence gap | label unverified/autolinker data correctly; add verifier later |
 | P1 | Documentation drift across Crystal/Titan/V9/V10 | maintain `docs/STATUS.md` as current reading rule |
 
-## What this repository should do next
+## Original next-steps plan (completed)
 
-1. Merge Track 1 as a small PR.
-2. Merge Track 2 as a separate PR.
-3. Update `STATUS.md` / implementation status after Tracks 1–2 if needed.
-4. Merge Track 3A.
-5. Merge Track 3B.
-6. Only then consider data verifier and canonical write path expansion.
+1. Merge Track 1 as a small PR. — DONE (#168)
+2. Merge Track 2 as a separate PR. — DONE (#170/#171)
+3. Update `STATUS.md` / implementation status after Tracks 1–2 if needed. — DONE
+4. Merge Track 3A. — DONE (#172)
+5. Merge Track 3B. — DONE (#175)
+6. Only then consider data verifier and canonical write path expansion. — pending (future work)
 
 ## Boundary
 

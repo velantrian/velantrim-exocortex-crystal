@@ -182,7 +182,12 @@ hands-on, reproducible CLI demo walkthrough with real captured output
 - claims of consciousness or artificial personhood;
 - “zero hallucination” claims;
 - mandatory dependence on a specific LLM provider;
-- production multi-tenant hosting without a dedicated auth/security layer.
+- production multi-tenant hosting without a dedicated auth/security layer;
+- the broader bio-inspired research agenda / full personal exocortex. The
+  bio-inspired modules already present in `core/` are tested baseline mechanisms
+  and engineering metaphors — **not** biological-cognition claims and **not** the
+  full Personal Research Mode, which is tracked separately (Notion / local
+  research builds) and is not a deliverable of this grant phase.
 
 ## Success criteria
 

@@ -2,7 +2,10 @@
 
 > Date: 2026-06-17
 > Scope: per-fact provenance-chain expectations for Crystal
-> Status: docs-only contract. Track 1 must implement and test this behaviour.
+> Status: implemented contract. Track 1 (#168) implemented and tested this
+> behaviour in `core/provenance_chain.py` (append-only, hash-chained), wired into
+> the GDPR erase path. Broader lifecycle wiring (other state transitions) remains
+> follow-up.
 
 ## Correction after Claude Code plan
 
@@ -13,10 +16,10 @@ For Crystal, Claude Code identified this as a planned/absent feature:
 ```text
 core/audit.py       = global audit chain
 core/provenance.py  = per-answer receipt provenance
-core/provenance_chain.py = planned per-fact event chain
+core/provenance_chain.py = per-fact event chain (implemented, Track 1 #168)
 ```
 
-Track 1 implements the missing per-fact event chain from Sprint1 P1-5 / I89.
+Track 1 (#168) implemented the per-fact event chain from Sprint1 P1-5 / I89.
 
 ## Purpose
 
@@ -113,7 +116,8 @@ Safe:
 Crystal plans/implements per-fact provenance-chain verification where tests prove the append and replay contract.
 ```
 
-Avoid unless Track 1 is merged and tested:
+Now satisfied for the erase path (Track 1, #168). Still avoid the unqualified
+universal claim until lifecycle wiring covers every state transition:
 
 ```text
 Every memory mutation is protected by a per-fact hash-chain audit trail.

@@ -48,25 +48,26 @@ Crystal must not claim:
 - Graphiti, Neo4j, OpenAI, or cloud LLMs as mandatory Crystal dependencies;
 - verified World Knowledge Core unless source/evidence requirements are met.
 
-## Current Track 1–3B plan
+## Track 1–3B hardening (completed)
 
-The current implementation plan is:
+The audit-hardening tracks are merged and implemented:
 
 ```text
-Track 1  — ProvenanceChain per-fact event chain
-Track 2  — Docker hardening from scratch
-Track 3A — TruthPolicy production default
-Track 3B — Write-path TruthGate audit/tests
+Track 1  — ProvenanceChain per-fact event chain   -> IMPLEMENTED (#168)
+Track 2  — Docker hardening from scratch           -> IMPLEMENTED (#170/#171)
+Track 3A — TruthPolicy production default          -> IMPLEMENTED (#172)
+Track 3B — Write-path TruthGate audit/tests        -> IMPLEMENTED (#175)
 ```
 
-Each track must be a separate branch and PR.
+Each track was delivered as a separate PR. See `TEST_REPORT.md` and
+`docs/IMPLEMENTATION_REALITY_MATRIX.md` for current status.
 
 ## Implementation reality matrix
 
 | Component / area | Current status | Public claim | Risk / note | Next action |
 |---|---|---|---|---|
 | Crystal public core | IMPLEMENTED | local-first verifiable memory core | Keep narrow; avoid Titan scope creep | Maintain `TEST_REPORT.md` as source of truth |
-| TruthGate / epistemic boundary | IMPLEMENTED / evolving | verifies admissibility where wired | Track 3A defines strict production default; Track 3B pins write-path behaviour | Separate PRs for 3A and 3B |
+| TruthGate / epistemic boundary | IMPLEMENTED | verifies admissibility where wired | Track 3A (#172) set the strict production default; Track 3B (#175) pinned the write-path audit + `gate_reason` (`tests/test_write_path_gate.py`) | Maintain behavioural tests |
 | TRACE / Receipt | IMPLEMENTED | replayable proof path where generated | Keep receipt semantics stable | Document threat model and replay assumptions |
 | Per-fact ProvenanceChain | IMPLEMENTED | per-fact, append-only, hash-chained provenance log | Implemented in current merged scope via #168 (`core/provenance_chain.py`, table in `core/memory.py`, wired into the erase path); broader lifecycle wiring (other state transitions) remains follow-up | Broader lifecycle wiring is follow-up |
 | Claim type / origin type | CANDIDATE / FEATURE DESIGN | separates fact, opinion, experience, LLM output | Do not imply all Crystal paths already enforce it unless verified | Track 3A/3B plus future tests |
@@ -79,14 +80,14 @@ Each track must be a separate branch and PR.
 | Graphiti / Neo4j | OPTIONAL / RESEARCH | optional advanced backend inspiration | Not Crystal truth authority | Keep stdlib/local-first Crystal core |
 | Knowledge graph / WSC data | RESEARCH / UNVERIFIED unless sourced | draft graph / autolinker prototype if no evidence | Do not call verified canon without real sources/evidence_refs | Data verifier after schema confirmation |
 
-## Immediate Crystal hardening sequence
+## Crystal hardening sequence (status)
 
-1. Track 1: implement per-fact ProvenanceChain and tests.
-2. Track 2: create Dockerfile, docker-compose.yml and .dockerignore with fail-closed `VELANTRIM_API_TOKEN`.
-3. Track 3A: define strict TruthPolicy production default.
-4. Track 3B: add write-path TruthGate behavioural tests and `gate_reason` audit detail.
-5. Keep this status page and Reality Matrix current after each PR.
-6. Add knowledge graph status / data-quality verifier rules before claiming verified graph knowledge.
+1. Track 1 — per-fact ProvenanceChain and tests — DONE (#168).
+2. Track 2 — Dockerfile, docker-compose.yml and .dockerignore with fail-closed `VELANTRIM_API_TOKEN` — DONE (#170/#171).
+3. Track 3A — strict TruthPolicy production default — DONE (#172).
+4. Track 3B — write-path TruthGate behavioural tests and `gate_reason` audit detail — DONE (#175).
+5. Keep this status page and Reality Matrix current after each PR — ongoing.
+6. Add knowledge graph status / data-quality verifier rules before claiming verified graph knowledge — pending.
 
 ## Relationship to Titan
 

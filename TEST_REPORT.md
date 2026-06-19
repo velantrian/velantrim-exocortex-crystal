@@ -6,7 +6,7 @@ numbers: run the commands below and compare the figures.
 **Current audited baseline after v0.2.0 + TRACE Visualization v0 + CI coverage fixes + Crystal Invariant Checker + Refusal Reasons Taxonomy v0.1 + PR #137 safe repo hygiene/toolchain hardening + PRs #142–#144 Codex P2 hardening + PR #152 reviewer tooling, then the v0.3.0 reviewer-preview audit-hardening
 milestone (RRF helper #163, exact-dedup #164, per-fact ProvenanceChain #168,
 Docker hardening #170/#171, strict TruthPolicy default #172, write-path
-TruthGate audit #175): 1209 passed /
+TruthGate audit #175), then the post-tag PDF span fix #182: 1210 passed /
 12 skipped.** This file and the README badge are the only places that carry
 the exact count; all other documents reference this report so the number
 cannot silently drift.
@@ -32,11 +32,16 @@ cannot silently drift.
 > gate. After this milestone the runtime is frozen (reviewer-facing packaging
 > only).
 
+> **PR #182 note.** A post-tag span fix for repeated identical PDF paragraphs
+> (#182, `core/adapters/pdf_adapter.py`) added 1 test in `tests/test_wp1_spans.py`,
+> taking the suite 1209 → 1210 while preserving the 100% coverage gate. PR #183
+> was docs-only (epistemic dogfooding cases log) and did not change the count.
+
 ## Summary
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **1209** |
+| **Tests passing** | **1210** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **100%** (gate enforced at 100%, repo-wide `--cov=.`) |
@@ -195,9 +200,11 @@ pytest tests/ --cov=. --cov-fail-under=100
 | RFC parsing | `test_rfc_parser.py` |
 | Biological-inspiration prototypes | `test_bio_modules.py`, `test_hybrid_biological_memory.py` |
 
-*Audited baseline regenerated on 2026-06-17 for the v0.3.0 reviewer preview
-(audit-hardening milestone: RRF #163, exact-dedup #164, ProvenanceChain #168,
-Docker hardening #170/#171, strict TruthPolicy default #172, write-path TruthGate
-audit #175). The per-module table and total were regenerated from a live
-`--cov=.` run (1209 passed / 12 skipped / 5461 statements / 100%). Figures are
-reproduced by running the commands above.*
+*The per-module table below was regenerated on 2026-06-17 for the v0.3.0 reviewer
+preview (audit-hardening milestone: RRF #163, exact-dedup #164, ProvenanceChain
+#168, Docker hardening #170/#171, strict TruthPolicy default #172, write-path
+TruthGate audit #175) from a live `--cov=.` run at 1209 passed / 12 skipped /
+100%. The post-tag PDF span fix #182 then added one test in
+`tests/test_wp1_spans.py`; the current total is 1210 passed / 12 skipped / 100%
+(confirmed by CI). The per-module rows predate #182 and will be regenerated at the
+next full audit. All figures are reproduced by running the commands above.*

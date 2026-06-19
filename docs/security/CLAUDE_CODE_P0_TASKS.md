@@ -3,6 +3,11 @@
 > Date: 2026-06-17
 > Scope: code tasks that require repository inspection, tests and controlled diffs.
 > This file supersedes earlier Titan-oriented wording.
+>
+> **Status (historical planning note):** all four tracks below are now merged —
+> Track 1 (#168), Track 2 (#170/#171), Track 3A (#172), Track 3B (#175). This
+> document is retained as the original task plan; for current status see
+> `docs/IMPLEMENTATION_REALITY_MATRIX.md` and `TEST_REPORT.md`.
 
 ## Track order
 
