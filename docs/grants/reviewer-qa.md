@@ -28,9 +28,11 @@ provenance, not a similarity index.
 A reproducible, deployable, local-first open-source MVP:
 
 1. a stable local pipeline with documented setup, import and export;
-2. a **FastAPI service layer** (ingest / retrieve / trace inspection / health) —
-   today only async-friendly entry points exist (`core/aio.py`); the HTTP service
-   is the deliverable;
+2. a hardened **FastAPI service layer** (ingest / retrieve / trace inspection /
+   health) — a baseline optional API already exists today (`pip install '.[api]'`,
+   `velantrim-api`: token-guarded review endpoints + `/health`, a thin async
+   wrapper over `core/aio.py`); M2 hardens and extends it into a documented,
+   tested service layer;
 3. production-strength source-span receipts (a baseline exists in
    `core/evidence.py` + Receipt v2);
 4. an evaluation harness wired as a CI quality gate (baseline in `core/eval.py`);
@@ -103,7 +105,7 @@ product.
 ### Q9. What if the awarded amount is lower than requested?
 
 The plan is viable under partial funding. Priority order: (1) local-first
-stabilisation; (2) metadata/trace/evidence validation; (3) basic FastAPI layer;
+stabilisation; (2) metadata/trace/evidence validation; (3) hardened FastAPI layer (extends the `.[api]` baseline);
 (4) evaluation as a CI gate; (5) documentation; (6) a small knowledge-base
 package; (7) initial multilingual support. Adapters, broad model evaluation,
 mobile apps, cloud sync and specialised models are deferred to later phases.
