@@ -52,7 +52,7 @@ later milestones are deferred (see *Partial funding* below).
 | # | Milestone / deliverable | Maps to | Amount |
 |---|---|---|---:|
 | M1 | **Local-first deployable prototype.** Stabilise the local pipeline, packaged install, reproducible setup, import/export, documented run path. | WP5 | €9,000 |
-| M2 | **FastAPI service layer (harden existing optional `.[api]` baseline).** Extend the existing token-guarded API + `/health` into documented, tested ingest/retrieval/trace-evidence/health endpoints; local deployment instructions; tests. | WP-new (builds on `.[api]`) | €8,000 |
+| M2 | **FastAPI service layer (harden existing optional `.[api]` baseline).** Extend the existing optional API baseline — including token-guarded review endpoints and `/health` — into documented, tested ingest/retrieval/trace-evidence/health endpoints; local deployment instructions; tests. | WP-new (builds on `.[api]`) | €8,000 |
 | M3 | **Production-strength evidence spans + Receipt v2.** Span extraction during PDF/Markdown ingest, original-snippet retrieval, multi-source corroboration, receipt replay against stored spans. | WP1 | €8,000 |
 | M4 | **Evaluation harness as a CI quality gate.** Curated fixtures, grounding score, contradiction P/R, regression gates so quality cannot silently drop. | WP3 | €5,000 |
 | M5 | **Knowledge-base expansion.** Larger source-referenced, graph-ready fact corpus across scientific, practical, educational and civic domains; licence/provenance metadata. | WP2/WP4 | €7,000 |
