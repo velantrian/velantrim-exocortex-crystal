@@ -56,7 +56,7 @@ to the repository.
 Suggested release title:
 
 ```text
-Velantrim Crystal v0.2.0 — Verifiable local-first AI memory core
+Velantrim Crystal <release version> — Verifiable local-first AI memory core
 ```
 
 Suggested release summary:

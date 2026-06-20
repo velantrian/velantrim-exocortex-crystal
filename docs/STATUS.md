@@ -64,6 +64,8 @@ Each track was delivered as a separate PR. See `TEST_REPORT.md` and
 
 ## Implementation reality matrix
 
+_High-level summary. The canonical track-by-track audit matrix is [`IMPLEMENTATION_REALITY_MATRIX.md`](./IMPLEMENTATION_REALITY_MATRIX.md)._
+
 | Component / area | Current status | Public claim | Risk / note | Next action |
 |---|---|---|---|---|
 | Crystal public core | IMPLEMENTED | local-first verifiable memory core | Keep narrow; avoid Titan scope creep | Maintain `TEST_REPORT.md` as source of truth |

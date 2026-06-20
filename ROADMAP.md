@@ -79,6 +79,11 @@ runtime · every delivered item below ships with tests and a CLI surface.
   opt-in at ingest; CLI `redact`.
 
 ### 🧬 Living memory — biologically-inspired (all implemented & tested)
+
+_These are tested baseline mechanisms and engineering metaphors — not biological
+cognition and not the full Personal Research Mode. See
+[`METAPHOR_VS_MECHANISM.md`](./docs/METAPHOR_VS_MECHANISM.md)._
+
 - **Fractal Memory** (`core/fractal.py`, RFC0070): multi-scale anchoring
   SHORT→MEDIUM→LONG→CORE with fractal capacities; CORE anchors are exempt from
   decay → anti-catastrophic-forgetting; CLI `fractal-*`.
@@ -163,6 +168,10 @@ runtime · every delivered item below ships with tests and a CLI surface.
 
 The strategic biological line (issue #7) is **fully delivered** — all four RFCs
 are implemented, dependency-free, and tested:
+
+_"Complete" and "biological" here describe tested baseline mechanisms and
+engineering metaphors — not biological cognition and not the full Personal
+Research Mode. See [`METAPHOR_VS_MECHANISM.md`](./docs/METAPHOR_VS_MECHANISM.md)._
 
 | RFC | Component | Status |
 |---|---|---|

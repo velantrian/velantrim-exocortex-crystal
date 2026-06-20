@@ -62,7 +62,7 @@ For biological or cognitive naming conventions, see
 Guard or Neurogenesis are engineering metaphors unless explicitly implemented as
 software mechanisms.
 
-## Out of Scope for v0.2.0 Grant
+## Out of Scope for the Current Grant / Reviewer Phase
 
 The following are **not** current Crystal runtime deliverables and must not be
 presented as implemented grant features:
@@ -79,7 +79,7 @@ presented as implemented grant features:
 - artificial consciousness, AGI, or brain-like implementation claims;
 - production multi-tenant hosting without a dedicated auth/security layer.
 
-Crystal v0.2.0 may include tested baseline components, such as read-only
+Crystal's current reviewer snapshot may include tested baseline components, such as read-only
 observability, trace/receipt tooling, and the implemented Fractal Memory
 anchoring layer. These must not be confused with the broader private research
 architecture.

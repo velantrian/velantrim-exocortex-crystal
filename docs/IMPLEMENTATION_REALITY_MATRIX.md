@@ -2,7 +2,7 @@
 
 > Date: 2026-06-17
 > Scope: current implementation/status matrix for public Crystal planning
-> Status: docs-only. This is a companion to `docs/STATUS.md`.
+> Status: docs-only. Canonical detailed audit matrix. `docs/STATUS.md` carries the high-level summary; `docs/IMPLEMENTATION_STATUS.md` is the component-level implemented/RFC/vision map.
 
 ## Legend
 
