@@ -483,6 +483,7 @@ milestone budget, partial-funding plan, and responsible-data position.
 | **[docs/DEMO.md](./docs/DEMO.md)** | Hands-on, reproducible CLI walkthrough with real captured output (ingest, ask, receipt, contradictions, knowledge import, GDPR erase, NeuroCore telemetry, eval, HTTP) |
 | **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** | Architecture diagrams and memory/backends/privacy boundaries |
 | **[docs/IMPLEMENTATION_STATUS.md](./docs/IMPLEMENTATION_STATUS.md)** | Honest status map: implemented Crystal core vs RFC/roadmap vs Exo-Cortex/Culture vision |
+| **[docs/CLAIM_METADATA_GLOSSARY.md](./docs/CLAIM_METADATA_GLOSSARY.md)** | As-built reference for claim metadata terminology, TruthGate discipline, and safe reviewer-facing language |
 | **[docs/REVIEWER_OVERVIEW.md](./docs/REVIEWER_OVERVIEW.md)** | Secondary — reviewer package (canonical entry point is docs/REVIEWER_GUIDE.md): one-page overview, ADRs, failure modes, evaluation metrics |
 | **[docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)** | Grant-facing problem, solution, work packages and success criteria |
 | **[docs/grants/funding-use-plan.md](./docs/grants/funding-use-plan.md)** | Why ~€50,000 was requested and the milestone-based plan for using it |
