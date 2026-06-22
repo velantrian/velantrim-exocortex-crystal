@@ -121,10 +121,12 @@ not a correctness guarantee.
 
 `core/truth_gate.py` is the **admissibility boundary**, not a metaphysical truth
 engine. It returns a decision `(passed, reason)`; the **caller** performs any
-write. By default it enforces unsupported-claim prevention — e.g. `LLM_OUTPUT`
-cannot become a `WORLD_FACT` without an independent source — while letting
-subjective claims pass as subjective. It decides what is **admissible**, not what
-is ultimately true.
+write. Under the default **strict TruthPolicy**, it enforces unsupported-claim
+prevention — e.g. `LLM_OUTPUT` cannot become a `WORLD_FACT` without an
+independent source — while letting subjective claims pass as subjective. Legacy /
+opt-out deployments with `ENABLE_TRUTH_POLICY=off` bypass this strict block and
+should be treated as review/audit exceptions, not the recommended policy. It
+decides what is **admissible**, not what is ultimately true.
 
 ## 9. Guardian — invariant / safety / scope boundary
 
@@ -134,8 +136,9 @@ the TruthGate before anything reaches the canonical graph.
 
 ## Discipline — what these axes do NOT permit
 
-- **`LLM_OUTPUT` cannot prove itself** — it is never a `WORLD_FACT` without an
-  independent source.
+- **`LLM_OUTPUT` cannot prove itself** — under the default strict TruthPolicy it
+  is not a `WORLD_FACT` without an independent source (the `ENABLE_TRUTH_POLICY=off`
+  legacy bypass is a review/audit exception, not the recommended policy).
 - **`USER_REPORTED` is not automatically a world fact** — it is a sourced claim,
   not verified canon.
 - **Subjective material** (`EMOTION` / `OPINION` / `INTERPRETATION` /
