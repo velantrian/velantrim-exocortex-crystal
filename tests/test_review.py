@@ -111,6 +111,30 @@ def test_approve_ready_promotes_to_canon(monkeypatch):
     assert get_l3_graph().get_fact(fid) is not None  # reached the canon
 
 
+def test_approve_aborts_on_cas_miss_without_l3_merge(monkeypatch):
+    """Defense-in-depth: if a competing reviewer changes the persisted state after
+    the queue read, approve() hits a CAS miss in transition_esm, aborts, and never
+    merges into the canon. This is not a full thread/process atomicity guarantee.
+    """
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    from core.memory import _db
+    fid = _ready_pending("A concurrently collapsed world claim", "cas:rev1")
+    get_fact(fid)  # prime L0 with the "Observed" record the curator sees
+
+    # A competing reviewer collapses the row directly in the DB; L0 stays stale.
+    with _db() as conn:
+        conn.execute("UPDATE facts SET epistemic_state = ? WHERE fact_id = ?",
+                     ("Collapsed", fid))
+
+    res = review.approve(fid, actor="alice")
+    assert res["approved"] is False
+    assert "CAS conflict" in res["reason"]
+    # The concurrently-collapsed fact was never resurrected into the canon.
+    assert get_l3_graph().get_fact(fid) is None
+    # The persisted state stays Collapsed (the attempted Validated did not win).
+    assert get_fact(fid)["epistemic_state"] == "Collapsed"
+
+
 def test_approve_blocked_without_force_refuses(monkeypatch):
     monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
     fid = _blocked_world_fact("A blocked claim awaiting review")
@@ -227,6 +251,20 @@ def test_reject_non_pending_is_noop(monkeypatch):
     out = review.reject(fid)
     assert out["rejected"] is False
     assert "not pending" in out["reason"]
+
+
+def test_reject_aborts_on_cas_miss(monkeypatch):
+    """If transition_esm reports a CAS miss, reject() aborts: rejected False and no
+    reject-success audit event. Defense-in-depth, not full atomicity."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    fid = _blocked_world_fact("A concurrently changed pending claim")
+    before = len([e for e in audit.audit_log() if e["event"] == "review_reject"])
+    monkeypatch.setattr(review, "transition_esm", lambda *a, **k: False)
+    res = review.reject(fid, actor="dave")
+    assert res["rejected"] is False
+    assert "CAS conflict" in res["reason"]
+    after = len([e for e in audit.audit_log() if e["event"] == "review_reject"])
+    assert after == before  # no reject-success audit event was recorded
 
 
 # ─── Accountability: audit chain stays intact ──────────────────────────────────

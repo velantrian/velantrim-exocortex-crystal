@@ -143,7 +143,7 @@ def test_transition_esm_cas_miss_aborts_without_clobber():
     Catches the lost-update / stale-cache case; this is defense-in-depth, not a
     full thread/process atomicity guarantee.
     """
-    from core.memory import store_fact, transition_esm, _db, _l0_get
+    from core.memory import store_fact, transition_esm, get_fact, _db, _L0
     store_fact({"fact_id": "cas_miss", "claim": "x", "source": "s", "confidence": 0.5})
 
     # Competing/external writer mutates the persisted state directly; the L0 cache
@@ -164,5 +164,7 @@ def test_transition_esm_cas_miss_aborts_without_clobber():
         ).fetchone()
     assert row["epistemic_state"] == "Supported"
 
-    # L0 is not poisoned with the attempted new state.
-    assert _l0_get("cas_miss")["epistemic_state"] == "Observed"
+    # L0 is not poisoned: the stale entry is evicted on a CAS miss, so a re-read
+    # returns the fresh persisted state, never the attempted "Validated".
+    assert "cas_miss" not in _L0
+    assert get_fact("cas_miss")["epistemic_state"] == "Supported"

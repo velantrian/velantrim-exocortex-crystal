@@ -7,7 +7,7 @@ numbers: run the commands below and compare the figures.
 milestone (RRF helper #163, exact-dedup #164, per-fact ProvenanceChain #168,
 Docker hardening #170/#171, strict TruthPolicy default #172, write-path
 TruthGate audit #175), then the post-tag PDF span fix #182, then the ESM
-CAS-guard hardening: 1212 passed /
+CAS-guard hardening: 1216 passed /
 12 skipped.** This file and the README badge are the only places that carry
 the exact count; all other documents reference this report so the number
 cannot silently drift.
@@ -42,7 +42,7 @@ cannot silently drift.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **1212** |
+| **Tests passing** | **1216** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **100%** (gate enforced at 100%, repo-wide `--cov=.`) |
@@ -207,6 +207,8 @@ preview (audit-hardening milestone: RRF #163, exact-dedup #164, ProvenanceChain
 TruthGate audit #175) from a live `--cov=.` run at 1209 passed / 12 skipped /
 100%. The post-tag PDF span fix #182 then added one test in
 `tests/test_wp1_spans.py` (1209 → 1210); the ESM CAS-guard hardening then added
-two tests in `tests/test_esm.py`, so the current total is 1212 passed / 12 skipped / 100%
+two tests in `tests/test_esm.py`, then the CAS-miss caller-abort guards added four
+tests across `tests/test_review.py`, `tests/test_ingest.py` and `tests/test_pipeline.py`,
+so the current total is 1216 passed / 12 skipped / 100%
 (confirmed by CI). The per-module rows predate #182 and will be regenerated at the
 next full audit. All figures are reproduced by running the commands above.*

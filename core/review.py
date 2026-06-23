@@ -178,7 +178,14 @@ def approve(fact_id: str, *, actor: Optional[str] = None,
     if actor is None or not actor.strip():
         actor = "curator"  # backward-compatible default for non-force approve
 
-    transition_esm(fact_id, "Validated")
+    # CAS guard: if the persisted state changed under us (a competing
+    # writer/reviewer), transition_esm returns False and evicts the stale L0
+    # entry. Abort the approval before any L3 merge / success audit — do not
+    # resurrect a concurrently rejected/collapsed fact. Defense-in-depth.
+    if not transition_esm(fact_id, "Validated"):
+        return {"found": True, "fact_id": fact_id, "approved": False,
+                "reason": "ESM CAS conflict: fact state changed concurrently",
+                "diagnosis": diag["verdict"]}
     ct = fact.get("claim_type", "WORLD_FACT")
     truth_status = _truth_status_for(ct, fact.get("source_status"))
     promoted = get_fact(fact_id)
@@ -227,7 +234,12 @@ def reject(fact_id: str, *, actor: str = "curator",
         return {"found": True, "fact_id": fact_id, "rejected": False,
                 "reason": f"not pending (state={fact.get('epistemic_state')})"}
 
-    transition_esm(fact_id, "Collapsed")
+    # CAS guard: if the persisted state changed under us (a competing
+    # writer/reviewer), transition_esm returns False and evicts the stale L0
+    # entry. Abort before recording a reject-success audit event.
+    if not transition_esm(fact_id, "Collapsed"):
+        return {"found": True, "fact_id": fact_id, "rejected": False,
+                "reason": "ESM CAS conflict: fact state changed concurrently"}
     metrics.incr("review.rejected")
     audit.append_event("review_reject", fact_id, {"actor": actor, "reason": reason})
     return {"found": True, "fact_id": fact_id, "rejected": True,

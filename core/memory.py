@@ -530,6 +530,11 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
             (new_state, now, fact_id, current_state)
         )
         if cur.rowcount != 1:
+            # CAS miss: a competing/external write changed the persisted state
+            # since our read. Evict the now-stale L0 entry so the next get_fact()
+            # re-reads the fresh DB state instead of serving stale cache to a
+            # caller that ignores the return value. Defense-in-depth, not atomicity.
+            _L0.pop(fact_id, None)
             return False
 
     # Update L0 only after the DB write succeeds, so the cache is never poisoned
