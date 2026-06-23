@@ -518,15 +518,25 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
         )
 
     now = datetime.now(timezone.utc).isoformat()
+
+    # CAS guard: only transition if the persisted state still equals the state we
+    # read (current_state). If a competing/external write changed it since the
+    # L0/DB read, the UPDATE matches 0 rows and we abort instead of clobbering.
+    # Defense-in-depth for future concurrency/async — NOT a full atomicity guarantee.
+    with _db() as conn:
+        cur = conn.execute(
+            "UPDATE facts SET epistemic_state = ?, updated_at = ? "
+            "WHERE fact_id = ? AND epistemic_state = ?",
+            (new_state, now, fact_id, current_state)
+        )
+        if cur.rowcount != 1:
+            return False
+
+    # Update L0 only after the DB write succeeds, so the cache is never poisoned
+    # with a state that did not persist.
     fact["epistemic_state"] = new_state
     fact["updated_at"] = now
-
     _l0_put(fact_id, fact)
-    with _db() as conn:
-        conn.execute(
-            "UPDATE facts SET epistemic_state = ?, updated_at = ? WHERE fact_id = ?",
-            (new_state, now, fact_id)
-        )
     return True
 
 
