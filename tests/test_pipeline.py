@@ -586,3 +586,19 @@ def test_run_blocks_when_truth_gate_fails(monkeypatch):
     result = pipeline.run("DNA")
     assert result["answer"] is None
     assert "TruthGate: nope" in result["error"]
+
+
+def test_pipeline_skips_l3_merge_on_cas_miss(monkeypatch):
+    """If transition_esm reports a CAS miss during promotion, the pipeline skips
+    merging that fact into the canon (no stale promotion) instead of continuing to
+    a success merge. Defense-in-depth, not a full atomicity guarantee."""
+    from core import pipeline
+    monkeypatch.setattr(pipeline, "transition_esm", lambda *a, **k: False)
+    result = pipeline.run("DNA")
+    # The run completes without crashing; any fact that hit the CAS miss was
+    # skipped before its truth_status was set / before the L3 merge.
+    assert isinstance(result, dict)
+    assert "answer" in result
+    for f in result.get("facts", []):
+        if f.get("epistemic_state") != "Validated":
+            assert "truth_status" not in f

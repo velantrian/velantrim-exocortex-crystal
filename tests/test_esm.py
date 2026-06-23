@@ -114,3 +114,57 @@ def test_lru_read_refreshes_recency():
 
     assert "rec_0" in _L0   # refreshed, not evicted
     assert "rec_1" not in _L0  # was oldest after rec_0 was refreshed
+
+
+# ─── CAS guard on ESM transitions ───────────────────────────────────────────────
+# Low-severity defense-in-depth: transition_esm only writes when the persisted
+# state still matches the state it read. These tests cover the happy path and a
+# competing-write (stale-cache) abort. They do NOT assert full thread/process
+# atomicity — only that a diverged prior state is detected.
+
+def test_transition_esm_happy_path_updates_db_and_l0():
+    """Normal transition still returns True and updates both DB and L0."""
+    from core.memory import store_fact, transition_esm, _db, _l0_get
+    store_fact({"fact_id": "cas_ok", "claim": "x", "source": "s", "confidence": 0.5})
+
+    assert transition_esm("cas_ok", "Validated") is True
+
+    assert _l0_get("cas_ok")["epistemic_state"] == "Validated"
+    with _db() as conn:
+        row = conn.execute(
+            "SELECT epistemic_state FROM facts WHERE fact_id = ?", ("cas_ok",)
+        ).fetchone()
+    assert row["epistemic_state"] == "Validated"
+
+
+def test_transition_esm_cas_miss_aborts_without_clobber():
+    """If a competing write changed the persisted state, the CAS guard aborts.
+
+    Catches the lost-update / stale-cache case; this is defense-in-depth, not a
+    full thread/process atomicity guarantee.
+    """
+    from core.memory import store_fact, transition_esm, get_fact, _db, _L0
+    store_fact({"fact_id": "cas_miss", "claim": "x", "source": "s", "confidence": 0.5})
+
+    # Competing/external writer mutates the persisted state directly; the L0 cache
+    # stays stale at "Observed".
+    with _db() as conn:
+        conn.execute(
+            "UPDATE facts SET epistemic_state = ? WHERE fact_id = ?",
+            ("Supported", "cas_miss"),
+        )
+
+    # current_state read from L0 is still "Observed" → CAS matches 0 rows → abort.
+    assert transition_esm("cas_miss", "Validated") is False
+
+    # DB keeps the competing state, not the attempted "Validated".
+    with _db() as conn:
+        row = conn.execute(
+            "SELECT epistemic_state FROM facts WHERE fact_id = ?", ("cas_miss",)
+        ).fetchone()
+    assert row["epistemic_state"] == "Supported"
+
+    # L0 is not poisoned: the stale entry is evicted on a CAS miss, so a re-read
+    # returns the fresh persisted state, never the attempted "Validated".
+    assert "cas_miss" not in _L0
+    assert get_fact("cas_miss")["epistemic_state"] == "Supported"

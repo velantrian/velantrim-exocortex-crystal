@@ -594,7 +594,12 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
             # A recall fact from L3 is already Validated — a repeated transition is not allowed in
             # the ESM matrix, so we only transition the not-yet-validated ones.
             if fact.get("epistemic_state") != "Validated":
-                transition_esm(fact["fact_id"], "Validated")
+                # CAS guard: if the persisted state changed under us (a competing
+                # writer), transition_esm returns False and evicts the stale L0
+                # entry. Do NOT merge a stale payload into the canon — skip this
+                # fact. Defense-in-depth, not a full atomicity guarantee.
+                if not transition_esm(fact["fact_id"], "Validated"):
+                    continue
                 updated = get_fact(fact["fact_id"])
                 if updated:
                     fact["epistemic_state"] = updated["epistemic_state"]

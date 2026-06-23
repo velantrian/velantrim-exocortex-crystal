@@ -260,7 +260,17 @@ def ingest(
         }
 
     # Passed the gates → Validated, truth_status by modality, MERGE into the L3 canon.
-    transition_esm(fid, "Validated")
+    # CAS guard: if the persisted state changed under us (a competing writer),
+    # transition_esm returns False and evicts the stale L0 entry. Abort the
+    # promotion instead of merging a stale payload / recording success.
+    # Defense-in-depth, not a full atomicity guarantee.
+    if not transition_esm(fid, "Validated"):
+        adaptation.record_block()
+        return {
+            "accepted": False,
+            "reason": "ESM CAS conflict: fact state changed concurrently; not promoted",
+            "conflicts": conflicts, "fact": fact,
+        }
     updated = get_fact(fid)
     if updated:
         fact["epistemic_state"] = updated["epistemic_state"]
