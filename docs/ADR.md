@@ -99,3 +99,88 @@ today).
     source of implementation claims);
   - biologically inspired component names are documented as engineering
     metaphors in [METAPHOR_VS_MECHANISM.md](./METAPHOR_VS_MECHANISM.md).
+
+## ADR-007: TruthGate as a pure admission function
+
+- **Status:** Accepted
+- **Context:** Admission control and persistence are easy to conflate. If the
+  verification boundary also performed writes, the decision logic and the
+  canon-mutation logic would be entangled, making the boundary harder to audit
+  and to reason about.
+- **Decision:** TruthGate is a *pure admission function*. It takes the evidence
+  package and returns a decision plus a reason (`(passed, reason)`); it does not
+  write to the database and does not mutate canon. Transitioning a fact into the
+  Validated state and merging it into the L3 canon is performed by the caller
+  (e.g. the pipeline, ingest, or the curator review path) only when admission
+  passes.
+- **Consequences:**
+  - the verification decision is side-effect-free and independently testable;
+  - every canon write is attributable to an explicit caller, not to the gate;
+  - the gate can be invoked for dry-run / preview without risk of mutation;
+  - this is an architectural boundary, not a concurrency guarantee — atomicity
+    of the subsequent write remains the caller's responsibility.
+
+## ADR-008: Append-only reconcile; caller decides
+
+- **Status:** Accepted
+- **Context:** Truth maintenance (deduplication, corroboration, conflict
+  detection) must never silently overwrite or auto-reject canon. A heuristic
+  that promotes or deprecates facts on its own would be unauditable.
+- **Decision:** Reconcile is append-only and advisory. `record_occurrence`
+  records a frequency signal only — it is *not* treated as independent evidence
+  and never changes confidence, truth_status, or the epistemic state.
+  `find_conflicts` returns candidate matches for review, not verdicts. The
+  decision to supersede, contradict, or send to review remains with the caller,
+  pipeline, or human curator.
+- **Consequences:**
+  - repeated occurrences raise frequency, never truth or confidence;
+  - corroboration that *does* raise confidence stays an explicit, separate
+    `reinforce()` decision;
+  - conflict signals are inputs to a decision, never the decision itself;
+  - canon promotion/deprecation always has an explicit, attributable actor.
+
+## ADR-009: Stdlib-only runtime core; optional lazy extras
+
+- **Status:** Accepted
+- **Context:** Dependency-free claims are easy to overstate. A precise boundary
+  is needed between the core runtime (which must run locally with no external
+  packages) and optional capabilities that legitimately require extras.
+- **Decision:** The runtime core (memory, pipeline, ingest, TruthGate,
+  reconcile, consolidation) is standard-library-only. Optional backends and
+  capabilities are lazy and opt-in: the Neo4j backend is optional and is *not*
+  in the default backend chain (the default chain falls back to embedded /
+  SQLite / in-memory backends), and optional generators/adapters may require
+  external extras. The whole repository is **not** claimed to be
+  dependency-free.
+- **Consequences:**
+  - the default local-first runtime installs and runs without third-party
+    packages;
+  - Neo4j is imported lazily and raises a clear, actionable error only when it
+    is explicitly selected and its driver is absent;
+  - grant-facing wording must say *"runtime core is stdlib-only; optional
+    extras such as Neo4j / generators / adapters may require external
+    dependencies"* — never *"the entire repository is dependency-free"*;
+  - optional extras extend the trust/dependency boundary and stay opt-in.
+
+## ADR-010: Bio-named modules are engineering metaphors
+
+- **Status:** Accepted
+- **Context:** Several modules carry biologically or cognitively inspired names
+  (e.g. neurogenesis, immune, neurocore, fractal, salience, adaptation). Such
+  names can be misread as claims of biological or conscious implementation. This
+  ADR extends [ADR-006](#adr-006-research-inspirations-are-non-normative).
+- **Decision:** Bio/cognitive names are engineering metaphors, not biological
+  implementation claims. They describe deterministic, auditable mechanisms over
+  the existing canon; they do not assert brain-like, conscious, or
+  neuroplastic runtime behavior. Disclaimers in code docstrings stay
+  synchronized with [METAPHOR_VS_MECHANISM.md](./METAPHOR_VS_MECHANISM.md),
+  which is the canonical mapping from metaphor to mechanism.
+- **Consequences:**
+  - no consciousness / brain / neuroplasticity overclaim in code, docs, or
+    grant materials;
+  - each metaphor-named module documents the concrete mechanism it implements;
+  - [METAPHOR_VS_MECHANISM.md](./METAPHOR_VS_MECHANISM.md) and
+    [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) remain the sources of
+    truth for what is actually implemented;
+  - adding or renaming a metaphor-named module requires updating the metaphor
+    mapping in the same change.
