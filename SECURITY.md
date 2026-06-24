@@ -51,6 +51,8 @@ assets and threats:
 | State machine | Illegal epistemic transitions (e.g. Collapsed → Validated) | `ESM_TRANSITIONS` matrix validated in `transition_esm`. |
 | Consistency | L3 write fails after L1 commit → orphaned fact | Persistent **outbox** (`l3_outbox`) drains idempotently on next access. |
 
+> 📋 For the detailed STRIDE breakdown — trust boundaries, per-category analysis, mitigation map, and explicit residual risks / non-claims — see [docs/security/threat-model.md](./docs/security/threat-model.md).
+
 ### Optional HTTP service layer and the review token guard
 
 The optional FastAPI service (`pip install ".[api]"`, `velantrim-api`) binds to
