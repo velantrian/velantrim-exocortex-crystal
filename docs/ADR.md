@@ -107,14 +107,22 @@ today).
   verification boundary also performed writes, the decision logic and the
   canon-mutation logic would be entangled, making the boundary harder to audit
   and to reason about.
-- **Decision:** TruthGate is a *pure admission function*. It takes the evidence
-  package and returns a decision plus a reason (`(passed, reason)`); it does not
-  write to the database and does not mutate canon. Transitioning a fact into the
-  Validated state and merging it into the L3 canon is performed by the caller
-  (e.g. the pipeline, ingest, or the curator review path) only when admission
-  passes.
+- **Decision:** TruthGate is an *admission / decision function*: it takes the
+  evidence package and returns a decision plus a reason (`(passed, reason)`); it
+  does not write to the database and does not mutate canon. Transitioning a fact
+  into the Validated state and merging it into the L3 canon is performed by the
+  caller (e.g. the pipeline, ingest, or the curator review path) only when
+  admission passes. It is *not* a pure function of the evidence package alone:
+  when `min_confidence` is omitted it reads the contextual threshold from
+  `core/adaptation` (`adaptation.verification_threshold()`) and it reads
+  `ENABLE_TRUTH_POLICY` at call time, so the same input can decide differently
+  as that context changes. The curator force-override (ADR-004) remains the
+  documented exception that can admit a gate-blocked fact, with an audited
+  actor + reason.
 - **Consequences:**
-  - the verification decision is side-effect-free and independently testable;
+  - the verification decision has no canon/DB write side-effects, and is
+    testable with the threshold and `ENABLE_TRUTH_POLICY` held fixed (it is not
+    guaranteed replayable across changing threshold/env state);
   - every canon write is attributable to an explicit caller, not to the gate;
   - the gate can be invoked for dry-run / preview without risk of mutation;
   - this is an architectural boundary, not a concurrency guarantee — atomicity
@@ -126,18 +134,25 @@ today).
 - **Context:** Truth maintenance (deduplication, corroboration, conflict
   detection) must never silently overwrite or auto-reject canon. A heuristic
   that promotes or deprecates facts on its own would be unauditable.
-- **Decision:** Reconcile is append-only and advisory. `record_occurrence`
-  records a frequency signal only — it is *not* treated as independent evidence
-  and never changes confidence, truth_status, or the epistemic state.
-  `find_conflicts` returns candidate matches for review, not verdicts. The
-  decision to supersede, contradict, or send to review remains with the caller,
-  pipeline, or human curator.
+- **Decision:** Reconcile's *detection* surface is append-only and advisory.
+  `record_occurrence` records a frequency signal only — it is *not* treated as
+  independent evidence and never changes confidence, truth_status, or the
+  epistemic state. `find_conflicts` returns candidate matches for review, not
+  verdicts. Reconcile also exposes *explicit, caller-invoked* truth-maintenance
+  operations — `supersede()` and `contradict()` — which **do** transition
+  epistemic state (`transition_esm`), sync the change into L3 (`_sync_l3` →
+  `merge_fact`) and add graph edges. These are deliberate, never automatic: the
+  decision to invoke them stays with the caller, pipeline, or human curator.
 - **Consequences:**
   - repeated occurrences raise frequency, never truth or confidence;
   - corroboration that *does* raise confidence stays an explicit, separate
     `reinforce()` decision;
   - conflict signals are inputs to a decision, never the decision itself;
-  - canon promotion/deprecation always has an explicit, attributable actor.
+  - actor/reason attribution holds for the review/curator paths
+    (`review.approve()` / `review.reject()`, which take `actor`/`reason`
+    arguments); `supersede()` / `contradict()` / `transition_esm()` do **not**
+    themselves record an actor/reason, so attribution for those is the calling
+    context's responsibility, not a guarantee of the function signature.
 
 ## ADR-009: Stdlib-only runtime core; optional lazy extras
 

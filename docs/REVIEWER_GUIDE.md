@@ -96,13 +96,18 @@ All commands are stdlib-only CLI (`velantrim …` after `pip install .`):
 
 **TruthGate (strict by default — Track 3A, #172).**
 The strict policy is the production default; only `ENABLE_TRUTH_POLICY=off` opts
-into the legacy bypass. An `LLM_OUTPUT` can never become a `WORLD_FACT` on its own:
+into the legacy bypass. Under the strict policy an `LLM_OUTPUT` cannot become a
+`WORLD_FACT` on its own. This admission behaviour (on/off/unset) is pinned by
+`tests/test_truth_gate.py` — that is the authoritative proof, not a CLI command.
 
 ```bash
-velantrim invariant-check          # machine-checkable epistemic invariants over L3
+velantrim invariant-check          # read-only at-rest scan of existing L3 facts
 ```
 
-See `tests/test_truth_gate.py` for the on/off/unset behaviour pins.
+Note: `invariant-check` is a read-only at-rest scan of the current L3 state; it
+does **not** call TruthGate or exercise `ENABLE_TRUTH_POLICY`, so it does not by
+itself prove that an `LLM_OUTPUT` write is blocked (see `tests/test_truth_gate.py`
+for that).
 
 **Receipt (sealed, replayable provenance).**
 
@@ -115,10 +120,14 @@ velantrim verify-receipt receipt.json --strict-provenance
 **Per-fact provenance & audit (Track 1, #168).**
 
 ```bash
-velantrim history <fact_id>     # truth provenance of a fact
+velantrim history <fact_id>     # truth-maintenance history (supersede/contradict edges)
 velantrim audit                 # tamper-evident audit log (erase/restrict/override)
 velantrim audit-verify          # verify the audit hash chain + signatures
 ```
+
+Note: `velantrim history` reads truth-maintenance graph edges via `fact_history`
+(`core/reconcile.py`); it does **not** read the per-fact `ProvenanceChain`
+(`core/provenance_chain.py`, wired into the erase path under #168).
 
 **Write-path gate + accountable overrides (Track 3B, #175).**
 Curator force-overrides of a blocked fact are recorded under

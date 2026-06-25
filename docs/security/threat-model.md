@@ -77,16 +77,16 @@ as guarantees beyond that (see §6 for residual risk and non-claims).
 | Threat | Mitigation in code |
 |--------|--------------------|
 | LLM-generated text presented as an independently-sourced world-fact | ADR-001 (LLM is speech, not a canon writer). Type-aware `truth_gate()` blocks `LLM_OUTPUT` + `WORLD_FACT` without an independent source under the strict policy (`core/truth_gate.py`). |
-| Fact admitted without any source | `truth_gate()` rejects a fact without a `source` (returns `(False, reason)`). |
+| Fact admitted without any source | `truth_gate()` rejects a fact whose `source` is empty/falsey (returns `(False, reason)`). **Caveat:** `store_fact` defaults an *omitted* source to the literal `"unknown"` (`core/memory.py`), which is truthy and passes this check — the gate enforces a non-empty source, not a *meaningful / verifiable* one. |
 | Caller identity on the optional API | `/review/*` bearer-token guard when `VELANTRIM_API_TOKEN` is set (constant-time compare). No general authn layer otherwise (see §7). |
 
 ### Tampering (integrity)
 
 | Threat | Mitigation in code |
 |--------|--------------------|
-| Direct L3 write bypassing the gate | **Single entry point**: admission goes through `truth_gate()`; `store_fact` writes L0/L1 only, never L3. The audit found **no unguarded Canon/L3 write paths** — all L3 writes are either TruthGate/Guardian-gated or operate only on already-Validated facts. |
-| Mutating the immutable core | Invariant **I6**: `transition_esm` raises `ImmutableStateError` for Ring Zero IDs (`VALUES_CORE`, `RING_ZERO`). |
-| Illegal epistemic transition (e.g. Collapsed → Validated) | `ESM_TRANSITIONS` matrix validated in `transition_esm`. |
+| Direct L3 write bypassing the gate | **Primary entry point**: admission / ingest writes go through `truth_gate()`; `store_fact` writes L0/L1 only, never L3. Most other L3 merges are metadata re-syncs of an already-admitted fact. **Caveat:** those sync paths do not re-check the gate, and `compliance._sync_restriction()` (`core/compliance.py`) does **not** require `Validated` — so restricting an `Observed` fact would merge it into L3. Treat "no unguarded L3 writes" as scoped to the admission/ingest paths, not an absolute guarantee. |
+| Mutating the immutable core | Invariant **I6**: `transition_esm` raises `ImmutableStateError` for Ring Zero IDs (`VALUES_CORE`, `RING_ZERO`) — this blocks *state transitions* only. **Caveat:** `update_fact()` has no immutable-id guard, so claim/source/metadata of those IDs can still be changed; I6 is not blanket immutability. |
+| Illegal epistemic transition (e.g. Collapsed → Validated) | `ESM_TRANSITIONS` matrix validated in `transition_esm`. **Caveat:** the `store_fact` upsert sets `epistemic_state` directly (only `ESM_STATES` membership is checked, not the matrix), so a re-`store_fact` can move a row across states outside the matrix — see §6. |
 | Lost-update / stale-cache state change | `transition_esm` uses a compare-and-swap (`WHERE fact_id = ? AND epistemic_state = ?`) and evicts stale L0 on a CAS miss (PR #190). This is **defense-in-depth correctness hardening**, not a full atomic state-machine guarantee. |
 | Editing past audit entries | Append-only hash chain in `core/audit.py`; `verify_audit_log()` detects edits/reordering; optional per-entry HMAC (`VELANTRIM_AUDIT_KEY`). |
 
@@ -95,7 +95,7 @@ as guarantees beyond that (see §6 for residual risk and non-claims).
 | Threat | Mitigation in code |
 |--------|--------------------|
 | "This claim was never reviewed / I never approved it" | Curator override is an explicit, attributed, audited event (ADR-004); recorded with actor + reason. |
-| Silent automatic promotion/deprecation | Reconcile is **append-only / advisory** (ADR-008): `record_occurrence` is a frequency signal (not independent evidence) and never changes confidence/truth_status/ESM; `find_conflicts` returns candidates, not verdicts; the supersede/contradict/review decision stays with the caller / pipeline / curator. |
+| Silent automatic promotion/deprecation | Reconcile's *occurrence / conflict* surface is **append-only / advisory** (ADR-008): `record_occurrence` is a frequency signal (not independent evidence) and never changes confidence/truth_status/ESM; `find_conflicts` returns candidates, not verdicts. State-changing operations (`supersede`/`contradict`) are explicit and caller-invoked, never automatic. |
 
 ### Information disclosure
 
@@ -124,8 +124,11 @@ as guarantees beyond that (see §6 for residual risk and non-claims).
 
 ## 5. Mitigation map (verified references)
 
-- **Admission boundary:** `core/truth_gate.py` — pure `(passed, reason)`
-  function, no DB write/no Canon mutation (ADR-007); caller performs writes.
+- **Admission boundary:** `core/truth_gate.py` — `(passed, reason)` decision
+  function with no DB write / no Canon mutation (ADR-007); caller performs
+  writes. Note its threshold reads `core/adaptation` and `ENABLE_TRUTH_POLICY`
+  at call time, so the decision depends on contextual state, not the evidence
+  package alone.
 - **Single L3 entry:** `core/pipeline.py` / `core/ingest.py` /
   `core/review.py` — L3 merges occur only after admission, or on
   already-Validated facts.
@@ -135,7 +138,9 @@ as guarantees beyond that (see §6 for residual risk and non-claims).
 - **Audit chain:** `core/audit.py` — append-only hash chain, `verify_audit_log()`,
   optional HMAC.
 - **Encryption at rest (opt-in):** `core/crypto.py`.
-- **Reconcile discipline:** `core/reconcile.py` — append-only/advisory (ADR-008).
+- **Reconcile discipline:** `core/reconcile.py` — the occurrence/conflict
+  surface is append-only/advisory; `supersede()`/`contradict()` are explicit,
+  caller-invoked operations that *do* transition state, sync L3 and add edges (ADR-008).
 
 ## 6. Residual risks & explicit non-claims
 
@@ -150,7 +155,11 @@ These are stated openly to avoid overclaiming:
    `off` knowingly opt into the legacy behavior.
 2. **CAS in `transition_esm` is defense-in-depth, not full atomicity.** It
    catches lost-update / stale-cache divergence; it is not a thread/process lock
-   and does not cover the independent `store_fact` upsert path.
+   and does not cover the independent `store_fact` upsert path. That upsert sets
+   `epistemic_state` from the incoming value (validated only against
+   `ESM_STATES`, not `ESM_TRANSITIONS`), so a re-`store_fact` can rewrite e.g. a
+   `Collapsed` row to `Validated`, bypassing the transition matrix — a residual
+   write path the `transition_esm` CAS does not cover.
 3. **On-disk L3 plaintext.** Field-level encryption covers L1 personal-data
    columns only when enabled; on-disk L3 claims are plaintext (mitigate with
    full-disk encryption or Art. 17 erasure).
