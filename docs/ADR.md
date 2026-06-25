@@ -148,10 +148,11 @@ today).
   - corroboration that *does* raise confidence stays an explicit, separate
     `reinforce()` decision;
   - conflict signals are inputs to a decision, never the decision itself;
-  - actor/reason attribution holds for the review/curator paths
-    (`review.approve()` / `review.reject()`, which take `actor`/`reason`
-    arguments); `supersede()` / `contradict()` / `transition_esm()` do **not**
-    themselves record an actor/reason, so attribution for those is the calling
+  - reason attribution is recorded for the *force-approve* and *reject* paths
+    (`review.approve(force=True, …, reason=…)` and `review.reject(…, reason=…)`);
+    a normal `review.approve()` records actor (and optional note/diagnosis) but
+    **not** a reason, and `supersede()` / `contradict()` / `transition_esm()` do
+    not take actor/reason at all — so attribution for those is the calling
     context's responsibility, not a guarantee of the function signature.
 
 ## ADR-009: Stdlib-only runtime core; optional lazy extras

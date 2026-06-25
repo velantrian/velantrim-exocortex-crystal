@@ -51,9 +51,12 @@ canonical — or a path that degrades the auditability of how a claim got there.
 
 1. **Ingestion boundary** — user/external input → `core/ingest.py` →
    `guardian()` → `truth_gate()` → (on pass) caller performs the L3 write.
-   TruthGate is a **pure admission function**: it returns `(passed, reason)`
-   and does not itself write to the DB or mutate Canon (ADR-007). The write is
-   performed by the caller (pipeline / ingest / review) only on admission.
+   TruthGate is an **admission / decision function**: it returns `(passed, reason)`
+   and does not itself write to the DB or mutate Canon (ADR-007). It is *not*
+   pure over the evidence package alone — its threshold reads `core/adaptation`
+   and `ENABLE_TRUTH_POLICY` at call time (see §4–§6) — so the decision is not
+   guaranteed replayable as that context changes. The write is performed by the
+   caller (pipeline / ingest / review) only on admission.
 2. **Optional HTTP surface** — the optional FastAPI service
    (`pip install ".[api]"`) binds to `127.0.0.1` by default and is a
    localhost-trust surface. `/review/*` endpoints carry an opt-in bearer-token
@@ -84,7 +87,7 @@ as guarantees beyond that (see §6 for residual risk and non-claims).
 
 | Threat | Mitigation in code |
 |--------|--------------------|
-| Direct L3 write bypassing the gate | **Primary entry point**: admission / ingest writes go through `truth_gate()`; `store_fact` writes L0/L1 only, never L3. Most other L3 merges are metadata re-syncs of an already-admitted fact. **Caveat:** those sync paths do not re-check the gate, and `compliance._sync_restriction()` (`core/compliance.py`) does **not** require `Validated` — so restricting an `Observed` fact would merge it into L3. Treat "no unguarded L3 writes" as scoped to the admission/ingest paths, not an absolute guarantee. |
+| Direct L3 write bypassing the gate | **Primary entry point**: admission / ingest writes go through `truth_gate()`; `store_fact` writes L0/L1 only, never L3. Most other L3 merges are metadata re-syncs of an already-admitted fact. **Caveat:** those sync paths do not re-check the gate, and some do not require `Validated` — e.g. `compliance._sync_restriction()` (`core/compliance.py`) merges a restricted fact, and `reconcile.reinforce()` (`core/reconcile.py`) calls `_sync_l3()` after a confidence/metadata change; either can merge an `Observed` fact into L3. Treat "no unguarded L3 writes" as scoped to the admission/ingest paths, not an absolute guarantee. |
 | Mutating the immutable core | Invariant **I6**: `transition_esm` raises `ImmutableStateError` for Ring Zero IDs (`VALUES_CORE`, `RING_ZERO`) — this blocks *state transitions* only. **Caveat:** `update_fact()` has no immutable-id guard, so claim/source/metadata of those IDs can still be changed; I6 is not blanket immutability. |
 | Illegal epistemic transition (e.g. Collapsed → Validated) | `ESM_TRANSITIONS` matrix validated in `transition_esm`. **Caveat:** the `store_fact` upsert sets `epistemic_state` directly (only `ESM_STATES` membership is checked, not the matrix), so a re-`store_fact` can move a row across states outside the matrix — see §6. |
 | Lost-update / stale-cache state change | `transition_esm` uses a compare-and-swap (`WHERE fact_id = ? AND epistemic_state = ?`) and evicts stale L0 on a CAS miss (PR #190). This is **defense-in-depth correctness hardening**, not a full atomic state-machine guarantee. |
