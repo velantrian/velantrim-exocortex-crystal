@@ -100,7 +100,7 @@ today).
   - biologically inspired component names are documented as engineering
     metaphors in [METAPHOR_VS_MECHANISM.md](./METAPHOR_VS_MECHANISM.md).
 
-## ADR-007: TruthGate as a pure admission function
+## ADR-007: TruthGate as an admission / decision function
 
 - **Status:** Accepted
 - **Context:** Admission control and persistence are easy to conflate. If the
