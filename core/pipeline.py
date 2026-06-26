@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from core.trace import build_trace, promote_trace, format_trace
 from core.memory import (
-    store_fact, get_fact, transition_esm,
+    store_fact, get_fact, transition_esm, ESM_TRANSITIONS,
 )
 from core.queue import get_outbox_queue
 from core.l3_graph import get_l3_graph
@@ -601,6 +601,17 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
             # A recall fact from L3 is already Validated — a repeated transition is not allowed in
             # the ESM matrix, so we only transition the not-yet-validated ones.
             if fact.get("epistemic_state") != "Validated":
+                # Promotion guard: only attempt the transition if "Validated" is a
+                # reachable next state from the fact's current ESM state. Terminal
+                # states (Collapsed, ImmutableCore) and non-promotable states
+                # (Contradicted, Deprecated) would raise ValueError inside
+                # transition_esm, which the broad L3 exception handler would catch
+                # and misroute into the L3 outbox — letting drain_l3_outbox() later
+                # merge a non-Validated fact into Canon without re-checking the gate.
+                if "Validated" not in ESM_TRANSITIONS.get(
+                    fact.get("epistemic_state", "Observed"), set()
+                ):
+                    continue
                 # CAS guard: if the persisted state changed under us (a competing
                 # writer), transition_esm returns False and evicts the stale L0
                 # entry. Do NOT merge a stale payload into the canon — skip this
