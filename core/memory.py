@@ -366,8 +366,13 @@ def _l0_get(fact_id: str) -> Optional[Dict]:
 def store_fact(fact: Dict) -> None:
     """
     Store a fact in L0 (LRU RAM) and L1 (SQLite).
-    Initial ESM state: Observed.
-    A direct write to the L3 graph — only via the TruthGate (not here).
+
+    New facts: epistemic_state from the call is persisted and cached.
+    Existing facts (conflict): epistemic_state is PRESERVED from the DB;
+    other fields (claim, source, confidence, etc.) are still updated.
+    Use transition_esm() to advance epistemic state explicitly.
+
+    A direct write to the L3 graph is only via the TruthGate (not here).
     """
     fact_id = fact.get("fact_id")
     if not fact_id:
@@ -403,8 +408,6 @@ def store_fact(fact: Dict) -> None:
         "metadata":        metadata_dict,
     }
 
-    _l0_put(fact_id, record)
-
     # Encrypt personal-data fields (claim, metadata) before they touch disk.
     # L0 keeps the plaintext record; only the L1/SQLite copy is encrypted at rest.
     l1_record = {
@@ -426,13 +429,25 @@ def store_fact(fact: Dict) -> None:
                 claim           = excluded.claim,
                 source          = excluded.source,
                 confidence      = excluded.confidence,
-                epistemic_state = excluded.epistemic_state,
                 claim_type      = excluded.claim_type,
                 source_status   = excluded.source_status,
                 significance    = excluded.significance,
                 updated_at      = excluded.updated_at,
                 metadata        = excluded.metadata
         """, l1_record)
+        # Re-read the persisted epistemic_state within the same connection so L0
+        # is never poisoned with the incoming value when this is a conflict-update
+        # (the ON CONFLICT clause intentionally omits epistemic_state, preserving
+        # the existing row's state). For new inserts this returns the incoming
+        # state unchanged. Mirrors the "L0 after DB write" discipline in
+        # transition_esm().
+        row = conn.execute(
+            "SELECT epistemic_state FROM facts WHERE fact_id = ?", (fact_id,)
+        ).fetchone()
+        persisted_state = row["epistemic_state"] if row else epistemic_state
+
+    record["epistemic_state"] = persisted_state
+    _l0_put(fact_id, record)
 
 
 def get_fact(fact_id: str) -> Optional[Dict]:

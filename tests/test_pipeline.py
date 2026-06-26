@@ -385,6 +385,42 @@ def test_rerun_recalls_validated_fact_without_esm_error():
     assert second["answer"] is not None
 
 
+def test_collapsed_fact_skipped_in_promotion_not_enqueued():
+    """Regression for Codex review #4: a fact already Collapsed in L1 must be
+    silently skipped in the ESM promotion loop — its illegal transition must not
+    fall into the broad L3 exception handler and must not be enqueued into the
+    L3 outbox for drain_l3_outbox() to later merge into Canon."""
+    from core.pipeline import run
+    from core.memory import transition_esm, get_all_facts
+    from core.queue import get_outbox_queue
+
+    # First run: demo-seed facts land in L1 and are promoted to Validated.
+    first = run("quantum entanglement")
+    assert first.get("error") is None
+
+    # Collapse one of the now-Validated facts (Validated → Collapsed is a
+    # valid matrix step — this simulates curator-driven logical removal).
+    validated = get_all_facts("Validated")
+    assert validated, "expected at least one Validated fact after first run"
+    target_id = validated[0]["fact_id"]
+    assert transition_esm(target_id, "Collapsed") is True
+
+    # Second run: the demo-seed re-surfaces the same fact as "Observed", but
+    # L1 now has "Collapsed". The promotion guard must skip it silently —
+    # the ValueError from transition_esm must NOT propagate to the broad L3
+    # exception handler (which would enqueue the fact for drain_l3_outbox).
+    # The pipeline may return "insufficient grounding" if all facts are now
+    # terminal; that is correct behavior, not a promotion failure.
+    second = run("quantum entanglement")
+    error = second.get("error", "")
+    assert "L3 promotion failed" not in error, (
+        f"Collapsed fact triggered L3 outbox path: {error}"
+    )
+    assert target_id not in get_outbox_queue().pending(), (
+        "Collapsed fact must not be enqueued in the L3 outbox"
+    )
+
+
 # ─── guardian ───────────────────────────────────────────────────────────────
 
 def test_guardian_rejects_empty_facts():
