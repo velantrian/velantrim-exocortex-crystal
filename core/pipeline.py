@@ -234,6 +234,13 @@ def build_facts_pack(
         }
         # L0/L1 store (store_fact does not persist the transient _score).
         store_fact(fact)
+        # Sync epistemic_state from the persisted store: store_fact preserves the
+        # existing state on conflict, so the fact dict may carry a stale retrieve()
+        # value (e.g. demo-seed items always arrive as "Observed") while the DB
+        # already holds a more advanced state such as "Validated".
+        persisted = get_fact(fact_id)
+        if persisted:
+            fact["epistemic_state"] = persisted["epistemic_state"]
         # _score — the relevance rank, only for ordering the pack; not written
         # to the canon (_l3_payload takes the clean persistent record without _score).
         fact["_score"] = round(float(item.get("_score", fact["confidence"])), 4)

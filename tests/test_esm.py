@@ -168,3 +168,76 @@ def test_transition_esm_cas_miss_aborts_without_clobber():
     # returns the fresh persisted state, never the attempted "Validated".
     assert "cas_miss" not in _L0
     assert get_fact("cas_miss")["epistemic_state"] == "Supported"
+
+
+# ─── store_fact() ESM preservation on upsert ──────────────────────────────────
+# Regression tests for the fix that removes epistemic_state from the ON CONFLICT
+# clause: store_fact must not overwrite an existing fact's state on upsert.
+
+def test_store_fact_preserves_collapsed_on_conflict():
+    """Collapsed must stay Collapsed when store_fact upserts with epistemic_state=Validated."""
+    from core.memory import store_fact, _db
+
+    store_fact({"fact_id": "sf_collapse", "claim": "x", "source": "s",
+                "confidence": 0.5, "epistemic_state": "Collapsed"})
+
+    store_fact({"fact_id": "sf_collapse", "claim": "y", "source": "s",
+                "confidence": 0.8, "epistemic_state": "Validated"})
+
+    with _db() as conn:
+        row = conn.execute(
+            "SELECT epistemic_state FROM facts WHERE fact_id = ?", ("sf_collapse",)
+        ).fetchone()
+    assert row["epistemic_state"] == "Collapsed"
+
+
+def test_store_fact_preserves_validated_on_conflict():
+    """Validated must stay Validated when store_fact upserts with epistemic_state=Observed."""
+    from core.memory import store_fact, _db
+
+    store_fact({"fact_id": "sf_valid", "claim": "a", "source": "s",
+                "confidence": 1.0, "epistemic_state": "Validated"})
+
+    store_fact({"fact_id": "sf_valid", "claim": "b", "source": "s",
+                "confidence": 0.3, "epistemic_state": "Observed"})
+
+    with _db() as conn:
+        row = conn.execute(
+            "SELECT epistemic_state FROM facts WHERE fact_id = ?", ("sf_valid",)
+        ).fetchone()
+    assert row["epistemic_state"] == "Validated"
+
+
+def test_store_fact_new_fact_accepts_initial_state():
+    """New facts must still receive the requested initial epistemic_state (insert path unaffected)."""
+    from core.memory import store_fact, _db
+
+    store_fact({"fact_id": "sf_new_hypo", "claim": "hypothesis", "source": "s",
+                "confidence": 0.6, "epistemic_state": "Hypothesized"})
+
+    with _db() as conn:
+        row = conn.execute(
+            "SELECT epistemic_state FROM facts WHERE fact_id = ?", ("sf_new_hypo",)
+        ).fetchone()
+    assert row["epistemic_state"] == "Hypothesized"
+
+
+def test_store_fact_l0_not_poisoned_on_conflict():
+    """After a conflict-update, L0 must hold the persisted state, not the incoming one.
+    Non-state fields (confidence) must still be updated normally.
+    """
+    from core.memory import store_fact, _l0_get, _L0
+
+    store_fact({"fact_id": "sf_l0_poison", "claim": "v1", "source": "s",
+                "confidence": 0.5, "epistemic_state": "Collapsed"})
+
+    # Evict from L0 so the re-read path inside the _db() block is exercised.
+    _L0.pop("sf_l0_poison", None)
+
+    store_fact({"fact_id": "sf_l0_poison", "claim": "v2", "source": "s",
+                "confidence": 0.9, "epistemic_state": "Validated"})
+
+    cached = _l0_get("sf_l0_poison")
+    assert cached is not None
+    assert cached["epistemic_state"] == "Collapsed"   # persisted state preserved
+    assert cached["confidence"] == 0.9                # non-state field updated normally

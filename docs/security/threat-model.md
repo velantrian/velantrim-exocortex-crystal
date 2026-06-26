@@ -89,7 +89,7 @@ as guarantees beyond that (see §6 for residual risk and non-claims).
 |--------|--------------------|
 | Direct L3 write bypassing the gate | **Primary entry point**: admission / ingest writes go through `truth_gate()`; `store_fact` writes L0/L1 only, never L3. Most other L3 merges are metadata re-syncs of an already-admitted fact. **Caveat:** those sync paths do not re-check the gate, and some do not require `Validated` — e.g. `compliance._sync_restriction()` (`core/compliance.py`) merges a restricted fact, and `reconcile.reinforce()` (`core/reconcile.py`) calls `_sync_l3()` after a confidence/metadata change; either can merge an `Observed` fact into L3. Treat "no unguarded L3 writes" as scoped to the admission/ingest paths, not an absolute guarantee. |
 | Mutating the immutable core | Invariant **I6**: `transition_esm` raises `ImmutableStateError` for Ring Zero IDs (`VALUES_CORE`, `RING_ZERO`) — this blocks *state transitions* only. **Caveat:** `update_fact()` has no immutable-id guard, so claim/source/metadata of those IDs can still be changed; I6 is not blanket immutability. |
-| Illegal epistemic transition (e.g. Collapsed → Validated) | `ESM_TRANSITIONS` matrix validated in `transition_esm`. **Caveat:** the `store_fact` upsert sets `epistemic_state` directly (only `ESM_STATES` membership is checked, not the matrix), so a re-`store_fact` can move a row across states outside the matrix — see §6. |
+| Illegal epistemic transition (e.g. Collapsed → Validated) | `ESM_TRANSITIONS` matrix validated in `transition_esm`. `store_fact` preserves the existing `epistemic_state` in the DB on conflict (the `ON CONFLICT` clause omits `epistemic_state`); L0 is updated only after the DB write using the persisted state. A re-`store_fact` can no longer bypass the transition matrix — use `transition_esm()` to advance state. |
 | Lost-update / stale-cache state change | `transition_esm` uses a compare-and-swap (`WHERE fact_id = ? AND epistemic_state = ?`) and evicts stale L0 on a CAS miss (PR #190). This is **defense-in-depth correctness hardening**, not a full atomic state-machine guarantee. |
 | Editing past audit entries | Append-only hash chain in `core/audit.py`; `verify_audit_log()` detects edits/reordering; optional per-entry HMAC (`VELANTRIM_AUDIT_KEY`). |
 
@@ -157,12 +157,12 @@ These are stated openly to avoid overclaiming:
    `UNVERIFIED`). Strict policy is the default (unset / `on`); operators who set
    `off` knowingly opt into the legacy behavior.
 2. **CAS in `transition_esm` is defense-in-depth, not full atomicity.** It
-   catches lost-update / stale-cache divergence; it is not a thread/process lock
-   and does not cover the independent `store_fact` upsert path. That upsert sets
-   `epistemic_state` from the incoming value (validated only against
-   `ESM_STATES`, not `ESM_TRANSITIONS`), so a re-`store_fact` can rewrite e.g. a
-   `Collapsed` row to `Validated`, bypassing the transition matrix — a residual
-   write path the `transition_esm` CAS does not cover.
+   catches lost-update / stale-cache divergence; it is not a thread/process lock.
+   The `store_fact` upsert path no longer overwrites `epistemic_state` on
+   conflict: the `ON CONFLICT` clause omits `epistemic_state`, and L0 is
+   populated from the persisted DB state after the write. A re-`store_fact`
+   cannot bypass the transition matrix. Use `transition_esm()` to advance
+   epistemic state explicitly.
 3. **On-disk L3 plaintext.** Field-level encryption covers L1 personal-data
    columns only when enabled; on-disk L3 claims are plaintext (mitigate with
    full-disk encryption or Art. 17 erasure).
