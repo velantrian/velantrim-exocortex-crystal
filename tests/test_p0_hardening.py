@@ -14,6 +14,9 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+# Repo root so the subprocess can import `core` regardless of cwd.
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+
 from core.consolidate import consolidate
 from core.ingest import ingest
 from core.l3_graph import get_l3_graph
@@ -39,6 +42,11 @@ def _run_probe(cwd, extra_env):
     env = {k: v for k, v in os.environ.items() if k != "VELANTRIM_DB"}
     env.update({"VELANTRIM_L3_BACKEND": "mock", "VELANTRIM_EMBEDDER": "hashing",
                 "VELANTRIM_GENERATOR": "extractive", **extra_env})
+    existing = env.get("PYTHONPATH")
+    env["PYTHONPATH"] = (
+        str(_REPO_ROOT) if not existing
+        else str(_REPO_ROOT) + os.pathsep + existing
+    )
     proc = subprocess.run([sys.executable, "-c", _PROBE], cwd=cwd, env=env,
                           capture_output=True, text=True, timeout=60)
     assert proc.returncode == 0, proc.stderr
