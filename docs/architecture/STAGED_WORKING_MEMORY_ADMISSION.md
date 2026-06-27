@@ -304,7 +304,49 @@ promote only after gate approval
 
 ---
 
-## 13. Test plan for any future implementation
+## 13. Lean research boundary
+
+This future direction should remain deliberately small until there is evidence that a larger mechanism is needed.
+
+The proposed working layer is a workbench, not a warehouse. Its purpose is to hold and sort live candidate material, not to become a universal ontology, a second Canon, or a general-purpose personal-memory product.
+
+A minimal future prototype should start with the smallest useful shape:
+
+```yaml
+working_item_minimum:
+  id: WD-0001
+  content: "..."
+  kind: idea | fact | hypothesis | emotion | question
+  importance: high | medium | low | tbd
+  can_write_l3: false
+```
+
+Optional fields may be added only when they protect an existing boundary or make review meaningfully clearer:
+
+```yaml
+optional_when_needed:
+  source: user | ai | file | tool | web
+  ttl: duration or expiry policy
+```
+
+Velaris or any future research mode should be treated as an operating mode over working items, not as a separate storage authority. It may loosen ideation pressure, but it must not loosen admission requirements.
+
+Weakest-status aggregation should be treated as an epistemic ceiling, not as a probability estimate. A derived claim must not be trusted above the weakest unresolved component that supports it.
+
+TTL should represent liveness, not truth. Returning to an item may justify keeping it active for review, but repeated attention must not increase epistemic authority.
+
+Anti-overbuild rule:
+
+```text
+Do not add fields, zones, graphs, classifiers, or persistence merely because they are possible.
+Add them only when they preserve a boundary, reduce review ambiguity, or prevent Canon pollution.
+```
+
+This keeps the idea grant-safe: the repository records a bounded future research direction, not an implementation commitment or an expanded runtime claim.
+
+---
+
+## 14. Test plan for any future implementation
 
 Implementation should start with tests before runtime integration.
 
@@ -327,7 +369,7 @@ The implementation should fail closed when classification is uncertain.
 
 ---
 
-## 14. Suggested future path
+## 15. Suggested future path
 
 A safe path, if approved later:
 
@@ -342,7 +384,7 @@ A safe path, if approved later:
 
 ---
 
-## 15. One-line law
+## 16. One-line law
 
 ```text
 Working memory may help the system think, but only admitted evidence may help the system know.
