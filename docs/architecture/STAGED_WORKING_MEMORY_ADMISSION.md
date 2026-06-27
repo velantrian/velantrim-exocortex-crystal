@@ -56,9 +56,9 @@ source labeling + classification + importance review
         ↓
 candidate selection
         ↓
-TruthGate + Guardian + Receipt
+Guardian + TruthGate + write-side audit/provenance
         ↓
-L3 Canon only if admitted
+L3 graph write and/or verified Canon authority only if admitted
 ```
 
 The proposed working layer is not Canon. It may assist orientation, review, and candidate preparation, but it must not make claims authoritative by itself.
@@ -70,15 +70,17 @@ The proposed working layer is not Canon. It may assist orientation, review, and 
 Crystal's core framing remains:
 
 ```text
-Graph / Canon = truth-bearing admitted memory
+L3 Graph = typed graph memory substrate; may contain verified, user-reported, hypothesis, subjective, or other status-tagged nodes
+Canon = verified, trace-valid admitted subgraph / evidence-authorized claims
 Index = speed
-TruthGate = epistemic boundary
-Guardian = safety and policy boundary
-TRACE / Receipt = proof path
+Guardian = structural, policy, and safety boundary
+TruthGate = epistemic verification boundary
+Write-side audit / provenance = proof path for admission or exceptional override
+Receipt / TRACE = answer/source proof path where applicable
 LLM = speech / phrasing layer only
 ```
 
-A staged working-memory layer would sit before the admission boundary. It would help separate:
+A staged working-memory layer would sit before the Guardian/TruthGate admission boundary. It would help separate:
 
 - temporary context from durable memory;
 - user-reported statements from verified world facts;
@@ -97,16 +99,16 @@ A future implementation could represent incoming material as explicit working it
 working_item:
   id: WD-0001
   source_type: user_input | tool_output | file | web | system_generated | hypothesis
-  source_ref: optional pointer to the originating turn, file, URL, receipt, or tool result
+  source_ref: optional pointer to the originating turn, file, URL, tool result, or provenance event
   claim_type: idea | question | user_reported | world_fact_candidate | hypothesis | task | risk
   truth_status: unverified | hypothesis | conflicted | verified
   importance: high | medium | low
   attention_priority: high | medium | low
   memory_status: temporary | review_pending | admitted | archived | rejected
   can_write_l3: false
-  requires_truthgate: true
   requires_guardian: true
-  requires_receipt: true
+  requires_truthgate: true
+  requires_write_proof: true
 ```
 
 The central field is:
@@ -155,7 +157,8 @@ ARCHIVE_IS_HISTORY_NOT_PROOF
 EMOTION_IS_CONTEXT_NOT_CANON
 VELARIS_OR_RESEARCH_MODE_CANNOT_PROMOTE_TO_CANON
 ADAPTATION_MUST_NOT_LOWER_TRUTHGATE
-PROMOTION_REQUIRES_TRUTHGATE_GUARDIAN_RECEIPT
+ORDINARY_PROMOTION_REQUIRES_GUARDIAN_TRUTHGATE_WRITE_PROOF
+AUDITED_FORCE_APPROVE_REMAINS_EXPLICIT_AND_LOGGED
 ```
 
 These invariants are more important than the specific data model.
@@ -219,17 +222,19 @@ Correct path:
 ```text
 working item
   → candidate selection
-  → TruthGate
   → Guardian
-  → Receipt / TRACE
-  → L3 Canon
+  → TruthGate
+  → write-side provenance / audit event
+  → L3 graph write, with verified Canon authority only when the admitted status supports it
 ```
+
+Audited force-approve workflows, if supported by the runtime, are exceptional review actions rather than normal promotion. They must remain explicit, re-run the relevant gate diagnostics where applicable, and record a dedicated audit event instead of silently redefining a blocked working item as evidence.
 
 Forbidden paths:
 
 ```text
-working item → L3 Canon
-hypothesis → L3 Canon
+working item → verified Canon
+hypothesis → verified Canon
 archive → evidence
 AI-generated text → evidence
 user_reported world fact → verified fact
@@ -299,7 +304,7 @@ send to research mode
 send to admission review
 archive
 discard
-promote only after gate approval
+promote only after gate approval or explicit audited exception
 ```
 
 ---
@@ -358,11 +363,11 @@ test_user_reported_world_fact_is_not_verified
 test_importance_does_not_change_truth_status
 test_ai_generated_item_is_not_evidence
 test_archive_item_is_not_evidence
-test_hypothesis_requires_truthgate_before_promotion
+test_hypothesis_requires_guardian_truthgate_before_promotion
 test_adaptation_cannot_lower_truthgate_threshold
 test_quarantine_blocks_promotion
 test_composed_claim_inherits_weakest_status
-test_promotion_requires_receipt
+test_promotion_requires_write_proof_or_audited_exception
 ```
 
 The implementation should fail closed when classification is uncertain.
@@ -387,5 +392,5 @@ A safe path, if approved later:
 ## 16. One-line law
 
 ```text
-Working memory may help the system think, but only admitted evidence may help the system know.
+Working memory may organize candidate material, but only admitted evidence may support authoritative claims.
 ```
