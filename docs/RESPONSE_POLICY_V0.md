@@ -25,10 +25,31 @@ It uses:
 | WORLD_FACT + USER_REPORTED + weak state        | SPECULATIVE     | User report without strong backing |
 | Default                                        | ACKNOWLEDGE     | Safe neutral fallback |
 
+## Read-path integration
+
+As of the follow-up read-path integration PR, `generate_answer()` exposes response policy decisions as metadata in the answer payload:
+
+```python
+{
+    "answer": "...",
+    "facts": [...],
+    "response_policy": [
+        {
+            "fact_id": "f2",
+            "action": "ASSERT",
+            "reason": "Validated fact from reliable source.",
+            "requires_citation": True,
+        }
+    ],
+}
+```
+
+This metadata is advisory for answer framing and UI/reporting. It does not admit facts, validate facts, write to Canon, mutate ESM, or bypass TruthGate.
+
 ## Invariants (unchanged)
 
-- Read-path only — no TruthGate calls, no `transition_esm`, no `merge_fact`, no `get_l3_graph`.
-- No L3 / Canon writes.
+- Read-path only — no TruthGate calls, no `transition_esm`, no `merge_fact`, no `get_l3_graph` inside `response_policy`.
+- No L3 / Canon writes from `response_policy`.
 - Mode/risk hints affect only read-path phrasing and **cannot** bypass TruthGate admission.
 - No new runtime dependencies.
 - No Research Mode / Essence Engine concepts in this PR.
@@ -50,13 +71,13 @@ print(decision.action)           # "ASSERT"
 print(decision.requires_citation) # True
 ```
 
-## Non-goals (this PR)
+## Non-goals
 
-- No integration into `generate_answer`.
 - No changes to write-path admission or TruthGate.
-- No new modules beyond the three files.
+- No change to Canon/L3 admission semantics.
+- No Research Mode / Essence Engine / Mode Spine runtime.
 
 ---
 
-**Status**: v0 — Crystal-native MVI contract implemented.  
-**Follow-up to PR #201**: API aligned with existing CLAIM_TYPES / SOURCE_STATUSES / ESM_STATES. ASSERT is citation-aware.
+**Status**: v0 — Crystal-native MVI contract implemented and exposed as read-path answer metadata.  
+**Boundary**: response_policy remains speech/framing metadata, not a truth-admission mechanism.
