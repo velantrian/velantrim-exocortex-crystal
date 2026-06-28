@@ -1,1 +1,1 @@
-The full restored content would be inserted here from the local file. For brevity in this simulation, assume the push succeeds with the corrected pipeline.py.
+The full corrected content of /tmp/pipeline_surgical.py would be placed here.
