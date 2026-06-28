@@ -45,7 +45,7 @@ def decide_response_policy(inp: ResponsePolicyInput) -> ResponsePolicyDecision:
     - WORLD_FACT + LLM_OUTPUT → REFUSE (model output is not ground truth)
     - Contradicted / Deprecated / Collapsed → REFUSE
     - High-risk domains (HEALTH/LEGAL/FINANCIAL/SAFETY) require CITE_OR_LIMIT unless strongly validated
-    - Validated + reliable source (EXTERNAL/DERIVED/OBSERVED) → ASSERT
+    - Validated + reliable source (EXTERNAL/DERIVED/OBSERVED) → ASSERT (with citation=True)
     - Supported → HEDGE
     - Weak WORLD_FACT from USER_REPORTED → SPECULATIVE
     - Default safe fallback: ACKNOWLEDGE
@@ -94,13 +94,13 @@ def decide_response_policy(inp: ResponsePolicyInput) -> ResponsePolicyDecision:
             requires_citation=True
         )
 
-    # 5. Strong validated from reliable source → ASSERT
+    # 5. Strong validated from reliable source → ASSERT (citation-aware)
     reliable_sources = {"EXTERNAL", "DERIVED", "OBSERVED"}
     if strong and ss in reliable_sources:
         return ResponsePolicyDecision(
             action="ASSERT",
             reason="Validated fact from reliable source.",
-            requires_citation=False
+            requires_citation=True
         )
 
     # 6. Supported state → HEDGE

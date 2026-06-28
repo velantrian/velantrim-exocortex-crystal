@@ -72,7 +72,7 @@ def test_strong_validated_assert():
     )
     decision = decide_response_policy(inp)
     assert decision.action == "ASSERT"
-    assert not decision.requires_citation
+    assert decision.requires_citation  # even strong ASSERT remains citation-aware in Crystal
 
 
 def test_supported_hedge():
@@ -103,3 +103,37 @@ def test_decision_is_frozen():
     decision = decide_response_policy(make_input())
     with pytest.raises(Exception):  # frozen dataclass
         decision.action = "HEDGE"  # type: ignore
+
+
+def test_read_path_only_no_forbidden_calls():
+    """Guard: response_policy must never call write-path or TruthGate functions."""
+    import ast
+    import inspect
+
+    source = inspect.getsource(decide_response_policy)
+    forbidden = ["truth_gate(", "transition_esm(", "merge_fact(", "get_l3_graph("]
+    for call in forbidden:
+        assert call not in source, f"Forbidden call found: {call}"
+
+
+def test_mode_hint_cannot_upgrade_weak_claim_to_assert():
+    """Invariant: mode_hint must never promote weak evidence to ASSERT."""
+    # Weak user-reported + mode_hint
+    inp1 = make_input(
+        claim_type="WORLD_FACT",
+        source_status="USER_REPORTED",
+        epistemic_state="Hypothesized",
+        mode_hint="science",
+    )
+    decision1 = decide_response_policy(inp1)
+    assert decision1.action != "ASSERT"
+
+    # Another weak case with strict mode
+    inp2 = make_input(
+        claim_type="WORLD_FACT",
+        source_status="UNKNOWN",
+        epistemic_state="Observed",
+        mode_hint="strict",
+    )
+    decision2 = decide_response_policy(inp2)
+    assert decision2.action != "ASSERT"
