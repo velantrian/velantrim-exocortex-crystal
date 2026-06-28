@@ -20,7 +20,7 @@ It uses:
 | WORLD_FACT + source_status=LLM_OUTPUT          | REFUSE          | Model output is not ground truth |
 | epistemic_state in {Contradicted, Deprecated, Collapsed} | REFUSE     | Conflict or obsolescence |
 | High-risk domain (HEALTH/LEGAL/FINANCIAL/SAFETY) + not Validated | CITE_OR_LIMIT | Requires citation or scope limit |
-| Validated + source in {EXTERNAL, DERIVED, OBSERVED} | ASSERT     | Strong admissible fact |
+| Validated + source in {EXTERNAL, DERIVED, OBSERVED} | ASSERT     | Strong admissible fact (citation-aware) |
 | epistemic_state = Supported                    | HEDGE           | Evidence exists, not fully validated |
 | WORLD_FACT + USER_REPORTED + weak state        | SPECULATIVE     | User report without strong backing |
 | Default                                        | ACKNOWLEDGE     | Safe neutral fallback |
@@ -47,7 +47,7 @@ inp = ResponsePolicyInput(
 
 decision = decide_response_policy(inp)
 print(decision.action)           # "ASSERT"
-print(decision.requires_citation) # False
+print(decision.requires_citation) # True
 ```
 
 ## Non-goals (this PR)
@@ -59,4 +59,4 @@ print(decision.requires_citation) # False
 ---
 
 **Status**: v0 — Crystal-native MVI contract implemented.  
-**Follow-up to PR #201**: API aligned with existing CLAIM_TYPES / SOURCE_STATUSES / ESM_STATES.
+**Follow-up to PR #201**: API aligned with existing CLAIM_TYPES / SOURCE_STATUSES / ESM_STATES. ASSERT is citation-aware.
