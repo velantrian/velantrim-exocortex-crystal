@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from core.research_mode.essence_card import (
+from prototypes.research_mode.essence_card import (
     CausalCandidateEdge,
     ConfidenceBreakdown,
     ContradictionRef,
