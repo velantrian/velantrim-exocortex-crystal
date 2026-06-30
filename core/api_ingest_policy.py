@@ -3,7 +3,9 @@
 #
 # Default API ingest treats utterances as USER_REPORTED. Privileged
 # source_status values (EXTERNAL/DERIVED/OBSERVED) require explicit import
-# mode, evidence references, and VELANTRIM_API_PRIVILEGED_INGEST=1.
+# mode, declared evidence references in metadata, and
+# VELANTRIM_API_PRIVILEGED_INGEST=1. Refs are not validated against the
+# evidence span store and evidence.attach_evidence() is not called.
 
 import os
 from typing import Any, Dict, List, Optional
@@ -26,6 +28,9 @@ def resolve_api_ingest(
     Returns kwargs fragment for ingest(): source_status and optional metadata.
     Raises ValueError when privileged source_status is requested without the
     full import-mode contract.
+
+    Privileged ingest stores declared evidence_refs in metadata only; it does
+    not validate URIs or attach evidence records.
     """
     refs = [r.strip() for r in (evidence_refs or []) if r and str(r).strip()]
     if source_status in PRIVILEGED_SOURCE_STATUSES:

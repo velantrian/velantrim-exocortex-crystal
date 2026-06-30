@@ -73,7 +73,9 @@ requires `VELANTRIM_API_TOKEN` before startup).
 Public `/ingest` treats utterances as **`USER_REPORTED`** by default. Privileged
 `source_status` values (`EXTERNAL`, `DERIVED`, `OBSERVED`) require
 `VELANTRIM_API_PRIVILEGED_INGEST=1`, `import_mode=true`, and non-empty
-`evidence_refs` on the request.
+`evidence_refs` on the request. The policy requires declared refs and stores
+them in fact `metadata`; it does **not** resolve URIs or attach rows in the
+evidence span store (`core/evidence.py`).
 
 ### Out of scope (current)
 
