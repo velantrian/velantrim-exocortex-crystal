@@ -1,6 +1,6 @@
 # Velantrim Crystal — Current Status
 
-> Date: 2026-06-17
+> Date: 2026-06-30
 > Scope: public Crystal repository status note
 > Status: docs-only integrity map; does not change runtime behaviour
 
@@ -61,6 +61,42 @@ Track 3B — Write-path TruthGate audit/tests        -> IMPLEMENTED (#175)
 
 Each track was delivered as a separate PR. See `TEST_REPORT.md` and
 `docs/IMPLEMENTATION_REALITY_MATRIX.md` for current status.
+
+## Recent PRs — response policy and research mode (status)
+
+These three PRs are recorded here so the public implementation boundary stays
+explicit. The audited suite is now **1252 passed / 12 skipped / 100% coverage**
+(see `TEST_REPORT.md`).
+
+```text
+PR #201 — deterministic response_policy v0            -> IMPLEMENTED (merged)
+PR #202 — wire response_policy onto the read path     -> DRAFT (open, not merged)
+PR #204 — Research Mode v0.5 scaffold (prototypes/)   -> RESEARCH (merged, prototype only)
+```
+
+- **PR #201 — `IMPLEMENTED`.** Deterministic read-path `response_policy v0`
+  (`core/response_policy.py`, `docs/RESPONSE_POLICY_V0.md`, 11 tests). It is a pure
+  read-path policy: it does not change write-path admission, does not write to
+  Canon/L3, and does not replace the TruthGate.
+- **PR #202 — `DRAFT`.** "Expose response_policy on the read path" is **open and not
+  merged**. It is **not implementation truth** and must not be cited as current
+  Crystal runtime until separately merged and listed here.
+- **PR #204 — `RESEARCH` (prototype scaffold only).** The Research Mode v0.5 scaffold
+  was merged under `prototypes/research_mode/` (`prototypes/research_mode/essence_card.py`),
+  not in `core/`, and `prototypes/` is excluded from the installable package list. It
+  is immutable data contracts, a pure transition helper and validators with tests
+  only. Explicitly, Research Mode v0.5 is:
+  - **not** wired into runtime;
+  - **not** wired into TruthGate;
+  - **not** storage;
+  - **not** an extractor;
+  - **not** a worker;
+  - **not** a dashboard;
+  - **not** current Crystal runtime behaviour.
+
+  Crystal public core remains implementation truth. Research Mode / Personal
+  Exo-Cortex / Titan / NoeticCore stay research/prototype directions unless a
+  feature is separately merged and listed here (or in `TEST_REPORT.md`) as runtime.
 
 ## Implementation reality matrix
 
