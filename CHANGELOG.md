@@ -12,11 +12,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Deterministic `response_policy` v0** (#201): new pure read-path module
+  `core/response_policy.py` (`decide_response_policy`) decides response framing
+  (e.g. `requires_citation`) from `claim_type`, `source_status`, and
+  `epistemic_state`. Read-path only — no TruthGate calls, no L3 writes, no new
+  runtime deps; a static guard test pins the no-forbidden-calls invariant. See
+  `docs/RESPONSE_POLICY_V0.md`.
+- **Research Mode v0.5 scaffold** (#204): exploratory `EssenceCard` model under
+  `prototypes/research_mode/` — excluded from the installable runtime package
+  list, not wired into `core/`, TruthGate, storage, the extractor, the worker,
+  or the dashboard. 20 new tests.
+
 ### Fixed
 - **PDF adapter span preservation** (#182): repeated identical paragraphs now
   keep distinct source spans (`core/adapters/pdf_adapter.py`). Adds a regression
   test in `tests/test_wp1_spans.py`; the suite stays at 100% coverage (exact
   count lives in the README badge / `TEST_REPORT.md`).
+- **CAS guard on ESM transitions** (#190): `transition_esm` is now a
+  compare-and-swap — the update matches on the expected prior state, checks
+  rowcount, and only updates the L0 cache after the DB write succeeds. On a
+  CAS miss the stale L0 entry is evicted and the promotion callers
+  (`core/pipeline.py`, `core/ingest.py`, `core/review.py`) abort instead of
+  continuing to an L3 merge / success / audit path. Low-severity
+  defense-in-depth for concurrent/async use, not a full atomicity guarantee.
+- **`store_fact` upsert no longer overwrites `epistemic_state`** (#195): the
+  `ON CONFLICT DO UPDATE` in `core/memory.py` was silently overwriting an
+  existing fact's `epistemic_state`, bypassing the `ESM_TRANSITIONS` matrix
+  enforced by `transition_esm()`. The conflict path now preserves the
+  persisted state and re-reads it within the same connection before the L0
+  cache is populated; `core/pipeline.py` syncs the in-flight fact dict from
+  the persisted store before the ESM promotion guard runs.
+- **`test_p0_hardening` subprocess `ModuleNotFoundError`** (#197): probe
+  subprocesses spawned outside the repo (`cwd=tmp_path`) now get the repo root
+  prepended to `PYTHONPATH`, fixing two tests that import `core.memory`.
 
 ### Documentation
 - **Epistemic dogfooding cases log** (#183): added
@@ -27,6 +56,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Bio-inspired `core/` modules are clarified as tested baseline mechanisms /
   engineering metaphors — not biological cognition and not the full Personal
   Research Mode (which is tracked separately, outside this repository).
+- **Claim metadata glossary linked from README** (#189).
+- **Audit-grounded ADRs 007-010** (#191): added to `docs/ADR.md`.
+- **STRIDE threat model** (#192): added `docs/security/threat-model.md`, then
+  linked from `SECURITY.md` (#193).
+- **Softened Codex-flagged accuracy claims** (#194): narrows reviewer-facing
+  wording in `docs/ADR.md`, `docs/security/threat-model.md`, and
+  `docs/REVIEWER_GUIDE.md` to match verified code behaviour (addresses
+  unresolved Codex accuracy comments on #191, #192, #176). Docs-only; no
+  runtime change.
+- **Staged working-memory admission boundary note** (#198, clarified in #199):
+  added and then refined `docs/architecture/STAGED_WORKING_MEMORY_ADMISSION.md`.
+- **README positioning note** (#200): grant-safe positioning draft at
+  `docs/grants/grant-safe-readme-positioning.md`.
+- **Status sync after response_policy and Research Mode scaffold** (#205):
+  README / `TEST_REPORT.md` baseline updated to 1252 passed / 12 skipped /
+  100% coverage (69 test files, confirmed by a fresh full-suite run on
+  `main @ 063cfdc`); `docs/STATUS.md` records #201 as IMPLEMENTED and #204 as
+  a RESEARCH scaffold under `prototypes/research_mode/`, explicitly not wired
+  into runtime/TruthGate/storage/extractor/worker/dashboard. Docs-only; PR
+  #202 is noted as DRAFT (not merged, not implementation truth).
 
 ## [0.3.0] — 2026-06-17 (reviewer preview)
 
