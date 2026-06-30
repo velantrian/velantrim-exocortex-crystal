@@ -70,7 +70,7 @@ cannot silently drift.
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **100%** (gate enforced at 100%, repo-wide `--cov=.`) |
-| Test files | 75 (`tests/test_*.py`) |
+| Test files | 74 (`tests/test_*.py`) |
 | Python | 3.11 / 3.12 in CI |
 | Runtime dependencies | standard library only |
 
