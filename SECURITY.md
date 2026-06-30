@@ -70,6 +70,11 @@ shell — enforced by test). Set the token whenever anything beyond the local us
 can reach the port (including the default `docker compose` deployment, which
 requires `VELANTRIM_API_TOKEN` before startup).
 
+Public `/ingest` treats utterances as **`USER_REPORTED`** by default. Privileged
+`source_status` values (`EXTERNAL`, `DERIVED`, `OBSERVED`) require
+`VELANTRIM_API_PRIVILEGED_INGEST=1`, `import_mode=true`, and non-empty
+`evidence_refs` on the request.
+
 ### Out of scope (current)
 
 - **Authentication / multi-tenant access control** — beyond the opt-in

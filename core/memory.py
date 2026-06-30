@@ -46,6 +46,35 @@ ESM_TRANSITIONS: Dict[str, set] = {
     "ImmutableCore": set(),
 }
 
+
+# ─── L3 secondary sync admissibility ─────────────────────────────────────────
+# Pre-canonical facts must enter L3 only through TruthGate admission.
+# Secondary sync paths (reinforce, restriction, outbox heal) may update L3
+# metadata only for post-admission facts.
+
+L3_PRE_CANONICAL_STATES = frozenset({"Observed", "Hypothesized", "Supported"})
+
+
+def l3_secondary_sync_admissible(
+    fact: Optional[Dict[str, Any]],
+    *,
+    graph: Any = None,
+) -> bool:
+    """Return True when a fact may be merged into L3 via a secondary sync path."""
+    if fact is None:
+        return False
+    state = fact.get("epistemic_state", "Observed")
+    if state in L3_PRE_CANONICAL_STATES:
+        return False
+    if state == "Validated":
+        return True
+    if state in {"Contradicted", "Deprecated", "ImmutableCore"}:
+        from core.l3_graph import get_l3_graph
+        g = graph if graph is not None else get_l3_graph()
+        return g.get_fact(fact["fact_id"]) is not None
+    return False
+
+
 # ─── CLAIM TYPE: claim modality (axis orthogonal to ESM) ─────────────
 # ESM answers "how verified", claim_type — "what kind of claim it is".
 # WORLD_FACT is separated from FACT on purpose: "a fact about the external world", not "verified".

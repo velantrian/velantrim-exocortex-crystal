@@ -132,6 +132,29 @@ def test_normal_approve_does_not_emit_force_warning(monkeypatch):
 
 # ─── Audit chain ─────────────────────────────────────────────────────────────
 
+def test_force_approve_stamps_override_metadata_on_canon(monkeypatch):
+    """Force-approved facts must carry explicit override metadata and must not
+    present as gate-passed VERIFIED world facts."""
+    from core.l3_graph import get_l3_graph
+    from core.memory import get_fact
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    fid = _blocked_fact("Override metadata must be explicit")
+    with warnings.catch_warnings(record=True):
+        warnings.simplefilter("always")
+        res = review.approve(fid, force=True, reason="explicit override",
+                             actor="curator-x")
+    assert res["approved"] is True
+    assert res["truth_status"] == "CURATOR_OVERRIDE"
+    meta = get_fact(fid)["metadata"]
+    assert meta["admission_path"] == "review_force_approve"
+    assert meta["override"] is True
+    assert meta["gate_passed"] is False
+    assert meta["gate_reason"]
+    l3 = get_l3_graph().get_fact(fid)
+    assert l3["truth_status"] == "CURATOR_OVERRIDE"
+    assert l3["metadata"]["override"] is True
+
+
 def test_force_approve_writes_force_approve_audit_event(monkeypatch):
     """Force approve must be recorded as review_force_approve in the audit chain."""
     monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")

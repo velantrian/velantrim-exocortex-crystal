@@ -277,28 +277,50 @@ def test_retrieve_pure_stopword_query_returns_nothing():
     assert retrieve("how do you do") == []
 
 
-def test_retrieve_calls_rrf_when_multiple_rankings(monkeypatch):
-    """When vector and graph both return candidates, retrieve() fuses via RRF."""
-    from core import pipeline
+def test_retrieve_rrf_deduplicates_seed_and_l3_same_id(monkeypatch):
+    """The same fact_id in seed and L3 rankings must appear once in results."""
+    from core.pipeline import retrieve
     from core.l3_graph import get_l3_graph
-
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "1")
     g = get_l3_graph()
-    g.merge_fact({"fact_id": "A", "claim": "sunlight energy photosynthesis",
-                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated"})
-    g.merge_fact({"fact_id": "B", "claim": "chlorophyll molecule structure",
-                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated"})
-    g.add_edge("A", "CO_OCCURRED", "B", {})
+    g.merge_fact({"fact_id": "f2", "claim": "Quantum entanglement links particles",
+                  "source": "physics", "confidence": 0.85,
+                  "epistemic_state": "Validated"})
+    hits = retrieve("quantum entanglement", k=10)
+    assert sum(1 for h in hits if h["id"] == "f2") == 1
 
-    calls = []
-    original = pipeline.rrf_fuse
 
-    def tracking(*args, **kwargs):
-        calls.append(len(args[0]))
-        return original(*args, **kwargs)
+def test_retrieve_rrf_respects_top_k(monkeypatch):
+    from core.pipeline import retrieve
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "1")
+    hits = retrieve("DNA genetic information physics", k=2)
+    assert len(hits) <= 2
 
-    monkeypatch.setattr(pipeline, "rrf_fuse", tracking)
-    pipeline.retrieve("sunlight energy")
-    assert calls and calls[0] >= 2
+
+def test_retrieve_rrf_excludes_restricted_l3_facts(monkeypatch):
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    g = get_l3_graph()
+    g.merge_fact({"fact_id": "rstr", "claim": "Zorblax telemetry alpha signal",
+                  "source": "s", "confidence": 0.95,
+                  "epistemic_state": "Validated", "restricted": True})
+    hits = retrieve("Zorblax telemetry alpha signal", k=5)
+    assert "rstr" not in {h["id"] for h in hits}
+
+
+def test_retrieve_rrf_order_is_stable_for_multi_ranking_overlap(monkeypatch):
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "1")
+    g = get_l3_graph()
+    g.merge_fact({"fact_id": "f2", "claim": "Quantum entanglement links particles",
+                  "source": "physics", "confidence": 0.85,
+                  "epistemic_state": "Validated"})
+    ids_a = [h["id"] for h in retrieve("quantum entanglement", k=5)]
+    ids_b = [h["id"] for h in retrieve("quantum entanglement", k=5)]
+    assert ids_a == ids_b
+
 
 def test_retrieve_graph_walk_surfaces_linked_facts():
     """A fact linked in the graph to a vector hit surfaces by association

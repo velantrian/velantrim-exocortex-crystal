@@ -49,6 +49,7 @@ def create_app():
     from importlib import resources
 
     from core import aio, evidence, provenance, review
+    from core.api_ingest_policy import resolve_api_ingest
 
     app = FastAPI(
         title="Velantrim Crystal",
@@ -88,6 +89,8 @@ def create_app():
         significance: Optional[float] = Field(None, ge=0.0, le=1.0)
         claim_type: Optional[str] = None
         source_status: Optional[str] = None
+        import_mode: bool = False
+        evidence_refs: Optional[List[str]] = None
 
     class AskRequest(BaseModel):
         query: str = Field(..., min_length=1, max_length=_MAX_UTTERANCE)
@@ -121,15 +124,24 @@ def create_app():
     @app.post("/ingest", dependencies=_guarded)
     async def ingest_endpoint(req: IngestRequest) -> Dict[str, Any]:
         """Ingest an utterance through the full Guardian + TruthGate path."""
+        try:
+            policy = resolve_api_ingest(
+                source_status=req.source_status,
+                import_mode=req.import_mode,
+                evidence_refs=req.evidence_refs,
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=422, detail=str(e))
         kwargs: Dict[str, Any] = {
             "source": req.source,
             "confidence": req.confidence,
             "significance": req.significance,
+            "source_status": policy["source_status"],
         }
         if req.claim_type is not None:
             kwargs["claim_type"] = req.claim_type
-        if req.source_status is not None:
-            kwargs["source_status"] = req.source_status
+        if policy.get("metadata"):
+            kwargs["metadata"] = policy["metadata"]
         try:
             return await aio.aingest(req.text, **kwargs)
         except ValueError as e:  # invalid claim_type / source_status etc.

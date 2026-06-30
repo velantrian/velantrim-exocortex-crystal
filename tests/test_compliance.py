@@ -104,8 +104,8 @@ def test_ropa_reports_local_no_transfer_by_default(monkeypatch):
     assert ropa["backends"]["generator"] == "extractive"
 
 
-def test_ropa_flags_transfer_when_claude_generator(monkeypatch):
-    monkeypatch.setenv("VELANTRIM_GENERATOR", "claude")
+def test_ropa_flags_transfer_when_anthropic_generator(monkeypatch):
+    monkeypatch.setenv("VELANTRIM_GENERATOR", "anthropic")
     ropa = record_of_processing()
     assert ropa["international_transfer"] is True
 

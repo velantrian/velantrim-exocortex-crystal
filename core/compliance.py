@@ -18,7 +18,10 @@ from collections import Counter
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 
-from core.memory import set_restricted, get_fact, get_all_facts, get_tombstones
+from core.memory import (
+    set_restricted, get_fact, get_all_facts, get_tombstones,
+    l3_secondary_sync_admissible,
+)
 from core.l3_graph import get_l3_graph
 from core import crypto, audit, pii
 
@@ -30,7 +33,7 @@ def _now() -> str:
 def _sync_restriction(fact_id: str) -> None:
     """Propagate the restricted flag to the L3 node so recall sees it."""
     fact = get_fact(fact_id)
-    if fact is None or fact.get("epistemic_state") == "Observed":
+    if fact is None or not l3_secondary_sync_admissible(fact):
         return
     get_l3_graph().merge_fact(fact)
 
@@ -91,7 +94,7 @@ def record_of_processing(controller: Optional[str] = None) -> Dict[str, Any]:
     l3 = os.environ.get("VELANTRIM_L3_BACKEND", "auto")
     embedder = os.environ.get("VELANTRIM_EMBEDDER", "auto")
     generator = os.environ.get("VELANTRIM_GENERATOR", "extractive")
-    transfers = (generator == "claude") or l3 == "neo4j"
+    transfers = (generator == "anthropic") or l3 == "neo4j"
 
     return {
         "generated_at": _now(),

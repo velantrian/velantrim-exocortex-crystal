@@ -30,8 +30,7 @@ def test_health(client):
 
 def test_ingest_then_ask(client):
     r = client.post("/ingest", json={"text": "Lisbon is the capital of Portugal",
-                                     "source": "test", "claim_type": "WORLD_FACT",
-                                     "source_status": "EXTERNAL"})
+                                     "source": "test", "claim_type": "WORLD_FACT"})
     assert r.status_code == 200
     assert r.json()["accepted"] is True
 
@@ -61,8 +60,48 @@ def test_ingest_rejects_empty_text(client):
     assert client.post("/ingest", json={"text": ""}).status_code == 422
 
 
+def test_ingest_rejects_privileged_source_status_without_import_mode(client):
+    r = client.post("/ingest", json={
+        "text": "A privileged world fact from the API",
+        "source_status": "EXTERNAL",
+        "claim_type": "WORLD_FACT",
+    })
+    assert r.status_code == 422
+    assert "privileged source_status" in r.json()["detail"]
+
+
+def test_ingest_defaults_api_source_status_to_user_reported(client):
+    r = client.post("/ingest", json={
+        "text": "Lisbon is the capital of Portugal",
+        "source": "test", "claim_type": "WORLD_FACT",
+    })
+    assert r.status_code == 200
+    assert r.json()["fact"]["source_status"] == "USER_REPORTED"
+
+
+def test_ingest_privileged_import_with_env(client, monkeypatch):
+    monkeypatch.setenv("VELANTRIM_API_PRIVILEGED_INGEST", "1")
+    r = client.post("/ingest", json={
+        "text": "The speed of light in vacuum is constant",
+        "source_status": "EXTERNAL",
+        "import_mode": True,
+        "evidence_refs": ["physics/constants.txt"],
+        "claim_type": "WORLD_FACT",
+        "confidence": 0.95,
+    })
+    assert r.status_code == 200
+    meta = r.json()["fact"]["metadata"]
+    assert meta["admission_path"] == "api_privileged_import"
+    assert meta["evidence_refs"] == ["physics/constants.txt"]
+
+
 def test_ingest_invalid_source_status_is_422(client):
     r = client.post("/ingest", json={"text": "A fact", "source_status": "NONSENSE"})
+    assert r.status_code == 422
+
+
+def test_ingest_invalid_claim_type_from_ingest_is_422(client):
+    r = client.post("/ingest", json={"text": "A fact", "claim_type": "NONSENSE"})
     assert r.status_code == 422
 
 
@@ -79,7 +118,8 @@ def test_ask_blocked_returns_200_with_error(client):
 
 def test_receipt_and_verify(client):
     client.post("/ingest", json={"text": "Gold is a chemical element",
-                                 "source": "test", "source_status": "EXTERNAL"})
+                                 "source": "test", "claim_type": "WORLD_FACT",
+                                 "confidence": 0.9})
     r = client.get("/receipt", params={"q": "tell me about gold"})
     assert r.status_code == 200
     receipt = r.json()
@@ -100,7 +140,8 @@ def test_receipt_blocked_returns_422(client):
 
 def test_evidence_endpoint(client):
     res = client.post("/ingest", json={"text": "Helium is a noble gas",
-                                       "source": "test", "source_status": "EXTERNAL"})
+                                       "source": "test", "claim_type": "WORLD_FACT",
+                                       "confidence": 0.9})
     fact_id = res.json()["fact"]["fact_id"]
     from core import evidence
     evidence.attach_evidence(fact_id, "chem.txt", source_text="Helium is a noble gas")

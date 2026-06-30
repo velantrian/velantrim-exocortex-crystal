@@ -31,8 +31,8 @@ from typing import Any, Dict, List, Optional
 from core import audit, contradiction, immune, metrics
 from core.l3_graph import get_l3_graph
 from core.memory import (
-    get_all_facts, get_fact, transition_esm,
-    get_review_session, list_review_sessions, save_review_session,
+    get_all_facts, get_fact, transition_esm, update_fact,
+    save_review_session, list_review_sessions, get_review_session,
 )
 from core.pipeline import _l3_payload, _truth_status_for, guardian, truth_gate
 from core.reconcile import find_conflicts
@@ -187,8 +187,20 @@ def approve(fact_id: str, *, actor: Optional[str] = None,
                 "reason": "ESM CAS conflict: fact state changed concurrently",
                 "diagnosis": diag["verdict"]}
     ct = fact.get("claim_type", "WORLD_FACT")
-    truth_status = _truth_status_for(ct, fact.get("source_status"))
-    promoted = get_fact(fact_id)
+    if overridden:
+        meta = dict((get_fact(fact_id) or {}).get("metadata") or {})
+        meta.update({
+            "admission_path": "review_force_approve",
+            "override": True,
+            "gate_passed": False,
+            "gate_reason": diag.get("reason"),
+        })
+        update_fact(fact_id, metadata=meta)
+        promoted = get_fact(fact_id)
+        truth_status = "CURATOR_OVERRIDE"
+    else:
+        truth_status = _truth_status_for(ct, fact.get("source_status"))
+        promoted = get_fact(fact_id)
     promoted["truth_status"] = truth_status
     get_l3_graph().merge_fact(_l3_payload(promoted))
 

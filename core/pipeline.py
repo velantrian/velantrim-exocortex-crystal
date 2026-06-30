@@ -20,6 +20,7 @@ from typing import List, Dict, Any, Optional
 from core.trace import build_trace, promote_trace, format_trace
 from core.memory import (
     store_fact, get_fact, transition_esm, ESM_TRANSITIONS,
+    l3_secondary_sync_admissible,
 )
 from core.queue import get_outbox_queue
 from core.l3_graph import get_l3_graph
@@ -569,7 +570,7 @@ def drain_l3_outbox(graph=None) -> int:
         if fact is None:
             queue.clear(fid)  # the fact vanished from SQLite — drop the stale entry
             continue
-        if fact.get("epistemic_state") != "Validated":
+        if not l3_secondary_sync_admissible(fact, graph=graph):
             queue.clear(fid)  # outbox is for post-gate canon merges only
             continue
         fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"), fact.get("source_status"))

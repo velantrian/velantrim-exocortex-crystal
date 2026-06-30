@@ -116,6 +116,7 @@ def ingest(
     claim_type: Optional[str] = None,
     episode: Optional[Dict[str, Any]] = None,
     source_status: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     Accept an utterance, classify it, run it through the gates, write it to L3.
@@ -199,13 +200,13 @@ def ingest(
         "significance": significance,
         "truth_status": "UNVERIFIED",
     }
-    metadata = {}
+    meta = dict(metadata or {})
     if pii_redacted:
-        metadata["pii_redacted"] = pii_redacted
+        meta["pii_redacted"] = pii_redacted
     if salience_meta:
-        metadata.update(salience_meta)
-    if metadata:
-        fact["metadata"] = metadata
+        meta.update(salience_meta)
+    if meta:
+        fact["metadata"] = meta
 
     # L0/L1: store as raw experience (pending), even if the gates reject it.
     store_fact(fact)
