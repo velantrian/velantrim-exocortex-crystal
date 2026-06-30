@@ -14,7 +14,12 @@ VELANTRIM_API_TOKEN
 
 Do not use the Titan-oriented `VELANTRIM_API_KEY` wording for Crystal deployment docs unless the code is changed to support it.
 
-Docker files are currently treated as a Track 2 creation task, not as an already-existing hardening patch.
+Docker hardening (Track 2) is implemented: `Dockerfile`, `docker-compose.yml`,
+and `.dockerignore` were added by PR #170 (`feat(docker): Track 2 — fail-closed
+local-first container deployment`) and hardened further by PR #171
+(`fix(docker): address Codex review findings on Track 2`). This file's
+remaining sections describe what those files already implement, kept here as
+the reviewable spec for that behaviour.
 
 ## Principle
 
@@ -99,7 +104,7 @@ venv/
 
 ### Dependency profile
 
-Track 2 should create Docker files from scratch and use the API extra only:
+Track 2 (PR #170, hardened in #171) uses the API extra only:
 
 ```dockerfile
 pip install '.[api]'
@@ -109,7 +114,7 @@ Do not install `[dev]`, research, audio, graph-lab, or embedding extras in the p
 
 ## Track 2 deliverables
 
-Claude Code should create:
+Delivered in PR #170 and #171:
 
 ```text
 Dockerfile
@@ -117,7 +122,7 @@ docker-compose.yml
 .dockerignore
 ```
 
-Requirements:
+Requirements (all implemented):
 
 1. multi-stage builder -> runtime image;
 2. `pip install '.[api]'`, not `[dev]`;
