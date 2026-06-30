@@ -119,6 +119,18 @@ def test_drain_l3_outbox_drops_stale_entry():
     assert pending_l3_writes() == []
 
 
+def test_drain_l3_outbox_drops_non_validated_entry():
+    """Outbox is for post-gate Validated merges only — Observed entries are dropped."""
+    from core import pipeline
+    from core.memory import store_fact, enqueue_l3_write, pending_l3_writes
+
+    store_fact({"fact_id": "obs_q", "claim": "c", "source": "s",
+                "epistemic_state": "Observed"})
+    enqueue_l3_write("obs_q")
+    assert pipeline.drain_l3_outbox() == 0
+    assert pending_l3_writes() == []
+
+
 def test_drain_l3_outbox_keeps_queue_when_backend_down(monkeypatch):
     """If the backend is still down during a drain, the entry stays queued."""
     from core import pipeline
@@ -264,6 +276,29 @@ def test_retrieve_pure_stopword_query_returns_nothing():
     from core.pipeline import retrieve
     assert retrieve("how do you do") == []
 
+
+def test_retrieve_calls_rrf_when_multiple_rankings(monkeypatch):
+    """When vector and graph both return candidates, retrieve() fuses via RRF."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+
+    g = get_l3_graph()
+    g.merge_fact({"fact_id": "A", "claim": "sunlight energy photosynthesis",
+                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated"})
+    g.merge_fact({"fact_id": "B", "claim": "chlorophyll molecule structure",
+                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated"})
+    g.add_edge("A", "CO_OCCURRED", "B", {})
+
+    calls = []
+    original = pipeline.rrf_fuse
+
+    def tracking(*args, **kwargs):
+        calls.append(len(args[0]))
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(pipeline, "rrf_fuse", tracking)
+    pipeline.retrieve("sunlight energy")
+    assert calls and calls[0] >= 2
 
 def test_retrieve_graph_walk_surfaces_linked_facts():
     """A fact linked in the graph to a vector hit surfaces by association

@@ -47,6 +47,16 @@ def test_reinforce_syncs_confidence_into_l3():
     assert get_l3_graph().get_fact("r3")["confidence"] == new_conf
 
 
+def test_reinforce_on_observed_does_not_merge_into_l3():
+    """Observed facts must not enter L3 via reinforce() metadata sync."""
+    store_fact({"fact_id": "obs_r", "claim": "pre-canonical", "source": "s",
+                "confidence": 0.5})
+    assert get_fact("obs_r")["epistemic_state"] == "Observed"
+    new_conf = reinforce("obs_r")
+    assert new_conf is not None
+    assert get_l3_graph().get_fact("obs_r") is None
+
+
 # ─── supersede ──────────────────────────────────────────────────────────────
 
 def test_supersede_deprecates_old_and_links_new():

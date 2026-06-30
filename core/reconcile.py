@@ -49,8 +49,13 @@ def _sync_l3(fact_id: str) -> Optional[Dict[str, Any]]:
     update has already happened. Mirror the pipeline's self-heal path — enqueue
     the fact in the L3 outbox so drain_l3_outbox() retries the merge later,
     instead of silently losing the sync.
+
+    Guardrail: Observed facts are pre-canonical and must never enter L3 through
+    this metadata/confidence sync path — only TruthGate admission may promote them.
     """
     fact = get_fact(fact_id)
+    if fact is not None and fact.get("epistemic_state") == "Observed":
+        return fact
     if fact is not None:
         try:
             get_l3_graph().merge_fact(fact)

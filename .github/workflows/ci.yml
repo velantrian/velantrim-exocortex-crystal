@@ -113,7 +113,7 @@ jobs:
           pip install bandit pip-audit
       - name: Python security lint (bandit)
         run: |
-          bandit -r core/ -ll -q
+          bandit -r core/ scripts/ -ll -q
       - name: Dependency vulnerability audit (pip-audit)
         run: |
           pip install -r requirements-dev.txt

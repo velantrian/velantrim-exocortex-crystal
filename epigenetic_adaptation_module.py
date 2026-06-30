@@ -1,6 +1,6 @@
 # Epigenetic Adaptation Module (RFC0071 v0.1)
-# Inspired by plant epigenetic memory and bacterial CRISPR-like adaptation
-# Allows dynamic behavior switching based on historical stress without full retraining
+# Engineering metaphor for adaptive threshold behaviour — not a biological
+# cognition or plant-memory claim. See docs/METAPHOR_VS_MECHANISM.md.
 
 class EpigeneticAdaptationModule:
     """

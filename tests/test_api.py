@@ -222,24 +222,39 @@ def test_review_reject_endpoint_and_404(client, monkeypatch):
                        json={"fact_id": "ing:nope"}).status_code == 404
 
 
-def test_review_token_guard_on_get_and_post(client, monkeypatch):
-    """Negative test: with VELANTRIM_API_TOKEN set, every /review/* JSON
-    endpoint — GET and POST — answers 401 without (or with a wrong) Bearer
-    token, and 200 with the right one."""
+def test_api_token_guard_on_memory_and_review_endpoints(client, monkeypatch):
+    """With VELANTRIM_API_TOKEN set, memory and review endpoints require Bearer."""
     monkeypatch.setenv("VELANTRIM_API_TOKEN", "s3cret")
+    auth = {"Authorization": "Bearer s3cret"}
     for path in ("/review/queue", "/review/report", "/review/decisions"):
         assert client.get(path).status_code == 401
         assert client.get(
             path, headers={"Authorization": "Bearer wrong"}).status_code == 401
-        assert client.get(
-            path, headers={"Authorization": "Bearer s3cret"}).status_code == 200
+        assert client.get(path, headers=auth).status_code == 200
     assert client.get("/review/item/ing:x").status_code == 401
     assert client.post("/review/approve",
                        json={"fact_id": "ing:x"}).status_code == 401
     assert client.post("/review/reject",
                        json={"fact_id": "ing:x"}).status_code == 401
-    # Non-review endpoints keep the historical localhost-trust posture.
+    # Memory endpoints are guarded too when the token is set.
+    assert client.post("/ingest", json={"text": "hello"}).status_code == 401
+    assert client.post("/ask", json={"query": "hello"}).status_code == 401
+    assert client.get("/receipt", params={"q": "hello"}).status_code == 401
+    assert client.post("/verify-receipt",
+                       json={"receipt": {"digest": "x"}}).status_code == 401
+    assert client.get("/evidence/ing:x").status_code == 401
+    assert client.post("/ingest", json={"text": "hello"}, headers=auth).status_code == 200
+    # Health and the static review shell stay public.
     assert client.get("/health").status_code == 200
+    assert client.get("/review/ui").status_code == 200
+
+
+def test_ingest_rejects_oversized_text(client):
+    assert client.post("/ingest", json={"text": "x" * 10_001}).status_code == 422
+
+
+def test_ask_rejects_oversized_query(client):
+    assert client.post("/ask", json={"query": "x" * 10_001}).status_code == 422
 
 
 def test_review_ui_is_a_dataless_static_shell(client, monkeypatch):

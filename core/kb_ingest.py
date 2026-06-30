@@ -23,6 +23,7 @@ import os
 from typing import Any, Dict, List, Optional
 
 from core.imports import predict_claim
+from core.path_safety import resolve_safe_path
 from core import knowledge as _kb
 from core.memory import SOURCE_STATUSES, CLAIM_TYPES
 
@@ -99,8 +100,8 @@ def dry_run_manifest_file(path: str, *, source: Optional[str] = None) -> Dict[st
 
     Each record must have a `"claim"` key (see dry_run_batch).
     """
-    if not os.path.isfile(path):
-        raise FileNotFoundError(f"Manifest file not found: {path!r}")
+    safe = resolve_safe_path(path)
+    path = str(safe)
     src = source or os.path.basename(path)
     ext = os.path.splitext(path)[1].lower()
     with open(path, encoding="utf-8") as fh:

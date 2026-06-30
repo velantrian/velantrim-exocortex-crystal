@@ -12,6 +12,12 @@ CAS-guard hardening: 1216 passed /
 the exact count; all other documents reference this report so the number
 cannot silently drift.
 
+> **Audit hardening note.** Ring Zero sync-path guards, HTTP API token alignment,
+> ingest path sandboxing (`core/path_safety.py`), RRF wired into `retrieve()`,
+> Guardian baseline contract, and eval-gate script pytest coverage added 55 tests
+> (1216 → 1271) and grew the measured surface by 309 statements (5461 → 5770)
+> while preserving the 100% coverage gate.
+
 > **PR #137 note.** The safe repo hygiene / toolchain hardening pass added 11
 > tests (1130 → 1141) and grew the measured surface by 28 statements
 > (5130 → 5158) while preserving the 100% coverage gate.
@@ -42,11 +48,11 @@ cannot silently drift.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **1216** |
+| **Tests passing** | **1271** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **100%** (gate enforced at 100%, repo-wide `--cov=.`) |
-| Test files | 67 (`tests/test_*.py`) |
+| Test files | 72 (`tests/test_*.py`) |
 | Python | 3.11 / 3.12 in CI |
 | Runtime dependencies | standard library only |
 
@@ -121,11 +127,12 @@ pytest tests/ --cov=. --cov-fail-under=100
 | `core/neurogenesis.py` | 96  | 100% |
 | `core/observe.py`      | 35  | 100% |
 | `core/pii.py`          | 56  | 100% |
-| `core/pipeline.py`     | 252 | 100% |
+| `core/path_safety.py`       | 32  | 100% |
+| `core/pipeline.py`     | 277 | 100% |
 | `core/provenance.py`   | 90  | 100% |
 | `core/provenance_chain.py`  | 46  | 100% |
 | `core/queue.py`        | 47  | 100% |
-| `core/reconcile.py`    | 117 | 100% |
+| `core/reconcile.py`    | 119 | 100% |
 | `core/refusal_reasons.py`   | 26  | 100% |
 | `core/retrieval_config.py`  | 69  | 100% |
 | `core/review.py`       | 163 | 100% |
@@ -137,19 +144,22 @@ pytest tests/ --cov=. --cov-fail-under=100
 | `core/truth_gate.py`        | 24  | 100% |
 | `core/velum.py`             | 106 | 100% |
 | `core/volition.py`          | 75  | 100% |
+| `scripts/eval_gate.py`      | 46  | 100% |
 | `scripts/eval_track.py`     | 72  | 100% |
 | `scripts/trace_visualize.py`| 22  | 100% |
 | root tooling (`audit_metadata` 109, `check_rfc_duplicates` 44, `fill_dependencies` 43, `epigenetic_adaptation_module` 29, `velantrim_migrate_v3_1` 393) | 618 | 100% |
 | `prototypes/` (4 research prototypes) | 142 | 100% |
 | `utils/rfc_parser.py`       | 13  | 100% |
-| **Total (repo-wide)**       | **5461** | **100%** |
+| **Total (repo-wide)**       | **5770** | **100%** |
 
 ## What the tests cover
 
 | Area | Test file |
 |------|-----------|
 | Memory layers (L0/L1), ESM transitions, Ring Zero (I6) | `test_memory.py`, `test_esm.py` |
-| End-to-end pipeline (retrieve → gate → L3 → answer) | `test_pipeline.py` |
+| End-to-end pipeline (retrieve → gate → L3 → answer) | `test_pipeline.py`, `test_guardian_contract.py` |
+| Ingest path sandboxing (`core/path_safety.py`) | `test_path_safety.py` |
+| CI eval quality gate script | `test_eval_gate_script.py` |
 | Pluggable re-merge queue (SQLite/Redis backends, fallback) & async entry points | `test_queue.py` |
 | Immune / CRISPR Memory Guard (RFC0072) — threat memory, screening, strict/learn, CLI | `test_immune.py` |
 | Fractal Memory Layer (RFC0070) — anchor strength, reanchor/spill, decay protection, CLI | `test_fractal.py` |

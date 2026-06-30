@@ -1,5 +1,5 @@
 # core/compliance.py
-# Velantrim ExoCortex — GDPR Compliance Operations
+# Velantrim ExoCortex — GDPR-oriented compliance operations
 #
 # Two accountability operations not related to deletion (Art. 17 → erasure.py):
 #
@@ -30,8 +30,9 @@ def _now() -> str:
 def _sync_restriction(fact_id: str) -> None:
     """Propagate the restricted flag to the L3 node so recall sees it."""
     fact = get_fact(fact_id)
-    if fact is not None:
-        get_l3_graph().merge_fact(fact)
+    if fact is None or fact.get("epistemic_state") == "Observed":
+        return
+    get_l3_graph().merge_fact(fact)
 
 
 def restrict_processing(

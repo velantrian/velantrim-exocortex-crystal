@@ -20,6 +20,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Iterable
 
 from core import memory, knowledge, immune, contradiction
+from core.path_safety import resolve_safe_path
 from core.ingest import classify_claim, _fact_id
 from core.pipeline import guardian, truth_gate
 from core.reconcile import find_conflicts
@@ -114,6 +115,8 @@ def dry_run_text(content: str, *, fmt: str = "txt", source: str = "external",
 def dry_run_file(path: str, *, source: Optional[str] = None,
                  fmt: Optional[str] = None) -> Dict[str, Any]:
     """Preview a knowledge file (stdlib or WP4 adapter formats). Writes nothing."""
+    safe = resolve_safe_path(path)
+    path = str(safe)
     ext = (fmt or os.path.splitext(path)[1]).lower()
     if not ext.startswith("."):
         ext = "." + ext

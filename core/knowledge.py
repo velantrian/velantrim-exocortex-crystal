@@ -26,6 +26,7 @@ from typing import Dict, Any, List, Optional, Iterable
 
 from core import ingest as _ingest_mod
 from core import metrics, evidence, span_extract
+from core.path_safety import resolve_safe_path
 
 EXTERNAL = "EXTERNAL"
 _SUPPORTED = (".txt", ".md", ".markdown", ".json", ".jsonl", ".ndjson", ".csv")
@@ -226,8 +227,10 @@ def ingest_file(
     Optional-dependency formats (.yaml/.pdf/.ttl/…) are handled by WP4
     adapters auto-loaded from core.adapters when the relevant extra is
     installed. `source` defaults to the file's basename; `fmt` is inferred
-    from the extension unless given. Raises on an unsupported extension.
+    from the extension unless given.     Raises on an unsupported extension.
     """
+    safe = resolve_safe_path(path)
+    path = str(safe)
     ext = (fmt or os.path.splitext(path)[1]).lower()
     if not ext.startswith("."):
         ext = "." + ext
