@@ -102,6 +102,8 @@ PR #204 — Research Mode v0.5 scaffold (prototypes/)   -> RESEARCH (merged, pro
 
 _High-level summary. The canonical track-by-track audit matrix is [`IMPLEMENTATION_REALITY_MATRIX.md`](./IMPLEMENTATION_REALITY_MATRIX.md)._
 
+_A companion documented evaluation lens (dimensions and criteria only, no status verdicts) lives at [`docs/audits/MEMORY_ARCHITECTURE_AUDIT.md`](./audits/MEMORY_ARCHITECTURE_AUDIT.md); it does not replace this matrix as the source of truth for current implementation status._
+
 | Component / area | Current status | Public claim | Risk / note | Next action |
 |---|---|---|---|---|
 | Crystal public core | IMPLEMENTED | local-first verifiable memory core | Keep narrow; avoid Titan scope creep | Maintain `TEST_REPORT.md` as source of truth |
