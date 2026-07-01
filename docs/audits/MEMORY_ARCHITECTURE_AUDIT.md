@@ -43,11 +43,14 @@ None of the axes below carries a status verdict — see §9.
 ### Object Type Axis
 
 What kind of claim is this? Crystal already separates `claim_type` values
-(e.g. `WORLD_FACT`, `USER_EXPERIENCE`, `EMOTION`, `LLM_OUTPUT`) so that
-subjective or generated content cannot silently pass as verified fact.
+(e.g. `WORLD_FACT`, `USER_EXPERIENCE`, `EMOTION`, `OPINION`) so that
+subjective or generated content cannot silently pass as verified fact. Note:
+`LLM_OUTPUT` is a `source_status` value (`core/memory.py`'s
+`SOURCE_STATUSES`), not a `claim_type` — the two axes are distinct and must
+not be conflated.
 
-- Anchor: `core/memory.py` (`claim_type` column and defaults),
-  `docs/core/CLAIM_TYPE_AND_ORIGIN.md`.
+- Anchor: `core/memory.py` (`claim_type` column, `CLAIM_TYPES`, and
+  defaults), `docs/core/CLAIM_TYPE_AND_ORIGIN.md`.
 
 ### Verification Effort Axis
 
@@ -65,7 +68,12 @@ not raise its verification effort; frequency is not independent evidence.
 What epistemic state does this fact currently hold, and can that state be
 trusted as final? Crystal's ESM (`epistemic_state`) tracks states such as
 `Observed`, `Validated`, `Supported`, `Contradicted`, and `Collapsed`, with
-transitions constrained by `ESM_TRANSITIONS`.
+*subsequent* transitions constrained by `ESM_TRANSITIONS`. This axis must
+distinguish that from *initial* state assignment: `core/memory.py`'s
+`store_fact()` persists a caller-supplied initial `epistemic_state` for a new
+row after only an enum-membership check, not a transition — a freshly
+imported or seeded fact can legitimately start in a later state than
+`Observed`.
 
 **`promotion_candidate` is not truth.** A fact sitting in an early,
 not-yet-admitted state (e.g. `Observed`) is a candidate for promotion, not an
@@ -83,11 +91,20 @@ in `core/pipeline.py` and the curator review path in `core/review.py`.
 
 **Compression does not promote to Canon by itself.** Summarizing, merging, or
 otherwise compressing memory content is not, on its own, an admission
-decision — only the promotion/review path defined in `core/pipeline.py` /
-`core/review.py` (behind TruthGate) can move a fact toward Canon.
+decision. This axis evaluates the admission/promotion path defined in
+`core/pipeline.py` / `core/review.py` (behind TruthGate) — it does not claim
+that path is the *only* code that ever touches L3. Other runtime paths call
+`merge_fact()` directly for sync/reconcile/compliance purposes outside
+promotion (e.g. `core/reconcile.py`, `core/compliance.py`, `core/volition.py`,
+`core/consolidate.py`, `core/fractal.py`); those must be audited separately
+for state preservation and no TruthGate bypass. This framework must not
+overstate a single canonical write path.
 
 - Anchor: `core/pipeline.py`, `core/review.py`,
-  `docs/architecture/STAGED_WORKING_MEMORY_ADMISSION.md`.
+  `docs/architecture/STAGED_WORKING_MEMORY_ADMISSION.md` (admission path);
+  `core/reconcile.py`, `core/compliance.py`, `core/volition.py`,
+  `core/consolidate.py`, `core/fractal.py` (other `merge_fact()` callers, out
+  of scope for this axis but noted so the lens is not read as exhaustive).
 
 ### Retention / Erasure Axis
 
@@ -96,26 +113,48 @@ Two distinct questions must not be collapsed into one:
 1. **Soft-decay / retention weighting** — how relevance or recency might
    deprioritize a fact in retrieval, without deleting it.
 2. **Hard-erasure / restriction paths** — where a fact must actually be
-   removed or restricted (e.g. a GDPR erasure request), recorded as an
-   append-only, hash-chained lifecycle event.
+   removed or restricted (e.g. a GDPR erasure or Art. 18 restriction
+   request).
 
 **Soft-decay does not replace hard-erasure requirements.** A relevance or
 recency weighting mechanism is not a substitute for an explicit erasure path
 where one is legally or contractually required.
 
+Point 2 itself covers two currently different mechanisms, and this axis must
+not treat them as one uniform lifecycle log:
+
+- **Erase path** — recorded as an append-only, hash-chained, per-fact
+  `core/provenance_chain.py` event, where implemented.
+- **Restriction / unrestriction** (Art. 18) — `core/compliance.py`'s
+  `restrict_processing()` / `unrestrict_processing()` currently record to the
+  **global** audit log (`core/audit.py`), not the per-fact ProvenanceChain.
+  Broader per-fact lifecycle chain coverage (including restriction events) is
+  a documented follow-up in `docs/core/PROVENANCE_CHAIN_CONTRACT.md`, not a
+  current claim.
+
 - Anchor: `core/erasure.py`, `core/provenance_chain.py` (erase-path events),
+  `core/compliance.py` (restriction, global audit log),
   `docs/core/PROVENANCE_CHAIN_CONTRACT.md`.
 
 ### Response Permission Axis
 
-Given a claim's type, source status, and epistemic state, what is the answer
-allowed to say about it — assert plainly, hedge, require a citation, or
-refuse? Crystal's read-path `decide_response_policy` decides this from
-`claim_type` + `source_status` + `epistemic_state`, never from TruthGate
+Given a claim's type, source status, and epistemic state, what *would* an
+answer be allowed to say about it — assert plainly, hedge, require a
+citation, or refuse? `core/response_policy.py`'s `decide_response_policy` is
+implemented and tested as a pure policy module that computes this decision
+from `claim_type` + `source_status` + `epistemic_state`, never from TruthGate
 itself and never by writing to L3.
 
+This module is **not currently wired into `generate_answer()`** or any other
+current read-path runtime call; `decide_response_policy` is referenced only
+from its own module, its docs, and its tests as of this writing, and the
+read-path wiring work is tracked separately (PR #202, open/unmerged). The
+Response Permission Axis therefore evaluates the policy contract and its
+planned future read-path wiring, not a current end-to-end runtime
+answer-control claim.
+
 **Response permission is not based on confidence alone.** A high confidence
-score does not by itself grant assertive response permission; the decision
+score does not by itself grant assertive response permission; the contract
 draws on claim type, source status, and epistemic state together. (Note:
 "ResponseGate" is a Notion-only conceptual term — there is no such module in
 `core/`. This axis refers strictly to `core/response_policy.py`.)
@@ -134,8 +173,17 @@ discrete component.
 
 **Guardian is an invariant shell, not a seventh pipeline step.** It is not
 another stage a fact passes through; it is the set of invariants (TruthGate
-cannot be bypassed, Canon cannot be overwritten outside the review path, TRACE
-cannot be altered) that every stage above must already respect.
+cannot be bypassed, Canon cannot be overwritten outside the review path, and
+sealed/emitted TRACE receipts must remain tamper-evident and not silently
+rewritten) that every stage above must already respect.
+
+This does not forbid the normal, approved lifecycle update of pre-seal trace
+elements: `core/trace.py`'s `promote_trace()` intentionally mutates trace
+elements in place after TruthGate approval, and
+`tests/test_trace.py::test_promote_trace_mutates_in_place` pins that
+behaviour. The invariant is about tamper resistance for sealed/emitted
+receipts, not a blanket ban on that approved in-place update during
+promotion.
 
 ## 5. Testability Gate
 
@@ -149,11 +197,23 @@ one.
 
 ## 6. Source Attribution Discipline
 
-Every axis above ultimately depends on `source_status` being traceable to an
-actual evidence span at ingest time (e.g. the PDF adapter's span-preservation
-fix, #182, `core/adapters/pdf_adapter.py`) rather than to an unattributed
-paraphrase. An audit against this framework should ask, per claim type,
-whether the evidence span survives from ingestion through to the answer.
+Source attribution should be evaluated as *appropriate to the claim's source
+type*, not as one blanket evidence-span requirement for every claim:
+
+- **Adapter-ingested factual claims** (e.g. the PDF adapter's
+  span-preservation fix, #182, `core/adapters/pdf_adapter.py`) should
+  preserve evidence spans.
+- **User-reported / subjective claims** (`source_status = USER_REPORTED`) may
+  legitimately have no adapter evidence span —
+  `core/knowledge.py`'s `attach_evidence` parameter is optional there — but
+  should preserve actor / source-turn attribution and an audit trace instead.
+- **Generated content** (`source_status = LLM_OUTPUT`) must not be treated as
+  external evidence for another claim.
+
+An audit against this framework should ask, per claim type and source
+status, whether the *appropriate* form of attribution for that source type
+survives from ingestion through to the answer — not whether every claim
+carries an evidence span.
 
 ## 7. Source Verification Status
 
@@ -180,15 +240,24 @@ A future worked audit against this lens (kept in a separate document — see
 - **Verification Effort** — Can the `source_status` + `confidence` pair be
   traced to a specific evidence span, independent of how many times the claim
   recurs?
-- **Memory State** — Does every `epistemic_state` transition go through
-  `ESM_TRANSITIONS`, with no path that mutates state outside it?
-- **Consolidation** — Does every L2→L3 promotion pass through TruthGate, with
-  no compression/merge step that promotes on its own?
+- **Memory State** — Is a fact's *initial* `epistemic_state` enum-valid and
+  justified by its ingest/import context (`core/memory.py`'s `store_fact()`
+  persists a caller-supplied initial state for new rows after only enum
+  validation — that is initialization, not a transition), and does every
+  *subsequent* state change go through `transition_esm()` /
+  `ESM_TRANSITIONS`?
+- **Consolidation** — Does every admission/promotion decision pass through
+  TruthGate, with no compression/merge step that promotes on its own? (Other
+  `merge_fact()` call sites outside the promotion path are a separate audit
+  question — see §3 Consolidation Axis.)
 - **Retention / Erasure** — Is there a hard-erasure path for every case that
-  requires one, independent of any soft-decay/relevance weighting?
-- **Response Permission** — Does `decide_response_policy` fully determine
-  response framing, with no path that grants assertive permission from
-  confidence alone?
+  requires one, independent of any soft-decay/relevance weighting, and is the
+  erase-path vs. restriction-path distinction in §3 respected?
+- **Response Permission** — Once wired onto the read path, would
+  `decide_response_policy`'s contract determine response framing without any
+  path that grants assertive permission from confidence alone? (A
+  contract-level question — current read-path wiring status is tracked
+  outside this document; see §3 Response Permission Axis.)
 
 ## 9. Current-status source of truth
 
@@ -212,6 +281,12 @@ This document does **not**:
   (those live only in `docs/IMPLEMENTATION_REALITY_MATRIX.md`);
 - claim Guardian is a discrete, implemented module;
 - claim that "ResponseGate" exists in Crystal's code;
+- claim that `decide_response_policy` is currently wired into
+  `generate_answer()` or any other live read-path call (read-path wiring is
+  tracked separately in PR #202, open/unmerged);
+- claim that `core/pipeline.py` / `core/review.py` are the only code paths
+  that ever call `merge_fact()` (other sync/reconcile/compliance paths exist
+  and are out of scope for the Consolidation Axis as defined here);
 - claim that Crystal implements, matches, or is architecturally equivalent to
   any external memory-research system;
 - describe Research Mode, Titan, or Personal Exo-Cortex capability;
@@ -224,8 +299,10 @@ Non-binding ideas for tests that could, in a future and separate PR, let an
 axis move from "criteria defined here" to "evaluated in
 `IMPLEMENTATION_REALITY_MATRIX.md`":
 
-- A regression test asserting that no code path sets `epistemic_state` to a
-  promoted value without going through `ESM_TRANSITIONS`.
+- A regression test asserting that no code path *transitions* an existing
+  fact's `epistemic_state` without going through `ESM_TRANSITIONS` (distinct
+  from initial state assignment on a new row, which is a separate,
+  documented case — see §3 Memory State Axis).
 - A test asserting that `decide_response_policy` output does not vary with
   `confidence` alone when `claim_type`/`source_status`/`epistemic_state` are
   held constant.
