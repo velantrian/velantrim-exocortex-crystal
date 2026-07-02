@@ -75,12 +75,18 @@ memory
 + consent-bounded proactivity
 ```
 
-This can create a more continuous and honest dialogue experience without claiming consciousness or emotion.
+Design hypothesis:
+
+```text
+These primitives may support more continuous, more honest long-term dialogue,
+but this is a research hypothesis and not an implemented or evaluated Crystal capability.
+```
 
 Canonical formula:
 
 ```text
-Operational aliveness = initiative + continuity + position, not experience.
+Operational continuity / presence = initiative + continuity + independent epistemic position,
+not subjective experience.
 ```
 
 ---
@@ -333,7 +339,7 @@ GitHub main remains implementation truth.
 Final boundary formula:
 
 ```text
-Dialogue may grow.
+Dialogue may grow as a research direction.
 Canon must still be admitted.
 Presence must not become manipulation.
 ```
