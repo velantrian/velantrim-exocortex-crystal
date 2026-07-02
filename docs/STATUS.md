@@ -1,6 +1,6 @@
 # Velantrim Crystal — Current Status
 
-> Date: 2026-06-30
+> Date: 2026-07-02
 > Scope: public Crystal repository status note
 > Status: docs-only integrity map; does not change runtime behaviour
 
@@ -98,6 +98,22 @@ PR #204 — Research Mode v0.5 scaffold (prototypes/)   -> RESEARCH (merged, pro
   Exo-Cortex / Titan / NoeticCore stay research/prototype directions unless a
   feature is separately merged and listed here (or in `TEST_REPORT.md`) as runtime.
 
+## Research-only design docs
+
+The following documents are architecture notes only. They do not change runtime
+behaviour and must not be cited as implemented Crystal capabilities.
+
+```text
+docs/research/dialogue-cultivation-layer.md -> RESEARCH / DOCUMENTED_ONLY
+```
+
+- **Presence & Dialogue Cultivation Layer — `RESEARCH / DOCUMENTED_ONLY`.** This RFC
+  studies long-term dialogue continuity, anti-sycophancy, open questions, proactive
+  reflection and user-state hypothesis boundaries. It explicitly makes no claims of
+  sentience, consciousness, emotion, personhood, biological life or implemented
+  autonomous companion behaviour. It does not add code, storage, workers, TruthGate
+  wiring, Canon writes or runtime integration.
+
 ## Implementation reality matrix
 
 _High-level summary. The canonical track-by-track audit matrix is [`IMPLEMENTATION_REALITY_MATRIX.md`](./IMPLEMENTATION_REALITY_MATRIX.md)._
@@ -118,26 +134,4 @@ _A companion documented evaluation lens (dimensions and criteria only, no status
 | Noetic Orchestration | RESEARCH | future external attention / cognitive routing | Not wired into `/query` as Crystal runtime | Keep as RFC only |
 | BICA Alignment | RESEARCH / GRANT LANGUAGE | BICA-informed mapping only | Not a BICA implementation | Use only as cautious framing |
 | Graphiti / Neo4j | OPTIONAL / RESEARCH | optional advanced backend inspiration | Not Crystal truth authority | Keep stdlib/local-first Crystal core |
-| Knowledge graph / WSC data | RESEARCH / UNVERIFIED unless sourced | draft graph / autolinker prototype if no evidence | Do not call verified canon without real sources/evidence_refs | Data verifier after schema confirmation |
-
-## Crystal hardening sequence (status)
-
-1. Track 1 — per-fact ProvenanceChain and tests — DONE (#168).
-2. Track 2 — Dockerfile, docker-compose.yml and .dockerignore with fail-closed `VELANTRIM_API_TOKEN` — DONE (#170/#171).
-3. Track 3A — strict TruthPolicy production default — DONE (#172).
-4. Track 3B — write-path TruthGate behavioural tests and `gate_reason` audit detail — DONE (#175).
-5. Keep this status page and Reality Matrix current after each PR — ongoing.
-6. Add knowledge graph status / data-quality verifier rules before claiming verified graph knowledge — pending.
-
-## Relationship to Titan
-
-Titan is valuable as a donor of ideas, UI, research modules and future architecture. Crystal should extract only:
-
-- invariants;
-- epistemic contracts;
-- evidence/source requirements;
-- security lessons;
-- minimal dependency-free mechanisms;
-- reviewer-safe documentation.
-
-Crystal should not absorb Titan wholesale.
+| Presence & Dialogue Cultivation | RESEARCH / DOCUMENTED_ONLY | future dialogue continuity and anti-sycophancy research | No sentience, consciousness, emotion, personhood, biological life or implemented companion-runtime claim | Keep as research-only RFC unless separately prototyped, tested and audited |
