@@ -5,6 +5,13 @@
 > **GenAI disclosure:** отчёт подготовлен с помощью AI-ассистента (Claude Code) и предназначен для ревью мейнтейнером — в той же практике прозрачности, что принята в остальных документах репозитория.
 > **Приватность:** отчёт не содержит деталей частной переписки с фондами; статус заявок упоминается только в объёме, уже публично зафиксированном в `docs/grants/funding-use-plan.md`.
 
+> **Snapshot boundary:** this report is a dated audit snapshot, not the source of implementation truth.
+> The canonical implementation boundary remains `docs/STATUS.md`, `docs/IMPLEMENTATION_REALITY_MATRIX.md`, and `TEST_REPORT.md`.
+>
+> **Open work boundary:** open PRs and issues are not treated as implemented runtime behaviour unless separately merged into `main` and reflected in the canonical status documents. In particular, PR #206 and issue #211 are follow-up/current work, not part of the audited `main` snapshot.
+>
+> **External programme note:** grant deadlines, programme status and eligibility are point-in-time observations and must be rechecked before applying.
+
 ---
 
 ## 🧭 1. Executive summary
@@ -56,7 +63,7 @@ Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer
 
 | Механизм | Суть | Файл |
 |---|---|---|
-| 🔗 **Глобальный audit log** | Append-only hash-chain (SHA-256), `verify_audit_log()` пересчитывает всю цепь; опциональный HMAC (`VELANTRIM_AUDIT_KEY`) делает лог tamper-proof; content-free (без персональных данных) | `core/audit.py` |
+| 🔗 **Глобальный audit log** | Append-only hash-chain (SHA-256), `verify_audit_log()` пересчитывает всю цепь; лог tamper-evident; при включённом HMAC (`VELANTRIM_AUDIT_KEY`) появляется защита от подделки при условии, что ключ остаётся секретным; content-free (без персональных данных) | `core/audit.py` |
 | 🧬 **Per-fact provenance chain** | Отдельная hash-цепь на каждый `fact_id`; спроектирована так, чтобы никогда не ломать GDPR-erasure | `core/provenance_chain.py` |
 | 🧾 **Replayable receipts** | `build_receipt()` запечатывает query+answer+citations под SHA-256 (+HMAC); `verify_receipt()` реплеит цитаты против живого канона и детектит drift (ok/erased/modified/…); хранится `claim_sha256`, а не текст | `core/provenance.py` |
 | 📍 **Evidence spans (Receipt v2)** | Привязка фактов к источнику: URI + char-span + `source_sha256`/`claim_sha256` | `core/evidence.py` |
@@ -132,6 +139,18 @@ Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer
 | 6 | **Нет линтера/типизации в CI** (ruff/mypy отсутствуют) | 🟡 | Дешёвое улучшение, заметное аудитору |
 | 7 | **HMAC-ключи симметричные** — verifiability доверяет держателю ключа | 🟡 | Для «независимой проверяемости» третьей стороной со временем нужны подписи/якорение |
 | 8 | **Расхождение бейджей возможно при дрейфе** (1252 vs 1177 def) | 🟢 | Управляется правилом «только TEST_REPORT.md несёт число» — соблюдать |
+
+---
+
+## 🧩 Current open work not included in this snapshot
+
+This report audits the repository state at revision `9822591`. The following items are important, but are not counted as implemented behaviour in this snapshot:
+
+| Item | Status | Why it matters |
+|---|---|---|
+| PR #206 — Audit hardening: Ring Zero sync guards, API auth, path sandbox, RRF | Open / not merged at snapshot boundary | Important hardening candidate: secondary L3 sync guard, API token guard, path sandboxing, force-override metadata, RRF wiring. It should be reviewed separately before being treated as implementation truth. |
+| Issue #211 — Structural Stress Smoke Test | Open issue / read-only diagnostic scope | Useful Mentaury-style review-ordering diagnostic, but explicitly no Canon writes, no TruthGate integration, no FactsPack integration, and no Crystal runtime mutation. |
+| Issue #196 — claim rewrite / validation identity | Open P0/P1 integrity follow-up | Highest-priority semantic integrity gap: validated claim text must not silently change under the same `fact_id` without versioning, reset, or revalidation. |
 
 ---
 
@@ -239,6 +258,29 @@ Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer
 - [ ] 🌍 Один задокументированный пилот-кейс (недели 4–10)
 - [ ] 🔍 Мониторить [ngi.eu/opencalls](https://ngi.eu/opencalls/) и следующие циклы Mozilla/STF/OTF (ежемесячно)
 - [ ] 🚀 Подготовить one-page manifesto для moonshot-фондов (неделя 2–3)
+
+---
+
+## 📤 Publication recommendation
+
+Recommended handling:
+
+1. Keep this file as a **dated grant/internal audit snapshot**.
+2. Do not use it as the canonical implementation-status source.
+3. If opened as a PR, open it as a **Draft PR** first.
+4. PR title suggestion:
+
+```text
+docs(grants): add dated grant audit report
+```
+
+5. PR body should explicitly say:
+
+> This is a dated grant/internal audit snapshot.
+> It does not replace `TEST_REPORT.md`, `docs/STATUS.md`, or `docs/IMPLEMENTATION_REALITY_MATRIX.md`.
+> Open PR #206 and issue #211 are not treated as merged implementation truth.
+
+6. After PR #206 or #196 are merged, this report should either remain unchanged as a dated snapshot or receive a clearly labelled follow-up note.
 
 ---
 
