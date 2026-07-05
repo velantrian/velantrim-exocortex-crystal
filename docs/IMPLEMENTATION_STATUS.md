@@ -34,14 +34,14 @@ of Crystal).
 | TruthGate | Implemented | Yes | `core/truth_gate.py` (extracted, behaviour-pinned); type-aware; the only automatic entry into L3 |
 | Trace / Receipt | Implemented | Yes | `core/trace.py`, `core/provenance.py`; sealed, replayable receipts with strict-provenance replay |
 | Per-fact Provenance Chain | Implemented (baseline) | Yes | `core/provenance_chain.py` (Sprint1 P1-5 / I89); per-`fact_id` append-only hash chain, distinct from the global `audit.py` ledger and per-answer `provenance.py` receipts. Tamper-evident `verify()`; empty chain reported as `empty_chain` (never a verified non-empty chain). Currently wired into the GDPR erasure path only; broader lifecycle wiring (ingest/promote/restrict) is follow-up. |
-| Guardian | Partial | Baseline | Boundary function in `core/pipeline.py` runs before the gate; a formal detect → flag/block/pass contract document is future work |
+| Guardian | Implemented (baseline contract) | Baseline | `core/pipeline.py` — `guardian_diagnose()` with documented detect → pass/block contract (`GUARDIAN_CONTRACT`); runs before TruthGate. Full policy routing (flag → action) remains future work |
 | FactsPack | Partial | Baseline | Grounding pack used by the answer path; explicit conflict/contestation policy is a future RFC |
 | Review queue + web UI | Implemented | Yes | `core/review.py`, token-guarded HTTP API, static Kanban UI; roles/multi-curator workflows are grant-scope hardening |
 | Resumable Review Sessions | Implemented | Yes | `core/review.py` (`create_session`, `resume_session`, `record_session_decision`, `complete_session`); `core/memory.py` `review_sessions` table; 14 behaviour-pinned tests in `tests/test_review_resumable.py` |
 | GDPR-oriented controls | Partial | Baseline | Erasure, restriction, record-of-processing, tamper-evident audit, PII redaction, opt-in field encryption; "GDPR-oriented", **not** a certification claim |
 | Eval gate | Implemented | Yes | English corpus CI-gated; Russian corpus report-only; expansion planned |
 | Memory observability | Implemented | Yes | `core/observe.py` — read-only `memory_report` over L3 (states, statuses, contradictions) |
-| RRF rank fusion (retrieval ordering) | Implemented (standalone helper) | Yes | `core/rrf.py` (PR #163); pure-stdlib Reciprocal Rank Fusion for combining ranked candidate lists. Ordering only — does **not** assign `truth_status`, change `confidence`, or bypass TruthGate/Guardian. **Not yet wired into `retrieve()`** (future integration). |
+| RRF rank fusion (retrieval ordering) | Implemented | Yes | `core/rrf.py` (PR #163) fused into `pipeline.retrieve()` for vector + graph-walk + seed rankings. Ordering only — does **not** assign `truth_status`, change `confidence`, or bypass TruthGate/Guardian |
 | Exact-duplicate ingest dedup (Variant B) | Implemented | Yes | `core/ingest.py` + `core/reconcile.record_occurrence` (PR #164). An exact repeat updates occurrence metadata only — `occurrences` / `last_seen` / `sources_seen` / `fingerprint_sha256` (separate from `observations`). Does **not** call `reinforce()`, does **not** increase `confidence`, and is **not** counted as independent evidence: a duplicate occurrence is frequency metadata, not evidence. Legacy normalized-id migration / normalized-claim index is tracked separately in #165 and is **not** implemented. |
 | Fractal Memory baseline (multi-scale anchoring) | Implemented (baseline) | Yes | `core/fractal.py` (RFC0070) implements SHORT→MEDIUM→LONG→CORE anchoring with CORE exempt from decay and `fractal-*` CLI support. This refers only to the Crystal baseline implementation — a memory **anchoring** mechanism, **not** a cognitive Fractal Attention system — and not to the broader Personal Research Mode concept "Fractal Memory = Structure + Attention + Consolidation". |
 | Observer **action policy** (flag → action routing) | RFC / roadmap | No | Observability exists (read-only); a policy that routes flags to receivers/actions does not |
@@ -120,7 +120,7 @@ that already governs `LLM_OUTPUT` today (see
 
 | RFC | Purpose | Status |
 |---|---|---|
-| GUARDIAN_CONTRACT | Formal detect → flag/block/pass behaviour of Guardian | Future |
+| GUARDIAN_CONTRACT | Formal detect → flag/block/pass behaviour of Guardian | Baseline in code (`guardian_diagnose`); extended policy doc future |
 | TRUTHGATE_BEHAVIOR | Hard blocks, thresholds, conflict handling in one document | Future |
 | FACTSPACK_POLICY | Evidence requirements + explicit contradiction/contested-answer policy | Future |
 | WRITE_POLICY | Allowed write targets per mode | Future |

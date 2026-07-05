@@ -1,7 +1,7 @@
 # core/pipeline.py
 # Velantrim ExoCortex — Core Pipeline
 #
-# Principle: Graph = Truth · LLM = Language · Memory = Physiology
+# Principle: Graph = Truth · LLM = Language · Memory = layered storage tiers
 # Pipeline: Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer
 #
 # Retrieval — vector-based (cosine of embeddings) over the seed corpus + recall from L3.
@@ -20,12 +20,14 @@ from typing import List, Dict, Any, Optional
 from core.trace import build_trace, promote_trace, format_trace
 from core.memory import (
     store_fact, get_fact, transition_esm, ESM_TRANSITIONS,
+    l3_secondary_sync_admissible,
 )
 from core.queue import get_outbox_queue
 from core.l3_graph import get_l3_graph
 from core.embedding import get_embedder, cosine, assert_compatible_embedder
 from core.retrieval_config import get_retrieval_config
 from core.generation import get_generator
+from core.rrf import rrf_fuse
 from core import metrics, adaptation
 
 logger = logging.getLogger(__name__)
@@ -93,20 +95,16 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
     # store (incomparable vectors → broken ranking). The first call stamps it.
     assert_compatible_embedder(graph)
     q_vec = embedder.embed(query)
-    by_id: Dict[str, Dict[str, Any]] = {}
-
-    def _offer(item: Dict[str, Any]) -> None:
-        # Dedup by id: the same fact may be both in the corpus and in L3.
-        prev = by_id.get(item["id"])
-        if prev is None or item["_score"] > prev["_score"]:
-            by_id[item["id"]] = item
+    seed_items: List[Dict[str, Any]] = []
+    vector_items: List[Dict[str, Any]] = []
+    graph_items: List[Dict[str, Any]] = []
 
     # Source 1: seed corpus (opt-in demo facts when VELANTRIM_DEMO_SEED=1).
     for item in _load_demo_seed():
         sim = cosine(q_vec, embedder.embed(item["text"]))
         if sim < min_sim:
             continue
-        _offer({
+        seed_items.append({
             **item,
             "_score":          round(sim * item.get("confidence", 1.0), 4),
             "epistemic_state": "Observed",
@@ -135,7 +133,7 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
             continue
         if node.get("restricted"):
             continue  # GDPR Art. 18: restricted facts do not take part in processing
-        _offer(_from_node(node, sim * node.get("confidence", 1.0), "memory"))
+        vector_items.append(_from_node(node, sim * node.get("confidence", 1.0), "memory"))
         vector_hits.append(node)
 
     # Source 3: multi-hop graph-walk from vector hits (associative recall).
@@ -190,9 +188,21 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
         current = nxt
 
     for nid, score in graph_score.items():
-        _offer(_from_node(node_cache[nid], score, "graph"))
+        graph_items.append(_from_node(node_cache[nid], score, "graph"))
 
-    return sorted(by_id.values(), key=lambda x: x["_score"], reverse=True)[:k]
+    # Fuse ranked candidate lists with RRF (ordering only — no truth/confidence change).
+    rankings: List[List[Dict[str, Any]]] = []
+    if vector_items:
+        rankings.append(sorted(vector_items, key=lambda x: x["_score"], reverse=True))
+    if graph_items:
+        rankings.append(sorted(graph_items, key=lambda x: x["_score"], reverse=True))
+    if seed_items:
+        rankings.append(sorted(seed_items, key=lambda x: x["_score"], reverse=True))
+    if not rankings:
+        return []
+    fused = (rankings[0] if len(rankings) == 1
+             else rrf_fuse(rankings, key=lambda x: x["id"]))
+    return fused[:k]
 
 
 # ─── FACTS PACK ───────────────────────────────────────────────────────────────
@@ -260,6 +270,66 @@ def build_facts_pack(
 # ─── GUARDIAN ─────────────────────────────────────────────────────────────────
 # Structural check — the last line of defense before the answer.
 # 0 tokens · synchronous · Fast Path.
+#
+# Contract (baseline): detect structural defects → flag/block before TruthGate.
+# Verdicts: pass | block. Does not assign truth, confidence, or epistemic state.
+
+GUARDIAN_VERDICT_PASS = "pass"
+GUARDIAN_VERDICT_BLOCK = "block"
+
+GUARDIAN_CONTRACT = (
+    "Structural integrity gate on FactsPack + Trace before TruthGate. "
+    "Blocks on: empty FactsPack, empty Trace, trace/fact count mismatch, "
+    "missing fact_id, missing claim, missing source, or zero confidence. "
+    "Does not promote facts or bypass TruthGate."
+)
+
+
+def guardian_diagnose(
+    facts_pack: Dict[str, Any],
+    trace: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Run the Guardian contract and return a structured verdict."""
+    facts = facts_pack.get("facts", [])
+    checks: Dict[str, bool] = {
+        "facts_non_empty": bool(facts),
+        "trace_non_empty": bool(trace),
+        "trace_covers_facts": len(trace) >= len(facts),
+        "all_have_fact_id": all(bool(f.get("fact_id")) for f in facts),
+        "all_have_claim": all(bool(f.get("claim")) for f in facts),
+        "all_have_source": all(bool(f.get("source")) for f in facts),
+        "all_have_positive_confidence": all(
+            float(f.get("confidence", 0)) > 0 for f in facts),
+    }
+
+    if not checks["facts_non_empty"]:
+        return {"verdict": GUARDIAN_VERDICT_BLOCK, "reason": "FactsPack is empty",
+                "checks": checks}
+    if not checks["trace_non_empty"]:
+        return {"verdict": GUARDIAN_VERDICT_BLOCK,
+                "reason": "Trace is empty — provenance is missing", "checks": checks}
+    if not checks["trace_covers_facts"]:
+        return {"verdict": GUARDIAN_VERDICT_BLOCK,
+                "reason": (f"Mismatch: {len(facts)} facts, "
+                           f"{len(trace)} trace elements"),
+                "checks": checks}
+
+    for fact in facts:
+        if not fact.get("fact_id"):
+            return {"verdict": GUARDIAN_VERDICT_BLOCK,
+                    "reason": f"Fact without fact_id: {fact}", "checks": checks}
+        if not fact.get("claim"):
+            return {"verdict": GUARDIAN_VERDICT_BLOCK,
+                    "reason": f"Fact without claim: {fact['fact_id']}", "checks": checks}
+        if not fact.get("source"):
+            return {"verdict": GUARDIAN_VERDICT_BLOCK,
+                    "reason": f"Fact without source: {fact['fact_id']}", "checks": checks}
+        if fact.get("confidence", 0) <= 0:
+            return {"verdict": GUARDIAN_VERDICT_BLOCK,
+                    "reason": f"Zero confidence: {fact['fact_id']}", "checks": checks}
+
+    return {"verdict": GUARDIAN_VERDICT_PASS, "reason": None, "checks": checks}
+
 
 def guardian(
     facts_pack: Dict[str, Any],
@@ -269,26 +339,8 @@ def guardian(
     Checks the structural integrity of the FactsPack and Trace.
     Returns (passed: bool, reason: str | None).
     """
-    facts = facts_pack.get("facts", [])
-
-    if not facts:
-        return False, "FactsPack is empty"
-    if not trace:
-        return False, "Trace is empty — provenance is missing"
-    if len(trace) < len(facts):
-        return False, f"Mismatch: {len(facts)} facts, {len(trace)} trace elements"
-
-    for fact in facts:
-        if not fact.get("fact_id"):
-            return False, f"Fact without fact_id: {fact}"
-        if not fact.get("claim"):
-            return False, f"Fact without claim: {fact['fact_id']}"
-        if not fact.get("source"):
-            return False, f"Fact without source: {fact['fact_id']}"
-        if fact.get("confidence", 0) <= 0:
-            return False, f"Zero confidence: {fact['fact_id']}"
-
-    return True, None
+    diag = guardian_diagnose(facts_pack, trace)
+    return diag["verdict"] == GUARDIAN_VERDICT_PASS, diag.get("reason")
 
 
 # ─── TRUTH GATE ───────────────────────────────────────────────────────────────
@@ -517,6 +569,9 @@ def drain_l3_outbox(graph=None) -> int:
         fact = get_fact(fid)
         if fact is None:
             queue.clear(fid)  # the fact vanished from SQLite — drop the stale entry
+            continue
+        if not l3_secondary_sync_admissible(fact, graph=graph):
+            queue.clear(fid)  # outbox is for post-gate canon merges only
             continue
         fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"), fact.get("source_status"))
         try:

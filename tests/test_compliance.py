@@ -64,6 +64,16 @@ def test_restricted_facts_lists_only_restricted():
     assert restricted_facts() == ["f2"]
 
 
+def test_restrict_observed_fact_does_not_merge_into_l3():
+    """Observed facts must not enter L3 via restriction sync."""
+    store_fact({"fact_id": "obs_f", "claim": "pre-canonical", "source": "test",
+                "epistemic_state": "Observed"})
+    rec = restrict_processing("obs_f", reason="dispute")
+    assert rec["found"] is True
+    assert is_restricted("obs_f") is True
+    assert get_l3_graph().get_fact("obs_f") is None
+
+
 # ─── Art. 30: record of processing ────────────────────────────────────────────
 
 def test_ropa_aggregates_and_is_content_free():
@@ -94,8 +104,8 @@ def test_ropa_reports_local_no_transfer_by_default(monkeypatch):
     assert ropa["backends"]["generator"] == "extractive"
 
 
-def test_ropa_flags_transfer_when_claude_generator(monkeypatch):
-    monkeypatch.setenv("VELANTRIM_GENERATOR", "claude")
+def test_ropa_flags_transfer_when_anthropic_generator(monkeypatch):
+    monkeypatch.setenv("VELANTRIM_GENERATOR", "anthropic")
     ropa = record_of_processing()
     assert ropa["international_transfer"] is True
 

@@ -23,7 +23,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional, List
 
-from core.memory import get_fact, store_fact, transition_esm, update_fact
+from core.memory import get_fact, store_fact, transition_esm, update_fact, l3_secondary_sync_admissible
 from core.l3_graph import get_l3_graph
 from core.embedding import get_embedder
 from core.queue import get_outbox_queue
@@ -49,8 +49,14 @@ def _sync_l3(fact_id: str) -> Optional[Dict[str, Any]]:
     update has already happened. Mirror the pipeline's self-heal path — enqueue
     the fact in the L3 outbox so drain_l3_outbox() retries the merge later,
     instead of silently losing the sync.
+
+    Guardrail: pre-canonical facts must never enter L3 through this metadata/
+    confidence sync path — only TruthGate admission may promote them.
+    Contradicted/Deprecated sync only when the node is already in L3.
     """
     fact = get_fact(fact_id)
+    if fact is not None and not l3_secondary_sync_admissible(fact):
+        return fact
     if fact is not None:
         try:
             get_l3_graph().merge_fact(fact)
@@ -132,7 +138,7 @@ def record_occurrence(
     # Guardrail: occurrence tracking must never promote a fact into the canon.
     # Sync the metadata to L3 ONLY when the fact is already Validated (already in
     # the canon); a non-Validated fact is never merged into L3 from here.
-    if fact.get("epistemic_state") == "Validated":
+    if l3_secondary_sync_admissible(fact):
         _sync_l3(fact_id)
     return occurrences
 

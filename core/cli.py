@@ -16,6 +16,7 @@ from typing import Optional, List
 
 from core.ingest import ingest
 from core.pipeline import run
+from core.path_safety import resolve_safe_path
 from core.reconcile import fact_history, find_conflicts
 from core.observe import memory_report, format_report
 from core.trace import format_trace
@@ -358,7 +359,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         if args.file == "-":
             raw = sys.stdin.read()
         else:
-            with open(args.file, encoding="utf-8") as fh:
+            with open(resolve_safe_path(args.file), encoding="utf-8") as fh:
                 raw = fh.read()
         print(json.dumps(
             provenance.verify_receipt(json.loads(raw),
@@ -518,7 +519,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         if args.file == "-":
             raw = sys.stdin.read()
         else:
-            with open(args.file, encoding="utf-8") as fh:
+            with open(resolve_safe_path(args.file), encoding="utf-8") as fh:
                 raw = fh.read()
         elements = _trace_elements(json.loads(raw))
         if elements is None:

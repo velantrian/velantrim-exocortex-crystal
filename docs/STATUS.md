@@ -65,8 +65,8 @@ Each track was delivered as a separate PR. See `TEST_REPORT.md` and
 ## Recent PRs — response policy and research mode (status)
 
 These three PRs are recorded here so the public implementation boundary stays
-explicit. The audited suite is now **1252 passed / 12 skipped / 100% coverage**
-(see `TEST_REPORT.md`).
+explicit. The audited suite is now **1292 passed / 12 skipped / 100% coverage**
+(see `TEST_REPORT.md`; includes audit-hardening PR #206 on top of #201/#204).
 
 ```text
 PR #201 — deterministic response_policy v0            -> IMPLEMENTED (merged)

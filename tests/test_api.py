@@ -30,8 +30,7 @@ def test_health(client):
 
 def test_ingest_then_ask(client):
     r = client.post("/ingest", json={"text": "Lisbon is the capital of Portugal",
-                                     "source": "test", "claim_type": "WORLD_FACT",
-                                     "source_status": "EXTERNAL"})
+                                     "source": "test", "claim_type": "WORLD_FACT"})
     assert r.status_code == 200
     assert r.json()["accepted"] is True
 
@@ -61,8 +60,48 @@ def test_ingest_rejects_empty_text(client):
     assert client.post("/ingest", json={"text": ""}).status_code == 422
 
 
+def test_ingest_rejects_privileged_source_status_without_import_mode(client):
+    r = client.post("/ingest", json={
+        "text": "A privileged world fact from the API",
+        "source_status": "EXTERNAL",
+        "claim_type": "WORLD_FACT",
+    })
+    assert r.status_code == 422
+    assert "privileged source_status" in r.json()["detail"]
+
+
+def test_ingest_defaults_api_source_status_to_user_reported(client):
+    r = client.post("/ingest", json={
+        "text": "Lisbon is the capital of Portugal",
+        "source": "test", "claim_type": "WORLD_FACT",
+    })
+    assert r.status_code == 200
+    assert r.json()["fact"]["source_status"] == "USER_REPORTED"
+
+
+def test_ingest_privileged_import_with_env(client, monkeypatch):
+    monkeypatch.setenv("VELANTRIM_API_PRIVILEGED_INGEST", "1")
+    r = client.post("/ingest", json={
+        "text": "The speed of light in vacuum is constant",
+        "source_status": "EXTERNAL",
+        "import_mode": True,
+        "evidence_refs": ["physics/constants.txt"],
+        "claim_type": "WORLD_FACT",
+        "confidence": 0.95,
+    })
+    assert r.status_code == 200
+    meta = r.json()["fact"]["metadata"]
+    assert meta["admission_path"] == "api_privileged_import"
+    assert meta["evidence_refs"] == ["physics/constants.txt"]
+
+
 def test_ingest_invalid_source_status_is_422(client):
     r = client.post("/ingest", json={"text": "A fact", "source_status": "NONSENSE"})
+    assert r.status_code == 422
+
+
+def test_ingest_invalid_claim_type_from_ingest_is_422(client):
+    r = client.post("/ingest", json={"text": "A fact", "claim_type": "NONSENSE"})
     assert r.status_code == 422
 
 
@@ -79,7 +118,8 @@ def test_ask_blocked_returns_200_with_error(client):
 
 def test_receipt_and_verify(client):
     client.post("/ingest", json={"text": "Gold is a chemical element",
-                                 "source": "test", "source_status": "EXTERNAL"})
+                                 "source": "test", "claim_type": "WORLD_FACT",
+                                 "confidence": 0.9})
     r = client.get("/receipt", params={"q": "tell me about gold"})
     assert r.status_code == 200
     receipt = r.json()
@@ -100,7 +140,8 @@ def test_receipt_blocked_returns_422(client):
 
 def test_evidence_endpoint(client):
     res = client.post("/ingest", json={"text": "Helium is a noble gas",
-                                       "source": "test", "source_status": "EXTERNAL"})
+                                       "source": "test", "claim_type": "WORLD_FACT",
+                                       "confidence": 0.9})
     fact_id = res.json()["fact"]["fact_id"]
     from core import evidence
     evidence.attach_evidence(fact_id, "chem.txt", source_text="Helium is a noble gas")
@@ -222,24 +263,39 @@ def test_review_reject_endpoint_and_404(client, monkeypatch):
                        json={"fact_id": "ing:nope"}).status_code == 404
 
 
-def test_review_token_guard_on_get_and_post(client, monkeypatch):
-    """Negative test: with VELANTRIM_API_TOKEN set, every /review/* JSON
-    endpoint — GET and POST — answers 401 without (or with a wrong) Bearer
-    token, and 200 with the right one."""
+def test_api_token_guard_on_memory_and_review_endpoints(client, monkeypatch):
+    """With VELANTRIM_API_TOKEN set, memory and review endpoints require Bearer."""
     monkeypatch.setenv("VELANTRIM_API_TOKEN", "s3cret")
+    auth = {"Authorization": "Bearer s3cret"}
     for path in ("/review/queue", "/review/report", "/review/decisions"):
         assert client.get(path).status_code == 401
         assert client.get(
             path, headers={"Authorization": "Bearer wrong"}).status_code == 401
-        assert client.get(
-            path, headers={"Authorization": "Bearer s3cret"}).status_code == 200
+        assert client.get(path, headers=auth).status_code == 200
     assert client.get("/review/item/ing:x").status_code == 401
     assert client.post("/review/approve",
                        json={"fact_id": "ing:x"}).status_code == 401
     assert client.post("/review/reject",
                        json={"fact_id": "ing:x"}).status_code == 401
-    # Non-review endpoints keep the historical localhost-trust posture.
+    # Memory endpoints are guarded too when the token is set.
+    assert client.post("/ingest", json={"text": "hello"}).status_code == 401
+    assert client.post("/ask", json={"query": "hello"}).status_code == 401
+    assert client.get("/receipt", params={"q": "hello"}).status_code == 401
+    assert client.post("/verify-receipt",
+                       json={"receipt": {"digest": "x"}}).status_code == 401
+    assert client.get("/evidence/ing:x").status_code == 401
+    assert client.post("/ingest", json={"text": "hello"}, headers=auth).status_code == 200
+    # Health and the static review shell stay public.
     assert client.get("/health").status_code == 200
+    assert client.get("/review/ui").status_code == 200
+
+
+def test_ingest_rejects_oversized_text(client):
+    assert client.post("/ingest", json={"text": "x" * 10_001}).status_code == 422
+
+
+def test_ask_rejects_oversized_query(client):
+    assert client.post("/ask", json={"query": "x" * 10_001}).status_code == 422
 
 
 def test_review_ui_is_a_dataless_static_shell(client, monkeypatch):

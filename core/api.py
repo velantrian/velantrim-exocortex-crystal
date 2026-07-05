@@ -18,7 +18,7 @@
 from typing import Any, Dict, List, Optional
 
 try:
-    from fastapi import Depends, FastAPI, Header, HTTPException
+    from fastapi import Depends, FastAPI, Header, HTTPException, Query
     from fastapi.responses import HTMLResponse
     from pydantic import BaseModel, Field
     _HAS_FASTAPI = True
@@ -49,6 +49,7 @@ def create_app():
     from importlib import resources
 
     from core import aio, evidence, provenance, review
+    from core.api_ingest_policy import resolve_api_ingest
 
     app = FastAPI(
         title="Velantrim Crystal",
@@ -56,14 +57,13 @@ def create_app():
         description="Verifiable, local-first AI memory — HTTP service layer.",
     )
 
-    # ─── review token guard ────────────────────────────────────────────────────
-    # With VELANTRIM_API_TOKEN set, EVERY /review/* JSON endpoint — GET and POST
-    # alike — requires `Authorization: Bearer <token>`: the read endpoints expose
-    # claims, sources, confidence and curator decisions, so they are no less
-    # sensitive than the write ones. Constant-time comparison (hmac.compare_digest)
-    # avoids token-guessing via timing. Without the env var the service keeps its
-    # historical localhost-trust posture (see SECURITY.md).
-    def _require_review_token(
+    # ─── API token guard ───────────────────────────────────────────────────────
+    # With VELANTRIM_API_TOKEN set, every memory-facing endpoint requires
+    # `Authorization: Bearer <token>` (constant-time compare). Unguarded:
+    # GET /health (liveness) and GET /review/ui (static data-free shell).
+    # Without the env var the service keeps its historical localhost-trust posture
+    # (see SECURITY.md).
+    def _require_api_token(
             authorization: Optional[str] = Header(None)) -> None:
         expected = os.environ.get("VELANTRIM_API_TOKEN", "")
         if not expected:
@@ -75,20 +75,25 @@ def create_app():
             raise HTTPException(status_code=401,
                                 detail="missing or invalid bearer token")
 
-    _guarded = [Depends(_require_review_token)]
+    _guarded = [Depends(_require_api_token)]
 
     # ─── request models ────────────────────────────────────────────────────────
+    _MAX_UTTERANCE = 10_000
+
     class IngestRequest(BaseModel):
-        text: str = Field(..., min_length=1, description="The utterance to ingest.")
+        text: str = Field(..., min_length=1, max_length=_MAX_UTTERANCE,
+                          description="The utterance to ingest.")
         source: str = "api"
         confidence: float = Field(0.6, ge=0.0, le=1.0)
         # None → auto-derived from utterance salience; explicit value wins.
         significance: Optional[float] = Field(None, ge=0.0, le=1.0)
         claim_type: Optional[str] = None
         source_status: Optional[str] = None
+        import_mode: bool = False
+        evidence_refs: Optional[List[str]] = None
 
     class AskRequest(BaseModel):
-        query: str = Field(..., min_length=1)
+        query: str = Field(..., min_length=1, max_length=_MAX_UTTERANCE)
 
     class VerifyRequest(BaseModel):
         receipt: Dict[str, Any]
@@ -116,24 +121,33 @@ def create_app():
         """Liveness/readiness probe — no canon access, always cheap."""
         return {"status": "ok", "service": "velantrim-crystal", "version": __version__}
 
-    @app.post("/ingest")
+    @app.post("/ingest", dependencies=_guarded)
     async def ingest_endpoint(req: IngestRequest) -> Dict[str, Any]:
         """Ingest an utterance through the full Guardian + TruthGate path."""
+        try:
+            policy = resolve_api_ingest(
+                source_status=req.source_status,
+                import_mode=req.import_mode,
+                evidence_refs=req.evidence_refs,
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=422, detail=str(e))
         kwargs: Dict[str, Any] = {
             "source": req.source,
             "confidence": req.confidence,
             "significance": req.significance,
+            "source_status": policy["source_status"],
         }
         if req.claim_type is not None:
             kwargs["claim_type"] = req.claim_type
-        if req.source_status is not None:
-            kwargs["source_status"] = req.source_status
+        if policy.get("metadata"):
+            kwargs["metadata"] = policy["metadata"]
         try:
             return await aio.aingest(req.text, **kwargs)
         except ValueError as e:  # invalid claim_type / source_status etc.
             raise HTTPException(status_code=422, detail=str(e))
 
-    @app.post("/ask")
+    @app.post("/ask", dependencies=_guarded)
     async def ask_endpoint(req: AskRequest) -> Dict[str, Any]:
         """Run the verifiable pipeline. Returns the answer or a blocked result.
 
@@ -143,8 +157,9 @@ def create_app():
         """
         return await aio.arun(req.query)
 
-    @app.get("/receipt")
-    async def receipt_endpoint(q: str) -> Dict[str, Any]:
+    @app.get("/receipt", dependencies=_guarded)
+    async def receipt_endpoint(
+            q: str = Query(..., min_length=1, max_length=_MAX_UTTERANCE)) -> Dict[str, Any]:
         """Run a query and return a replayable provenance receipt."""
         result = await aio.arun(q)
         try:
@@ -152,7 +167,7 @@ def create_app():
         except ValueError as e:  # blocked result has no answer to attest to
             raise HTTPException(status_code=422, detail=str(e))
 
-    @app.post("/verify-receipt")
+    @app.post("/verify-receipt", dependencies=_guarded)
     async def verify_receipt_endpoint(req: VerifyRequest) -> Dict[str, Any]:
         """Verify a receipt and replay its citations against the current canon."""
         return await asyncio.to_thread(
@@ -160,7 +175,7 @@ def create_app():
             strict_provenance=req.strict_provenance,
         )
 
-    @app.get("/evidence/{fact_id}")
+    @app.get("/evidence/{fact_id}", dependencies=_guarded)
     async def evidence_endpoint(fact_id: str) -> List[Dict[str, Any]]:
         """List the source-span evidence records attached to a fact."""
         return await asyncio.to_thread(evidence.evidence_for, fact_id)

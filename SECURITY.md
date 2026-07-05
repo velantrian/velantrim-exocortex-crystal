@@ -53,21 +53,29 @@ assets and threats:
 
 > 📋 For the detailed STRIDE breakdown — trust boundaries, per-category analysis, mitigation map, and explicit residual risks / non-claims — see [docs/security/threat-model.md](./docs/security/threat-model.md).
 
-### Optional HTTP service layer and the review token guard
+### Optional HTTP service layer and the API token guard
 
 The optional FastAPI service (`pip install ".[api]"`, `velantrim-api`) binds to
 **127.0.0.1 by default** and is intended to stay there: it is a localhost-trust
-surface, not an internet-facing service. Do not change `VELANTRIM_API_HOST`
-to a routable address without putting real authentication and TLS in front.
+surface when no token is configured, not an internet-facing service. Do not change
+`VELANTRIM_API_HOST` to a routable address without putting real authentication
+and TLS in front.
 
-The curator review endpoints (`/review/*`) read and mutate pre-canonical
-claims, sources, confidence and curator decisions, so they carry an opt-in
-token guard: when **`VELANTRIM_API_TOKEN`** is set, every `/review/*` JSON
-endpoint — **GET and POST alike** — requires `Authorization: Bearer <token>`
-(compared with `hmac.compare_digest`, constant-time). `GET /review/ui` stays
-public because it is a static, data-free shell (enforced by test): all data it
-shows is fetched client-side through the guarded JSON endpoints. Set the token
-whenever anything beyond the local user can reach the port.
+When **`VELANTRIM_API_TOKEN`** is set, every memory-facing endpoint requires
+`Authorization: Bearer <token>` (compared with `hmac.compare_digest`,
+constant-time). This covers `/ingest`, `/ask`, `/receipt`, `/verify-receipt`,
+`/evidence/{fact_id}`, and all `/review/*` JSON endpoints (GET and POST alike).
+**Unguarded:** `GET /health` (liveness) and `GET /review/ui` (static, data-free
+shell — enforced by test). Set the token whenever anything beyond the local user
+can reach the port (including the default `docker compose` deployment, which
+requires `VELANTRIM_API_TOKEN` before startup).
+
+Public `/ingest` treats utterances as **`USER_REPORTED`** by default. Privileged
+`source_status` values (`EXTERNAL`, `DERIVED`, `OBSERVED`) require
+`VELANTRIM_API_PRIVILEGED_INGEST=1`, `import_mode=true`, and non-empty
+`evidence_refs` on the request. The policy requires declared refs and stores
+them in fact `metadata`; it does **not** resolve URIs or attach rows in the
+evidence span store (`core/evidence.py`).
 
 ### Out of scope (current)
 

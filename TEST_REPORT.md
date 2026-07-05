@@ -8,10 +8,18 @@ milestone (RRF helper #163, exact-dedup #164, per-fact ProvenanceChain #168,
 Docker hardening #170/#171, strict TruthPolicy default #172, write-path
 TruthGate audit #175), then the post-tag PDF span fix #182, then the ESM
 CAS-guard hardening, then the deterministic response_policy v0 (#201) and the
-Research Mode v0.5 scaffold under `prototypes/research_mode/` (#204): 1252 passed /
+Research Mode v0.5 scaffold under `prototypes/research_mode/` (#204), then the audit-hardening
+PR (Ring Zero sync guards, API epistemic ingest policy, force-override metadata): **1292 passed /
 12 skipped.** This file and the README badge are the only places that carry
 the exact count; all other documents reference this report so the number
 cannot silently drift.
+
+> **Audit hardening note.** Ring Zero sync-path guards, HTTP API token alignment,
+> ingest path sandboxing (`core/path_safety.py`), RRF wired into `retrieve()`,
+> Guardian baseline contract, eval-gate script pytest coverage, API epistemic
+> ingest policy, and force-override metadata added 40 tests (1252 → 1292) and
+> grew the measured surface by 350 statements (5461 → 5811) while preserving the
+> 100% coverage gate.
 
 > **PR #137 note.** The safe repo hygiene / toolchain hardening pass added 11
 > tests (1130 → 1141) and grew the measured surface by 28 statements
@@ -58,11 +66,11 @@ cannot silently drift.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **1252** |
+| **Tests passing** | **1292** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **100%** (gate enforced at 100%, repo-wide `--cov=.`) |
-| Test files | 69 (`tests/test_*.py`) |
+| Test files | 74 (`tests/test_*.py`) |
 | Python | 3.11 / 3.12 in CI |
 | Runtime dependencies | standard library only |
 
@@ -137,11 +145,13 @@ pytest tests/ --cov=. --cov-fail-under=100
 | `core/neurogenesis.py` | 96  | 100% |
 | `core/observe.py`      | 35  | 100% |
 | `core/pii.py`          | 56  | 100% |
-| `core/pipeline.py`     | 252 | 100% |
+| `core/api_ingest_policy.py` | 14  | 100% |
+| `core/path_safety.py`       | 32  | 100% |
+| `core/pipeline.py`     | 277 | 100% |
 | `core/provenance.py`   | 90  | 100% |
 | `core/provenance_chain.py`  | 46  | 100% |
 | `core/queue.py`        | 47  | 100% |
-| `core/reconcile.py`    | 117 | 100% |
+| `core/reconcile.py`    | 119 | 100% |
 | `core/refusal_reasons.py`   | 26  | 100% |
 | `core/retrieval_config.py`  | 69  | 100% |
 | `core/review.py`       | 163 | 100% |
@@ -153,19 +163,22 @@ pytest tests/ --cov=. --cov-fail-under=100
 | `core/truth_gate.py`        | 24  | 100% |
 | `core/velum.py`             | 106 | 100% |
 | `core/volition.py`          | 75  | 100% |
+| `scripts/eval_gate.py`      | 46  | 100% |
 | `scripts/eval_track.py`     | 72  | 100% |
 | `scripts/trace_visualize.py`| 22  | 100% |
 | root tooling (`audit_metadata` 109, `check_rfc_duplicates` 44, `fill_dependencies` 43, `epigenetic_adaptation_module` 29, `velantrim_migrate_v3_1` 393) | 618 | 100% |
 | `prototypes/` (4 research prototypes) | 142 | 100% |
 | `utils/rfc_parser.py`       | 13  | 100% |
-| **Total (repo-wide)**       | **5461** | **100%** |
+| **Total (repo-wide)**       | **5811** | **100%** |
 
 ## What the tests cover
 
 | Area | Test file |
 |------|-----------|
 | Memory layers (L0/L1), ESM transitions, Ring Zero (I6) | `test_memory.py`, `test_esm.py` |
-| End-to-end pipeline (retrieve → gate → L3 → answer) | `test_pipeline.py` |
+| End-to-end pipeline (retrieve → gate → L3 → answer) | `test_pipeline.py`, `test_guardian_contract.py` |
+| Ingest path sandboxing (`core/path_safety.py`) | `test_path_safety.py` |
+| CI eval quality gate script | `test_eval_gate_script.py` |
 | Pluggable re-merge queue (SQLite/Redis backends, fallback) & async entry points | `test_queue.py` |
 | Immune / CRISPR Memory Guard (RFC0072) — threat memory, screening, strict/learn, CLI | `test_immune.py` |
 | Fractal Memory Layer (RFC0070) — anchor strength, reanchor/spill, decay protection, CLI | `test_fractal.py` |
@@ -226,6 +239,9 @@ TruthGate audit #175) from a live `--cov=.` run at 1209 passed / 12 skipped /
 two tests in `tests/test_esm.py`, then the CAS-miss caller-abort guards added four
 tests across `tests/test_review.py`, `tests/test_ingest.py` and `tests/test_pipeline.py`,
 then `response_policy v0` (#201, 11 tests) and the Research Mode v0.5 scaffold
-(#204, 20 tests), so the current total is 1252 passed / 12 skipped / 100%
-(confirmed by CI). The per-module rows predate #182 and will be regenerated at the
-next full audit. All figures are reproduced by running the commands above.*
+(#204, 20 tests), then the audit-hardening PR (40 tests across Ring Zero sync
+guards, API epistemic ingest policy, path sandbox, RRF behavior, and
+force-override metadata), so the current total is **1292 passed / 12 skipped /
+100%** (confirmed by CI). The per-module rows predate #182 and will be
+regenerated at the next full audit. All figures are reproduced by running the
+commands above.*
