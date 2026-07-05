@@ -74,11 +74,11 @@ Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer
 
 | Статья GDPR | Реализация | Файл |
 |---|---|---|
-| **Art. 17** (erasure) | Физическое удаление по L0/L1/L3/outbox + immutable content-free tombstone (только sha256); каскад по `DERIVED_FROM` с защитой от циклов | `core/erasure.py` |
+| **Art. 17** (erasure) | Физическое удаление по L0/L1/L3/outbox + immutable tombstone с content-light erasure-метаданными (`fact_id`, timestamp, reason, actor + hash удалённого claim — не сам текст claim); каскад по `DERIVED_FROM` с защитой от циклов | `core/erasure.py` |
 | **Art. 18** (restriction) | Флаг `restricted` исключает факт из retrieval и graph-walk | `core/compliance.py` |
 | **Art. 30** (record of processing) | `record_of_processing`, `erasure_log` | `core/compliance.py` |
-| **Art. 32** (encryption at rest) | Field-level шифрование claim/metadata; Fernet/AES или stdlib-only HMAC-SHA256-CTR encrypt-then-MAC; PBKDF2 200k | `core/crypto.py` |
-| **Art. 5** (minimisation) | PII-детекция/редакция: EMAIL, IBAN, карта (Luhn), IPv4, PHONE | `core/pii.py` |
+| **Art. 32** (encryption at rest) | Field-level шифрование claim/metadata; Fernet/AES или stdlib-only HMAC-SHA256-CTR encrypt-then-MAC; PBKDF2 200k. **Opt-in**: off by default (identity-функция без ключа), включается `VELANTRIM_ENCRYPTION_KEY` | `core/crypto.py` |
+| **Art. 5** (minimisation) | PII-детекция/редакция: EMAIL, IBAN, карта (Luhn), IPv4, PHONE. **Opt-in**: off by default, включается `VELANTRIM_REDACT_PII=1` | `core/pii.py` |
 
 Формулировка в документах корректно осторожная: «GDPR-relevant controls, not a legal certification». 👍
 
@@ -91,8 +91,12 @@ Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer
 
 ### 2.7 Прототипы vs runtime 🧪
 
-`prototypes/` (fractal memory, hybrid biological memory, CRISPR immune guard, neurogenesis, research_mode) — исследовательские модули, **явно не подключённые к боевому конвейеру** (это прямо написано в `prototypes/README.md` и `docs/METAPHOR_VS_MECHANISM.md`). В runtime живут только тонкие срезы (`core/immune.py`, `core/adaptation.py`, `core/neurocore.py`), выключенные по умолчанию.
-✅ В грантовых текстах эта граница выдержана — так и держать: «биологические» метафоры нельзя подавать как работающую механику.
+Здесь важно различать два разных набора файлов, которые легко спутать по названию:
+
+- **`prototypes/`** (`fractal_memory_layer.py`, `hybrid_biological_memory.py`, `immune_crispr_memory_guard.py`, `neurogenesis_dynamic_growth.py`, `research_mode/`) — исследовательские модули, **явно не подключённые к боевому конвейеру** (прямо написано в `prototypes/README.md`: «not part of the Crystal runtime pipeline unless explicitly imported»).
+- **`core/`** — по `docs/METAPHOR_VS_MECHANISM.md` (Table A) в runtime реализованы и покрыты тестами **7** био-метафорных механизмов со статусом `Implemented`: Fractal Memory anchoring (`core/fractal.py`, RFC0070 — multi-scale anchoring, не когнитивная Fractal Attention), Epigenetic Adaptation (`core/adaptation.py`, RFC0071 — единый глобальный tag, регулирующий порог TruthGate), Immune Layer + CRISPR Guard (`core/immune.py`, RFC0072 — базовый advisory-скрининг включён всегда, strict-блокировка опциональна через `VELANTRIM_IMMUNE_STRICT`), Neurogenesis (`core/neurogenesis.py`, RFC0073), Concept Emergence (`core/concept.py`, RFC0066), Memory Volition (`core/volition.py`, RFC0065). Единственный модуль с явным флагом «off by default» — **NeuroCore** (`core/neurocore.py`, RFC0068, `VELANTRIM_NEUROCORE`).
+
+✅ Граница, которую важно сохранить в грантовых текстах: это **implemented baseline-механизмы** (детерминированное anchoring/pattern-matching/threshold-adjustment, всё покрыто тестами) — а не биологическая когниция и не полноценный Personal Research Mode («Fractal Memory = Structure + Attention + Consolidation» и т.п. остаются вне runtime). «Реализовано» здесь означает конкретную узкую механику, а не метафору целиком.
 
 ---
 
@@ -106,9 +110,11 @@ Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer
 | Markdown-документация | ~33k строк / 85 файлов | ✅ (docs ≈ code!) |
 | Заявлено тестов | **1252 passed / 12 skipped, 100% coverage** (`TEST_REPORT.md`) | ✅ **подтверждено прогоном** |
 | CI | pytest 3.11/3.12 + `--cov-fail-under=100` + bandit + pip-audit + eval-gate + jsonl-integrity | ✅ конфиг проверен |
-| Релизы | Теги v0.1.0 → v0.3.0-reviewer-preview | ✅ |
+| Релизы | Только `v0.3.0-reviewer-preview` — предок текущего HEAD (`git tag --merged 9822591`) | ✅ |
 | PyPI | ❌ пакет не опубликован | ✅ проверено |
-| История | 52 коммита, 2026-06-17 → 2026-07-04, автор фактически один | ✅ |
+| История | 52 коммита текущей ветки main, 2026-06-17 → 2026-07-04, автор фактически один | ✅ |
+
+⚠️ **Уточнение по тегам/истории:** теги `v0.1.0`, `v0.1.1`, `v0.2.0` (`git ls-remote --tags`) указывают на **не связанную** с текущим `main` линию коммитов с первым коммитом от **2026-04-08** (`git merge-base --is-ancestor v0.1.0 9822591` → `no`). То есть в какой-то момент история проекта была переписана/сквошена: текущая ветка main начинается заново 2026-06-17 (52 коммита), а старые теги ведут в отрезанную, недостижимую из HEAD линию разработки. Формулировка «52 коммита, 17 июня → 4 июля» относится **только к текущей ветке main**, а не ко всей истории проекта с апреля 2026 — этот нюанс стоит держать в уме при любых грантовых заявлениях о «возрасте» проекта.
 
 **Эмпирическая проверка тестов:** ✅ полный suite прогнан в рамках этого аудита (`pip install -e '.[dev]' && pytest tests/`, ревизия `9822591`): **1252 passed, 12 skipped, 0 failed, total coverage 100.00% (5661 statements), 5 мин 04 сек.** Заявленные в README и `TEST_REPORT.md` цифры полностью соответствуют действительности.
 
@@ -206,7 +212,7 @@ This report audits the repository state at revision `9822591`. The following ite
 ### 🔥 P0 — до окончания ревью NLnet (следующие 4–10 недель)
 
 1. **🎬 Публичное демо за 60 секунд.** Скринкаст/асциинема: ingest → ask → receipt → tamper → erasure. Одна ссылка в README. Это одновременно усиливает NLnet-impact и закрывает главный пробел для moonshot-фондов.
-2. **📦 Релиз на PyPI** (`pip install velantrim`). Пакет собран, name свободен; это превращает «репозиторий» в «инфраструктуру, которую можно поставить» и даёт скачивания как метрику.
+2. **📦 Релиз на PyPI** (`pip install velantrim-exocortex-crystal` — точное имя пакета из `pyproject.toml`). Короткое имя `velantrim` для CLI-команды уже занято как entry point внутри пакета, но как отдельное *имя пакета на PyPI* оно не зарезервировано — это отдельное решение на будущее, а не то же самое действие. Пакет собран, релиз превращает «репозиторий» в «инфраструктуру, которую можно поставить» и даёт скачивания как метрику.
 3. **✉️ Разослать письма поддержки.** Шаблоны в `docs/grants/letters-of-support.md` готовы — нужны 2–4 реальных эндорсмента (университетская группа, библиотека/архив, privacy-NGO, знакомый мейнтейнер FOSS). Для impact-критерия (40%!) это самый дешёвый прирост.
 4. **👥 Митигировать bus-factor делом:** позвать хотя бы одного co-maintainer/regular reviewer (пусть с ограниченной ролью), включить в GOVERNANCE.md; 2–3 «good first issue» + разметка контрибьютор-пути.
 5. **🧹 Дешёвая техническая гигиена:** ruff + mypy (хотя бы `core/`) в CI; бейдж. Полдня работы, заметный сигнал аудитору.
@@ -231,10 +237,10 @@ This report audits the repository state at revision `9822591`. The following ite
 | Программа | Сумма | Статус / дедлайн | Fit | Комментарий |
 |---|---|---|:---:|---|
 | **[NGI TALER 14th call](https://nlnet.nl/news/2026/20260601-call.html)** (NLnet) | €5k–50k | **до 1 авг 2026, 12:00 CEST** | 🟡 | Только при честном угле «verifiable receipts/provenance для платёжных экосистем»; не натягивать — NLnet те же ревьюеры |
-| **[NGI Fediversity](https://nlnet.nl/fediversity/)** (NLnet) | €5k–50k | июньский дедлайн прошёл; следить за следующим | 🟢 | Реальный угол: verifiable memory / provenance-слой для Fediverse-инстансов и модерации знаний |
+| **[NGI Fediversity](https://nlnet.nl/fediversity/)** (NLnet) | €5k–50k | **12th call открыт с 1 июня 2026, дедлайн 1 авг 2026, 12:00 CEST** | 🟢 | Реальный угол: verifiable memory / provenance-слой для Fediverse-инстансов и модерации знаний |
 | **[Sovereign Tech Fund](https://www.sovereign.tech/programs/fund)** | от €50k | rolling | 🟡→🟢 | Требует статуса «критической инфраструктуры с adoption» — подавать после появления пользователей; отличная цель на 2027 |
 | **[Sovereign Tech Fellowship](https://www.sovereign.tech/programs/fellowship)** | контракт 3–12 мес | заявки были до 6 апр 2026; следующий цикл — следить | 🟢 | Формат «оплачиваемый мейнтейнер» идеально бьётся с bus-factor-проблемой |
-| **[Open Philanthropy / Coefficient Giving — Technical AI Safety RFP](https://grantedai.com/grants/technical-ai-safety-coefficient-giving-open-philanthropy-d38c0dec)** | часть $40M RFP | открыт (21 research area) | 🟢🟢 | Сильный угол: «epistemic audit layer / truthful-AI infrastructure»; принимают independent researchers. Использовать `docs/grants/north-america-positioning.md` |
+| **[Coefficient Giving (ex-Open Philanthropy) — Technical AI Safety RFP](https://coefficientgiving.org/funds/navigating-transformative-ai/request-for-proposals-technical-ai-safety-research/)** | часть $40M RFP | 🔴 **закрыт** (приём заявок завершился 15 апр 2025; форма для «revise & resubmit» была открыта до 15 июля 2025) — мониторить следующий цикл RFP | 🟡 | Угол на будущее: «epistemic audit layer / truthful-AI infrastructure»; принимают independent researchers. Использовать `docs/grants/north-america-positioning.md`, когда откроется новый цикл |
 | **[Mozilla — Democracy x AI Incubator](https://www.mozillafoundation.org/en/what-we-do/grantmaking/incubator/democracy-ai-cohort/)** | $50k (Tier I) → $250k | дедлайн марта 2026 прошёл; следить за следующей когортой | 🟢 | Категория «better information systems / verification tools» — прямое попадание |
 | **[OTF — FOSS Sustainability Fund](https://www.opentech.fund/funds/free-and-open-source-software-sustainability-fund/)** | варьируется | concept notes до 7 мая 2026 — прошёл; цикл повторяется | 🟡 | Фокус internet freedom; проверить соответствие миссии и eligibility |
 | **[NGI Open Calls (Horizon cascade)](https://ngi.eu/opencalls/)** | €5k–50k+ | постоянно появляются новые | 🟢 | Открыты для individuals; мониторить ежемесячно — профиль «trustworthy AI / data sovereignty» появляется регулярно |
