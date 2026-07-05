@@ -3,13 +3,18 @@
 Focus: L0→L1 fallback, get_all_facts, and the input-validation / not-found
 branches of store_fact / transition_esm.
 """
+import sqlite3
+
 import pytest
 
+from core import memory
 from core.memory import (
     store_fact,
     get_fact,
     transition_esm,
     get_all_facts,
+    set_restricted,
+    call_with_lock_retry,
     _L0,
     L0_CAP,
 )
@@ -49,6 +54,36 @@ def test_store_fact_upsert_updates_existing_row():
     f = get_fact("up1")
     assert f["claim"] == "v2"
     assert f["confidence"] == pytest.approx(0.9)
+
+
+def test_store_fact_upsert_preserves_restricted_and_created_at_in_l0():
+    """A conflict-update must not poison the L0 cache with a reset `restricted`
+    flag or a fresh `created_at` — both must reflect the persisted DB row, not
+    the incoming/default values baked into a brand-new `record` dict.
+
+    Regression for: after set_restricted(True), a later store_fact() upsert
+    (e.g. a re-ingest of the same fact_id) used to overwrite the L0 entry with
+    restricted missing entirely and created_at reset to "now", even though the
+    DB row correctly kept restricted=1 and the original created_at.
+    """
+    store_fact({"fact_id": "res1", "claim": "v1", "source": "s", "confidence": 0.5})
+    original_created_at = get_fact("res1")["created_at"]
+
+    assert set_restricted("res1", True) is True
+    assert get_fact("res1")["restricted"] == 1  # from L0
+
+    # Upsert the same fact_id (e.g. a re-ingest) — must NOT poison L0.
+    store_fact({"fact_id": "res1", "claim": "v2", "source": "s", "confidence": 0.9})
+    cached = get_fact("res1")  # served from L0
+    assert cached["restricted"] == 1
+    assert cached["created_at"] == original_created_at
+    assert cached["claim"] == "v2"  # other fields still update normally
+
+    # And the L1/SQLite row must agree (no divergence between cache and disk).
+    _L0.clear()
+    persisted = get_fact("res1")
+    assert persisted["restricted"] == 1
+    assert persisted["created_at"] == original_created_at
 
 
 def test_metadata_round_trips_through_l1():
@@ -189,3 +224,41 @@ def test_migration_adds_columns_to_legacy_table(monkeypatch, tmp_path):
     f = get_fact("leg1")
     assert f["claim_type"] == "OPINION"
     assert f["significance"] == pytest.approx(0.3)
+
+
+# ─── call_with_lock_retry (audit/provenance_chain write-lock contention) ─────
+
+def test_call_with_lock_retry_retries_transient_lock_then_succeeds(monkeypatch):
+    monkeypatch.setattr(memory.time, "sleep", lambda seconds: None)
+    calls = {"n": 0}
+
+    def flaky():
+        calls["n"] += 1
+        if calls["n"] < 3:
+            raise sqlite3.OperationalError("database is locked")
+        return "ok"
+
+    assert call_with_lock_retry(flaky, retries=5, base_delay=0.01) == "ok"
+    assert calls["n"] == 3
+
+
+def test_call_with_lock_retry_reraises_once_retries_are_exhausted(monkeypatch):
+    monkeypatch.setattr(memory.time, "sleep", lambda seconds: None)
+
+    def always_locked():
+        raise sqlite3.OperationalError("database is locked")
+
+    with pytest.raises(sqlite3.OperationalError, match="locked"):
+        call_with_lock_retry(always_locked, retries=3, base_delay=0.01)
+
+
+def test_call_with_lock_retry_does_not_retry_unrelated_operational_errors():
+    calls = {"n": 0}
+
+    def other_error():
+        calls["n"] += 1
+        raise sqlite3.OperationalError("disk I/O error")
+
+    with pytest.raises(sqlite3.OperationalError, match="disk I/O error"):
+        call_with_lock_retry(other_error, retries=5, base_delay=0.01)
+    assert calls["n"] == 1  # no retry for a non-lock OperationalError

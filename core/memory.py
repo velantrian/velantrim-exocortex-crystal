@@ -11,6 +11,7 @@
 import os
 import sqlite3
 import json
+import time
 from collections import OrderedDict
 from contextlib import contextmanager
 from datetime import datetime, timezone
@@ -337,13 +338,51 @@ def _migrate(conn) -> None:
             conn.execute(f"ALTER TABLE evidence_spans ADD COLUMN {column} {ddl}")
 
 
+def begin_immediate(conn) -> None:
+    """Start a write-serializing transaction on `conn`.
+
+    Used by callers that must serialize a check-then-act sequence (read the
+    tail of an append-only log, then insert the next entry) across concurrent
+    writers — see audit.append_event and provenance_chain.append. Acquires the
+    write lock (RESERVED) up front so a competing writer blocks here instead
+    of both readers computing the same "next" value. Pair with
+    call_with_lock_retry() at the call site: a WAL-mode lock conflict can
+    surface as an immediate "database is locked" OperationalError at BEGIN,
+    at the INSERT, or at the implicit commit when the `with _db()` block
+    exits — not only as a timed wait covered by connect(timeout=...).
+    """
+    conn.execute("BEGIN IMMEDIATE")
+
+
+def call_with_lock_retry(fn, retries: int = 5, base_delay: float = 0.05):
+    """Call `fn()`, retrying the WHOLE unit of work on a contended write lock.
+
+    Retrying only the BEGIN statement is not enough: sqlite3's busy handler
+    does not reliably cover every point a WAL-mode lock conflict can surface
+    (BEGIN, INSERT, or the implicit commit on `with _db()` exit), so on
+    "database is locked" we retry the entire fn() call — including opening a
+    fresh connection — a few times with a short backoff before giving up.
+    """
+    for attempt in range(retries):
+        try:
+            return fn()
+        except sqlite3.OperationalError as e:
+            if "locked" not in str(e).lower() or attempt == retries - 1:
+                raise
+            time.sleep(base_delay * (attempt + 1))
+
+
 @contextmanager
 def _db():
     """Connection per operation — no global state, no database-is-locked."""
     db_dir = os.path.dirname(SQLITE_PATH)
     if db_dir:
         os.makedirs(db_dir, exist_ok=True)
-    conn = sqlite3.connect(SQLITE_PATH)
+    # timeout=30: BEGIN IMMEDIATE callers (audit.append_event,
+    # provenance_chain.append) serialize concurrent writers on this lock
+    # instead of racing on a computed seq; give queued writers real headroom
+    # instead of sqlite3's 5s default before raising "database is locked".
+    conn = sqlite3.connect(SQLITE_PATH, timeout=30.0)
     conn.row_factory = sqlite3.Row
     # WAL: the writer does not block readers (better concurrency for evidence/audit).
     # It is a property of the DB file — set once and persisted; repeating it is harmless.
@@ -464,18 +503,25 @@ def store_fact(fact: Dict) -> None:
                 updated_at      = excluded.updated_at,
                 metadata        = excluded.metadata
         """, l1_record)
-        # Re-read the persisted epistemic_state within the same connection so L0
-        # is never poisoned with the incoming value when this is a conflict-update
-        # (the ON CONFLICT clause intentionally omits epistemic_state, preserving
-        # the existing row's state). For new inserts this returns the incoming
-        # state unchanged. Mirrors the "L0 after DB write" discipline in
-        # transition_esm().
+        # Re-read the persisted epistemic_state/created_at/restricted within the
+        # same connection so L0 is never poisoned with incoming/default values on
+        # a conflict-update. The ON CONFLICT clause intentionally omits
+        # epistemic_state and restricted (preserving the existing row's state),
+        # and `record["created_at"]` above is always "now" even though the DB
+        # row keeps the original insert timestamp. For new inserts this returns
+        # the incoming/default values unchanged. Mirrors the "L0 after DB write"
+        # discipline in transition_esm().
         row = conn.execute(
-            "SELECT epistemic_state FROM facts WHERE fact_id = ?", (fact_id,)
+            "SELECT epistemic_state, created_at, restricted FROM facts WHERE fact_id = ?",
+            (fact_id,)
         ).fetchone()
         persisted_state = row["epistemic_state"] if row else epistemic_state
+        persisted_created_at = row["created_at"] if row else now
+        persisted_restricted = row["restricted"] if row else 0
 
     record["epistemic_state"] = persisted_state
+    record["created_at"] = persisted_created_at
+    record["restricted"] = persisted_restricted
     _l0_put(fact_id, record)
 
 

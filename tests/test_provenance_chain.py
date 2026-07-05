@@ -10,6 +10,8 @@ Covers the seven behaviours required by the audit spec:
   6. the GDPR/erasure path records a provenance event
   7. an empty chain reports empty_chain / no_events, never a verified non-empty chain
 """
+import threading
+
 import pytest
 
 from core import memory
@@ -207,3 +209,37 @@ def test_compute_hash_is_deterministic_and_sensitive():
     assert _compute_hash(**{**base, "actor": "other"}) != h1
     assert _compute_hash(**{**base, "reason": "other"}) != h1
     assert _compute_hash(**{**base, "payload_str": "other"}) != h1
+
+
+# ─── concurrency (regression) ─────────────────────────────────────────────────
+
+def test_concurrent_append_never_collides_on_seq():
+    """Two callers racing append() for the SAME fact_id must not both read the
+    same tail seq and collide on insert.
+
+    Regression for: SELECT max(seq) + INSERT with no write-lock let concurrent
+    callers compute the same next seq; append() swallows the resulting
+    IntegrityError and returns False, silently dropping a lifecycle event.
+    """
+    pc = ProvenanceChain()
+    n_threads, n_per_thread = 8, 15
+    results = []
+    lock = threading.Lock()
+
+    def worker():
+        for _ in range(n_per_thread):
+            ok = pc.append(fact_id="race", event_type="ingest", to_state="Observed")
+            with lock:
+                results.append(ok)
+
+    threads = [threading.Thread(target=worker) for _ in range(n_threads)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    assert all(results)  # no swallowed IntegrityError
+    chain = pc.chain("race")
+    assert len(chain) == n_threads * n_per_thread
+    assert [e["seq"] for e in chain] == list(range(1, len(chain) + 1))
+    assert pc.verify("race")["ok"] is True

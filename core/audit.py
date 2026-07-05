@@ -66,20 +66,33 @@ def append_event(
     """
     detail_json = json.dumps(detail or {}, sort_keys=True, ensure_ascii=False)
     ts = _now()
-    with memory._db() as conn:
-        last = conn.execute(
-            "SELECT seq, entry_hash FROM audit_log ORDER BY seq DESC LIMIT 1"
-        ).fetchone()
-        prev_hash = last["entry_hash"] if last else _GENESIS
-        seq = (last["seq"] + 1) if last else 1
-        entry_hash = _entry_hash(seq, ts, event, fact_id, detail_json, prev_hash)
-        signature = _sign(entry_hash)
-        conn.execute(
-            "INSERT INTO audit_log "
-            "(seq, ts, event, fact_id, detail, prev_hash, entry_hash, signature) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (seq, ts, event, fact_id, detail_json, prev_hash, entry_hash, signature),
-        )
+
+    def _write():
+        with memory._db() as conn:
+            # BEGIN IMMEDIATE acquires the write lock before the tail read, so
+            # a concurrent append_event() call (e.g. two /review/approve
+            # requests in FastAPI's thread pool) cannot read the same
+            # `last seq` and race to insert the same seq — the second caller
+            # blocks here until the first transaction commits, then sees the
+            # updated tail. call_with_lock_retry covers contention that
+            # surfaces later in this block (INSERT / implicit commit).
+            memory.begin_immediate(conn)
+            last = conn.execute(
+                "SELECT seq, entry_hash FROM audit_log ORDER BY seq DESC LIMIT 1"
+            ).fetchone()
+            prev_hash = last["entry_hash"] if last else _GENESIS
+            seq = (last["seq"] + 1) if last else 1
+            entry_hash = _entry_hash(seq, ts, event, fact_id, detail_json, prev_hash)
+            signature = _sign(entry_hash)
+            conn.execute(
+                "INSERT INTO audit_log "
+                "(seq, ts, event, fact_id, detail, prev_hash, entry_hash, signature) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (seq, ts, event, fact_id, detail_json, prev_hash, entry_hash, signature),
+            )
+            return seq, entry_hash, signature
+
+    seq, entry_hash, signature = memory.call_with_lock_retry(_write)
     return {"seq": seq, "ts": ts, "event": event, "fact_id": fact_id,
             "entry_hash": entry_hash, "signed": signature is not None}
 
