@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or the dashboard. 20 new tests.
 
 ### Fixed
-- **P0 integrity follow-up to the audit-hardening PR (#206)**: three
+- **P0 integrity follow-up to the audit-hardening PR (#206)** (#216): three
   audit-confirmed integrity bugs. (1) `store_fact()` upsert no longer poisons
   the L0 cache with a reset `restricted` flag or a fresh `created_at` on a
   conflict-update — both are now re-read from the persisted row, mirroring the
