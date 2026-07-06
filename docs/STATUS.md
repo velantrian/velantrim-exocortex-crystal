@@ -76,6 +76,7 @@ PR #202 — wire response_policy onto the read path     -> CLOSED (not merged)
 PR #204 — Research Mode v0.5 scaffold (prototypes/)   -> RESEARCH (merged, prototype only)
 PR #216 — P0 integrity follow-up (post-#206)          -> IMPLEMENTED (merged)
 PR #222 — small correctness hardening (post-#216)     -> IMPLEMENTED (merged)
+PR #218 — L3 retrieval-scale smoke benchmark          -> BENCHMARK BASELINE / no runtime behaviour change
 ```
 
 - **PR #201 — `IMPLEMENTED`.** Deterministic read-path `response_policy v0`
@@ -112,6 +113,12 @@ PR #222 — small correctness hardening (post-#216)     -> IMPLEMENTED (merged)
   a Codex-review fix, since the shape-only check would have wrongly exempted
   phone-like values such as `5555-12-34`). 8 new regression tests; current
   baseline: 1307 passed / 12 skipped / 100% coverage.
+- **PR #218 — `BENCHMARK BASELINE`.** Adds `scripts/bench_l3_retrieval.py`
+  and `docs/benchmarks/L3_RETRIEVAL_SCALE.md`: a dependency-free smoke
+  benchmark measuring current `core.l3_graph` SQLite-backend retrieval
+  latency at increasing synthetic corpus sizes. Measures existing behaviour
+  only — no retrieval algorithm, TruthGate, or L3 schema change; not a
+  performance optimization or a CI gate.
 - **PR #204 — `RESEARCH` (prototype scaffold only).** The Research Mode v0.5 scaffold
   was merged under `prototypes/research_mode/` (`prototypes/research_mode/essence_card.py`),
   not in `core/`, and `prototypes/` is excluded from the installable package list. It
