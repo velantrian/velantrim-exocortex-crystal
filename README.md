@@ -480,6 +480,7 @@ milestone budget, partial-funding plan, and responsible-data position.
 | **[docs/REVIEWER_GUIDE.md](./docs/REVIEWER_GUIDE.md)** | Reviewer entry point: what Crystal is/isn't, status, how to run tests + Docker securely, how to verify TruthGate/Receipt/Provenance, audit-hardening tracks merged (#168/#170/#171/#172/#175), and deferred work |
 | **[docs/REVIEWER_DEMO.md](./docs/REVIEWER_DEMO.md)** | 10-minute reviewer demo: ingest → evidence → trace → answer → sealed receipt → strict replay → tamper check → eval gate |
 | **[docs/REVIEWER_NOTES.md](./docs/REVIEWER_NOTES.md)** | Secondary — one-page reviewer notes (canonical entry point is docs/REVIEWER_GUIDE.md): purpose, demo path, implemented scope and grant extensions |
+| **[docs/REVIEWER_CHECKPOINT_2026-07.md](./docs/REVIEWER_CHECKPOINT_2026-07.md)** | Post-audit-hardening reviewer/grant checkpoint: what changed (PRs #206–#225), implemented vs. RFC-only vs. benchmark-only, current test baseline, non-goals |
 | **[docs/DEMO.md](./docs/DEMO.md)** | Hands-on, reproducible CLI walkthrough with real captured output (ingest, ask, receipt, contradictions, knowledge import, GDPR erase, NeuroCore telemetry, eval, HTTP) |
 | **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** | Architecture diagrams and memory/backends/privacy boundaries |
 | **[docs/IMPLEMENTATION_STATUS.md](./docs/IMPLEMENTATION_STATUS.md)** | Honest status map: implemented Crystal core vs RFC/roadmap vs Exo-Cortex/Culture vision |
