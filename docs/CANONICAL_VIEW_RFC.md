@@ -36,9 +36,9 @@ Canon          = the VERIFIED + trace-valid subgraph of it.
 The physical L3 graph may legitimately contain nodes with `truth_status` in
 `VERIFIED`, `USER_CLAIMED`, `UNVERIFIED`, `HYPOTHESIS`, or `SUBJECTIVE` — the
 gate is type-aware and admits a subjective claim *as* a subjective claim,
-not as a rejected one. `docs/ARCHITECTURE.md` also notes that MCP reads
-L0/L1 working memory directly, so pre-canonical facts may already be
-visible to a caller that only expects canon.
+not as a rejected one. Some read paths may expose working-memory material
+outside the strict canon boundary unless the caller explicitly applies a
+trusted-only projection.
 
 The ambiguity this RFC targets:
 
