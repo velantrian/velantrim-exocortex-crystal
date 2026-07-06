@@ -31,6 +31,12 @@ _PATTERNS = [
 
 _ENV_REDACT = "VELANTRIM_REDACT_PII"
 
+# A bare ISO-8601 date (YYYY-MM-DD) clears the PHONE pattern's digit-count
+# check (8 digits, within the 7-15 range) — exclude it explicitly rather than
+# tighten the digit-count bound, which would risk rejecting real short phone
+# numbers.
+_ISO_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
 
 def redaction_enabled() -> bool:
     """True if PII redaction at ingest is turned on (VELANTRIM_REDACT_PII)."""
@@ -57,6 +63,8 @@ def _valid(pii_type: str, raw: str) -> bool:
         digits = re.sub(r"\D", "", raw)
         return 13 <= len(digits) <= 19 and _luhn_ok(digits)
     if pii_type == "PHONE":
+        if _ISO_DATE_RE.match(raw.strip()):
+            return False
         digits = re.sub(r"\D", "", raw)
         return 7 <= len(digits) <= 15
     return True

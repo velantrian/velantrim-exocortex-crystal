@@ -497,7 +497,12 @@ def main(argv: Optional[List[str]] = None) -> int:
             if not sep:
                 print(f"expected key=value, got {pair!r}", file=sys.stderr)
                 return 1
-            base[key] = int(value) if value.lstrip("-").isdigit() else float(value)
+            try:
+                base[key] = int(value) if value.lstrip("-").isdigit() else float(value)
+            except ValueError:
+                print(f"invalid retrieval config: {key}={value!r} is not a number",
+                      file=sys.stderr)
+                return 1
         try:
             cfg = retrieval_config.RetrievalConfig(**base)
             res = retrieval_config.save_config(cfg, args.out, source=args.source)

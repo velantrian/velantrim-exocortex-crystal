@@ -25,6 +25,22 @@ def test_phone_redacted():
     assert found[0]["type"] == "PHONE"
 
 
+def test_iso_date_is_not_treated_as_phone():
+    """An ISO-8601 date (YYYY-MM-DD) must not be flagged as PII — its 8 bare
+    digits otherwise clear the PHONE pattern's 7-15 digit validation."""
+    red, found = pii.redact("meeting scheduled for 2026-07-06")
+    assert red == "meeting scheduled for 2026-07-06"
+    assert found == []
+
+
+def test_iso_date_next_to_real_phone_only_redacts_the_phone():
+    text = "logged 2026-07-06, call +33 6 12 34 56 78"
+    red, found = pii.redact(text)
+    assert "2026-07-06" in red         # date left untouched
+    assert "[PHONE]" in red
+    assert [f["type"] for f in found] == ["PHONE"]
+
+
 def test_valid_credit_card_redacted():
     red, found = pii.redact(f"card {_VALID_CARD} exp")
     assert red == "card [CREDIT_CARD] exp"

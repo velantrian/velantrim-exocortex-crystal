@@ -7,12 +7,15 @@
 # deserve attention and rehearsal.
 #
 # Two faces, both faithful to "Graph = Truth":
-#   - write_voluntary(): the system writes a DERIVED, self-authored fact — but
-#     through the SAME Guardian → TruthGate path as everything else. Volition
-#     never bypasses the gate; a self-generated claim earns its place or is
-#     blocked like any other. The fact is tagged (metadata.volition, trace
-#     origin "volition") so a voluntary write is always distinguishable from an
-#     external one.
+#   - write_voluntary(): the system writes a self-authored fact — but through
+#     the SAME Guardian → TruthGate path as everything else. Volition never
+#     bypasses the gate; a self-generated claim earns its place or is blocked
+#     like any other, and it declares source_status=USER_REPORTED explicitly
+#     (not DERIVED/OBSERVED/EXTERNAL): it has not been independently sourced,
+#     so a WORLD_FACT it writes never outranks the ordinary evidentiary bar by
+#     becoming VERIFIED just because the system chose to say it. The fact is
+#     tagged (metadata.volition, trace origin "volition") so a voluntary write
+#     is always distinguishable from an external one.
 #   - VolitionWorker (volition_cycle): a deterministic survey that ranks the canon
 #     by a salience signal (significance · confidence · reinforcement · co-
 #     activation) and REHEARSES the most salient memories — refreshing their decay
@@ -94,8 +97,18 @@ def write_voluntary(
     the fact is tagged metadata.volition=True and the result carries volition=True.
     """
     from core.ingest import ingest  # lazy: ingest imports many siblings
+    # Explicit, not left to classify_claim()'s fallback (which always answers
+    # USER_REPORTED — it classifies a human's utterance). A self-authored
+    # write must declare its own status rather than silently inherit
+    # whatever a future change to that classifier happens to default to.
+    # USER_REPORTED (not DERIVED/OBSERVED/EXTERNAL) is deliberate: those
+    # source_status values make a WORLD_FACT claim VERIFIED (see
+    # ingest._truth_status_for), and a volition write has not been
+    # independently sourced — it must not outrank an ordinary claim's
+    # evidentiary bar just because the system chose to say it.
     result = ingest(claim, source=source, significance=significance,
-                    confidence=confidence, claim_type=claim_type)
+                    confidence=confidence, claim_type=claim_type,
+                    source_status="USER_REPORTED")
     result["volition"] = True
     if result.get("accepted") and not result.get("duplicate"):
         fid = result["fact"]["fact_id"]

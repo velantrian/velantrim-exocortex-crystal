@@ -92,6 +92,25 @@ def erase_fact(
 
     graph = get_l3_graph()
     fact = get_fact(fact_id)
+
+    # A fact_id that was never stored AND was never previously erased is a
+    # true no-op: skip the tombstone/audit/provenance writes entirely. Doing
+    # otherwise would fabricate an Art. 30 erasure record for personal data
+    # that was never present. A fact_id that WAS previously erased (fact is
+    # None because it is already gone, but a tombstone exists) still falls
+    # through to the idempotent path below, unchanged.
+    if fact is None and get_tombstone(fact_id) is None:
+        return {
+            "fact_id": fact_id,
+            "erased_now": False,
+            "l1_removed": False,
+            "l3_removed": False,
+            "reason": reason,
+            "actor": actor,
+            "content_hash": None,
+            "erased_at": None,
+        }
+
     content_hash = _hash_claim(fact["claim"]) if fact and fact.get("claim") else None
 
     # Who to cascade-erase — collected BEFORE deletion (deletion removes the edges).
