@@ -1,6 +1,6 @@
 # Velantrim Crystal — Current Status
 
-> Date: 2026-07-02
+> Date: 2026-07-06
 > Scope: public Crystal repository status note
 > Status: docs-only integrity map; does not change runtime behaviour
 
@@ -64,23 +64,36 @@ Each track was delivered as a separate PR. See `TEST_REPORT.md` and
 
 ## Recent PRs — response policy and research mode (status)
 
-These three PRs are recorded here so the public implementation boundary stays
-explicit. The audited suite is now **1292 passed / 12 skipped / 100% coverage**
-(see `TEST_REPORT.md`; includes audit-hardening PR #206 on top of #201/#204).
+These PRs are recorded here so the public implementation boundary stays
+explicit. The audited suite is now **1299 passed / 12 skipped / 100% coverage**
+(see `TEST_REPORT.md`; includes the P0 integrity follow-up PR #216 on top of
+the audit-hardening PR #206, on top of #201/#204).
 
 ```text
 PR #201 — deterministic response_policy v0            -> IMPLEMENTED (merged)
-PR #202 — wire response_policy onto the read path     -> DRAFT (open, not merged)
+PR #202 — wire response_policy onto the read path     -> CLOSED (not merged)
 PR #204 — Research Mode v0.5 scaffold (prototypes/)   -> RESEARCH (merged, prototype only)
+PR #216 — P0 integrity follow-up (post-#206)          -> IMPLEMENTED (merged)
 ```
 
 - **PR #201 — `IMPLEMENTED`.** Deterministic read-path `response_policy v0`
   (`core/response_policy.py`, `docs/RESPONSE_POLICY_V0.md`, 11 tests). It is a pure
   read-path policy: it does not change write-path admission, does not write to
   Canon/L3, and does not replace the TruthGate.
-- **PR #202 — `DRAFT`.** "Expose response_policy on the read path" is **open and not
-  merged**. It is **not implementation truth** and must not be cited as current
-  Crystal runtime until separately merged and listed here.
+- **PR #202 — `CLOSED`.** "Expose response_policy on the read path" was **closed
+  without merging** — the branch's own `core/pipeline.py` diff was corrupted to a
+  placeholder stub, so CI failed and the change was rejected. It is **not
+  implementation truth** and was never part of Crystal runtime.
+- **PR #216 — `IMPLEMENTED`.** P0 integrity follow-up after the audit-hardening PR
+  (#206): (1) `store_fact()` upsert no longer poisons the L0 cache with a reset
+  `restricted` flag or a stale `created_at` on a conflict-update; (2)
+  `audit.append_event()` / `provenance_chain.append()` serialize their
+  read-tail-then-insert sequence (`BEGIN IMMEDIATE` + a bounded write-lock retry)
+  instead of racing on a computed `seq`; (3) `knowledge.ingest_claims()` /
+  `imports.import_file()` track which facts an import session actually created
+  (`new_fact_ids`), so a session that only duplicated a pre-existing claim can no
+  longer `erase_session()` / `restrict_session()` a fact it never created. 7 new
+  regression tests; current baseline: 1299 passed / 12 skipped / 100% coverage.
 - **PR #204 — `RESEARCH` (prototype scaffold only).** The Research Mode v0.5 scaffold
   was merged under `prototypes/research_mode/` (`prototypes/research_mode/essence_card.py`),
   not in `core/`, and `prototypes/` is excluded from the installable package list. It
