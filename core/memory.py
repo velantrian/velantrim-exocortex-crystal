@@ -362,6 +362,14 @@ def call_with_lock_retry(fn, retries: int = 5, base_delay: float = 0.05):
     (BEGIN, INSERT, or the implicit commit on `with _db()` exit), so on
     "database is locked" we retry the entire fn() call — including opening a
     fresh connection — a few times with a short backoff before giving up.
+
+    `fn` may run more than once, so it must be idempotent/side-effect-free
+    until its own `_db()` block commits (e.g. audit.append_event and
+    provenance_chain.append only read the DB tail and issue one INSERT inside
+    `fn` — nothing observable happens unless that INSERT's transaction
+    actually commits). Do not wrap a unit of work that has effects outside
+    the SQLite transaction it opens (e.g. a network call, or a write to a
+    second store) — a retried attempt would repeat that side effect.
     """
     for attempt in range(retries):
         try:
