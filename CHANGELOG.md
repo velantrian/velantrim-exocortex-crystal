@@ -25,6 +25,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or the dashboard. 20 new tests.
 
 ### Fixed
+- **Small correctness hardening after the audit follow-up** (#222): five
+  small, independent correctness/UX bugs, plus two Codex-review follow-ups.
+  (1) `truth_gate()` treats a missing `confidence` as a controlled rejection
+  instead of raising `KeyError` — gate semantics unchanged, only the
+  rejection-message construction was crashing. (2)
+  `volition.write_voluntary()` now passes `source_status="USER_REPORTED"`
+  explicitly instead of relying on `classify_claim()`'s fallback, so a
+  self-authored fact's status is declared, not incidental. (3)
+  `erase_fact()` is a true no-op for a `fact_id` that never existed (no
+  tombstone/audit/provenance event), while still correctly erasing an
+  L3-only orphan — a fact_id present only in the canonical graph, not L1
+  (initial fix missed this; caught in Codex review and fixed in the same
+  PR). (4) the `retrieval-config-set` CLI returns a controlled `invalid
+  retrieval config: ...` error instead of a raw traceback on malformed
+  numeric input (`k=abc`, `k=--5`). (5) `pii.py`'s PHONE detector no longer
+  false-flags a bare ISO-8601 date (`2026-07-06`) as personal data,
+  validated via `datetime.strptime` rather than shape alone (a shape-only
+  check would have wrongly exempted phone-like values such as
+  `5555-12-34`; also caught in Codex review). 8 new regression tests.
 - **P0 integrity follow-up to the audit-hardening PR (#206)** (#216): three
   audit-confirmed integrity bugs. (1) `store_fact()` upsert no longer poisons
   the L0 cache with a reset `restricted` flag or a fresh `created_at` on a
