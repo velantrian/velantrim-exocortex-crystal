@@ -17,6 +17,7 @@
 
 import os
 import re
+from datetime import datetime
 from typing import Dict, Any, List, Tuple
 
 # (type, priority, compiled_regex). Lower priority number = wins on overlap.
@@ -36,6 +37,24 @@ _ENV_REDACT = "VELANTRIM_REDACT_PII"
 # tighten the digit-count bound, which would risk rejecting real short phone
 # numbers.
 _ISO_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def _is_real_iso_date(raw: str) -> bool:
+    """True only for a genuine calendar date shaped YYYY-MM-DD.
+
+    Shape alone is not enough: a phone-like value such as "5555-12-34" (day
+    34 does not exist) or "1234-56-78" (month 56 does not exist) matches the
+    YYYY-MM-DD shape without being a real date, and must remain eligible for
+    PHONE redaction.
+    """
+    raw = raw.strip()
+    if not _ISO_DATE_RE.match(raw):
+        return False
+    try:
+        datetime.strptime(raw, "%Y-%m-%d")
+        return True
+    except ValueError:
+        return False
 
 
 def redaction_enabled() -> bool:
@@ -63,7 +82,7 @@ def _valid(pii_type: str, raw: str) -> bool:
         digits = re.sub(r"\D", "", raw)
         return 13 <= len(digits) <= 19 and _luhn_ok(digits)
     if pii_type == "PHONE":
-        if _ISO_DATE_RE.match(raw.strip()):
+        if _is_real_iso_date(raw):
             return False
         digits = re.sub(r"\D", "", raw)
         return 7 <= len(digits) <= 15

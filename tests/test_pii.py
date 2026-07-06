@@ -33,6 +33,15 @@ def test_iso_date_is_not_treated_as_phone():
     assert found == []
 
 
+def test_invalid_calendar_date_shaped_value_still_redacted_as_phone():
+    """A phone-shaped value that merely LOOKS like YYYY-MM-DD but is not a
+    real calendar date (month 12 has no day 34) must still be treated as
+    PHONE — the date exclusion must validate the date, not just its shape."""
+    red, found = pii.redact("call 5555-12-34 for support")
+    assert "[PHONE]" in red
+    assert [f["type"] for f in found] == ["PHONE"]
+
+
 def test_iso_date_next_to_real_phone_only_redacts_the_phone():
     text = "logged 2026-07-06, call +33 6 12 34 56 78"
     red, found = pii.redact(text)
