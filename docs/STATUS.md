@@ -136,6 +136,7 @@ behaviour and must not be cited as implemented Crystal capabilities.
 
 ```text
 docs/research/dialogue-cultivation-layer.md -> RESEARCH / DOCUMENTED_ONLY
+docs/CANONICAL_VIEW_RFC.md                  -> PROPOSED / RFC-only, NOT IMPLEMENTED
 ```
 
 - **Presence & Dialogue Cultivation Layer — `RESEARCH / DOCUMENTED_ONLY`.** This RFC
@@ -144,6 +145,13 @@ docs/research/dialogue-cultivation-layer.md -> RESEARCH / DOCUMENTED_ONLY
   sentience, consciousness, emotion, personhood, biological life or implemented
   autonomous companion behaviour. It does not add code, storage, workers, TruthGate
   wiring, Canon writes or runtime integration.
+- **CanonicalView / Trusted-Only Read Mode — `PROPOSED / RFC-only` (issue #220).**
+  Specifies a read-path contract distinguishing the physical L3 graph from a
+  trusted-only, `VERIFIED` + trace-valid read projection. No code, CLI flag,
+  API parameter, or test in this repository implements it; do not cite
+  `trusted_only`/`review`/`full_graph` read modes as current Crystal
+  behaviour until a separate implementation PR lands and is tested per the
+  RFC's own acceptance criteria.
 
 ## Implementation reality matrix
 
