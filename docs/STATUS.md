@@ -136,6 +136,17 @@ PR #218 — L3 retrieval-scale smoke benchmark          -> BENCHMARK BASELINE / 
   Exo-Cortex / Titan / NoeticCore stay research/prototype directions unless a
   feature is separately merged and listed here (or in `TEST_REPORT.md`) as runtime.
 
+## Reviewer checkpoint
+
+```text
+docs/REVIEWER_CHECKPOINT_2026-07.md -> REVIEWER CHECKPOINT / documentation only
+```
+
+A single reviewer/grant-facing summary of the PR #206→#225 audit-hardening
+cycle (correctness fixes, contradiction/immune docs, the CanonicalView RFC,
+and the L3 retrieval benchmark). It is a snapshot, not a new status
+source — `TEST_REPORT.md` and this file remain authoritative if it ages.
+
 ## Research-only design docs
 
 The following documents are architecture notes only. They do not change runtime
