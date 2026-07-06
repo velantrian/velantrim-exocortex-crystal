@@ -44,16 +44,27 @@ _NOW = "2026-01-01T00:00:00+00:00"
 
 
 def _git_commit() -> str:
-    """Short commit SHA, or 'unknown' if git is unavailable (e.g. a tarball
-    checkout) — never fails the benchmark over this."""
+    """Short commit SHA, suffixed '-dirty' if the worktree has uncommitted
+    changes at run time (so a baseline recorded before committing the
+    benchmark's own files is never mistaken for a clean-tree measurement),
+    or 'unknown' if git is unavailable (e.g. a tarball checkout) — never
+    fails the benchmark over this."""
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     try:
         out = subprocess.run(
             ["git", "rev-parse", "--short", "HEAD"],
             cwd=root, capture_output=True, text=True, timeout=5,
         )
-        if out.returncode == 0:
-            return out.stdout.strip()
+        if out.returncode != 0:
+            return "unknown"
+        sha = out.stdout.strip()
+        status = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=root, capture_output=True, text=True, timeout=5,
+        )
+        if status.returncode == 0 and status.stdout.strip():
+            return f"{sha}-dirty"
+        return sha
     except Exception:  # noqa: BLE001 — commit SHA is informational only
         pass
     return "unknown"
@@ -145,7 +156,10 @@ def run_one_size(n: int, keep_artifacts: bool) -> Dict[str, Any]:
 
     result = {
         "facts": n,
-        "queries": len(latencies_ms),
+        # Total measured vector_search() calls, cycling over query_templates
+        # distinct query texts — NOT query_templates measured N times each.
+        "measured_searches_total": len(latencies_ms),
+        "query_templates": len(query_vectors),
         "top_k": _TOP_K,
         "warmup_queries": _WARMUP_QUERIES,
         "p50_ms": round(_percentile(latencies_ms, 50), 3),

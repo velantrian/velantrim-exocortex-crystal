@@ -24,9 +24,12 @@ confidence and future engineering decisions, not a production SLO.
 
 - `core.l3_graph`'s SQLite backend (`SqliteL3Graph`) — the dependency-free,
   local-first default when the optional LadybugDB backend is not installed.
-- `vector_search(query_vector, k=10)` latency directly, over a fixed set of
-  20 deterministic queries (10 topic-based + 10 group-based), each run
-  `10` times warmup (discarded) + `100` times measured.
+- `vector_search(query_vector, k=10)` latency directly: `10` warmup calls
+  (discarded), then **`100` total measured searches**, cycling round-robin
+  over a fixed set of **`20` deterministic query texts** (10 topic-based +
+  10 group-based — so each text is measured roughly 5 times, not 100 times
+  each). The JSON output names these `measured_searches_total` (100) and
+  `query_templates` (20) so the two numbers cannot be confused.
 - Bulk `merge_fact()` load time for the synthetic corpus.
 - On-disk database size at measurement time (includes any active WAL/SHM
   sidecar files — SQLite may checkpoint and shrink this further on a clean
@@ -93,7 +96,7 @@ an illustrative placeholder:
 ```text
 Velantrim L3 retrieval-scale smoke benchmark
 Python: 3.11.15  Platform: Linux-6.18.5-x86_64-with-glibc2.39
-Commit: 2507c73  Backend: sqlite  Embedder: hashing
+Commit: 2507c73-dirty  Backend: sqlite  Embedder: hashing
 
 --- 1000 facts ---
   load: 1.384s  p50: 390.415ms  p95: 399.914ms  max: 422.019ms  db: 16625288 bytes
@@ -104,7 +107,7 @@ JSON shape (`--json-out`):
 ```json
 {
   "benchmark": "l3_retrieval_scale",
-  "commit": "2507c73",
+  "commit": "2507c73-dirty",
   "backend": "sqlite",
   "embedder": "hashing",
   "python_version": "3.11.15",
@@ -112,7 +115,8 @@ JSON shape (`--json-out`):
   "sizes": [
     {
       "facts": 1000,
-      "queries": 100,
+      "measured_searches_total": 100,
+      "query_templates": 20,
       "top_k": 10,
       "warmup_queries": 10,
       "p50_ms": 390.415,
@@ -134,9 +138,10 @@ anything into absolute numbers.
 python scripts/bench_l3_retrieval.py --sizes 100,1000,10000 --json-out /tmp/l3_bench_full.json
 ```
 
-Python `3.11.15`, `Linux-6.18.5-x86_64-with-glibc2.39`, commit `2507c73`,
-backend `sqlite`, embedder `hashing`, `top_k=10`, `10` warmup + `100`
-measured queries per size.
+Python `3.11.15`, `Linux-6.18.5-x86_64-with-glibc2.39`, commit `2507c73-dirty`,
+backend `sqlite`, embedder `hashing`, `top_k=10`, `10` warmup calls + `100`
+total measured searches (cycling over `20` deterministic query texts) per
+size.
 
 | Facts | Load time | p50 | p95 | max | DB size (open) |
 |---:|---:|---:|---:|---:|---:|
