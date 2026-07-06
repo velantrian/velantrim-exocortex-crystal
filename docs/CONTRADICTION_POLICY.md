@@ -31,7 +31,7 @@ returns `CONTRADICTION` when both hold:
    Below this, the verdict is withheld as `RELATED` regardless of any other
    signal.
 2. **An explicit polarity signal**, checked in this order:
-   - **antonym** — the claims differ by one of ~50 hardcoded antonym pairs
+   - **antonym** — the claims differ by one of ~55 hardcoded antonym pairs
      (hot/cold, rises/falls, legal/illegal, …);
    - **negation** — exactly one claim carries a negation cue (`not`, `no`,
      `never`, `n't`-contractions, and the Russian equivalents `не`/`нет`/`ни`/
@@ -51,7 +51,7 @@ returns a list of `{fact_id, claim, similarity, kind, signal}` — **candidates
 only**, not verdicts. It is called from the ingest path (`core/ingest.py`),
 import path (`core/imports.py`), review diagnosis (`core/review.py`), the
 immune layer (`core/immune.py`), the eval harness, and exposed read-only via
-the `find-conflicts` CLI command and the MCP `find_conflicts` tool.
+the `conflicts` CLI command and the MCP `find_conflicts` tool.
 
 ### Truth-maintenance primitives (`reconcile.contradict` / `reconcile.supersede`)
 
@@ -76,11 +76,19 @@ This is the part reviewers should read carefully — the safety story here is
   path.** A repo-wide search confirms they are only referenced from
   `core/reconcile.py` itself, its tests, and one docstring comment in
   `core/compliance.py`. Detecting a conflict (`find_conflicts`) never, by
-  itself, changes any fact's epistemic state.
-- **No curator-facing entry point calls them either.** The CLI exposes
-  read-only `find-conflicts` and `fact-history`; there is no `contradict` or
-  `supersede` CLI/API command today. Acting on a detected conflict currently
-  requires calling `core.reconcile` directly from Python.
+  itself, changes any fact's epistemic state. There is one narrower,
+  separate exception: `core/ingest.py`'s live ingest path, when
+  `VELANTRIM_AUTO_CONTRADICT=1`, calls `graph.add_edge()` **directly**
+  (not `reconcile.contradict()`) to persist a `CONTRADICTS` edge for a
+  high-precision contradiction. This links the two facts (queryable via
+  `fact_history()`) but does not flip either side's epistemic state, and it
+  is off by default.
+- **No curator-facing entry point calls `contradict()`/`supersede()`
+  either.** The CLI exposes read-only `conflicts` and `history`; there is no
+  `contradict` or `supersede` CLI/API command today. Acting on a detected
+  conflict currently requires calling `core.reconcile` directly from Python
+  (the `VELANTRIM_AUTO_CONTRADICT` edge-linking above is not the same thing
+  — it links, it does not resolve).
 - **A `"conflict"` review diagnosis does not block approval.** In
   `core/review.py`, `_diagnose()` returns `verdict="conflict"` (with the
   contradicted `fact_id`s) when a pending `WORLD_FACT` contradicts the canon.
@@ -91,17 +99,29 @@ This is the part reviewers should read carefully — the safety story here is
   contradicted fact is not automatically transitioned or flagged** unless a
   human separately calls `reconcile.contradict()`.
 - **Net effect today:** two `Validated` `WORLD_FACT`s that directly
-  contradict each other *can* coexist in the canon, with the only record of
-  the conflict being the transient `_diagnose()` return value shown to the
-  curator at approval time — nothing is persisted as a "contested" marker if
-  the curator approves without also manually resolving the older fact.
-- **The classifier's coverage is intentionally narrow.** ~50 hardcoded
-  antonym pairs, ASCII+Cyrillic negation cues, and single-number extraction
-  only. Claims that contradict through implication, comparison, or
-  domain reasoning it cannot lexically detect are classified `RELATED` and
-  never reach the reviewer as a conflict at all — this is a false-negative
-  risk, not a false-positive one (see design rationale in the module
-  docstring: high-precision over high-recall).
+  contradict each other *can* coexist in the canon. On the `review.py`
+  curator-approval path, the only record of the conflict is the transient
+  `_diagnose()` return value shown at approval time — nothing is persisted
+  as a "contested" marker unless a human separately calls
+  `reconcile.contradict()`. On the live `ingest()` path, a `CONTRADICTS`
+  edge *is* persisted automatically (queryable via `fact_history()`) when
+  `VELANTRIM_AUTO_CONTRADICT=1` — but that still only links the two facts;
+  it does not transition either one's epistemic state or otherwise mark a
+  side as resolved.
+- **The classifier's coverage is intentionally narrow, in both directions.**
+  ~55 hardcoded antonym pairs, ASCII+Cyrillic negation cues, and
+  single-number extraction only. Claims that contradict through implication,
+  comparison, or domain reasoning it cannot lexically detect are classified
+  `RELATED` and never reach a conflict check at all — a false-negative risk
+  (see design rationale in the module docstring: high-precision over
+  high-recall). But **false positives are also possible, and measured, not
+  just theoretical**: the numeric signal flags `CONTRADICTION` whenever two
+  claims clear the content-overlap gate and carry different numbers, even
+  when the numbers differ for a non-contradictory reason (different years,
+  different scopes). The eval harness tracks a nonzero
+  `contradiction.false_positive_rate` (`core/eval.py`, baseline `0.25`)
+  precisely because of this — treat contradiction hits as high-precision by
+  design, not as verified-correct by construction.
 - **`find_conflicts` only looks at `WORLD_FACT` + `Validated` canon nodes.**
   Conflicts against `Supported`/`Hypothesized` facts, or against
   non-`WORLD_FACT` claim types, are out of scope for this function by
@@ -127,11 +147,20 @@ silently choose one:
 4. **Show trace paths.** `reconcile.fact_history(fact_id)` exposes
    `contradicts` / `contradicted_by` / `supersedes` / `superseded_by` edges
    so the provenance of a conflict is queryable.
-5. **Flag curator review unless an explicit supersession rule applies.**
-   Today this means: a conflicting fact still passes through the normal
-   pending-review queue (it is never auto-admitted ahead of TruthGate), and
-   resolving *which* side stands is a human decision exercised through
-   `reconcile.contradict()`/`supersede()`, not an automatic one.
+5. **Flag curator review unless an explicit supersession rule applies —
+   but only on the review-queue path, not on live ingest.** This holds for
+   `core/review.py`'s pending-queue flow (facts an operator left/routed as
+   `Observed`, e.g. via `core/imports.py`'s import-then-review pattern): a
+   `"conflict"` diagnosis is shown before `approve()` is called, and nothing
+   reaches canon ahead of that curator decision. **It does not hold for the
+   live `ingest()` path**: once `find_conflicts()` runs post-TruthGate, a
+   non-strict-mode conflict does not pause for review — the fact is
+   transitioned to `Validated` and merged into L3 in the same call, with the
+   conflict attached to the result. Only `VELANTRIM_IMMUNE_STRICT` turns a
+   detected contradiction into an outright ingest-time block. Either way,
+   resolving *which* side stands afterward is a human decision exercised by
+   calling `reconcile.contradict()`/`supersede()` directly — not an
+   automatic one, and not one exposed through a CLI/API action today.
 
 ## Non-goals / future policy ideas
 
@@ -142,8 +171,9 @@ Explicitly **not** implemented, and not to be inferred from this document:
 - **Automatic resolution of a detected conflict** without a human/curator
   action (no auto-`contradict()`, no auto-`supersede()`).
 - **A persistent "contested" state or edge type** distinct from
-  `Contradicted`/`CONTRADICTS` — today the only signal is the transient
-  review-time diagnosis. Adding a persistent contested marker, or wiring
+  `Contradicted`/`CONTRADICTS` — today the only signals are the transient
+  review-time diagnosis and, opt-in on ingest, a plain (non-state-changing)
+  `CONTRADICTS` link. Adding a persistent contested marker, or wiring
   `contradict()`/`supersede()` into a curator-facing CLI/API action, is
   future work and would need its own RFC and tests before implementation.
 - **Broader contradiction detection** (semantic/NLI-based, cross-claim-type,

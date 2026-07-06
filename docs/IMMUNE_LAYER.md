@@ -33,12 +33,40 @@ default ingest behaviour.
    (whole-token, not substring). On a match: `verdict=BLOCK`, a hit counter
    on the threat entry increments, and the highest-severity match wins if
    several patterns match.
-2. **Canon contradiction** (`check_canon=True`, the ingest-path default) —
-   reuses `reconcile.find_conflicts()` and keeps only `CONTRADICTION`-kind
-   results (see [`CONTRADICTION_POLICY.md`](./CONTRADICTION_POLICY.md) for
-   what that classifier does and does not catch). If any exist:
+2. **Canon contradiction** (`check_canon=True`, `screen()`'s own default
+   when called standalone) — reuses `reconcile.find_conflicts()` and keeps
+   only `CONTRADICTION`-kind results (see
+   [`CONTRADICTION_POLICY.md`](./CONTRADICTION_POLICY.md) for what that
+   classifier does and does not catch). If any exist:
    - **strict mode off (default):** `verdict=QUARANTINE` — advisory only.
    - **strict mode on** (`VELANTRIM_IMMUNE_STRICT=1`): `verdict=BLOCK`.
+
+### Ingest-path usage differs from standalone `screen()`
+
+The live `ingest()` path (`core/ingest.py`) does **not** call `screen()`
+with `check_canon=True`. It calls `screen(utterance, fact_id=fid,
+check_canon=False)` exactly once, *before* Guardian/TruthGate, purely as a
+threat-memory pre-screen (step 1 above). Canon contradiction is checked
+separately, *after* TruthGate passes, by calling `reconcile.find_conflicts()`
+directly — not through `screen()` — with its own inline strict/non-strict
+branch:
+
+- **strict mode off (default):** the conflict is attached to the ingest
+  result (`result["conflicts"]`) and the fact still promotes to `Validated`
+  and merges into L3 in the same call. There is no separate `QUARANTINE`
+  verdict object on this path — just the conflicts list on an otherwise
+  successful `accepted=True` result.
+- **strict mode on:** ingest blocks outright, and — **only on this branch**
+  — `VELANTRIM_IMMUNE_LEARN=1` additionally calls `record_threat()` to learn
+  the utterance as a new threat. This auto-learning is implemented in
+  `core/ingest.py`, not inside `screen()`/`immune.py` itself, so a
+  standalone `screen()` call (e.g. via the `immune-check` CLI command, or
+  `review.py`'s own pre-screen at `check_canon=False`) never triggers it.
+
+So the ADMIT/QUARANTINE/BLOCK table above describes `screen()` itself and
+what a direct/standalone caller gets. The live ingest path's actual
+contradiction handling is the bespoke logic in `core/ingest.py` described
+here — it reuses `find_conflicts()`, not `screen()`'s `QUARANTINE` branch.
 
 ### What it blocks (strict vs advisory)
 
@@ -66,13 +94,16 @@ principle: a heuristic must never silently reject on its own judgment of
   threat, total hits, and a breakdown by `threat_type`.
 - **Persistent and adaptive**: threats live in the `immune_memory` SQLite
   table and survive restarts.
-- **`VELANTRIM_IMMUNE_LEARN`** (off by default): when a claim is
-  strict-blocked for contradicting the canon, this flag would record it as a
-  new threat automatically. It is off by default *deliberately* — the module
-  docstring is explicit that the system cannot know which side of a
-  contradiction is the hallucination, so auto-learning from a clash risks
-  immunising against a true correction. Enable only for a source expected to
-  be wrong-by-default (e.g. an untrusted feed behind manual review).
+- **`VELANTRIM_IMMUNE_LEARN`** (off by default): on the live `ingest()`
+  path's strict-contradiction branch only (see "Ingest-path usage differs
+  from standalone `screen()`" above — this is *not* implemented inside
+  `screen()`/`immune.py`), a strict-blocked contradiction is additionally
+  recorded as a new threat automatically. It is off by default
+  *deliberately* — the module docstring is explicit that the system cannot
+  know which side of a contradiction is the hallucination, so auto-learning
+  from a clash risks immunising against a true correction. Enable only for a
+  source expected to be wrong-by-default (e.g. an untrusted feed behind
+  manual review).
 
 ### Accountability
 
