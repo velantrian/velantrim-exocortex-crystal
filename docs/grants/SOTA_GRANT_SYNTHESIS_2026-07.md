@@ -53,7 +53,7 @@ reasoning behind each row.
 
 | SOTA area | Typical current approach | Crystal position | Canonical doc |
 |---|---|---|---|
-| Vector RAG / vector stores | Similarity search over chunks; the model judges what's true | Crystal emphasizes typed, source-linked facts with an explicit truth boundary ahead of retrieval, not just chunk similarity | [`docs/COMPARISON.md`](../COMPARISON.md) |
+| Vector RAG / vector stores | Similarity search over chunks; the model judges what's true | Crystal emphasizes typed, source-linked facts and an explicit admission truth boundary, rather than treating retrieved chunks as authority | [`docs/COMPARISON.md`](../COMPARISON.md) |
 | Chatbot memory features | Vendor-controlled personalization, often opaque | Crystal differs by being local-first and inspectable by default, with no mandatory cloud path | [`docs/COMPARISON.md`](../COMPARISON.md) |
 | Agent memory frameworks (MemGPT/Letta-style) | Agent-centric memory orchestration, provider-dependent semantics | Crystal emphasizes a lower-level, framework-independent verifiable memory core that an agent can sit on top of | [`docs/COMPARISON.md`](../COMPARISON.md) |
 | Temporal graph memory (Zep/Graphiti-style) | Time-aware conversational/event graphs, usually service-bound | Crystal differs by being dependency-free by default and keeping canonical writes behind an audited TruthGate | [`docs/COMPARISON.md`](../COMPARISON.md) |
@@ -180,8 +180,9 @@ implemented trusted-only CanonicalView reads
 Velantrim Crystal is a local-first verifiable AI memory layer that treats LLM
 output as candidate speech, not truth. Instead of letting retrieved text
 become authority by repetition, Crystal attaches claim type, source status,
-epistemic state, provenance, and replayable receipts to memory before it can
-be treated as trusted. Recent hardening work added audit-confirmed
+epistemic state, and provenance to memory before it can be treated as
+trusted, and produces replayable receipts for the answers built from that
+memory. Recent hardening work added audit-confirmed
 correctness fixes, an explicit RFC boundary for canonical reads, and a
 retrieval-scale benchmark baseline, making the project easier to review and
 safer to extend. It is not a chatbot, not a generic RAG app, and not a
