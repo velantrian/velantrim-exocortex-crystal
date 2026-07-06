@@ -2,7 +2,7 @@
 
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
-`v0.3.0` · 🧪 **1299 tests** · 🎯 **100% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v0.3.0` · 🧪 **1307 tests** · 🎯 **100% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
 
 > Velantrim Crystal is **not another chatbot**. It is a **verifiable memory layer**
 > that AI systems write to and read from. Every stored fact carries provenance,

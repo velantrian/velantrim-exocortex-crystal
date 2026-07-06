@@ -65,15 +65,17 @@ Each track was delivered as a separate PR. See `TEST_REPORT.md` and
 ## Recent PRs — response policy and research mode (status)
 
 These PRs are recorded here so the public implementation boundary stays
-explicit. The audited suite is now **1299 passed / 12 skipped / 100% coverage**
-(see `TEST_REPORT.md`; includes the P0 integrity follow-up PR #216 on top of
-the audit-hardening PR #206, on top of #201/#204).
+explicit. The audited suite is now **1307 passed / 12 skipped / 100% coverage**
+(see `TEST_REPORT.md`; includes the small correctness-hardening PR #222 on
+top of the P0 integrity follow-up PR #216, the audit-hardening PR #206, and
+#201/#204).
 
 ```text
 PR #201 — deterministic response_policy v0            -> IMPLEMENTED (merged)
 PR #202 — wire response_policy onto the read path     -> CLOSED (not merged)
 PR #204 — Research Mode v0.5 scaffold (prototypes/)   -> RESEARCH (merged, prototype only)
 PR #216 — P0 integrity follow-up (post-#206)          -> IMPLEMENTED (merged)
+PR #222 — small correctness hardening (post-#216)     -> IMPLEMENTED (merged)
 ```
 
 - **PR #201 — `IMPLEMENTED`.** Deterministic read-path `response_policy v0`
@@ -94,6 +96,22 @@ PR #216 — P0 integrity follow-up (post-#206)          -> IMPLEMENTED (merged)
   (`new_fact_ids`), so a session that only duplicated a pre-existing claim can no
   longer `erase_session()` / `restrict_session()` a fact it never created. 7 new
   regression tests; current baseline: 1299 passed / 12 skipped / 100% coverage.
+- **PR #222 — `IMPLEMENTED`.** Small correctness hardening after the audit
+  follow-up, merged as `9377d34`: (1) `truth_gate()` treats a missing
+  `confidence` as a controlled rejection instead of raising `KeyError`; (2)
+  `volition.write_voluntary()` now passes `source_status="USER_REPORTED"`
+  explicitly rather than relying on `classify_claim()`'s fallback; (3)
+  `erase_fact()` is a true no-op for a `fact_id` that never existed (no
+  tombstone/audit/provenance event), while still correctly erasing an
+  L3-only orphan (a fact_id present only in the canonical graph, not L1) —
+  a Codex-review fix on top of the initial version; (4) the
+  `retrieval-config-set` CLI returns a controlled `invalid retrieval
+  config: ...` error instead of a raw traceback on malformed numeric input;
+  (5) `pii.py`'s PHONE detector no longer false-flags a bare ISO-8601 date
+  (validated via `datetime.strptime`, not just the `YYYY-MM-DD` shape — also
+  a Codex-review fix, since the shape-only check would have wrongly exempted
+  phone-like values such as `5555-12-34`). 8 new regression tests; current
+  baseline: 1307 passed / 12 skipped / 100% coverage.
 - **PR #204 — `RESEARCH` (prototype scaffold only).** The Research Mode v0.5 scaffold
   was merged under `prototypes/research_mode/` (`prototypes/research_mode/essence_card.py`),
   not in `core/`, and `prototypes/` is excluded from the installable package list. It

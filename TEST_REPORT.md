@@ -11,10 +11,31 @@ CAS-guard hardening, then the deterministic response_policy v0 (#201) and the
 Research Mode v0.5 scaffold under `prototypes/research_mode/` (#204), then the audit-hardening
 PR (Ring Zero sync guards, API epistemic ingest policy, force-override metadata,
 #206), then the P0 integrity follow-up (store_fact L0 cache consistency,
-audit/provenance write-lock serialization, import-session duplicate safety):
-**1299 passed / 12 skipped.** This file and the README badge are the only
-places that carry the exact count; all other documents reference this report
-so the number cannot silently drift.
+audit/provenance write-lock serialization, import-session duplicate safety,
+#216), then the small correctness-hardening follow-up (TruthGate missing
+confidence, voluntary-write source_status, erase_fact no-op safety, CLI
+error handling, PII date false positive, #222): **1307 passed / 12 skipped.**
+This file and the README badge are the only places that carry the exact
+count; all other documents reference this report so the number cannot
+silently drift.
+
+> **Small correctness-hardening note.** Five audit-confirmed correctness/UX
+> bugs fixed after #216 merged, plus two Codex-review follow-ups: (1)
+> `truth_gate()` treats a missing `confidence` as a controlled rejection
+> instead of raising `KeyError`; (2) `volition.write_voluntary()` now passes
+> `source_status="USER_REPORTED"` explicitly instead of relying on
+> `classify_claim()`'s fallback; (3) `erase_fact()` is a true no-op for a
+> `fact_id` that never existed (no tombstone/audit/provenance event) while
+> still correctly erasing an L3-only orphan (a fact_id present only in the
+> canonical graph, not L1 — the Codex-review fix); (4) the
+> `retrieval-config-set` CLI returns a controlled `invalid retrieval
+> config: ...` error instead of a raw traceback on malformed numeric input;
+> (5) `pii.py`'s PHONE detector no longer false-flags a bare ISO-8601 date,
+> validated via `datetime.strptime` rather than shape alone (the
+> shape-only version, caught in Codex review, would have wrongly exempted
+> phone-like values such as `5555-12-34`). Added 8 tests (1299 → 1307) and
+> grew the measured surface by 25 statements (5835 → 5860) while preserving
+> the 100% coverage gate.
 
 > **P0 integrity follow-up note.** Three audit-confirmed integrity bugs fixed
 > after #206 merged: (1) `store_fact()` upsert no longer poisons the L0 cache
@@ -84,7 +105,7 @@ so the number cannot silently drift.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **1299** |
+| **Tests passing** | **1307** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **100%** (gate enforced at 100%, repo-wide `--cov=.`) |
