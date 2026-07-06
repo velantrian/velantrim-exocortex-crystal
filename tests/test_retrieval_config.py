@@ -171,3 +171,19 @@ def test_cli_retrieval_config_set_rejects_bad_values(tmp_path, capsys):
     assert "invalid retrieval config" in capsys.readouterr().err
     assert main(["retrieval-config-set", "temperature=1", "--out", out_path]) == 1
     assert main(["retrieval-config-set", "k", "--out", out_path]) == 1
+
+
+def test_cli_retrieval_config_set_rejects_non_numeric_value(tmp_path, capsys):
+    """A non-numeric value must be a controlled CLI error, not a raw
+    unhandled ValueError/traceback from float()."""
+    out_path = str(tmp_path / "cfg.json")
+    assert main(["retrieval-config-set", "k=abc", "--out", out_path]) == 1
+    assert "invalid retrieval config" in capsys.readouterr().err
+
+
+def test_cli_retrieval_config_set_rejects_malformed_numeric_value(tmp_path, capsys):
+    """`--5` passes the `lstrip("-").isdigit()` probe (it strips to "5") but
+    int("--5") itself still raises — must not escape as a raw traceback."""
+    out_path = str(tmp_path / "cfg.json")
+    assert main(["retrieval-config-set", "k=--5", "--out", out_path]) == 1
+    assert "invalid retrieval config" in capsys.readouterr().err

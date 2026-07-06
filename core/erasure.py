@@ -92,7 +92,36 @@ def erase_fact(
 
     graph = get_l3_graph()
     fact = get_fact(fact_id)
-    content_hash = _hash_claim(fact["claim"]) if fact and fact.get("claim") else None
+    l3_node = graph.get_fact(fact_id)
+
+    # A fact_id that was never stored anywhere — L1 (fact) OR L3 (l3_node) —
+    # AND was never previously erased is a true no-op: skip the
+    # tombstone/audit/provenance writes entirely. Doing otherwise would
+    # fabricate an Art. 30 erasure record for personal data that was never
+    # present. Checking L3 too (not just L1 via get_fact) matters for an
+    # L3-only orphan — e.g. a node left behind by a partial write failure —
+    # which must still be deleted, not silently skipped. A fact_id that WAS
+    # previously erased (fact and l3_node are both None because it is
+    # already gone, but a tombstone exists) still falls through to the
+    # idempotent path below, unchanged.
+    if fact is None and l3_node is None and get_tombstone(fact_id) is None:
+        return {
+            "fact_id": fact_id,
+            "erased_now": False,
+            "l1_removed": False,
+            "l3_removed": False,
+            "reason": reason,
+            "actor": actor,
+            "content_hash": None,
+            "erased_at": None,
+        }
+
+    if fact and fact.get("claim"):
+        content_hash = _hash_claim(fact["claim"])
+    elif l3_node and l3_node.get("claim"):
+        content_hash = _hash_claim(l3_node["claim"])
+    else:
+        content_hash = None
 
     # Who to cascade-erase — collected BEFORE deletion (deletion removes the edges).
     derived_ids: List[str] = []

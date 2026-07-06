@@ -64,6 +64,21 @@ def test_write_voluntary_passes_gate_and_is_tagged():
     assert res["fact"]["claim_type"] == "WORLD_FACT"
 
 
+def test_write_voluntary_declares_source_status_explicitly(monkeypatch):
+    """write_voluntary() must explicitly pass a system-declared source_status
+    to ingest(), not rely on classify_claim()'s user-oriented fallback —
+    otherwise a self-authored fact silently inherits whatever the classifier
+    assigns to ordinary user text (fragile: any change to classify_claim's
+    default would silently change what a voluntary write is attributed to).
+    """
+    from core import ingest as ingest_mod
+    monkeypatch.setattr(ingest_mod, "classify_claim",
+                        lambda utterance: ("WORLD_FACT", "OBSERVED"))
+    res = volition.write_voluntary("Self-authored claim for this test")
+    assert res["accepted"] is True
+    assert res["fact"]["source_status"] == "USER_REPORTED"
+
+
 def test_write_voluntary_can_be_blocked_like_any_write():
     res = volition.write_voluntary("dubious self-claim", confidence=0.0)
     assert res["accepted"] is False and res["volition"] is True

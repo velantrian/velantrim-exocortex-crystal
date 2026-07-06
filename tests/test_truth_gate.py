@@ -59,6 +59,16 @@ def test_low_confidence_world_fact_is_blocked():
     assert ok is False and "Confidence 0.2 < threshold 0.5" in reason
 
 
+def test_missing_confidence_is_controlled_rejection_not_keyerror():
+    """A WORLD_FACT with no `confidence` key must be rejected with a clear
+    reason, not raise KeyError while building the rejection message."""
+    fact = _fact()
+    del fact["confidence"]
+    ok, reason = truth_gate({"facts": [fact]}, min_confidence=0.5)
+    assert ok is False
+    assert "confidence" in reason.lower()
+
+
 def test_subjective_claim_passes_without_evidentiary_bar():
     ok, reason = truth_gate(
         {"facts": [_fact(claim_type="EMOTION", confidence=0.01)]},

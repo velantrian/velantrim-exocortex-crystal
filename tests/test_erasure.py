@@ -97,12 +97,34 @@ def test_erase_clears_pending_outbox_entry():
     assert "f1" not in pending_l3_writes()
 
 
-def test_erase_unknown_fact_still_tombstones():
-    # Erasing a fact that was never stored is a valid no-op that is still logged.
+def test_erase_l3_only_orphan_is_still_removed():
+    """A fact_id present ONLY in L3 (e.g. after a partial write failure that
+    left L1 absent but a canon node behind) must still be erased — the
+    never-existed no-op path must not fire just because L1 has nothing."""
+    get_l3_graph().merge_fact({"fact_id": "orphan", "claim": "orphaned claim",
+                               "epistemic_state": "Validated"})
+    assert get_fact("orphan") is None
+    assert get_l3_graph().get_fact("orphan") is not None
+
+    receipt = erase_fact("orphan")
+
+    assert receipt["erased_now"] is True
+    assert receipt["l3_removed"] is True
+    assert get_l3_graph().get_fact("orphan") is None
+    assert is_erased("orphan") is True
+
+
+def test_erase_unknown_fact_is_a_no_op_without_a_tombstone():
+    # A fact_id that was never stored and was never previously erased must not
+    # gain a tombstone or an audit/provenance event: that would fabricate an
+    # Art. 30 erasure record for personal data that was never present.
     receipt = erase_fact("ghost")
     assert receipt["erased_now"] is False
     assert receipt["content_hash"] is None
-    assert is_erased("ghost") is True
+    assert is_erased("ghost") is False
+
+    from core import audit
+    assert audit.audit_log() == []
 
 
 def test_erasure_log_lists_tombstones_content_free():

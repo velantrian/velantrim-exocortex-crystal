@@ -85,9 +85,10 @@ def truth_gate(
             continue
 
         # WORLD_FACT and INTERPRETATION — require a minimum confidence.
-        if fact.get("confidence", 0) < min_confidence:
+        confidence = fact.get("confidence", 0)
+        if confidence < min_confidence:
             return False, (
-                f"Confidence {fact['confidence']} < threshold {min_confidence}: "
+                f"Confidence {confidence} < threshold {min_confidence}: "
                 f"{fact.get('fact_id')}"
             )
 
