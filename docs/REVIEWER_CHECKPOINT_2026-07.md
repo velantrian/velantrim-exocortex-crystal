@@ -18,10 +18,15 @@
 - It is **not a chatbot** and **not simple RAG** — retrieval feeds a gated
   admission path (TruthGate), not a direct answer.
 - It makes **no claim** to be an AGI, a digital mind, or conscious.
-- The **graph/canon is the truth boundary**: only the `VERIFIED`,
-  trace-valid subgraph is canon; the physical graph may hold other
-  epistemic states (pending, hypothetical, subjective) without those being
-  confused for verified truth.
+- The **graph/canon is the truth boundary, by design**: only the
+  `VERIFIED`, trace-valid subgraph is meant to count as canon; the physical
+  graph may hold other epistemic/truth states (pending, `USER_CLAIMED`,
+  hypothetical, subjective) alongside it. **This separation is not yet a
+  read-time filter today** — `core.pipeline.retrieve()` reads L3 by
+  similarity and does not filter on `truth_status == VERIFIED` or trace
+  validity, so a `USER_CLAIMED` fact is retrievable, not only a `VERIFIED`
+  one. Closing that gap with a trusted-only read projection is exactly
+  what CanonicalView (section 3, RFC-only) proposes.
 - The **LLM is an optional speech layer** — it can phrase an answer from
   admitted facts, but it is never itself a source of truth.
 - **TruthGate, Trace/Receipt, and per-fact provenance** enforce epistemic
