@@ -157,6 +157,7 @@ def ingest_claims(
     accepted = duplicates = blocked = 0
     blocked_reasons: List[Dict[str, str]] = []
     fact_ids: List[str] = []
+    new_fact_ids: List[str] = []
     for rec in claims:
         claim = (rec.get("claim") or "").strip()
         if not claim:
@@ -172,24 +173,32 @@ def ingest_claims(
             fact_ids.append(fid)
             if res.get("duplicate"):
                 duplicates += 1
-            elif attach_evidence:
-                # Resolve span offsets: prefer adapter-supplied values, then
-                # detect from source_content, else fall back to doc-level ref.
-                sp_start = rec.get("span_start")
-                sp_end = rec.get("span_end")
-                section = rec.get("section")
-                chunk_id = rec.get("chunk_id")
-                if sp_start is None and source_content is not None:
-                    sp_start, sp_end = span_extract.locate_claim(
-                        source_content, claim)
-                    if sp_start is not None and section is None:
-                        section = span_extract.extract_section(
-                            source_content, sp_start)
-                evidence.attach_evidence(
-                    fid, source, source_kind="file", claim=claim,
-                    source_sha256=source_sha256,
-                    span_start=sp_start, span_end=sp_end,
-                    section=section, chunk_id=chunk_id)
+            else:
+                # Only facts newly created by THIS call are this batch's own —
+                # a duplicate hit means fid already existed (possibly created
+                # by an unrelated, earlier import). Session bookkeeping must
+                # track new_fact_ids, not fact_ids, or a later erase_session()/
+                # restrict_session() on this batch would act on a fact this
+                # batch never created (see core/imports.py _record_session).
+                new_fact_ids.append(fid)
+                if attach_evidence:
+                    # Resolve span offsets: prefer adapter-supplied values, then
+                    # detect from source_content, else fall back to doc-level ref.
+                    sp_start = rec.get("span_start")
+                    sp_end = rec.get("span_end")
+                    section = rec.get("section")
+                    chunk_id = rec.get("chunk_id")
+                    if sp_start is None and source_content is not None:
+                        sp_start, sp_end = span_extract.locate_claim(
+                            source_content, claim)
+                        if sp_start is not None and section is None:
+                            section = span_extract.extract_section(
+                                source_content, sp_start)
+                    evidence.attach_evidence(
+                        fid, source, source_kind="file", claim=claim,
+                        source_sha256=source_sha256,
+                        span_start=sp_start, span_end=sp_end,
+                        section=section, chunk_id=chunk_id)
         else:
             blocked += 1
             blocked_reasons.append({"claim": claim, "reason": res.get("reason", "")})
@@ -201,6 +210,7 @@ def ingest_claims(
         "duplicates": duplicates,
         "blocked": blocked,
         "fact_ids": fact_ids,
+        "new_fact_ids": new_fact_ids,
         "blocked_reasons": blocked_reasons,
     }
 

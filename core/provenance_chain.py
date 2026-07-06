@@ -89,8 +89,16 @@ class ProvenanceChain:
         disturbed by a provenance-write problem.
         """
         created_at = _now()
-        try:
+
+        def _write():
             with memory._db() as conn:
+                # BEGIN IMMEDIATE acquires the write lock before the tail read,
+                # so two concurrent append() calls for the same fact_id cannot
+                # read the same `last seq` and race to insert the same seq (see
+                # core/audit.py's append_event for the same pattern).
+                # call_with_lock_retry covers contention that surfaces later
+                # in this block (INSERT / implicit commit).
+                memory.begin_immediate(conn)
                 last = conn.execute(
                     "SELECT seq, hash FROM provenance_chain "
                     "WHERE fact_id = ? ORDER BY seq DESC LIMIT 1",
@@ -109,6 +117,9 @@ class ProvenanceChain:
                     (fact_id, seq, event_type, from_state, to_state,
                      payload_str, created_at, actor, reason, prev_hash, entry_hash),
                 )
+
+        try:
+            memory.call_with_lock_retry(_write)
             return True
         except Exception:
             return False

@@ -25,6 +25,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or the dashboard. 20 new tests.
 
 ### Fixed
+- **P0 integrity follow-up to the audit-hardening PR (#206)** (#216): three
+  audit-confirmed integrity bugs. (1) `store_fact()` upsert no longer poisons
+  the L0 cache with a reset `restricted` flag or a fresh `created_at` on a
+  conflict-update — both are now re-read from the persisted row, mirroring the
+  existing `epistemic_state` fix (#195). (2) `audit.append_event()` /
+  `provenance_chain.append()` serialize their read-tail-then-insert sequence
+  with `BEGIN IMMEDIATE` plus a bounded retry (`memory.call_with_lock_retry`)
+  instead of racing on a computed `seq`, which could silently drop a
+  compliance/provenance event under concurrent writers (e.g. FastAPI's thread
+  pool). (3) `knowledge.ingest_claims()` now reports `new_fact_ids` (facts this
+  call actually created) separately from `fact_ids` (all accepted, including
+  duplicate hits of pre-existing facts); `imports.import_file()` enrolls only
+  `new_fact_ids` into the import session, so a session that only duplicated an
+  existing claim can no longer `erase_session()` / `restrict_session()` a fact
+  it never created. 7 new regression tests.
 - **PDF adapter span preservation** (#182): repeated identical paragraphs now
   keep distinct source spans (`core/adapters/pdf_adapter.py`). Adds a regression
   test in `tests/test_wp1_spans.py`; the suite stays at 100% coverage (exact

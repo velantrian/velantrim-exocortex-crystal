@@ -1,5 +1,6 @@
 """Tests for core/audit.py — tamper-evident audit log (GDPR Art. 5(2)/24/30)."""
 import sqlite3
+import threading
 
 import pytest
 
@@ -42,6 +43,40 @@ def test_append_and_verify_chain():
 def test_detail_is_content_free():
     audit.append_event("erase", "f1", {"reason": "gdpr", "actor": "dpo"})
     assert "claim" not in str(audit.audit_log())
+
+
+# ─── concurrency ──────────────────────────────────────────────────────────────
+
+def test_concurrent_append_event_never_collides_on_seq():
+    """Two callers racing append_event() (e.g. FastAPI's thread pool serving
+    concurrent /review/approve requests) must not both read the same tail seq
+    and collide on insert.
+
+    Regression for: SELECT max(seq) + INSERT with no write-lock let concurrent
+    callers compute the same next seq, so the loser raised
+    sqlite3.IntegrityError and lost its audit event.
+    """
+    n_threads, n_per_thread = 8, 15
+    errors = []
+
+    def worker(i):
+        for j in range(n_per_thread):
+            try:
+                audit.append_event("erase", f"f-{i}-{j}", {"reason": "r"})
+            except Exception as e:  # noqa: BLE001 — captured for the assertion below
+                errors.append(e)
+
+    threads = [threading.Thread(target=worker, args=(i,)) for i in range(n_threads)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    assert errors == []
+    entries = audit.audit_log()
+    assert len(entries) == n_threads * n_per_thread
+    assert sorted(e["seq"] for e in entries) == list(range(1, len(entries) + 1))
+    assert audit.verify_audit_log()["ok"] is True
 
 
 # ─── tamper detection ─────────────────────────────────────────────────────────

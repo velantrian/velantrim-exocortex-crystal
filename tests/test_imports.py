@@ -104,6 +104,40 @@ def test_import_file_explicit_session_id(tmp_path):
     assert imports.session_facts("imp:fixed1") == rep["fact_ids"]
 
 
+def test_duplicate_import_session_does_not_own_preexisting_fact(tmp_path):
+    """A session that only re-imports an already-canonical claim must not be
+    able to erase/restrict the fact a DIFFERENT, earlier session created.
+
+    Regression for: ingest_claims() recorded every accepted fact_id in
+    `fact_ids`, including duplicate hits of pre-existing facts, so
+    _record_session() enrolled a fact into a session that never created it —
+    a later erase_session()/restrict_session() on that session then deleted a
+    fact owned by an unrelated import.
+    """
+    p = tmp_path / "c.txt"
+    p.write_text("Water boils at 100 degrees Celsius at sea level.\n", encoding="utf-8")
+
+    rep_a = imports.import_file(str(p), source="doc_a")
+    assert rep_a["accepted"] == 1
+    assert rep_a["duplicates"] == 0
+    fid = rep_a["fact_ids"][0]
+
+    # Re-import of the SAME claim text: accepted-but-duplicate, zero NEW facts.
+    rep_b = imports.import_file(str(p), source="doc_b")
+    assert rep_b["accepted"] == 1
+    assert rep_b["duplicates"] == 1
+    assert rep_b["fact_ids"] == [fid]        # reporting still shows the hit
+    assert rep_b["new_fact_ids"] == []       # but session B created nothing
+
+    assert imports.session_facts(rep_b["session_id"]) == []
+    assert imports.session_facts(rep_a["session_id"]) == [fid]
+
+    e = imports.erase_session(rep_b["session_id"])
+    assert e == {"session_id": rep_b["session_id"], "facts": 0, "erased": 0}
+    assert not is_erased(fid)
+    assert memory.get_fact(fid) is not None  # session A's fact survives
+
+
 def test_restrict_and_erase_session(tmp_path):
     p = tmp_path / "c.txt"
     p.write_text("Neon glows orange\nArgon is inert\n", encoding="utf-8")

@@ -9,10 +9,28 @@ Docker hardening #170/#171, strict TruthPolicy default #172, write-path
 TruthGate audit #175), then the post-tag PDF span fix #182, then the ESM
 CAS-guard hardening, then the deterministic response_policy v0 (#201) and the
 Research Mode v0.5 scaffold under `prototypes/research_mode/` (#204), then the audit-hardening
-PR (Ring Zero sync guards, API epistemic ingest policy, force-override metadata): **1292 passed /
-12 skipped.** This file and the README badge are the only places that carry
-the exact count; all other documents reference this report so the number
-cannot silently drift.
+PR (Ring Zero sync guards, API epistemic ingest policy, force-override metadata,
+#206), then the P0 integrity follow-up (store_fact L0 cache consistency,
+audit/provenance write-lock serialization, import-session duplicate safety):
+**1299 passed / 12 skipped.** This file and the README badge are the only
+places that carry the exact count; all other documents reference this report
+so the number cannot silently drift.
+
+> **P0 integrity follow-up note.** Three audit-confirmed integrity bugs fixed
+> after #206 merged: (1) `store_fact()` upsert no longer poisons the L0 cache
+> with a reset `restricted` flag or a fresh `created_at` on a conflict-update —
+> both are now re-read from the persisted row, like `epistemic_state` already
+> was; (2) `audit.append_event()` / `provenance_chain.append()` serialize their
+> read-tail-then-insert sequence with `BEGIN IMMEDIATE` plus a bounded retry
+> (`memory.call_with_lock_retry`) instead of racing on a computed `seq`, which
+> could drop events under concurrent writers (e.g. FastAPI's thread pool); (3)
+> `knowledge.ingest_claims()` now reports `new_fact_ids` (facts this call
+> actually created) separately from `fact_ids` (all accepted, including
+> duplicate hits of pre-existing facts), and `imports.import_file()` enrolls
+> only `new_fact_ids` into the import session — a session that only duplicated
+> an existing claim can no longer `erase_session()`/`restrict_session()` a fact
+> it never created. Added 7 tests (1292 → 1299) and grew the measured surface
+> by 24 statements (5811 → 5835) while preserving the 100% coverage gate.
 
 > **Audit hardening note.** Ring Zero sync-path guards, HTTP API token alignment,
 > ingest path sandboxing (`core/path_safety.py`), RRF wired into `retrieve()`,
@@ -66,7 +84,7 @@ cannot silently drift.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **1292** |
+| **Tests passing** | **1299** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **100%** (gate enforced at 100%, repo-wide `--cov=.`) |

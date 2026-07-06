@@ -162,7 +162,12 @@ def import_file(path: str, *, source: Optional[str] = None,
         return dry_run_file(path, source=source)
     session_id = session_id or ("imp:" + uuid.uuid4().hex[:12])
     rep = knowledge.ingest_file(path, source=source)
-    _record_session(session_id, rep["fact_ids"], rep["source"])
+    # Session membership must track only facts THIS import newly created
+    # (new_fact_ids), not every accepted hit (rep["fact_ids"] also includes
+    # duplicates of pre-existing facts) — otherwise restrict_session()/
+    # erase_session() on this batch would act on a fact this batch never
+    # created.
+    _record_session(session_id, rep["new_fact_ids"], rep["source"])
     rep["session_id"] = session_id
     return rep
 
