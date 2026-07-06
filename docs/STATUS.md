@@ -147,6 +147,15 @@ cycle (correctness fixes, contradiction/immune docs, the CanonicalView RFC,
 and the L3 retrieval benchmark). It is a snapshot, not a new status
 source — `TEST_REPORT.md` and this file remain authoritative if it ages.
 
+```text
+docs/grants/SOTA_GRANT_SYNTHESIS_2026-07.md -> SOTA / grant synthesis / documentation only
+```
+
+A compact map connecting the existing comparison, grant, reviewer and
+benchmark documents into one "where Crystal stands now" view. It cross-links
+those documents rather than duplicating them and is not a new grant
+application.
+
 ## Research-only design docs
 
 The following documents are architecture notes only. They do not change runtime
