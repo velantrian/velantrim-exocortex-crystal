@@ -241,3 +241,52 @@ def test_store_fact_l0_not_poisoned_on_conflict():
     assert cached is not None
     assert cached["epistemic_state"] == "Collapsed"   # persisted state preserved
     assert cached["confidence"] == 0.9                # non-state field updated normally
+
+
+# ─── Exhaustive transition-matrix coverage (mutation-killing pins) ─────────────
+# Two complementary layers:
+#   1. The matrix CONTENT is pinned against an explicit copy of the declared
+#      policy, so any edit to ESM_TRANSITIONS fails loudly here (a deliberate
+#      duplicate: the point is that policy changes cannot land silently).
+#   2. transition_esm() BEHAVIOUR is checked for every one of the 8×8 pairs
+#      against the canonical matrix, so the validator can never drift from it.
+
+_ESM_STATES = ("Observed", "Hypothesized", "Supported", "Validated",
+               "Contradicted", "Deprecated", "Collapsed", "ImmutableCore")
+
+_PINNED_TRANSITIONS = {
+    "Observed":      {"Hypothesized", "Supported", "Validated", "Collapsed"},
+    "Hypothesized":  {"Supported", "Validated", "Collapsed"},
+    "Supported":     {"Validated", "Collapsed"},
+    "Validated":     {"Contradicted", "ImmutableCore", "Collapsed"},
+    "Contradicted":  {"Deprecated", "Collapsed"},
+    "Deprecated":    {"Collapsed"},
+    "Collapsed":     set(),
+    "ImmutableCore": set(),
+}
+
+
+def test_transition_matrix_content_is_pinned():
+    from core.memory import ESM_TRANSITIONS
+    assert ESM_TRANSITIONS == _PINNED_TRANSITIONS
+
+
+@pytest.mark.parametrize("to_state", _ESM_STATES)
+@pytest.mark.parametrize("from_state", _ESM_STATES)
+def test_transition_esm_matches_matrix_exhaustively(from_state, to_state):
+    """For every from/to pair (64 cases, self-transitions included):
+    a pair in ESM_TRANSITIONS must succeed and persist the new state; any
+    other pair must raise ValueError and leave the state untouched."""
+    from core.memory import ESM_TRANSITIONS, store_fact, transition_esm, get_fact
+
+    fact_id = f"esm_{from_state}_{to_state}"
+    store_fact({"fact_id": fact_id, "claim": "x", "source": "s",
+                "confidence": 0.5, "epistemic_state": from_state})
+
+    if to_state in ESM_TRANSITIONS[from_state]:
+        assert transition_esm(fact_id, to_state) is True
+        assert get_fact(fact_id)["epistemic_state"] == to_state
+    else:
+        with pytest.raises(ValueError, match="is not allowed"):
+            transition_esm(fact_id, to_state)
+        assert get_fact(fact_id)["epistemic_state"] == from_state
