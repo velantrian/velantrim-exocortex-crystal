@@ -65,10 +65,10 @@ Each track was delivered as a separate PR. See `TEST_REPORT.md` and
 ## Recent PRs — response policy and research mode (status)
 
 These PRs are recorded here so the public implementation boundary stays
-explicit. The audited suite is now **1307 passed / 12 skipped / 100% coverage**
-(see `TEST_REPORT.md`; includes the small correctness-hardening PR #222 on
-top of the P0 integrity follow-up PR #216, the audit-hardening PR #206, and
-#201/#204).
+explicit. The audited suite is now **1377 passed / 12 skipped / 100% coverage**
+(see `TEST_REPORT.md`; includes the mutation-boundary quick-wins PR #229 on
+top of the small correctness-hardening PR #222, the P0 integrity follow-up
+PR #216, the audit-hardening PR #206, and #201/#204).
 
 ```text
 PR #201 — deterministic response_policy v0            -> IMPLEMENTED (merged)
@@ -111,8 +111,9 @@ PR #218 — L3 retrieval-scale smoke benchmark          -> BENCHMARK BASELINE / 
   (5) `pii.py`'s PHONE detector no longer false-flags a bare ISO-8601 date
   (validated via `datetime.strptime`, not just the `YYYY-MM-DD` shape — also
   a Codex-review fix, since the shape-only check would have wrongly exempted
-  phone-like values such as `5555-12-34`). 8 new regression tests; current
-  baseline: 1307 passed / 12 skipped / 100% coverage.
+  phone-like values such as `5555-12-34`). 8 new regression tests; suite
+  total after this PR: 1307 passed / 12 skipped / 100% coverage (see
+  `TEST_REPORT.md` for the current baseline).
 - **PR #218 — `BENCHMARK BASELINE`.** Adds `scripts/bench_l3_retrieval.py`
   and `docs/benchmarks/L3_RETRIEVAL_SCALE.md`: a dependency-free smoke
   benchmark measuring current `core.l3_graph` SQLite-backend retrieval

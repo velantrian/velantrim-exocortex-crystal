@@ -145,7 +145,7 @@ Being explicit about gaps is part of reviewer trust, not a weakness to hide.
 |---|---|
 | CanonicalView implementation | RFC-only ([`docs/CANONICAL_VIEW_RFC.md`](../CANONICAL_VIEW_RFC.md)), not built |
 | L3 retrieval optimization | Benchmark baseline exists ([`docs/benchmarks/L3_RETRIEVAL_SCALE.md`](../benchmarks/L3_RETRIEVAL_SCALE.md)); the observed near-linear scaling is not yet addressed |
-| Property / invariant test suite | Future work — not started; current suite is example-based (1307 passed / 12 skipped, 100% coverage per [`TEST_REPORT.md`](../../TEST_REPORT.md)) |
+| Property / invariant test suite | Future work — not started; current suite is example-based (see [`TEST_REPORT.md`](../../TEST_REPORT.md) for the current pass/skip count and coverage) |
 | Independent external adoption | Limited — no PyPI release, no known third-party deployments, no independent citations to date |
 | Public package / release maturity | No public package release yet; the project is at pre-release, tested-core maturity |
 

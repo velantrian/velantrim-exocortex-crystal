@@ -14,10 +14,24 @@ PR (Ring Zero sync guards, API epistemic ingest policy, force-override metadata,
 audit/provenance write-lock serialization, import-session duplicate safety,
 #216), then the small correctness-hardening follow-up (TruthGate missing
 confidence, voluntary-write source_status, erase_fact no-op safety, CLI
-error handling, PII date false positive, #222): **1307 passed / 12 skipped.**
+error handling, PII date false positive, #222), then the mutation-boundary
+quick-wins follow-up (#229): **1377 passed / 12 skipped.**
 This file and the README badge are the only places that carry the exact
 count; all other documents reference this report so the number cannot
 silently drift.
+
+> **Mutation-boundary quick-wins note (#229).** A branch-coverage audit found
+> that 100% line coverage still let two mutants survive the full suite:
+> `truth_gate()`'s confidence check (`confidence < min_confidence`) with `<`
+> flipped to `<=`, and `reconcile.reinforce()`'s agreement formula with its
+> `obs + 1` denominator flipped to `obs + 2`. Both are now killed: exact-value
+> tests pin `reinforce()`'s agreement/disagreement math for observations 1→3,
+> boundary tests pin that `confidence == min_confidence` is admitted (the
+> strict `<` contract) on both the explicit and adaptive-threshold paths, and
+> an exhaustive 8×8 `ESM_TRANSITIONS` matrix test locks the epistemic-state
+> transition policy against silent edits. Tests-only change (no runtime files
+> touched); added 70 tests (1307 → 1377) while preserving the 100% coverage
+> gate — the measured statement surface is unchanged at 5860.
 
 > **Small correctness-hardening note.** Five audit-confirmed correctness/UX
 > bugs fixed after #216 merged, plus two Codex-review follow-ups: (1)
@@ -105,7 +119,7 @@ silently drift.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **1307** |
+| **Tests passing** | **1377** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **100%** (gate enforced at 100%, repo-wide `--cov=.`) |

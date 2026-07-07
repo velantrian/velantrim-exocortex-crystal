@@ -174,10 +174,10 @@ not smuggle in under this name:
 - [`docs/IMMUNE_LAYER.md`](./IMMUNE_LAYER.md) — read-path safety framing
   (advisory vs. strict, never a silent auto-decision) is consistent with
   how this RFC treats conflicting `VERIFIED` facts.
-- [`TEST_REPORT.md`](../TEST_REPORT.md) — current audited baseline is 1307
-  passed / 12 skipped / 100% coverage. This RFC adds no tests and does not
-  change that baseline; a future implementation PR would need to grow it
-  per the acceptance criteria below.
+- [`TEST_REPORT.md`](../TEST_REPORT.md) — see that file for the current
+  audited test-suite baseline. This RFC adds no tests and does not change
+  that baseline; a future implementation PR would need to grow it per the
+  acceptance criteria below.
 
 ## 9. Acceptance criteria for future implementation
 
