@@ -88,6 +88,62 @@ def test_call_get_fact_missing_and_present():
     assert payload["found"] is True and payload["fact_id"] == fid
 
 
+def test_mcp_get_fact_unrestricted_preserves_existing_behavior():
+    from core.ingest import ingest
+    fid = ingest("Grass is green")["fact"]["fact_id"]
+    resp = _call("tools/call", {"name": "get_fact", "arguments": {"fact_id": fid}})
+    payload = json.loads(resp["result"]["content"][0]["text"])
+    assert payload["found"] is True
+    assert payload["fact_id"] == fid
+    assert payload.get("restricted") in (0, False, None)
+    assert payload["claim"] == "Grass is green"
+
+
+def test_mcp_get_fact_respects_processing_restriction():
+    from core.memory import store_fact, get_fact
+    from core.l3_graph import get_l3_graph
+    from core.compliance import restrict_processing
+
+    fact_id = "mcp_restricted_f1"
+    store_fact({"fact_id": fact_id, "claim": "a secret claim", "source": "test",
+                "epistemic_state": "Validated"})
+    get_l3_graph().merge_fact(get_fact(fact_id))
+    restrict_processing(fact_id, reason="dispute")
+
+    resp = _call("tools/call", {"name": "get_fact", "arguments": {"fact_id": fact_id}})
+    assert resp["result"]["isError"] is False
+    payload = json.loads(resp["result"]["content"][0]["text"])
+
+    assert payload["found"] is True
+    assert payload["restricted"] is True
+    assert payload["reason"] == "RESTRICTED_BY_POLICY"
+    # The raw claim/content must never appear in a restricted response.
+    assert "claim" not in payload
+    assert "metadata" not in payload
+    assert "a secret claim" not in json.dumps(payload)
+
+
+def test_mcp_search_excludes_restricted_facts():
+    from core.memory import store_fact, get_fact
+    from core.l3_graph import get_l3_graph
+    from core.compliance import restrict_processing
+    from core.pipeline import retrieve
+
+    fact_id = "mcp_restricted_search_f1"
+    claim = "Zylthorpe hums with quiet indigo static"
+    store_fact({"fact_id": fact_id, "claim": claim, "source": "test",
+                "epistemic_state": "Validated"})
+    get_l3_graph().merge_fact(get_fact(fact_id))
+    assert fact_id in [h["id"] for h in retrieve(claim)]
+
+    restrict_processing(fact_id, reason="dispute")
+
+    resp = _call("tools/call", {"name": "search", "arguments": {"query": claim, "k": 5}})
+    assert resp["result"]["isError"] is False
+    payload = json.loads(resp["result"]["content"][0]["text"])
+    assert fact_id not in [h["fact_id"] for h in payload]
+
+
 def test_call_fact_history_and_find_conflicts():
     h = _call("tools/call", {"name": "fact_history", "arguments": {"fact_id": "x"}})
     assert "superseded_by" in json.loads(h["result"]["content"][0]["text"])
