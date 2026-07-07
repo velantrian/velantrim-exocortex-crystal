@@ -57,6 +57,31 @@ def test_reinforce_on_observed_does_not_merge_into_l3():
     assert get_l3_graph().get_fact("obs_r") is None
 
 
+def test_reinforce_agreement_follows_exact_formula():
+    """Pin the exact update rule (not just its direction):
+    new_conf = round(conf + (1.0 - conf) / (obs + 1), 4). Consecutive calls
+    walk observations 1 → 2 → 3, so an off-by-one in the denominator
+    (obs + 1 → obs + 2) produces 0.6667 instead of 0.75 on the first call."""
+    _validated("rf_agree", confidence=0.5)
+    assert reinforce("rf_agree") == 0.75            # obs=1: 0.5 + 0.5/2
+    assert reinforce("rf_agree") == 0.8333          # obs=2: 0.75 + 0.25/3
+    assert reinforce("rf_agree") == 0.875           # obs=3: 0.8333 + 0.1667/4
+    fact = get_fact("rf_agree")
+    assert fact["confidence"] == 0.875
+    assert fact["metadata"]["observations"] == 4
+
+
+def test_reinforce_disagreement_follows_exact_formula():
+    """Pin the exact decay rule: new_conf = round(conf * obs / (obs + 1), 4)."""
+    _validated("rf_disagree", confidence=0.8)
+    assert reinforce("rf_disagree", agreement=False) == 0.4      # obs=1: 0.8*1/2
+    assert reinforce("rf_disagree", agreement=False) == 0.2667   # obs=2: 0.4*2/3
+    assert reinforce("rf_disagree", agreement=False) == 0.2      # obs=3: 0.2667*3/4
+    fact = get_fact("rf_disagree")
+    assert fact["confidence"] == 0.2
+    assert fact["metadata"]["observations"] == 4
+
+
 # ─── supersede ──────────────────────────────────────────────────────────────
 
 def test_supersede_deprecates_old_and_links_new():

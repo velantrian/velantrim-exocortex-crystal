@@ -88,6 +88,32 @@ def test_default_threshold_comes_from_adaptation(monkeypatch):
     assert ok is False and "0.95" in reason
 
 
+# ─── Threshold boundary (mutation-killing pins) ───────────────────────────────
+# The gate comparison is strict `<` (truth_gate.py): confidence EQUAL to the
+# threshold is sufficient evidence and must be admitted. These pins make an
+# accidental `<` → `<=` (or the inverse) regression fail loudly.
+
+def test_confidence_exactly_at_threshold_passes():
+    ok, reason = truth_gate({"facts": [_fact(confidence=0.5)]},
+                            min_confidence=0.5)
+    assert ok is True and reason is None
+
+
+def test_confidence_just_below_threshold_is_blocked():
+    ok, reason = truth_gate({"facts": [_fact(confidence=0.4999)]},
+                            min_confidence=0.5)
+    assert ok is False and "Confidence 0.4999 < threshold 0.5" in reason
+
+
+def test_adaptive_threshold_boundary_also_admits_equality(monkeypatch):
+    """Equality admits on the min_confidence=None path too, where the
+    threshold comes from adaptation.verification_threshold()."""
+    from core import adaptation
+    monkeypatch.setattr(adaptation, "verification_threshold", lambda: 0.7)
+    ok, reason = truth_gate({"facts": [_fact(confidence=0.7)]})
+    assert ok is True and reason is None
+
+
 # ─── Track 3A: ENABLE_TRUTH_POLICY production default ─────────────────────────
 
 def test_truth_policy_on_blocks_llm_output_world_fact(monkeypatch):
