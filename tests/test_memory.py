@@ -262,3 +262,48 @@ def test_call_with_lock_retry_does_not_retry_unrelated_operational_errors():
     with pytest.raises(sqlite3.OperationalError, match="disk I/O error"):
         call_with_lock_retry(other_error, retries=5, base_delay=0.01)
     assert calls["n"] == 1  # no retry for a non-lock OperationalError
+
+
+def test_l0_cache_survives_concurrent_access():
+    """Regression: the L0 LRU cache is module-level mutable state driven from
+    worker threads (core/aio.py runs the pipeline via asyncio.to_thread; the
+    FastAPI service layer is multi-threaded). Before _L0_LOCK guarded them, the
+    check-then-act sequences raced: _l0_get does `if k in _L0` then
+    `_L0.move_to_end(k)`, so a competing _l0_pop/eviction between the two lines
+    raised KeyError; concurrent _l0_put could also drive len(_L0) past L0_CAP.
+
+    Hammer the L0 helpers directly (the unit the lock fixes) from many threads
+    over a key space larger than the cache — no SQLite, so this isolates the
+    cache race without touching L1 write concurrency. A worker exception
+    re-raises here via future.result(); the LRU size invariant must still hold."""
+    import sys
+    import threading
+    from concurrent.futures import ThreadPoolExecutor
+
+    keys = [f"cc_{i}" for i in range(L0_CAP * 4)]  # 20 keys, cap 5 → eviction churn
+    n_workers = 8
+    barrier = threading.Barrier(n_workers)
+
+    def worker(seed):
+        barrier.wait()  # release all workers together to maximise contention
+        for n in range(4000):
+            memory._l0_put(keys[(seed + n) % len(keys)], {"fact_id": "x", "claim": "c"})
+            memory._l0_get(keys[(seed * 7 + n) % len(keys)])
+            if n % 4 == 0:
+                memory._l0_pop(keys[(seed * 3 + n) % len(keys)])
+
+    # Force aggressive thread pre-emption so the check-then-act window is
+    # actually hit: with the default switch interval the GIL lets a helper run
+    # to completion too often for the unsynchronised race to surface. Verified
+    # to fail (KeyError) on every run when _L0_LOCK is removed.
+    prev_interval = sys.getswitchinterval()
+    sys.setswitchinterval(1e-7)
+    try:
+        with ThreadPoolExecutor(max_workers=n_workers) as ex:
+            futures = [ex.submit(worker, s) for s in range(n_workers)]
+            for f in futures:
+                f.result()  # re-raise any KeyError/RuntimeError from a race
+    finally:
+        sys.setswitchinterval(prev_interval)
+
+    assert len(memory._L0) <= L0_CAP
