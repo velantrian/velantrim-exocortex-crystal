@@ -5,7 +5,7 @@
 # This is a facade over four layers. The implementations live in separate
 # modules (single source of truth) rather than being duplicated here:
 #   - FractalMemoryLayer          → prototypes/fractal_memory_layer.py       (RFC0070)
-#   - EpigeneticAdaptationModule  → epigenetic_adaptation_module.py (wired into core, RFC0071)
+#   - AdaptiveThresholdModule     → adaptive_threshold_module.py (wired into core, formerly RFC0071)
 #   - ImmuneCRISPRMemoryGuard     → prototypes/immune_crispr_memory_guard.py (RFC0072)
 #   - NeurogenesisDynamicGrowth   → prototypes/neurogenesis_dynamic_growth.py (RFC0073)
 #
@@ -16,7 +16,7 @@ import uuid
 from typing import Dict, List, Any, Optional
 
 from prototypes.fractal_memory_layer import FractalMemoryLayer
-from epigenetic_adaptation_module import EpigeneticAdaptationModule
+from adaptive_threshold_module import AdaptiveThresholdModule
 from prototypes.immune_crispr_memory_guard import ImmuneCRISPRMemoryGuard
 from prototypes.neurogenesis_dynamic_growth import NeurogenesisDynamicGrowth
 
@@ -48,7 +48,7 @@ class HybridBiologicalMemory:
     def __init__(self, name: str = "Velantrim-Hybrid"):
         self.name = name
         self.fractal_layer = FractalMemoryLayer()
-        self.epigenetic_module = EpigeneticAdaptationModule()
+        self.epigenetic_module = AdaptiveThresholdModule()
         self.immune_guard = ImmuneCRISPRMemoryGuard()
         self.neurogenesis_module = NeurogenesisDynamicGrowth()
         self.memory_log: List[Dict[str, Any]] = []

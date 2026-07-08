@@ -5,7 +5,7 @@ prototypes/hybrid_biological_memory.py and previously had zero test coverage.
 """
 import pytest
 
-from epigenetic_adaptation_module import EpigeneticAdaptationModule
+from adaptive_threshold_module import AdaptiveThresholdModule
 from prototypes.fractal_memory_layer import FractalMemoryLayer
 from prototypes.immune_crispr_memory_guard import ImmuneCRISPRMemoryGuard
 from prototypes.neurogenesis_dynamic_growth import NeurogenesisDynamicGrowth
@@ -14,7 +14,7 @@ from prototypes.neurogenesis_dynamic_growth import NeurogenesisDynamicGrowth
 # ─── RFC0071: Epigenetic Adaptation ───────────────────────────────────────────
 
 def test_epigenetic_high_stress_raises_verification_lowers_creativity():
-    m = EpigeneticAdaptationModule()
+    m = AdaptiveThresholdModule()
     before = dict(m.epigenetic_tags)
     m.record_stress(0.85, context="hallucination")
     assert m.epigenetic_tags["verification"] > before["verification"]
@@ -22,21 +22,21 @@ def test_epigenetic_high_stress_raises_verification_lowers_creativity():
 
 
 def test_epigenetic_low_stress_boosts_exploration():
-    m = EpigeneticAdaptationModule()
+    m = AdaptiveThresholdModule()
     before = dict(m.epigenetic_tags)
     m.record_stress(0.1)
     assert m.epigenetic_tags["exploration"] > before["exploration"]
 
 
 def test_epigenetic_tags_stay_within_bounds():
-    m = EpigeneticAdaptationModule()
+    m = AdaptiveThresholdModule()
     for _ in range(50):
         m.record_stress(0.95)
     assert all(0.0 <= v <= 1.0 for v in m.epigenetic_tags.values())
 
 
 def test_epigenetic_adapt_behavior_only_touches_known_keys():
-    m = EpigeneticAdaptationModule()
+    m = AdaptiveThresholdModule()
     m.record_stress(0.9)
     adapted = m.adapt_behavior({"verification_strength": 0.1, "temperature": 1.0,
                                 "unrelated": "keep"})
@@ -46,7 +46,7 @@ def test_epigenetic_adapt_behavior_only_touches_known_keys():
 
 
 def test_epigenetic_inherit_passes_recent_history_and_tags():
-    m = EpigeneticAdaptationModule()
+    m = AdaptiveThresholdModule()
     for s in [0.1, 0.2, 0.9, 0.95]:
         m.record_stress(s)
     child = m.inherit_to_child()
@@ -55,7 +55,7 @@ def test_epigenetic_inherit_passes_recent_history_and_tags():
 
 
 def test_epigenetic_state_summary_keys():
-    m = EpigeneticAdaptationModule(initial_stress=0.3)
+    m = AdaptiveThresholdModule(initial_stress=0.3)
     summary = m.get_state_summary()
     assert set(summary) == {"tags", "avg_stress", "adaptation_level"}
     assert summary["avg_stress"] == pytest.approx(0.3)

@@ -1,18 +1,20 @@
-# Epigenetic Adaptation Module (RFC0071 v0.1)
-# Engineering metaphor for adaptive threshold behaviour — not a biological
-# cognition or plant-memory claim. See docs/METAPHOR_VS_MECHANISM.md.
+# Adaptive Threshold Module (formerly the RFC0071 "epigenetic adaptation"
+# metaphor). Mechanically this is a small set of bounded [0,1] weights ("tags")
+# that a stream of stress signals nudges up or down; the verification weight is
+# read by core/adaptation.py to move the TruthGate confidence threshold. The old
+# name was an engineering metaphor, not a biological-cognition or plant-memory
+# claim — see docs/METAPHOR_VS_MECHANISM.md. Attribute names (epigenetic_tags)
+# are kept as-is for continuity.
 
-class EpigeneticAdaptationModule:
+class AdaptiveThresholdModule:
     """
-    Core module for RFC0071: Epigenetic Adaptation.
-    
-    Mimics how plants pass stress memory to offspring via epigenetic tags
-    and bacteria adapt immune response.
-    
+    Bounded adaptive weights that shift system behaviour in response to a
+    stream of "stress" signals — no retraining involved.
+
     Key features:
-    - Dynamic "epigenetic tags" that activate/deactivate pathways
-    - Stress recording and adaptation
-    - Inheritance to child processes/sessions
+    - A dict of bounded [0,1] weights ("tags") that bias downstream parameters
+    - Stress recording that nudges those weights
+    - Inheritance of recent state to a child process/session
     - No full retraining required
     """
 
@@ -72,7 +74,7 @@ class EpigeneticAdaptationModule:
         Create a child module with inherited epigenetic state.
         Like plants passing memory through seeds.
         """
-        child = EpigeneticAdaptationModule()
+        child = AdaptiveThresholdModule()
         child.epigenetic_tags = self.epigenetic_tags.copy()
         child.stress_history = self.stress_history[-3:]  # Pass recent history
         return child
@@ -88,9 +90,9 @@ class EpigeneticAdaptationModule:
 
 # Example usage
 if __name__ == "__main__":
-    print("=== RFC0071 Epigenetic Adaptation Module Demo ===")
-    
-    module = EpigeneticAdaptationModule(initial_stress=0.3)
+    print("=== Adaptive Threshold Module Demo (formerly RFC0071) ===")
+
+    module = AdaptiveThresholdModule(initial_stress=0.3)
     
     # Simulate high stress (hallucination detected)
     module.record_stress(0.85, context="hallucination")

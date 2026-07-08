@@ -219,7 +219,7 @@ pytest tests/ --cov=. --cov-fail-under=100
 | `scripts/eval_gate.py`      | 46  | 100% |
 | `scripts/eval_track.py`     | 72  | 100% |
 | `scripts/trace_visualize.py`| 22  | 100% |
-| root tooling (`audit_metadata` 109, `check_rfc_duplicates` 44, `fill_dependencies` 43, `epigenetic_adaptation_module` 29, `velantrim_migrate_v3_1` 393) | 618 | 100% |
+| root tooling (`audit_metadata` 109, `check_rfc_duplicates` 44, `fill_dependencies` 43, `adaptive_threshold_module` 29, `velantrim_migrate_v3_1` 393) | 618 | 100% |
 | `prototypes/` (4 research prototypes) | 142 | 100% |
 | `utils/rfc_parser.py`       | 13  | 100% |
 | **Total (repo-wide)**       | **5811** | **100%** |
