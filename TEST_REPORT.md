@@ -153,6 +153,21 @@ pip install -e .
 pytest tests/ --cov=. --cov-fail-under=100
 ```
 
+> **Coverage reproducibility note.** The 100% figure is measured under the
+> **full dev environment** above (all `requirements-dev.txt` / `[dev]` optional
+> layers installed, plus the editable install). In a **partial or pytest-only
+> environment** — where one or more of those layers (FastAPI/httpx,
+> cryptography, PyYAML, pypdf, rdflib, ebooklib, requests) is missing — the
+> matching test modules `pytest.importorskip(...)` and skip, which leaves the
+> optional API and knowledge-adapter surfaces they exercise **uncovered**.
+> Coverage then reports **below 100% and the `--cov-fail-under=100` gate
+> "fails" locally**, even though nothing is actually broken — you are simply
+> not running the tests that cover those lines. If you see a coverage failure,
+> first confirm the full dev environment is installed (no `SKIPPED` lines for
+> the API/adapter modules) before treating it as a real regression. The
+> authoritative gate is CI (`.github/workflows/ci.yml`, Python 3.11 + 3.12),
+> which installs the full environment and enforces the same flags.
+
 ## Coverage by module
 
 | Module | Stmts | Cover |
