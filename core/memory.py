@@ -11,6 +11,7 @@
 import os
 import sqlite3
 import json
+import threading
 import time
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -119,8 +120,15 @@ class ImmutableStateError(Exception):
 
 
 # ─── L0: LRU cache (in-memory, lives only within the session) ─────────────────────────
+# The L0 OrderedDict is shared module-level mutable state. The pipeline is run
+# across worker threads (see core/aio.py asyncio.to_thread, and the FastAPI
+# service layer), so every read/write/mutation of _L0 must hold _L0_LOCK — an
+# unsynchronized OrderedDict under concurrent access raises "dictionary changed
+# size during iteration"/KeyError and corrupts LRU order. Reentrant so a locked
+# helper may safely call another. All access goes through _l0_put/_l0_get/_l0_pop.
 L0_CAP = 5
 _L0: OrderedDict = OrderedDict()
+_L0_LOCK = threading.RLock()
 
 # ─── L1: SQLite path ──────────────────────────────────────────────────────────
 # VELANTRIM_DB redirects the L1 store (read at import time, like the other
@@ -422,19 +430,27 @@ def _db():
 
 def _l0_put(fact_id: str, record: Dict) -> None:
     """Insert into L0 LRU cache, evict oldest entry when over capacity."""
-    if fact_id in _L0:
-        del _L0[fact_id]
-    _L0[fact_id] = record
-    if len(_L0) > L0_CAP:
-        _L0.popitem(last=False)  # evict least-recently-used
+    with _L0_LOCK:
+        if fact_id in _L0:
+            del _L0[fact_id]
+        _L0[fact_id] = record
+        if len(_L0) > L0_CAP:
+            _L0.popitem(last=False)  # evict least-recently-used
 
 
 def _l0_get(fact_id: str) -> Optional[Dict]:
     """Return from L0, refreshing recency. Returns None on miss."""
-    if fact_id not in _L0:
-        return None
-    _L0.move_to_end(fact_id)
-    return _L0[fact_id]
+    with _L0_LOCK:
+        if fact_id not in _L0:
+            return None
+        _L0.move_to_end(fact_id)
+        return _L0[fact_id]
+
+
+def _l0_pop(fact_id: str) -> None:
+    """Evict a fact from L0 if present (no-op on miss). Lock-guarded."""
+    with _L0_LOCK:
+        _L0.pop(fact_id, None)
 
 
 # ─── API ───────────────────────────────────────────────────────────────────────
@@ -632,7 +648,7 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
             # since our read. Evict the now-stale L0 entry so the next get_fact()
             # re-reads the fresh DB state instead of serving stale cache to a
             # caller that ignores the return value. Defense-in-depth, not atomicity.
-            _L0.pop(fact_id, None)
+            _l0_pop(fact_id)
             return False
 
     # Update L0 only after the DB write succeeds, so the cache is never poisoned
@@ -723,7 +739,7 @@ def delete_fact_l1(fact_id: str) -> bool:
     Physically delete a fact from L0 (LRU) and L1 (SQLite). Does not touch L3 or the tombstone.
     Returns True if the row in SQLite was actually deleted.
     """
-    _L0.pop(fact_id, None)
+    _l0_pop(fact_id)
     with _db() as conn:
         cur = conn.execute("DELETE FROM facts WHERE fact_id = ?", (fact_id,))
         return cur.rowcount > 0
