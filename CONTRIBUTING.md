@@ -38,6 +38,13 @@ pytest                       # full suite (see TEST_REPORT.md)
 The default backends are dependency-free (`mock` L3, hashing embedder, extractive
 generator), so the suite runs offline with no API keys.
 
+> Install the **full** `[dev]` environment before trusting a coverage number.
+> The 100% gate is measured with every `[dev]` optional layer installed; in a
+> partial / pytest-only environment the optional API and adapter test modules
+> `importorskip` and skip, leaving those surfaces uncovered so the gate "fails"
+> locally even though nothing is broken. See the coverage reproducibility note
+> in [TEST_REPORT.md](./TEST_REPORT.md#how-to-reproduce). CI is the authoritative gate.
+
 ## ✅ Pull request checklist
 
 - [ ] Tests added/updated; `pytest` passes locally.
