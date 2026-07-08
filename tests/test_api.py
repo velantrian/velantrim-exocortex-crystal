@@ -12,7 +12,12 @@ from core import api  # noqa: E402
 
 
 @pytest.fixture
-def client():
+def client(monkeypatch):
+    # A TestClient is definitionally a local-development instance. The service
+    # now fails closed when no token is configured, so opt into the explicit
+    # local-dev bypass here; tests that exercise real token auth set
+    # VELANTRIM_API_TOKEN themselves (which takes precedence over the bypass).
+    monkeypatch.setenv("VELANTRIM_API_ALLOW_UNAUTH_LOCAL", "1")
     return TestClient(api.create_app())
 
 
@@ -288,6 +293,47 @@ def test_api_token_guard_on_memory_and_review_endpoints(client, monkeypatch):
     # Health and the static review shell stay public.
     assert client.get("/health").status_code == 200
     assert client.get("/review/ui").status_code == 200
+
+
+def test_api_fails_closed_without_token_or_bypass(monkeypatch):
+    """No token AND no local-dev bypass → guarded endpoints refuse with 401.
+    The unconfigured service is not implicitly open."""
+    monkeypatch.delenv("VELANTRIM_API_TOKEN", raising=False)
+    monkeypatch.delenv("VELANTRIM_API_ALLOW_UNAUTH_LOCAL", raising=False)
+    c = TestClient(api.create_app())
+    assert c.post("/ingest", json={"text": "hello"}).status_code == 401
+    assert c.post("/ask", json={"query": "hello"}).status_code == 401
+    assert c.get("/review/queue").status_code == 401
+    # Public surfaces stay reachable even when unconfigured.
+    assert c.get("/health").status_code == 200
+    assert c.get("/review/ui").status_code == 200
+
+
+def test_api_correct_token_accepted(monkeypatch):
+    monkeypatch.setenv("VELANTRIM_API_TOKEN", "s3cret")
+    monkeypatch.delenv("VELANTRIM_API_ALLOW_UNAUTH_LOCAL", raising=False)
+    c = TestClient(api.create_app())
+    r = c.post("/ingest", json={"text": "hello"},
+               headers={"Authorization": "Bearer s3cret"})
+    assert r.status_code == 200
+
+
+def test_api_wrong_token_rejected(monkeypatch):
+    monkeypatch.setenv("VELANTRIM_API_TOKEN", "s3cret")
+    c = TestClient(api.create_app())
+    # Wrong token, and no token at all, are both rejected.
+    assert c.post("/ingest", json={"text": "hello"},
+                  headers={"Authorization": "Bearer wrong"}).status_code == 401
+    assert c.post("/ingest", json={"text": "hello"}).status_code == 401
+
+
+def test_api_unauth_local_bypass_accepted(monkeypatch):
+    """With no token but VELANTRIM_API_ALLOW_UNAUTH_LOCAL=1, guarded endpoints
+    are reachable without a bearer (explicit local-dev opt-in)."""
+    monkeypatch.delenv("VELANTRIM_API_TOKEN", raising=False)
+    monkeypatch.setenv("VELANTRIM_API_ALLOW_UNAUTH_LOCAL", "1")
+    c = TestClient(api.create_app())
+    assert c.post("/ingest", json={"text": "hello"}).status_code == 200
 
 
 def test_ingest_rejects_oversized_text(client):

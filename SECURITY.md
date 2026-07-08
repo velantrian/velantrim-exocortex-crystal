@@ -56,19 +56,26 @@ assets and threats:
 ### Optional HTTP service layer and the API token guard
 
 The optional FastAPI service (`pip install ".[api]"`, `velantrim-api`) binds to
-**127.0.0.1 by default** and is intended to stay there: it is a localhost-trust
-surface when no token is configured, not an internet-facing service. Do not change
-`VELANTRIM_API_HOST` to a routable address without putting real authentication
-and TLS in front.
+**127.0.0.1 by default** and is intended to stay there: it is not an
+internet-facing service. Do not change `VELANTRIM_API_HOST` to a routable
+address without putting real authentication and TLS in front.
 
-When **`VELANTRIM_API_TOKEN`** is set, every memory-facing endpoint requires
-`Authorization: Bearer <token>` (compared with `hmac.compare_digest`,
-constant-time). This covers `/ingest`, `/ask`, `/receipt`, `/verify-receipt`,
-`/evidence/{fact_id}`, and all `/review/*` JSON endpoints (GET and POST alike).
-**Unguarded:** `GET /health` (liveness) and `GET /review/ui` (static, data-free
-shell — enforced by test). Set the token whenever anything beyond the local user
-can reach the port (including the default `docker compose` deployment, which
-requires `VELANTRIM_API_TOKEN` before startup).
+The service **fails closed**: memory-facing endpoints require authentication by
+default. There are exactly two ways to reach them:
+
+- **`VELANTRIM_API_TOKEN`** set → every memory-facing endpoint requires
+  `Authorization: Bearer <token>` (compared with `hmac.compare_digest`,
+  constant-time). This covers `/ingest`, `/ask`, `/receipt`, `/verify-receipt`,
+  `/evidence/{fact_id}`, and all `/review/*` JSON endpoints (GET and POST alike).
+- **`VELANTRIM_API_ALLOW_UNAUTH_LOCAL=1`** (and no token) → an explicit opt-in
+  for an unauthenticated **local-development** instance only.
+
+With neither set, guarded endpoints return `401` rather than exposing the canon.
+**Unguarded regardless:** `GET /health` (liveness) and `GET /review/ui` (static,
+data-free shell — enforced by test; all its data flows through the guarded
+`/review/*` endpoints). Set the token whenever anything beyond the local user can
+reach the port (including the default `docker compose` deployment, which requires
+`VELANTRIM_API_TOKEN` before startup).
 
 Public `/ingest` treats utterances as **`USER_REPORTED`** by default. Privileged
 `source_status` values (`EXTERNAL`, `DERIVED`, `OBSERVED`) require

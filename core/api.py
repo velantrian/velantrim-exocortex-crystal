@@ -57,17 +57,33 @@ def create_app():
         description="Verifiable, local-first AI memory — HTTP service layer.",
     )
 
-    # ─── API token guard ───────────────────────────────────────────────────────
-    # With VELANTRIM_API_TOKEN set, every memory-facing endpoint requires
-    # `Authorization: Bearer <token>` (constant-time compare). Unguarded:
+    # ─── API token guard (fail closed) ──────────────────────────────────────────
+    # Every memory-facing endpoint requires authentication by default. Unguarded:
     # GET /health (liveness) and GET /review/ui (static data-free shell).
-    # Without the env var the service keeps its historical localhost-trust posture
-    # (see SECURITY.md).
+    #
+    #   * VELANTRIM_API_TOKEN set        → require `Authorization: Bearer <token>`
+    #                                      (constant-time compare).
+    #   * VELANTRIM_API_TOKEN unset      → the service FAILS CLOSED: guarded
+    #                                      endpoints return 401. To run an
+    #                                      unauthenticated local-dev instance you
+    #                                      must opt in explicitly with
+    #                                      VELANTRIM_API_ALLOW_UNAUTH_LOCAL=1.
+    #
+    # An unconfigured service is no longer implicitly open (see SECURITY.md).
     def _require_api_token(
             authorization: Optional[str] = Header(None)) -> None:
         expected = os.environ.get("VELANTRIM_API_TOKEN", "")
         if not expected:
-            return
+            # No token configured: allow only the explicit local-dev bypass,
+            # otherwise refuse rather than silently exposing the canon.
+            if os.environ.get("VELANTRIM_API_ALLOW_UNAUTH_LOCAL") == "1":
+                return
+            raise HTTPException(
+                status_code=401,
+                detail="API authentication is not configured. Set "
+                       "VELANTRIM_API_TOKEN to require a bearer token, or set "
+                       "VELANTRIM_API_ALLOW_UNAUTH_LOCAL=1 to explicitly allow "
+                       "an unauthenticated local-development instance.")
         supplied = ""
         if authorization and authorization.lower().startswith("bearer "):
             supplied = authorization[7:]
