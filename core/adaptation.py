@@ -1,14 +1,14 @@
 # core/adaptation.py
-# Velantrim ExoCortex — Epigenetic Adaptation wiring (RFC0071)
+# Velantrim ExoCortex — adaptive threshold wiring (formerly RFC0071)
 #
-# Brings the epigenetic_adaptation_module prototype to life in the core: gate blocks
+# Brings the adaptive_threshold_module to life in the core: gate blocks
 # are "stress"; as it accumulates, it raises the verification tag, which tightens
 # the TruthGate threshold. Hallucination defense adapts without retraining; under
 # a healthy flow (successes) the threshold gradually relaxes.
 
 from typing import Dict, Any, Optional
 
-from epigenetic_adaptation_module import EpigeneticAdaptationModule
+from adaptive_threshold_module import AdaptiveThresholdModule
 
 # Base confidence threshold for WORLD_FACT at the gate (verification == 0.5).
 _BASE_CONFIDENCE = 0.05
@@ -17,13 +17,13 @@ _MAX_BOOST = 0.3
 _STRESS_HIGH = 0.85   # gate block
 _STRESS_LOW = 0.2     # successful answer
 
-_MODULE: Optional[EpigeneticAdaptationModule] = None
+_MODULE: Optional[AdaptiveThresholdModule] = None
 
 
-def get_adaptation() -> EpigeneticAdaptationModule:
+def get_adaptation() -> AdaptiveThresholdModule:
     global _MODULE
     if _MODULE is None:
-        _MODULE = EpigeneticAdaptationModule()
+        _MODULE = AdaptiveThresholdModule()
     return _MODULE
 
 

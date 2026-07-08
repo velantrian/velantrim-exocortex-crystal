@@ -44,7 +44,7 @@ def test_declared_packages_cover_runtime_imports(pyproject):
     # The runtime is `core` plus the top-level module core.adaptation imports.
     st = pyproject["tool"]["setuptools"]
     assert "core" in st["packages"]
-    assert "epigenetic_adaptation_module" in st["py-modules"]
+    assert "adaptive_threshold_module" in st["py-modules"]
 
 
 def test_no_runtime_dependencies(pyproject):

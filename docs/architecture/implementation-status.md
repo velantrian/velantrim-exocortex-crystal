@@ -86,7 +86,7 @@ audited release boundary. Under Observer + TruthGate control.
 | **Velum / Synaptic pre-graph** | `core/velum.py` | `RESEARCH / P2` | L1.5 entity co-occurrence layer. Does not promote facts. |
 | **Analogy graph** | `core/analogy.py` | `RESEARCH / P2` | Semantic bridges. Association weight ≠ evidence. |
 | **Volition / Voluntary writes** | `core/volition.py` | `RESEARCH / P2` | Voluntary writes and rehearsal — still passes through all gates. |
-| **Epigenetic adaptation** | `epigenetic_adaptation_module.py` | `RESEARCH / P2` | Prototype-level. Not in core release boundary. |
+| **Epigenetic adaptation** | `adaptive_threshold_module.py` | `RESEARCH / P2` | Prototype-level. Not in core release boundary. |
 
 ---
 

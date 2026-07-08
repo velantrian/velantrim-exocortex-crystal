@@ -111,12 +111,12 @@ adapters = [
 ]
 
 # Explicit package surface — the runtime is the `core` package plus the
-# top-level `epigenetic_adaptation_module` it imports. Declaring them keeps the
+# top-level `adaptive_threshold_module` it imports. Declaring them keeps the
 # flat-layout build reproducible (no auto-discovery ambiguity over prototypes/
 # utils/docs, which are not part of the installable runtime).
 [tool.setuptools]
 packages = ["core", "core.adapters"]
-py-modules = ["epigenetic_adaptation_module"]
+py-modules = ["adaptive_threshold_module"]
 
 [tool.setuptools.package-data]
 # Bundle the curated evaluation fixtures (WP3) and the MOSC classifier weights

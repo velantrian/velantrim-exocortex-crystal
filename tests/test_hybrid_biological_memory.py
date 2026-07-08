@@ -7,14 +7,14 @@
 
 import pytest
 from prototypes.hybrid_biological_memory import HybridBiologicalMemory
-from epigenetic_adaptation_module import EpigeneticAdaptationModule
+from adaptive_threshold_module import AdaptiveThresholdModule
 from prototypes.neurogenesis_dynamic_growth import NeurogenesisDynamicGrowth
 
 
 def test_initialization_wires_canonical_modules():
     hbm = HybridBiologicalMemory()
     assert hbm.fractal_layer is not None
-    assert isinstance(hbm.epigenetic_module, EpigeneticAdaptationModule)
+    assert isinstance(hbm.epigenetic_module, AdaptiveThresholdModule)
     assert isinstance(hbm.neurogenesis_module, NeurogenesisDynamicGrowth)
     assert hbm.immune_guard is not None
 
