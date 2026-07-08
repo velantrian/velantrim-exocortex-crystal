@@ -272,7 +272,11 @@ Key invariants visible in this diagram:
   is recorded as a `review_force_approve` audit event.
 - **MCP server is read-only** by design (see section 7 for the privacy
   boundary).  MCP reads L0/L1 working memory (via `memory.get_fact`) — pre-canonical
-  facts may be visible, not only L3-canon items.
+  facts may be visible, not only L3-canon items.  `get_fact` is policy-aware for
+  GDPR Art. 18 restriction: if the target fact is `restricted`, MCP refuses with
+  a `RESTRICTED_BY_POLICY` reason instead of returning the claim or other raw
+  stored fields (issue #231, Option A). This does not add a general
+  capability/role/token model — only this one lookup path is restriction-aware.
 - **LadybugDB** is an optional drop-in replacement for the SQLite L3 backend;
   the rest of the pipeline is identical either way.
 - Evidence and audit writes occur only on the specific paths that trigger them

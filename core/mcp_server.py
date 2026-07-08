@@ -77,6 +77,19 @@ def _tool_get_fact(fact_id: str) -> Any:
     fact = get_fact(fact_id)
     if fact is None:
         return {"found": False, "fact_id": fact_id}
+    if fact.get("restricted"):
+        # GDPR Art. 18: processing is restricted for this fact. Unlike
+        # pipeline.retrieve (which silently excludes restricted nodes from
+        # search/graph-walk), a direct by-id lookup must say something — so
+        # get_fact refuses with a stable reason code instead of returning the
+        # claim text or any other raw stored field.
+        return {
+            "found": True,
+            "fact_id": fact_id,
+            "restricted": True,
+            "reason": "RESTRICTED_BY_POLICY",
+            "message": "Fact is restricted and cannot be returned through MCP get_fact.",
+        }
     return {"found": True, **fact}
 
 
