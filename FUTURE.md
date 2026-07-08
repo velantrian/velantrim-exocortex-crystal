@@ -61,7 +61,7 @@ grep -RIn "v8\.x-sprint\|v8\.\|v8_" core tests scripts *.py
 ```
 
 The only remaining `v8` strings live in the historical knowledge corpus
-(`docs/Velantrim_V8_Crystal_Sprint1.jsonl` + `_toc.md`) — these are legitimate
+(`docs/archive/Velantrim_V8_Crystal_Sprint1.jsonl` + `_toc.md`) — these are legitimate
 dataset names, not stale runtime headers, and are intentionally preserved.
 
 ### 2.2 Embedder-mismatch guard on a persistent L3 store — in-process guard DONE ✅

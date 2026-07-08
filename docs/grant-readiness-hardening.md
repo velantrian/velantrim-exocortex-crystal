@@ -24,7 +24,7 @@ Run locally:
 python -c "
 import json, sys
 REQUIRED = ['chunk_id', 'title', 'content']
-path = 'docs/Velantrim_V8_Crystal_Sprint1.jsonl'
+path = 'docs/archive/Velantrim_V8_Crystal_Sprint1.jsonl'
 errors, seen = [], {}
 with open(path) as f:
     for i, line in enumerate(f, 1):
