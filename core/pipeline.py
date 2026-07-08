@@ -7,7 +7,7 @@
 # Retrieval — vector-based (cosine of embeddings) over the seed corpus + recall from L3.
 # The answer — a pluggable Generator (extractive by default, optional LLM). L3 — a pluggable
 # backend (auto→LadybugDB / mock / neo4j). Full L0–L6 architecture:
-# docs/Velantrim_V8_Crystal_Sprint1_toc.md
+# docs/archive/Velantrim_V8_Crystal_Sprint1_toc.md
 #
 # TODO (next):
 #   - ESM: full transition matrix + automatic Supported/Hypothesized

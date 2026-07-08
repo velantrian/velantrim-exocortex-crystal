@@ -15,7 +15,7 @@
 ## Purpose
 
 This file records the historical metadata-cleanup sprint for
-`docs/Velantrim_V8_Crystal_Sprint1.jsonl`. It is kept as an audit note, not as a
+`docs/archive/Velantrim_V8_Crystal_Sprint1.jsonl`. It is kept as an audit note, not as a
 current release statement.
 
 For the current repository status, use:
@@ -47,7 +47,7 @@ Confirmed metadata work:
 The main modified data file was:
 
 ```text
-docs/Velantrim_V8_Crystal_Sprint1.jsonl
+docs/archive/Velantrim_V8_Crystal_Sprint1.jsonl
 ```
 
 ---

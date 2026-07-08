@@ -5,7 +5,7 @@
 # Principle: Trace → Validation → Answer (not the other way around).
 # Each trace element carries the epistemic_state from ESM.
 #
-# Full architecture: docs/Velantrim_V8_Crystal_Sprint1_toc.md
+# Full architecture: docs/archive/Velantrim_V8_Crystal_Sprint1_toc.md
 
 from typing import List, Dict, Any
 from datetime import datetime, timezone

@@ -79,7 +79,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "input_file",
         nargs="?",
-        default="docs/Velantrim_V8_Crystal_Sprint1.jsonl",
+        default="docs/archive/Velantrim_V8_Crystal_Sprint1.jsonl",
     )
     parser.add_argument(
         "--dry-run",

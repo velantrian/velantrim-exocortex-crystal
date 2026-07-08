@@ -81,5 +81,5 @@ def check_duplicates(jsonl_path: Path) -> None:
 
 
 if __name__ == "__main__":
-    jsonl_path = Path("docs/Velantrim_V8_Crystal_Sprint1.jsonl")
+    jsonl_path = Path("docs/archive/Velantrim_V8_Crystal_Sprint1.jsonl")
     check_duplicates(jsonl_path)

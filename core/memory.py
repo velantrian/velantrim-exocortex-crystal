@@ -5,7 +5,7 @@
 #   L0: LRU in-memory cache (CAP=5, OrderedDict)
 #   L1: SQLite (short-term, persistent across runs)
 #
-# Full L0–L6 architecture: docs/Velantrim_V8_Crystal_Sprint1_toc.md
+# Full L0–L6 architecture: docs/archive/Velantrim_V8_Crystal_Sprint1_toc.md
 # ESM (Epistemic State Machine): 8 states of a fact's lifecycle.
 
 import os
