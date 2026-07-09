@@ -83,6 +83,56 @@ def test_reinforce_disagreement_follows_exact_formula():
     assert fact["metadata"]["observations"] == 4
 
 
+def test_reinforce_retries_on_cas_miss_and_eventually_succeeds(monkeypatch):
+    """Regression for a Codex P1 finding (#244): reinforce() ignored
+    update_fact()'s boolean return, so a CAS miss (lost race with a
+    concurrent writer) made it report a confidence value that was never
+    actually persisted. It must retry against fresh state instead."""
+    from core import reconcile
+
+    _validated("cas_r1", confidence=0.5)
+
+    real_update_fact = reconcile.update_fact
+    calls = {"n": 0}
+
+    def flaky_update_fact(*args, **kwargs):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return False  # simulate one lost CAS race
+        return real_update_fact(*args, **kwargs)
+
+    monkeypatch.setattr(reconcile, "update_fact", flaky_update_fact)
+
+    new_conf = reinforce("cas_r1")
+    assert new_conf == 0.75            # obs=1 formula, unaffected by the retry
+    assert get_fact("cas_r1")["confidence"] == 0.75
+    assert get_fact("cas_r1")["metadata"]["observations"] == 2
+    assert calls["n"] == 2             # first attempt lost the race, second succeeded
+
+
+def test_reinforce_drops_update_after_exhausting_retries_under_sustained_contention():
+    """When every attempt loses the CAS race (persistent contention), reinforce()
+    must drop the reinforcement and return the fact's actual current confidence
+    — never a value that was silently never persisted."""
+    from core import reconcile
+
+    _validated("cas_r2", confidence=0.5)
+
+    def always_fails(*args, **kwargs):
+        return False
+
+    original = reconcile.update_fact
+    reconcile.update_fact = always_fails
+    try:
+        result = reinforce("cas_r2")
+    finally:
+        reconcile.update_fact = original
+
+    assert result == 0.5                                  # unchanged, not fabricated
+    assert get_fact("cas_r2")["confidence"] == 0.5
+    assert get_fact("cas_r2")["metadata"].get("observations") is None
+
+
 # ─── supersede ──────────────────────────────────────────────────────────────
 
 def test_supersede_deprecates_old_and_links_new():

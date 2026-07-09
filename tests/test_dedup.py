@@ -92,3 +92,29 @@ def test_record_occurrence_on_non_validated_fact_never_reaches_l3():
     assert get_fact("obs1")["metadata"]["occurrences"] == 2
     # Guardrail: a non-Validated fact is never merged into the L3 canon here.
     assert get_l3_graph().get_fact("obs1") is None
+
+
+def test_record_occurrence_retries_on_cas_miss_and_eventually_succeeds(monkeypatch):
+    """Regression for a Codex P1 finding (#244): record_occurrence() ignored
+    update_fact()'s boolean return, so a CAS miss (lost race with a
+    concurrent writer) made it report an occurrence count that was never
+    actually persisted. It must retry against fresh state instead."""
+    from core import reconcile
+
+    store_fact({"fact_id": "cas_ro1", "claim": "c", "source": "s", "confidence": 0.5})
+
+    real_update_fact = reconcile.update_fact
+    calls = {"n": 0}
+
+    def flaky_update_fact(*args, **kwargs):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return False  # simulate one lost CAS race
+        return real_update_fact(*args, **kwargs)
+
+    monkeypatch.setattr(reconcile, "update_fact", flaky_update_fact)
+
+    result = record_occurrence("cas_ro1", source="s2")
+    assert result == 2
+    assert get_fact("cas_ro1")["metadata"]["occurrences"] == 2
+    assert calls["n"] == 2  # first attempt lost the race, second succeeded

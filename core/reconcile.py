@@ -37,6 +37,12 @@ REL_CONTRADICTS = "CONTRADICTS"
 # Threshold for "similar, but it is a DIFFERENT fact" → a contradiction/supersession candidate.
 _CONFLICT_MIN_SIM = 0.5
 
+# update_fact() CAS-guards on updated_at (#244): a concurrent writer between our
+# read and write makes it return False without applying our change. Retry a
+# bounded number of times against the fresh state rather than reporting a
+# value (confidence/occurrence count) that was never actually persisted.
+_CAS_MAX_ATTEMPTS = 3
+
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -69,31 +75,43 @@ def _sync_l3(fact_id: str) -> Optional[Dict[str, Any]]:
 
 def reinforce(fact_id: str, agreement: bool = True) -> Optional[float]:
     """
-    Reinforce a fact with independent evidence. Returns the new confidence
-    (or None if the fact does not exist).
+    Reinforce a fact with independent evidence. Returns the new confidence;
+    None if the fact does not exist; or the fact's current (unchanged)
+    confidence if update_fact()'s CAS guard lost a sustained race across all
+    retries (the reinforcement is dropped rather than reporting a confidence
+    value that was never actually persisted — see #244).
 
     agreement=True  → confidence += (1 - confidence) / (obs + 1)  — decaying growth.
     agreement=False → confidence *= obs / (obs + 1)               — decaying decline.
     The observation counter is stored in metadata['observations'].
     """
-    fact = get_fact(fact_id)
-    if fact is None:
-        return None
+    for attempt in range(_CAS_MAX_ATTEMPTS):
+        fact = get_fact(fact_id)
+        if fact is None:
+            return None
 
-    meta = dict(fact.get("metadata") or {})
-    obs = int(meta.get("observations", 1))
-    conf = float(fact.get("confidence", 0.5))
+        meta = dict(fact.get("metadata") or {})
+        obs = int(meta.get("observations", 1))
+        conf = float(fact.get("confidence", 0.5))
 
-    if agreement:
-        new_conf = round(conf + (1.0 - conf) / (obs + 1), 4)
-    else:
-        new_conf = round(conf * obs / (obs + 1), 4)
+        if agreement:
+            new_conf = round(conf + (1.0 - conf) / (obs + 1), 4)
+        else:
+            new_conf = round(conf * obs / (obs + 1), 4)
 
-    meta["observations"] = obs + 1
-    meta["last_consolidated"] = _now()  # reinforcement resets the decay clock
-    update_fact(fact_id, confidence=new_conf, metadata=meta)
-    _sync_l3(fact_id)
-    return new_conf
+        meta["observations"] = obs + 1
+        meta["last_consolidated"] = _now()  # reinforcement resets the decay clock
+        if update_fact(fact_id, confidence=new_conf, metadata=meta):
+            _sync_l3(fact_id)
+            return new_conf
+        logger.warning(
+            "reinforce: update_fact CAS miss for %s (attempt %d/%d), retrying",
+            fact_id, attempt + 1, _CAS_MAX_ATTEMPTS)
+
+    # Exhausted retries under sustained contention: drop this reinforcement
+    # rather than lie about a confidence value that was never persisted.
+    current = get_fact(fact_id)
+    return current.get("confidence") if current is not None else None
 
 
 def record_occurrence(
@@ -106,8 +124,11 @@ def record_occurrence(
     Register that identical content was ingested again (an exact-duplicate
     sighting). This is a FREQUENCY signal only: it updates occurrence metadata
     and NEVER changes confidence, truth_status or the ESM state — a repeat is
-    not independent evidence. Returns the new occurrence count, or None if the
-    fact does not exist.
+    not independent evidence. Returns the new occurrence count; None if the
+    fact does not exist; or the fact's current (unchanged) occurrence count if
+    update_fact()'s CAS guard lost a sustained race across all retries (the
+    sighting is dropped rather than reporting a count that was never actually
+    persisted — see #244).
 
     Occurrence bookkeeping is kept deliberately SEPARATE from
     metadata['observations'] (which reinforce() folds into the confidence
@@ -117,30 +138,41 @@ def record_occurrence(
       sources_seen       — sorted list of distinct source labels
       fingerprint_sha256 — sha256 of the normalized content (audit)
     """
-    fact = get_fact(fact_id)
-    if fact is None:
+    for attempt in range(_CAS_MAX_ATTEMPTS):
+        fact = get_fact(fact_id)
+        if fact is None:
+            return None
+
+        meta = dict(fact.get("metadata") or {})
+        occurrences = int(meta.get("occurrences", 1)) + 1
+        meta["occurrences"] = occurrences
+        meta["last_seen"] = _now()
+        if fingerprint:
+            meta["fingerprint_sha256"] = fingerprint
+        seen = set(meta.get("sources_seen") or [])
+        if fact.get("source"):
+            seen.add(fact["source"])
+        if source:
+            seen.add(source)
+        meta["sources_seen"] = sorted(seen)
+
+        if update_fact(fact_id, metadata=meta):
+            # Guardrail: occurrence tracking must never promote a fact into the
+            # canon. Sync to L3 ONLY when the fact is already Validated (already
+            # in the canon); a non-Validated fact is never merged from here.
+            if l3_secondary_sync_admissible(fact):
+                _sync_l3(fact_id)
+            return occurrences
+        logger.warning(
+            "record_occurrence: update_fact CAS miss for %s (attempt %d/%d), retrying",
+            fact_id, attempt + 1, _CAS_MAX_ATTEMPTS)
+
+    # Exhausted retries under sustained contention: drop this sighting rather
+    # than lie about an occurrence count that was never persisted.
+    current = get_fact(fact_id)
+    if current is None:
         return None
-
-    meta = dict(fact.get("metadata") or {})
-    occurrences = int(meta.get("occurrences", 1)) + 1
-    meta["occurrences"] = occurrences
-    meta["last_seen"] = _now()
-    if fingerprint:
-        meta["fingerprint_sha256"] = fingerprint
-    seen = set(meta.get("sources_seen") or [])
-    if fact.get("source"):
-        seen.add(fact["source"])
-    if source:
-        seen.add(source)
-    meta["sources_seen"] = sorted(seen)
-
-    update_fact(fact_id, metadata=meta)
-    # Guardrail: occurrence tracking must never promote a fact into the canon.
-    # Sync the metadata to L3 ONLY when the fact is already Validated (already in
-    # the canon); a non-Validated fact is never merged into L3 from here.
-    if l3_secondary_sync_admissible(fact):
-        _sync_l3(fact_id)
-    return occurrences
+    return int((current.get("metadata") or {}).get("occurrences", 1))
 
 
 def supersede(old_id: str, new_fact: Dict[str, Any], *, enforce_gate: bool = True) -> str:

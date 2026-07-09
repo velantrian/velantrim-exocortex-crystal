@@ -163,6 +163,11 @@ def review_report() -> Dict[str, Any]:
 
 _FORCE_REASON_MAX = 500  # accountability text, not an essay — keep audit lean
 
+# update_fact() CAS-guards on updated_at (#244): a concurrent writer between
+# our read and write makes it return False without applying the override
+# metadata below. Retry a bounded number of times against the fresh state.
+_CAS_MAX_ATTEMPTS = 3
+
 
 def approve(fact_id: str, *, actor: Optional[str] = None,
             note: Optional[str] = None,
@@ -230,14 +235,20 @@ def approve(fact_id: str, *, actor: Optional[str] = None,
                 "diagnosis": diag["verdict"]}
     ct = fact.get("claim_type", "WORLD_FACT")
     if overridden:
-        meta = dict((get_fact(fact_id) or {}).get("metadata") or {})
-        meta.update({
-            "admission_path": "review_force_approve",
-            "override": True,
-            "gate_passed": False,
-            "gate_reason": diag.get("reason"),
-        })
-        update_fact(fact_id, metadata=meta)
+        # Retry against a fresh read on a CAS miss, so the override markers
+        # below are not silently dropped by a concurrent writer racing this
+        # update (see #244) — a plain unconditional overwrite is not an
+        # option here, since update_fact() itself is CAS-guarded.
+        for _ in range(_CAS_MAX_ATTEMPTS):
+            meta = dict((get_fact(fact_id) or {}).get("metadata") or {})
+            meta.update({
+                "admission_path": "review_force_approve",
+                "override": True,
+                "gate_passed": False,
+                "gate_reason": diag.get("reason"),
+            })
+            if update_fact(fact_id, metadata=meta):
+                break
         promoted = get_fact(fact_id)
         truth_status = "CURATOR_OVERRIDE"
     else:
