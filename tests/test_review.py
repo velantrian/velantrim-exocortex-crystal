@@ -342,6 +342,34 @@ def test_force_approve_audited_distinctly_and_content_free(monkeypatch):
     assert audit.verify_audit_log()["ok"] is True
 
 
+def test_force_approve_retries_on_cas_miss_for_override_metadata(monkeypatch):
+    """Regression for a Codex P1 finding (#244): the override-metadata
+    update_fact() call ignored its boolean return, so a CAS miss could
+    silently drop the override/gate_passed/gate_reason markers even though
+    the force-approval itself (transition_esm + audit) went through. It must
+    retry against fresh state instead."""
+    claim = "A force-approved claim under a CAS race"
+    fid = _blocked_world_fact(claim)
+
+    real_update_fact = review.update_fact
+    calls = {"n": 0}
+
+    def flaky_update_fact(*args, **kwargs):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return False  # simulate one lost CAS race
+        return real_update_fact(*args, **kwargs)
+
+    monkeypatch.setattr(review, "update_fact", flaky_update_fact)
+
+    result = review.approve(fid, actor="bob", force=True, reason="manual vetting")
+    assert result["approved"] is True
+    meta = get_fact(fid)["metadata"]
+    assert meta["override"] is True
+    assert meta["admission_path"] == "review_force_approve"
+    assert calls["n"] == 2  # first attempt lost the race, second succeeded
+
+
 def test_approve_not_found():
     assert review.approve("ing:nope")["found"] is False
 

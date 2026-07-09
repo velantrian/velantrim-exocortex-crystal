@@ -92,3 +92,81 @@ def test_record_occurrence_on_non_validated_fact_never_reaches_l3():
     assert get_fact("obs1")["metadata"]["occurrences"] == 2
     # Guardrail: a non-Validated fact is never merged into the L3 canon here.
     assert get_l3_graph().get_fact("obs1") is None
+
+
+def test_record_occurrence_retries_on_cas_miss_and_eventually_succeeds(monkeypatch):
+    """Regression for a Codex P1 finding (#244): record_occurrence() ignored
+    update_fact()'s boolean return, so a CAS miss (lost race with a
+    concurrent writer) made it report an occurrence count that was never
+    actually persisted. It must retry against fresh state instead."""
+    from core import reconcile
+
+    store_fact({"fact_id": "cas_ro1", "claim": "c", "source": "s", "confidence": 0.5})
+
+    real_update_fact = reconcile.update_fact
+    calls = {"n": 0}
+
+    def flaky_update_fact(*args, **kwargs):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return False  # simulate one lost CAS race
+        return real_update_fact(*args, **kwargs)
+
+    monkeypatch.setattr(reconcile, "update_fact", flaky_update_fact)
+
+    result = record_occurrence("cas_ro1", source="s2")
+    assert result == 2
+    assert get_fact("cas_ro1")["metadata"]["occurrences"] == 2
+    assert calls["n"] == 2  # first attempt lost the race, second succeeded
+
+
+def test_record_occurrence_drops_sighting_after_exhausting_retries_under_sustained_contention():
+    """When every attempt loses the CAS race (persistent contention),
+    record_occurrence() must drop the sighting and return the fact's actual
+    current occurrence count — never a value that was silently never
+    persisted."""
+    from core import reconcile
+
+    store_fact({"fact_id": "cas_ro2", "claim": "c", "source": "s", "confidence": 0.5})
+
+    def always_fails(*args, **kwargs):
+        return False
+
+    original = reconcile.update_fact
+    reconcile.update_fact = always_fails
+    try:
+        result = record_occurrence("cas_ro2")
+    finally:
+        reconcile.update_fact = original
+
+    assert result == 1                                  # unchanged, not fabricated
+    assert get_fact("cas_ro2")["metadata"].get("occurrences") is None
+
+
+def test_record_occurrence_returns_none_if_fact_vanishes_during_exhausted_retries():
+    """Extreme edge of the sustained-contention fallback: every retry attempt
+    loses the CAS race AND the fact is concurrently erased right before the
+    final fallback read. Must report None (matching the "fact does not
+    exist" contract), not crash or fabricate a count."""
+    from core import reconcile
+    from core.memory import delete_fact_l1
+
+    store_fact({"fact_id": "cas_ro3", "claim": "c", "source": "s", "confidence": 0.5})
+
+    calls = {"n": 0}
+
+    def always_fails_then_erase(*args, **kwargs):
+        calls["n"] += 1
+        if calls["n"] >= reconcile._CAS_MAX_ATTEMPTS:
+            delete_fact_l1("cas_ro3")
+        return False
+
+    original = reconcile.update_fact
+    reconcile.update_fact = always_fails_then_erase
+    try:
+        result = record_occurrence("cas_ro3")
+    finally:
+        reconcile.update_fact = original
+
+    assert result is None
+    assert calls["n"] == reconcile._CAS_MAX_ATTEMPTS
