@@ -9,6 +9,7 @@ from core.memory import (
     ImmutableStateError,
 )
 from core.l3_graph import get_l3_graph
+from core import evidence
 
 
 def _seed(fact_id="f1", claim="Water boils at 100C", state="Validated"):
@@ -208,3 +209,74 @@ def test_cli_erase_and_erasures(capsys):
     log = json.loads(capsys.readouterr().out.strip())
     assert any(t["fact_id"] == "f1" and t["reason"] == "cli_test" for t in log)
     assert "cli secret" not in str(log)
+
+
+# ─── evidence_spans erasure (GDPR Art. 17 completeness) ───────────────────────
+
+def test_erase_deletes_attached_evidence_spans():
+    """evidence_spans stores source_uri/chunk_id/section as plaintext, which
+    can carry personal data — erase_fact() must delete it, not just L0/L1/L3."""
+    _seed("f1", claim="a claim with a source")
+    evidence.attach_evidence("f1", "private/patient-notes.txt", chunk_id="c1",
+                             section="Visit summary")
+    assert evidence.evidence_for("f1") != []
+
+    receipt = erase_fact("f1", reason="gdpr_request")
+
+    assert evidence.evidence_for("f1") == []
+    assert receipt["evidence_removed"] == 1
+    # Tombstone/audit accountability is unaffected by the evidence cleanup.
+    tomb = get_tombstone("f1")
+    assert tomb is not None
+    assert tomb["content_hash"].startswith("sha256:")
+    assert "private/patient-notes.txt" not in str(tomb)
+    from core import audit
+    assert any(e["fact_id"] == "f1" and e["event"] == "erase" for e in audit.audit_log())
+
+
+def test_erase_without_evidence_reports_zero_removed():
+    _seed("f1")
+    receipt = erase_fact("f1")
+    assert receipt["evidence_removed"] == 0
+
+
+def test_repeated_erase_with_evidence_stays_idempotent():
+    _seed("f1", claim="a claim with a source")
+    evidence.attach_evidence("f1", "src.txt")
+
+    first = erase_fact("f1", reason="first")
+    assert first["erased_now"] is True
+    assert first["evidence_removed"] == 1
+
+    second = erase_fact("f1", reason="second")
+    assert second["erased_now"] is False
+    assert second["evidence_removed"] == 0
+    assert evidence.evidence_for("f1") == []
+    # First erasure event's tombstone is preserved, not duplicated.
+    assert len([t for t in erasure_log() if t["fact_id"] == "f1"]) == 1
+
+
+def test_erase_evidence_only_orphan_is_still_removed():
+    """Regression for a Codex P2 finding: the "never stored anywhere" no-op
+    check ran BEFORE evidence deletion, so a fact_id with orphan evidence_spans
+    rows but no L1 fact, no L3 node, and no tombstone (e.g. delete_fact_l1 and
+    graph.erase_fact called directly, bypassing erase_fact — the same failure
+    mode as test_erase_l3_only_orphan_is_still_removed, but for evidence)
+    hit the no-op path and its evidence survived forever."""
+    from core.memory import delete_fact_l1
+    _seed("evidence_orphan", claim="orphaned evidence claim")
+    evidence.attach_evidence("evidence_orphan", "orphan-doc.txt")
+    assert evidence.evidence_for("evidence_orphan") != []
+
+    delete_fact_l1("evidence_orphan")
+    get_l3_graph().erase_fact("evidence_orphan")
+    assert get_fact("evidence_orphan") is None
+    assert get_l3_graph().get_fact("evidence_orphan") is None
+    assert get_tombstone("evidence_orphan") is None
+
+    receipt = erase_fact("evidence_orphan")
+
+    assert receipt["erased_now"] is True
+    assert receipt["evidence_removed"] == 1
+    assert evidence.evidence_for("evidence_orphan") == []
+    assert is_erased("evidence_orphan") is True

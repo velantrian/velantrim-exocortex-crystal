@@ -125,6 +125,19 @@ def evidence_for(fact_id: str) -> List[Dict[str, Any]]:
     return [dict(r) for r in rows]
 
 
+def delete_evidence_for(fact_id: str) -> int:
+    """Delete all evidence spans attached to fact_id. Return deleted row count.
+
+    Used by core.erasure.erase_fact() — evidence_spans stores source_uri/
+    chunk_id/section as plaintext (GDPR Art. 17 requires these gone too, not
+    just the fact record itself). Idempotent: erasing an id with no spans
+    returns 0.
+    """
+    with memory._db() as conn:
+        cur = conn.execute("DELETE FROM evidence_spans WHERE fact_id = ?", (fact_id,))
+        return cur.rowcount
+
+
 def verify_evidence(
     fact_id: str,
     current_sources: Optional[Dict[str, str]] = None,
