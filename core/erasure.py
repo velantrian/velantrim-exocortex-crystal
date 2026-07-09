@@ -5,9 +5,10 @@
 #
 # Principle: deletion must be COMPLETE and PROVABLE at the same time.
 #   Complete — the node disappears from L0 (cache), L1 (SQLite), L3 (canon: node + edges +
-#             mentions), the L3 outbox (re-merge queue), and evidence_spans
-#             (source_uri/chunk_id/section provenance pointers). No
-#             personal data or dangling references remain anywhere.
+#             mentions), the L3 outbox (re-merge queue), evidence_spans
+#             (source_uri/chunk_id/section provenance pointers), and
+#             import_sessions (session_id/source batch-provenance pointers).
+#             No personal data or dangling references remain anywhere.
 #   Provable — a content-free tombstone is written to erasure_log: fact_id, time,
 #             reason, actor and the sha256 hash of the erased claim (not the claim itself). This is a
 #             record of processing (Art. 30): one can prove WHAT and WHEN was
@@ -23,6 +24,7 @@ from typing import Dict, Any, List, Optional
 from core.memory import (
     get_fact,
     delete_fact_l1,
+    delete_import_session_entries_for,
     write_tombstone,
     get_tombstone,
     get_tombstones,
@@ -71,7 +73,8 @@ def erase_fact(
     Physically and irreversibly delete a fact (GDPR Art. 17, right to be forgotten).
 
     Removes the fact from L0, L1, the L3 canonical graph (node + all edges + mentions),
-    the L3 outbox, and evidence_spans, then writes a content-free tombstone to erasure_log.
+    the L3 outbox, evidence_spans, and import_sessions, then writes a
+    content-free tombstone to erasure_log.
 
     cascade=True: besides the fact itself, also erases everything derived from it —
     facts with a DERIVED_FROM edge to it (recursively, with cycle protection). This way
@@ -95,30 +98,35 @@ def erase_fact(
     graph = get_l3_graph()
     fact = get_fact(fact_id)
     l3_node = graph.get_fact(fact_id)
-    # Delete evidence BEFORE the no-op check below, and fold its result into
-    # that check. Evidence can be the only remaining trace of a fact_id whose
-    # L1/L3 rows are already gone (e.g. left behind by delete_fact_l1 called
-    # directly, bypassing erase_fact) — the "never stored anywhere" no-op
-    # determination must not skip that orphan cleanup (Codex review on #242).
+    # Delete evidence and import-session entries BEFORE the no-op check below,
+    # and fold their results into that check. Either can be the only
+    # remaining trace of a fact_id whose L1/L3 rows are already gone (e.g.
+    # left behind by delete_fact_l1 called directly, bypassing erase_fact) —
+    # the "never stored anywhere" no-op determination must not skip that
+    # orphan cleanup (Codex review on #242, same bug class here for
+    # import_sessions.source — plaintext, can carry personal data/file paths).
     evidence_removed = evidence.delete_evidence_for(fact_id)
+    import_sessions_removed = delete_import_session_entries_for(fact_id)
 
-    # A fact_id that was never stored anywhere — L1 (fact), L3 (l3_node), OR
-    # evidence_spans — AND was never previously erased is a true no-op: skip
-    # the tombstone/audit/provenance writes entirely. Doing otherwise would
-    # fabricate an Art. 30 erasure record for personal data that was never
-    # present. Checking L3 too (not just L1 via get_fact) matters for an
-    # L3-only orphan — e.g. a node left behind by a partial write failure —
-    # which must still be deleted, not silently skipped. A fact_id that WAS
-    # previously erased (fact and l3_node are both None because it is
-    # already gone, but a tombstone exists) still falls through to the
-    # idempotent path below, unchanged.
-    if fact is None and l3_node is None and not evidence_removed and get_tombstone(fact_id) is None:
+    # A fact_id that was never stored anywhere — L1 (fact), L3 (l3_node),
+    # evidence_spans, OR import_sessions — AND was never previously erased is
+    # a true no-op: skip the tombstone/audit/provenance writes entirely.
+    # Doing otherwise would fabricate an Art. 30 erasure record for personal
+    # data that was never present. Checking L3 too (not just L1 via get_fact)
+    # matters for an L3-only orphan — e.g. a node left behind by a partial
+    # write failure — which must still be deleted, not silently skipped. A
+    # fact_id that WAS previously erased (fact and l3_node are both None
+    # because it is already gone, but a tombstone exists) still falls
+    # through to the idempotent path below, unchanged.
+    if (fact is None and l3_node is None and not evidence_removed
+            and not import_sessions_removed and get_tombstone(fact_id) is None):
         return {
             "fact_id": fact_id,
             "erased_now": False,
             "l1_removed": False,
             "l3_removed": False,
             "evidence_removed": 0,
+            "import_sessions_removed": 0,
             "reason": reason,
             "actor": actor,
             "content_hash": None,
@@ -139,12 +147,13 @@ def erase_fact(
                        for e in graph.incoming_edges(fact_id, REL_DERIVED_FROM)]
 
     # Deletion across all fabrics. Each step is idempotent and independent.
-    # (evidence_spans was already deleted above, before the no-op check.)
+    # (evidence_spans and import_sessions were already deleted above, before
+    # the no-op check.)
     l1_removed = delete_fact_l1(fact_id)
     l3_removed = graph.erase_fact(fact_id)
     get_outbox_queue().clear(fact_id)  # remove any possible entry from the re-merge queue
 
-    erased_now = l1_removed or l3_removed or bool(evidence_removed)
+    erased_now = l1_removed or l3_removed or bool(evidence_removed) or bool(import_sessions_removed)
 
     # The tombstone is immutable: on a repeated deletion the original hash is preserved.
     write_tombstone(fact_id, reason=reason, actor=actor, content_hash=content_hash)
@@ -170,6 +179,7 @@ def erase_fact(
         "l1_removed": l1_removed,
         "l3_removed": l3_removed,
         "evidence_removed": evidence_removed,
+        "import_sessions_removed": import_sessions_removed,
         "reason": reason,
         "actor": actor,
         "content_hash": (tombstone or {}).get("content_hash"),

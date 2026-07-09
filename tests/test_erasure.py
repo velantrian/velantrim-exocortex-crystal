@@ -280,3 +280,86 @@ def test_erase_evidence_only_orphan_is_still_removed():
     assert receipt["evidence_removed"] == 1
     assert evidence.evidence_for("evidence_orphan") == []
     assert is_erased("evidence_orphan") is True
+
+
+# ─── import_sessions erasure (GDPR Art. 17 completeness — same bug class as
+# the evidence_spans gap above, for #242) ──────────────────────────────────────
+
+def _record_import_session(session_id: str, fact_id: str, source: str) -> None:
+    """Test-only low-level insert mirroring core.imports._record_session(),
+    without importing core.imports (test_erasure.py stays scoped to
+    core.erasure/core.memory/core.evidence)."""
+    from core.memory import _db
+    with _db() as conn:
+        conn.execute(
+            "INSERT INTO import_sessions (session_id, fact_id, source, created_at) "
+            "VALUES (?, ?, ?, ?)",
+            (session_id, fact_id, source, "2024-01-01T00:00:00+00:00"))
+
+
+def _import_session_rows_for(fact_id: str) -> list:
+    from core.memory import _db
+    with _db() as conn:
+        return conn.execute(
+            "SELECT * FROM import_sessions WHERE fact_id = ?", (fact_id,)
+        ).fetchall()
+
+
+def test_erase_deletes_import_session_entries():
+    """import_sessions.source is plaintext (often a file path or corpus name)
+    and can carry personal data — erase_fact() must delete it too."""
+    _seed("f1", claim="a claim imported via a batch")
+    _record_import_session("imp:batch1", "f1", "private/patient-import.csv")
+    assert _import_session_rows_for("f1") != []
+
+    receipt = erase_fact("f1", reason="gdpr_request")
+
+    assert _import_session_rows_for("f1") == []
+    assert receipt["import_sessions_removed"] == 1
+    tomb = get_tombstone("f1")
+    assert tomb is not None
+    assert "private/patient-import.csv" not in str(tomb)
+
+
+def test_erase_without_import_session_reports_zero_removed():
+    _seed("f1")
+    receipt = erase_fact("f1")
+    assert receipt["import_sessions_removed"] == 0
+
+
+def test_repeated_erase_with_import_session_stays_idempotent():
+    _seed("f1", claim="a claim imported via a batch")
+    _record_import_session("imp:batch2", "f1", "src.csv")
+
+    first = erase_fact("f1", reason="first")
+    assert first["erased_now"] is True
+    assert first["import_sessions_removed"] == 1
+
+    second = erase_fact("f1", reason="second")
+    assert second["erased_now"] is False
+    assert second["import_sessions_removed"] == 0
+    assert _import_session_rows_for("f1") == []
+    assert len([t for t in erasure_log() if t["fact_id"] == "f1"]) == 1
+
+
+def test_erase_import_session_only_orphan_is_still_removed():
+    """Same pattern as test_erase_evidence_only_orphan_is_still_removed: a
+    fact_id with an orphan import_sessions row but no L1 fact, no L3 node,
+    and no tombstone must still be cleaned up, not hit the no-op path."""
+    from core.memory import delete_fact_l1
+    _seed("import_orphan", claim="orphaned import-session claim")
+    _record_import_session("imp:batch3", "import_orphan", "orphan-corpus.csv")
+    assert _import_session_rows_for("import_orphan") != []
+
+    delete_fact_l1("import_orphan")
+    get_l3_graph().erase_fact("import_orphan")
+    assert get_fact("import_orphan") is None
+    assert get_l3_graph().get_fact("import_orphan") is None
+    assert get_tombstone("import_orphan") is None
+
+    receipt = erase_fact("import_orphan")
+
+    assert receipt["erased_now"] is True
+    assert receipt["import_sessions_removed"] == 1
+    assert _import_session_rows_for("import_orphan") == []
+    assert is_erased("import_orphan") is True

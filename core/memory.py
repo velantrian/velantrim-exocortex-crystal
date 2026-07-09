@@ -745,6 +745,23 @@ def delete_fact_l1(fact_id: str) -> bool:
         return cur.rowcount > 0
 
 
+def delete_import_session_entries_for(fact_id: str) -> int:
+    """Delete all import_sessions rows for fact_id. Return deleted row count.
+
+    Used by core.erasure.erase_fact() — import_sessions.source is plaintext
+    (often a file path or corpus name) and can carry personal data (GDPR
+    Art. 17 requires this gone too, not just the fact record itself). Lives
+    here (not in core.imports, which owns the higher-level session API) so
+    core.erasure can call it without an import cycle: core.imports already
+    imports erase_fact() from core.erasure. Idempotent: erasing a fact_id
+    with no import_sessions rows returns 0.
+    """
+    with _db() as conn:
+        cur = conn.execute(
+            "DELETE FROM import_sessions WHERE fact_id = ?", (fact_id,))
+        return cur.rowcount
+
+
 def write_tombstone(
     fact_id: str, *, reason: str, actor: str, content_hash: Optional[str] = None
 ) -> None:
