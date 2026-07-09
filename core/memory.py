@@ -455,35 +455,56 @@ def _l0_pop(fact_id: str) -> None:
 
 def _l0_put_if_fresher(fact_id: str, record: Dict) -> None:
     """Like _l0_put(), but refuses to overwrite an already-cached record with
-    an OLDER one.
-
-    store_fact() and get_fact()'s L1-rehydration path both write to L1/read
-    from L1 first, then call this to populate L0 — with no lock spanning
-    both steps. Two concurrent calls for the same fact_id can commit to L1 in
-    one order (SQLite serializes writes) but reach this L0 write in the
-    OTHER order (whichever thread gets scheduled first), which would leave a
-    stale record cached even though L1 already holds the newer one. This
-    compares `updated_at` (an ISO-8601 UTC string set from
+    an OLDER one. Compares `updated_at` (an ISO-8601 UTC string set from
     datetime.now(timezone.utc).isoformat() everywhere it's produced, so
     lexical string comparison is a safe, correct chronological comparison)
-    and skips the write only when the cached record is strictly newer.
+    and skips the write only when the cached record is strictly newer. A tie
+    (equal `updated_at`) accepts the incoming record.
 
-    A tie (equal `updated_at`) accepts the incoming record — this preserves
-    the pre-existing unconditional-overwrite behavior for the common,
-    non-racing sequential case (e.g. two store_fact() calls close enough in
-    time to round to the same timestamp), rather than introducing a new
-    "first write wins on a tie" rule nothing depends on.
+    Used by get_fact()'s L1-rehydration-on-miss path ONLY. There, `record`'s
+    `updated_at` is always the value actually read from a committed L1 row —
+    a true historical snapshot — so comparing it against whatever else is
+    cached is a valid freshness check: if L0 already holds something with a
+    newer `updated_at`, a fresher write has already landed and this read's
+    snapshot must not overwrite it.
+
+    NOT used by store_fact() (Codex P1 correction on #248): store_fact()
+    captures `now` and uses it as `updated_at` BEFORE performing the SQLite
+    write, so two concurrent store_fact() calls' `updated_at` values reflect
+    when each call STARTED, not the order their writes actually committed to
+    L1 — those can differ (a call that captured an earlier `now` can still be
+    the one whose write lands last in L1, e.g. if it was scheduled out right
+    after capturing `now` and before reaching the write). Comparing such
+    pre-write timestamps would reject a genuinely-latest L1 write just
+    because its `now` happened to be captured first. store_fact() instead
+    gets its ordering guarantee from _STORE_FACT_LOCK (serialized write +
+    same-connection re-read + L0 populate as one atomic unit — see
+    store_fact()) and populates L0 unconditionally within that lock, since
+    whichever call holds the lock and just re-read its own committed write
+    is, at that instant, guaranteed to hold the true latest L1 state.
 
     This is a cache-freshness guard, not a CAS/revision scheme: it never
     raises, never rejects the caller's write to L1 (which already happened
-    by the time this runs), and never changes what store_fact()/get_fact()
-    return to their caller — only which record ends up cached in L0.
+    by the time this runs), and never changes what get_fact() returns to its
+    caller — only which record ends up cached in L0.
     """
     with _L0_LOCK:
         cached = _L0.get(fact_id)
         if cached is not None and cached.get("updated_at", "") > record.get("updated_at", ""):
             return  # a fresher record is already cached — do not clobber it
         _l0_put(fact_id, record)
+
+
+# store_fact()-specific lock (Codex P1 correction on #248): serializes the
+# ENTIRE write + same-connection re-read + L0 populate sequence for
+# store_fact() calls, so that DB-commit order and L0-populate order can never
+# diverge. See store_fact() and _l0_put_if_fresher()'s docstring for why a
+# pre-write `updated_at` comparison alone is insufficient here. Deliberately
+# a single global lock, not per-fact_id: store_fact() writes are already
+# serialized at the SQLite level (single-writer), so this adds no more
+# contention than SQLite itself already imposes, and a per-key lock registry
+# would be unwarranted complexity for the problem this actually is.
+_STORE_FACT_LOCK = threading.Lock()
 
 
 # ─── API ───────────────────────────────────────────────────────────────────────
@@ -540,49 +561,63 @@ def store_fact(fact: Dict) -> None:
         "claim":    crypto.encrypt(record["claim"]),
         "metadata": crypto.encrypt(json.dumps(metadata_dict)),
     }
-    with _db() as conn:
-        conn.execute("""
-            INSERT INTO facts
-                (fact_id, claim, source, confidence, epistemic_state,
-                 claim_type, source_status, significance,
-                 created_at, updated_at, metadata)
-            VALUES
-                (:fact_id, :claim, :source, :confidence, :epistemic_state,
-                 :claim_type, :source_status, :significance,
-                 :created_at, :updated_at, :metadata)
-            ON CONFLICT(fact_id) DO UPDATE SET
-                claim           = excluded.claim,
-                source          = excluded.source,
-                confidence      = excluded.confidence,
-                claim_type      = excluded.claim_type,
-                source_status   = excluded.source_status,
-                significance    = excluded.significance,
-                updated_at      = excluded.updated_at,
-                metadata        = excluded.metadata
-        """, l1_record)
-        # Re-read the persisted epistemic_state/created_at/restricted within the
-        # same connection so L0 is never poisoned with incoming/default values on
-        # a conflict-update. The ON CONFLICT clause intentionally omits
-        # epistemic_state and restricted (preserving the existing row's state),
-        # and `record["created_at"]` above is always "now" even though the DB
-        # row keeps the original insert timestamp. For new inserts this returns
-        # the incoming/default values unchanged. Mirrors the "L0 after DB write"
-        # discipline in transition_esm().
-        row = conn.execute(
-            "SELECT epistemic_state, created_at, restricted FROM facts WHERE fact_id = ?",
-            (fact_id,)
-        ).fetchone()
-        persisted_state = row["epistemic_state"] if row else epistemic_state
-        persisted_created_at = row["created_at"] if row else now
-        persisted_restricted = row["restricted"] if row else 0
+    # _STORE_FACT_LOCK (Codex P1 correction on #248): the write, the
+    # same-connection re-read, and the L0 populate below are one atomic unit
+    # relative to other store_fact() calls. `now`/`updated_at` is captured
+    # BEFORE this lock is acquired, so it reflects when this call STARTED,
+    # not the order in which writes actually commit to L1 — comparing it
+    # against another call's timestamp would be comparing the wrong thing
+    # (see _l0_put_if_fresher's docstring). The lock is the actual ordering
+    # guarantee: whichever call acquires it and completes its write+reread
+    # is, at that instant, unconditionally the true latest L1 state for this
+    # fact_id, because no other store_fact() call can be interleaved.
+    with _STORE_FACT_LOCK:
+        with _db() as conn:
+            conn.execute("""
+                INSERT INTO facts
+                    (fact_id, claim, source, confidence, epistemic_state,
+                     claim_type, source_status, significance,
+                     created_at, updated_at, metadata)
+                VALUES
+                    (:fact_id, :claim, :source, :confidence, :epistemic_state,
+                     :claim_type, :source_status, :significance,
+                     :created_at, :updated_at, :metadata)
+                ON CONFLICT(fact_id) DO UPDATE SET
+                    claim           = excluded.claim,
+                    source          = excluded.source,
+                    confidence      = excluded.confidence,
+                    claim_type      = excluded.claim_type,
+                    source_status   = excluded.source_status,
+                    significance    = excluded.significance,
+                    updated_at      = excluded.updated_at,
+                    metadata        = excluded.metadata
+            """, l1_record)
+            # Re-read the persisted epistemic_state/created_at/restricted within the
+            # same connection so L0 is never poisoned with incoming/default values on
+            # a conflict-update. The ON CONFLICT clause intentionally omits
+            # epistemic_state and restricted (preserving the existing row's state),
+            # and `record["created_at"]` above is always "now" even though the DB
+            # row keeps the original insert timestamp. For new inserts this returns
+            # the incoming/default values unchanged. Mirrors the "L0 after DB write"
+            # discipline in transition_esm().
+            row = conn.execute(
+                "SELECT epistemic_state, created_at, restricted FROM facts WHERE fact_id = ?",
+                (fact_id,)
+            ).fetchone()
+            persisted_state = row["epistemic_state"] if row else epistemic_state
+            persisted_created_at = row["created_at"] if row else now
+            persisted_restricted = row["restricted"] if row else 0
 
-    record["epistemic_state"] = persisted_state
-    record["created_at"] = persisted_created_at
-    record["restricted"] = persisted_restricted
-    # _l0_put_if_fresher, not _l0_put: a concurrent store_fact() for the same
-    # fact_id can commit to L1 in one order and reach this line in the other
-    # order — see _l0_put_if_fresher's docstring.
-    _l0_put_if_fresher(fact_id, record)
+        record["epistemic_state"] = persisted_state
+        record["created_at"] = persisted_created_at
+        record["restricted"] = persisted_restricted
+        # Unconditional _l0_put, not _l0_put_if_fresher: within this lock,
+        # `record` (from the re-read above) IS the true, just-committed
+        # latest L1 state for this fact_id — nothing else can have written
+        # something newer without going through this same lock. Gating this
+        # on a timestamp comparison would reintroduce the exact bug this
+        # lock exists to fix (see _l0_put_if_fresher's docstring).
+        _l0_put(fact_id, record)
 
 
 def get_fact(fact_id: str) -> Optional[Dict]:

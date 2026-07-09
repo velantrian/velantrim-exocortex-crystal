@@ -403,10 +403,14 @@ def test_l0_freshness_guard_prevents_the_reordering_that_would_otherwise_poison_
 
 
 def test_store_fact_does_not_let_a_delayed_stale_l0_write_win():
-    """End-to-end version of the guard using real store_fact() records (not
-    synthetic ones): even if a delayed 'loser' thread's L0-populate step
-    arrives after a fresher store_fact() call already landed, the cache
-    keeps the fresher record — and get_fact() reflects it too."""
+    """Exercises _l0_put_if_fresher() with real store_fact()-produced records
+    (not synthetic ones): even if a delayed read's L0-populate step arrives
+    after a fresher store_fact() call already landed, the helper keeps the
+    fresher record. (store_fact() itself no longer calls this helper for its
+    OWN populate step — see test_store_fact_l0_reflects_actual_l1_winner_not_
+    capture_time_order below for why, and _l0_put_if_fresher()'s docstring —
+    but get_fact()'s L1-rehydration path does, and this is the shape of
+    protection it gets.)"""
     store_fact({"fact_id": "race2", "claim": "first", "source": "s", "confidence": 0.5})
     first_cached = dict(memory._l0_get("race2"))
 
@@ -423,12 +427,16 @@ def test_store_fact_does_not_let_a_delayed_stale_l0_write_win():
 
 
 def test_get_fact_rehydration_does_not_clobber_a_fresher_l0_entry():
-    """get_fact()'s L1-rehydration path (core/memory.py) uses the same
-    freshness guard as store_fact() — a stale L1 read reaching
-    _l0_put_if_fresher() after a fresher record is already cached must not
-    overwrite it. The value get_fact() RETURNS to its caller is unaffected
-    either way (it always returns what it just read) — this only protects
-    what ends up cached for the NEXT reader."""
+    """get_fact()'s L1-rehydration path (core/memory.py) calls
+    _l0_put_if_fresher() — a stale L1 read reaching it after a fresher
+    record is already cached must not overwrite it. This is a valid use of
+    timestamp comparison here specifically because get_fact()'s `record` is
+    always a value actually read from a committed row (a true historical
+    snapshot), unlike store_fact()'s pre-write `now` (see
+    _l0_put_if_fresher()'s docstring and the Codex P1 test below). The value
+    get_fact() RETURNS to its caller is unaffected either way (it always
+    returns what it just read) — this only protects what ends up cached for
+    the NEXT reader."""
     store_fact({"fact_id": "race3", "claim": "fresh", "source": "s", "confidence": 0.5})
     fresh_cached = dict(memory._l0_get("race3"))
 
@@ -438,9 +446,66 @@ def test_get_fact_rehydration_does_not_clobber_a_fresher_l0_entry():
     assert memory._l0_get("race3")["claim"] == "fresh"
 
 
+def test_store_fact_l0_reflects_actual_l1_winner_not_capture_time_order(monkeypatch):
+    """Regression for the Codex P1 finding on #248.
+
+    store_fact() captures `updated_at` BEFORE performing its SQLite write.
+    In a real race, a call that captures an EARLIER `now` can still be the
+    one whose write actually lands LAST in L1 (e.g. it was scheduled out
+    right after capturing `now`, before reaching the write, while a
+    second call captured a later `now` but reached the write first). The
+    old timestamp-only L0 guard would reject that genuinely-latest call's
+    cache update because its `updated_at` looked older than what was
+    already cached — exactly backwards. L0 must reflect whichever write
+    actually persisted last, never whichever call merely captured the
+    latest clock reading.
+
+    Reproduced deterministically (no threads/sleeps needed): mock the clock
+    store_fact() reads so call "B" gets a LATER `now` but call "A" — called
+    SECOND, so its write is genuinely the last one to commit to L1 — gets an
+    EARLIER `now`."""
+    from datetime import datetime as real_datetime, timezone
+    real_datetime_cls = memory.datetime
+
+    class _FixedClock:
+        def __init__(self, fixed):
+            self._fixed = fixed
+        def now(self, tz=None):
+            return self._fixed
+
+    later_clock = real_datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+    earlier_clock = real_datetime(2024, 1, 1, 11, 0, 0, tzinfo=timezone.utc)
+
+    # "B" captures a LATER clock reading and reaches its write + L0-populate
+    # first.
+    monkeypatch.setattr(memory, "datetime", _FixedClock(later_clock))
+    store_fact({"fact_id": "cas_order1", "claim": "B", "source": "s", "confidence": 0.5})
+    assert memory._l0_get("cas_order1")["claim"] == "B"
+
+    # "A" captures an EARLIER clock reading, but its write happens SECOND —
+    # i.e. it is the actual, true L1 winner (plain last-write-wins upsert),
+    # simulating a call that started before B but was delayed reaching the
+    # write until after B's had already committed and cached.
+    monkeypatch.setattr(memory, "datetime", _FixedClock(earlier_clock))
+    store_fact({"fact_id": "cas_order1", "claim": "A", "source": "s", "confidence": 0.5})
+
+    # L0 must reflect A immediately — the call that just genuinely won L1 —
+    # even though A's timestamp (11:00) is numerically EARLIER than B's
+    # already-cached timestamp (12:00). Under the old timestamp-only guard
+    # this assertion fails: A's populate would have been rejected as "stale"
+    # and L0 would still show "B".
+    assert memory._l0_get("cas_order1")["claim"] == "A"
+
+    # Confirm A really is the persisted L1 winner too (not just an L0
+    # artifact): restore the real clock and force a clean L1 read.
+    monkeypatch.setattr(memory, "datetime", real_datetime_cls)
+    _L0.clear()
+    assert get_fact("cas_order1")["claim"] == "A"
+
+
 def test_store_fact_sequential_behavior_unchanged_by_freshness_guard():
-    """The freshness guard must not change store_fact()'s normal (non-racing)
-    contract: the second call's claim/source/confidence win, and
+    """The store_fact()-specific lock must not change store_fact()'s normal
+    (non-racing) contract: the second call's claim/source/confidence win, and
     epistemic_state/restricted are preserved from the persisted row rather
     than reset — exactly as before this PR."""
     store_fact({"fact_id": "seq1", "claim": "v1", "source": "s1", "confidence": 0.5})
