@@ -50,12 +50,15 @@ def test_verify_detects_modified_claim():
 
 
 def test_verify_detects_erased():
+    # erase_fact() physically deletes evidence_spans (GDPR Art. 17), so a fully
+    # erased fact has no spans left to replay — an empty report, not a
+    # per-span "erased" status. (The "erased" branch in verify_evidence()
+    # still exists for legacy data erased before this behavior shipped.)
     from core.erasure import erase_fact
     fid = ingest("Helium is a gas")["fact"]["fact_id"]
     evidence.attach_evidence(fid, "chem.txt")
     erase_fact(fid, reason="test")
-    report = evidence.verify_evidence(fid)
-    assert report[0]["status"] == "erased"
+    assert evidence.verify_evidence(fid) == []
 
 
 def test_verify_no_spans_is_empty():

@@ -5,7 +5,8 @@
 #
 # Principle: deletion must be COMPLETE and PROVABLE at the same time.
 #   Complete — the node disappears from L0 (cache), L1 (SQLite), L3 (canon: node + edges +
-#             mentions) and from the L3 outbox (re-merge queue). No
+#             mentions), the L3 outbox (re-merge queue), and evidence_spans
+#             (source_uri/chunk_id/section provenance pointers). No
 #             personal data or dangling references remain anywhere.
 #   Provable — a content-free tombstone is written to erasure_log: fact_id, time,
 #             reason, actor and the sha256 hash of the erased claim (not the claim itself). This is a
@@ -31,6 +32,7 @@ from core.memory import (
 from core.l3_graph import get_l3_graph
 from core.queue import get_outbox_queue
 from core import audit
+from core import evidence
 from core.provenance_chain import ProvenanceChain
 
 # Provenance edge: derived -DERIVED_FROM-> source. Marks that a fact is derived
@@ -68,8 +70,8 @@ def erase_fact(
     """
     Physically and irreversibly delete a fact (GDPR Art. 17, right to be forgotten).
 
-    Removes the fact from L0, L1, the L3 canonical graph (node + all edges + mentions)
-    and from the L3 outbox, then writes a content-free tombstone to erasure_log.
+    Removes the fact from L0, L1, the L3 canonical graph (node + all edges + mentions),
+    the L3 outbox, and evidence_spans, then writes a content-free tombstone to erasure_log.
 
     cascade=True: besides the fact itself, also erases everything derived from it —
     facts with a DERIVED_FROM edge to it (recursively, with cycle protection). This way
@@ -110,6 +112,7 @@ def erase_fact(
             "erased_now": False,
             "l1_removed": False,
             "l3_removed": False,
+            "evidence_removed": 0,
             "reason": reason,
             "actor": actor,
             "content_hash": None,
@@ -133,8 +136,9 @@ def erase_fact(
     l1_removed = delete_fact_l1(fact_id)
     l3_removed = graph.erase_fact(fact_id)
     get_outbox_queue().clear(fact_id)  # remove any possible entry from the re-merge queue
+    evidence_removed = evidence.delete_evidence_for(fact_id)  # evidence_spans: source_uri/section may carry personal data
 
-    erased_now = l1_removed or l3_removed
+    erased_now = l1_removed or l3_removed or bool(evidence_removed)
 
     # The tombstone is immutable: on a repeated deletion the original hash is preserved.
     write_tombstone(fact_id, reason=reason, actor=actor, content_hash=content_hash)
@@ -159,6 +163,7 @@ def erase_fact(
         "erased_now": erased_now,
         "l1_removed": l1_removed,
         "l3_removed": l3_removed,
+        "evidence_removed": evidence_removed,
         "reason": reason,
         "actor": actor,
         "content_hash": (tombstone or {}).get("content_hash"),
