@@ -151,6 +151,10 @@ def test_restrict_and_erase_session(tmp_path):
     e = imports.erase_session("imp:batch")
     assert e["erased"] == len(fids)
     assert all(is_erased(fid) for fid in fids)
+    # GDPR Art. 17: erase_session() erases through erase_fact(), which now
+    # also cleans up each fact's import_sessions row(s) — no dangling
+    # session_id/source pointer survives the batch erasure.
+    assert imports.session_facts("imp:batch") == []
 
 
 def test_dry_run_via_import_file(tmp_path):
