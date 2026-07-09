@@ -7,6 +7,7 @@
 # logic live here — in one place.
 
 import os
+import threading
 from typing import Any, Callable, Optional
 
 
@@ -17,6 +18,13 @@ class BackendRegistry:
     factory(name) -> instance; it must raise ValueError itself on an unknown name.
     get(backend=None): backend=None → name from env (or default) and a cached
     singleton; an explicit backend → a fresh instance without caching.
+
+    Singleton creation and reset are serialized by an RLock so concurrent
+    first access (e.g. two request threads under FastAPI's thread pool) cannot
+    construct two live backend instances that silently diverge — see the L0
+    cache race fixed in 4df0c2c for the same bug class on a different cache.
+    The explicit-backend path never touches shared state, so it runs outside
+    the lock.
     """
 
     def __init__(
@@ -29,15 +37,17 @@ class BackendRegistry:
         self._default = default
         self._factory = factory
         self._instance: Optional[Any] = None
+        self._lock = threading.RLock()
 
     def get(self, backend: Optional[str] = None) -> Any:
-        if self._instance is not None and backend is None:
+        if backend is not None:
+            return self._factory(backend)  # explicit backend: always fresh, never cached
+        with self._lock:
+            if self._instance is not None:
+                return self._instance
+            name = os.environ.get(self._env_var, self._default)
+            self._instance = self._factory(name)
             return self._instance
-        name = backend or os.environ.get(self._env_var, self._default)
-        instance = self._factory(name)
-        if backend is None:
-            self._instance = instance
-        return instance
 
     def reset(self) -> None:
         """Reset the singleton (for tests).
@@ -46,10 +56,11 @@ class BackendRegistry:
         connection), close it first so connections do not accumulate across the
         many resets a test suite performs.
         """
-        close = getattr(self._instance, "close", None)
-        if callable(close):
-            try:
-                close()
-            except Exception:  # noqa: BLE001 — reset must never raise
-                pass
-        self._instance = None
+        with self._lock:
+            close = getattr(self._instance, "close", None)
+            if callable(close):
+                try:
+                    close()
+                except Exception:  # noqa: BLE001 — reset must never raise
+                    pass
+            self._instance = None

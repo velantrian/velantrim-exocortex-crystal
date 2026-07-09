@@ -378,3 +378,67 @@ def test_registry_reset_swallows_close_errors():
     reg.get()                 # populate the singleton with a closable instance
     reg.reset()               # close() raises → must be swallowed, instance cleared
     assert reg._instance is None
+
+
+# ─── _registry.get — concurrent first access creates exactly one singleton ───
+
+def test_registry_get_concurrent_first_access_creates_single_instance():
+    """Regression: BackendRegistry.get()'s singleton path did unguarded
+    check-then-act (`if self._instance is not None: return`) — the same bug
+    class fixed for the L0 cache in 4df0c2c, left unpatched here. Under
+    concurrent first access (e.g. two request threads under FastAPI's thread
+    pool touching the L3 graph/embedder/generator/queue singleton for the
+    first time), two live backend instances could be constructed silently.
+
+    The factory sleeps to widen the check-then-act window: without the lock,
+    every worker passes the `_instance is None` check before any of them
+    writes it back, so this fails deterministically (calls["n"] == n_workers)
+    against the unpatched code."""
+    import threading
+    import time
+    from concurrent.futures import ThreadPoolExecutor
+    from core._registry import BackendRegistry
+
+    calls = {"n": 0}
+    calls_lock = threading.Lock()
+
+    def factory(name):
+        with calls_lock:
+            calls["n"] += 1
+        time.sleep(0.02)
+        return object()
+
+    reg = BackendRegistry("VELANTRIM_X", "default", factory)
+    n_workers = 8
+    barrier = threading.Barrier(n_workers)
+
+    def worker():
+        barrier.wait()  # release all workers together to maximise contention
+        return reg.get()
+
+    with ThreadPoolExecutor(max_workers=n_workers) as ex:
+        futures = [ex.submit(worker) for _ in range(n_workers)]
+        results = [f.result() for f in futures]
+
+    assert calls["n"] == 1
+    assert len({id(r) for r in results}) == 1
+    assert all(r is reg._instance for r in results)
+
+
+def test_registry_explicit_backend_bypasses_singleton_cache():
+    """An explicit backend must still get a fresh, uncached instance every
+    call, and must never populate (or be affected by) the singleton."""
+    from core._registry import BackendRegistry
+
+    calls = {"n": 0}
+
+    def factory(name):
+        calls["n"] += 1
+        return object()
+
+    reg = BackendRegistry("VELANTRIM_X", "default", factory)
+    a = reg.get("explicit")
+    b = reg.get("explicit")
+    assert a is not b
+    assert calls["n"] == 2
+    assert reg._instance is None
