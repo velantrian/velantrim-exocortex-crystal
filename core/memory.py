@@ -453,6 +453,39 @@ def _l0_pop(fact_id: str) -> None:
         _L0.pop(fact_id, None)
 
 
+def _l0_put_if_fresher(fact_id: str, record: Dict) -> None:
+    """Like _l0_put(), but refuses to overwrite an already-cached record with
+    an OLDER one.
+
+    store_fact() and get_fact()'s L1-rehydration path both write to L1/read
+    from L1 first, then call this to populate L0 — with no lock spanning
+    both steps. Two concurrent calls for the same fact_id can commit to L1 in
+    one order (SQLite serializes writes) but reach this L0 write in the
+    OTHER order (whichever thread gets scheduled first), which would leave a
+    stale record cached even though L1 already holds the newer one. This
+    compares `updated_at` (an ISO-8601 UTC string set from
+    datetime.now(timezone.utc).isoformat() everywhere it's produced, so
+    lexical string comparison is a safe, correct chronological comparison)
+    and skips the write only when the cached record is strictly newer.
+
+    A tie (equal `updated_at`) accepts the incoming record — this preserves
+    the pre-existing unconditional-overwrite behavior for the common,
+    non-racing sequential case (e.g. two store_fact() calls close enough in
+    time to round to the same timestamp), rather than introducing a new
+    "first write wins on a tie" rule nothing depends on.
+
+    This is a cache-freshness guard, not a CAS/revision scheme: it never
+    raises, never rejects the caller's write to L1 (which already happened
+    by the time this runs), and never changes what store_fact()/get_fact()
+    return to their caller — only which record ends up cached in L0.
+    """
+    with _L0_LOCK:
+        cached = _L0.get(fact_id)
+        if cached is not None and cached.get("updated_at", "") > record.get("updated_at", ""):
+            return  # a fresher record is already cached — do not clobber it
+        _l0_put(fact_id, record)
+
+
 # ─── API ───────────────────────────────────────────────────────────────────────
 
 def store_fact(fact: Dict) -> None:
@@ -546,7 +579,10 @@ def store_fact(fact: Dict) -> None:
     record["epistemic_state"] = persisted_state
     record["created_at"] = persisted_created_at
     record["restricted"] = persisted_restricted
-    _l0_put(fact_id, record)
+    # _l0_put_if_fresher, not _l0_put: a concurrent store_fact() for the same
+    # fact_id can commit to L1 in one order and reach this line in the other
+    # order — see _l0_put_if_fresher's docstring.
+    _l0_put_if_fresher(fact_id, record)
 
 
 def get_fact(fact_id: str) -> Optional[Dict]:
@@ -562,7 +598,12 @@ def get_fact(fact_id: str) -> Optional[Dict]:
             result = dict(row)
             result["claim"] = crypto.decrypt(result["claim"])
             result["metadata"] = json.loads(crypto.decrypt(result["metadata"]))
-            _l0_put(fact_id, result)
+            # _l0_put_if_fresher, not _l0_put: this L1 snapshot may have been
+            # read before a concurrent writer's newer store_fact()/update_fact()
+            # already populated L0 — do not let a stale read clobber it. The
+            # value returned to THIS caller is unaffected either way (`result`
+            # is returned regardless of which record wins the cache).
+            _l0_put_if_fresher(fact_id, result)
             return result
     return None
 
