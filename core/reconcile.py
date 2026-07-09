@@ -250,9 +250,23 @@ def find_conflicts(
     q_vec = get_embedder().embed(claim)
     claim_norm = claim.strip().lower()
     out: List[Dict[str, Any]] = []
-    for node in graph.vector_search(q_vec, k=k):
-        if node.get("fact_id") == fact_id:
+    # Overfetch beyond k (mirrors LadybugL3Graph.vector_search's own internal
+    # k*3 margin): a restricted candidate can occupy a raw top-k slot and get
+    # filtered out below, which would silently hide a real unrestricted
+    # conflict that was just outside the raw top-k. We stop once k real
+    # candidates have been collected (see the break below).
+    for node in graph.vector_search(q_vec, k=max(k * 3, k)):
+        candidate_id = node.get("fact_id")
+        if candidate_id == fact_id:
             continue
+        # Backend-independent restriction check: LadybugL3Graph's `_COLS` is a
+        # fixed typed-column list that does not include `restricted`, so its
+        # vector_search()/get_fact() nodes never carry the flag even when the
+        # underlying fact is restricted. core.memory.get_fact() always has it
+        # (facts.restricted persists in L1 SQLite regardless of L3 backend).
+        canonical = get_fact(candidate_id) if candidate_id else None
+        if canonical is not None and canonical.get("restricted"):
+            continue  # GDPR Art. 18: restricted facts do not take part in processing
         if node.get("claim_type", "WORLD_FACT") != "WORLD_FACT":
             continue
         if node.get("epistemic_state") != "Validated":
@@ -271,4 +285,6 @@ def find_conflicts(
             "kind": verdict["kind"],
             "signal": verdict["signal"],
         })
+        if len(out) >= k:
+            break
     return out
