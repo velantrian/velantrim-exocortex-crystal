@@ -229,3 +229,44 @@ def test_find_conflicts_still_returns_unrestricted_candidate():
     ids = {h["fact_id"] for h in hits}
     assert "cap_restricted2" not in ids
     assert "cap_open" in ids
+
+
+def test_find_conflicts_excludes_restricted_even_when_node_lacks_the_flag():
+    """Regression for a Codex P1 finding: LadybugL3Graph._COLS is a fixed
+    typed-column list that omits `restricted`, so its vector_search()/get_fact()
+    nodes never carry the flag even when the underlying fact IS restricted.
+    find_conflicts() must not trust node.get("restricted") alone — it has to
+    fall back to core.memory.get_fact() (always has the flag, L1-backed,
+    backend-independent). Simulate the gap directly on the in-memory mock by
+    stripping `restricted` from the L3 node after merge, exactly as a
+    fixed-column backend would."""
+    _validated_worldfact("cap_restricted3", "The capital of Freldania is Sunmere")
+    restrict_processing("cap_restricted3", reason="dispute")
+    get_l3_graph()._nodes["cap_restricted3"].pop("restricted", None)
+    hits = find_conflicts("The capital of Freldania is Rivenholt")
+    assert "cap_restricted3" not in {h["fact_id"] for h in hits}
+
+
+def test_find_conflicts_overfetches_so_restricted_top_k_does_not_hide_others():
+    """A restricted candidate can occupy a raw top-k vector_search slot; without
+    overfetching beyond k, filtering it out would silently return fewer than k
+    real conflicts (or none) even though an unrestricted one qualifies. Rank the
+    restricted fact strictly first via significance, then ask for only k=1."""
+    store_fact({"fact_id": "cap_restricted4", "claim": "The capital of Meridia is Ashfall",
+                "source": "s", "confidence": 0.9, "claim_type": "WORLD_FACT",
+                "significance": 0.9})
+    transition_esm("cap_restricted4", "Validated")
+    get_l3_graph().merge_fact(get_fact("cap_restricted4"))
+    restrict_processing("cap_restricted4", reason="dispute")
+
+    store_fact({"fact_id": "cap_open2", "claim": "The capital of Meridia is Brightholm",
+                "source": "s", "confidence": 0.9, "claim_type": "WORLD_FACT",
+                "significance": 0.5})
+    transition_esm("cap_open2", "Validated")
+    get_l3_graph().merge_fact(get_fact("cap_open2"))
+
+    hits = find_conflicts("The capital of Meridia is Stonegate", k=1)
+    ids = {h["fact_id"] for h in hits}
+    assert "cap_restricted4" not in ids
+    assert "cap_open2" in ids
+    assert len(hits) == 1
