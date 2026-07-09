@@ -151,6 +151,28 @@ def test_call_fact_history_and_find_conflicts():
     assert isinstance(json.loads(c["result"]["content"][0]["text"]), list)
 
 
+def test_mcp_find_conflicts_excludes_restricted_facts():
+    """GDPR Art. 18: the MCP `find_conflicts` tool must not reveal a
+    restricted fact's claim as a conflict candidate."""
+    from core.memory import store_fact, transition_esm, get_fact
+    from core.l3_graph import get_l3_graph
+    from core.compliance import restrict_processing
+
+    fact_id = "mcp_restricted_conflict_f1"
+    store_fact({"fact_id": fact_id, "claim": "The capital of Freldania is Sunmere",
+                "source": "test", "confidence": 0.9, "claim_type": "WORLD_FACT"})
+    transition_esm(fact_id, "Validated")
+    get_l3_graph().merge_fact(get_fact(fact_id))
+    restrict_processing(fact_id, reason="dispute")
+
+    resp = _call("tools/call", {"name": "find_conflicts",
+                                 "arguments": {"claim": "The capital of Freldania is Rivenholt"}})
+    assert resp["result"]["isError"] is False
+    payload = json.loads(resp["result"]["content"][0]["text"])
+    assert fact_id not in [h["fact_id"] for h in payload]
+    assert "Sunmere" not in json.dumps(payload)
+
+
 def test_call_verify_receipt_roundtrips():
     # Build a real receipt, then verify it through the tool.
     from core.pipeline import run

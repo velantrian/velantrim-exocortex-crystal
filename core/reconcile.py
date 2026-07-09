@@ -253,6 +253,8 @@ def find_conflicts(
     for node in graph.vector_search(q_vec, k=k):
         if node.get("fact_id") == fact_id:
             continue
+        if node.get("restricted"):
+            continue  # GDPR Art. 18: restricted facts do not take part in processing
         if node.get("claim_type", "WORLD_FACT") != "WORLD_FACT":
             continue
         if node.get("epistemic_state") != "Validated":

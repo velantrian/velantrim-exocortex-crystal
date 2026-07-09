@@ -3,6 +3,7 @@ import pytest
 
 from core.memory import store_fact, transition_esm, get_fact
 from core.l3_graph import get_l3_graph
+from core.compliance import restrict_processing
 from core.reconcile import (
     reinforce,
     supersede,
@@ -205,3 +206,26 @@ def test_find_conflicts_ignores_subjective_claims():
     get_l3_graph().merge_fact(get_fact("emo1"))
     # an EMOTION node is never a world-fact conflict candidate
     assert find_conflicts("the capital is wrong") == []
+
+
+def test_find_conflicts_excludes_restricted_facts():
+    """GDPR Art. 18: a fact under processing restriction must never surface as
+    a conflict candidate, even when semantically close to the query claim.
+    find_conflicts() is exposed read-only via the MCP `find_conflicts` tool, so
+    this also closes that leak path (see core/reconcile.py:249)."""
+    _validated_worldfact("cap_restricted", "The capital of Australia is Sydney")
+    restrict_processing("cap_restricted", reason="dispute")
+    hits = find_conflicts("The capital of Australia is Canberra")
+    assert "cap_restricted" not in {h["fact_id"] for h in hits}
+
+
+def test_find_conflicts_still_returns_unrestricted_candidate():
+    """Restriction filtering must not over-filter: an unrestricted validated
+    WORLD_FACT in the same candidate set is still surfaced as a conflict."""
+    _validated_worldfact("cap_restricted2", "The capital of Australia is Sydney")
+    restrict_processing("cap_restricted2", reason="dispute")
+    _validated_worldfact("cap_open", "The capital of Australia is Perth")
+    hits = find_conflicts("The capital of Australia is Canberra")
+    ids = {h["fact_id"] for h in hits}
+    assert "cap_restricted2" not in ids
+    assert "cap_open" in ids
