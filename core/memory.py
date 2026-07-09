@@ -652,15 +652,24 @@ def update_fact(fact_id: str, **fields) -> bool:
     """
     Update individual fields of a fact WITHOUT touching epistemic_state.
     Changing the ESM state — only via transition_esm. Returns True if the
-    fact is found and updated.
+    fact is found and the update was applied.
+
+    Optimistic CAS guard (mirrors transition_esm()): the UPDATE only applies
+    if the persisted updated_at still equals what we read. If a competing
+    write landed on this fact_id between our read and our write, the UPDATE
+    matches 0 rows and we abort instead of silently clobbering that write with
+    a stale snapshot. Defense-in-depth for future concurrency/async — NOT a
+    full atomicity guarantee.
     """
     fields = {k: v for k, v in fields.items() if k in _UPDATABLE}
     existing = get_fact(fact_id)
     if existing is None or not fields:
         return False
 
+    expected_updated_at = existing["updated_at"]
     now = datetime.now(timezone.utc).isoformat()
-    sets, params = [], {"fact_id": fact_id, "updated_at": now}
+    sets, params = [], {"fact_id": fact_id, "updated_at": now,
+                         "expected_updated_at": expected_updated_at}
     for key, value in fields.items():
         sets.append(f"{key} = :{key}")
         if key == "metadata":
@@ -671,11 +680,17 @@ def update_fact(fact_id: str, **fields) -> bool:
             params[key] = value
 
     with _db() as conn:
-        conn.execute(
+        cur = conn.execute(
             f"UPDATE facts SET {', '.join(sets)}, updated_at = :updated_at "  # nosec B608 — keys from _UPDATABLE allowlist
-            f"WHERE fact_id = :fact_id",
+            f"WHERE fact_id = :fact_id AND updated_at = :expected_updated_at",
             params,
         )
+        if cur.rowcount != 1:
+            # CAS miss: evict the stale L0 entry so the next get_fact() re-reads
+            # the fresh DB state instead of serving stale cache to a caller that
+            # ignores the return value. Never poison L0 with our lost update.
+            _l0_pop(fact_id)
+            return False
 
     merged = {**existing, **fields, "updated_at": now}
     _l0_put(fact_id, merged)

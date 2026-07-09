@@ -123,6 +123,60 @@ def test_update_fact_missing_or_no_fields_returns_false():
     assert update_fact("u2", epistemic_state="Validated") is False  # not updatable
 
 
+def test_update_fact_cas_rejects_stale_snapshot_without_poisoning_cache():
+    """Regression: update_fact() blindly overwrote based on whatever the
+    caller last saw (indirectly, via get_fact), with no version check —
+    concurrent update_fact() calls on the same fact_id (e.g. two reconcile.
+    reinforce() calls) could silently drop one writer's update.
+
+    Simulate a stale L0 snapshot racing a write that landed underneath it:
+    a direct SQL write bypasses the L0-invalidating helpers, so L0 keeps
+    serving the pre-write snapshot — the same shape a second worker thread
+    that read *before* the first worker's write completed would see."""
+    from core import crypto
+    from core.memory import update_fact
+    from datetime import datetime, timezone
+
+    store_fact({"fact_id": "cas1", "claim": "v0", "source": "s", "confidence": 0.5})
+    stale = get_fact("cas1")  # this snapshot is what L0 now serves
+
+    # A competing writer's update landed via a fresh connection, bypassing the
+    # cache-invalidating helpers — L0 does not know about it.
+    with memory._db() as conn:
+        conn.execute(
+            "UPDATE facts SET claim = ?, updated_at = ? WHERE fact_id = ?",
+            (crypto.encrypt("v1-from-another-writer"),
+             datetime.now(timezone.utc).isoformat(), "cas1"),
+        )
+
+    # update_fact()'s internal get_fact() still returns the stale L0 snapshot,
+    # so its CAS check must find the persisted updated_at has moved and abort —
+    # not silently overwrite the other writer's claim.
+    assert update_fact("cas1", confidence=0.9) is False
+
+    # L0 must be evicted on the CAS miss: the next read reflects the real
+    # persisted state, not a re-served stale copy.
+    fresh = get_fact("cas1")
+    assert fresh["claim"] == "v1-from-another-writer"
+    assert fresh["confidence"] == stale["confidence"]  # our update never landed
+
+    # A fresh retry (re-read, then update) against the current state succeeds.
+    assert update_fact("cas1", confidence=0.9) is True
+    assert get_fact("cas1")["confidence"] == 0.9
+
+
+def test_update_fact_normal_sequential_calls_still_succeed():
+    """The CAS guard must not get in the way of the common (non-racing) case:
+    each update_fact() call re-reads the just-written state, so successive
+    calls on the same fact_id keep succeeding."""
+    from core.memory import update_fact
+    store_fact({"fact_id": "cas2", "claim": "c", "source": "s", "confidence": 0.1})
+    assert update_fact("cas2", confidence=0.2) is True
+    assert update_fact("cas2", confidence=0.3) is True
+    assert update_fact("cas2", confidence=0.4) is True
+    assert get_fact("cas2")["confidence"] == 0.4
+
+
 def test_db_uses_wal_journal_mode():
     """Evidence/audit store runs in WAL so writers don't block readers."""
     from core import memory
