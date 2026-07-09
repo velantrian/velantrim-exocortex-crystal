@@ -61,6 +61,20 @@ def test_verify_detects_erased():
     assert evidence.verify_evidence(fid) == []
 
 
+def test_verify_detects_erased_legacy_span_left_behind():
+    """The "erased" branch in verify_evidence() is unreachable via the current
+    erase_fact() (it deletes evidence_spans too), but still applies to legacy
+    data erased before this behavior shipped: a tombstone with no matching
+    fact, and an evidence span that survived because it predates the fix."""
+    from core.memory import delete_fact_l1, write_tombstone
+    fid = ingest("Neon is inert")["fact"]["fact_id"]
+    evidence.attach_evidence(fid, "chem2.txt")
+    delete_fact_l1(fid)
+    write_tombstone(fid, reason="legacy_test", actor="test")
+    report = evidence.verify_evidence(fid)
+    assert report[0]["status"] == "erased"
+
+
 def test_verify_no_spans_is_empty():
     fid = ingest("Mercury is a planet")["fact"]["fact_id"]
     assert evidence.verify_evidence(fid) == []
