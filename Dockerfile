@@ -28,10 +28,10 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Copy ONLY what `pip install .` needs to build the wheel: packaging metadata
 # (pyproject.toml + README.md for the readme + LICENSE for the license file),
 # the `core` package, and the top-level py-module declared in pyproject.toml
-# (py-modules = ["epigenetic_adaptation_module"]).
+# (py-modules = ["adaptive_threshold_module"]).
 COPY pyproject.toml README.md LICENSE ./
 COPY core ./core
-COPY epigenetic_adaptation_module.py ./
+COPY adaptive_threshold_module.py ./
 
 # Install the runtime + HTTP service layer only (fastapi + uvicorn). NOT [dev].
 RUN pip install ".[api]"
@@ -41,8 +41,9 @@ FROM python:3.12-slim AS runtime
 
 # Runtime defaults. The IMAGE default for VELANTRIM_API_HOST is the SAFE value
 # 127.0.0.1, so a bare `docker run -p 8000:8000 <image>` cannot accidentally
-# expose the API on all host interfaces (only /review/* is token-gated; /ingest,
-# /ask, /receipt, /evidence are not — see core/api.py). docker-compose.yml
+# expose the API on all host interfaces. Memory-facing endpoints are guarded by
+# the application token layer and fail closed by default; only /health and the
+# static data-free /review/ui shell are public (see core/api.py). docker-compose.yml
 # explicitly overrides this to 0.0.0.0 so Docker bridge publishing can reach
 # uvicorn, while restricting host exposure to loopback via "127.0.0.1:8000:8000".
 ENV PYTHONUNBUFFERED=1 \

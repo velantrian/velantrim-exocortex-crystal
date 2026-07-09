@@ -1,12 +1,12 @@
 # Build-context hygiene for the Crystal API image.
 #
 # Goal: ship ONLY the installable runtime surface declared in pyproject.toml
-# (the `core` package + the top-level `epigenetic_adaptation_module` module +
+# (the `core` package + the top-level `adaptive_threshold_module` module +
 # packaging metadata). Everything else — tests, docs, local databases, secrets,
 # caches, build artifacts — must never enter the image build context.
 #
 # Keep in the context (do NOT add these here): pyproject.toml, README.md,
-# LICENSE, core/, epigenetic_adaptation_module.py.
+# LICENSE, core/, adaptive_threshold_module.py.
 
 # Version control / CI
 .git/
