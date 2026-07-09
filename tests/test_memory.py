@@ -123,14 +123,18 @@ def test_update_fact_missing_or_no_fields_returns_false():
     assert update_fact("u2", epistemic_state="Validated") is False  # not updatable
 
 
-def test_update_fact_cas_rejects_stale_snapshot_without_poisoning_cache():
+def test_update_fact_cas_rejects_stale_revision_without_poisoning_cache():
     """Regression: update_fact() blindly overwrote based on whatever the
     caller last saw (indirectly, via get_fact), with no version check —
     concurrent update_fact() calls on the same fact_id (e.g. two reconcile.
     reinforce() calls) could silently drop one writer's update.
 
+    CAS token is `revision` (an integer, not the wall-clock `updated_at`
+    string this originally used — see update_fact()'s docstring for why).
+
     Simulate a stale L0 snapshot racing a write that landed underneath it:
-    a direct SQL write bypasses the L0-invalidating helpers, so L0 keeps
+    a direct SQL write bumps `revision` (as every real writer does) via a
+    fresh connection, bypassing the L0-invalidating helpers, so L0 keeps
     serving the pre-write snapshot — the same shape a second worker thread
     that read *before* the first worker's write completed would see."""
     from core import crypto
@@ -141,16 +145,18 @@ def test_update_fact_cas_rejects_stale_snapshot_without_poisoning_cache():
     stale = get_fact("cas1")  # this snapshot is what L0 now serves
 
     # A competing writer's update landed via a fresh connection, bypassing the
-    # cache-invalidating helpers — L0 does not know about it.
+    # cache-invalidating helpers — L0 does not know about it. Bumps revision,
+    # exactly like store_fact()/update_fact()/transition_esm()/set_restricted().
     with memory._db() as conn:
         conn.execute(
-            "UPDATE facts SET claim = ?, updated_at = ? WHERE fact_id = ?",
+            "UPDATE facts SET claim = ?, revision = revision + 1, updated_at = ? "
+            "WHERE fact_id = ?",
             (crypto.encrypt("v1-from-another-writer"),
              datetime.now(timezone.utc).isoformat(), "cas1"),
         )
 
     # update_fact()'s internal get_fact() still returns the stale L0 snapshot,
-    # so its CAS check must find the persisted updated_at has moved and abort —
+    # so its CAS check must find the persisted revision has moved and abort —
     # not silently overwrite the other writer's claim.
     assert update_fact("cas1", confidence=0.9) is False
 
@@ -159,10 +165,71 @@ def test_update_fact_cas_rejects_stale_snapshot_without_poisoning_cache():
     fresh = get_fact("cas1")
     assert fresh["claim"] == "v1-from-another-writer"
     assert fresh["confidence"] == stale["confidence"]  # our update never landed
+    assert fresh["revision"] == stale["revision"] + 1
 
     # A fresh retry (re-read, then update) against the current state succeeds.
     assert update_fact("cas1", confidence=0.9) is True
     assert get_fact("cas1")["confidence"] == 0.9
+    assert get_fact("cas1")["revision"] == stale["revision"] + 2
+
+
+def test_update_fact_stale_writer_is_rejected_after_a_real_concurrent_winner():
+    """The #248-style race applied to update_fact(): writer A reads the fact
+    early; writer B then makes a REAL, successful update_fact() call, which
+    commits to L1 and populates L0; writer A, still holding its now-stale
+    pre-B snapshot, must be rejected — L0 must keep reflecting B's committed
+    write, not get silently clobbered by A's stale one."""
+    from core.memory import update_fact
+
+    store_fact({"fact_id": "cas3", "claim": "v0", "source": "s", "confidence": 0.1})
+    stale_snapshot = dict(get_fact("cas3"))  # writer A's early read
+
+    # Writer B: a real, successful concurrent update_fact() call.
+    assert update_fact("cas3", confidence=0.5) is True
+    assert get_fact("cas3")["confidence"] == 0.5
+
+    # Simulate writer A having been scheduled out between its early read and
+    # its own write attempt, so it still acts on the pre-B snapshot — force
+    # L0 back to that stale view (this is what a delayed, in-flight read on a
+    # second thread would still be holding at this point).
+    memory._l0_put("cas3", stale_snapshot)
+
+    assert update_fact("cas3", confidence=0.9) is False  # A's stale revision is rejected
+
+    # L0 must reflect the real DB state (B's committed write) — evicted on
+    # A's CAS miss, then re-read fresh from L1 — not A's stale snapshot.
+    _L0.clear()
+    persisted = get_fact("cas3")
+    assert persisted["confidence"] == 0.5  # B's write is the one that survived
+
+
+def test_update_fact_l0_reflects_post_commit_row_not_pre_write_merge():
+    """After a successful update_fact(), the L0 entry must be populated from a
+    fresh re-read of the row it just committed — including the bumped
+    `revision` — not a pre-write merge of `existing` + the caller's fields.
+
+    A merged-snapshot implementation would carry the OLD (pre-write) revision
+    number into L0, since a plain `{**existing, **fields}` merge never
+    reflects the `revision = revision + 1` the SQL itself just applied. The
+    NEXT update_fact() call would then read that stale revision from L0 and
+    CAS against a value the DB can never match again — a false, self-
+    inflicted CAS-miss with no real competing writer involved."""
+    from core.memory import update_fact
+
+    store_fact({"fact_id": "cas4", "claim": "v0", "source": "s", "confidence": 0.1})
+    before_revision = get_fact("cas4")["revision"]
+
+    assert update_fact("cas4", confidence=0.5) is True
+    cached = get_fact("cas4")  # served from L0
+    assert cached["revision"] == before_revision + 1
+
+    _L0.clear()
+    persisted = get_fact("cas4")  # forces the L1 read path
+    assert persisted["revision"] == cached["revision"]  # cache matches L1 exactly
+
+    # A correct revision in L0 is what lets the next sequential call succeed
+    # (see test_update_fact_normal_sequential_calls_still_succeed below).
+    assert update_fact("cas4", confidence=0.6) is True
 
 
 def test_update_fact_normal_sequential_calls_still_succeed():

@@ -326,6 +326,12 @@ _MIGRATIONS = [
     ("source_status", "TEXT DEFAULT 'UNKNOWN'"),
     ("significance",  "REAL DEFAULT 0.5"),
     ("restricted",    "INTEGER DEFAULT 0"),  # GDPR Art. 18 (processing restriction)
+    # Optimistic-CAS version token (#244 follow-up). Every writer of a facts row
+    # (store_fact, update_fact, transition_esm, set_restricted) increments this
+    # on each write. A monotonic integer cannot repeat a value for a given row
+    # the way a wall-clock updated_at string in principle can (ABA risk) — see
+    # update_fact()'s docstring for why this replaced an updated_at-based CAS.
+    ("revision",      "INTEGER NOT NULL DEFAULT 0"),
 ]
 
 # Columns added to evidence_spans after its first release (WP1 hardening, #61).
@@ -477,7 +483,7 @@ def _l0_put_if_fresher(fact_id: str, record: Dict) -> None:
     after capturing `now` and before reaching the write). Comparing such
     pre-write timestamps would reject a genuinely-latest L1 write just
     because its `now` happened to be captured first. store_fact() instead
-    gets its ordering guarantee from _STORE_FACT_LOCK (serialized write +
+    gets its ordering guarantee from _FACTS_WRITE_LOCK (serialized write +
     same-connection re-read + L0 populate as one atomic unit — see
     store_fact()) and populates L0 unconditionally within that lock, since
     whichever call holds the lock and just re-read its own committed write
@@ -495,16 +501,27 @@ def _l0_put_if_fresher(fact_id: str, record: Dict) -> None:
         _l0_put(fact_id, record)
 
 
-# store_fact()-specific lock (Codex P1 correction on #248): serializes the
-# ENTIRE write + same-connection re-read + L0 populate sequence for
-# store_fact() calls, so that DB-commit order and L0-populate order can never
-# diverge. See store_fact() and _l0_put_if_fresher()'s docstring for why a
-# pre-write `updated_at` comparison alone is insufficient here. Deliberately
-# a single global lock, not per-fact_id: store_fact() writes are already
-# serialized at the SQLite level (single-writer), so this adds no more
-# contention than SQLite itself already imposes, and a per-key lock registry
-# would be unwarranted complexity for the problem this actually is.
-_STORE_FACT_LOCK = threading.Lock()
+# Shared write lock for store_fact() and update_fact() (Codex P1 correction on
+# #248; reused rather than duplicated for #244's follow-up hardening). Both
+# functions serialize their ENTIRE write + same-connection re-read + L0
+# populate sequence through this one lock, so that DB-commit order and
+# L0-populate order can never diverge — including ACROSS the two functions
+# (e.g. a store_fact() re-ingest racing a reconcile.reinforce() update_fact()
+# call on the same fact_id). See store_fact(), update_fact() and
+# _l0_put_if_fresher()'s docstring for why a pre-write `updated_at` comparison
+# alone is insufficient for this. Deliberately a single global lock, not
+# per-fact_id: these writes are already serialized at the SQLite level
+# (single-writer), so this adds no more contention than SQLite itself already
+# imposes, and a per-key lock registry would be unwarranted complexity for the
+# problem this actually is.
+#
+# transition_esm() and set_restricted() do NOT go through this lock: they are
+# lower-contention/administrative writers outside the reinforce/record_
+# occurrence/store_fact hot path this hardening arc has targeted, and each has
+# its own pre-existing (unchanged, not worsened by #244) write-then-populate
+# gap of the same shape — tracked as a separate, future, narrowly-scoped
+# follow-up rather than folded into this PR (see update_fact()'s docstring).
+_FACTS_WRITE_LOCK = threading.Lock()
 
 
 # ─── API ───────────────────────────────────────────────────────────────────────
@@ -561,17 +578,18 @@ def store_fact(fact: Dict) -> None:
         "claim":    crypto.encrypt(record["claim"]),
         "metadata": crypto.encrypt(json.dumps(metadata_dict)),
     }
-    # _STORE_FACT_LOCK (Codex P1 correction on #248): the write, the
+    # _FACTS_WRITE_LOCK (Codex P1 correction on #248): the write, the
     # same-connection re-read, and the L0 populate below are one atomic unit
-    # relative to other store_fact() calls. `now`/`updated_at` is captured
-    # BEFORE this lock is acquired, so it reflects when this call STARTED,
-    # not the order in which writes actually commit to L1 — comparing it
-    # against another call's timestamp would be comparing the wrong thing
+    # relative to other store_fact()/update_fact() calls. `now`/`updated_at` is
+    # captured BEFORE this lock is acquired, so it reflects when this call
+    # STARTED, not the order in which writes actually commit to L1 — comparing
+    # it against another call's timestamp would be comparing the wrong thing
     # (see _l0_put_if_fresher's docstring). The lock is the actual ordering
     # guarantee: whichever call acquires it and completes its write+reread
     # is, at that instant, unconditionally the true latest L1 state for this
-    # fact_id, because no other store_fact() call can be interleaved.
-    with _STORE_FACT_LOCK:
+    # fact_id, because no other store_fact()/update_fact() call can be
+    # interleaved.
+    with _FACTS_WRITE_LOCK:
         with _db() as conn:
             conn.execute("""
                 INSERT INTO facts
@@ -590,27 +608,32 @@ def store_fact(fact: Dict) -> None:
                     source_status   = excluded.source_status,
                     significance    = excluded.significance,
                     updated_at      = excluded.updated_at,
-                    metadata        = excluded.metadata
+                    metadata        = excluded.metadata,
+                    revision        = facts.revision + 1
             """, l1_record)
-            # Re-read the persisted epistemic_state/created_at/restricted within the
-            # same connection so L0 is never poisoned with incoming/default values on
-            # a conflict-update. The ON CONFLICT clause intentionally omits
-            # epistemic_state and restricted (preserving the existing row's state),
-            # and `record["created_at"]` above is always "now" even though the DB
-            # row keeps the original insert timestamp. For new inserts this returns
-            # the incoming/default values unchanged. Mirrors the "L0 after DB write"
+            # Re-read the persisted epistemic_state/created_at/restricted/revision
+            # within the same connection so L0 is never poisoned with incoming/
+            # default values on a conflict-update. The ON CONFLICT clause
+            # intentionally omits epistemic_state and restricted (preserving the
+            # existing row's state), and `record["created_at"]` above is always
+            # "now" even though the DB row keeps the original insert timestamp.
+            # For new inserts this returns the incoming/default values unchanged
+            # (revision defaults to 0 on INSERT). Mirrors the "L0 after DB write"
             # discipline in transition_esm().
             row = conn.execute(
-                "SELECT epistemic_state, created_at, restricted FROM facts WHERE fact_id = ?",
+                "SELECT epistemic_state, created_at, restricted, revision "
+                "FROM facts WHERE fact_id = ?",
                 (fact_id,)
             ).fetchone()
             persisted_state = row["epistemic_state"] if row else epistemic_state
             persisted_created_at = row["created_at"] if row else now
             persisted_restricted = row["restricted"] if row else 0
+            persisted_revision = row["revision"] if row else 0
 
         record["epistemic_state"] = persisted_state
         record["created_at"] = persisted_created_at
         record["restricted"] = persisted_restricted
+        record["revision"] = persisted_revision
         # Unconditional _l0_put, not _l0_put_if_fresher: within this lock,
         # `record` (from the re-read above) IS the true, just-committed
         # latest L1 state for this fact_id — nothing else can have written
@@ -654,22 +677,46 @@ def update_fact(fact_id: str, **fields) -> bool:
     Changing the ESM state — only via transition_esm. Returns True if the
     fact is found and the update was applied.
 
-    Optimistic CAS guard (mirrors transition_esm()): the UPDATE only applies
-    if the persisted updated_at still equals what we read. If a competing
-    write landed on this fact_id between our read and our write, the UPDATE
-    matches 0 rows and we abort instead of silently clobbering that write with
-    a stale snapshot. Defense-in-depth for future concurrency/async — NOT a
-    full atomicity guarantee.
+    Optimistic CAS guard on `revision` (an integer column every writer of a
+    facts row increments on each write — see _MIGRATIONS): the UPDATE only
+    applies if the persisted revision still equals what we read. If a
+    competing write landed on this fact_id between our read and our write,
+    the UPDATE matches 0 rows and we abort instead of silently clobbering
+    that write with a stale snapshot. Defense-in-depth for future
+    concurrency/async — NOT a full atomicity guarantee.
+
+    Originally this CAS-guarded on `updated_at` (a wall-clock string). Replaced
+    with `revision` (#244 follow-up, after #248): a monotonically-incrementing
+    integer cannot repeat a value for a given row, whereas two writes landing
+    within the same timestamp-string resolution — or a backward clock
+    adjustment — could in principle produce identical `updated_at` values,
+    letting a stale reader's CAS incorrectly match (ABA). Low-probability with
+    microsecond ISO timestamps, but the same "trusting wall-clock time to
+    distinguish two different states" anti-pattern #248 fixed for L0-populate
+    ordering — not something to also lean on for CAS identity once we know
+    better. `revision` is immune to this by construction.
+
+    The write, the post-commit re-read, and the L0 populate below run inside
+    _FACTS_WRITE_LOCK (shared with store_fact()) as one atomic unit: on a CAS
+    hit, L0 is populated from a fresh re-read of the row this call itself just
+    committed — never from the pre-write `existing`/`fields` snapshot — so a
+    concurrent store_fact()/update_fact() call's L0 populate can never be
+    clobbered by this call's populate landing later with older data (the same
+    class of bug #248 fixed for store_fact() alone; see _FACTS_WRITE_LOCK's
+    docstring). transition_esm() and set_restricted() do not go through this
+    lock and keep their own pre-existing write-then-populate gap of this same
+    shape — a separate, lower-traffic, out-of-scope follow-up, unchanged and
+    not worsened by this fix.
     """
     fields = {k: v for k, v in fields.items() if k in _UPDATABLE}
     existing = get_fact(fact_id)
     if existing is None or not fields:
         return False
 
-    expected_updated_at = existing["updated_at"]
+    expected_revision = existing["revision"]
     now = datetime.now(timezone.utc).isoformat()
     sets, params = [], {"fact_id": fact_id, "updated_at": now,
-                         "expected_updated_at": expected_updated_at}
+                         "expected_revision": expected_revision}
     for key, value in fields.items():
         sets.append(f"{key} = :{key}")
         if key == "metadata":
@@ -679,22 +726,41 @@ def update_fact(fact_id: str, **fields) -> bool:
         else:
             params[key] = value
 
-    with _db() as conn:
-        cur = conn.execute(
-            f"UPDATE facts SET {', '.join(sets)}, updated_at = :updated_at "  # nosec B608 — keys from _UPDATABLE allowlist
-            f"WHERE fact_id = :fact_id AND updated_at = :expected_updated_at",
-            params,
-        )
-        if cur.rowcount != 1:
-            # CAS miss: evict the stale L0 entry so the next get_fact() re-reads
-            # the fresh DB state instead of serving stale cache to a caller that
-            # ignores the return value. Never poison L0 with our lost update.
-            _l0_pop(fact_id)
-            return False
+    with _FACTS_WRITE_LOCK:
+        with _db() as conn:
+            cur = conn.execute(
+                f"UPDATE facts SET {', '.join(sets)}, revision = revision + 1, "  # nosec B608 — keys from _UPDATABLE allowlist
+                f"updated_at = :updated_at "
+                f"WHERE fact_id = :fact_id AND revision = :expected_revision",
+                params,
+            )
+            if cur.rowcount != 1:
+                # CAS miss: evict the stale L0 entry so the next get_fact()
+                # re-reads the fresh DB state instead of serving stale cache to
+                # a caller that ignores the return value. Never poison L0 with
+                # our lost update.
+                _l0_pop(fact_id)
+                return False
 
-    merged = {**existing, **fields, "updated_at": now}
-    _l0_put(fact_id, merged)
-    return True
+            # Re-read the row we just committed, in the same connection/
+            # transaction, so L0 is populated from the real persisted winner —
+            # not from the pre-write `existing`/`fields` snapshot, which could
+            # already be stale by the time this line runs relative to what we
+            # ourselves just wrote (e.g. a concurrent value for a field this
+            # call did not touch).
+            row = conn.execute(
+                "SELECT * FROM facts WHERE fact_id = ?", (fact_id,)
+            ).fetchone()
+
+        refreshed = dict(row)
+        refreshed["claim"] = crypto.decrypt(refreshed["claim"])
+        refreshed["metadata"] = json.loads(crypto.decrypt(refreshed["metadata"]))
+        # Unconditional _l0_put, not _l0_put_if_fresher: within _FACTS_WRITE_LOCK,
+        # `refreshed` IS the true, just-committed latest L1 state for this
+        # fact_id — nothing else can have written something newer without
+        # going through this same lock.
+        _l0_put(fact_id, refreshed)
+        return True
 
 
 def transition_esm(fact_id: str, new_state: str) -> bool:
@@ -728,9 +794,22 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
     # read (current_state). If a competing/external write changed it since the
     # L0/DB read, the UPDATE matches 0 rows and we abort instead of clobbering.
     # Defense-in-depth for future concurrency/async — NOT a full atomicity guarantee.
+    #
+    # `revision` is also bumped here (not just epistemic_state's own CAS column)
+    # so that update_fact()'s revision-based CAS (#244) can detect a transition_esm()
+    # write that landed on this fact_id between update_fact()'s read and write —
+    # without this, update_fact() would see an unchanged revision and incorrectly
+    # believe nothing else had touched the row. This function does NOT go
+    # through _FACTS_WRITE_LOCK, so its own write-then-populate-L0 step below
+    # keeps the same pre-existing race #248/#244 closed for store_fact()/
+    # update_fact() (a delayed populate here could still clobber a newer L0
+    # entry from a faster-completing concurrent writer) — lower-traffic than
+    # the reinforce()/record_occurrence()/store_fact() hot path this hardening
+    # arc has targeted, tracked as a separate, narrowly-scoped follow-up rather
+    # than folded into #244.
     with _db() as conn:
         cur = conn.execute(
-            "UPDATE facts SET epistemic_state = ?, updated_at = ? "
+            "UPDATE facts SET epistemic_state = ?, revision = revision + 1, updated_at = ? "
             "WHERE fact_id = ? AND epistemic_state = ?",
             (new_state, now, fact_id, current_state)
         )
@@ -746,6 +825,7 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
     # with a state that did not persist.
     fact["epistemic_state"] = new_state
     fact["updated_at"] = now
+    fact["revision"] = fact.get("revision", 0) + 1
     _l0_put(fact_id, fact)
     return True
 
@@ -805,6 +885,12 @@ def set_restricted(fact_id: str, restricted: bool) -> bool:
     """
     Set/clear the processing restriction on a fact (L0 + L1). Returns True if the
     fact is found. Does not touch the ESM state. Sync to L3 — on the caller's side.
+
+    Bumps `revision` (see _MIGRATIONS) so update_fact()'s revision-based CAS
+    (#244) can detect a set_restricted() write landing on this fact_id between
+    update_fact()'s read and write. Like transition_esm(), this function does
+    not go through _FACTS_WRITE_LOCK — same pre-existing, out-of-scope,
+    lower-traffic write-then-populate-L0 gap noted there.
     """
     existing = get_fact(fact_id)
     if existing is None:
@@ -813,10 +899,12 @@ def set_restricted(fact_id: str, restricted: bool) -> bool:
     now = datetime.now(timezone.utc).isoformat()
     with _db() as conn:
         conn.execute(
-            "UPDATE facts SET restricted = ?, updated_at = ? WHERE fact_id = ?",
+            "UPDATE facts SET restricted = ?, revision = revision + 1, updated_at = ? "
+            "WHERE fact_id = ?",
             (val, now, fact_id),
         )
-    _l0_put(fact_id, {**existing, "restricted": val, "updated_at": now})
+    _l0_put(fact_id, {**existing, "restricted": val, "updated_at": now,
+                       "revision": existing.get("revision", 0) + 1})
     return True
 
 
