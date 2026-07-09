@@ -163,6 +163,21 @@ def test_evidence_unknown_fact_is_empty(client):
     assert r.json() == []
 
 
+def test_evidence_endpoint_redacts_restricted_fact(client):
+    res = client.post("/ingest", json={"text": "A restricted claim with a source",
+                                       "source": "test", "claim_type": "WORLD_FACT",
+                                       "confidence": 0.9})
+    fact_id = res.json()["fact"]["fact_id"]
+    from core import evidence
+    from core.compliance import restrict_processing
+    evidence.attach_evidence(fact_id, "private/notes.txt")
+    restrict_processing(fact_id, reason="dispute")
+
+    r = client.get(f"/evidence/{fact_id}")
+    assert r.status_code == 200
+    assert r.json() == []
+
+
 # ─── guarded import ──────────────────────────────────────────────────────────────
 
 def test_create_app_without_fastapi_raises(monkeypatch):

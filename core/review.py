@@ -42,9 +42,17 @@ _PENDING_STATE = "Observed"
 
 # ─── Queue inspection ─────────────────────────────────────────────────────────
 
+_RESTRICTED_STUB = {"restricted": True, "reason": "RESTRICTED_BY_POLICY"}
+
+
 def _summary(fact: Dict[str, Any]) -> Dict[str, Any]:
     """A compact, content-light view of a queued fact (the claim is included so a
-    curator can actually read it — this is a review surface, not the audit log)."""
+    curator can actually read it — this is a review surface, not the audit log).
+
+    GDPR Art. 18: a fact under processing restriction returns a redacted stub
+    instead — claim/source/source_status/confidence must never surface here."""
+    if fact.get("restricted"):
+        return {"fact_id": fact["fact_id"], **_RESTRICTED_STUB}
     return {
         "fact_id": fact["fact_id"],
         "claim": fact.get("claim"),
@@ -56,6 +64,18 @@ def _summary(fact: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _summary_with_diagnosis(fact: Dict[str, Any]) -> Dict[str, Any]:
+    """_summary() plus a fresh gate diagnosis — except for a restricted fact,
+    which must not be passed through immune/Guardian/TruthGate/find_conflicts
+    just to produce one. A restricted verdict is returned instead."""
+    summary = _summary(fact)
+    if fact.get("restricted"):
+        summary["diagnosis"] = {"verdict": "restricted", "reason": "RESTRICTED_BY_POLICY"}
+        return summary
+    summary["diagnosis"] = _diagnose(fact)
+    return summary
+
+
 def pending(limit: Optional[int] = None,
             claim_type: Optional[str] = None,
             diagnose: bool = False) -> List[Dict[str, Any]]:
@@ -64,7 +84,8 @@ def pending(limit: Optional[int] = None,
 
     diagnose=True attaches a fresh gate verdict to every item (the Kanban UI
     sorts cards into Pending/Quarantined by it). Opt-in: it re-runs the live
-    gates per item, so it is O(queue) and pricier than the plain listing."""
+    gates per item, so it is O(queue) and pricier than the plain listing.
+    Restricted items never reach the live gates — see _summary_with_diagnosis()."""
     items = get_all_facts(_PENDING_STATE)
     if claim_type is not None:
         items = [f for f in items if f.get("claim_type") == claim_type]
@@ -73,7 +94,7 @@ def pending(limit: Optional[int] = None,
         items = items[:limit]
     if not diagnose:
         return [_summary(f) for f in items]
-    return [{**_summary(f), "diagnosis": _diagnose(f)} for f in items]
+    return [_summary_with_diagnosis(f) for f in items]
 
 
 def _diagnose(fact: Dict[str, Any]) -> Dict[str, Any]:
@@ -111,11 +132,14 @@ def _diagnose(fact: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def review_item(fact_id: str) -> Dict[str, Any]:
-    """Full detail for one queued fact: its summary plus a fresh gate diagnosis."""
+    """Full detail for one queued fact: its summary plus a fresh gate diagnosis.
+
+    GDPR Art. 18: a restricted fact never reaches the live gates — see
+    _summary_with_diagnosis()."""
     fact = get_fact(fact_id)
     if fact is None:
         return {"found": False, "fact_id": fact_id}
-    return {"found": True, **_summary(fact), "diagnosis": _diagnose(fact)}
+    return {"found": True, **_summary_with_diagnosis(fact)}
 
 
 def review_report() -> Dict[str, Any]:
@@ -387,6 +411,12 @@ def decisions(limit: int = 50, *,
     survives as a decision record with claim=None. With `include_claim=False`
     no memory content is rehydrated at all: the entry stays as content-free as
     the audit chain itself (no `claim`/`claim_type` keys).
+
+    GDPR Art. 18: a fact that is now under processing restriction also gets
+    claim=None (mirroring the erased case) plus `restricted=True` and
+    `restricted_reason="RESTRICTED_BY_POLICY"` — distinct from the erased case
+    (no `restricted` key) and from `reason`, which already holds the curator's
+    own decision reason (`entry["detail"]["reason"]`) and must not be clobbered.
     """
     out: List[Dict[str, Any]] = []
     for entry in reversed(audit.audit_log()):
@@ -404,8 +434,14 @@ def decisions(limit: int = 50, *,
         }
         if include_claim:
             fact = get_fact(entry["fact_id"]) if entry["fact_id"] else None
-            item["claim"] = fact.get("claim") if fact else None
-            item["claim_type"] = fact.get("claim_type") if fact else None
+            if fact is not None and fact.get("restricted"):
+                item["claim"] = None
+                item["claim_type"] = None
+                item["restricted"] = True
+                item["restricted_reason"] = "RESTRICTED_BY_POLICY"
+            else:
+                item["claim"] = fact.get("claim") if fact else None
+                item["claim_type"] = fact.get("claim_type") if fact else None
         out.append(item)
         if len(out) >= limit:
             break
