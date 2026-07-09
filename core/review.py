@@ -85,10 +85,17 @@ def pending(limit: Optional[int] = None,
     diagnose=True attaches a fresh gate verdict to every item (the Kanban UI
     sorts cards into Pending/Quarantined by it). Opt-in: it re-runs the live
     gates per item, so it is O(queue) and pricier than the plain listing.
-    Restricted items never reach the live gates — see _summary_with_diagnosis()."""
+    Restricted items never reach the live gates — see _summary_with_diagnosis().
+
+    GDPR Art. 18: an explicit `claim_type` filter omits restricted facts
+    entirely, rather than including them as a redacted stub. A stub's mere
+    presence or absence across different `claim_type` values would otherwise
+    leak the restricted fact's real claim_type as a side channel — with no
+    filter, a restricted fact still appears (redacted) in the plain listing."""
     items = get_all_facts(_PENDING_STATE)
     if claim_type is not None:
-        items = [f for f in items if f.get("claim_type") == claim_type]
+        items = [f for f in items
+                 if not f.get("restricted") and f.get("claim_type") == claim_type]
     items.sort(key=lambda f: (f.get("created_at") or "", f.get("fact_id", "")))
     if limit is not None:
         items = items[:limit]
@@ -180,6 +187,17 @@ def approve(fact_id: str, *, actor: Optional[str] = None,
     if fact.get("epistemic_state") != _PENDING_STATE:
         return {"found": True, "fact_id": fact_id, "approved": False,
                 "reason": f"not pending (state={fact.get('epistemic_state')})"}
+
+    # GDPR Art. 18: a fact under processing restriction is not actionable from
+    # the review path — not even with force=True. Checked before _diagnose()
+    # (never pass a restricted claim through immune/Guardian/TruthGate/
+    # find_conflicts), before transition_esm() (no ESM promotion), before any
+    # L3 merge, and before any success audit event. The correct path to
+    # promote it is to lift the restriction first via an explicit compliance
+    # action (core.compliance.unrestrict_processing), not approval.
+    if fact.get("restricted"):
+        return {"found": True, "fact_id": fact_id, "approved": False,
+                "restricted": True, "reason": "RESTRICTED_BY_POLICY"}
 
     diag = _diagnose(fact)
     overridden = False

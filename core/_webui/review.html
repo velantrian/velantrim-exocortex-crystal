@@ -180,8 +180,14 @@ function decisionCard(d) {
   const why = d.reason ? `<div class="reason">${esc(d.reason)}</div>` : "";
   const forced = d.decision === "force_approved"
     ? ` <span class="badge warn">override</span>` : "";
+  // GDPR Art. 18: restricted and erased both null out `claim`, but they are
+  // NOT the same thing — check `restricted` first, ahead of the null/erased
+  // fallback below, so a restricted fact is never shown as though it had
+  // been erased.
+  const claimText = d.restricted ? "(fact restricted)"
+    : (d.claim ?? "(fact erased)");
   return `<div class="card">
-    <div class="claim">${esc(d.claim ?? "(fact erased)")}</div>
+    <div class="claim">${esc(claimText)}</div>
     <div class="meta"><span class="badge type">${esc(d.claim_type ?? "?")}</span>
       <span class="badge">${esc((d.ts || "").slice(0, 16))}${who}</span>${forced}</div>
     ${why}</div>`;

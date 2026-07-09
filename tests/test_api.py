@@ -382,3 +382,21 @@ def test_review_ui_ships_as_package_data():
     html = resources.files("core").joinpath(
         "_webui/review.html").read_text(encoding="utf-8")
     assert "Crystal Review Queue" in html
+
+
+def test_review_ui_decision_card_distinguishes_restricted_from_erased():
+    """No JS execution harness ships with this repo, so this is a targeted
+    text-level check (mirroring test_review_ui_ships_as_package_data above):
+    decisionCard() must check `restricted` before falling back to the erased
+    "(fact erased)" placeholder, so a restricted decision never renders as
+    if the fact had been erased (Codex P2 follow-up on #246)."""
+    from importlib import resources
+    html = resources.files("core").joinpath(
+        "_webui/review.html").read_text(encoding="utf-8")
+    assert "function decisionCard" in html
+    body = html[html.index("function decisionCard"):html.index("function fill")]
+    assert "(fact restricted)" in body
+    assert "(fact erased)" in body
+    assert "d.restricted" in body
+    # The restricted check must be evaluated before the erased/null fallback.
+    assert body.index("d.restricted") < body.index('"(fact erased)"')
