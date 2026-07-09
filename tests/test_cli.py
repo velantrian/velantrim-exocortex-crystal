@@ -94,6 +94,64 @@ def test_cli_trace_unrecognized_payload(tmp_path, capsys):
     assert "error" in json.loads(capsys.readouterr().out)
 
 
+# ─── Evidence (GDPR Art. 18 redaction) ────────────────────────────────────────
+
+def test_cli_evidence_returns_empty_for_restricted_fact(capsys):
+    from core import evidence
+    from core.compliance import restrict_processing
+
+    main(["ingest", "A restricted claim with a source"])
+    fid = json.loads(capsys.readouterr().out)["fact_id"]
+    evidence.attach_evidence(fid, "private/notes.txt")
+    restrict_processing(fid, reason="dispute")
+
+    rc = main(["evidence", fid])
+    assert rc == 0
+    assert json.loads(capsys.readouterr().out) == []
+
+
+def test_cli_evidence_returns_rows_for_unrestricted_fact(capsys):
+    from core import evidence
+
+    main(["ingest", "An ordinary claim with a source"])
+    fid = json.loads(capsys.readouterr().out)["fact_id"]
+    evidence.attach_evidence(fid, "public/notes.txt")
+
+    rc = main(["evidence", fid])
+    assert rc == 0
+    rows = json.loads(capsys.readouterr().out)
+    assert rows and rows[0]["source_uri"] == "public/notes.txt"
+
+
+def test_cli_evidence_verify_does_not_expose_source_uri_for_restricted_fact(capsys):
+    from core import evidence
+    from core.compliance import restrict_processing
+
+    main(["ingest", "A restricted claim to be verified"])
+    fid = json.loads(capsys.readouterr().out)["fact_id"]
+    evidence.attach_evidence(fid, "private/source.txt")
+    restrict_processing(fid, reason="dispute")
+
+    rc = main(["evidence", fid, "--verify"])
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert json.loads(out) == []
+    assert "private/source.txt" not in out
+
+
+def test_cli_evidence_verify_reports_status_for_unrestricted_fact(capsys):
+    from core import evidence
+
+    main(["ingest", "An ordinary claim to be verified"])
+    fid = json.loads(capsys.readouterr().out)["fact_id"]
+    evidence.attach_evidence(fid, "public/source.txt")
+
+    rc = main(["evidence", fid, "--verify"])
+    assert rc == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report and report[0]["status"] == "ok"
+
+
 # ─── Reviewer tooling: health (read-only diagnostic score) ────────────────────
 
 def test_cli_health_score(capsys):

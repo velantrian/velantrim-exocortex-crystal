@@ -481,10 +481,13 @@ def main(argv: Optional[List[str]] = None) -> int:
                           f"(must be {f['op']} {f['threshold']})", file=sys.stderr)
                 return 1
     elif args.cmd == "evidence":
+        # GDPR Art. 18: a restricted fact's evidence (source_uri/chunk_id/
+        # section — plaintext) must not print here; see core/evidence.py's
+        # public_evidence_for()/public_verify_evidence().
         if args.verify:
-            print(json.dumps(evidence.verify_evidence(args.fact_id), ensure_ascii=False))
+            print(json.dumps(evidence.public_verify_evidence(args.fact_id), ensure_ascii=False))
         else:
-            print(json.dumps(evidence.evidence_for(args.fact_id), ensure_ascii=False))
+            print(json.dumps(evidence.public_evidence_for(args.fact_id), ensure_ascii=False))
     elif args.cmd == "retrieval-config-show":
         cfg = retrieval_config.get_retrieval_config()
         print(json.dumps(cfg.to_dict(), ensure_ascii=False, indent=2))

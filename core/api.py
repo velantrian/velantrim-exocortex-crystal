@@ -193,8 +193,11 @@ def create_app():
 
     @app.get("/evidence/{fact_id}", dependencies=_guarded)
     async def evidence_endpoint(fact_id: str) -> List[Dict[str, Any]]:
-        """List the source-span evidence records attached to a fact."""
-        return await asyncio.to_thread(evidence.evidence_for, fact_id)
+        """List the source-span evidence records attached to a fact.
+
+        GDPR Art. 18: returns [] for a fact under processing restriction —
+        source_uri/chunk_id/section must not leak through this surface."""
+        return await asyncio.to_thread(evidence.public_evidence_for, fact_id)
 
     # ─── curator review (WP2) ──────────────────────────────────────────────────
     # Thin wrappers over core/review.py: the same gates, ESM transitions and

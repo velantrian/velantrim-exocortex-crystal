@@ -11,6 +11,7 @@ Key invariant under test:
 import pytest
 
 from core import review
+from core.compliance import restrict_processing
 from core.ingest import ingest
 from core.memory import get_all_facts, store_fact
 
@@ -228,3 +229,25 @@ def test_resume_skips_fact_no_longer_observed(monkeypatch):
     result = review.resume_session(session["session_id"])
     ids = {item["fact_id"] for item in result["pending_items"]}
     assert fid not in ids
+
+
+def test_resume_session_redacts_restricted_facts(monkeypatch):
+    """GDPR Art. 18: resume_session() routes items through _summary(), so a
+    restricted fact still in the queue must come back as a redacted stub —
+    no claim/source — same as pending()/review_item()."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    restricted_fid = _blocked_fact("A restricted claim awaiting review")
+    open_fid = _blocked_fact("An ordinary claim awaiting review")
+    restrict_processing(restricted_fid, reason="dispute")
+
+    session = review.create_session()
+    result = review.resume_session(session["session_id"])
+    items = {item["fact_id"]: item for item in result["pending_items"]}
+
+    restricted_item = items[restricted_fid]
+    assert restricted_item["restricted"] is True
+    assert restricted_item["reason"] == "RESTRICTED_BY_POLICY"
+    assert "claim" not in restricted_item
+
+    open_item = items[open_fid]
+    assert open_item["claim"] == "An ordinary claim awaiting review"

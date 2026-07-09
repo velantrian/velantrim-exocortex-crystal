@@ -32,6 +32,53 @@ def test_attach_defaults_claim_to_current_fact():
     assert row["claim_sha256"] == evidence.sha256("Gold is a metal")
 
 
+# ─── public exposure wrappers (GDPR Art. 18) ──────────────────────────────────
+
+def test_public_evidence_for_returns_empty_for_restricted_fact():
+    from core.compliance import restrict_processing
+    fid = ingest("A restricted claim with a source")["fact"]["fact_id"]
+    evidence.attach_evidence(fid, "private/notes.txt", section="Visit summary")
+    restrict_processing(fid, reason="dispute")
+    assert evidence.public_evidence_for(fid) == []
+
+
+def test_public_evidence_for_unaffected_for_unrestricted_fact():
+    fid = ingest("An ordinary claim with a source")["fact"]["fact_id"]
+    evidence.attach_evidence(fid, "public/notes.txt")
+    rows = evidence.public_evidence_for(fid)
+    assert rows and rows[0]["source_uri"] == "public/notes.txt"
+
+
+def test_public_verify_evidence_returns_empty_for_restricted_fact():
+    from core.compliance import restrict_processing
+    fid = ingest("A restricted claim to be verified")["fact"]["fact_id"]
+    evidence.attach_evidence(fid, "private/source.txt")
+    restrict_processing(fid, reason="dispute")
+    assert evidence.public_verify_evidence(fid) == []
+
+
+def test_public_verify_evidence_unaffected_for_unrestricted_fact():
+    fid = ingest("An ordinary claim to be verified")["fact"]["fact_id"]
+    evidence.attach_evidence(fid, "public/source.txt")
+    report = evidence.public_verify_evidence(fid)
+    assert report and report[0]["status"] == "ok"
+
+
+def test_internal_accountability_paths_unaffected_by_public_wrappers():
+    """Regression guard: evidence_for()/verify_evidence() themselves stay
+    unchanged — the redaction lives only in the public_* wrappers, so internal
+    accountability code (verify_receipt, build_receipt, eval coverage stats)
+    keeps seeing real evidence rows for a restricted fact if it calls the
+    low-level accessor directly."""
+    from core.compliance import restrict_processing
+    fid = ingest("A restricted claim, low-level access")["fact"]["fact_id"]
+    evidence.attach_evidence(fid, "internal/source.txt")
+    restrict_processing(fid, reason="dispute")
+    assert evidence.evidence_for(fid) != []
+    assert evidence.evidence_for(fid)[0]["source_uri"] == "internal/source.txt"
+    assert evidence.verify_evidence(fid)[0]["status"] == "ok"
+
+
 # ─── verify / drift ─────────────────────────────────────────────────────────
 
 def test_verify_evidence_ok():

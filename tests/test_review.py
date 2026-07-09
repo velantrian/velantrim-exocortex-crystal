@@ -7,6 +7,7 @@ Validated. Curator approve/reject decisions are accountable (audit chain).
 import pytest
 
 from core import review, audit
+from core.compliance import restrict_processing
 from core.ingest import ingest
 from core.l3_graph import get_l3_graph
 from core.memory import get_fact, store_fact, get_all_facts
@@ -69,6 +70,68 @@ def test_pending_oldest_first(monkeypatch):
     assert ids.index(f1) < ids.index(f2)
 
 
+def test_pending_redacts_restricted_facts(monkeypatch):
+    """GDPR Art. 18: a restricted fact sitting in the review queue must not
+    surface its claim/source/confidence — only a redacted stub, even though
+    it is technically still Observed/pending."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    restricted_fid = _blocked_world_fact("A restricted pending claim")
+    open_fid = _blocked_world_fact("An ordinary pending claim")
+    restrict_processing(restricted_fid, reason="dispute")
+
+    items = {i["fact_id"]: i for i in review.pending()}
+    restricted_item = items[restricted_fid]
+    assert restricted_item == {
+        "fact_id": restricted_fid, "restricted": True, "reason": "RESTRICTED_BY_POLICY"}
+    assert "A restricted pending claim" not in str(restricted_item)
+
+    open_item = items[open_fid]
+    assert open_item["claim"] == "An ordinary pending claim"
+
+
+def test_pending_claim_type_filter_omits_restricted_fact_even_when_type_matches(monkeypatch):
+    """GDPR Art. 18: an explicit claim_type filter must not reveal a restricted
+    fact's real claim_type via its mere presence — a restricted WORLD_FACT
+    must be entirely absent from pending(claim_type="WORLD_FACT"), even though
+    it DOES appear (redacted) in the unfiltered pending()."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    restricted_fid = _blocked_world_fact("A restricted world fact, typed query")
+    open_fid = _blocked_world_fact("An ordinary world fact, typed query")
+    restrict_processing(restricted_fid, reason="dispute")
+
+    unfiltered_ids = {i["fact_id"] for i in review.pending()}
+    assert restricted_fid in unfiltered_ids       # present, redacted, unfiltered
+
+    typed_ids = {i["fact_id"] for i in review.pending(claim_type="WORLD_FACT")}
+    assert restricted_fid not in typed_ids        # absent from the typed query
+    assert open_fid in typed_ids                  # unrestricted typed filtering intact
+
+
+def test_pending_claim_type_filter_omits_restricted_fact_of_different_type(monkeypatch):
+    """A restricted fact must not appear in a typed query even for a
+    claim_type OTHER than its real one — its absence there must not become a
+    positive signal either (it's simply never included in any typed query)."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    restricted_fid = _blocked_world_fact("A restricted world fact, wrong-type query")
+    restrict_processing(restricted_fid, reason="dispute")
+
+    assert review.pending(claim_type="EMOTION") == []
+    assert restricted_fid not in {i["fact_id"] for i in review.pending(claim_type="WORLD_FACT")}
+
+
+def test_pending_diagnose_claim_type_filter_omits_restricted_facts(monkeypatch):
+    """The claim_type-omission behavior applies identically to the
+    diagnose=True variant used by the Kanban UI."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    restricted_fid = _blocked_world_fact("A restricted world fact, diagnosed typed query")
+    open_fid = _ready_pending("Argon is a noble gas", "ing:ready08")
+    restrict_processing(restricted_fid, reason="dispute")
+
+    typed_ids = {i["fact_id"] for i in review.pending(claim_type="WORLD_FACT", diagnose=True)}
+    assert restricted_fid not in typed_ids
+    assert open_fid in typed_ids
+
+
 def test_review_report_counts_by_type(monkeypatch):
     monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
     _blocked_world_fact("Some false world claim here")
@@ -96,6 +159,27 @@ def test_review_item_ready_diagnosis(monkeypatch):
     fid = _ready_pending("Helium is a noble gas", "ing:ready01")
     item = review.review_item(fid)
     assert item["diagnosis"]["verdict"] == "ready"
+
+
+def test_review_item_redacts_restricted_fact(monkeypatch):
+    """GDPR Art. 18: review_item() must not expose claim/source, and must not
+    run the live diagnosis (immune/Guardian/TruthGate/find_conflicts) against
+    a restricted fact's claim just to produce a verdict."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    fid = _blocked_world_fact("A restricted claim under review")
+    restrict_processing(fid, reason="dispute")
+
+    def _boom(*args, **kwargs):
+        raise AssertionError("_diagnose must not run for a restricted fact")
+    monkeypatch.setattr(review, "_diagnose", _boom)
+
+    item = review.review_item(fid)
+    assert item["found"] is True
+    assert item["restricted"] is True
+    assert item["reason"] == "RESTRICTED_BY_POLICY"
+    assert item["diagnosis"] == {"verdict": "restricted", "reason": "RESTRICTED_BY_POLICY"}
+    assert "claim" not in item and "source" not in item and "confidence" not in item
+    assert "A restricted claim under review" not in str(item)
 
 
 # ─── approve ────────────────────────────────────────────────────────────────────
@@ -133,6 +217,50 @@ def test_approve_aborts_on_cas_miss_without_l3_merge(monkeypatch):
     assert get_l3_graph().get_fact(fid) is None
     # The persisted state stays Collapsed (the attempted Validated did not win).
     assert get_fact(fid)["epistemic_state"] == "Collapsed"
+
+
+def test_approve_refuses_restricted_fact(monkeypatch):
+    """GDPR Art. 18: a restricted fact must not be actionable from approve() —
+    not diagnosed, not transitioned, not merged into L3, no success audit."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    fid = _ready_pending("A restricted claim awaiting approval", "ing:restricted-appr1")
+    restrict_processing(fid, reason="dispute")
+
+    def _boom(*args, **kwargs):
+        raise AssertionError("_diagnose must not run for a restricted fact")
+    monkeypatch.setattr(review, "_diagnose", _boom)
+
+    events_before = len(audit.audit_log())
+    res = review.approve(fid, actor="alice")
+
+    assert res == {"found": True, "fact_id": fid, "approved": False,
+                    "restricted": True, "reason": "RESTRICTED_BY_POLICY"}
+    assert get_fact(fid)["epistemic_state"] == "Observed"   # never transitioned
+    assert get_l3_graph().get_fact(fid) is None              # never merged
+    assert len(audit.audit_log()) == events_before           # no success event
+
+
+def test_approve_force_true_also_refuses_restricted_fact(monkeypatch):
+    """Force approval must not override GDPR Art. 18 restriction — the correct
+    path is to lift the restriction first (compliance.unrestrict_processing),
+    not to force-approve through it."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    fid = _blocked_world_fact("A restricted claim a curator tries to force")
+    restrict_processing(fid, reason="dispute")
+
+    def _boom(*args, **kwargs):
+        raise AssertionError("_diagnose must not run for a restricted fact")
+    monkeypatch.setattr(review, "_diagnose", _boom)
+
+    events_before = len(audit.audit_log())
+    res = review.approve(fid, actor="bob", force=True, reason="vetted anyway")
+
+    assert res["approved"] is False
+    assert res["restricted"] is True
+    assert res["reason"] == "RESTRICTED_BY_POLICY"
+    assert get_fact(fid)["epistemic_state"] == "Observed"
+    assert get_l3_graph().get_fact(fid) is None
+    assert len(audit.audit_log()) == events_before
 
 
 def test_approve_blocked_without_force_refuses(monkeypatch):
@@ -357,6 +485,33 @@ def test_decisions_survive_fact_erasure(monkeypatch):
     assert entry["claim"] is None            # content gone, decision record stays
 
 
+def test_decisions_redact_claim_for_restricted_facts(monkeypatch):
+    """GDPR Art. 18: a fact that was approved and later restricted must have
+    claim=None in its decision-history entry (like the erased case), plus a
+    distinct restricted marker — while an unrestricted entry in the same
+    history is untouched. `restricted_reason` (not `reason`) carries the
+    marker, since `reason` already holds the curator's own decision reason."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    restricted_fid = _blocked_world_fact("A claim approved then restricted")
+    open_fid = _blocked_world_fact("A claim approved and left alone")
+    review.approve(restricted_fid, actor="dave", force=True, reason="vetted")
+    review.approve(open_fid, actor="dave", force=True, reason="vetted")
+    restrict_processing(restricted_fid, reason="dispute")
+
+    history = {d["fact_id"]: d for d in review.decisions()}
+    restricted_entry = history[restricted_fid]
+    assert restricted_entry["claim"] is None
+    assert restricted_entry["claim_type"] is None
+    assert restricted_entry["restricted"] is True
+    assert restricted_entry["restricted_reason"] == "RESTRICTED_BY_POLICY"
+    assert restricted_entry["reason"] == "vetted"          # curator's own reason, untouched
+    assert "A claim approved then restricted" not in str(restricted_entry)
+
+    open_entry = history[open_fid]
+    assert open_entry["claim"] == "A claim approved and left alone"
+    assert "restricted" not in open_entry
+
+
 def test_decisions_without_claim_stay_content_free(monkeypatch):
     """include_claim=False must not rehydrate memory content from L1: the
     entries carry decision metadata only — no claim text, no claim_type."""
@@ -380,6 +535,37 @@ def test_pending_diagnose_attaches_verdicts(monkeypatch):
     assert "ready" in verdicts.values()
     assert "blocked" in verdicts.values()
     assert all("diagnosis" not in i for i in review.pending())   # opt-in only
+
+
+def test_pending_diagnose_does_not_run_live_gates_on_restricted_facts(monkeypatch):
+    """GDPR Art. 18: pending(diagnose=True) must not pass a restricted fact's
+    claim through immune/Guardian/TruthGate/find_conflicts just to produce a
+    diagnosis — it must short-circuit to a restricted verdict instead. An
+    unrestricted item in the same batch must still get a real diagnosis."""
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    restricted_fid = _blocked_world_fact("A restricted claim for the kanban")
+    open_fid = _ready_pending("Neon is a noble gas", "ing:ready07")
+    restrict_processing(restricted_fid, reason="dispute")
+
+    original_diagnose = review._diagnose
+    diagnosed_ids = []
+
+    def _tracking_diagnose(fact):
+        diagnosed_ids.append(fact["fact_id"])
+        return original_diagnose(fact)
+    monkeypatch.setattr(review, "_diagnose", _tracking_diagnose)
+
+    items = {i["fact_id"]: i for i in review.pending(diagnose=True)}
+
+    assert restricted_fid not in diagnosed_ids   # never passed through the live gates
+    assert open_fid in diagnosed_ids             # the real gate did run for this one
+
+    restricted_item = items[restricted_fid]
+    assert restricted_item["restricted"] is True
+    assert restricted_item["diagnosis"] == {"verdict": "restricted", "reason": "RESTRICTED_BY_POLICY"}
+    assert "claim" not in restricted_item
+
+    assert items[open_fid]["diagnosis"]["verdict"] == "ready"
 
 
 def test_cli_review_decisions(monkeypatch, capsys):

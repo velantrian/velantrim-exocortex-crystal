@@ -163,6 +163,21 @@ def test_evidence_unknown_fact_is_empty(client):
     assert r.json() == []
 
 
+def test_evidence_endpoint_redacts_restricted_fact(client):
+    res = client.post("/ingest", json={"text": "A restricted claim with a source",
+                                       "source": "test", "claim_type": "WORLD_FACT",
+                                       "confidence": 0.9})
+    fact_id = res.json()["fact"]["fact_id"]
+    from core import evidence
+    from core.compliance import restrict_processing
+    evidence.attach_evidence(fact_id, "private/notes.txt")
+    restrict_processing(fact_id, reason="dispute")
+
+    r = client.get(f"/evidence/{fact_id}")
+    assert r.status_code == 200
+    assert r.json() == []
+
+
 # ─── guarded import ──────────────────────────────────────────────────────────────
 
 def test_create_app_without_fastapi_raises(monkeypatch):
@@ -367,3 +382,21 @@ def test_review_ui_ships_as_package_data():
     html = resources.files("core").joinpath(
         "_webui/review.html").read_text(encoding="utf-8")
     assert "Crystal Review Queue" in html
+
+
+def test_review_ui_decision_card_distinguishes_restricted_from_erased():
+    """No JS execution harness ships with this repo, so this is a targeted
+    text-level check (mirroring test_review_ui_ships_as_package_data above):
+    decisionCard() must check `restricted` before falling back to the erased
+    "(fact erased)" placeholder, so a restricted decision never renders as
+    if the fact had been erased (Codex P2 follow-up on #246)."""
+    from importlib import resources
+    html = resources.files("core").joinpath(
+        "_webui/review.html").read_text(encoding="utf-8")
+    assert "function decisionCard" in html
+    body = html[html.index("function decisionCard"):html.index("function fill")]
+    assert "(fact restricted)" in body
+    assert "(fact erased)" in body
+    assert "d.restricted" in body
+    # The restricted check must be evaluated before the erased/null fallback.
+    assert body.index("d.restricted") < body.index('"(fact erased)"')

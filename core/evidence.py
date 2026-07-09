@@ -219,6 +219,36 @@ def has_evidence(fact_id: str) -> bool:
     return bool(evidence_for(fact_id))
 
 
+# ─── Public exposure wrappers (GDPR Art. 18) ──────────────────────────────────
+# evidence_for()/verify_evidence() are low-level accessors also used by
+# internal accountability/provenance code (verify_receipt, build_receipt,
+# eval coverage stats) — those paths already handle restriction on their own
+# terms and must not be silently changed. Surfaces that hand evidence rows
+# (source_uri/chunk_id/section — plaintext, can carry personal data) directly
+# to an API/CLI caller go through these wrappers instead, so a restricted
+# fact's evidence never reaches a public/reviewer-facing response.
+
+def public_evidence_for(fact_id: str) -> List[Dict[str, Any]]:
+    """Like evidence_for(), but returns [] for a fact under processing
+    restriction instead of its (plaintext) source-span rows."""
+    fact = memory.get_fact(fact_id)
+    if fact is not None and fact.get("restricted"):
+        return []
+    return evidence_for(fact_id)
+
+
+def public_verify_evidence(
+    fact_id: str,
+    current_sources: Optional[Dict[str, str]] = None,
+) -> List[Dict[str, Any]]:
+    """Like verify_evidence(), but returns [] for a fact under processing
+    restriction instead of a per-span report (which includes source_uri)."""
+    fact = memory.get_fact(fact_id)
+    if fact is not None and fact.get("restricted"):
+        return []
+    return verify_evidence(fact_id, current_sources)
+
+
 def provenance_gaps(fact_ids: List[str]) -> List[str]:
     """
     fact_ids that present high-confidence provenance (VERIFIED) without any
