@@ -307,3 +307,222 @@ def test_l0_cache_survives_concurrent_access():
         sys.setswitchinterval(prev_interval)
 
     assert len(memory._L0) <= L0_CAP
+
+
+# ─── _l0_put_if_fresher (L0 cache-freshness guard) ────────────────────────────
+#
+# store_fact() writes to L1 first, then populates L0 — with no lock spanning
+# both steps. Two concurrent store_fact() calls for the same fact_id can
+# commit to L1 in one order (SQLite serializes writes) but reach the L0
+# write in the OTHER order (whichever thread's scheduled first), leaving a
+# stale record cached even though L1 already holds the newer one.
+# _l0_put_if_fresher() compares `updated_at` (ISO-8601 UTC, safe to compare
+# lexically) and refuses to overwrite a cached record with an older one.
+# This is a cache-coherence guard, not a CAS/revision scheme (see #244,
+# which is a separate, still-on-hold change to update_fact() specifically) —
+# it never rejects a write to L1, never raises, and never changes what
+# store_fact()/get_fact() return; it only decides what ends up cached.
+
+def test_l0_put_if_fresher_accepts_when_nothing_cached():
+    memory._l0_pop("if_fresher_new")
+    rec = {"fact_id": "if_fresher_new", "claim": "v1",
+           "updated_at": "2024-01-01T00:00:00+00:00"}
+    memory._l0_put_if_fresher("if_fresher_new", rec)
+    assert memory._l0_get("if_fresher_new") == rec
+
+
+def test_l0_put_if_fresher_rejects_older_record():
+    """Helper-level guard: an older incoming record must not evict a newer
+    one that is already cached."""
+    newer = {"fact_id": "if_fresher1", "claim": "v2",
+             "updated_at": "2024-01-02T00:00:00+00:00"}
+    older = {"fact_id": "if_fresher1", "claim": "v1",
+              "updated_at": "2024-01-01T00:00:00+00:00"}
+    memory._l0_put_if_fresher("if_fresher1", newer)
+    memory._l0_put_if_fresher("if_fresher1", older)
+    assert memory._l0_get("if_fresher1") == newer
+
+
+def test_l0_put_if_fresher_accepts_newer_record():
+    """A genuinely newer incoming record still overwrites the cache normally
+    — the guard only blocks the STALE-overwriting-fresh direction."""
+    older = {"fact_id": "if_fresher2", "claim": "v1",
+              "updated_at": "2024-01-01T00:00:00+00:00"}
+    newer = {"fact_id": "if_fresher2", "claim": "v2",
+             "updated_at": "2024-01-02T00:00:00+00:00"}
+    memory._l0_put_if_fresher("if_fresher2", older)
+    memory._l0_put_if_fresher("if_fresher2", newer)
+    assert memory._l0_get("if_fresher2") == newer
+
+
+def test_l0_put_if_fresher_accepts_incoming_record_on_tied_timestamp():
+    """Defined tie-breaking rule: an EQUAL `updated_at` accepts the incoming
+    record, preserving the pre-existing unconditional-overwrite behavior for
+    the common non-racing case (e.g. two calls close enough in time to round
+    to the same timestamp) rather than inventing a new first-write-wins rule
+    nothing in the codebase depends on."""
+    ts = "2024-01-01T00:00:00+00:00"
+    first = {"fact_id": "if_fresher3", "claim": "v1", "updated_at": ts}
+    second = {"fact_id": "if_fresher3", "claim": "v2", "updated_at": ts}
+    memory._l0_put_if_fresher("if_fresher3", first)
+    memory._l0_put_if_fresher("if_fresher3", second)
+    assert memory._l0_get("if_fresher3") == second
+
+
+def test_l0_freshness_guard_prevents_the_reordering_that_would_otherwise_poison_cache():
+    """Deterministic simulation of the actual race (no sleep/threads needed):
+    two concurrent store_fact() calls for the same fact_id can commit to L1
+    in one order but reach the L0 write in the other order. Simulate the
+    'loser' (older DB commit) reaching its L0 write AFTER the 'winner'
+    (newer DB commit) already populated L0.
+
+    First prove the failure mode is real with the raw, unguarded _l0_put()
+    (what store_fact() called before this fix): it happily overwrites the
+    fresher cached record with stale data. Then prove _l0_put_if_fresher()
+    — what store_fact() calls now — is immune to the identical reordering."""
+    store_fact({"fact_id": "race1", "claim": "winner (newer)", "source": "s",
+                "confidence": 0.9})
+    winner_cached = dict(memory._l0_get("race1"))
+    assert winner_cached["claim"] == "winner (newer)"
+
+    # The "loser" writer's own store_fact() call committed to L1 BEFORE the
+    # winner's (an earlier updated_at), but its thread only reaches the L0
+    # write line now, after the winner's record has already landed.
+    stale_record = {**winner_cached, "claim": "loser (older, stale)",
+                     "updated_at": "2000-01-01T00:00:00+00:00"}
+
+    # Failure mode: the raw primitive poisons the cache with stale data.
+    memory._l0_put("race1", stale_record)
+    assert memory._l0_get("race1")["claim"] == "loser (older, stale)"
+
+    # Restore the winner and prove the freshness guard is immune to the same
+    # reordering.
+    memory._l0_put("race1", winner_cached)
+    memory._l0_put_if_fresher("race1", stale_record)
+    assert memory._l0_get("race1")["claim"] == "winner (newer)"
+
+
+def test_store_fact_does_not_let_a_delayed_stale_l0_write_win():
+    """Exercises _l0_put_if_fresher() with real store_fact()-produced records
+    (not synthetic ones): even if a delayed read's L0-populate step arrives
+    after a fresher store_fact() call already landed, the helper keeps the
+    fresher record. (store_fact() itself no longer calls this helper for its
+    OWN populate step — see test_store_fact_l0_reflects_actual_l1_winner_not_
+    capture_time_order below for why, and _l0_put_if_fresher()'s docstring —
+    but get_fact()'s L1-rehydration path does, and this is the shape of
+    protection it gets.)"""
+    store_fact({"fact_id": "race2", "claim": "first", "source": "s", "confidence": 0.5})
+    first_cached = dict(memory._l0_get("race2"))
+
+    store_fact({"fact_id": "race2", "claim": "second", "source": "s", "confidence": 0.6})
+    assert memory._l0_get("race2")["claim"] == "second"
+
+    # Simulate the FIRST call's L0-populate step arriving late — e.g. its
+    # thread was preempted right after its DB commit, before reaching
+    # _l0_put_if_fresher, and only resumes well after the SECOND call
+    # already committed and cached.
+    memory._l0_put_if_fresher("race2", first_cached)
+    assert memory._l0_get("race2")["claim"] == "second"   # still the fresher one
+    assert get_fact("race2")["claim"] == "second"
+
+
+def test_get_fact_rehydration_does_not_clobber_a_fresher_l0_entry():
+    """get_fact()'s L1-rehydration path (core/memory.py) calls
+    _l0_put_if_fresher() — a stale L1 read reaching it after a fresher
+    record is already cached must not overwrite it. This is a valid use of
+    timestamp comparison here specifically because get_fact()'s `record` is
+    always a value actually read from a committed row (a true historical
+    snapshot), unlike store_fact()'s pre-write `now` (see
+    _l0_put_if_fresher()'s docstring and the Codex P1 test below). The value
+    get_fact() RETURNS to its caller is unaffected either way (it always
+    returns what it just read) — this only protects what ends up cached for
+    the NEXT reader."""
+    store_fact({"fact_id": "race3", "claim": "fresh", "source": "s", "confidence": 0.5})
+    fresh_cached = dict(memory._l0_get("race3"))
+
+    stale_l1_read = {**fresh_cached, "claim": "stale",
+                      "updated_at": "2000-01-01T00:00:00+00:00"}
+    memory._l0_put_if_fresher("race3", stale_l1_read)
+    assert memory._l0_get("race3")["claim"] == "fresh"
+
+
+def test_store_fact_l0_reflects_actual_l1_winner_not_capture_time_order(monkeypatch):
+    """Regression for the Codex P1 finding on #248.
+
+    store_fact() captures `updated_at` BEFORE performing its SQLite write.
+    In a real race, a call that captures an EARLIER `now` can still be the
+    one whose write actually lands LAST in L1 (e.g. it was scheduled out
+    right after capturing `now`, before reaching the write, while a
+    second call captured a later `now` but reached the write first). The
+    old timestamp-only L0 guard would reject that genuinely-latest call's
+    cache update because its `updated_at` looked older than what was
+    already cached — exactly backwards. L0 must reflect whichever write
+    actually persisted last, never whichever call merely captured the
+    latest clock reading.
+
+    Reproduced deterministically (no threads/sleeps needed): mock the clock
+    store_fact() reads so call "B" gets a LATER `now` but call "A" — called
+    SECOND, so its write is genuinely the last one to commit to L1 — gets an
+    EARLIER `now`."""
+    from datetime import datetime as real_datetime, timezone
+    real_datetime_cls = memory.datetime
+
+    class _FixedClock:
+        def __init__(self, fixed):
+            self._fixed = fixed
+        def now(self, tz=None):
+            return self._fixed
+
+    later_clock = real_datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+    earlier_clock = real_datetime(2024, 1, 1, 11, 0, 0, tzinfo=timezone.utc)
+
+    # "B" captures a LATER clock reading and reaches its write + L0-populate
+    # first.
+    monkeypatch.setattr(memory, "datetime", _FixedClock(later_clock))
+    store_fact({"fact_id": "cas_order1", "claim": "B", "source": "s", "confidence": 0.5})
+    assert memory._l0_get("cas_order1")["claim"] == "B"
+
+    # "A" captures an EARLIER clock reading, but its write happens SECOND —
+    # i.e. it is the actual, true L1 winner (plain last-write-wins upsert),
+    # simulating a call that started before B but was delayed reaching the
+    # write until after B's had already committed and cached.
+    monkeypatch.setattr(memory, "datetime", _FixedClock(earlier_clock))
+    store_fact({"fact_id": "cas_order1", "claim": "A", "source": "s", "confidence": 0.5})
+
+    # L0 must reflect A immediately — the call that just genuinely won L1 —
+    # even though A's timestamp (11:00) is numerically EARLIER than B's
+    # already-cached timestamp (12:00). Under the old timestamp-only guard
+    # this assertion fails: A's populate would have been rejected as "stale"
+    # and L0 would still show "B".
+    assert memory._l0_get("cas_order1")["claim"] == "A"
+
+    # Confirm A really is the persisted L1 winner too (not just an L0
+    # artifact): restore the real clock and force a clean L1 read.
+    monkeypatch.setattr(memory, "datetime", real_datetime_cls)
+    _L0.clear()
+    assert get_fact("cas_order1")["claim"] == "A"
+
+
+def test_store_fact_sequential_behavior_unchanged_by_freshness_guard():
+    """The store_fact()-specific lock must not change store_fact()'s normal
+    (non-racing) contract: the second call's claim/source/confidence win, and
+    epistemic_state/restricted are preserved from the persisted row rather
+    than reset — exactly as before this PR."""
+    store_fact({"fact_id": "seq1", "claim": "v1", "source": "s1", "confidence": 0.5})
+    transition_esm("seq1", "Validated")
+    set_restricted("seq1", True)
+
+    store_fact({"fact_id": "seq1", "claim": "v2", "source": "s2", "confidence": 0.8})
+
+    cached = get_fact("seq1")
+    assert cached["claim"] == "v2"
+    assert cached["source"] == "s2"
+    assert cached["confidence"] == 0.8
+    assert cached["epistemic_state"] == "Validated"    # preserved, not reset
+    assert cached["restricted"] == 1                    # preserved, not reset
+
+    _L0.clear()  # force the L1 read path too
+    persisted = get_fact("seq1")
+    assert persisted["claim"] == "v2"
+    assert persisted["epistemic_state"] == "Validated"
+    assert persisted["restricted"] == 1
