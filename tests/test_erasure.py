@@ -254,3 +254,29 @@ def test_repeated_erase_with_evidence_stays_idempotent():
     assert evidence.evidence_for("f1") == []
     # First erasure event's tombstone is preserved, not duplicated.
     assert len([t for t in erasure_log() if t["fact_id"] == "f1"]) == 1
+
+
+def test_erase_evidence_only_orphan_is_still_removed():
+    """Regression for a Codex P2 finding: the "never stored anywhere" no-op
+    check ran BEFORE evidence deletion, so a fact_id with orphan evidence_spans
+    rows but no L1 fact, no L3 node, and no tombstone (e.g. delete_fact_l1 and
+    graph.erase_fact called directly, bypassing erase_fact — the same failure
+    mode as test_erase_l3_only_orphan_is_still_removed, but for evidence)
+    hit the no-op path and its evidence survived forever."""
+    from core.memory import delete_fact_l1
+    _seed("evidence_orphan", claim="orphaned evidence claim")
+    evidence.attach_evidence("evidence_orphan", "orphan-doc.txt")
+    assert evidence.evidence_for("evidence_orphan") != []
+
+    delete_fact_l1("evidence_orphan")
+    get_l3_graph().erase_fact("evidence_orphan")
+    assert get_fact("evidence_orphan") is None
+    assert get_l3_graph().get_fact("evidence_orphan") is None
+    assert get_tombstone("evidence_orphan") is None
+
+    receipt = erase_fact("evidence_orphan")
+
+    assert receipt["erased_now"] is True
+    assert receipt["evidence_removed"] == 1
+    assert evidence.evidence_for("evidence_orphan") == []
+    assert is_erased("evidence_orphan") is True
