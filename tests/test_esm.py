@@ -181,7 +181,7 @@ def test_store_fact_preserves_collapsed_on_conflict():
     store_fact({"fact_id": "sf_collapse", "claim": "x", "source": "s",
                 "confidence": 0.5, "epistemic_state": "Collapsed"})
 
-    store_fact({"fact_id": "sf_collapse", "claim": "y", "source": "s",
+    store_fact({"fact_id": "sf_collapse", "claim": "x", "source": "s",
                 "confidence": 0.8, "epistemic_state": "Validated"})
 
     with _db() as conn:
@@ -198,7 +198,7 @@ def test_store_fact_preserves_validated_on_conflict():
     store_fact({"fact_id": "sf_valid", "claim": "a", "source": "s",
                 "confidence": 1.0, "epistemic_state": "Validated"})
 
-    store_fact({"fact_id": "sf_valid", "claim": "b", "source": "s",
+    store_fact({"fact_id": "sf_valid", "claim": "a", "source": "s",
                 "confidence": 0.3, "epistemic_state": "Observed"})
 
     with _db() as conn:
@@ -234,7 +234,7 @@ def test_store_fact_l0_not_poisoned_on_conflict():
     # Evict from L0 so the re-read path inside the _db() block is exercised.
     _L0.pop("sf_l0_poison", None)
 
-    store_fact({"fact_id": "sf_l0_poison", "claim": "v2", "source": "s",
+    store_fact({"fact_id": "sf_l0_poison", "claim": "v1", "source": "s",
                 "confidence": 0.9, "epistemic_state": "Validated"})
 
     cached = _l0_get("sf_l0_poison")
