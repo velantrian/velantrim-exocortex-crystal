@@ -1224,6 +1224,71 @@ def test_valid_persisted_source_and_confidence_remain_unaffected():
     assert result["facts"][0]["confidence"] == pytest.approx(0.95)
 
 
+# ─── Blocker (#257 review round 4): non-finite confidence must fail closed ────
+# float("nan")/float("inf") both convert without raising, but NaN compares
+# False against every relational operator (>, <=, <) — a raw `x > 0` /
+# `x <= 0` / `x < threshold` check silently lets it through instead of
+# rejecting it, and +Infinity legitimately satisfies every "confidence >=
+# threshold" check there is.
+
+@pytest.mark.parametrize("raw", [
+    float("nan"), "NaN", "nan",
+    float("inf"), "Infinity", "inf",
+    float("-inf"), "-Infinity", "-inf",
+])
+def test_safe_confidence_rejects_all_non_finite_forms(raw):
+    from core.pipeline import _safe_confidence
+    assert _safe_confidence(raw) == 0.0
+
+
+def test_safe_confidence_accepts_valid_finite_value():
+    from core.pipeline import _safe_confidence
+    assert _safe_confidence(0.9) == pytest.approx(0.9)
+
+
+@pytest.mark.parametrize("raw", [-0.5, 1.5, 100.0])
+def test_safe_confidence_rejects_out_of_domain_values(raw):
+    """The canonical confidence domain is [0.0, 1.0] (schemas/fact.schema.json:
+    minimum 0.0, maximum 1.0; core/api.py's IngestRequest: Field(ge=0.0,
+    le=1.0)) — a value outside it is malformed, not merely "very confident"."""
+    from core.pipeline import _safe_confidence
+    assert _safe_confidence(raw) == 0.0
+
+
+@pytest.mark.parametrize("raw", [float("nan"), float("inf"), float("-inf"),
+                                 "NaN", "Infinity", "not-a-number", ["x"]])
+def test_guardian_blocks_non_finite_or_malformed_confidence_without_crashing(raw):
+    """Guardian must reject non-finite/malformed confidence itself — not
+    merely trust that a caller already sanitized it — and must never crash
+    computing the diagnostic (#257 review round 4)."""
+    from core.pipeline import guardian_diagnose, GUARDIAN_VERDICT_BLOCK
+    facts = {"facts": [{"fact_id": "a", "claim": "c", "source": "s",
+                        "confidence": raw}]}
+    diag = guardian_diagnose(facts, [{"fact_id": "a"}])
+    assert diag["verdict"] == GUARDIAN_VERDICT_BLOCK
+    assert diag["checks"]["all_have_positive_confidence"] is False
+
+
+@pytest.mark.parametrize("raw_confidence", [
+    float("nan"), float("inf"), float("-inf"), "NaN", "not-a-number", ["x"],
+])
+def test_verified_validated_l3_node_with_non_finite_confidence_no_answer_no_crash(raw_confidence):
+    """A malformed/non-finite VERIFIED + Validated L3 node must produce no
+    answer and must not crash the pipeline (#257 review round 4)."""
+    from core.pipeline import run
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    claim = f"a verified claim with non finite confidence {raw_confidence!r}"
+    g.merge_fact({"fact_id": "non-finite-confidence", "claim": claim,
+                 "source": "s", "confidence": raw_confidence,
+                 "epistemic_state": "Validated", "truth_status": "VERIFIED"})
+
+    result = run(claim)  # must not raise
+
+    assert result["answer"] is None
+    assert "Guardian" in (result.get("error") or "")
+
+
 # ─── Trace metadata consistency (#257 review round 3) ─────────────────────────
 
 def test_trace_epistemic_state_matches_fact_epistemic_state_for_successful_answer(monkeypatch):

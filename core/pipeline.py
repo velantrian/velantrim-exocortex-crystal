@@ -15,6 +15,7 @@
 # (Done: HybridRetriever graph-walk over vector-recall — see _graph_walk below.)
 
 import logging
+import math
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from core.trace import build_trace, promote_trace, format_trace
@@ -36,15 +37,31 @@ logger = logging.getLogger(__name__)
 
 def _safe_confidence(value: Any, default: float = 0.0) -> float:
     """Coerce a retrieved/persisted confidence value to a float, failing
-    closed (0.0) on a malformed non-numeric value (e.g. a string/list from a
-    corrupted or legacy node) instead of crashing — used everywhere a raw L3
-    node's `confidence` field is read arithmetically (retrieve()'s scoring)
-    or compared (Guardian/TruthGate), which must not raise on it (#257 review
-    round 3)."""
+    closed (0.0) on:
+      - a malformed non-numeric value (e.g. a string/list from a corrupted
+        or legacy node) — would otherwise raise TypeError/ValueError;
+      - a non-finite value (NaN, +/-Infinity) — float("nan") and
+        float("inf") both convert without raising, but NaN compares False
+        against every relational operator (>, <=, <), so a downstream
+        `confidence > 0` / `confidence <= 0` check silently passes it
+        through instead of rejecting it, and +Infinity legitimately
+        satisfies every "confidence >= threshold" check there is (#257
+        review round 4);
+      - a value outside the canonical [0.0, 1.0] confidence domain
+        (schemas/fact.schema.json: minimum 0.0, maximum 1.0; core/api.py's
+        IngestRequest.confidence: Field(ge=0.0, le=1.0)).
+    Used everywhere a raw L3 node's `confidence` field is read arithmetically
+    (retrieve()'s scoring) or compared (Guardian), which must not raise on,
+    or be fooled by, any of the above."""
     try:
-        return float(value)
+        confidence = float(value)
     except (TypeError, ValueError):
         return default
+    if not math.isfinite(confidence):
+        return default
+    if not 0.0 <= confidence <= 1.0:
+        return default
+    return confidence
 
 
 def _safe_source(value: Any) -> Optional[str]:
@@ -366,8 +383,16 @@ def guardian_diagnose(
         "all_have_fact_id": all(bool(f.get("fact_id")) for f in facts),
         "all_have_claim": all(bool(f.get("claim")) for f in facts),
         "all_have_source": all(bool(f.get("source")) for f in facts),
+        # _safe_confidence(), not a raw float(...) > 0: Guardian must reject
+        # non-finite (NaN/+-Infinity) and malformed confidence itself, not
+        # merely trust that a caller already sanitized it (#257 review round
+        # 4) — NaN compares False against every relational operator, so a raw
+        # `float(x) > 0` silently treats it as "not positive" here but a raw
+        # `<= 0` below would ALSO be False, letting it slip through the
+        # per-fact block undetected; a raw `float(x)` on a non-numeric value
+        # would also crash this comprehension outright.
         "all_have_positive_confidence": all(
-            float(f.get("confidence", 0)) > 0 for f in facts),
+            _safe_confidence(f.get("confidence", 0)) > 0 for f in facts),
     }
 
     if not checks["facts_non_empty"]:
@@ -392,7 +417,7 @@ def guardian_diagnose(
         if not fact.get("source"):
             return {"verdict": GUARDIAN_VERDICT_BLOCK,
                     "reason": f"Fact without source: {fact['fact_id']}", "checks": checks}
-        if fact.get("confidence", 0) <= 0:
+        if _safe_confidence(fact.get("confidence", 0)) <= 0:
             return {"verdict": GUARDIAN_VERDICT_BLOCK,
                     "reason": f"Zero confidence: {fact['fact_id']}", "checks": checks}
 
