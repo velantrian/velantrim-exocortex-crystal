@@ -775,3 +775,64 @@ def test_store_fact_sequential_behavior_unchanged_by_freshness_guard():
     assert persisted["claim"] == "v1"
     assert persisted["epistemic_state"] == "Validated"
     assert persisted["restricted"] == 1
+
+
+def test_transition_and_restriction_publish_in_sqlite_commit_order(monkeypatch):
+    """A delayed transition cache publish must not erase a later restriction.
+
+    Before both APIs shared _FACTS_WRITE_LOCK, transition_esm() could commit,
+    pause before its L0 publish, let set_restricted() commit and publish, then
+    overwrite L0 with its older pre-restriction snapshot. The database was
+    correct while immediate reads from L0 were stale.
+    """
+    store_fact({"fact_id": "writer_order", "claim": "x", "source": "s"})
+    real_l0_put = memory._l0_put
+    transition_at_publish = threading.Event()
+    release_transition = threading.Event()
+    results = {}
+
+    def delayed_l0_put(fact_id, record):
+        if (
+            fact_id == "writer_order"
+            and threading.current_thread().name == "transition-writer"
+        ):
+            transition_at_publish.set()
+            assert release_transition.wait(timeout=2)
+        real_l0_put(fact_id, record)
+
+    monkeypatch.setattr(memory, "_l0_put", delayed_l0_put)
+
+    transition_thread = threading.Thread(
+        name="transition-writer",
+        target=lambda: results.setdefault(
+            "transition", transition_esm("writer_order", "Validated")
+        ),
+    )
+    restriction_thread = threading.Thread(
+        name="restriction-writer",
+        target=lambda: results.setdefault(
+            "restriction", set_restricted("writer_order", True)
+        ),
+    )
+
+    transition_thread.start()
+    assert transition_at_publish.wait(timeout=2)
+    restriction_thread.start()
+    time.sleep(0.05)
+    assert restriction_thread.is_alive()  # blocked behind the shared writer lock
+    release_transition.set()
+    transition_thread.join(timeout=2)
+    restriction_thread.join(timeout=2)
+
+    assert not transition_thread.is_alive()
+    assert not restriction_thread.is_alive()
+    assert results == {"transition": True, "restriction": True}
+
+    cached = memory._l0_get("writer_order")
+    with memory._db() as conn:
+        persisted = dict(conn.execute(
+            "SELECT * FROM facts WHERE fact_id = ?", ("writer_order",)
+        ).fetchone())
+    assert cached["epistemic_state"] == persisted["epistemic_state"] == "Validated"
+    assert cached["restricted"] == persisted["restricted"] == 1
+    assert cached["revision"] == persisted["revision"] == 2

@@ -90,7 +90,7 @@ as guarantees beyond that (see §6 for residual risk and non-claims).
 | Direct L3 write bypassing the gate | **Primary entry point**: admission / ingest writes go through `truth_gate()`; `store_fact` writes L0/L1 only, never L3. Secondary sync paths (`reconcile._sync_l3()`, `compliance._sync_restriction()`, `drain_l3_outbox()`) skip re-gating but reject **all pre-canonical ESM states** (`Observed`, `Hypothesized`, `Supported`) via `memory.l3_secondary_sync_admissible()`. `Contradicted`/`Deprecated` sync only when the node is already in L3. Residual: sync paths still do not re-run TruthGate on metadata changes. |
 | Mutating the immutable core | Invariant **I6**: `transition_esm` raises `ImmutableStateError` for Ring Zero IDs (`VALUES_CORE`, `RING_ZERO`). Claim text is also identity-locked once a fact reaches `Supported` or any validated/terminal state: `store_fact()` / `update_fact()` reject changed text with `ClaimIdentityError`, and replacement must use a new fact plus explicit supersession. Source/metadata remain separately updateable, so I6 is still not blanket row immutability. |
 | Illegal epistemic transition (e.g. Collapsed → Validated) | `ESM_TRANSITIONS` matrix validated in `transition_esm`. `store_fact` preserves the existing `epistemic_state` in the DB on conflict (the `ON CONFLICT` clause omits `epistemic_state`); L0 is updated only after the DB write using the persisted state. A re-`store_fact` can no longer bypass the transition matrix — use `transition_esm()` to advance state. |
-| Lost-update / stale-cache state change | `transition_esm` uses a compare-and-swap (`WHERE fact_id = ? AND epistemic_state = ?`) and evicts stale L0 on a CAS miss (PR #190). This is **defense-in-depth correctness hardening**, not a full atomic state-machine guarantee. |
+| Lost-update / stale-cache fact mutation | All facts-row APIs serialize SQLite mutation + fresh re-read + L0 publish/evict through one process lock. `transition_esm()` and `set_restricted()` additionally read/check/write under `BEGIN IMMEDIATE`, so policy uses the persisted row and concurrent processes sharing the same SQLite file cannot interleave that unit. `update_fact()` retains revision CAS defense for stale callers. |
 | Editing or truncating audit/provenance event rows | Hash-chain replay detects edits, gaps and reordering; transactionally advanced `chain_checkpoints` pin each current head and detect event-table suffix deletion; optional audit-entry HMAC (`VELANTRIM_AUDIT_KEY`) prevents forging signed entry content. A rollback/replacement of the whole SQLite database or simultaneous rewrite of both rows and checkpoints still requires an externally held checkpoint/backup to detect. |
 
 ### Repudiation (deniability)
@@ -156,13 +156,12 @@ These are stated openly to avoid overclaiming:
    `truth_status` to `VERIFIED` (an `LLM_OUTPUT` world-claim resolves to
    `UNVERIFIED`). Strict policy is the default (unset / `on`); operators who set
    `off` knowingly opt into the legacy behavior.
-2. **CAS in `transition_esm` is defense-in-depth, not full atomicity.** It
-   catches lost-update / stale-cache divergence; it is not a thread/process lock.
-   The `store_fact` upsert path no longer overwrites `epistemic_state` on
-   conflict: the `ON CONFLICT` clause omits `epistemic_state`, and L0 is
-   populated from the persisted DB state after the write. A re-`store_fact`
-   cannot bypass the transition matrix. Use `transition_esm()` to advance
-   epistemic state explicitly.
+2. **Fact-writer serialization is scoped to one SQLite database.** A shared
+   process lock keeps local SQLite commit order and L0 publish order aligned;
+   `BEGIN IMMEDIATE` serializes read/check/write units across processes sharing
+   that database file. It is not a distributed lock across copied/replicated
+   databases. The `store_fact` upsert path does not overwrite
+   `epistemic_state`; use `transition_esm()` to advance state explicitly.
 3. **On-disk L3 plaintext.** Field-level encryption covers L1 personal-data
    columns only when enabled; on-disk L3 claims are plaintext (mitigate with
    full-disk encryption or Art. 17 erasure).
