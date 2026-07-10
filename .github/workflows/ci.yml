@@ -116,6 +116,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Gitleaks compares the PR head with its parent commit; a shallow
+          # checkout contains only the synthetic merge ref and makes that
+          # revision range unavailable.
+          fetch-depth: 0
       - name: Scan repository for committed secrets
         uses: gitleaks/gitleaks-action@v2
         env:
