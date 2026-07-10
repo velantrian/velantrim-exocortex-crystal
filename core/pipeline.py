@@ -33,6 +33,29 @@ from core import metrics, adaptation
 
 logger = logging.getLogger(__name__)
 
+
+def _safe_confidence(value: Any, default: float = 0.0) -> float:
+    """Coerce a retrieved/persisted confidence value to a float, failing
+    closed (0.0) on a malformed non-numeric value (e.g. a string/list from a
+    corrupted or legacy node) instead of crashing — used everywhere a raw L3
+    node's `confidence` field is read arithmetically (retrieve()'s scoring)
+    or compared (Guardian/TruthGate), which must not raise on it (#257 review
+    round 3)."""
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _safe_source(value: Any) -> Optional[str]:
+    """A non-empty string, or None. A malformed non-string source (e.g. a
+    list/dict from a corrupted node) is treated as missing, not stored
+    as-is — the `source` column is TEXT NOT NULL, so a raw non-string value
+    would raise out of store_fact() instead of failing closed at Guardian
+    (#257 review round 3)."""
+    return value if isinstance(value, str) and value.strip() else None
+
+
 # ─── RETRIEVAL CORPUS (source for retrieve, not L3) ──────────────────────────
 # Issue #65: demo seed facts are opt-in only (VELANTRIM_DEMO_SEED=1).
 # The production pipeline starts with an empty corpus; all facts must enter
@@ -123,11 +146,18 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
         # read-through by run()'s recall path (never recomputed on ordinary
         # recall — see run()'s ESM-promotion loop) and judged by
         # core.canonical_view, which fails closed on a missing/unknown value.
+        # source/confidence: no fail-open synthesis either — a node missing
+        # real provenance (source=None, not "memory") or confidence
+        # (confidence=0.0, not 1.0) must fail Guardian's structural checks
+        # (all_have_source / all_have_positive_confidence), not pass through
+        # looking like an authoritative, fully-confident fact (#257 review
+        # round 3). build_facts_pack() is responsible for not crashing L1
+        # storage on a None/malformed source — see its own docstring.
         return {
             "id":              node["fact_id"],
             "text":            node.get("claim", ""),
-            "source":          node.get("source", "memory"),
-            "confidence":      node.get("confidence", 1.0),
+            "source":          node.get("source"),
+            "confidence":      _safe_confidence(node.get("confidence", 0.0)),
             "claim_type":      node.get("claim_type", "WORLD_FACT"),
             "source_status":   node.get("source_status", DEFAULT_SOURCE_STATUS),
             "significance":    node.get("significance", 0.5),
@@ -145,7 +175,11 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
             continue
         if node.get("restricted"):
             continue  # GDPR Art. 18: restricted facts do not take part in processing
-        vector_items.append(_from_node(node, sim * node.get("confidence", 1.0), "memory"))
+        # confidence: 0.0 (not 1.0) for a node missing it, and coerced safely
+        # for a malformed non-numeric value — a malformed node must not rank
+        # as if maximally confident, or crash the multiplication (#257 review
+        # round 3).
+        vector_items.append(_from_node(node, sim * _safe_confidence(node.get("confidence", 0.0)), "memory"))
         vector_hits.append(node)
 
     # Source 3: multi-hop graph-walk from vector hits (associative recall).
@@ -161,7 +195,8 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
     graph_score: Dict[str, float] = {}
     node_cache: Dict[str, Dict[str, Any]] = {}
     current = {
-        hit["fact_id"]: hit.get("_relevance", 0.0) * hit.get("confidence", 1.0)
+        # confidence: 0.0 default + safe coercion — see the note above.
+        hit["fact_id"]: hit.get("_relevance", 0.0) * _safe_confidence(hit.get("confidence", 0.0))
         for hit in vector_hits
     }
     for _hop in range(cfg.graph_walk_hops):
@@ -244,14 +279,13 @@ def build_facts_pack(
         fact = {
             "fact_id":         fact_id,
             "claim":           item["text"],
-            "source":          item["source"],
             # confidence — EPISTEMIC confidence (from the source or the L3 canon),
             # not a relevance rank. Previously item["_score"]
             # (similarity × confidence) was written here, and that value traveled via merge_fact
             # into the canon, silently eroding the node's confidence on EVERY recall (sim ≤ 1 →
             # confidence only fell). The relevance rank lives separately, in
             # _score, and does not reach the canon (see _l3_payload).
-            "confidence":      round(float(item.get("confidence", item.get("_score", 0.5))), 4),
+            "confidence":      round(_safe_confidence(item.get("confidence", item.get("_score", 0.5))), 4),
             "epistemic_state": item["epistemic_state"],  # from retrieve(), not duplicated
             # retrieval facts — claims about the world from an external source.
             "claim_type":      item.get("claim_type", "WORLD_FACT"),
@@ -259,6 +293,16 @@ def build_facts_pack(
             "significance":    item.get("significance", 0.5),
             "truth_status":    item.get("truth_status", "UNVERIFIED"),
         }
+        # source: only set the key when it's a genuine non-empty string. A
+        # missing/malformed source (core.pipeline._from_node no longer
+        # invents "memory" for it) is left OUT of `fact` entirely — Guardian
+        # (fact.get("source")) then correctly sees it as missing and blocks,
+        # while store_fact()'s own "unknown" fallback (fact.get("source",
+        # "unknown")) keeps the L1 write itself from raising on the
+        # source TEXT NOT NULL column (#257 review round 3).
+        safe_source = _safe_source(item.get("source"))
+        if safe_source is not None:
+            fact["source"] = safe_source
         # L0/L1 store (store_fact does not persist the transient _score).
         store_fact(fact)
         # Sync epistemic_state and restricted from the persisted store:
@@ -459,9 +503,22 @@ def generate_answer(
     # public trace must not claim provenance for retrieved-but-excluded
     # material (e.g. a USER_CLAIMED candidate that never grounded anything).
     # set(result["facts"] fact_ids) == set(result["trace"] fact_ids) for every
-    # successful strict answer (#257 review).
-    grounded_ids = {f["fact_id"] for f in canonical_facts}
-    grounded_trace = [t for t in trace if t.get("fact_id") in grounded_ids]
+    # successful strict answer (#257 review). Each surviving trace element's
+    # epistemic_state is also synced to the corresponding fact's REAL final
+    # state — run()'s blanket promote_trace(trace, "Validated") call stamps
+    # every trace element "Validated" regardless of what the fact actually
+    # is, so an ImmutableCore (or any non-"Validated" but still strict-
+    # canonical) grounding fact must not be misreported as "Validated" in its
+    # own trace entry (#257 review round 3).
+    canonical_by_id = {f["fact_id"]: f for f in canonical_facts}
+    grounded_trace = []
+    for t in trace:
+        fid = t.get("fact_id")
+        if fid not in canonical_by_id:
+            continue
+        entry = dict(t)
+        entry["epistemic_state"] = canonical_by_id[fid].get("epistemic_state")
+        grounded_trace.append(entry)
 
     return {
         "answer":       answer,
@@ -693,10 +750,41 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     graph = get_l3_graph()
     try:
         for fact in facts_pack["facts"]:
-            # A recall fact from L3 is already Validated — a repeated transition is not allowed in
-            # the ESM matrix, so we only transition the not-yet-validated ones.
-            is_new_admission = fact.get("epistemic_state") != "Validated"
-            if is_new_admission:
+            # Admission-vs-recall must key off PHYSICAL L3 presence, not ESM
+            # state (#257 review round 3): an L3 node that already exists —
+            # legitimately Observed/Hypothesized/Supported, or with a
+            # missing/malformed epistemic_state on a corrupted/legacy record —
+            # is an ORDINARY RECALL, not a new admission, regardless of what
+            # epistemic_state the retrieved item/L1 row currently shows
+            # (build_facts_pack()'s store_fact() upsert can create/refresh an
+            # L1 row for a fact_id that is already a physical L3 node, e.g.
+            # when L1 lost its copy — that must not be mistaken for "this
+            # fact has never been admitted"). Using ESM state alone here was
+            # the actual bug: it let a malformed L3 node (missing
+            # epistemic_state -> _from_node() defaults it to "Observed") be
+            # treated as brand new, auto-transitioned to Validated, and have
+            # its real persisted truth_status silently recomputed/overwritten.
+            existing_node = graph.get_fact(fact["fact_id"])
+            if existing_node is not None:
+                # Ordinary recall: do not auto-transition it merely because a
+                # query touched it, and do not recompute/overwrite its
+                # persisted verdict — promotion of pending or non-canonical
+                # physical-L3 material requires an explicit admission/review
+                # path (core.review.approve / core.reconcile), not ordinary
+                # answer retrieval. No write to L3 happens for this fact.
+                fact["epistemic_state"] = existing_node.get("epistemic_state")
+                fact["truth_status"] = existing_node.get("truth_status")
+                continue
+
+            # Genuinely new to the L3 canon (this also correctly covers the
+            # L1-Validated/L3-missing outbox-recovery case: epistemic_state is
+            # already "Validated" here, so the transition attempt below is
+            # skipped — Validated->Validated is illegal in the ESM matrix —
+            # but there is still no PRIOR L3 verdict to preserve, since this
+            # fact_id was never actually merged, so truth_status is computed
+            # fresh below, exactly reproducing what the original admission
+            # would have set).
+            if fact.get("epistemic_state") != "Validated":
                 # Promotion guard: only attempt the transition if "Validated" is a
                 # reachable next state from the fact's current ESM state. Terminal
                 # states (Collapsed, ImmutableCore) and non-promotable states
@@ -718,26 +806,8 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
                 if updated:
                     fact["epistemic_state"] = updated["epistemic_state"]
 
-            if is_new_admission:
-                # Genuinely new admission this round: no prior persisted L3
-                # verdict exists to preserve — compute truth_status once, at
-                # the TruthGate-adjacent admission boundary (claim_type/
-                # source_status are exactly what TruthGate itself just gated
-                # on).
-                fact["truth_status"] = _truth_status_for(
-                    fact.get("claim_type", "WORLD_FACT"), fact.get("source_status"))
-            else:
-                # Ordinary recall of an already-canonical fact: never
-                # recompute or silently overwrite its persisted verdict (#257
-                # review) — a curator's CURATOR_OVERRIDE, or any other
-                # already-assigned truth_status, must survive repeated recall
-                # unchanged. Read the CURRENT persisted value directly from L3
-                # rather than trusting it was threaded through unmutated from
-                # retrieve()/build_facts_pack() — missing/malformed stays
-                # missing/malformed (CanonicalView fails closed on it), it is
-                # never backfilled here.
-                existing_node = graph.get_fact(fact["fact_id"])
-                fact["truth_status"] = existing_node.get("truth_status") if existing_node else None
+            fact["truth_status"] = _truth_status_for(
+                fact.get("claim_type", "WORLD_FACT"), fact.get("source_status"))
             # The only entry into L3: the canonical MERGE strictly after the TruthGate.
             # We merge the persistent record (created_at/metadata → for SleepCycle),
             # not the transient fact with _score (see _l3_payload).
