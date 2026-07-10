@@ -334,7 +334,11 @@ def test_verify_receipt_reports_evidence_drift(monkeypatch):
     from core import provenance, evidence
     from core.pipeline import run
     from core.memory import update_fact
-    fid = ingest("The Eiffel Tower is in Paris")["fact"]["fact_id"]
+    # source_status="EXTERNAL": truth_status=VERIFIED, so CanonicalView strict
+    # grounding (core/canonical_view.py) treats this fact as groundable — this
+    # test is about receipt/evidence-drift replay, not ingest write-policy.
+    fid = ingest("The Eiffel Tower is in Paris",
+                 source_status="EXTERNAL")["fact"]["fact_id"]
     evidence.attach_evidence(fid, "guide.pdf", source_kind="file",
                             claim="The Eiffel Tower is in Paris")
     receipt = provenance.build_receipt(run("where is the Eiffel Tower"))

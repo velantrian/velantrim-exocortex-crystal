@@ -15,22 +15,63 @@
 # (Done: HybridRetriever graph-walk over vector-recall — see _graph_walk below.)
 
 import logging
+import math
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from core.trace import build_trace, promote_trace, format_trace
 from core.memory import (
     store_fact, get_fact, transition_esm, ESM_TRANSITIONS,
-    l3_secondary_sync_admissible,
+    l3_secondary_sync_admissible, DEFAULT_SOURCE_STATUS,
 )
 from core.queue import get_outbox_queue
 from core.l3_graph import get_l3_graph
 from core.embedding import get_embedder, cosine, assert_compatible_embedder
 from core.retrieval_config import get_retrieval_config
 from core.generation import get_generator
+from core.canonical_view import project_canonical
 from core.rrf import rrf_fuse
 from core import metrics, adaptation
 
 logger = logging.getLogger(__name__)
+
+
+def _safe_confidence(value: Any, default: float = 0.0) -> float:
+    """Coerce a retrieved/persisted confidence value to a float, failing
+    closed (0.0) on:
+      - a malformed non-numeric value (e.g. a string/list from a corrupted
+        or legacy node) — would otherwise raise TypeError/ValueError;
+      - a non-finite value (NaN, +/-Infinity) — float("nan") and
+        float("inf") both convert without raising, but NaN compares False
+        against every relational operator (>, <=, <), so a downstream
+        `confidence > 0` / `confidence <= 0` check silently passes it
+        through instead of rejecting it, and +Infinity legitimately
+        satisfies every "confidence >= threshold" check there is (#257
+        review round 4);
+      - a value outside the canonical [0.0, 1.0] confidence domain
+        (schemas/fact.schema.json: minimum 0.0, maximum 1.0; core/api.py's
+        IngestRequest.confidence: Field(ge=0.0, le=1.0)).
+    Used everywhere a raw L3 node's `confidence` field is read arithmetically
+    (retrieve()'s scoring) or compared (Guardian), which must not raise on,
+    or be fooled by, any of the above."""
+    try:
+        confidence = float(value)
+    except (TypeError, ValueError):
+        return default
+    if not math.isfinite(confidence):
+        return default
+    if not 0.0 <= confidence <= 1.0:
+        return default
+    return confidence
+
+
+def _safe_source(value: Any) -> Optional[str]:
+    """A non-empty string, or None. A malformed non-string source (e.g. a
+    list/dict from a corrupted node) is treated as missing, not stored
+    as-is — the `source` column is TEXT NOT NULL, so a raw non-string value
+    would raise out of store_fact() instead of failing closed at Guardian
+    (#257 review round 3)."""
+    return value if isinstance(value, str) and value.strip() else None
+
 
 # ─── RETRIEVAL CORPUS (source for retrieve, not L3) ──────────────────────────
 # Issue #65: demo seed facts are opt-in only (VELANTRIM_DEMO_SEED=1).
@@ -112,16 +153,34 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
         })
 
     def _from_node(node: Dict[str, Any], score: float, origin: str) -> Dict[str, Any]:
+        # source_status/epistemic_state: default to the safe, non-privileged
+        # pending values (UNKNOWN / Observed) rather than a value that implies
+        # verification (DERIVED is a "privileged" source_status per
+        # core.pipeline._truth_status_for; "Validated" is already-canonical) —
+        # a malformed/legacy L3 node missing these fields must not silently
+        # gain trust it never earned (#257 review). truth_status is propagated
+        # AS-IS (no default at all): this is the node's own persisted verdict,
+        # read-through by run()'s recall path (never recomputed on ordinary
+        # recall — see run()'s ESM-promotion loop) and judged by
+        # core.canonical_view, which fails closed on a missing/unknown value.
+        # source/confidence: no fail-open synthesis either — a node missing
+        # real provenance (source=None, not "memory") or confidence
+        # (confidence=0.0, not 1.0) must fail Guardian's structural checks
+        # (all_have_source / all_have_positive_confidence), not pass through
+        # looking like an authoritative, fully-confident fact (#257 review
+        # round 3). build_facts_pack() is responsible for not crashing L1
+        # storage on a None/malformed source — see its own docstring.
         return {
             "id":              node["fact_id"],
             "text":            node.get("claim", ""),
-            "source":          node.get("source", "memory"),
-            "confidence":      node.get("confidence", 1.0),
+            "source":          node.get("source"),
+            "confidence":      _safe_confidence(node.get("confidence", 0.0)),
             "claim_type":      node.get("claim_type", "WORLD_FACT"),
-            "source_status":   node.get("source_status", "DERIVED"),
+            "source_status":   node.get("source_status", DEFAULT_SOURCE_STATUS),
             "significance":    node.get("significance", 0.5),
             "_score":          round(score, 4),
-            "epistemic_state": node.get("epistemic_state", "Validated"),
+            "epistemic_state": node.get("epistemic_state", "Observed"),
+            "truth_status":    node.get("truth_status"),
             "origin":          origin,
         }
 
@@ -133,7 +192,11 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
             continue
         if node.get("restricted"):
             continue  # GDPR Art. 18: restricted facts do not take part in processing
-        vector_items.append(_from_node(node, sim * node.get("confidence", 1.0), "memory"))
+        # confidence: 0.0 (not 1.0) for a node missing it, and coerced safely
+        # for a malformed non-numeric value — a malformed node must not rank
+        # as if maximally confident, or crash the multiplication (#257 review
+        # round 3).
+        vector_items.append(_from_node(node, sim * _safe_confidence(node.get("confidence", 0.0)), "memory"))
         vector_hits.append(node)
 
     # Source 3: multi-hop graph-walk from vector hits (associative recall).
@@ -149,7 +212,8 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
     graph_score: Dict[str, float] = {}
     node_cache: Dict[str, Dict[str, Any]] = {}
     current = {
-        hit["fact_id"]: hit.get("_relevance", 0.0) * hit.get("confidence", 1.0)
+        # confidence: 0.0 default + safe coercion — see the note above.
+        hit["fact_id"]: hit.get("_relevance", 0.0) * _safe_confidence(hit.get("confidence", 0.0))
         for hit in vector_hits
     }
     for _hop in range(cfg.graph_walk_hops):
@@ -214,7 +278,12 @@ def build_facts_pack(
     """
     Assemble a FactsPack from the retrieved facts.
     Each fact is stored in L0/L1 memory via store_fact().
-    truth_status = UNVERIFIED until passing the TruthGate.
+    truth_status: an item recalled from L3 (core.pipeline._from_node) carries
+    its own persisted verdict through unchanged — a brand-new item (no prior
+    verdict) defaults to UNVERIFIED. Never invented here; run()'s ESM-
+    promotion loop is the only place a fresh truth_status is computed (for a
+    genuinely new admission), and it never recomputes/overwrites an existing
+    persisted verdict on ordinary recall (#257 review).
     epistemic_state is taken from retrieve() — the owner of the initial ESM state.
     """
     facts: List[Dict[str, Any]] = []
@@ -227,30 +296,46 @@ def build_facts_pack(
         fact = {
             "fact_id":         fact_id,
             "claim":           item["text"],
-            "source":          item["source"],
             # confidence — EPISTEMIC confidence (from the source or the L3 canon),
             # not a relevance rank. Previously item["_score"]
             # (similarity × confidence) was written here, and that value traveled via merge_fact
             # into the canon, silently eroding the node's confidence on EVERY recall (sim ≤ 1 →
             # confidence only fell). The relevance rank lives separately, in
             # _score, and does not reach the canon (see _l3_payload).
-            "confidence":      round(float(item.get("confidence", item.get("_score", 0.5))), 4),
+            "confidence":      round(_safe_confidence(item.get("confidence", item.get("_score", 0.5))), 4),
             "epistemic_state": item["epistemic_state"],  # from retrieve(), not duplicated
             # retrieval facts — claims about the world from an external source.
             "claim_type":      item.get("claim_type", "WORLD_FACT"),
-            "source_status":   item.get("source_status", "EXTERNAL"),
+            "source_status":   item.get("source_status", DEFAULT_SOURCE_STATUS),
             "significance":    item.get("significance", 0.5),
-            "truth_status":    "UNVERIFIED",
+            "truth_status":    item.get("truth_status", "UNVERIFIED"),
         }
+        # source: only set the key when it's a genuine non-empty string. A
+        # missing/malformed source (core.pipeline._from_node no longer
+        # invents "memory" for it) is left OUT of `fact` entirely — Guardian
+        # (fact.get("source")) then correctly sees it as missing and blocks,
+        # while store_fact()'s own "unknown" fallback (fact.get("source",
+        # "unknown")) keeps the L1 write itself from raising on the
+        # source TEXT NOT NULL column (#257 review round 3).
+        safe_source = _safe_source(item.get("source"))
+        if safe_source is not None:
+            fact["source"] = safe_source
         # L0/L1 store (store_fact does not persist the transient _score).
         store_fact(fact)
-        # Sync epistemic_state from the persisted store: store_fact preserves the
-        # existing state on conflict, so the fact dict may carry a stale retrieve()
-        # value (e.g. demo-seed items always arrive as "Observed") while the DB
-        # already holds a more advanced state such as "Validated".
+        # Sync epistemic_state and restricted from the persisted store:
+        # store_fact preserves the existing state on conflict, so the fact
+        # dict may carry a stale retrieve() value (e.g. demo-seed items
+        # always arrive as "Observed") while the DB already holds a more
+        # advanced state such as "Validated" — or a processing restriction
+        # applied after this fact_id was last retrieved. `restricted` is
+        # required by core.canonical_view.is_strict_canonical(); retrieve()
+        # already excludes restricted L3 nodes from candidacy, but syncing it
+        # here too is defense-in-depth against this exact field going stale
+        # or missing by the time generate_answer() runs.
         persisted = get_fact(fact_id)
         if persisted:
             fact["epistemic_state"] = persisted["epistemic_state"]
+            fact["restricted"] = bool(persisted.get("restricted"))
         # _score — the relevance rank, only for ordering the pack; not written
         # to the canon (_l3_payload takes the clean persistent record without _score).
         fact["_score"] = round(float(item.get("_score", fact["confidence"])), 4)
@@ -298,8 +383,16 @@ def guardian_diagnose(
         "all_have_fact_id": all(bool(f.get("fact_id")) for f in facts),
         "all_have_claim": all(bool(f.get("claim")) for f in facts),
         "all_have_source": all(bool(f.get("source")) for f in facts),
+        # _safe_confidence(), not a raw float(...) > 0: Guardian must reject
+        # non-finite (NaN/+-Infinity) and malformed confidence itself, not
+        # merely trust that a caller already sanitized it (#257 review round
+        # 4) — NaN compares False against every relational operator, so a raw
+        # `float(x) > 0` silently treats it as "not positive" here but a raw
+        # `<= 0` below would ALSO be False, letting it slip through the
+        # per-fact block undetected; a raw `float(x)` on a non-numeric value
+        # would also crash this comprehension outright.
         "all_have_positive_confidence": all(
-            float(f.get("confidence", 0)) > 0 for f in facts),
+            _safe_confidence(f.get("confidence", 0)) > 0 for f in facts),
     }
 
     if not checks["facts_non_empty"]:
@@ -324,7 +417,7 @@ def guardian_diagnose(
         if not fact.get("source"):
             return {"verdict": GUARDIAN_VERDICT_BLOCK,
                     "reason": f"Fact without source: {fact['fact_id']}", "checks": checks}
-        if fact.get("confidence", 0) <= 0:
+        if _safe_confidence(fact.get("confidence", 0)) <= 0:
             return {"verdict": GUARDIAN_VERDICT_BLOCK,
                     "reason": f"Zero confidence: {fact['fact_id']}", "checks": checks}
 
@@ -396,24 +489,32 @@ def generate_answer(
     trace: List[Dict[str, Any]],
 ) -> Dict[str, Any]:
     """
-    Generate an answer from verified facts via get_generator().
+    Generate an answer from strict-canonical facts via get_generator().
     Default backend extractive (concatenation); LLM — via VELANTRIM_GENERATOR=anthropic.
+
+    Grounding uses core.canonical_view's default STRICT read projection, not a
+    raw ESM-state filter: physical L3 membership or epistemic_state ==
+    "Validated"/"Supported" does not by itself make a fact suitable grounding
+    for a confident factual answer — e.g. a USER_CLAIMED WORLD_FACT can reach
+    epistemic_state "Validated" without ever being externally verified. See
+    docs/CANONICAL_VIEW_RFC.md and core/canonical_view.py for the full
+    rationale; this is the smallest production-safe runtime slice of that RFC.
     """
-    validated_facts = [
-        f for f in facts_pack["facts"]
-        if f.get("epistemic_state") in {"Validated", "Supported"}
-    ]
-    if not validated_facts:
-        # Issue #64: a verifiable memory system must not answer from unvalidated
-        # material. No Validated/Supported facts → insufficient grounding → block.
+    canonical_facts = project_canonical(facts_pack["facts"])
+    if not canonical_facts:
+        # Issue #64 + CanonicalView: a verifiable memory system must not answer
+        # from material that is not strict-canonical (VERIFIED, non-contradicted/
+        # -deprecated, unrestricted, identity-complete). No such facts →
+        # insufficient grounding → block, even if unvalidated/non-canonical
+        # material (e.g. USER_CLAIMED) is present.
         logger.warning(
-            "generate_answer: no Validated/Supported facts — blocking answer "
-            "(%d unvalidated fact(s) present but not usable as grounding)",
+            "generate_answer: no strict-canonical facts — blocking answer "
+            "(%d non-canonical fact(s) present but not usable as grounding)",
             len(facts_pack["facts"]),
         )
         return {
             "answer":      None,
-            "error":       "insufficient grounding: no Validated or Supported facts available",
+            "error":       "insufficient grounding: no strict-canonical (VERIFIED) facts available",
             "query":       facts_pack.get("query", ""),
             "facts":       [],
             "trace":       trace,
@@ -421,15 +522,36 @@ def generate_answer(
             "total_facts": 0,
         }
 
-    answer = get_generator().generate(facts_pack.get("query", ""), validated_facts)
+    answer = get_generator().generate(facts_pack.get("query", ""), canonical_facts)
+
+    # Prune the trace to exactly the fact_ids that grounded this answer: the
+    # public trace must not claim provenance for retrieved-but-excluded
+    # material (e.g. a USER_CLAIMED candidate that never grounded anything).
+    # set(result["facts"] fact_ids) == set(result["trace"] fact_ids) for every
+    # successful strict answer (#257 review). Each surviving trace element's
+    # epistemic_state is also synced to the corresponding fact's REAL final
+    # state — run()'s blanket promote_trace(trace, "Validated") call stamps
+    # every trace element "Validated" regardless of what the fact actually
+    # is, so an ImmutableCore (or any non-"Validated" but still strict-
+    # canonical) grounding fact must not be misreported as "Validated" in its
+    # own trace entry (#257 review round 3).
+    canonical_by_id = {f["fact_id"]: f for f in canonical_facts}
+    grounded_trace = []
+    for t in trace:
+        fid = t.get("fact_id")
+        if fid not in canonical_by_id:
+            continue
+        entry = dict(t)
+        entry["epistemic_state"] = canonical_by_id[fid].get("epistemic_state")
+        grounded_trace.append(entry)
 
     return {
         "answer":       answer,
         "query":        facts_pack.get("query", ""),
-        "facts":        _public_facts(validated_facts),
-        "trace":        trace,
-        "trace_fmt":    format_trace(trace),
-        "total_facts":  len(validated_facts),
+        "facts":        _public_facts(canonical_facts),
+        "trace":        grounded_trace,
+        "trace_fmt":    format_trace(grounded_trace),
+        "total_facts":  len(canonical_facts),
     }
 
 
@@ -653,8 +775,40 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     graph = get_l3_graph()
     try:
         for fact in facts_pack["facts"]:
-            # A recall fact from L3 is already Validated — a repeated transition is not allowed in
-            # the ESM matrix, so we only transition the not-yet-validated ones.
+            # Admission-vs-recall must key off PHYSICAL L3 presence, not ESM
+            # state (#257 review round 3): an L3 node that already exists —
+            # legitimately Observed/Hypothesized/Supported, or with a
+            # missing/malformed epistemic_state on a corrupted/legacy record —
+            # is an ORDINARY RECALL, not a new admission, regardless of what
+            # epistemic_state the retrieved item/L1 row currently shows
+            # (build_facts_pack()'s store_fact() upsert can create/refresh an
+            # L1 row for a fact_id that is already a physical L3 node, e.g.
+            # when L1 lost its copy — that must not be mistaken for "this
+            # fact has never been admitted"). Using ESM state alone here was
+            # the actual bug: it let a malformed L3 node (missing
+            # epistemic_state -> _from_node() defaults it to "Observed") be
+            # treated as brand new, auto-transitioned to Validated, and have
+            # its real persisted truth_status silently recomputed/overwritten.
+            existing_node = graph.get_fact(fact["fact_id"])
+            if existing_node is not None:
+                # Ordinary recall: do not auto-transition it merely because a
+                # query touched it, and do not recompute/overwrite its
+                # persisted verdict — promotion of pending or non-canonical
+                # physical-L3 material requires an explicit admission/review
+                # path (core.review.approve / core.reconcile), not ordinary
+                # answer retrieval. No write to L3 happens for this fact.
+                fact["epistemic_state"] = existing_node.get("epistemic_state")
+                fact["truth_status"] = existing_node.get("truth_status")
+                continue
+
+            # Genuinely new to the L3 canon (this also correctly covers the
+            # L1-Validated/L3-missing outbox-recovery case: epistemic_state is
+            # already "Validated" here, so the transition attempt below is
+            # skipped — Validated->Validated is illegal in the ESM matrix —
+            # but there is still no PRIOR L3 verdict to preserve, since this
+            # fact_id was never actually merged, so truth_status is computed
+            # fresh below, exactly reproducing what the original admission
+            # would have set).
             if fact.get("epistemic_state") != "Validated":
                 # Promotion guard: only attempt the transition if "Validated" is a
                 # reachable next state from the fact's current ESM state. Terminal
@@ -676,7 +830,9 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
                 updated = get_fact(fact["fact_id"])
                 if updated:
                     fact["epistemic_state"] = updated["epistemic_state"]
-            fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"), fact.get("source_status"))
+
+            fact["truth_status"] = _truth_status_for(
+                fact.get("claim_type", "WORLD_FACT"), fact.get("source_status"))
             # The only entry into L3: the canonical MERGE strictly after the TruthGate.
             # We merge the persistent record (created_at/metadata → for SleepCycle),
             # not the transient fact with _score (see _l3_payload).
@@ -694,10 +850,18 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
 
     promote_trace(trace, "Validated")
 
-    # 7. Generate
-    metrics.incr("query.answered")
-    adaptation.record_success()     # a healthy outcome → the threshold relaxes
-    return generate_answer(facts_pack, trace)
+    # 7. Generate — metrics/adaptation must reflect the ACTUAL CanonicalView
+    # outcome, not merely that L3 promotion succeeded. A CanonicalView refusal
+    # here (no strict-canonical facts) is a block, not a success — reaching
+    # this line does not itself guarantee generate_answer() will answer.
+    result = generate_answer(facts_pack, trace)
+    if result.get("answer") is not None:
+        metrics.incr("query.answered")
+        adaptation.record_success()     # a healthy outcome → the threshold relaxes
+    else:
+        metrics.incr("query.blocked")
+        adaptation.record_block()       # stress → verification rises (RFC0071)
+    return result
 
 
 def _blocked(

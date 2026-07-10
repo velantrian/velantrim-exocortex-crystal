@@ -329,14 +329,33 @@ def run_baseline(fixture: List[Dict[str, str]] | None = None, *, k: int = 5,
 
     # 0. Ingest distractor facts so retrieval ranking is non-trivial (the target
     #    fact must out-rank unrelated facts that share the same canon).
+    # Deliberately left as plain ingest() (source_status default →
+    # truth_status=USER_CLAIMED, never VERIFIED): distractors are ranking
+    # noise only, never intended to ground an answer or carry evidence. If
+    # they were EXTERNAL/VERIFIED, an unrelated distractor pulled into the
+    # same facts_pack as a target case (close vector similarity / graph-walk)
+    # would be cited as VERIFIED grounding with no evidence attached and fail
+    # strict-provenance receipt verification for a reason unrelated to this
+    # corpus's actual retrieval/grounding quality.
     for text in distractors:
         ingest(text)
 
     # 1. Ingest the corpus; remember the fact id for each expected claim. Attach a
     #    source-span evidence record so source-span coverage is measured on real data.
+    # source_status="EXTERNAL": this fixture represents a curated reference
+    # corpus (docs/EVAL.md), the same convention core/demo_seed.py documents
+    # for "curated reference knowledge, not user reports". Without this,
+    # ingest()'s classifier defaults every utterance to source_status=
+    # USER_REPORTED, which core.pipeline._truth_status_for() maps to
+    # truth_status=USER_CLAIMED — never VERIFIED — so after CanonicalView
+    # strict grounding (this PR), run()/generate_answer() would abstain on
+    # every case and collapse receipt_replay_survival to 0, not because
+    # retrieval/grounding quality regressed, but because the fixture was
+    # accidentally exercising the "unverified user claim" path instead of the
+    # "verified external corpus" path it is documented to simulate.
     claim_to_id: Dict[str, str] = {}
     for case in cases:
-        res = ingest(case["claim"])
+        res = ingest(case["claim"], source_status="EXTERNAL")
         fid = res["fact"]["fact_id"]
         claim_to_id[case["claim"]] = fid
         evidence.attach_evidence(fid, "eval-fixture", source_kind="fixture",

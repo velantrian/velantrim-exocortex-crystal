@@ -631,6 +631,696 @@ def test_generate_answer_blocks_when_nothing_validated():
     assert out["total_facts"] == 0
 
 
+# ─── CanonicalView strict grounding (core/canonical_view.py) ──────────────────
+
+def _pack(*facts):
+    return {"facts": list(facts), "query": "q", "total": len(facts)}
+
+
+def test_generate_answer_blocks_on_user_claimed_facts_only():
+    """A USER_CLAIMED WORLD_FACT reaching epistemic_state Validated must NOT
+    ground a confident answer — the exact trust-boundary gap this PR closes.
+    High confidence and epistemic_state=Validated must not change the result."""
+    from core.pipeline import generate_answer
+    pack = _pack({
+        "fact_id": "u1", "claim": "My cat is the smartest animal alive",
+        "source": "user", "claim_type": "WORLD_FACT",
+        "source_status": "USER_REPORTED", "truth_status": "USER_CLAIMED",
+        "epistemic_state": "Validated", "confidence": 1.0, "restricted": False,
+    })
+    out = generate_answer(pack, trace=[])
+    assert out["answer"] is None
+    assert "strict-canonical" in out["error"] or "VERIFIED" in out["error"]
+    assert out["total_facts"] == 0
+    assert out["facts"] == []
+
+
+def test_generate_answer_grounds_only_the_verified_fact_from_a_mixed_pack():
+    """Mixed candidate set: VERIFIED, USER_CLAIMED, Contradicted, restricted —
+    only the VERIFIED, unrestricted, non-contradicted fact grounds the answer."""
+    from core.pipeline import generate_answer
+    verified = {
+        "fact_id": "v1", "claim": "Verified claim", "source": "src",
+        "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+        "truth_status": "VERIFIED", "epistemic_state": "Validated",
+        "confidence": 0.9, "restricted": False,
+    }
+    user_claimed = {**verified, "fact_id": "u1", "claim": "User claim",
+                    "source_status": "USER_REPORTED", "truth_status": "USER_CLAIMED"}
+    contradicted = {**verified, "fact_id": "c1", "epistemic_state": "Contradicted"}
+    restricted = {**verified, "fact_id": "r1", "restricted": True}
+
+    out = generate_answer(
+        _pack(verified, user_claimed, contradicted, restricted), trace=[])
+
+    assert out["answer"] is not None
+    assert out["total_facts"] == 1
+    assert [f["fact_id"] for f in out["facts"]] == ["v1"]
+
+
+def test_run_refuses_when_retrieval_surfaces_only_user_claimed_material(monkeypatch):
+    """End-to-end refusal (Test 6): when retrieve() finds only user-claimed /
+    otherwise non-canonical material, run() must refuse (existing
+    insufficient-evidence behavior), never hallucinate an answer from the
+    excluded claims."""
+    from core import pipeline
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [{
+        "id": "u1", "text": "My cat is the smartest animal alive",
+        "source": "user", "confidence": 1.0, "claim_type": "WORLD_FACT",
+        "source_status": "USER_REPORTED", "significance": 0.5,
+        "_score": 0.9, "epistemic_state": "Observed", "origin": "retrieval",
+    }])
+    result = pipeline.run("smartest animal")
+    assert result["answer"] is None
+    assert "insufficient grounding" in (result.get("error") or "")
+
+
+def test_run_end_to_end_verified_grounding_trace_and_receipt_unaffected():
+    """Regression pin (Test 9): a genuinely VERIFIED fact's trace, receipt and
+    evidence-span behavior must be unchanged by CanonicalView strict grounding."""
+    from core.ingest import ingest
+    from core.pipeline import run
+    from core import evidence, provenance
+
+    fid = ingest("Argon is a noble gas",
+                 source_status="EXTERNAL")["fact"]["fact_id"]
+    evidence.attach_evidence(fid, "chem.md", source_kind="file")
+
+    result = run("is argon a noble gas")
+    assert result["answer"] is not None
+    assert result["total_facts"] >= 1
+    assert result["trace"]
+    assert all(f["truth_status"] == "VERIFIED" for f in result["facts"])
+
+    receipt = provenance.build_receipt(result)
+    verified = provenance.verify_receipt(receipt, strict_provenance=True)
+    assert verified["verified"] is True
+
+
+# ─── Blocker 1 (#257 review): preserve authoritative L3 truth metadata ────────
+# _from_node() must not fail-open default missing trust fields, and run()'s
+# ESM-promotion loop must never recompute/overwrite an already-persisted L3
+# verdict on ordinary recall (only on a genuinely new admission).
+
+def _seed_l1_and_l3(fact_id, *, epistemic_state="Validated",
+                    claim_type="WORLD_FACT", source_status="EXTERNAL",
+                    confidence=0.9, l3_node=None):
+    """Directly seed L1 (SQLite) + L3 (graph) as an already-canonical fact,
+    bypassing ingest()/run()'s own admission — lets a test control exactly
+    what the L3 node's persisted truth_status is (including a malformed/
+    missing one) independent of what the pipeline would normally compute."""
+    from core.memory import store_fact
+    from core.l3_graph import get_l3_graph
+    claim = f"claim text for {fact_id}"
+    store_fact({
+        "fact_id": fact_id, "claim": claim, "source": "seed",
+        "confidence": confidence, "epistemic_state": epistemic_state,
+        "claim_type": claim_type, "source_status": source_status,
+        "significance": 0.5,
+    })
+    node = {"fact_id": fact_id, "claim": claim, "source": "seed",
+            "confidence": confidence, "epistemic_state": epistemic_state,
+            "claim_type": claim_type, "source_status": source_status}
+    if l3_node:
+        node.update(l3_node)
+    get_l3_graph().merge_fact(node)
+    return claim
+
+
+def _retrieved_item(fact_id, claim, epistemic_state="Validated", **overrides):
+    """A retrieve()-shaped item for the given already-seeded fact_id, as
+    _from_node() would build it (used with a monkeypatched retrieve() to
+    isolate run()'s own recall-vs-new-admission handling from real vector
+    search/embedding mechanics)."""
+    item = {
+        "id": fact_id, "text": claim, "source": "seed", "confidence": 0.9,
+        "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+        "significance": 0.5, "_score": 0.9, "epistemic_state": epistemic_state,
+        "origin": "memory",
+    }
+    item.update(overrides)
+    return item
+
+
+def test_persisted_user_claimed_truth_status_survives_recall_never_becomes_verified(monkeypatch):
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    fid = "recall-user-claimed"
+    claim = _seed_l1_and_l3(fid, source_status="USER_REPORTED",
+                           l3_node={"truth_status": "USER_CLAIMED"})
+    monkeypatch.setattr(pipeline, "retrieve",
+                       lambda q, k=3: [_retrieved_item(fid, claim)])
+
+    result = pipeline.run("q")
+
+    assert get_l3_graph().get_fact(fid)["truth_status"] == "USER_CLAIMED"
+    assert result["answer"] is None
+    assert "insufficient grounding" in (result.get("error") or "")
+
+
+def test_persisted_curator_override_truth_status_survives_recall_never_becomes_verified(monkeypatch):
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    fid = "recall-curator-override"
+    claim = _seed_l1_and_l3(fid, l3_node={"truth_status": "CURATOR_OVERRIDE"})
+    monkeypatch.setattr(pipeline, "retrieve",
+                       lambda q, k=3: [_retrieved_item(fid, claim)])
+
+    result = pipeline.run("q")
+
+    assert get_l3_graph().get_fact(fid)["truth_status"] == "CURATOR_OVERRIDE"
+    assert result["answer"] is None
+    assert "insufficient grounding" in (result.get("error") or "")
+
+
+def test_recall_of_l3_node_missing_truth_status_fails_closed_not_backfilled(monkeypatch):
+    """A malformed/legacy L3 node that is already Validated but was NEVER
+    assigned a truth_status must not have one invented for it on recall."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    fid = "recall-missing-truth-status"
+    claim = _seed_l1_and_l3(fid)  # l3_node has no truth_status key at all
+    monkeypatch.setattr(pipeline, "retrieve",
+                       lambda q, k=3: [_retrieved_item(fid, claim)])
+
+    result = pipeline.run("q")
+
+    assert get_l3_graph().get_fact(fid).get("truth_status") is None
+    assert result["answer"] is None
+    assert "insufficient grounding" in (result.get("error") or "")
+
+
+def test_recall_of_l3_node_with_unknown_truth_status_fails_closed(monkeypatch):
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    fid = "recall-unknown-truth-status"
+    claim = _seed_l1_and_l3(fid, l3_node={"truth_status": "PROBABLY_TRUE"})
+    monkeypatch.setattr(pipeline, "retrieve",
+                       lambda q, k=3: [_retrieved_item(fid, claim)])
+
+    result = pipeline.run("q")
+
+    assert get_l3_graph().get_fact(fid)["truth_status"] == "PROBABLY_TRUE"  # untouched
+    assert result["answer"] is None
+
+
+def test_persisted_verified_fact_continues_to_answer_across_recall(monkeypatch):
+    """Regression: a genuinely VERIFIED fact's verdict must also survive
+    recall unchanged (not just the negative cases above)."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    fid = "recall-verified"
+    claim = _seed_l1_and_l3(fid, l3_node={"truth_status": "VERIFIED"})
+    monkeypatch.setattr(pipeline, "retrieve",
+                       lambda q, k=3: [_retrieved_item(fid, claim)])
+
+    result = pipeline.run("q")
+
+    assert get_l3_graph().get_fact(fid)["truth_status"] == "VERIFIED"
+    assert result["answer"] is not None
+    assert [f["fact_id"] for f in result["facts"]] == [fid]
+
+
+def test_retrieve_defaults_missing_epistemic_state_to_observed_not_validated():
+    """_from_node() must not fail-open default a missing epistemic_state to
+    'Validated' — a malformed/legacy L3 node must not be treated as
+    already-canonical."""
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    get_l3_graph().merge_fact({
+        "fact_id": "malformed-no-esm",
+        "claim": "malformed node missing epistemic state entirely",
+        "source": "s", "confidence": 0.9,
+    })  # no epistemic_state key at all
+    hits = {h["id"]: h for h in retrieve("malformed node missing epistemic state entirely")}
+    assert hits["malformed-no-esm"]["epistemic_state"] == "Observed"
+
+
+def test_retrieve_defaults_missing_source_status_to_unknown_not_derived():
+    """_from_node() must not fail-open default a missing source_status to
+    'DERIVED' (a privileged, verification-implying value)."""
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    get_l3_graph().merge_fact({
+        "fact_id": "malformed-no-ss",
+        "claim": "malformed node missing source status field entirely",
+        "source": "s", "confidence": 0.9, "epistemic_state": "Validated",
+    })  # no source_status key at all
+    hits = {h["id"]: h for h in retrieve("malformed node missing source status field entirely")}
+    assert hits["malformed-no-ss"]["source_status"] == "UNKNOWN"
+
+
+def test_retrieve_propagates_persisted_truth_status_from_l3_node():
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    get_l3_graph().merge_fact({
+        "fact_id": "persisted-curator-override",
+        "claim": "a curator overridden claim about widgets and gadgets",
+        "source": "s", "confidence": 0.9, "epistemic_state": "Validated",
+        "truth_status": "CURATOR_OVERRIDE",
+    })
+    hits = {h["id"]: h for h in retrieve("a curator overridden claim about widgets and gadgets")}
+    assert hits["persisted-curator-override"]["truth_status"] == "CURATOR_OVERRIDE"
+
+
+def test_retrieve_missing_truth_status_on_l3_node_surfaces_as_none():
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    get_l3_graph().merge_fact({
+        "fact_id": "no-truth-status",
+        "claim": "a node with absolutely no truth status field present",
+        "source": "s", "confidence": 0.9, "epistemic_state": "Validated",
+    })
+    hits = {h["id"]: h for h in retrieve("a node with absolutely no truth status field present")}
+    assert hits["no-truth-status"]["truth_status"] is None
+
+
+def test_new_admission_with_missing_source_status_stays_unverified_not_verified(monkeypatch):
+    """A genuinely new candidate (no existing L3 node for this fact_id — see
+    test_genuinely_new_candidate_still_follows_truth_gate_admission_path for
+    the physical-presence check this relies on) missing source_status, and
+    promoted this round via the normal admission path, must compute
+    truth_status=UNVERIFIED (the safe UNKNOWN default), never VERIFIED (the
+    old fail-open DERIVED default) and must not crash."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    assert g.get_fact("pending-no-ss") is None  # genuinely new to L3
+    item = {
+        "id": "pending-no-ss",
+        "text": "a pending world fact missing source status entirely",
+        "source": "s", "confidence": 0.9, "claim_type": "WORLD_FACT",
+        "significance": 0.5, "_score": 0.9, "epistemic_state": "Observed",
+        "origin": "memory",
+    }  # no source_status key at all
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is None
+    node = g.get_fact("pending-no-ss")
+    assert node["epistemic_state"] == "Validated"   # promoted this round (new admission)
+    assert node["truth_status"] == "UNVERIFIED"     # never silently VERIFIED
+
+
+# ─── Blocker 3 (#257 review): facts/trace/metrics consistency ─────────────────
+
+def test_run_trace_contains_only_grounded_fact_ids_from_a_mixed_recall(monkeypatch):
+    """set(result.facts.fact_id) == set(result.trace.fact_id) for a successful
+    strict answer, even when retrieve() surfaces additional non-canonical
+    candidates alongside the grounding fact."""
+    from core import pipeline
+    verified_fid = "mixed-verified"
+    user_claimed_fid = "mixed-user-claimed"
+    v_claim = _seed_l1_and_l3(verified_fid, l3_node={"truth_status": "VERIFIED"})
+    u_claim = _seed_l1_and_l3(user_claimed_fid, source_status="USER_REPORTED",
+                             l3_node={"truth_status": "USER_CLAIMED"})
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [
+        _retrieved_item(verified_fid, v_claim),
+        _retrieved_item(user_claimed_fid, u_claim),
+    ])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is not None
+    fact_ids = {f["fact_id"] for f in result["facts"]}
+    trace_ids = {t["fact_id"] for t in result["trace"]}
+    assert fact_ids == trace_ids == {verified_fid}
+
+
+def test_strict_refusal_does_not_increment_query_answered_or_record_success(monkeypatch):
+    from core import pipeline, metrics, adaptation
+    metrics.reset()
+    calls = {"success": 0, "block": 0}
+    monkeypatch.setattr(adaptation, "record_success", lambda: calls.__setitem__("success", calls["success"] + 1))
+    monkeypatch.setattr(adaptation, "record_block", lambda: calls.__setitem__("block", calls["block"] + 1))
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [{
+        "id": "u1", "text": "My cat is the smartest animal alive",
+        "source": "user", "confidence": 1.0, "claim_type": "WORLD_FACT",
+        "source_status": "USER_REPORTED", "significance": 0.5,
+        "_score": 0.9, "epistemic_state": "Observed", "origin": "retrieval",
+    }])
+
+    result = pipeline.run("smartest animal")
+
+    assert result["answer"] is None
+    assert metrics.value("query.answered") == 0
+    assert metrics.value("query.blocked") == 1
+    assert calls["success"] == 0
+    assert calls["block"] == 1
+
+
+def test_successful_verified_answer_still_records_success_and_answered_metrics(monkeypatch):
+    from core import pipeline, metrics, adaptation
+    from core.ingest import ingest
+    ingest("Xenon is a noble gas", source_status="EXTERNAL")  # setup, before spying
+
+    metrics.reset()
+    calls = {"success": 0, "block": 0}
+    monkeypatch.setattr(adaptation, "record_success", lambda: calls.__setitem__("success", calls["success"] + 1))
+    monkeypatch.setattr(adaptation, "record_block", lambda: calls.__setitem__("block", calls["block"] + 1))
+
+    result = pipeline.run("is xenon a noble gas")
+
+    assert result["answer"] is not None
+    assert metrics.value("query.answered") == 1
+    assert metrics.value("query.blocked") == 0
+    assert calls["success"] == 1
+    assert calls["block"] == 0
+
+
+# ─── Blocker 1 round 3 (#257 review): admission decision keys off physical ────
+# L3 presence, not ESM state. An L3 node that already exists — legitimately
+# pending, or with a missing/malformed epistemic_state on a corrupted/legacy
+# record — is an ordinary recall, never a new admission, regardless of what
+# epistemic_state the retrieved item/L1 row shows.
+
+def test_existing_l3_node_user_claimed_external_missing_esm_refused_and_unchanged(monkeypatch):
+    """Blocker 1 test 1: an existing L3 node with truth_status=USER_CLAIMED,
+    source_status=EXTERNAL, and a MISSING epistemic_state must be treated as
+    an ordinary recall (not a new admission) — run() must refuse and leave
+    the node completely unchanged. This is the exact exploit path from the
+    review: a missing epistemic_state used to make _from_node() default to
+    "Observed", which made run() (wrongly, keying off ESM state) treat this
+    as a new admission, transition it to Validated, and recompute
+    truth_status=VERIFIED from source_status=EXTERNAL — silently overwriting
+    the real USER_CLAIMED verdict."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "exploit-user-claimed-external"
+    claim = "an exploit scenario claim about widgets and gizmos"
+    g.merge_fact({"fact_id": fid, "claim": claim, "source": "s", "confidence": 0.9,
+                 "source_status": "EXTERNAL", "truth_status": "USER_CLAIMED"})
+    # no epistemic_state key at all on the L3 node
+    before = dict(g.get_fact(fid))
+
+    item = {"id": fid, "text": claim, "source": "s", "confidence": 0.9,
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Observed",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is None
+    assert "insufficient grounding" in (result.get("error") or "")
+    assert g.get_fact(fid) == before  # completely unchanged
+
+
+def test_existing_l3_node_curator_override_supported_remains_unchanged_and_excluded(monkeypatch):
+    """Blocker 1 test 2: an existing L3 node with truth_status=CURATOR_OVERRIDE,
+    epistemic_state=Supported must remain exactly that and be excluded from
+    strict grounding — never auto-promoted or recomputed."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "exploit-curator-override-supported"
+    claim = "an exploit scenario claim about gadgets and thingamajigs"
+    g.merge_fact({"fact_id": fid, "claim": claim, "source": "s", "confidence": 0.9,
+                 "epistemic_state": "Supported", "truth_status": "CURATOR_OVERRIDE"})
+    before = dict(g.get_fact(fid))
+
+    item = {"id": fid, "text": claim, "source": "s", "confidence": 0.9,
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Supported",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is None
+    after = g.get_fact(fid)
+    assert after == before
+    assert after["truth_status"] == "CURATOR_OVERRIDE"
+    assert after["epistemic_state"] == "Supported"
+
+
+def test_existing_l3_node_verified_observed_fails_closed_not_promoted(monkeypatch):
+    """Blocker 1 test 3: an existing L3 node with truth_status=VERIFIED,
+    epistemic_state=Observed must fail closed (Observed is pre-canonical, not
+    in the strict ESM allowlist) and must NOT be promoted to Validated merely
+    by a query touching it."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "exploit-verified-observed"
+    claim = "an exploit scenario claim about doohickeys and contraptions"
+    g.merge_fact({"fact_id": fid, "claim": claim, "source": "s", "confidence": 0.9,
+                 "epistemic_state": "Observed", "truth_status": "VERIFIED"})
+
+    item = {"id": fid, "text": claim, "source": "s", "confidence": 0.9,
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Observed",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is None
+    after = g.get_fact(fid)
+    assert after["epistemic_state"] == "Observed"   # never auto-promoted
+    assert after["truth_status"] == "VERIFIED"       # untouched
+
+
+def test_genuinely_new_candidate_still_follows_truth_gate_admission_path(monkeypatch):
+    """Blocker 1 test 4: a fact_id with NO existing L3 node is a genuinely new
+    admission and must still follow the normal ESM-transition +
+    _truth_status_for() path."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "genuinely-new-candidate"
+    assert g.get_fact(fid) is None
+    item = {"id": fid, "text": "a genuinely new claim about sprockets and cogs",
+            "source": "s", "confidence": 0.9, "claim_type": "WORLD_FACT",
+            "source_status": "EXTERNAL", "significance": 0.5, "_score": 0.9,
+            "epistemic_state": "Observed", "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is not None
+    after = g.get_fact(fid)
+    assert after["epistemic_state"] == "Validated"
+    assert after["truth_status"] == "VERIFIED"
+
+
+def test_new_admission_with_non_promotable_state_is_skipped_not_merged(monkeypatch):
+    """A fact_id genuinely new to L3 (never merged) but arriving with a
+    non-promotable epistemic_state (e.g. Collapsed) must be skipped, not
+    force-promoted or merged — the pre-existing terminal-state guard, now
+    reachable only via the genuinely-new-admission branch (#257 review round
+    3: an L3-existing fact takes the "not new admission" branch and never
+    reaches this check at all)."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "new-but-collapsed"
+    assert g.get_fact(fid) is None
+    item = {"id": fid, "text": "a fact that arrives already collapsed and new to l3",
+            "source": "s", "confidence": 0.9, "claim_type": "WORLD_FACT",
+            "source_status": "EXTERNAL", "significance": 0.5, "_score": 0.9,
+            "epistemic_state": "Collapsed", "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is None
+    assert g.get_fact(fid) is None  # never merged
+
+
+def test_l1_validated_l3_missing_outbox_recovery_self_heals_correctly(monkeypatch):
+    """Blocker 1 test 5: a fact already Validated in L1 but missing from L3
+    (simulating a prior merge failure) must still be recognized as a
+    genuinely new L3 admission (no existing node to preserve) and self-heal
+    with a freshly computed truth_status — the outbox-recovery path must
+    keep working, not be mistaken for "not a new admission"."""
+    from core import pipeline
+    from core.memory import store_fact
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "outbox-recovery-candidate"
+    claim = "an outbox recovery claim about widgets that never reached L3"
+    store_fact({"fact_id": fid, "claim": claim, "source": "s", "confidence": 0.9,
+               "epistemic_state": "Validated", "claim_type": "WORLD_FACT",
+               "source_status": "EXTERNAL", "significance": 0.5})
+    assert g.get_fact(fid) is None  # L3 merge never happened (simulated failure)
+
+    item = {"id": fid, "text": claim, "source": "s", "confidence": 0.9,
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Validated",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is not None
+    after = g.get_fact(fid)
+    assert after is not None            # self-healed: now merged
+    assert after["truth_status"] == "VERIFIED"
+
+
+# ─── Blocker 2 (#257 review round 3): no synthesized provenance/confidence ────
+
+def test_verified_validated_l3_node_missing_source_blocks_via_guardian():
+    from core.pipeline import run
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    claim = "a verified claim missing its source field entirely for guardian"
+    g.merge_fact({"fact_id": "missing-source-verified", "claim": claim,
+                 "confidence": 0.9, "epistemic_state": "Validated",
+                 "truth_status": "VERIFIED"})  # no "source" key at all
+
+    result = run(claim)
+
+    assert result["answer"] is None
+    assert "Guardian" in (result.get("error") or "")
+
+
+def test_verified_validated_l3_node_missing_confidence_blocks_via_guardian():
+    from core.pipeline import run
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    claim = "a verified claim missing its confidence field entirely for guardian"
+    g.merge_fact({"fact_id": "missing-confidence-verified", "claim": claim,
+                 "source": "s", "epistemic_state": "Validated",
+                 "truth_status": "VERIFIED"})  # no "confidence" key at all
+
+    result = run(claim)
+
+    assert result["answer"] is None
+    assert "Guardian" in (result.get("error") or "")
+
+
+def test_malformed_source_and_confidence_types_fail_closed_without_crashing():
+    from core.pipeline import run
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    claim = "a claim with malformed source and confidence types for guardian"
+    g.merge_fact({"fact_id": "malformed-types", "claim": claim,
+                 "source": ["not", "a", "string"], "confidence": "not-a-number",
+                 "epistemic_state": "Validated", "truth_status": "VERIFIED"})
+
+    result = run(claim)  # must not raise
+
+    assert result["answer"] is None
+    assert "Guardian" in (result.get("error") or "")
+
+
+def test_valid_persisted_source_and_confidence_remain_unaffected():
+    from core.pipeline import run
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    claim = "a fully valid verified claim about properly sourced widgets"
+    g.merge_fact({"fact_id": "valid-verified", "claim": claim,
+                 "source": "trusted-source", "confidence": 0.95,
+                 "epistemic_state": "Validated", "truth_status": "VERIFIED"})
+
+    result = run(claim)
+
+    assert result["answer"] is not None
+    assert result["facts"][0]["source"] == "trusted-source"
+    assert result["facts"][0]["confidence"] == pytest.approx(0.95)
+
+
+# ─── Blocker (#257 review round 4): non-finite confidence must fail closed ────
+# float("nan")/float("inf") both convert without raising, but NaN compares
+# False against every relational operator (>, <=, <) — a raw `x > 0` /
+# `x <= 0` / `x < threshold` check silently lets it through instead of
+# rejecting it, and +Infinity legitimately satisfies every "confidence >=
+# threshold" check there is.
+
+@pytest.mark.parametrize("raw", [
+    float("nan"), "NaN", "nan",
+    float("inf"), "Infinity", "inf",
+    float("-inf"), "-Infinity", "-inf",
+])
+def test_safe_confidence_rejects_all_non_finite_forms(raw):
+    from core.pipeline import _safe_confidence
+    assert _safe_confidence(raw) == 0.0
+
+
+def test_safe_confidence_accepts_valid_finite_value():
+    from core.pipeline import _safe_confidence
+    assert _safe_confidence(0.9) == pytest.approx(0.9)
+
+
+@pytest.mark.parametrize("raw", [-0.5, 1.5, 100.0])
+def test_safe_confidence_rejects_out_of_domain_values(raw):
+    """The canonical confidence domain is [0.0, 1.0] (schemas/fact.schema.json:
+    minimum 0.0, maximum 1.0; core/api.py's IngestRequest: Field(ge=0.0,
+    le=1.0)) — a value outside it is malformed, not merely "very confident"."""
+    from core.pipeline import _safe_confidence
+    assert _safe_confidence(raw) == 0.0
+
+
+@pytest.mark.parametrize("raw", [float("nan"), float("inf"), float("-inf"),
+                                 "NaN", "Infinity", "not-a-number", ["x"]])
+def test_guardian_blocks_non_finite_or_malformed_confidence_without_crashing(raw):
+    """Guardian must reject non-finite/malformed confidence itself — not
+    merely trust that a caller already sanitized it — and must never crash
+    computing the diagnostic (#257 review round 4)."""
+    from core.pipeline import guardian_diagnose, GUARDIAN_VERDICT_BLOCK
+    facts = {"facts": [{"fact_id": "a", "claim": "c", "source": "s",
+                        "confidence": raw}]}
+    diag = guardian_diagnose(facts, [{"fact_id": "a"}])
+    assert diag["verdict"] == GUARDIAN_VERDICT_BLOCK
+    assert diag["checks"]["all_have_positive_confidence"] is False
+
+
+@pytest.mark.parametrize("raw_confidence", [
+    float("nan"), float("inf"), float("-inf"), "NaN", "not-a-number", ["x"],
+])
+def test_verified_validated_l3_node_with_non_finite_confidence_no_answer_no_crash(raw_confidence):
+    """A malformed/non-finite VERIFIED + Validated L3 node must produce no
+    answer and must not crash the pipeline (#257 review round 4)."""
+    from core.pipeline import run
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    claim = f"a verified claim with non finite confidence {raw_confidence!r}"
+    g.merge_fact({"fact_id": "non-finite-confidence", "claim": claim,
+                 "source": "s", "confidence": raw_confidence,
+                 "epistemic_state": "Validated", "truth_status": "VERIFIED"})
+
+    result = run(claim)  # must not raise
+
+    assert result["answer"] is None
+    assert "Guardian" in (result.get("error") or "")
+
+
+# ─── Trace metadata consistency (#257 review round 3) ─────────────────────────
+
+def test_trace_epistemic_state_matches_fact_epistemic_state_for_successful_answer(monkeypatch):
+    """For a successful strict answer, every trace element's epistemic_state
+    must match its corresponding fact's REAL epistemic_state — run()'s
+    blanket promote_trace(trace, "Validated") call must not survive into the
+    final trace for a fact whose actual state is something else (here:
+    ImmutableCore)."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "immutable-core-grounding-fact"
+    claim = "an immutable core grounding fact about ring zero values"
+    g.merge_fact({"fact_id": fid, "claim": claim, "source": "s",
+                 "confidence": 0.9, "epistemic_state": "ImmutableCore",
+                 "truth_status": "VERIFIED"})
+
+    item = {"id": fid, "text": claim, "source": "s", "confidence": 0.9,
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "ImmutableCore",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is not None
+    assert [f["fact_id"] for f in result["facts"]] == [fid]
+    assert [t["fact_id"] for t in result["trace"]] == [fid]
+    assert result["facts"][0]["epistemic_state"] == "ImmutableCore"
+    assert result["trace"][0]["epistemic_state"] == "ImmutableCore"
+
+
 # ─── demo seed opt-in (issue #65) ─────────────────────────────────────────────
 
 def test_production_default_has_no_seed_corpus(monkeypatch):

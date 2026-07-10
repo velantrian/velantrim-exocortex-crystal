@@ -39,9 +39,27 @@ def test_ingest_then_ask(client):
     assert r.status_code == 200
     assert r.json()["accepted"] is True
 
+    # The public /ingest surface defaults to source_status=USER_REPORTED
+    # (core/api_ingest_policy.py — EXTERNAL/DERIVED/OBSERVED are privileged and
+    # gated behind VELANTRIM_API_PRIVILEGED_INGEST + import_mode + evidence_refs,
+    # deliberately not exercised by this smoke test), so the fact above is
+    # truth_status=USER_CLAIMED and CanonicalView strict grounding
+    # (core/canonical_view.py) correctly excludes it from a confident answer.
     r2 = client.post("/ask", json={"query": "what is the capital of Portugal"})
     assert r2.status_code == 200
-    assert r2.json()["answer"] is not None
+    assert r2.json()["answer"] is None
+    assert "insufficient grounding" in (r2.json().get("error") or "")
+
+    # A genuinely verified fact (seeded via core.ingest directly, mirroring an
+    # externally-sourced import — a distinct claim so it gets its own fact_id
+    # rather than hitting the USER_CLAIMED fact's exact-duplicate dedup path,
+    # which does not change an existing fact's source_status/truth_status)
+    # does ground a confident /ask answer.
+    from core.ingest import ingest
+    ingest("Portugal's capital city is Lisbon", source_status="EXTERNAL")
+    r3 = client.post("/ask", json={"query": "what is the capital of Portugal"})
+    assert r3.status_code == 200
+    assert r3.json()["answer"] is not None
 
 
 def test_ingest_blocks_llm_output_world_fact(client):
@@ -122,9 +140,14 @@ def test_ask_blocked_returns_200_with_error(client):
 # ─── receipt → verify ───────────────────────────────────────────────────────────
 
 def test_receipt_and_verify(client):
-    client.post("/ingest", json={"text": "Gold is a chemical element",
-                                 "source": "test", "claim_type": "WORLD_FACT",
-                                 "confidence": 0.9})
+    # Seeded via core.ingest directly with source_status="EXTERNAL" so the
+    # fact is truth_status=VERIFIED and CanonicalView strict grounding
+    # (core/canonical_view.py) treats it as groundable — the public /ingest
+    # surface defaults to USER_REPORTED/USER_CLAIMED (core/api_ingest_policy.py),
+    # which would otherwise leave /receipt with no answer to attest to. This
+    # test is about receipt/verify mechanics, not ingest write-policy.
+    from core.ingest import ingest
+    ingest("Gold is a chemical element", source_status="EXTERNAL")
     r = client.get("/receipt", params={"q": "tell me about gold"})
     assert r.status_code == 200
     receipt = r.json()

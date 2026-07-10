@@ -233,7 +233,11 @@ def test_ingest_claims_can_disable_evidence():
 # ─── Receipt v2: evidence sealed into citations + replay ──────────────────────
 
 def _answer_with_evidence():
-    fid = ingest("Jupiter is the largest planet")["fact"]["fact_id"]
+    # source_status="EXTERNAL": truth_status=VERIFIED, so CanonicalView strict
+    # grounding (core/canonical_view.py) treats this fact as groundable — these
+    # tests are about receipt/evidence embedding mechanics, not ingest policy.
+    fid = ingest("Jupiter is the largest planet",
+                 source_status="EXTERNAL")["fact"]["fact_id"]
     evidence.attach_evidence(fid, "planets.md", source_kind="file")
     from core.pipeline import run
     return run("which is the largest planet")
@@ -270,7 +274,10 @@ def test_receipt_v2_detects_removed_evidence():
 
 def test_evidence_free_citation_keeps_v1_shape():
     # A receipt over facts without evidence must keep the original 5-key citation.
-    ingest("A plain fact about salt")
+    # source_status="EXTERNAL" so the fact is groundable under CanonicalView
+    # strict grounding (core/canonical_view.py) — this test is about citation
+    # shape, not ingest write-policy.
+    ingest("A plain fact about salt", source_status="EXTERNAL")
     from core.pipeline import run
     receipt = provenance.build_receipt(run("salt"))
     for cit in receipt["citations"]:
