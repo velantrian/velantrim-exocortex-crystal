@@ -631,6 +631,92 @@ def test_generate_answer_blocks_when_nothing_validated():
     assert out["total_facts"] == 0
 
 
+# ─── CanonicalView strict grounding (core/canonical_view.py) ──────────────────
+
+def _pack(*facts):
+    return {"facts": list(facts), "query": "q", "total": len(facts)}
+
+
+def test_generate_answer_blocks_on_user_claimed_facts_only():
+    """A USER_CLAIMED WORLD_FACT reaching epistemic_state Validated must NOT
+    ground a confident answer — the exact trust-boundary gap this PR closes.
+    High confidence and epistemic_state=Validated must not change the result."""
+    from core.pipeline import generate_answer
+    pack = _pack({
+        "fact_id": "u1", "claim": "My cat is the smartest animal alive",
+        "source": "user", "claim_type": "WORLD_FACT",
+        "source_status": "USER_REPORTED", "truth_status": "USER_CLAIMED",
+        "epistemic_state": "Validated", "confidence": 1.0, "restricted": False,
+    })
+    out = generate_answer(pack, trace=[])
+    assert out["answer"] is None
+    assert "strict-canonical" in out["error"] or "VERIFIED" in out["error"]
+    assert out["total_facts"] == 0
+    assert out["facts"] == []
+
+
+def test_generate_answer_grounds_only_the_verified_fact_from_a_mixed_pack():
+    """Mixed candidate set: VERIFIED, USER_CLAIMED, Contradicted, restricted —
+    only the VERIFIED, unrestricted, non-contradicted fact grounds the answer."""
+    from core.pipeline import generate_answer
+    verified = {
+        "fact_id": "v1", "claim": "Verified claim", "source": "src",
+        "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+        "truth_status": "VERIFIED", "epistemic_state": "Validated",
+        "confidence": 0.9, "restricted": False,
+    }
+    user_claimed = {**verified, "fact_id": "u1", "claim": "User claim",
+                    "source_status": "USER_REPORTED", "truth_status": "USER_CLAIMED"}
+    contradicted = {**verified, "fact_id": "c1", "epistemic_state": "Contradicted"}
+    restricted = {**verified, "fact_id": "r1", "restricted": True}
+
+    out = generate_answer(
+        _pack(verified, user_claimed, contradicted, restricted), trace=[])
+
+    assert out["answer"] is not None
+    assert out["total_facts"] == 1
+    assert [f["fact_id"] for f in out["facts"]] == ["v1"]
+
+
+def test_run_refuses_when_retrieval_surfaces_only_user_claimed_material(monkeypatch):
+    """End-to-end refusal (Test 6): when retrieve() finds only user-claimed /
+    otherwise non-canonical material, run() must refuse (existing
+    insufficient-evidence behavior), never hallucinate an answer from the
+    excluded claims."""
+    from core import pipeline
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [{
+        "id": "u1", "text": "My cat is the smartest animal alive",
+        "source": "user", "confidence": 1.0, "claim_type": "WORLD_FACT",
+        "source_status": "USER_REPORTED", "significance": 0.5,
+        "_score": 0.9, "epistemic_state": "Observed", "origin": "retrieval",
+    }])
+    result = pipeline.run("smartest animal")
+    assert result["answer"] is None
+    assert "insufficient grounding" in (result.get("error") or "")
+
+
+def test_run_end_to_end_verified_grounding_trace_and_receipt_unaffected():
+    """Regression pin (Test 9): a genuinely VERIFIED fact's trace, receipt and
+    evidence-span behavior must be unchanged by CanonicalView strict grounding."""
+    from core.ingest import ingest
+    from core.pipeline import run
+    from core import evidence, provenance
+
+    fid = ingest("Argon is a noble gas",
+                 source_status="EXTERNAL")["fact"]["fact_id"]
+    evidence.attach_evidence(fid, "chem.md", source_kind="file")
+
+    result = run("is argon a noble gas")
+    assert result["answer"] is not None
+    assert result["total_facts"] >= 1
+    assert result["trace"]
+    assert all(f["truth_status"] == "VERIFIED" for f in result["facts"])
+
+    receipt = provenance.build_receipt(result)
+    verified = provenance.verify_receipt(receipt, strict_provenance=True)
+    assert verified["verified"] is True
+
+
 # ─── demo seed opt-in (issue #65) ─────────────────────────────────────────────
 
 def test_production_default_has_no_seed_corpus(monkeypatch):

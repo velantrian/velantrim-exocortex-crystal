@@ -27,6 +27,7 @@ from core.l3_graph import get_l3_graph
 from core.embedding import get_embedder, cosine, assert_compatible_embedder
 from core.retrieval_config import get_retrieval_config
 from core.generation import get_generator
+from core.canonical_view import project_canonical
 from core.rrf import rrf_fuse
 from core import metrics, adaptation
 
@@ -244,13 +245,20 @@ def build_facts_pack(
         }
         # L0/L1 store (store_fact does not persist the transient _score).
         store_fact(fact)
-        # Sync epistemic_state from the persisted store: store_fact preserves the
-        # existing state on conflict, so the fact dict may carry a stale retrieve()
-        # value (e.g. demo-seed items always arrive as "Observed") while the DB
-        # already holds a more advanced state such as "Validated".
+        # Sync epistemic_state and restricted from the persisted store:
+        # store_fact preserves the existing state on conflict, so the fact
+        # dict may carry a stale retrieve() value (e.g. demo-seed items
+        # always arrive as "Observed") while the DB already holds a more
+        # advanced state such as "Validated" — or a processing restriction
+        # applied after this fact_id was last retrieved. `restricted` is
+        # required by core.canonical_view.is_strict_canonical(); retrieve()
+        # already excludes restricted L3 nodes from candidacy, but syncing it
+        # here too is defense-in-depth against this exact field going stale
+        # or missing by the time generate_answer() runs.
         persisted = get_fact(fact_id)
         if persisted:
             fact["epistemic_state"] = persisted["epistemic_state"]
+            fact["restricted"] = bool(persisted.get("restricted"))
         # _score — the relevance rank, only for ordering the pack; not written
         # to the canon (_l3_payload takes the clean persistent record without _score).
         fact["_score"] = round(float(item.get("_score", fact["confidence"])), 4)
@@ -396,24 +404,32 @@ def generate_answer(
     trace: List[Dict[str, Any]],
 ) -> Dict[str, Any]:
     """
-    Generate an answer from verified facts via get_generator().
+    Generate an answer from strict-canonical facts via get_generator().
     Default backend extractive (concatenation); LLM — via VELANTRIM_GENERATOR=anthropic.
+
+    Grounding uses core.canonical_view's default STRICT read projection, not a
+    raw ESM-state filter: physical L3 membership or epistemic_state ==
+    "Validated"/"Supported" does not by itself make a fact suitable grounding
+    for a confident factual answer — e.g. a USER_CLAIMED WORLD_FACT can reach
+    epistemic_state "Validated" without ever being externally verified. See
+    docs/CANONICAL_VIEW_RFC.md and core/canonical_view.py for the full
+    rationale; this is the smallest production-safe runtime slice of that RFC.
     """
-    validated_facts = [
-        f for f in facts_pack["facts"]
-        if f.get("epistemic_state") in {"Validated", "Supported"}
-    ]
-    if not validated_facts:
-        # Issue #64: a verifiable memory system must not answer from unvalidated
-        # material. No Validated/Supported facts → insufficient grounding → block.
+    canonical_facts = project_canonical(facts_pack["facts"])
+    if not canonical_facts:
+        # Issue #64 + CanonicalView: a verifiable memory system must not answer
+        # from material that is not strict-canonical (VERIFIED, non-contradicted/
+        # -deprecated, unrestricted, identity-complete). No such facts →
+        # insufficient grounding → block, even if unvalidated/non-canonical
+        # material (e.g. USER_CLAIMED) is present.
         logger.warning(
-            "generate_answer: no Validated/Supported facts — blocking answer "
-            "(%d unvalidated fact(s) present but not usable as grounding)",
+            "generate_answer: no strict-canonical facts — blocking answer "
+            "(%d non-canonical fact(s) present but not usable as grounding)",
             len(facts_pack["facts"]),
         )
         return {
             "answer":      None,
-            "error":       "insufficient grounding: no Validated or Supported facts available",
+            "error":       "insufficient grounding: no strict-canonical (VERIFIED) facts available",
             "query":       facts_pack.get("query", ""),
             "facts":       [],
             "trace":       trace,
@@ -421,15 +437,15 @@ def generate_answer(
             "total_facts": 0,
         }
 
-    answer = get_generator().generate(facts_pack.get("query", ""), validated_facts)
+    answer = get_generator().generate(facts_pack.get("query", ""), canonical_facts)
 
     return {
         "answer":       answer,
         "query":        facts_pack.get("query", ""),
-        "facts":        _public_facts(validated_facts),
+        "facts":        _public_facts(canonical_facts),
         "trace":        trace,
         "trace_fmt":    format_trace(trace),
-        "total_facts":  len(validated_facts),
+        "total_facts":  len(canonical_facts),
     }
 
 

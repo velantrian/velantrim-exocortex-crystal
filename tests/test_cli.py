@@ -16,7 +16,17 @@ def test_cli_ingest_outputs_classification(capsys):
 
 
 def test_cli_ask_returns_answer(capsys):
-    main(["ingest", "Octopuses have three hearts"])
+    # Seed via core.ingest directly with source_status="EXTERNAL": the plain
+    # CLI `ingest` subcommand has no --source-status flag, and a fact ingested
+    # through it defaults to USER_REPORTED -> truth_status USER_CLAIMED, which
+    # CanonicalView strict grounding (core/canonical_view.py) now correctly
+    # excludes from answer grounding. This test is about the `ask` subcommand
+    # printing the answer text, not about write-path classification — seed
+    # with genuinely verifiable content so the read path under test has
+    # something to ground on.
+    from core.ingest import ingest
+    ingest("Octopuses have three hearts", source_status="EXTERNAL")
+    capsys.readouterr()
     main(["ask", "octopus hearts"])
     out = capsys.readouterr().out
     assert "hearts" in out.lower()

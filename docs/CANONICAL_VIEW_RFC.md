@@ -1,27 +1,42 @@
 # CanonicalView / Trusted-Only Read Mode — RFC
 
 ```text
-Status:         PROPOSED / RFC-only
-Implementation: NOT IMPLEMENTED
+Status:         PARTIALLY IMPLEMENTED (strict grounding slice)
+Implementation: core/canonical_view.py — STRICT mode wired into
+                core/pipeline.py::generate_answer() (the answer-grounding
+                path). CONTEXTUAL mode exists as a pure, tested function but
+                is NOT wired into any default surface. review / full_graph
+                modes below remain PROPOSED, not implemented.
 Scope:          read-path contract only
 ```
 
-This document defines a **proposed** read-path contract. It does not
-describe a current runtime feature, does not add code, and must not be
-cited as an implemented Crystal capability. See [Non-goals](#7-non-goals)
-and [Reviewer-safe wording](#10-reviewer-safe-wording) below.
+This document originally defined a **proposed** read-path contract. A PR
+has since implemented the smallest production-safe runtime slice of it:
+section 4's inclusion rule (`truth_status == VERIFIED`, non-restricted,
+non-Contradicted/Deprecated/Collapsed, identity-complete) as
+`core.canonical_view.is_strict_canonical()` / `project_canonical()`, wired
+as the default grounding filter for confident factual answers. **Not**
+implemented: the `review` / `full_graph` read modes (section 6), trace
+replayability as an inclusion condition, and the conflicting-`VERIFIED`-facts
+surfacing/abstention policy (section 5) — those remain proposed only. See
+[Non-goals](#7-non-goals) and [Reviewer-safe wording](#10-reviewer-safe-wording)
+below, both still accurate for the unimplemented remainder.
 
 ## 1. Status
 
 ```text
-Status: PROPOSED / RFC-only
-Implementation: NOT IMPLEMENTED
-Scope: read-path contract only
+Status: PARTIALLY IMPLEMENTED — see the header above and section 9 below for
+        exactly which acceptance criteria are met and which remain open.
+Scope:  read-path contract only
 ```
 
-No code, CLI flag, API parameter, or test in this repository implements
-anything described here. This RFC exists to specify the intended contract
-for a future implementation PR, tracked as issue #220.
+The strict-grounding slice of this RFC is implemented: `core/canonical_view.py`
+(`CanonicalReadMode`, `is_strict_canonical()`, `project_canonical()`), wired
+into `core/pipeline.py::generate_answer()` as the default answer-grounding
+filter. It does not implement every mode or acceptance criterion this RFC
+describes — see section 9 for the itemized breakdown. This RFC remains the
+authoritative contract for the unimplemented remainder (tracked as issue
+#220); do not cite this document as evidence that the whole RFC landed.
 
 ## 2. Problem statement
 
@@ -181,40 +196,58 @@ not smuggle in under this name:
 
 ## 9. Acceptance criteria for future implementation
 
-Not implemented by this document. Listed here so a future implementation PR
-has a concrete bar to meet:
+Status per criterion, after the strict-grounding-slice PR:
 
-- add read-path filter helpers implementing section 4's inclusion rules;
-- add tests for every inclusion/exclusion rule in sections 4 and 5,
-  independently;
-- prove restricted facts cannot appear in a `trusted_only` read;
-- prove erased / tombstoned `fact_id`s cannot appear in a `trusted_only`
-  read;
-- prove `USER_CLAIMED` / `HYPOTHESIS` / `SUBJECTIVE` material is excluded
-  from `trusted_only` unless the caller explicitly requests `review` or
-  `full_graph`;
-- prove that when `VERIFIED` facts conflict, the implementation surfaces
-  conflict metadata or abstains — and add a regression test asserting it
-  never silently picks a winner;
-- preserve existing TruthGate and L3 write-path semantics unchanged — a
-  `CanonicalView` implementation PR should touch read paths only.
+- ✅ add read-path filter helpers implementing section 4's inclusion rules
+  (except trace-replayability — see below): `core/canonical_view.py`.
+- ✅ add tests for every inclusion/exclusion rule actually implemented
+  (`tests/test_canonical_view.py`, plus integration tests in
+  `tests/test_pipeline.py`).
+- ✅ prove restricted facts cannot appear in a strict read.
+- ✅ prove `USER_CLAIMED` / `HYPOTHESIS` / `SUBJECTIVE` material is excluded
+  from strict grounding unless the caller explicitly requests `CONTEXTUAL`
+  mode (this PR's two-mode `CanonicalReadMode`, not the RFC's original
+  three-mode `trusted_only`/`review`/`full_graph` naming — `review` and
+  `full_graph` are not implemented).
+- ⬜ **not implemented**: trace-present-and-replayable as an inclusion
+  condition (section 4) — strict grounding checks `truth_status`,
+  `epistemic_state`, `restricted`, and identity/provenance fields, but does
+  not independently re-verify trace replayability per fact.
+- ⬜ **not implemented**: erased/tombstoned `fact_id`s are excluded
+  *structurally* (erasure physically removes the record — see
+  `is_strict_canonical()`'s docstring) rather than via an explicit check in
+  this module; no dedicated regression test was added here beyond that
+  structural argument.
+- ⬜ **not implemented**: the conflicting-`VERIFIED`-facts surfacing/
+  abstention policy (section 5) — this PR does not detect or handle
+  contradicting `VERIFIED` facts reaching a strict read together; that
+  remains open, tracked here, not silently resolved either way.
+- ✅ preserve existing TruthGate and L3 write-path semantics unchanged —
+  the implementation touches only `core/pipeline.py::generate_answer()`
+  (read path) and `build_facts_pack()`'s `restricted` sync (still read-side:
+  it copies an already-persisted field onto the in-flight fact dict, no new
+  write). No TruthGate, ESM, or L3 write-path code was modified.
 
 ## 10. Reviewer-safe wording
 
-This RFC uses, and any discussion of it should use, language like:
+Accurate language, after the strict-grounding-slice PR:
 
-> CanonicalView is a proposed read projection over the existing physical
-> graph. This RFC defines the intended contract for a future
-> implementation.
+> Strict CanonicalView grounding is implemented for answer generation
+> (`core/canonical_view.py`, wired into `core/pipeline.py::generate_answer()`).
+> Physical L3 membership does not itself imply verified truth. `USER_CLAIMED`
+> remains available as labelled contextual memory (`CanonicalReadMode.
+> CONTEXTUAL`) but is excluded from strict factual grounding.
 
 Not language like:
 
-> CanonicalView is now implemented.
-> This PR adds trusted-only runtime mode.
+> The CanonicalView RFC is fully implemented.
+> Every read surface now enforces trusted-only mode.
+> All L3 data is Canon.
+> This achieves zero hallucination.
 
-No such claim appears in this repository as of this document, and none
-should be made until an implementation PR actually lands and is covered by
-the tests in section 9.
+The `review` / `full_graph` modes, trace-replayability as an inclusion
+condition, and the conflicting-`VERIFIED`-facts policy remain unimplemented
+(section 9) — do not claim otherwise.
 
 ## Open questions
 
@@ -233,8 +266,11 @@ the tests in section 9.
 
 ## Current recommendation
 
-Keep `CanonicalView` as an RFC only. Do not implement until this document
-has been reviewed and the open questions above have answers. Any
-implementation should be its own, separately reviewed PR, scoped to read
-paths only, and held to the acceptance criteria in section 9 — not bundled
-with unrelated work.
+The strict-grounding slice (section 4's inclusion rule, as the default
+answer-grounding filter) is implemented — see the status header and section
+9. The open questions above are still genuinely open and block the
+remainder: `review`/`full_graph` modes, the conflicting-`VERIFIED`-facts
+policy, and trace-replayability as an inclusion condition should each be
+their own, separately reviewed, narrowly-scoped follow-up PR, not bundled
+together or with unrelated work — the same discipline that produced this
+slice.
