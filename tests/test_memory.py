@@ -4,6 +4,8 @@ Focus: L0→L1 fallback, get_all_facts, and the input-validation / not-found
 branches of store_fact / transition_esm.
 """
 import sqlite3
+import threading
+import time
 
 import pytest
 
@@ -345,6 +347,89 @@ def test_migration_adds_columns_to_legacy_table(monkeypatch, tmp_path):
     f = get_fact("leg1")
     assert f["claim_type"] == "OPINION"
     assert f["significance"] == pytest.approx(0.3)
+
+
+def test_schema_initialization_serializes_concurrent_migrations(monkeypatch):
+    """Fresh-database migration must run once under concurrent first opens.
+
+    Regression for #244's revision migration: every connection used to run a
+    PRAGMA-table_info/ALTER check independently, so two audit worker threads
+    could both observe revision as missing and the loser raised
+    ``OperationalError: duplicate column name: revision``.
+    """
+    real_migrate = memory._migrate
+    state_lock = threading.Lock()
+    state = {"active": 0, "max_active": 0, "calls": 0}
+
+    def slow_migrate(conn):
+        with state_lock:
+            state["active"] += 1
+            state["calls"] += 1
+            state["max_active"] = max(state["max_active"], state["active"])
+        try:
+            # Widen the old check-then-ALTER race deterministically enough for
+            # the regression while the fixed path keeps this section locked.
+            time.sleep(0.02)
+            real_migrate(conn)
+        finally:
+            with state_lock:
+                state["active"] -= 1
+
+    monkeypatch.setattr(memory, "_migrate", slow_migrate)
+    errors = []
+
+    def first_open():
+        try:
+            with memory._db():
+                pass
+        except Exception as exc:  # noqa: BLE001 — asserted below
+            errors.append(exc)
+
+    threads = [threading.Thread(target=first_open) for _ in range(8)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert errors == []
+    assert state == {"active": 0, "max_active": 1, "calls": 1}
+    with sqlite3.connect(memory.SQLITE_PATH) as conn:
+        columns = [row[1] for row in conn.execute("PRAGMA table_info(facts)")]
+        version = conn.execute("PRAGMA user_version").fetchone()[0]
+    assert columns.count("revision") == 1
+    assert version == memory._SCHEMA_VERSION
+
+
+def test_schema_initialization_rejects_newer_database_version():
+    """Older code must fail closed instead of opening a newer schema."""
+    with sqlite3.connect(memory.SQLITE_PATH) as conn:
+        conn.execute(f"PRAGMA user_version = {memory._SCHEMA_VERSION + 1}")
+    with pytest.raises(RuntimeError, match="newer than supported"):
+        with memory._db():
+            pass
+
+
+def test_schema_initialization_rolls_back_and_can_retry(monkeypatch):
+    """A failed migration must not publish its schema version or poison retry."""
+    real_migrate = memory._migrate
+
+    def broken_migrate(conn):
+        raise RuntimeError("simulated migration failure")
+
+    monkeypatch.setattr(memory, "_migrate", broken_migrate)
+    with pytest.raises(RuntimeError, match="simulated migration failure"):
+        with memory._db():
+            pass
+
+    with sqlite3.connect(memory.SQLITE_PATH) as conn:
+        assert conn.execute("PRAGMA user_version").fetchone()[0] == 0
+
+    # A later clean startup must be able to initialize the same file.
+    monkeypatch.setattr(memory, "_migrate", real_migrate)
+    with memory._db():
+        pass
+    with sqlite3.connect(memory.SQLITE_PATH) as conn:
+        assert conn.execute("PRAGMA user_version").fetchone()[0] == memory._SCHEMA_VERSION
 
 
 # ─── call_with_lock_retry (audit/provenance_chain write-lock contention) ─────
