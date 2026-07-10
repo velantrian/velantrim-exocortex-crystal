@@ -53,16 +53,22 @@ KNOWN_TRUTH_STATUSES = frozenset({
 # automated VERIFIED verdict; see this PR's documented limitations.
 VERIFIED_TRUTH_STATUS = "VERIFIED"
 
-# ESM states that make a fact non-canonical regardless of truth_status. A
-# fact can carry a STALE truth_status from before it entered one of these
-# states: core/l3_graph.py's merge_fact() does a partial dict update (only
-# overwrites keys present in the merged payload), and core/reconcile.py's
-# _sync_l3() merges a Contradicted/Deprecated fact via get_fact() — an L1
-# record that never carries truth_status at all — so an earlier VERIFIED
-# value already on the L3 node is preserved, not cleared. Checking
-# epistemic_state independently of truth_status is therefore required, not
-# redundant (see this module's tests for a regression case).
-NON_CANONICAL_ESM_STATES = frozenset({"Contradicted", "Deprecated", "Collapsed"})
+# ESM states eligible for strict grounding — a POSITIVE allowlist, not a
+# blocklist of known-bad states. Only a fact that has actually completed
+# TruthGate admission (Validated) or is a permanently entrenched Ring Zero /
+# VALUES_CORE fact (ImmutableCore) qualifies. Everything else — Observed,
+# Hypothesized, Supported (pre-canonical/pending), Contradicted, Deprecated,
+# Collapsed (post-canonical/superseded), a missing epistemic_state, or an
+# unknown/malformed value — fails closed. A blocklist-only design would let a
+# pre-canonical or malformed epistemic_state slip through if truth_status
+# happened to read VERIFIED (e.g. a fact can carry a STALE truth_status from
+# before it entered a bad state: core/l3_graph.py's merge_fact() does a
+# partial dict update, and core/reconcile.py's _sync_l3() merges via
+# get_fact() — an L1 record that never carries truth_status at all — so an
+# earlier VERIFIED value already on the L3 node is preserved, not cleared).
+# Checking epistemic_state independently of, and as strictly as, truth_status
+# is therefore required, not redundant (see this module's tests).
+STRICT_CANONICAL_ESM_STATES = frozenset({"Validated", "ImmutableCore"})
 
 # Identity/provenance fields a strict-canonical fact must carry, non-empty.
 # Mirrors the same fields core/pipeline.py's Guardian already treats as
@@ -77,6 +83,16 @@ def _has_required_fields(fact: Mapping[str, Any]) -> bool:
                for field in _REQUIRED_STRING_FIELDS)
 
 
+def _in(value: Any, known: frozenset) -> bool:
+    """`value in known`, but fails closed (False) instead of raising for an
+    unhashable malformed value (e.g. a list/dict where a string is expected) —
+    malformed trust metadata must be excluded, never crash the read path."""
+    try:
+        return value in known
+    except TypeError:
+        return False
+
+
 def is_strict_canonical(fact: Mapping[str, Any]) -> bool:
     """
     True if `fact` may ground a strict, confident factual answer.
@@ -86,9 +102,12 @@ def is_strict_canonical(fact: Mapping[str, Any]) -> bool:
         unknown truth_status values fail closed — this function never
         infers verification from confidence, epistemic_state, source_status,
         or anything else.
-      - epistemic_state is not Contradicted / Deprecated / Collapsed (see
-        NON_CANONICAL_ESM_STATES for why this is checked independently of
-        truth_status rather than assumed to be implied by it).
+      - epistemic_state is in STRICT_CANONICAL_ESM_STATES (a positive
+        allowlist: Validated / ImmutableCore only). A missing, pre-canonical
+        (Observed/Hypothesized/Supported), post-canonical (Contradicted/
+        Deprecated/Collapsed), or unknown/malformed epistemic_state all fail
+        closed — this is checked independently of truth_status rather than
+        assumed to be implied by it (see STRICT_CANONICAL_ESM_STATES).
       - the fact is not `restricted` (GDPR Art. 18 processing restriction) —
         a restricted fact is excluded from grounding exactly like it is
         already excluded from retrieval (core/pipeline.py::retrieve) and
@@ -109,12 +128,12 @@ def is_strict_canonical(fact: Mapping[str, Any]) -> bool:
     Pure function: never writes, never calls TruthGate, never mutates `fact`.
     """
     truth_status = fact.get("truth_status")
-    if truth_status not in KNOWN_TRUTH_STATUSES:
+    if not _in(truth_status, KNOWN_TRUTH_STATUSES):
         return False  # missing, malformed, or unknown — fail closed
     if truth_status != VERIFIED_TRUTH_STATUS:
         return False  # USER_CLAIMED / HYPOTHESIS / SUBJECTIVE / UNVERIFIED / CURATOR_OVERRIDE
 
-    if fact.get("epistemic_state") in NON_CANONICAL_ESM_STATES:
+    if not _in(fact.get("epistemic_state"), STRICT_CANONICAL_ESM_STATES):
         return False
 
     if fact.get("restricted"):

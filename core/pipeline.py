@@ -20,7 +20,7 @@ from typing import List, Dict, Any, Optional
 from core.trace import build_trace, promote_trace, format_trace
 from core.memory import (
     store_fact, get_fact, transition_esm, ESM_TRANSITIONS,
-    l3_secondary_sync_admissible,
+    l3_secondary_sync_admissible, DEFAULT_SOURCE_STATUS,
 )
 from core.queue import get_outbox_queue
 from core.l3_graph import get_l3_graph
@@ -113,16 +113,27 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
         })
 
     def _from_node(node: Dict[str, Any], score: float, origin: str) -> Dict[str, Any]:
+        # source_status/epistemic_state: default to the safe, non-privileged
+        # pending values (UNKNOWN / Observed) rather than a value that implies
+        # verification (DERIVED is a "privileged" source_status per
+        # core.pipeline._truth_status_for; "Validated" is already-canonical) —
+        # a malformed/legacy L3 node missing these fields must not silently
+        # gain trust it never earned (#257 review). truth_status is propagated
+        # AS-IS (no default at all): this is the node's own persisted verdict,
+        # read-through by run()'s recall path (never recomputed on ordinary
+        # recall — see run()'s ESM-promotion loop) and judged by
+        # core.canonical_view, which fails closed on a missing/unknown value.
         return {
             "id":              node["fact_id"],
             "text":            node.get("claim", ""),
             "source":          node.get("source", "memory"),
             "confidence":      node.get("confidence", 1.0),
             "claim_type":      node.get("claim_type", "WORLD_FACT"),
-            "source_status":   node.get("source_status", "DERIVED"),
+            "source_status":   node.get("source_status", DEFAULT_SOURCE_STATUS),
             "significance":    node.get("significance", 0.5),
             "_score":          round(score, 4),
-            "epistemic_state": node.get("epistemic_state", "Validated"),
+            "epistemic_state": node.get("epistemic_state", "Observed"),
+            "truth_status":    node.get("truth_status"),
             "origin":          origin,
         }
 
@@ -215,7 +226,12 @@ def build_facts_pack(
     """
     Assemble a FactsPack from the retrieved facts.
     Each fact is stored in L0/L1 memory via store_fact().
-    truth_status = UNVERIFIED until passing the TruthGate.
+    truth_status: an item recalled from L3 (core.pipeline._from_node) carries
+    its own persisted verdict through unchanged — a brand-new item (no prior
+    verdict) defaults to UNVERIFIED. Never invented here; run()'s ESM-
+    promotion loop is the only place a fresh truth_status is computed (for a
+    genuinely new admission), and it never recomputes/overwrites an existing
+    persisted verdict on ordinary recall (#257 review).
     epistemic_state is taken from retrieve() — the owner of the initial ESM state.
     """
     facts: List[Dict[str, Any]] = []
@@ -239,9 +255,9 @@ def build_facts_pack(
             "epistemic_state": item["epistemic_state"],  # from retrieve(), not duplicated
             # retrieval facts — claims about the world from an external source.
             "claim_type":      item.get("claim_type", "WORLD_FACT"),
-            "source_status":   item.get("source_status", "EXTERNAL"),
+            "source_status":   item.get("source_status", DEFAULT_SOURCE_STATUS),
             "significance":    item.get("significance", 0.5),
-            "truth_status":    "UNVERIFIED",
+            "truth_status":    item.get("truth_status", "UNVERIFIED"),
         }
         # L0/L1 store (store_fact does not persist the transient _score).
         store_fact(fact)
@@ -439,12 +455,20 @@ def generate_answer(
 
     answer = get_generator().generate(facts_pack.get("query", ""), canonical_facts)
 
+    # Prune the trace to exactly the fact_ids that grounded this answer: the
+    # public trace must not claim provenance for retrieved-but-excluded
+    # material (e.g. a USER_CLAIMED candidate that never grounded anything).
+    # set(result["facts"] fact_ids) == set(result["trace"] fact_ids) for every
+    # successful strict answer (#257 review).
+    grounded_ids = {f["fact_id"] for f in canonical_facts}
+    grounded_trace = [t for t in trace if t.get("fact_id") in grounded_ids]
+
     return {
         "answer":       answer,
         "query":        facts_pack.get("query", ""),
         "facts":        _public_facts(canonical_facts),
-        "trace":        trace,
-        "trace_fmt":    format_trace(trace),
+        "trace":        grounded_trace,
+        "trace_fmt":    format_trace(grounded_trace),
         "total_facts":  len(canonical_facts),
     }
 
@@ -671,7 +695,8 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         for fact in facts_pack["facts"]:
             # A recall fact from L3 is already Validated — a repeated transition is not allowed in
             # the ESM matrix, so we only transition the not-yet-validated ones.
-            if fact.get("epistemic_state") != "Validated":
+            is_new_admission = fact.get("epistemic_state") != "Validated"
+            if is_new_admission:
                 # Promotion guard: only attempt the transition if "Validated" is a
                 # reachable next state from the fact's current ESM state. Terminal
                 # states (Collapsed, ImmutableCore) and non-promotable states
@@ -692,7 +717,27 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
                 updated = get_fact(fact["fact_id"])
                 if updated:
                     fact["epistemic_state"] = updated["epistemic_state"]
-            fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"), fact.get("source_status"))
+
+            if is_new_admission:
+                # Genuinely new admission this round: no prior persisted L3
+                # verdict exists to preserve — compute truth_status once, at
+                # the TruthGate-adjacent admission boundary (claim_type/
+                # source_status are exactly what TruthGate itself just gated
+                # on).
+                fact["truth_status"] = _truth_status_for(
+                    fact.get("claim_type", "WORLD_FACT"), fact.get("source_status"))
+            else:
+                # Ordinary recall of an already-canonical fact: never
+                # recompute or silently overwrite its persisted verdict (#257
+                # review) — a curator's CURATOR_OVERRIDE, or any other
+                # already-assigned truth_status, must survive repeated recall
+                # unchanged. Read the CURRENT persisted value directly from L3
+                # rather than trusting it was threaded through unmutated from
+                # retrieve()/build_facts_pack() — missing/malformed stays
+                # missing/malformed (CanonicalView fails closed on it), it is
+                # never backfilled here.
+                existing_node = graph.get_fact(fact["fact_id"])
+                fact["truth_status"] = existing_node.get("truth_status") if existing_node else None
             # The only entry into L3: the canonical MERGE strictly after the TruthGate.
             # We merge the persistent record (created_at/metadata → for SleepCycle),
             # not the transient fact with _score (see _l3_payload).
@@ -710,10 +755,18 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
 
     promote_trace(trace, "Validated")
 
-    # 7. Generate
-    metrics.incr("query.answered")
-    adaptation.record_success()     # a healthy outcome → the threshold relaxes
-    return generate_answer(facts_pack, trace)
+    # 7. Generate — metrics/adaptation must reflect the ACTUAL CanonicalView
+    # outcome, not merely that L3 promotion succeeded. A CanonicalView refusal
+    # here (no strict-canonical facts) is a block, not a success — reaching
+    # this line does not itself guarantee generate_answer() will answer.
+    result = generate_answer(facts_pack, trace)
+    if result.get("answer") is not None:
+        metrics.incr("query.answered")
+        adaptation.record_success()     # a healthy outcome → the threshold relaxes
+    else:
+        metrics.incr("query.blocked")
+        adaptation.record_block()       # stress → verification rises (RFC0071)
+    return result
 
 
 def _blocked(

@@ -13,7 +13,7 @@ from core.canonical_view import (
     project_canonical,
     KNOWN_TRUTH_STATUSES,
     VERIFIED_TRUTH_STATUS,
-    NON_CANONICAL_ESM_STATES,
+    STRICT_CANONICAL_ESM_STATES,
 )
 
 
@@ -104,6 +104,15 @@ def test_truth_status_absent_key_fails_closed():
     assert is_strict_canonical(fact) is False
 
 
+@pytest.mark.parametrize("truth_status", [["VERIFIED"], {"status": "VERIFIED"}])
+def test_unhashable_malformed_truth_status_fails_closed_without_crashing(truth_status):
+    """A malformed non-hashable truth_status (e.g. a list/dict where a string
+    is expected) must be excluded like any other malformed value — not raise
+    TypeError out of a read-path predicate."""
+    fact = _verified_fact(truth_status=truth_status)
+    assert is_strict_canonical(fact) is False
+
+
 def test_known_truth_statuses_contains_exactly_the_pipeline_vocabulary():
     """Regression guard: this set must track core.pipeline._truth_status_for()'s
     output range plus core.review.py's CURATOR_OVERRIDE — not silently drift."""
@@ -165,9 +174,18 @@ def test_esm_state_alone_does_not_make_a_non_verified_fact_strict_canonical(
     assert is_strict_canonical(fact) is False
 
 
-# ─── Independent ESM exclusions (not implied by truth_status alone) ────────────
+# ─── Positive ESM allowlist (STRICT_CANONICAL_ESM_STATES) ─────────────────────
+# A blocklist-only design (exclude Contradicted/Deprecated/Collapsed, allow
+# everything else) would let a VERIFIED-but-pre-canonical fact (Observed/
+# Hypothesized/Supported), or one with a missing/unknown/malformed
+# epistemic_state, slip through. STRICT_CANONICAL_ESM_STATES is a positive
+# allowlist instead: only Validated / ImmutableCore qualify.
 
-@pytest.mark.parametrize("epistemic_state", sorted(NON_CANONICAL_ESM_STATES))
+def test_strict_canonical_esm_states_is_exactly_validated_and_immutable_core():
+    assert STRICT_CANONICAL_ESM_STATES == {"Validated", "ImmutableCore"}
+
+
+@pytest.mark.parametrize("epistemic_state", ["Contradicted", "Deprecated", "Collapsed"])
 def test_verified_truth_status_does_not_survive_a_non_canonical_esm_state(
     epistemic_state,
 ):
@@ -180,6 +198,49 @@ def test_verified_truth_status_does_not_survive_a_non_canonical_esm_state(
     not assumed to be implied by it."""
     fact = _verified_fact(epistemic_state=epistemic_state)
     assert is_strict_canonical(fact) is False
+
+
+@pytest.mark.parametrize("epistemic_state", ["Observed", "Hypothesized", "Supported"])
+def test_verified_truth_status_does_not_survive_a_pre_canonical_esm_state(
+    epistemic_state,
+):
+    """A blocklist-only check would have missed this: these states are not in
+    the old 'bad state' set, but they are pre-canonical/pending, not strict
+    canon — a VERIFIED truth_status must not bypass the allowlist."""
+    fact = _verified_fact(epistemic_state=epistemic_state)
+    assert is_strict_canonical(fact) is False
+
+
+def test_verified_truth_status_with_missing_esm_state_fails_closed():
+    fact = _verified_fact()
+    del fact["epistemic_state"]
+    assert is_strict_canonical(fact) is False
+
+
+def test_verified_truth_status_with_unknown_esm_state_string_fails_closed():
+    fact = _verified_fact(epistemic_state="QuantumSuperposition")
+    assert is_strict_canonical(fact) is False
+
+
+@pytest.mark.parametrize("epistemic_state", [123, ["Validated"], {"state": "Validated"}, None])
+def test_verified_truth_status_with_malformed_non_string_esm_state_fails_closed(
+    epistemic_state,
+):
+    fact = _verified_fact(epistemic_state=epistemic_state)
+    assert is_strict_canonical(fact) is False
+
+
+def test_validated_esm_state_is_allowed():
+    fact = _verified_fact(epistemic_state="Validated")
+    assert is_strict_canonical(fact) is True
+
+
+def test_immutable_core_esm_state_is_allowed():
+    """Ring Zero / VALUES_CORE contract: a permanently entrenched fact is at
+    least as canonical as Validated, not less — explicitly part of the
+    allowlist, not merely "not excluded"."""
+    fact = _verified_fact(epistemic_state="ImmutableCore")
+    assert is_strict_canonical(fact) is True
 
 
 # ─── Required identity/provenance fields ────────────────────────────────────────
