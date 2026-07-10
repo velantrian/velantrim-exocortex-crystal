@@ -20,6 +20,7 @@ def test_empty_log_verifies():
     v = audit.verify_audit_log()
     assert v["ok"] is True
     assert v["length"] == 0
+    assert v["checkpointed"] is False
 
 
 def test_append_and_verify_chain():
@@ -30,6 +31,7 @@ def test_append_and_verify_chain():
     v = audit.verify_audit_log()
     assert v["ok"] is True
     assert v["length"] == 3
+    assert v["checkpointed"] is True
 
     entries = audit.audit_log()
     assert [e["seq"] for e in entries] == [1, 2, 3]
@@ -109,6 +111,65 @@ def test_deleting_an_entry_is_detected():
     v = audit.verify_audit_log()
     assert v["ok"] is False
     assert v["broken_at"] == 2  # first surviving row is seq 2, expected 1
+
+
+def test_deleting_audit_tail_is_detected_by_checkpoint():
+    audit.append_event("erase", "f1", {})
+    audit.append_event("erase", "f2", {})
+    _raw_exec("DELETE FROM audit_log WHERE seq = 2")
+
+    v = audit.verify_audit_log()
+    assert v["ok"] is False
+    assert v["checkpointed"] is True
+    assert v["broken_at"] == 2
+    assert v["error"] == "checkpoint mismatch (tail truncated or replaced)"
+    with pytest.raises(RuntimeError, match="checkpoint mismatch"):
+        audit.append_event("erase", "f3", {})
+
+
+def test_deleting_entire_audit_log_while_checkpoint_survives_is_detected():
+    audit.append_event("erase", "f1", {})
+    _raw_exec("DELETE FROM audit_log")
+
+    v = audit.verify_audit_log()
+    assert v["ok"] is False
+    assert v["length"] == 0
+    assert v["broken_at"] == 1
+    assert "checkpoint mismatch" in v["error"]
+
+
+def test_missing_audit_checkpoint_is_detected_and_blocks_append():
+    audit.append_event("erase", "f1", {})
+    _raw_exec("DELETE FROM chain_checkpoints WHERE chain_name = 'audit'")
+
+    v = audit.verify_audit_log()
+    assert v["ok"] is False
+    assert v["checkpointed"] is False
+    assert v["error"] == "chain checkpoint missing"
+    with pytest.raises(RuntimeError, match="checkpoint missing"):
+        audit.append_event("erase", "f2", {})
+
+
+def test_tampering_audit_checkpoint_head_is_detected():
+    audit.append_event("erase", "f1", {})
+    _raw_exec(
+        "UPDATE chain_checkpoints SET head_hash = ? "
+        "WHERE chain_name = 'audit'",
+        ("f" * 64,),
+    )
+    v = audit.verify_audit_log()
+    assert v["ok"] is False
+    assert "checkpoint mismatch" in v["error"]
+
+
+def test_schema_v2_migration_backfills_legacy_audit_checkpoint():
+    audit.append_event("erase", "f1", {})
+    _raw_exec("DELETE FROM chain_checkpoints WHERE chain_name = 'audit'")
+    _raw_exec("PRAGMA user_version = 1")
+
+    v = audit.verify_audit_log()
+    assert v["ok"] is True
+    assert v["checkpointed"] is True
 
 
 def test_broken_prev_hash_link_is_detected():

@@ -13,9 +13,12 @@
 #                 | payload_str | created_at | actor | reason)
 #
 # Because every entry commits to the previous entry's hash, editing, deleting or
-# reordering ANY past entry of that fact changes its hash and breaks every link
-# after it — verify() detects this. This realises invariant I89
+# reordering an entry of that fact breaks its hash or a surviving link. A
+# transactionally maintained same-database checkpoint pins the latest seq/hash,
+# so verify() also detects deletion of the event-table tail. This realises I89
 # (ProvenanceAppendOnly): the per-fact provenance chain is append-only.
+# Full-database rollback/replacement remains outside this trust boundary and
+# requires an externally held checkpoint or backup.
 #
 # The chain is content-light: payload_str holds a hash/short marker, never the
 # claim text itself (the same discipline as the audit log).
@@ -27,7 +30,7 @@
 
 import hashlib
 from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 
 from core import memory
 
@@ -104,6 +107,19 @@ class ProvenanceChain:
                     "WHERE fact_id = ? ORDER BY seq DESC LIMIT 1",
                     (fact_id,),
                 ).fetchone()
+                checkpoint = conn.execute(
+                    "SELECT seq, head_hash FROM chain_checkpoints "
+                    "WHERE chain_name = 'provenance' AND scope_id = ?",
+                    (fact_id,),
+                ).fetchone()
+                if checkpoint is None and last is not None:
+                    raise RuntimeError("provenance chain checkpoint missing")
+                if checkpoint is not None and (
+                    last is None
+                    or checkpoint["seq"] != last["seq"]
+                    or checkpoint["head_hash"] != last["hash"]
+                ):
+                    raise RuntimeError("provenance chain checkpoint mismatch")
                 prev_hash = last["hash"] if last else _GENESIS
                 seq = (last["seq"] + 1) if last else 1
                 entry_hash = _compute_hash(
@@ -117,6 +133,19 @@ class ProvenanceChain:
                     (fact_id, seq, event_type, from_state, to_state,
                      payload_str, created_at, actor, reason, prev_hash, entry_hash),
                 )
+                if checkpoint is None:
+                    conn.execute(
+                        "INSERT INTO chain_checkpoints "
+                        "(chain_name, scope_id, seq, head_hash) "
+                        "VALUES ('provenance', ?, ?, ?)",
+                        (fact_id, seq, entry_hash),
+                    )
+                else:
+                    conn.execute(
+                        "UPDATE chain_checkpoints SET seq = ?, head_hash = ? "
+                        "WHERE chain_name = 'provenance' AND scope_id = ?",
+                        (seq, entry_hash, fact_id),
+                    )
 
         try:
             memory.call_with_lock_retry(_write)
@@ -150,8 +179,22 @@ class ProvenanceChain:
           broken_at  — seq of the first bad entry, or None
           error      — reason for the break, or None
         """
-        rows = self.chain(fact_id)
+        with memory._db() as conn:
+            conn.execute("BEGIN")
+            rows = conn.execute(
+                "SELECT * FROM provenance_chain WHERE fact_id = ? ORDER BY seq",
+                (fact_id,),
+            ).fetchall()
+            checkpoint = conn.execute(
+                "SELECT seq, head_hash FROM chain_checkpoints "
+                "WHERE chain_name = 'provenance' AND scope_id = ?",
+                (fact_id,),
+            ).fetchone()
         if not rows:
+            if checkpoint is not None:
+                return {"fact_id": fact_id, "status": "tampered", "ok": False,
+                        "length": 0, "broken_at": checkpoint["seq"],
+                        "error": "checkpoint mismatch (tail truncated or replaced)"}
             return {"fact_id": fact_id, "status": "empty_chain", "ok": False,
                     "length": 0, "broken_at": None, "error": "no_events"}
 
@@ -175,6 +218,14 @@ class ProvenanceChain:
                 return fail(r["seq"], "hash mismatch (content altered)")
             prev = r["hash"]
             expected_seq += 1
+
+        if checkpoint is None:
+            return fail(expected_seq, "chain checkpoint missing")
+        if checkpoint["seq"] != len(rows) or checkpoint["head_hash"] != prev:
+            return fail(
+                checkpoint["seq"],
+                "checkpoint mismatch (tail truncated or replaced)",
+            )
 
         return {"fact_id": fact_id, "status": "ok", "ok": True,
                 "length": len(rows), "broken_at": None, "error": None}

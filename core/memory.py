@@ -287,7 +287,9 @@ _TOMBSTONE_DDL = """
 # ─── AUDIT LOG: tamper-evident hash chain of compliance events (Art. 5(2)/24/30) ─
 # Append-only ledger. Each row links to the previous via prev_hash and seals its
 # own content in entry_hash = sha256(seq|ts|event|fact_id|detail|prev_hash), so
-# editing, deleting or reordering any past entry is detectable (see core/audit).
+# editing, deleting or reordering an entry is detectable (see core/audit).
+# The chain_checkpoints row below also pins the latest seq/hash so deleting a
+# contiguous suffix cannot make the shorter audit chain look valid.
 # signature is an optional per-entry HMAC when VELANTRIM_AUDIT_KEY is configured.
 _AUDIT_DDL = """
     CREATE TABLE IF NOT EXISTS audit_log (
@@ -332,6 +334,28 @@ _PROVENANCE_CHAIN_INDEX_DDL = (
     "ON provenance_chain(fact_id, seq)"
 )
 
+# ─── CHAIN CHECKPOINTS: durable heads for suffix-truncation detection ────────
+# A hash chain can detect an edit or a gap only while a later link survives.
+# Deleting a contiguous suffix leaves the remaining prefix internally valid.
+# This table pins the last committed seq/hash for the global audit chain and
+# every per-fact provenance chain. Append operations advance the event row and
+# its checkpoint in the same SQLite transaction; verification compares a full
+# replay against the pinned head.
+#
+# This closes event-table tail deletion. It deliberately does not claim to
+# detect rollback/replacement of the entire SQLite database or an attacker who
+# can rewrite both event rows and checkpoints; that requires an externally held
+# checkpoint/backup outside this database's trust boundary.
+_CHAIN_CHECKPOINT_DDL = """
+    CREATE TABLE IF NOT EXISTS chain_checkpoints (
+        chain_name TEXT NOT NULL,
+        scope_id   TEXT NOT NULL,
+        seq        INTEGER NOT NULL CHECK(seq > 0),
+        head_hash  TEXT NOT NULL,
+        PRIMARY KEY (chain_name, scope_id)
+    )
+"""
+
 # ─── Migration: columns added after the first schema release ────────────────
 # CREATE TABLE IF NOT EXISTS does not touch an already existing DB, so old
 # velantrim_memory.db files must be brought up to date via ALTER TABLE ADD COLUMN (idempotent).
@@ -354,10 +378,10 @@ _EVIDENCE_MIGRATIONS = [
 ]
 
 # SQLite's PRAGMA user_version is the single schema-version marker for the L1
-# database. Version 1 covers the full DDL above plus every entry in
-# _MIGRATIONS/_EVIDENCE_MIGRATIONS, including the revision CAS token added in
-# #244. Future schema changes must increment this value.
-_SCHEMA_VERSION = 1
+# database. Version 1 covers the revision CAS token added in #244; version 2
+# adds durable audit/provenance chain checkpoints. Future schema changes must
+# increment this value.
+_SCHEMA_VERSION = 2
 
 # Serializes first-open schema initialization within this process. The
 # BEGIN IMMEDIATE inside _ensure_schema provides the corresponding
@@ -376,6 +400,33 @@ def _migrate(conn) -> None:
     for column, ddl in _EVIDENCE_MIGRATIONS:
         if column not in ev_cols:
             conn.execute(f"ALTER TABLE evidence_spans ADD COLUMN {column} {ddl}")
+
+    # Establish a migration-time anchor for legacy non-empty chains. This can
+    # only pin the tail present during migration; it cannot prove that an older
+    # database was not truncated before version 2 first opened it.
+    conn.execute(_CHAIN_CHECKPOINT_DDL)
+    tables = {
+        row["name"] for row in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table'"
+        )
+    }
+    if "audit_log" in tables:
+        conn.execute(
+            "INSERT OR IGNORE INTO chain_checkpoints "
+            "(chain_name, scope_id, seq, head_hash) "
+            "SELECT 'audit', '', seq, entry_hash FROM audit_log "
+            "ORDER BY seq DESC LIMIT 1"
+        )
+    if "provenance_chain" in tables:
+        conn.execute(
+            "INSERT OR IGNORE INTO chain_checkpoints "
+            "(chain_name, scope_id, seq, head_hash) "
+            "SELECT 'provenance', p.fact_id, p.seq, p.hash "
+            "FROM provenance_chain AS p "
+            "JOIN (SELECT fact_id, MAX(seq) AS seq FROM provenance_chain "
+            "      GROUP BY fact_id) AS tail "
+            "ON tail.fact_id = p.fact_id AND tail.seq = p.seq"
+        )
 
 
 def _schema_version(conn) -> int:
@@ -439,6 +490,7 @@ def _ensure_schema(conn) -> None:
                     _AUDIT_DDL,
                     _PROVENANCE_CHAIN_DDL,
                     _PROVENANCE_CHAIN_INDEX_DDL,
+                    _CHAIN_CHECKPOINT_DDL,
                 ):
                     conn.execute(ddl)
                 _migrate(conn)
