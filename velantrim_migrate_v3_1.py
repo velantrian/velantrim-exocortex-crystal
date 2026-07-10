@@ -14,7 +14,7 @@ import argparse
 import logging
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple, Set
-from datetime import datetime, timezone
+from datetime import datetime
 from collections import defaultdict
 
 from utils.rfc_parser import extract_rfc

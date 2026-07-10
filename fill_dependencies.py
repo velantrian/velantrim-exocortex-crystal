@@ -5,7 +5,6 @@ Fill depends_on by analyzing content for RFC cross-references.
 
 import argparse
 import json
-import os
 import shutil
 import sys
 import tempfile

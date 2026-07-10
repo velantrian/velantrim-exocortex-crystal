@@ -53,7 +53,11 @@ def extract_claims(content: str, fmt: str) -> List[Dict[str, Any]]:
     """
     fmt = fmt.lower().lstrip(".")
     if fmt in ("txt", "text"):
-        return [{"claim": ln} for ln in (l.strip() for l in content.splitlines()) if ln]
+        return [
+            {"claim": line}
+            for line in (raw_line.strip() for raw_line in content.splitlines())
+            if line
+        ]
     if fmt in ("md", "markdown"):
         return _extract_markdown(content)
     if fmt == "json":

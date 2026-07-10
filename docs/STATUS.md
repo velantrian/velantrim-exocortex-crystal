@@ -65,10 +65,10 @@ Each track was delivered as a separate PR. See `TEST_REPORT.md` and
 ## Recent PRs — response policy and research mode (status)
 
 These PRs are recorded here so the public implementation boundary stays
-explicit. The audited suite is now **1377 passed / 12 skipped / 100% coverage**
-(see `TEST_REPORT.md`; includes the mutation-boundary quick-wins PR #229 on
-top of the small correctness-hardening PR #222, the P0 integrity follow-up
-PR #216, the audit-hardening PR #206, and #201/#204).
+explicit. The integrity-candidate stack is now **1463 passed / 12 skipped /
+100% coverage** (see `TEST_REPORT.md`; includes concurrent schema migration,
+promoted-claim identity protection, audit/provenance tail checkpoints, and the
+shared fact-writer ordering contract on top of the prior audited baseline).
 
 ```text
 PR #201 — deterministic response_policy v0            -> IMPLEMENTED (merged)

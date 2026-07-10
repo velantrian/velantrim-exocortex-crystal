@@ -55,8 +55,6 @@ def decide_response_policy(inp: ResponsePolicyInput) -> ResponsePolicyDecision:
     es = (inp.epistemic_state or "").strip()
     es_upper = es.upper()
     risk = (inp.risk_domain or "GENERAL").upper().strip()
-    mode = (inp.mode_hint or "normal").lower().strip()
-
     # 1. Subjective claims → ACKNOWLEDGE (personal, not world facts)
     subjective = {"EMOTION", "USER_EXPERIENCE", "OPINION", "PREFERENCE", "GOAL"}
     if ct in subjective:

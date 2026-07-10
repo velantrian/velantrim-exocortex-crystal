@@ -222,4 +222,4 @@ if __name__ == '__main__':
     # Save detailed issues to JSON for programmatic processing
     with open('audit_issues.json', 'w', encoding='utf-8') as f:
         json.dump(issues, f, ensure_ascii=False, indent=2)
-    print(f"\nDetailed audit saved to audit_issues.json")
+    print("\nDetailed audit saved to audit_issues.json")
