@@ -26,8 +26,9 @@
 # `review`/`full_graph` mode from the RFC is not implemented here — only the
 # two modes this PR's task requires.
 
+import math
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Mapping
+from typing import Any, Container, Dict, Iterable, List, Mapping, Optional
 
 
 class CanonicalReadMode(str, Enum):
@@ -78,12 +79,45 @@ _REQUIRED_STRING_FIELDS = ("fact_id", "source", "claim")
 
 
 def _has_required_fields(fact: Mapping[str, Any]) -> bool:
-    return all(bool((fact.get(field) or "").strip() if isinstance(fact.get(field), str)
-                     else fact.get(field))
-               for field in _REQUIRED_STRING_FIELDS)
+    """True only if every required field is a real, non-blank string.
+
+    A truthy NON-string value (e.g. `claim=["bad"]`, `source={"x": 1}`,
+    `fact_id=123`) must fail closed here, not be treated as present: these
+    fields are declared as required STRING fields, and a caller that skips
+    its own sanitation (or a corrupted L3 node) must not be able to smuggle a
+    list/dict/number through as if it were valid identity/provenance (#257
+    corrective hardening, review round 5)."""
+    return all(
+        isinstance(fact.get(field), str) and bool(fact[field].strip())
+        for field in _REQUIRED_STRING_FIELDS
+    )
 
 
-def _in(value: Any, known: frozenset) -> bool:
+def _is_valid_confidence(value: Any) -> bool:
+    """True only for a real int/float (never bool — bool is a int subclass
+    but not a valid confidence type) that is finite and within [0.0, 1.0].
+
+    CanonicalView is an independent trust boundary (#257 corrective
+    hardening, section 9/11): it must not assume retrieval or Guardian
+    already validated confidence, since core/pipeline.py::generate_answer()
+    and other direct callers may hand it a fact dict that never passed
+    through either."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return False
+    try:
+        if not math.isfinite(value):
+            return False
+    except OverflowError:
+        # A real int too large to convert to a float (e.g. 10**1000) — math.isfinite()
+        # requires a C double conversion internally and raises rather than
+        # returning False for it. Malformed/out-of-domain, not finite — fail
+        # closed instead of crashing this trust boundary (#257
+        # independent-review round 5).
+        return False
+    return 0.0 <= value <= 1.0
+
+
+def _in(value: Any, known: Container[Any]) -> bool:
     """`value in known`, but fails closed (False) instead of raising for an
     unhashable malformed value (e.g. a list/dict where a string is expected) —
     malformed trust metadata must be excluded, never crash the read path."""
@@ -91,6 +125,36 @@ def _in(value: Any, known: frozenset) -> bool:
         return value in known
     except TypeError:
         return False
+
+
+def _normalize_restricted_bit(value: Any) -> Optional[bool]:
+    """Normalize a `restricted` value read at a known storage-adapter
+    boundary to bool — STRICT about both the source of "missing" and the
+    exact type of a present value (#257 corrective hardening, follow-up).
+
+    Only two things are known-good:
+      - an actual `bool` (True/False);
+      - a real `int` that is exactly 0 or 1 (never `float` — `0.0`/`1.0`
+        must NOT compare equal here; `isinstance(value, int)` alone would
+        also accept them via Python's numeric `==`, so the int check must
+        run before any `== 0`/`== 1` comparison).
+
+    A MISSING value (None) is NOT normalized to False — nor is any other
+    present-but-not-0/1/bool value (another int, a string, a collection,
+    ...). Both are UNKNOWN, never silently coerced to False by a permissive
+    bool(value) over an arbitrary/malformed backend value.
+
+    Lives here (not core/pipeline.py) because CanonicalView is an
+    independent trust boundary that must not rely on a caller/pipeline
+    having already normalized this bit — core/pipeline.py imports this
+    function rather than duplicating it, so the two representations of
+    "restricted" can never independently drift out of sync (#257
+    independent-review round)."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int) and value in (0, 1):
+        return value == 1
+    return None  # UNKNOWN: missing, float, out-of-range int, string, ...
 
 
 def is_strict_canonical(fact: Mapping[str, Any]) -> bool:
@@ -108,10 +172,11 @@ def is_strict_canonical(fact: Mapping[str, Any]) -> bool:
         Deprecated/Collapsed), or unknown/malformed epistemic_state all fail
         closed — this is checked independently of truth_status rather than
         assumed to be implied by it (see STRICT_CANONICAL_ESM_STATES).
-      - the fact is not `restricted` (GDPR Art. 18 processing restriction) —
-        a restricted fact is excluded from grounding exactly like it is
-        already excluded from retrieval (core/pipeline.py::retrieve) and
-        from evidence/review surfaces (core/evidence.py, core/review.py).
+      - `restricted` normalizes to exactly False (GDPR Art. 18 processing
+        restriction) — a confirmed-True OR UNKNOWN (missing/malformed)
+        restricted bit is excluded from grounding, deny-dominant, exactly
+        like it is already excluded from retrieval (core/pipeline.py::retrieve)
+        and from evidence/review surfaces (core/evidence.py, core/review.py).
       - required identity/provenance fields (fact_id, source, claim) are
         present and non-empty.
 
@@ -133,13 +198,45 @@ def is_strict_canonical(fact: Mapping[str, Any]) -> bool:
     if truth_status != VERIFIED_TRUTH_STATUS:
         return False  # USER_CLAIMED / HYPOTHESIS / SUBJECTIVE / UNVERIFIED / CURATOR_OVERRIDE
 
+    # Anti-hybrid-record check (#257 corrective hardening, section 8/9): a
+    # persisted/assembled truth_status=VERIFIED label that the canonical
+    # write-time policy could never have produced for this fact's
+    # claim_type/source_status combination (e.g. VERIFIED + USER_REPORTED, or
+    # VERIFIED + a subjective claim_type like OPINION/EMOTION/PREFERENCE) is
+    # inconsistent metadata, not a real verdict — a malformed/corrupted L3
+    # record or a direct generate_answer() caller must not launder
+    # user-reported or subjective material into a confident factual answer
+    # just because the single truth_status field reads VERIFIED in
+    # isolation. Reuses the exact pure function the write/admission path uses
+    # (core.pipeline._truth_status_for) rather than re-deriving the policy
+    # with a second, parallel enum list that could drift out of sync.
+    # Deferred import: core.pipeline imports this module at its own top
+    # level, so a module-level import here would be circular.
+    from core.pipeline import _truth_status_for
+    claim_type = fact.get("claim_type", "WORLD_FACT")
+    try:
+        # _truth_status_for does a raw `source_status in {...}` set
+        # membership check — an unhashable source_status (e.g. a caller-
+        # supplied list/dict) raises TypeError instead of comparing False.
+        # This module is an independent trust boundary and must fail
+        # closed on malformed input, not crash the read path (#257
+        # independent-review round).
+        resolved_status = _truth_status_for(claim_type, fact.get("source_status"))
+    except TypeError:
+        return False
+    if resolved_status != VERIFIED_TRUTH_STATUS:
+        return False
+
     if not _in(fact.get("epistemic_state"), STRICT_CANONICAL_ESM_STATES):
         return False
 
-    if fact.get("restricted"):
-        return False
+    if _normalize_restricted_bit(fact.get("restricted")) is not False:
+        return False  # True or UNKNOWN (missing/malformed) both fail closed
 
     if not _has_required_fields(fact):
+        return False
+
+    if not _is_valid_confidence(fact.get("confidence")):
         return False
 
     return True
@@ -175,4 +272,7 @@ def project_canonical(
     mode = CanonicalReadMode(mode)  # accepts the enum or its raw string value
     if mode is CanonicalReadMode.STRICT:
         return [dict(f) for f in facts if is_strict_canonical(f)]
-    return [dict(f) for f in facts if not f.get("restricted")]
+    return [
+        dict(f) for f in facts
+        if _normalize_restricted_bit(f.get("restricted")) is False
+    ]
