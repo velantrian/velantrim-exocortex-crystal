@@ -99,23 +99,39 @@ STORE_STATE_CONFLICT = "STORE_STATE_CONFLICT"
 
 def _normalize_restricted_bit(value: Any) -> Optional[bool]:
     """Normalize a `restricted` value read at a known storage-adapter
-    boundary (SQLite `restricted INTEGER DEFAULT 0` via core.memory, or an L3
-    graph node) to bool. A missing value (None — the field was never set)
-    normalizes to False, matching the column's own DEFAULT 0 and the common
-    case of a fact that was never restricted. Any OTHER value that is not a
-    known bool/0/1 — another int, a string, ... — is UNKNOWN and must stay
-    UNKNOWN, never silently coerced to False by a permissive bool(value) over
-    an arbitrary/malformed backend value (#257 corrective hardening, section
-    7)."""
-    if value is None:
-        return False
+    boundary to bool — STRICT about both the source of "missing" and the
+    exact type of a present value (#257 corrective hardening, follow-up).
+
+    Only two things are known-good:
+      - an actual `bool` (True/False);
+      - a real `int` that is exactly 0 or 1 (never `float` — `0.0`/`1.0`
+        must NOT compare equal here; `isinstance(value, int)` alone would
+        also accept them via Python's numeric `==`, so the int check must
+        run before any `== 0`/`== 1` comparison).
+
+    A MISSING value (None) is NOT normalized to False. Two different things
+    can produce None: core.memory's SQLite `facts` table always has
+    `restricted INTEGER DEFAULT 0`, so an L1 read is a KNOWN adapter
+    boundary and would only ever be a genuine 0/1 there — but a physical L3
+    graph node is not guaranteed to carry this field at all (e.g.
+    LadybugL3Graph._COLS does not include "restricted" — an unsupported
+    backend capability, not a value). Conflating "the adapter told us 0"
+    with "this backend never returns the field" would let an
+    unsupported-capability backend silently read as unrestricted. Missing is
+    therefore always UNKNOWN here; callers that know they are reading a
+    definite-0/1 boundary (like L1) will simply never observe a missing
+    value in the first place, since core.pipeline.build_facts_pack() already
+    coerces L1's own read with an explicit bool() over the persisted int.
+
+    Any other present-but-not-0/1/bool value (another int, a string, a
+    collection, ...) is likewise UNKNOWN — never silently coerced to False
+    by a permissive bool(value) over an arbitrary/malformed backend value.
+    """
     if isinstance(value, bool):
         return value
-    if value == 0:
-        return False
-    if value == 1:
-        return True
-    return None  # UNKNOWN: present but malformed
+    if isinstance(value, int) and value in (0, 1):
+        return value == 1
+    return None  # UNKNOWN: missing, float, out-of-range int, string, ...
 
 
 def _effective_restricted(a: Any, b: Any) -> bool:
@@ -147,25 +163,66 @@ def _effective_epistemic_state(fact_state: Any, l3_state: Any) -> Any:
     return l3_state
 
 
+def _fact_metadata_conflicts(fact: Dict[str, Any], existing_node: Dict[str, Any]) -> bool:
+    """True if the in-flight fact's confidence/claim_type/source_status
+    disagrees with the physical L3 node's own values (#257 corrective
+    hardening, follow-up).
+
+    _reconcile_recalled_fact() already takes truth_status from the L3 node.
+    Silently also taking confidence/claim_type/source_status from a
+    DIFFERENT representation (the transient item) — instead of noticing they
+    disagree — is exactly the hybrid-record anti-pattern this reconciliation
+    exists to refuse: a truth_status from one source stitched together with
+    other trust-relevant fields from another, never explicitly checked for
+    equality. A real disagreement here means either a race (the L3 node
+    changed between retrieve() and this admission loop) or a transient item
+    from an unrelated origin that merely shares this fact_id — neither
+    should be resolved by silently preferring one side.
+    """
+    if not math.isclose(
+        _safe_confidence(fact.get("confidence")),
+        _safe_confidence(existing_node.get("confidence")),
+        abs_tol=1e-9,
+    ):
+        return True
+    if fact.get("claim_type") != existing_node.get("claim_type"):
+        return True
+    if fact.get("source_status") != existing_node.get("source_status"):
+        return True
+    return False
+
+
 def _reconcile_recalled_fact(fact: Dict[str, Any], existing_node: Dict[str, Any]) -> None:
     """Ordinary recall of a fact with a physical L3 node: refresh the
     strict-grounding fields from the authoritative L3 record, but never let
-    it resurrect a fresher terminal state, and never let a stale/missing
-    restriction bit under-count a real restriction from either side.
-    Read-only: mutates only the transient `fact` dict, never L1/L3."""
-    fact["epistemic_state"] = _effective_epistemic_state(
+    it resurrect a fresher terminal state, never let a stale/missing
+    restriction bit under-count a real restriction from either side, and
+    never let a disagreeing confidence/claim_type/source_status pass through
+    unnoticed. Read-only: mutates only the transient `fact` dict, never
+    L1/L3."""
+    effective_state = _effective_epistemic_state(
         fact.get("epistemic_state"), existing_node.get("epistemic_state"))
+    if _fact_metadata_conflicts(fact, existing_node):
+        # Content-free fail-closed: block via the same sentinel used for an
+        # unresolvable ESM disagreement, rather than exposing which field
+        # disagreed or what either value was.
+        effective_state = STORE_STATE_CONFLICT
+    fact["epistemic_state"] = effective_state
     fact["truth_status"] = existing_node.get("truth_status")
     fact["restricted"] = _effective_restricted(
         fact.get("restricted"), existing_node.get("restricted"))
-    # source/claim: the physical L3 node is the single authoritative record
-    # for this fact_id — a transient item's source/claim (e.g. from a
-    # different retrieval origin that happens to share this fact_id) must not
-    # be trusted over it, even if the L3 node's own value turns out to be
-    # missing/malformed (which then correctly fails Guardian/CanonicalView's
-    # required-field check instead of grounding on unverified provenance).
+    # claim/source/confidence/claim_type/source_status: the physical L3 node
+    # is the single authoritative record for this fact_id — a transient
+    # item's own values (e.g. from a different retrieval origin that happens
+    # to share this fact_id) must not be trusted over it, even if the L3
+    # node's own value turns out to be missing/malformed (which then
+    # correctly fails Guardian/CanonicalView's own checks instead of
+    # grounding on unverified provenance).
     fact["claim"] = existing_node.get("claim")
     fact["source"] = existing_node.get("source")
+    fact["confidence"] = existing_node.get("confidence")
+    fact["claim_type"] = existing_node.get("claim_type")
+    fact["source_status"] = existing_node.get("source_status")
 
 
 # ─── RETRIEVAL CORPUS (source for retrieve, not L3) ──────────────────────────
@@ -620,8 +677,12 @@ def generate_answer(
         for t in trace:
             entry = dict(t)
             fact = facts_by_id.get(t.get("fact_id"))
-            if fact is not None:
-                entry["epistemic_state"] = fact.get("epistemic_state")
+            # An unmatched/malformed trace entry (no corresponding fact in
+            # facts_pack) has no REAL current state to report — leaving
+            # whatever epistemic_state it already carried would let a stale
+            # blanket-promoted "Validated" survive for exactly the entries
+            # this sync cannot verify (#257 corrective hardening, follow-up).
+            entry["epistemic_state"] = fact.get("epistemic_state") if fact is not None else None
             refusal_trace.append(entry)
         return {
             "answer":      None,
