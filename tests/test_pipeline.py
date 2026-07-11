@@ -743,6 +743,61 @@ def test_recall_reconciliation_resyncs_l1_confidence_claim_type_source_status_af
     assert l1_after["source_status"] == "EXTERNAL"
 
 
+def test_recall_reconciliation_resync_fails_closed_on_unhashable_l3_claim_type_and_source_status(monkeypatch):
+    """A malformed/corrupted L3 node with an unhashable claim_type or
+    source_status (e.g. a list/dict) must not crash
+    _reconcile_recalled_fact()'s L1 resync membership checks with
+    TypeError inside run()'s broad L3-promotion exception handler — which
+    would enqueue the already-polluted L1 row for drain_l3_outbox() to
+    later merge back over the authoritative L3 record instead of just
+    failing this recall closed (#257 independent-review round 5)."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "l3-unhashable-claim-type-source-status"
+    claim = "a fact whose l3 claim_type and source_status are unhashable"
+    g.merge_fact({"fact_id": fid, "claim": claim, "source": "s",
+                 "confidence": 0.9, "claim_type": ["bad", "list"],
+                 "source_status": {"bad": "dict"}, "epistemic_state": "Validated",
+                 "truth_status": "VERIFIED", "restricted": False})
+
+    item = {"id": fid, "text": claim, "source": "s", "confidence": 0.9,
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Validated",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")  # must not raise
+
+    assert result["answer"] is None
+
+
+def test_recall_reconciliation_confidence_resync_fails_closed_on_oversized_l3_confidence(monkeypatch):
+    """An L3 node whose confidence is a real int too large to convert to a
+    float (e.g. 10**1000) must not crash _reconcile_recalled_fact()'s
+    confidence-resync validity check via OverflowError (#257
+    independent-review round 5)."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "l3-oversized-confidence"
+    claim = "a fact whose l3 confidence is an oversized integer"
+    g.merge_fact({"fact_id": fid, "claim": claim, "source": "s",
+                 "confidence": 10**1000, "claim_type": "WORLD_FACT",
+                 "source_status": "EXTERNAL", "epistemic_state": "Validated",
+                 "truth_status": "VERIFIED", "restricted": False})
+
+    item = {"id": fid, "text": claim, "source": "s", "confidence": 0.9,
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Validated",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")  # must not raise
+
+    assert result["answer"] is None
+
+
 def test_graph_walk_excludes_stale_terminal_vector_hit_and_its_neighbor():
     """A node whose L3 copy still reads Validated/restricted=False but whose
     L1 record has already gone terminal (Collapsed/Contradicted/Deprecated)
@@ -1633,9 +1688,14 @@ def test_recall_blocks_when_l1_restricted_true_l3_reports_false(monkeypatch):
     assert result["answer"] is None
 
 
-def test_recall_blocks_when_l3_restricted_value_is_unknown_type(monkeypatch):
+def test_recall_allows_when_l3_restricted_value_is_unknown_type_but_l1_confirms_false(monkeypatch):
     """A malformed/unknown `restricted` value on the L3 node (not a known
-    0/1/bool) is UNKNOWN, never treated as False."""
+    0/1/bool) is UNKNOWN, not a confirmed True — L1's own confirmed False
+    (synced by build_facts_pack()) must ground normally rather than being
+    overridden by an L3-side value that isn't itself a real restriction
+    (#257 independent-review round 5; corrected from the round-2/3 version
+    of this test, which asserted the opposite before the Ladybug-breaking
+    over-application of deny-dominance was identified and fixed)."""
     from core import pipeline
     from core.l3_graph import get_l3_graph
     g = get_l3_graph()
@@ -1654,7 +1714,7 @@ def test_recall_blocks_when_l3_restricted_value_is_unknown_type(monkeypatch):
 
     result = pipeline.run("q")
 
-    assert result["answer"] is None
+    assert result["answer"] is not None
 
 
 def test_recall_allows_when_both_representations_agree_unrestricted(monkeypatch):
@@ -1682,11 +1742,17 @@ def test_recall_allows_when_both_representations_agree_unrestricted(monkeypatch)
     assert result["answer"] is not None
 
 
-def test_recall_blocks_when_l3_node_never_carries_a_restricted_field(monkeypatch):
-    """The L1 side reports a known, explicit False, but the physical L3 node
-    never carries a `restricted` field at all (e.g. a backend whose schema
-    does not track it — see LadybugL3Graph._COLS). Missing is UNKNOWN, not a
-    known False, so False + UNKNOWN must still block."""
+def test_recall_allows_when_l3_node_never_carries_a_restricted_field_and_l1_confirms_false(monkeypatch):
+    """The L1 side reports a known, explicit False, and the physical L3 node
+    never carries a `restricted` field at all (e.g. LadybugL3Graph, whose
+    schema does not track it). Missing is UNKNOWN, not a confirmed True —
+    L1's confirmed False must ground the fact normally rather than being
+    overridden by the L3 backend's structural inability to express this
+    field at all (#257 independent-review round 5: the previous
+    fail-closed version of this test made every recalled fact on such a
+    backend permanently non-groundable, which is the exact regression this
+    round corrects — see the identical fix already applied to the
+    retrieval layer in round 4)."""
     from core import pipeline
     from core.l3_graph import get_l3_graph
     g = get_l3_graph()
@@ -1707,7 +1773,7 @@ def test_recall_blocks_when_l3_node_never_carries_a_restricted_field(monkeypatch
 
     result = pipeline.run("q")
 
-    assert result["answer"] is None
+    assert result["answer"] is not None
 
 
 def test_recall_allows_when_both_sides_are_known_sqlite_zero(monkeypatch):
@@ -2161,6 +2227,16 @@ def test_safe_confidence_rejects_bool(raw):
     assert _safe_confidence(raw) == 0.0
 
 
+def test_safe_confidence_fails_closed_on_oversized_integer_without_crashing():
+    """float(value) itself raises OverflowError for a real int too large to
+    convert to a float (e.g. 10**1000) — must fail closed to the default,
+    not crash every caller of this pervasively-used helper (Guardian,
+    retrieve()'s scoring, _fact_metadata_conflicts, ...) (#257
+    independent-review round 5)."""
+    from core.pipeline import _safe_confidence
+    assert _safe_confidence(10**1000) == 0.0
+
+
 # ─── Direct unit coverage for the recall-reconciliation helpers ───────────────
 
 def test_normalize_restricted_bit_accepts_known_sqlite_adapter_values():
@@ -2188,14 +2264,21 @@ def test_normalize_restricted_bit_treats_other_values_as_unknown(bad):
 
 
 def test_effective_restricted_deny_dominant_matrix():
+    """_effective_restricted(fact_restricted, l3_restricted) is asymmetric
+    (#257 independent-review round 5): fact_restricted is already L1's
+    confirmed, authoritative value by the time this runs (synced by
+    build_facts_pack()), so a merely-UNKNOWN/malformed/missing L3 field
+    must NOT override an L1-confirmed False — only a CONFIRMED True from
+    either side blocks."""
     from core.pipeline import _effective_restricted
     assert _effective_restricted(False, False) is False
     assert _effective_restricted(True, False) is True
     assert _effective_restricted(False, True) is True
     assert _effective_restricted(True, True) is True
-    assert _effective_restricted(False, "malformed") is True   # False + UNKNOWN
-    assert _effective_restricted(False, None) is True          # False + missing L3 field → UNKNOWN
-    assert _effective_restricted(None, None) is True           # both UNKNOWN → fail closed
+    assert _effective_restricted(False, "malformed") is False  # L1 False wins; L3 not confirmed True
+    assert _effective_restricted(False, None) is False         # L1 False wins; missing L3 field is not confirmed True
+    assert _effective_restricted(None, None) is True           # fact_restricted itself UNKNOWN → fail closed defensively
+    assert _effective_restricted("malformed", False) is True   # fact_restricted itself malformed → fail closed defensively
 
 
 @pytest.mark.parametrize("bad_fact_id", [["a", "list"], {"a": "dict"}, 123, None])

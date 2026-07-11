@@ -322,6 +322,18 @@ def test_valid_numeric_confidence_is_accepted(good_confidence):
     assert is_strict_canonical(fact) is True
 
 
+def test_oversized_integer_confidence_fails_closed_without_crashing():
+    """math.isfinite() requires an internal C double conversion and raises
+    OverflowError (rather than returning False) for a real int too large to
+    convert to a float — CanonicalView is an independent trust boundary for
+    callers that may not have passed through Guardian, so it must fail
+    closed on this malformed value, not crash (#257 independent-review
+    round 5)."""
+    fact = _verified_fact(confidence=10**1000)
+    assert is_strict_canonical(fact) is False
+    assert project_canonical([fact]) == []
+
+
 # Thread: "Fail closed on inconsistent VERIFIED metadata"
 # (core/canonical_view.py:134) — a VERIFIED label the canonical write-time
 # policy (core.pipeline._truth_status_for) could never have produced for this

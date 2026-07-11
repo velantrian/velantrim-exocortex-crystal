@@ -28,7 +28,7 @@
 
 import math
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Container, Dict, Iterable, List, Mapping, Optional
 
 
 class CanonicalReadMode(str, Enum):
@@ -104,10 +104,20 @@ def _is_valid_confidence(value: Any) -> bool:
     through either."""
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return False
-    return math.isfinite(value) and 0.0 <= value <= 1.0
+    try:
+        if not math.isfinite(value):
+            return False
+    except OverflowError:
+        # A real int too large to convert to a float (e.g. 10**1000) — math.isfinite()
+        # requires a C double conversion internally and raises rather than
+        # returning False for it. Malformed/out-of-domain, not finite — fail
+        # closed instead of crashing this trust boundary (#257
+        # independent-review round 5).
+        return False
+    return 0.0 <= value <= 1.0
 
 
-def _in(value: Any, known: frozenset) -> bool:
+def _in(value: Any, known: Container[Any]) -> bool:
     """`value in known`, but fails closed (False) instead of raising for an
     unhashable malformed value (e.g. a list/dict where a string is expected) —
     malformed trust metadata must be excluded, never crash the read path."""

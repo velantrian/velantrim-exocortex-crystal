@@ -54,13 +54,20 @@ def _safe_confidence(value: Any, default: float = 0.0) -> float:
         review round 4);
       - a value outside the canonical [0.0, 1.0] confidence domain
         (schemas/fact.schema.json: minimum 0.0, maximum 1.0; core/api.py's
-        IngestRequest.confidence: Field(ge=0.0, le=1.0)).
+        IngestRequest.confidence: Field(ge=0.0, le=1.0));
+      - a real int too large to convert to a float (e.g. 10**1000) —
+        float(value) itself raises OverflowError for this rather than
+        producing inf, which the non-finite check above would otherwise
+        catch (#257 independent-review round 5).
     Used everywhere a raw L3 node's `confidence` field is read arithmetically
     (retrieve()'s scoring) or compared (Guardian), which must not raise on,
     or be fooled by, any of the above."""
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return default
-    confidence = float(value)
+    try:
+        confidence = float(value)
+    except OverflowError:
+        return default
     if not math.isfinite(confidence):
         return default
     if not 0.0 <= confidence <= 1.0:
@@ -108,17 +115,34 @@ STORE_STATE_CONFLICT = "STORE_STATE_CONFLICT"
 # of sync (#257 independent-review round).
 
 
-def _effective_restricted(a: Any, b: Any) -> bool:
-    """Deny-dominant merge of two representations of `restricted` (e.g. the
-    in-flight fact vs. the physical L3 node): True if either side is True, or
-    if either side is UNKNOWN (missing/malformed) — UNKNOWN must never be
-    treated as equivalent to False for strict grounding."""
-    na, nb = _normalize_restricted_bit(a), _normalize_restricted_bit(b)
-    if na is True or nb is True:
+def _effective_restricted(fact_restricted: Any, l3_restricted: Any) -> bool:
+    """Reconcile `restricted` for an ORDINARY RECALL: True if either side
+    confirms a restriction, but a merely-UNKNOWN/missing L3 field does NOT
+    override an L1-confirmed False.
+
+    `fact_restricted` is not an arbitrary second representation: by the time
+    _reconcile_recalled_fact() calls this, build_facts_pack() has already
+    synced it from L1's own persisted `restricted` column, which always has
+    a real 0/1 value (`restricted INTEGER DEFAULT 0` — even a brand-new row
+    with no explicit `restricted` key gets the SQL DEFAULT, not NULL), so it
+    is already a confirmed, authoritative bool in practice, not UNKNOWN.
+    `l3_restricted` is the physical L3 node's own field, which some backends
+    (e.g. LadybugL3Graph) never persist at all — treating that structural
+    absence (or any other non-True L3 value: malformed, wrong type) as
+    equivalent to a confirmed restriction would make every such recalled
+    fact permanently non-groundable even though L1 already confirms it is
+    not restricted (#257 independent-review round 5; mirrors the identical
+    correction already applied to the retrieval layer's
+    _may_seed_vector_hit()/_may_propagate_activation() in round 4).
+
+    Still defensively fails closed (True) if fact_restricted itself is ever
+    not a confirmed False (True, or — should the L1-sync assumption above
+    ever be violated — UNKNOWN); a confirmed True from L3 also always wins,
+    even over an L1 False, since a real L3-side restriction must never be
+    silently dropped."""
+    if _normalize_restricted_bit(fact_restricted) is not False:
         return True
-    if na is False and nb is False:
-        return False
-    return True  # unknown ordering / UNKNOWN → fail closed
+    return _normalize_restricted_bit(l3_restricted) is True
 
 
 def _effective_epistemic_state(fact_state: Any, l3_state: Any) -> Any:
@@ -223,14 +247,32 @@ def _reconcile_recalled_fact(fact: Dict[str, Any], existing_node: Dict[str, Any]
     if (isinstance(l3_source, str) and l3_source.strip()
             and fact.get("source") != l3_source):
         resync_fields["source"] = l3_source
-    if (isinstance(l3_confidence, (int, float)) and not isinstance(l3_confidence, bool)
+    try:
+        # math.isfinite() requires a C double conversion internally and
+        # raises OverflowError (rather than returning False) for a real int
+        # too large to convert to a float (e.g. 10**1000) — malformed, not
+        # finite, and must fail this validity check rather than crash the
+        # whole reconciliation (#257 independent-review round 5).
+        l3_confidence_is_valid = (
+            isinstance(l3_confidence, (int, float)) and not isinstance(l3_confidence, bool)
             and math.isfinite(l3_confidence) and 0.0 <= l3_confidence <= 1.0
+        )
+    except OverflowError:
+        l3_confidence_is_valid = False
+    if (l3_confidence_is_valid
             and not math.isclose(_safe_confidence(fact.get("confidence")),
                                   _safe_confidence(l3_confidence), abs_tol=1e-9)):
         resync_fields["confidence"] = l3_confidence
-    if l3_claim_type in CLAIM_TYPES and fact.get("claim_type") != l3_claim_type:
+    # _in(), not raw `in`: an unhashable l3_claim_type/l3_source_status
+    # (e.g. a corrupted L3 node's list/dict value) must fail this
+    # membership check closed, not raise TypeError inside run()'s broad
+    # L3-promotion exception handler — which would enqueue the
+    # already-polluted L1 row for drain_l3_outbox() to later merge back
+    # over the authoritative L3 record instead of just failing this recall
+    # closed (#257 independent-review round 5).
+    if _in(l3_claim_type, CLAIM_TYPES) and fact.get("claim_type") != l3_claim_type:
         resync_fields["claim_type"] = l3_claim_type
-    if l3_source_status in SOURCE_STATUSES and fact.get("source_status") != l3_source_status:
+    if _in(l3_source_status, SOURCE_STATUSES) and fact.get("source_status") != l3_source_status:
         resync_fields["source_status"] = l3_source_status
     if resync_fields:
         update_fact(fact["fact_id"], **resync_fields)
@@ -340,12 +382,12 @@ def _may_propagate_activation(node: Dict[str, Any]) -> bool:
     score just because the L3 copy hasn't caught up yet (#257
     independent-review round).
 
-    Deliberately narrower than _effective_epistemic_state()/
-    _effective_restricted(): those fully reconcile two representations of
-    the SAME in-flight fact and fail closed on any disagreement, including a
-    missing L1 record. Here, a graph-walk-encountered node commonly has no
-    L1 record at all — that is not itself a disagreement to fail closed on,
-    so this only checks whether L1, when present, disagrees in the specific
+    Deliberately narrower than _effective_epistemic_state(): that fully
+    reconciles two representations of the SAME in-flight fact and fails
+    closed on any epistemic_state disagreement, including a missing L1
+    record. Here, a graph-walk-encountered node commonly has no L1 record
+    at all — that is not itself a disagreement to fail closed on, so this
+    only checks whether L1, when present, disagrees in the specific
     terminal-resurrection / restriction direction.
 
     The L3 node's OWN restricted field only blocks on a CONFIRMED True, not
