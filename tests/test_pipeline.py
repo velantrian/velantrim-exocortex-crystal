@@ -613,52 +613,144 @@ def test_graph_walk_does_not_propagate_to_node_stale_validated_in_l3_but_termina
     assert "stale-terminal" not in ids
 
 
-def test_graph_walk_does_not_propagate_to_node_with_unknown_restricted_bit():
-    """A graph-walk target node whose `restricted` field is merely UNKNOWN
-    (missing/malformed) — not a confirmed False — must not receive or pass
-    on activation, deny-dominant, exactly like a confirmed-True restricted
-    node already does not (#257 independent-review round)."""
+def test_graph_walk_skips_confirmed_restricted_target():
+    """A graph-walk target node whose `restricted` field is a CONFIRMED True
+    must not receive or pass on activation (#257 independent-review round)."""
     from core.pipeline import retrieve
     from core.l3_graph import get_l3_graph
     g = get_l3_graph()
     g.merge_fact({"fact_id": "seed2", "claim": "moonlight tide pattern",
                   "source": "s", "confidence": 0.9, "epistemic_state": "Validated",
                   "restricted": False})
-    g.merge_fact({"fact_id": "unknown-restricted", "claim": "tide chart neighbor",
-                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated"})
-    # no "restricted" key at all on "unknown-restricted" — UNKNOWN, not False
-    g.add_edge("seed2", "CO_OCCURRED", "unknown-restricted", {})
+    g.merge_fact({"fact_id": "confirmed-restricted", "claim": "tide chart neighbor",
+                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated",
+                  "restricted": True})
+    g.add_edge("seed2", "CO_OCCURRED", "confirmed-restricted", {})
 
     ids = {h["id"] for h in retrieve("moonlight tide pattern", k=5)}
     assert "seed2" in ids
-    assert "unknown-restricted" not in ids
+    assert "confirmed-restricted" not in ids
 
 
-def test_retrieve_excludes_vector_hit_with_unknown_restricted_bit():
+def test_graph_walk_propagates_to_target_with_unknown_restricted_bit_and_no_l1_record():
+    """A graph-walk target node whose `restricted` field is merely UNKNOWN
+    (missing/malformed, e.g. an L3 backend like LadybugL3Graph that never
+    persists this column at all) AND has no L1 record either must still be
+    allowed to propagate — treating that structural absence as a confirmed
+    restriction would make every such node permanently unreachable on a
+    backend that simply cannot express this field. L1's own restricted flag
+    (checked separately, see test_retrieve_excludes_vector_hit_restricted_only_in_l1)
+    remains the deny-dominant authority when it IS known (#257
+    independent-review round 4)."""
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    g.merge_fact({"fact_id": "seed3", "claim": "glacier ice core sample",
+                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated",
+                  "restricted": False})
+    g.merge_fact({"fact_id": "unknown-restricted", "claim": "ice core lab neighbor",
+                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated"})
+    # no "restricted" key at all on "unknown-restricted" — UNKNOWN, not False,
+    # and no L1 record for it either (never learned via store_fact by this process).
+    g.add_edge("seed3", "CO_OCCURRED", "unknown-restricted", {})
+
+    ids = {h["id"] for h in retrieve("glacier ice core sample", k=5)}
+    assert "seed3" in ids
+    assert "unknown-restricted" in ids
+
+
+def test_retrieve_admits_vector_hit_with_unknown_restricted_bit_and_no_l1_record():
     """A direct vector-search hit whose `restricted` field is merely UNKNOWN
-    (missing/malformed), not a confirmed False, must not surface — deny-
-    dominant, matching how a confirmed-True restricted hit is already
-    excluded (#257 independent-review round)."""
+    (missing/malformed) and has no L1 record either must still surface — a
+    backend that structurally never persists `restricted` at all (e.g.
+    LadybugL3Graph) must not have every one of its facts become permanently
+    unretrievable. A CONFIRMED-True restricted hit is still excluded (see
+    test_retrieve_rrf_excludes_restricted_l3_facts), and an L1-confirmed
+    restriction still wins over a stale unrestricted L3 copy (see
+    test_retrieve_excludes_vector_hit_restricted_only_in_l1) (#257
+    independent-review round 4)."""
     from core.pipeline import retrieve
     from core.l3_graph import get_l3_graph
     g = get_l3_graph()
     g.merge_fact({"fact_id": "unknown-restricted-hit",
                   "claim": "a claim with an unknown restricted bit",
                   "source": "s", "confidence": 0.9, "epistemic_state": "Validated"})
-    # no "restricted" key at all — UNKNOWN, not False
+    # no "restricted" key at all — UNKNOWN, not False — and no L1 record.
 
     ids = {h["id"] for h in retrieve("a claim with an unknown restricted bit")}
-    assert "unknown-restricted-hit" not in ids
+    assert "unknown-restricted-hit" in ids
 
 
-def test_graph_walk_blocks_stale_terminal_vector_hit_from_seeding_walk():
-    """When the stale L3 'Validated'/restricted=False node is ITSELF a direct
-    vector hit (not merely a target reached via an edge), it is already in
-    `current` at hop 0 — gating only each hop's TARGETS is not enough,
-    because the source's own outgoing edges were still walked regardless of
-    its true (terminal-in-L1) state. A neighbor reached only through that
-    stale source must not receive activation (#257 independent-review
-    round 2)."""
+def test_retrieve_backfills_vector_hits_denied_by_top_k_starvation():
+    """graph.vector_search(k=k) returns at most k rows straight from the
+    backend, ranked by similarity, BEFORE the deny-dominant restricted
+    filter runs. With k=1, a top-ranked but restricted fact would (without
+    a fetch margin) consume the only slot, and a genuinely valid, slightly
+    lower-ranked fact for the same query would never even be fetched —
+    a false zero-hit refusal despite usable canon existing. Fetching with a
+    margin (_VECTOR_SEARCH_FETCH_MARGIN) must let the valid fact surface
+    (#257 independent-review round 4)."""
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    query = "quantum entanglement particle physics experiment results"
+    g.merge_fact({"fact_id": "top-restricted", "claim": query,
+                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated",
+                  "restricted": True})
+    g.merge_fact({"fact_id": "near-unrestricted",
+                  "claim": "quantum entanglement particle physics experiment data",
+                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated",
+                  "restricted": False})
+
+    ids = {h["id"] for h in retrieve(query, k=1)}
+    assert "top-restricted" not in ids
+    assert "near-unrestricted" in ids
+
+
+def test_recall_reconciliation_resyncs_l1_confidence_claim_type_source_status_after_pollution(monkeypatch):
+    """build_facts_pack() persists the pre-reconciliation transient item's
+    confidence/claim_type/source_status to L1 via store_fact() before
+    _reconcile_recalled_fact() runs. When these disagree with the L3
+    record, the fact is blocked via STORE_STATE_CONFLICT — but L1 was still
+    left holding the WRONG trust metadata, which could feed back into a
+    later secondary sync or make memory.get_fact() report the wrong policy
+    inputs for this fact_id. _reconcile_recalled_fact() must re-sync these
+    three fields too, not only claim/source (#257 independent-review
+    round 4)."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    from core.memory import get_fact
+    g = get_l3_graph()
+    fid = "l1-resync-trust-metadata"
+    claim = "a fact whose l1 trust metadata gets polluted by a disagreeing recall"
+    g.merge_fact({"fact_id": fid, "claim": claim, "source": "s",
+                 "confidence": 0.95, "claim_type": "WORLD_FACT",
+                 "source_status": "EXTERNAL", "epistemic_state": "Validated",
+                 "truth_status": "VERIFIED", "restricted": False})
+
+    item = {"id": fid, "text": claim, "source": "s", "confidence": 0.4,
+            "claim_type": "OPINION", "source_status": "USER_REPORTED",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Validated",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is None  # blocked via STORE_STATE_CONFLICT
+    l1_after = get_fact(fid)
+    assert l1_after["confidence"] == 0.95
+    assert l1_after["claim_type"] == "WORLD_FACT"
+    assert l1_after["source_status"] == "EXTERNAL"
+
+
+def test_graph_walk_excludes_stale_terminal_vector_hit_and_its_neighbor():
+    """A node whose L3 copy still reads Validated/restricted=False but whose
+    L1 record has already gone terminal (Collapsed/Contradicted/Deprecated)
+    must now be excluded as a vector hit ITSELF (not merely prevented from
+    expanding its own edges) — admitting it consumes a top-k slot that
+    reconciliation will fail closed on anyway, and its neighbor must not
+    receive activation from it either (#257 independent-review rounds 2
+    and 4)."""
     from core.pipeline import retrieve
     from core.l3_graph import get_l3_graph
     g = get_l3_graph()
@@ -671,8 +763,8 @@ def test_graph_walk_blocks_stale_terminal_vector_hit_from_seeding_walk():
     g.add_edge("stale-source", "CO_OCCURRED", "reef-neighbor", {})
 
     ids = {h["id"] for h in retrieve("a stale source about volcanic eruptions", k=5)}
-    assert "stale-source" in ids       # still a legitimate vector hit
-    assert "reef-neighbor" not in ids  # but must not receive activation from it
+    assert "stale-source" not in ids   # excluded as a vector hit itself now
+    assert "reef-neighbor" not in ids  # and must not receive activation from it
 
 
 def test_retrieve_excludes_vector_hit_restricted_only_in_l1():

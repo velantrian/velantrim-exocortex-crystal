@@ -22,6 +22,7 @@ from core.trace import build_trace, promote_trace, format_trace
 from core.memory import (
     store_fact, get_fact, update_fact, transition_esm, ESM_TRANSITIONS,
     l3_secondary_sync_admissible, DEFAULT_SOURCE_STATUS,
+    CLAIM_TYPES, SOURCE_STATUSES,
 )
 from core.queue import get_outbox_queue
 from core.l3_graph import get_l3_graph
@@ -195,35 +196,49 @@ def _reconcile_recalled_fact(fact: Dict[str, Any], existing_node: Dict[str, Any]
     # correctly fails Guardian/CanonicalView's own checks instead of
     # grounding on unverified provenance).
     #
-    # L1 re-sync (#257 independent-review round 2): build_facts_pack() has
-    # already called store_fact(fact) for this fact_id BEFORE this
+    # L1 re-sync (#257 independent-review rounds 2 and 4): build_facts_pack()
+    # has already called store_fact(fact) for this fact_id BEFORE this
     # reconciliation runs, and store_fact() always overwrites an existing
-    # row's claim/source with whatever the transient item said — regardless
-    # of whether that agrees with L3. If the transient item's claim/source
-    # disagreed with the L3 record, L1 now holds the WRONG value: this
-    # answer/trace correctly grounds on the L3 claim/source below, but a
-    # later memory.get_fact() read (and provenance.verify_receipt(), which
-    # diffs a receipt against a fresh L1 read) would see the polluted L1
-    # value and report a false "modified"/tamper signal. Re-sync L1 back to
-    # the authoritative L3 value here, undoing that pollution — but only for
-    # a field that is itself a genuine non-empty string, never writing a
-    # missing/malformed L3 value into L1's NOT NULL columns.
+    # row's claim/source/confidence/claim_type/source_status with whatever
+    # the transient item said — regardless of whether that agrees with L3.
+    # If the transient item disagreed with the L3 record on any of these
+    # fields, L1 now holds the WRONG value: this answer/trace correctly
+    # grounds on the L3 record below, but a later memory.get_fact() read
+    # (and provenance.verify_receipt(), which diffs a receipt against a
+    # fresh L1 read, or a secondary sync that reads L1's polluted trust
+    # metadata back into L3) would see the polluted L1 value. Re-sync L1
+    # back to the authoritative L3 value here for every field this function
+    # already trusts L3 for, undoing that pollution — but only for a value
+    # that is itself genuinely well-typed, never writing a missing/malformed
+    # L3 value into L1.
     l3_claim = existing_node.get("claim")
     l3_source = existing_node.get("source")
-    resync_fields = {}
+    l3_confidence = existing_node.get("confidence")
+    l3_claim_type = existing_node.get("claim_type")
+    l3_source_status = existing_node.get("source_status")
+    resync_fields: Dict[str, Any] = {}
     if (isinstance(l3_claim, str) and l3_claim.strip()
             and fact.get("claim") != l3_claim):
         resync_fields["claim"] = l3_claim
     if (isinstance(l3_source, str) and l3_source.strip()
             and fact.get("source") != l3_source):
         resync_fields["source"] = l3_source
+    if (isinstance(l3_confidence, (int, float)) and not isinstance(l3_confidence, bool)
+            and math.isfinite(l3_confidence) and 0.0 <= l3_confidence <= 1.0
+            and not math.isclose(_safe_confidence(fact.get("confidence")),
+                                  _safe_confidence(l3_confidence), abs_tol=1e-9)):
+        resync_fields["confidence"] = l3_confidence
+    if l3_claim_type in CLAIM_TYPES and fact.get("claim_type") != l3_claim_type:
+        resync_fields["claim_type"] = l3_claim_type
+    if l3_source_status in SOURCE_STATUSES and fact.get("source_status") != l3_source_status:
+        resync_fields["source_status"] = l3_source_status
     if resync_fields:
         update_fact(fact["fact_id"], **resync_fields)
     fact["claim"] = l3_claim
     fact["source"] = l3_source
-    fact["confidence"] = existing_node.get("confidence")
-    fact["claim_type"] = existing_node.get("claim_type")
-    fact["source_status"] = existing_node.get("source_status")
+    fact["confidence"] = l3_confidence
+    fact["claim_type"] = l3_claim_type
+    fact["source_status"] = l3_source_status
 
 
 # ─── RETRIEVAL CORPUS (source for retrieve, not L3) ──────────────────────────
@@ -270,6 +285,18 @@ _WALK_EDGE_WEIGHTS = {
 }
 _WALK_DEFAULT_EDGE_WEIGHT = 1.0
 
+# graph.vector_search(k=...) returns at most k rows straight from the
+# backend, ranked by similarity, BEFORE _may_seed_vector_hit()'s deny
+# filtering runs. Fetching exactly k means a denied row (restricted,
+# L1-terminal, or UNKNOWN-restricted) consumes a top-k slot and can hide a
+# valid lower-ranked candidate that the backend never even returned — a
+# false zero-hit/refusal even though usable canon exists (#257
+# independent-review round 4). Fetching with a margin and trimming to k
+# only at the very end (see retrieve()'s final `fused[:k]`) mirrors the
+# same margin-then-rerank pattern LadybugL3Graph.vector_search() already
+# uses internally (its own "k*3" fetch, re-ranked by significance).
+_VECTOR_SEARCH_FETCH_MARGIN = 3
+
 
 def _l1_terminal_state_blocks(fact_id: Any) -> bool:
     """True if L1 holds a terminal epistemic_state (Collapsed/Contradicted/
@@ -308,9 +335,8 @@ def _may_propagate_activation(node: Dict[str, Any]) -> bool:
     it runs BEFORE run()'s later _reconcile_recalled_fact() (which only
     reconciles facts that already made it into facts_pack) ever executes. A
     fact that has already gone terminal in L1 (Collapsed/Contradicted/
-    Deprecated), whose restricted bit reads as merely UNKNOWN rather than a
-    confirmed False, or whose L1 record is itself confirmed-restricted while
-    the L3 copy is stale, must not inflate an unrelated neighbor's relevance
+    Deprecated), or whose L1 record is itself confirmed-restricted while the
+    L3 copy is stale, must not inflate an unrelated neighbor's relevance
     score just because the L3 copy hasn't caught up yet (#257
     independent-review round).
 
@@ -320,13 +346,19 @@ def _may_propagate_activation(node: Dict[str, Any]) -> bool:
     missing L1 record. Here, a graph-walk-encountered node commonly has no
     L1 record at all — that is not itself a disagreement to fail closed on,
     so this only checks whether L1, when present, disagrees in the specific
-    terminal-resurrection / restriction direction."""
+    terminal-resurrection / restriction direction.
+
+    The L3 node's OWN restricted field only blocks on a CONFIRMED True, not
+    merely UNKNOWN/missing — see _may_seed_vector_hit()'s docstring for why
+    (some L3 backends, e.g. LadybugL3Graph, never persist this field at
+    all; L1, checked above, is the actual always-typed source of truth for
+    a fact_id this process has learned)."""
     if node.get("epistemic_state") != "Validated":
         return False
     fact_id = node.get("fact_id")
     if _l1_terminal_state_blocks(fact_id) or _l1_restricted_blocks(fact_id):
         return False
-    return _normalize_restricted_bit(node.get("restricted")) is False
+    return _normalize_restricted_bit(node.get("restricted")) is not True
 
 
 def _may_seed_vector_hit(node: Dict[str, Any]) -> bool:
@@ -336,15 +368,32 @@ def _may_seed_vector_hit(node: Dict[str, Any]) -> bool:
     Unlike _may_propagate_activation, does not require epistemic_state ==
     "Validated" — a vector hit's own epistemic state has never been
     restricted to Validated-only (Observed/Hypothesized material can be a
-    legitimate direct hit); only the restricted bit is checked here, but
-    against BOTH the L3 node's own field and L1's (deny-dominant) — a
-    set_restricted() call already applied to L1 must not be defeated by a
-    stale L3 copy that still reads restricted=False (#257 independent-review
-    round 2)."""
+    legitimate direct hit).
+
+    Also excludes a node already terminal in L1 (Collapsed/Contradicted/
+    Deprecated) even though its L3 copy still looks unrestricted/Validated:
+    admitting it as a vector hit consumes a top-k slot that
+    run()'s later reconciliation will fail closed anyway, potentially
+    hiding a valid lower-ranked candidate (#257 independent-review round 4;
+    see retrieve()'s vector_search margin fix for the companion top-k-
+    starvation issue).
+
+    Restricted is checked against BOTH L1's (deny-dominant: True or UNKNOWN
+    both block — set_restricted() already applied to L1 must not be
+    defeated by a stale L3 copy) and the L3 node's own field — but the L3
+    field only blocks on a CONFIRMED True, not merely UNKNOWN/missing. Some
+    L3 backends (e.g. LadybugL3Graph) never persist a `restricted` column
+    at all — a known, structural backend limitation, not per-record
+    corruption — so treating that structural absence as equivalent to a
+    confirmed restriction would make every vector hit on that backend
+    permanently unretrievable. L1's SQLite `restricted INTEGER DEFAULT 0`
+    column is always populated for any fact_id this process has learned, so
+    it is the authoritative check; a missing L3 field defers to L1 rather
+    than deny-by-default (#257 independent-review round 4)."""
     fact_id = node.get("fact_id")
-    if _l1_restricted_blocks(fact_id):
+    if _l1_terminal_state_blocks(fact_id) or _l1_restricted_blocks(fact_id):
         return False
-    return _normalize_restricted_bit(node.get("restricted")) is False
+    return _normalize_restricted_bit(node.get("restricted")) is not True
 
 
 def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
@@ -414,13 +463,16 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
         }
 
     # Source 2: L3 canonical memory (recall of what was learned).
+    # Fetch with a margin (see _VECTOR_SEARCH_FETCH_MARGIN) so a denied row
+    # cannot starve a valid lower-ranked candidate out of the top-k window;
+    # the final `fused[:k]` below still trims the actual output to k.
     vector_hits = []
-    for node in graph.vector_search(q_vec, k=k):
+    for node in graph.vector_search(q_vec, k=k * _VECTOR_SEARCH_FETCH_MARGIN):
         sim = node.get("_relevance", 0.0)
         if sim < min_sim:
             continue
         if not _may_seed_vector_hit(node):
-            continue  # GDPR Art. 18: restricted (L3 own or L1) OR unknown-restricted facts do not take part
+            continue  # GDPR Art. 18 / L1-terminal: denied facts do not take part or seed a walk
         # confidence: 0.0 (not 1.0) for a node missing it, and coerced safely
         # for a malformed non-numeric value — a malformed node must not rank
         # as if maximally confident, or crash the multiplication (#257 review
@@ -448,20 +500,12 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
     for _hop in range(cfg.graph_walk_hops):
         nxt: Dict[str, float] = {}
         for fid, act in current.items():
-            # A stale-terminal-in-L1 or L1-confirmed-restricted SOURCE must
-            # not expand its own outgoing edges either — not only its
-            # targets are gated above. A vector hit that is Validated/
-            # restricted=False in L3 but already Collapsed/Contradicted/
-            # Deprecated (or restricted) in L1 would otherwise still donate
-            # activation to a legitimate unrestricted neighbor via this loop,
-            # even though run() later correctly excludes the stale/restricted
-            # source itself (#257 independent-review round 2). Deliberately
-            # does not require epistemic_state == "Validated" here — a vector
-            # hit's own epistemic state was never restricted to Validated-
-            # only, and this must not newly exclude a legitimate Observed/
-            # Hypothesized source from acting as a walk origin.
-            if _l1_terminal_state_blocks(fid) or _l1_restricted_blocks(fid):
-                continue
+            # Every fid reaching `current` — whether an initial vector hit
+            # or a later-hop target — has already passed
+            # _may_seed_vector_hit()/_may_propagate_activation(), both of
+            # which check the SOURCE's own L1 terminal-state/restricted
+            # status before it is ever admitted; no separate re-check is
+            # needed here (#257 independent-review rounds 2 and 4).
             # Outgoing edges by type → weight; only edges with
             # weight > 0 propagate to Validated nodes. Activation is split proportionally to weights
             # (normalized by their sum), not by raw out-degree — edges with
