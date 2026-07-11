@@ -274,3 +274,83 @@ def test_project_canonical_preserves_input_order():
 def test_project_canonical_rejects_unknown_mode():
     with pytest.raises(ValueError):
         project_canonical([_verified_fact()], mode="bogus")
+
+
+# ─── Corrective hardening after #257 review round 5 ────────────────────────────
+# Nine outstanding review threads on the merged PR. See
+# fix/pr257-canonical-boundary-hardening for the disposition of each.
+
+# Thread: "Reject non-string canonical fields" / "Require string identity
+# fields in strict projection" (core/canonical_view.py:83) — a truthy
+# non-string fact_id/source/claim must not satisfy the required-field check.
+
+@pytest.mark.parametrize("field,bad_value", [
+    ("claim", ["a claim wrapped in a list"]),
+    ("source", {"nested": "source"}),
+    ("fact_id", 12345),
+])
+def test_non_string_identity_field_fails_closed_even_if_truthy(field, bad_value):
+    fact = _verified_fact(**{field: bad_value})
+    assert is_strict_canonical(fact) is False
+    assert project_canonical([fact]) == []
+
+
+def test_non_string_claim_does_not_crash_project_canonical():
+    fact = _verified_fact(claim=["not", "a", "string"])
+    result = project_canonical([fact])  # must not raise
+    assert result == []
+
+
+# Thread: "Reject malformed confidence in CanonicalView itself"
+# (core/canonical_view.py:145) — CanonicalView must independently validate
+# confidence, not rely on retrieval/Guardian having already done so.
+
+@pytest.mark.parametrize("bad_confidence", [
+    float("nan"), float("inf"), float("-inf"),
+    "0.9", "1", True, False, None, -0.01, 1.01,
+    [0.9], {"value": 0.9},
+])
+def test_malformed_confidence_fails_closed_in_canonical_view_itself(bad_confidence):
+    fact = _verified_fact(confidence=bad_confidence)
+    assert is_strict_canonical(fact) is False
+    assert project_canonical([fact]) == []
+
+
+@pytest.mark.parametrize("good_confidence", [0.0, 0.5, 1.0, 1])
+def test_valid_numeric_confidence_is_accepted(good_confidence):
+    fact = _verified_fact(confidence=good_confidence)
+    assert is_strict_canonical(fact) is True
+
+
+# Thread: "Fail closed on inconsistent VERIFIED metadata"
+# (core/canonical_view.py:134) — a VERIFIED label the canonical write-time
+# policy (core.pipeline._truth_status_for) could never have produced for this
+# claim_type/source_status combination is inconsistent metadata, not a real
+# verdict, and must not be trusted in isolation.
+
+@pytest.mark.parametrize("claim_type,source_status", [
+    ("WORLD_FACT", "USER_REPORTED"),
+    ("OPINION", "EXTERNAL"),
+    ("EMOTION", "EXTERNAL"),
+    ("PREFERENCE", "EXTERNAL"),
+    ("USER_EXPERIENCE", "EXTERNAL"),
+    ("GOAL", "EXTERNAL"),
+    ("INTERPRETATION", "EXTERNAL"),
+])
+def test_verified_with_policy_inconsistent_metadata_fails_closed(claim_type, source_status):
+    fact = _verified_fact(claim_type=claim_type, source_status=source_status)
+    assert is_strict_canonical(fact) is False
+    assert project_canonical([fact]) == []
+
+
+def test_verified_world_fact_from_external_source_status_remains_valid():
+    """Regression guard: the inconsistent-metadata check must not reject the
+    normal VERIFIED case it is meant to preserve."""
+    fact = _verified_fact(claim_type="WORLD_FACT", source_status="EXTERNAL")
+    assert is_strict_canonical(fact) is True
+
+
+@pytest.mark.parametrize("source_status", ["DERIVED", "OBSERVED"])
+def test_verified_world_fact_from_other_independent_sources_remains_valid(source_status):
+    fact = _verified_fact(claim_type="WORLD_FACT", source_status=source_status)
+    assert is_strict_canonical(fact) is True

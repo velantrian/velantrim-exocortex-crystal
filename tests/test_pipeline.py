@@ -151,12 +151,18 @@ def test_drain_l3_outbox_keeps_queue_when_backend_down(monkeypatch):
 # ─── episodic binding ─────────────────────────────────────────────────────────
 
 def _two_retrieved():
+    # source_status=EXTERNAL/claim_type=WORLD_FACT (#257 corrective hardening):
+    # episodic linking now only happens after a successful strict-grounded
+    # answer, so these fixture facts must actually be admissible as VERIFIED,
+    # not just merely present.
     return [
         {"id": "f2", "text": "Quantum entanglement links particles",
          "source": "physics", "confidence": 0.85, "_score": 0.6,
+         "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
          "epistemic_state": "Observed", "origin": "retrieval"},
         {"id": "f5", "text": "DNA encodes genetic information",
          "source": "biology", "confidence": 0.99, "_score": 0.5,
+         "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
          "epistemic_state": "Observed", "origin": "retrieval"},
     ]
 
@@ -233,6 +239,170 @@ def test_link_episode_defaults_when_to_now_without_context():
     edge = next(e for e in g._edges if e[0] == "a")
     assert "when" in edge[3] and edge[3]["when"]      # auto-stamped
     assert "who" not in edge[3]                        # no context → no who/where
+
+
+# ─── Episodic-write contract (#257 corrective hardening, independent finding) ──
+# Compatibility change: implicit co-recall graph linking is removed. Only an
+# explicit `episode` argument, on a query whose answer actually grounds, may
+# create episodic graph mutations (CO_OCCURRED edges, entity nodes/MENTIONS).
+
+def test_implicit_co_recall_without_episode_creates_no_edges(monkeypatch):
+    """Two fully strict-canonical, co-recalled facts with NO explicit episode
+    must not create any CO_OCCURRED edge — implicit co-recall linking is
+    removed."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: _two_retrieved())
+    result = pipeline.run("two facts, no episode")
+
+    assert result["answer"] is not None
+    assert get_l3_graph()._edges == []
+
+
+def test_blocked_query_with_explicit_episode_creates_no_edges(monkeypatch):
+    """An explicit episode on a query that ultimately refuses (no
+    strict-canonical facts) must not write any episodic edge."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+
+    non_canonical = [
+        {"id": "nc1", "text": "a user-claimed fact one",
+         "source": "user", "confidence": 0.9, "_score": 0.6,
+         "claim_type": "WORLD_FACT", "source_status": "USER_REPORTED",
+         "epistemic_state": "Observed", "origin": "retrieval"},
+        {"id": "nc2", "text": "a user-claimed fact two",
+         "source": "user", "confidence": 0.9, "_score": 0.5,
+         "claim_type": "WORLD_FACT", "source_status": "USER_REPORTED",
+         "epistemic_state": "Observed", "origin": "retrieval"},
+    ]
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: non_canonical)
+    result = pipeline.run("blocked query", episode={"who": ["alice"], "where": "lab"})
+
+    assert result["answer"] is None
+    assert get_l3_graph()._edges == []
+    assert get_l3_graph()._mentions == []
+
+
+def test_explicit_episode_with_only_restricted_facts_creates_no_edges(monkeypatch):
+    """Restricted facts are excluded from strict grounding; if that leaves
+    nothing to ground, an explicit episode must still not write anything."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    for fid in ("restricted-a", "restricted-b"):
+        g.merge_fact({"fact_id": fid, "claim": f"a restricted claim {fid}",
+                     "source": "s", "confidence": 0.9, "claim_type": "WORLD_FACT",
+                     "source_status": "EXTERNAL", "epistemic_state": "Validated",
+                     "truth_status": "VERIFIED", "restricted": True})
+
+    items = [
+        {"id": "restricted-a", "text": "a restricted claim restricted-a",
+         "source": "s", "confidence": 0.9, "claim_type": "WORLD_FACT",
+         "source_status": "EXTERNAL", "significance": 0.5, "_score": 0.9,
+         "epistemic_state": "Validated", "origin": "memory"},
+        {"id": "restricted-b", "text": "a restricted claim restricted-b",
+         "source": "s", "confidence": 0.9, "claim_type": "WORLD_FACT",
+         "source_status": "EXTERNAL", "significance": 0.5, "_score": 0.8,
+         "epistemic_state": "Validated", "origin": "memory"},
+    ]
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: items)
+    result = pipeline.run("q", episode={"who": ["alice"]})
+
+    assert result["answer"] is None
+    assert get_l3_graph()._edges == []
+
+
+def test_explicit_episode_with_mixed_facts_links_only_canonical(monkeypatch):
+    """When only some retrieved facts ground the answer, episodic linking
+    (edges and entity mentions) must cover only the used canonical facts, not
+    the excluded non-canonical one."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+
+    items = [
+        {"id": "canon-a", "text": "a verified canonical claim a",
+         "source": "s", "confidence": 0.9, "claim_type": "WORLD_FACT",
+         "source_status": "EXTERNAL", "_score": 0.9,
+         "epistemic_state": "Observed", "origin": "retrieval"},
+        {"id": "canon-b", "text": "a verified canonical claim b",
+         "source": "s", "confidence": 0.9, "claim_type": "WORLD_FACT",
+         "source_status": "EXTERNAL", "_score": 0.8,
+         "epistemic_state": "Observed", "origin": "retrieval"},
+        {"id": "non-canon-c", "text": "a user-claimed non-canonical claim c",
+         "source": "user", "confidence": 0.9, "claim_type": "WORLD_FACT",
+         "source_status": "USER_REPORTED", "_score": 0.7,
+         "epistemic_state": "Observed", "origin": "retrieval"},
+    ]
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: items)
+    result = pipeline.run("mixed facts", episode={"who": ["bob"]})
+
+    assert result["answer"] is not None
+    assert {f["fact_id"] for f in result["facts"]} == {"canon-a", "canon-b"}
+
+    g = get_l3_graph()
+    edge_pairs = {(e[0], e[2]) for e in g._edges}
+    assert ("canon-a", "canon-b") in edge_pairs or ("canon-b", "canon-a") in edge_pairs
+    for src, _, dst in [(e[0], e[1], e[2]) for e in g._edges]:
+        assert "non-canon-c" not in (src, dst)
+    mentioned_facts = {fid for fid, _eid, _rel in g._mentions}
+    assert "non-canon-c" not in mentioned_facts
+    assert {"canon-a", "canon-b"} <= mentioned_facts
+
+
+def test_explicit_episode_success_links_once(monkeypatch):
+    """A successful strict-grounded answer with an explicit episode must
+    create exactly the expected CO_OCCURRED pair, not zero and not more than
+    once."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: _two_retrieved())
+    result = pipeline.run("two facts", episode={"who": ["carol"], "where": "office",
+                                                 "when": "2026-07-11T10:00:00"})
+
+    assert result["answer"] is not None
+    g = get_l3_graph()
+    co_occurred_edges = [e for e in g._edges if e[1] == "CO_OCCURRED"]
+    assert len(co_occurred_edges) == 2  # undirected pair: f2->f5 and f5->f2
+
+
+def test_repeated_identical_explicit_episode_creates_no_duplicate_edges(monkeypatch):
+    """Calling run() twice with the SAME explicit episode context (including
+    an explicit `when`) for the same facts must not create duplicate edges —
+    add_edge is an idempotent MERGE keyed on (src, rel_type, dst, props)."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: _two_retrieved())
+    episode = {"who": ["dave"], "where": "kitchen", "when": "2026-07-11T09:00:00"}
+
+    pipeline.run("two facts", episode=dict(episode))
+    pipeline.run("two facts", episode=dict(episode))
+
+    g = get_l3_graph()
+    co_occurred_edges = [e for e in g._edges if e[1] == "CO_OCCURRED"]
+    assert len(co_occurred_edges) == 2  # not 4 — the repeat is not a duplicate
+
+
+def test_episode_link_failure_after_grounded_answer_is_safe_and_observable(monkeypatch):
+    """A backend failure while writing episodic links must not turn a
+    correct, already-grounded answer into a failure, must not raise out of
+    run(), and must be observable via a metric."""
+    from core import pipeline
+    from core import metrics
+
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: _two_retrieved())
+
+    def _boom(*a, **k):
+        raise RuntimeError("simulated episodic backend failure")
+    monkeypatch.setattr(pipeline, "_link_episode", _boom)
+
+    before = metrics.value("episode_link.failed")
+    result = pipeline.run("two facts", episode={"who": ["erin"]})  # must not raise
+
+    assert result["answer"] is not None
+    assert metrics.value("episode_link.failed") == before + 1
 
 
 def test_pipeline_empty_retrieval_blocks():
@@ -378,6 +548,25 @@ def test_graph_walk_sums_activation_across_paths():
     assert hits["A"]["origin"] == "memory" and hits["B"]["origin"] == "memory"
     assert hits["hub"]["origin"] == "graph" and hits["X"]["origin"] == "graph"
     assert hits["hub"]["_score"] > hits["X"]["_score"]   # two paths > one
+
+
+def test_graph_walk_does_not_pour_activation_into_another_vector_hit():
+    """A neighbor reached by the graph-walk that is already a direct vector
+    hit itself must not have graph-walk activation poured into it — it
+    already has an authoritative vector score of its own."""
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    g.merge_fact({"fact_id": "A", "claim": "alpha topic", "source": "s",
+                  "confidence": 1.0, "epistemic_state": "Validated"})
+    g.merge_fact({"fact_id": "B", "claim": "beta topic", "source": "s",
+                  "confidence": 1.0, "epistemic_state": "Validated"})
+    g.add_edge("A", "CO_OCCURRED", "B", {})
+
+    hits = [h for h in retrieve("alpha beta", k=5)]
+    ids = [h["id"] for h in hits]
+    assert ids.count("B") == 1               # not duplicated by the walk
+    assert next(h for h in hits if h["id"] == "B")["origin"] == "memory"
 
 
 def test_graph_walk_skips_deprecated_neighbors():
@@ -1161,6 +1350,232 @@ def test_l1_validated_l3_missing_outbox_recovery_self_heals_correctly(monkeypatc
     assert after["truth_status"] == "VERIFIED"
 
 
+# ─── Recall reconciliation (#257 review round 5) ──────────────────────────────
+# Ordinary recall of a fact with a physical L3 node used to copy only
+# epistemic_state/truth_status from the L3 node, ignoring restricted/source/
+# claim entirely and letting a stale L3 read silently win over a fresher
+# terminal state elsewhere. _reconcile_recalled_fact fixes both.
+
+def test_recall_does_not_resurrect_collapsed_fact_from_stale_l3_validated(monkeypatch):
+    """A fact collapsed in L1 (e.g. via an explicit removal) but whose L3 node
+    has not yet caught up (still shows Validated) must not be resurrected by
+    the recall branch blindly preferring the L3 read."""
+    from core import pipeline
+    from core.memory import store_fact
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "collapsed-in-l1-stale-validated-in-l3"
+    claim = "a fact collapsed in l1 but still shown validated in a stale l3 node"
+    store_fact({"fact_id": fid, "claim": claim, "source": "s", "confidence": 0.9,
+               "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+               "epistemic_state": "Collapsed"})
+    g.merge_fact({"fact_id": fid, "claim": claim, "source": "s", "confidence": 0.9,
+                 "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+                 "epistemic_state": "Validated", "truth_status": "VERIFIED"})
+
+    item = {"id": fid, "text": claim, "source": "s", "confidence": 0.9,
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Observed",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is None
+
+
+def test_recall_blocks_when_l3_restricted_true_but_transient_item_says_false(monkeypatch):
+    """An L3 node that is restricted must not be groundable just because the
+    in-flight item (e.g. from a different retrieval origin sharing the same
+    fact_id) never carried the restriction."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "l3-restricted-transient-says-unrestricted"
+    claim = "a fact restricted in l3 recalled via an item without the restriction"
+    g.merge_fact({"fact_id": fid, "claim": claim, "source": "s", "confidence": 0.9,
+                 "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+                 "epistemic_state": "Validated", "truth_status": "VERIFIED",
+                 "restricted": True})
+
+    item = {"id": fid, "text": claim, "source": "s", "confidence": 0.9,
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Validated",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is None
+
+
+def test_recall_blocks_when_l1_restricted_true_l3_reports_false(monkeypatch):
+    """The reverse direction: L1 already marked the fact restricted, but the
+    L3 node has not (yet) synced that — deny-dominant, not "last write
+    wins"."""
+    from core import pipeline
+    from core.memory import store_fact, set_restricted
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "l1-restricted-l3-reports-unrestricted"
+    claim = "a fact restricted in l1 but not yet reflected on its l3 node"
+    store_fact({"fact_id": fid, "claim": claim, "source": "s", "confidence": 0.9,
+               "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+               "epistemic_state": "Validated"})
+    set_restricted(fid, True)
+    g.merge_fact({"fact_id": fid, "claim": claim, "source": "s", "confidence": 0.9,
+                 "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+                 "epistemic_state": "Validated", "truth_status": "VERIFIED",
+                 "restricted": False})
+
+    item = {"id": fid, "text": claim, "source": "s", "confidence": 0.9,
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Validated",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is None
+
+
+def test_recall_blocks_when_l3_restricted_value_is_unknown_type(monkeypatch):
+    """A malformed/unknown `restricted` value on the L3 node (not a known
+    0/1/bool) is UNKNOWN, never treated as False."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "l3-restricted-unknown-type"
+    claim = "a fact whose l3 restricted field is a malformed unknown value"
+    g.merge_fact({"fact_id": fid, "claim": claim, "source": "s", "confidence": 0.9,
+                 "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+                 "epistemic_state": "Validated", "truth_status": "VERIFIED",
+                 "restricted": "yes"})
+
+    item = {"id": fid, "text": claim, "source": "s", "confidence": 0.9,
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Validated",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is None
+
+
+def test_recall_allows_when_both_representations_agree_unrestricted(monkeypatch):
+    """Regression guard: the deny-dominant reconciliation must not
+    over-block the common case where both sides agree the fact is not
+    restricted."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "both-sides-agree-unrestricted"
+    claim = "a fact both representations agree is not restricted"
+    g.merge_fact({"fact_id": fid, "claim": claim, "source": "s", "confidence": 0.9,
+                 "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+                 "epistemic_state": "Validated", "truth_status": "VERIFIED",
+                 "restricted": False})
+
+    item = {"id": fid, "text": claim, "source": "s", "confidence": 0.9,
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Validated",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is not None
+
+
+def test_recall_blocks_on_unresolvable_non_terminal_epistemic_state_disagreement(monkeypatch):
+    """L1 shows Validated, the L3 node shows ImmutableCore — individually both
+    are strict-canonical states, but an unresolvable disagreement between the
+    two representations must fail closed (STORE_STATE_CONFLICT), not silently
+    prefer either side."""
+    from core import pipeline
+    from core.memory import store_fact
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "unresolvable-state-disagreement"
+    claim = "a fact whose l1 and l3 views of epistemic_state disagree"
+    store_fact({"fact_id": fid, "claim": claim, "source": "s", "confidence": 0.9,
+               "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+               "epistemic_state": "Validated"})
+    g.merge_fact({"fact_id": fid, "claim": claim, "source": "s", "confidence": 0.9,
+                 "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+                 "epistemic_state": "ImmutableCore", "truth_status": "VERIFIED"})
+
+    item = {"id": fid, "text": claim, "source": "s", "confidence": 0.9,
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Observed",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is None
+
+
+def test_recall_reconciliation_does_not_mutate_persisted_state(monkeypatch):
+    """Recall reconciliation is read-only: repeated recall of a conflicting
+    fact must never write back to L1 or L3 — the terminal state stays exactly
+    as persisted on both sides."""
+    from core import pipeline
+    from core.memory import store_fact, get_fact
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "repeated-recall-no-mutation"
+    claim = "a fact recalled twice must not have its persisted state changed by recall"
+    store_fact({"fact_id": fid, "claim": claim, "source": "s", "confidence": 0.9,
+               "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+               "epistemic_state": "Collapsed"})
+    g.merge_fact({"fact_id": fid, "claim": claim, "source": "s", "confidence": 0.9,
+                 "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+                 "epistemic_state": "Validated", "truth_status": "VERIFIED"})
+
+    item = {"id": fid, "text": claim, "source": "s", "confidence": 0.9,
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Observed",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    pipeline.run("q")
+    pipeline.run("q")
+
+    assert get_fact(fid)["epistemic_state"] == "Collapsed"
+    assert g.get_fact(fid)["epistemic_state"] == "Validated"
+
+
+def test_recall_uses_l3_record_claim_and_source_not_transient_item(monkeypatch):
+    """The physical L3 node is the single authoritative record for its
+    fact_id — a transient retrieved item's claim/source (e.g. a different
+    retrieval origin coincidentally sharing this fact_id) must not override
+    it."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "l3-authoritative-claim-and-source"
+    real_claim = "the real canonical claim persisted in l3"
+    g.merge_fact({"fact_id": fid, "claim": real_claim, "source": "trusted-l3-source",
+                 "confidence": 0.9, "claim_type": "WORLD_FACT",
+                 "source_status": "EXTERNAL", "epistemic_state": "Validated",
+                 "truth_status": "VERIFIED"})
+
+    item = {"id": fid, "text": "a different non-canonical claim from another retrieval origin",
+            "source": "untrusted-other-origin", "confidence": 0.9,
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Validated",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is not None
+    assert result["facts"][0]["claim"] == real_claim
+    assert result["facts"][0]["source"] == "trusted-l3-source"
+
+
 # ─── Blocker 2 (#257 review round 3): no synthesized provenance/confidence ────
 
 def test_verified_validated_l3_node_missing_source_blocks_via_guardian():
@@ -1213,8 +1628,14 @@ def test_valid_persisted_source_and_confidence_remain_unaffected():
     from core.l3_graph import get_l3_graph
     g = get_l3_graph()
     claim = "a fully valid verified claim about properly sourced widgets"
+    # claim_type/source_status must actually support a VERIFIED verdict
+    # (#257 corrective hardening: CanonicalView now fails closed on a
+    # VERIFIED label the write-time policy could never have produced for the
+    # fact's claim_type/source_status combination) — a "fully valid" fixture
+    # needs consistent metadata, not just a bare truth_status.
     g.merge_fact({"fact_id": "valid-verified", "claim": claim,
                  "source": "trusted-source", "confidence": 0.95,
+                 "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
                  "epistemic_state": "Validated", "truth_status": "VERIFIED"})
 
     result = run(claim)
@@ -1253,6 +1674,87 @@ def test_safe_confidence_rejects_out_of_domain_values(raw):
     le=1.0)) — a value outside it is malformed, not merely "very confident"."""
     from core.pipeline import _safe_confidence
     assert _safe_confidence(raw) == 0.0
+
+
+# ─── Corrective hardening (#257 review round 5): reject string confidences
+# before coercion — a persisted numeric string must not be normalized into
+# trusted metadata just because float() happens to accept it.
+
+@pytest.mark.parametrize("raw", ["0.9", "1", "1.0", "0", "0.0"])
+def test_safe_confidence_rejects_valid_looking_numeric_strings(raw):
+    from core.pipeline import _safe_confidence
+    assert _safe_confidence(raw) == 0.0
+
+
+@pytest.mark.parametrize("raw", [True, False])
+def test_safe_confidence_rejects_bool(raw):
+    """bool is an int subclass in Python — True/False must not silently
+    coerce to 1.0/0.0 confidence."""
+    from core.pipeline import _safe_confidence
+    assert _safe_confidence(raw) == 0.0
+
+
+# ─── Direct unit coverage for the recall-reconciliation helpers ───────────────
+
+def test_normalize_restricted_bit_accepts_known_sqlite_adapter_values():
+    from core.pipeline import _normalize_restricted_bit
+    assert _normalize_restricted_bit(0) is False
+    assert _normalize_restricted_bit(1) is True
+    assert _normalize_restricted_bit(True) is True
+    assert _normalize_restricted_bit(False) is False
+    assert _normalize_restricted_bit(None) is False  # never persisted → schema DEFAULT 0
+
+
+@pytest.mark.parametrize("bad", [2, -1, "yes", "1", "0", "true", "false", [], {}])
+def test_normalize_restricted_bit_treats_other_values_as_unknown(bad):
+    from core.pipeline import _normalize_restricted_bit
+    assert _normalize_restricted_bit(bad) is None
+
+
+def test_effective_restricted_deny_dominant_matrix():
+    from core.pipeline import _effective_restricted
+    assert _effective_restricted(False, False) is False
+    assert _effective_restricted(True, False) is True
+    assert _effective_restricted(False, True) is True
+    assert _effective_restricted(True, True) is True
+    assert _effective_restricted(False, "malformed") is True   # False + UNKNOWN
+    assert _effective_restricted(None, None) is False          # both never set → both False
+
+
+def test_effective_epistemic_state_matrix():
+    from core.pipeline import _effective_epistemic_state, STORE_STATE_CONFLICT
+    assert _effective_epistemic_state("Collapsed", "Validated") == "Collapsed"
+    assert _effective_epistemic_state("Validated", "Collapsed") == "Collapsed"
+    assert _effective_epistemic_state("Contradicted", "Validated") == "Contradicted"
+    assert _effective_epistemic_state("Validated", "Deprecated") == "Deprecated"
+    assert _effective_epistemic_state("Validated", "Validated") == "Validated"
+    assert _effective_epistemic_state("Validated", "ImmutableCore") == STORE_STATE_CONFLICT
+
+
+def test_verified_validated_l3_node_with_numeric_string_confidence_blocked(monkeypatch):
+    """A recalled L3 node storing confidence as a numeric string (e.g. from a
+    legacy/corrupted write) must not ground an answer — the coercion in
+    _safe_confidence must reject the wrong type before converting it, not
+    normalize it into a valid float (#257 review round 5)."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "string-confidence-node"
+    claim = "a claim whose persisted confidence is a numeric string"
+    g.merge_fact({"fact_id": fid, "claim": claim, "source": "s",
+                 "confidence": "0.9", "claim_type": "WORLD_FACT",
+                 "source_status": "EXTERNAL",
+                 "epistemic_state": "Validated", "truth_status": "VERIFIED"})
+
+    item = {"id": fid, "text": claim, "source": "s", "confidence": "0.9",
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Validated",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is None
 
 
 @pytest.mark.parametrize("raw", [float("nan"), float("inf"), float("-inf"),
@@ -1319,6 +1821,34 @@ def test_trace_epistemic_state_matches_fact_epistemic_state_for_successful_answe
     assert [t["fact_id"] for t in result["trace"]] == [fid]
     assert result["facts"][0]["epistemic_state"] == "ImmutableCore"
     assert result["trace"][0]["epistemic_state"] == "ImmutableCore"
+
+
+def test_refusal_trace_does_not_report_a_false_validated_state(monkeypatch):
+    """(#257 review round 5) When generate_answer() refuses because all
+    candidates are non-canonical, the returned trace must not claim
+    "Validated" for a fact the recall branch deliberately left unchanged
+    (here: Supported / CURATOR_OVERRIDE) — a blocked response must never
+    look like validation."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "curator-override-supported-refusal-trace"
+    claim = "a curator-override claim that must not report a validated trace"
+    g.merge_fact({"fact_id": fid, "claim": claim, "source": "s", "confidence": 0.9,
+                 "epistemic_state": "Supported", "truth_status": "CURATOR_OVERRIDE"})
+
+    item = {"id": fid, "text": claim, "source": "s", "confidence": 0.9,
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Supported",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is None
+    assert result["trace"], "refusal must still carry a trace for diagnostics"
+    for t in result["trace"]:
+        assert t.get("epistemic_state") != "Validated"
 
 
 # ─── demo seed opt-in (issue #65) ─────────────────────────────────────────────

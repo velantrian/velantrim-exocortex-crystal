@@ -26,6 +26,7 @@
 # `review`/`full_graph` mode from the RFC is not implemented here — only the
 # two modes this PR's task requires.
 
+import math
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Mapping
 
@@ -78,9 +79,32 @@ _REQUIRED_STRING_FIELDS = ("fact_id", "source", "claim")
 
 
 def _has_required_fields(fact: Mapping[str, Any]) -> bool:
-    return all(bool((fact.get(field) or "").strip() if isinstance(fact.get(field), str)
-                     else fact.get(field))
-               for field in _REQUIRED_STRING_FIELDS)
+    """True only if every required field is a real, non-blank string.
+
+    A truthy NON-string value (e.g. `claim=["bad"]`, `source={"x": 1}`,
+    `fact_id=123`) must fail closed here, not be treated as present: these
+    fields are declared as required STRING fields, and a caller that skips
+    its own sanitation (or a corrupted L3 node) must not be able to smuggle a
+    list/dict/number through as if it were valid identity/provenance (#257
+    corrective hardening, review round 5)."""
+    return all(
+        isinstance(fact.get(field), str) and bool(fact[field].strip())
+        for field in _REQUIRED_STRING_FIELDS
+    )
+
+
+def _is_valid_confidence(value: Any) -> bool:
+    """True only for a real int/float (never bool — bool is a int subclass
+    but not a valid confidence type) that is finite and within [0.0, 1.0].
+
+    CanonicalView is an independent trust boundary (#257 corrective
+    hardening, section 9/11): it must not assume retrieval or Guardian
+    already validated confidence, since core/pipeline.py::generate_answer()
+    and other direct callers may hand it a fact dict that never passed
+    through either."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return False
+    return math.isfinite(value) and 0.0 <= value <= 1.0
 
 
 def _in(value: Any, known: frozenset) -> bool:
@@ -133,6 +157,25 @@ def is_strict_canonical(fact: Mapping[str, Any]) -> bool:
     if truth_status != VERIFIED_TRUTH_STATUS:
         return False  # USER_CLAIMED / HYPOTHESIS / SUBJECTIVE / UNVERIFIED / CURATOR_OVERRIDE
 
+    # Anti-hybrid-record check (#257 corrective hardening, section 8/9): a
+    # persisted/assembled truth_status=VERIFIED label that the canonical
+    # write-time policy could never have produced for this fact's
+    # claim_type/source_status combination (e.g. VERIFIED + USER_REPORTED, or
+    # VERIFIED + a subjective claim_type like OPINION/EMOTION/PREFERENCE) is
+    # inconsistent metadata, not a real verdict — a malformed/corrupted L3
+    # record or a direct generate_answer() caller must not launder
+    # user-reported or subjective material into a confident factual answer
+    # just because the single truth_status field reads VERIFIED in
+    # isolation. Reuses the exact pure function the write/admission path uses
+    # (core.pipeline._truth_status_for) rather than re-deriving the policy
+    # with a second, parallel enum list that could drift out of sync.
+    # Deferred import: core.pipeline imports this module at its own top
+    # level, so a module-level import here would be circular.
+    from core.pipeline import _truth_status_for
+    claim_type = fact.get("claim_type", "WORLD_FACT")
+    if _truth_status_for(claim_type, fact.get("source_status")) != VERIFIED_TRUTH_STATUS:
+        return False
+
     if not _in(fact.get("epistemic_state"), STRICT_CANONICAL_ESM_STATES):
         return False
 
@@ -140,6 +183,9 @@ def is_strict_canonical(fact: Mapping[str, Any]) -> bool:
         return False
 
     if not _has_required_fields(fact):
+        return False
+
+    if not _is_valid_confidence(fact.get("confidence")):
         return False
 
     return True

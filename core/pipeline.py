@@ -38,8 +38,12 @@ logger = logging.getLogger(__name__)
 def _safe_confidence(value: Any, default: float = 0.0) -> float:
     """Coerce a retrieved/persisted confidence value to a float, failing
     closed (0.0) on:
-      - a malformed non-numeric value (e.g. a string/list from a corrupted
-        or legacy node) — would otherwise raise TypeError/ValueError;
+      - a non-numeric-TYPE value (e.g. a string/list/dict from a corrupted
+        or legacy node) — only a real `int`/`float` (never `bool`, an int
+        subclass) is accepted; a numeric-looking string such as "0.9" must
+        not be normalized into trusted metadata just because float() happens
+        to accept it (#257 review round 5) — would otherwise raise
+        TypeError/ValueError for the genuinely non-numeric cases anyway;
       - a non-finite value (NaN, +/-Infinity) — float("nan") and
         float("inf") both convert without raising, but NaN compares False
         against every relational operator (>, <=, <), so a downstream
@@ -53,10 +57,9 @@ def _safe_confidence(value: Any, default: float = 0.0) -> float:
     Used everywhere a raw L3 node's `confidence` field is read arithmetically
     (retrieve()'s scoring) or compared (Guardian), which must not raise on,
     or be fooled by, any of the above."""
-    try:
-        confidence = float(value)
-    except (TypeError, ValueError):
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
         return default
+    confidence = float(value)
     if not math.isfinite(confidence):
         return default
     if not 0.0 <= confidence <= 1.0:
@@ -71,6 +74,98 @@ def _safe_source(value: Any) -> Optional[str]:
     would raise out of store_fact() instead of failing closed at Guardian
     (#257 review round 3)."""
     return value if isinstance(value, str) and value.strip() else None
+
+
+# ─── RECALL RECONCILIATION (#257 review round 5) ─────────────────────────────
+# run()'s ordinary-recall branch (an in-flight fact that already has a
+# physical L3 node) used to copy only epistemic_state/truth_status from the
+# L3 node onto the in-flight fact. That let a stale/partial read silently
+# win over a fresher, stricter representation: a fresher terminal ESM state
+# (Collapsed/Contradicted/Deprecated) already reflected elsewhere could be
+# overwritten by an older Validated L3 read, and a real L3 restriction could
+# be left un-synced onto a transient item that never carried it. This is a
+# narrow, read-only reconciliation for exactly this one call site — not a
+# general distributed-consistency redesign.
+
+_TERMINAL_ESM_STATES = frozenset({"Collapsed", "Contradicted", "Deprecated"})
+
+# Sentinel epistemic_state for an unresolvable disagreement between the
+# in-flight fact and the physical L3 node (neither terminal, but not equal
+# either) — guaranteed to never be a member of
+# core.canonical_view.STRICT_CANONICAL_ESM_STATES, so it fails closed via the
+# existing allowlist check without inventing a second parallel state machine.
+STORE_STATE_CONFLICT = "STORE_STATE_CONFLICT"
+
+
+def _normalize_restricted_bit(value: Any) -> Optional[bool]:
+    """Normalize a `restricted` value read at a known storage-adapter
+    boundary (SQLite `restricted INTEGER DEFAULT 0` via core.memory, or an L3
+    graph node) to bool. A missing value (None — the field was never set)
+    normalizes to False, matching the column's own DEFAULT 0 and the common
+    case of a fact that was never restricted. Any OTHER value that is not a
+    known bool/0/1 — another int, a string, ... — is UNKNOWN and must stay
+    UNKNOWN, never silently coerced to False by a permissive bool(value) over
+    an arbitrary/malformed backend value (#257 corrective hardening, section
+    7)."""
+    if value is None:
+        return False
+    if isinstance(value, bool):
+        return value
+    if value == 0:
+        return False
+    if value == 1:
+        return True
+    return None  # UNKNOWN: present but malformed
+
+
+def _effective_restricted(a: Any, b: Any) -> bool:
+    """Deny-dominant merge of two representations of `restricted` (e.g. the
+    in-flight fact vs. the physical L3 node): True if either side is True, or
+    if either side is UNKNOWN (missing/malformed) — UNKNOWN must never be
+    treated as equivalent to False for strict grounding."""
+    na, nb = _normalize_restricted_bit(a), _normalize_restricted_bit(b)
+    if na is True or nb is True:
+        return True
+    if na is False and nb is False:
+        return False
+    return True  # unknown ordering / UNKNOWN → fail closed
+
+
+def _effective_epistemic_state(fact_state: Any, l3_state: Any) -> Any:
+    """Reconcile the in-flight fact's epistemic_state with the physical L3
+    node's own epistemic_state for an ORDINARY RECALL. A stale L3 read must
+    never resurrect a fact that another representation already shows in a
+    terminal state — and an unresolvable disagreement between the two fails
+    closed (STORE_STATE_CONFLICT) rather than silently preferring either
+    side."""
+    if fact_state in _TERMINAL_ESM_STATES:
+        return fact_state
+    if l3_state in _TERMINAL_ESM_STATES:
+        return l3_state
+    if fact_state != l3_state:
+        return STORE_STATE_CONFLICT
+    return l3_state
+
+
+def _reconcile_recalled_fact(fact: Dict[str, Any], existing_node: Dict[str, Any]) -> None:
+    """Ordinary recall of a fact with a physical L3 node: refresh the
+    strict-grounding fields from the authoritative L3 record, but never let
+    it resurrect a fresher terminal state, and never let a stale/missing
+    restriction bit under-count a real restriction from either side.
+    Read-only: mutates only the transient `fact` dict, never L1/L3."""
+    fact["epistemic_state"] = _effective_epistemic_state(
+        fact.get("epistemic_state"), existing_node.get("epistemic_state"))
+    fact["truth_status"] = existing_node.get("truth_status")
+    fact["restricted"] = _effective_restricted(
+        fact.get("restricted"), existing_node.get("restricted"))
+    # source/claim: the physical L3 node is the single authoritative record
+    # for this fact_id — a transient item's source/claim (e.g. from a
+    # different retrieval origin that happens to share this fact_id) must not
+    # be trusted over it, even if the L3 node's own value turns out to be
+    # missing/malformed (which then correctly fails Guardian/CanonicalView's
+    # required-field check instead of grounding on unverified provenance).
+    fact["claim"] = existing_node.get("claim")
+    fact["source"] = existing_node.get("source")
 
 
 # ─── RETRIEVAL CORPUS (source for retrieve, not L3) ──────────────────────────
@@ -512,13 +607,29 @@ def generate_answer(
             "(%d non-canonical fact(s) present but not usable as grounding)",
             len(facts_pack["facts"]),
         )
+        # A refusal must not report a false "Validated" trace (#257 review
+        # round 5): run()'s blanket promote_trace(trace, "Validated") call
+        # (for the CanonicalView-success path) stamps every trace element
+        # "Validated" before generate_answer() is even called, regardless of
+        # whether CanonicalView actually admits anything. Sync each element's
+        # epistemic_state to its fact's REAL current state instead of
+        # returning the blanket-promoted trace verbatim — a blocked response
+        # must never look like validation.
+        facts_by_id = {f["fact_id"]: f for f in facts_pack["facts"] if f.get("fact_id")}
+        refusal_trace = []
+        for t in trace:
+            entry = dict(t)
+            fact = facts_by_id.get(t.get("fact_id"))
+            if fact is not None:
+                entry["epistemic_state"] = fact.get("epistemic_state")
+            refusal_trace.append(entry)
         return {
             "answer":      None,
             "error":       "insufficient grounding: no strict-canonical (VERIFIED) facts available",
             "query":       facts_pack.get("query", ""),
             "facts":       [],
-            "trace":       trace,
-            "trace_fmt":   format_trace(trace),
+            "trace":       refusal_trace,
+            "trace_fmt":   format_trace(refusal_trace),
             "total_facts": 0,
         }
 
@@ -797,8 +908,11 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
                 # physical-L3 material requires an explicit admission/review
                 # path (core.review.approve / core.reconcile), not ordinary
                 # answer retrieval. No write to L3 happens for this fact.
-                fact["epistemic_state"] = existing_node.get("epistemic_state")
-                fact["truth_status"] = existing_node.get("truth_status")
+                # _reconcile_recalled_fact (#257 review round 5) refreshes
+                # the strict-grounding fields from the L3 record without
+                # letting a stale L3 read resurrect a fresher terminal state
+                # or under-count a real restriction from either side.
+                _reconcile_recalled_fact(fact, existing_node)
                 continue
 
             # Genuinely new to the L3 canon (this also correctly covers the
@@ -837,8 +951,6 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
             # We merge the persistent record (created_at/metadata → for SleepCycle),
             # not the transient fact with _score (see _l3_payload).
             graph.merge_fact(_l3_payload(fact))
-        # 6b. Episodic binding: facts recalled in one query are linked.
-        _link_episode(graph, facts_pack["facts"], query, episode)
     except Exception as e:  # noqa: BLE001 — an L3 failure must not crash the pipeline
         logger.error("L3 promotion failed: %s", e)
         adaptation.record_block()
@@ -858,6 +970,24 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     if result.get("answer") is not None:
         metrics.incr("query.answered")
         adaptation.record_success()     # a healthy outcome → the threshold relaxes
+        # 8. Episodic binding (#257 corrective hardening, independent finding):
+        # only an EXPLICIT episode may create episodic graph mutations, and
+        # only AFTER a successful strict-grounded answer, linking only the
+        # facts that actually grounded it. Implicit co-recall linking (any
+        # 2+ facts retrieved together, episode or not) is removed — a
+        # blocked answer, or a query with no explicit episode, must never
+        # write CO_OCCURRED/MENTIONS edges. A failure here must not turn an
+        # epistemically correct answer into a false failure: it is logged as
+        # a safe, content-free, observable event and swallowed.
+        if episode is not None:
+            try:
+                _link_episode(graph, result["facts"], query, episode)
+            except Exception:  # noqa: BLE001 — a grounded answer must survive this
+                logger.warning(
+                    "episode_link failed after a successful grounded answer "
+                    "(fact_count=%d) — answer unaffected", len(result["facts"]),
+                )
+                metrics.incr("episode_link.failed")
     else:
         metrics.incr("query.blocked")
         adaptation.record_block()       # stress → verification rises (RFC0071)
