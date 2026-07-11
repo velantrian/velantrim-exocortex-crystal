@@ -1731,6 +1731,37 @@ def test_recall_succeeds_when_full_trust_metadata_matches(monkeypatch):
     assert result["answer"] is not None
 
 
+def test_recall_reconciliation_grounds_both_facts_via_real_retrieval_path():
+    """All other recall-reconciliation tests in this module monkeypatch
+    retrieve() with a synthetic item, bypassing the real vector-search +
+    graph-walk mechanics entirely. This is the one reconciliation test that
+    drives _reconcile_recalled_fact() through the actual retrieve() pipeline
+    for two already-canonical facts that are both direct vector hits AND
+    linked to each other in the graph — verifying the recall path still
+    grounds correctly end-to-end when a fact is reached by more than one
+    retrieval source at once, not just via an injected item."""
+    from core.pipeline import run
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    g.merge_fact({"fact_id": "recon-real-path-a",
+                 "claim": "alpha topic reconciliation real path check",
+                 "source": "s", "confidence": 0.9, "claim_type": "WORLD_FACT",
+                 "source_status": "EXTERNAL", "epistemic_state": "Validated",
+                 "truth_status": "VERIFIED", "restricted": False})
+    g.merge_fact({"fact_id": "recon-real-path-b",
+                 "claim": "beta topic reconciliation real path check",
+                 "source": "s", "confidence": 0.9, "claim_type": "WORLD_FACT",
+                 "source_status": "EXTERNAL", "epistemic_state": "Validated",
+                 "truth_status": "VERIFIED", "restricted": False})
+    g.add_edge("recon-real-path-a", "CO_OCCURRED", "recon-real-path-b", {})
+
+    result = run("alpha topic beta topic reconciliation real path check")
+
+    assert result["answer"] is not None
+    assert {f["fact_id"] for f in result["facts"]} == {
+        "recon-real-path-a", "recon-real-path-b"}
+
+
 # ─── Blocker 2 (#257 review round 3): no synthesized provenance/confidence ────
 
 def test_verified_validated_l3_node_missing_source_blocks_via_guardian():
