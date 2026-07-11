@@ -651,6 +651,57 @@ def test_retrieve_excludes_vector_hit_with_unknown_restricted_bit():
     assert "unknown-restricted-hit" not in ids
 
 
+def test_graph_walk_blocks_stale_terminal_vector_hit_from_seeding_walk():
+    """When the stale L3 'Validated'/restricted=False node is ITSELF a direct
+    vector hit (not merely a target reached via an edge), it is already in
+    `current` at hop 0 — gating only each hop's TARGETS is not enough,
+    because the source's own outgoing edges were still walked regardless of
+    its true (terminal-in-L1) state. A neighbor reached only through that
+    stale source must not receive activation (#257 independent-review
+    round 2)."""
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    _seed_l1_and_l3("stale-source", epistemic_state="Collapsed",
+                     l3_node={"claim": "a stale source about volcanic eruptions",
+                              "epistemic_state": "Validated", "restricted": False})
+    g.merge_fact({"fact_id": "reef-neighbor", "claim": "seismic instrument calibration record",
+                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated",
+                  "restricted": False})
+    g.add_edge("stale-source", "CO_OCCURRED", "reef-neighbor", {})
+
+    ids = {h["id"] for h in retrieve("a stale source about volcanic eruptions", k=5)}
+    assert "stale-source" in ids       # still a legitimate vector hit
+    assert "reef-neighbor" not in ids  # but must not receive activation from it
+
+
+def test_retrieve_excludes_vector_hit_restricted_only_in_l1():
+    """The vector-hit filter used to check only the L3 node's own restricted
+    bit. If set_restricted() has already marked the L1 record restricted
+    while the L3 copy is stale (restricted=False), the fact must not be
+    admitted as a vector hit or seed graph-walk activation to an otherwise
+    unrestricted neighbor (#257 independent-review round 2)."""
+    from core.pipeline import retrieve
+    from core.memory import store_fact, set_restricted
+    from core.l3_graph import get_l3_graph
+    fid = "l1-restricted-only"
+    claim = "a claim restricted only at the l1 layer"
+    store_fact({"fact_id": fid, "claim": claim, "source": "s", "confidence": 0.9,
+                "epistemic_state": "Validated"})
+    assert set_restricted(fid, True) is True
+    g = get_l3_graph()
+    g.merge_fact({"fact_id": fid, "claim": claim, "source": "s", "confidence": 0.9,
+                  "epistemic_state": "Validated", "restricted": False})  # stale L3 copy
+    g.merge_fact({"fact_id": "l1-restricted-neighbor", "claim": "an unrestricted neighbor fact",
+                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated",
+                  "restricted": False})
+    g.add_edge(fid, "CO_OCCURRED", "l1-restricted-neighbor", {})
+
+    ids = {h["id"] for h in retrieve(claim, k=5)}
+    assert fid not in ids
+    assert "l1-restricted-neighbor" not in ids
+
+
 def test_retrieve_recalls_facts_learned_via_ingest():
     """Closing the loop: a fact accepted through ingest() lands in L3 and is
     then recallable by retrieve() (origin='memory'), not just the seed corpus."""
@@ -1703,6 +1754,73 @@ def test_recall_uses_l3_record_claim_and_source_not_transient_item(monkeypatch):
     assert result["facts"][0]["source"] == "trusted-l3-source"
 
 
+def test_recall_reconciliation_syncs_trace_source_not_just_epistemic_state(monkeypatch):
+    """generate_answer()'s success path pruned the trace to grounding facts
+    and synced epistemic_state, but not source — so after
+    _reconcile_recalled_fact() replaces the in-flight fact's source with the
+    L3-authoritative value, the trace (built earlier by build_trace(retrieved)
+    from the pre-reconciliation transient item) still cited the wrong source,
+    even though result["facts"] correctly showed the L3 source (#257
+    independent-review round 2)."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    fid = "trace-source-sync"
+    real_claim = "the real canonical claim persisted in l3 for trace sync"
+    g.merge_fact({"fact_id": fid, "claim": real_claim, "source": "trusted-l3-source",
+                 "confidence": 0.9, "claim_type": "WORLD_FACT",
+                 "source_status": "EXTERNAL", "epistemic_state": "Validated",
+                 "truth_status": "VERIFIED", "restricted": False})
+
+    item = {"id": fid, "text": "a different non-canonical claim for trace sync",
+            "source": "untrusted-other-origin", "confidence": 0.9,
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Validated",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is not None
+    assert result["facts"][0]["source"] == "trusted-l3-source"
+    assert result["trace"][0]["source"] == "trusted-l3-source"
+    assert "untrusted-other-origin" not in result["trace_fmt"]
+
+
+def test_recall_reconciliation_resyncs_l1_claim_and_source_after_pollution(monkeypatch):
+    """build_facts_pack() persists the pre-reconciliation transient item to
+    L1 via store_fact() before _reconcile_recalled_fact() ever runs. If the
+    transient item's claim/source disagreed with the L3 record, L1 is left
+    holding the WRONG value even though this answer itself grounds correctly
+    on L3 — polluting future memory.get_fact() reads and provenance receipt
+    verification. _reconcile_recalled_fact() must re-sync L1 back to the
+    authoritative L3 value (#257 independent-review round 2)."""
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    from core.memory import get_fact
+    g = get_l3_graph()
+    fid = "l1-resync-after-pollution"
+    real_claim = "the real canonical claim persisted in l3 for l1 resync"
+    g.merge_fact({"fact_id": fid, "claim": real_claim, "source": "trusted-l3-source",
+                 "confidence": 0.9, "claim_type": "WORLD_FACT",
+                 "source_status": "EXTERNAL", "epistemic_state": "Validated",
+                 "truth_status": "VERIFIED", "restricted": False})
+
+    item = {"id": fid, "text": "a different non-canonical claim for l1 resync",
+            "source": "untrusted-other-origin", "confidence": 0.9,
+            "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+            "significance": 0.5, "_score": 0.9, "epistemic_state": "Validated",
+            "origin": "memory"}
+    monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: [item])
+
+    result = pipeline.run("q")
+
+    assert result["answer"] is not None
+    l1_after = get_fact(fid)
+    assert l1_after["claim"] == real_claim
+    assert l1_after["source"] == "trusted-l3-source"
+
+
 # ─── Recall metadata-conflict reconciliation (#257 corrective, follow-up) ──────
 # truth_status is taken from the L3 node; silently taking
 # confidence/claim_type/source_status from a DIFFERENT (transient)
@@ -1988,6 +2106,22 @@ def test_effective_restricted_deny_dominant_matrix():
     assert _effective_restricted(None, None) is True           # both UNKNOWN → fail closed
 
 
+@pytest.mark.parametrize("bad_fact_id", [["a", "list"], {"a": "dict"}, 123, None])
+def test_l1_terminal_state_blocks_fails_closed_to_false_on_malformed_fact_id(bad_fact_id):
+    """A malformed (non-string) fact_id — e.g. from a corrupted graph-walk
+    node — must not be looked up in L1 at all; the helper must fail closed
+    to False (does not additionally block) rather than raise or misbehave
+    (#257 independent-review round 2)."""
+    from core.pipeline import _l1_terminal_state_blocks
+    assert _l1_terminal_state_blocks(bad_fact_id) is False
+
+
+@pytest.mark.parametrize("bad_fact_id", [["a", "list"], {"a": "dict"}, 123, None])
+def test_l1_restricted_blocks_fails_closed_to_false_on_malformed_fact_id(bad_fact_id):
+    from core.pipeline import _l1_restricted_blocks
+    assert _l1_restricted_blocks(bad_fact_id) is False
+
+
 def test_effective_epistemic_state_matrix():
     from core.pipeline import _effective_epistemic_state, STORE_STATE_CONFLICT
     assert _effective_epistemic_state("Collapsed", "Validated") == "Collapsed"
@@ -2150,6 +2284,29 @@ def test_refusal_trace_unmatched_entry_does_not_report_false_validated_state():
 
     assert result["answer"] is None
     assert result["trace"][0]["fact_id"] == "orphan-not-in-facts-pack"
+    assert result["trace"][0]["epistemic_state"] != "Validated"
+
+
+@pytest.mark.parametrize("bad_fact_id", [["a", "list"], {"a": "dict"}])
+def test_refusal_trace_unhashable_fact_id_fails_closed_without_crashing(bad_fact_id):
+    """A direct generate_answer() caller can pass a fact whose fact_id is an
+    unhashable list/dict — CanonicalView correctly rejects it as non-
+    canonical (not a valid identity field), but the refusal-path trace-sync
+    dict comprehension must not crash trying to use it as a dict key instead
+    of reaching the intended fail-closed refusal (#257 independent-review
+    round 2)."""
+    from core.pipeline import generate_answer
+    facts_pack = {
+        "facts": [{"fact_id": bad_fact_id, "claim": "c", "source": "s",
+                   "confidence": 0.9, "epistemic_state": "Validated",
+                   "truth_status": "VERIFIED"}],
+        "query": "q", "total": 1,
+    }
+    trace = [{"fact_id": bad_fact_id, "epistemic_state": "Validated"}]
+
+    result = generate_answer(facts_pack, trace)  # must not raise
+
+    assert result["answer"] is None
     assert result["trace"][0]["epistemic_state"] != "Validated"
 
 

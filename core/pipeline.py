@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from core.trace import build_trace, promote_trace, format_trace
 from core.memory import (
-    store_fact, get_fact, transition_esm, ESM_TRANSITIONS,
+    store_fact, get_fact, update_fact, transition_esm, ESM_TRANSITIONS,
     l3_secondary_sync_admissible, DEFAULT_SOURCE_STATUS,
 )
 from core.queue import get_outbox_queue
@@ -84,8 +84,11 @@ def _safe_source(value: Any) -> Optional[str]:
 # (Collapsed/Contradicted/Deprecated) already reflected elsewhere could be
 # overwritten by an older Validated L3 read, and a real L3 restriction could
 # be left un-synced onto a transient item that never carried it. This is a
-# narrow, read-only reconciliation for exactly this one call site — not a
-# general distributed-consistency redesign.
+# narrow reconciliation for exactly this one call site — not a general
+# distributed-consistency redesign. It also re-syncs L1's claim/source via
+# update_fact() when build_facts_pack()'s earlier store_fact() call is
+# detected to have polluted them with a disagreeing transient value (#257
+# independent-review round 2) — the only write this reconciliation performs.
 
 _TERMINAL_ESM_STATES = frozenset({"Collapsed", "Contradicted", "Deprecated"})
 
@@ -170,8 +173,9 @@ def _reconcile_recalled_fact(fact: Dict[str, Any], existing_node: Dict[str, Any]
     it resurrect a fresher terminal state, never let a stale/missing
     restriction bit under-count a real restriction from either side, and
     never let a disagreeing confidence/claim_type/source_status pass through
-    unnoticed. Read-only: mutates only the transient `fact` dict, never
-    L1/L3."""
+    unnoticed. Mutates the transient `fact` dict, and — only when this
+    reconciliation detects that L1 was just polluted (see below) — L1's own
+    claim/source columns via update_fact(); never touches L3."""
     effective_state = _effective_epistemic_state(
         fact.get("epistemic_state"), existing_node.get("epistemic_state"))
     if _fact_metadata_conflicts(fact, existing_node):
@@ -190,8 +194,33 @@ def _reconcile_recalled_fact(fact: Dict[str, Any], existing_node: Dict[str, Any]
     # node's own value turns out to be missing/malformed (which then
     # correctly fails Guardian/CanonicalView's own checks instead of
     # grounding on unverified provenance).
-    fact["claim"] = existing_node.get("claim")
-    fact["source"] = existing_node.get("source")
+    #
+    # L1 re-sync (#257 independent-review round 2): build_facts_pack() has
+    # already called store_fact(fact) for this fact_id BEFORE this
+    # reconciliation runs, and store_fact() always overwrites an existing
+    # row's claim/source with whatever the transient item said — regardless
+    # of whether that agrees with L3. If the transient item's claim/source
+    # disagreed with the L3 record, L1 now holds the WRONG value: this
+    # answer/trace correctly grounds on the L3 claim/source below, but a
+    # later memory.get_fact() read (and provenance.verify_receipt(), which
+    # diffs a receipt against a fresh L1 read) would see the polluted L1
+    # value and report a false "modified"/tamper signal. Re-sync L1 back to
+    # the authoritative L3 value here, undoing that pollution — but only for
+    # a field that is itself a genuine non-empty string, never writing a
+    # missing/malformed L3 value into L1's NOT NULL columns.
+    l3_claim = existing_node.get("claim")
+    l3_source = existing_node.get("source")
+    resync_fields = {}
+    if (isinstance(l3_claim, str) and l3_claim.strip()
+            and fact.get("claim") != l3_claim):
+        resync_fields["claim"] = l3_claim
+    if (isinstance(l3_source, str) and l3_source.strip()
+            and fact.get("source") != l3_source):
+        resync_fields["source"] = l3_source
+    if resync_fields:
+        update_fact(fact["fact_id"], **resync_fields)
+    fact["claim"] = l3_claim
+    fact["source"] = l3_source
     fact["confidence"] = existing_node.get("confidence")
     fact["claim_type"] = existing_node.get("claim_type")
     fact["source_status"] = existing_node.get("source_status")
@@ -242,17 +271,46 @@ _WALK_EDGE_WEIGHTS = {
 _WALK_DEFAULT_EDGE_WEIGHT = 1.0
 
 
+def _l1_terminal_state_blocks(fact_id: Any) -> bool:
+    """True if L1 holds a terminal epistemic_state (Collapsed/Contradicted/
+    Deprecated) for fact_id that must win over a stale L3 copy still reading
+    e.g. Validated. Fails closed to False (does not additionally block) when
+    fact_id is malformed or L1 has no record for it at all — a graph-walk-
+    encountered node commonly has no L1 record (L1 only ever holds facts
+    this process itself learned via store_fact), and that absence is not
+    itself a disagreement to fail closed on (#257 independent-review
+    round 2)."""
+    if not isinstance(fact_id, str):
+        return False
+    l1_record = get_fact(fact_id)
+    return l1_record is not None and _in(l1_record.get("epistemic_state"), _TERMINAL_ESM_STATES)
+
+
+def _l1_restricted_blocks(fact_id: Any) -> bool:
+    """True if L1 confirms fact_id as restricted (or UNKNOWN, deny-dominant),
+    which must win over a stale L3 copy that has not yet caught up to a
+    set_restricted() call made directly against L1. Fails closed to False
+    (does not additionally block) when fact_id is malformed or L1 has no
+    record for it — the caller is expected to separately check the L3 node's
+    own restricted bit (#257 independent-review round 2)."""
+    if not isinstance(fact_id, str):
+        return False
+    l1_record = get_fact(fact_id)
+    return l1_record is not None and _normalize_restricted_bit(l1_record.get("restricted")) is not False
+
+
 def _may_propagate_activation(node: Dict[str, Any]) -> bool:
     """True only if `node` (a physical L3 node reached by the graph-walk) may
-    seed or receive spreading-activation credit in retrieve()'s Source 3.
+    receive spreading-activation credit as a TARGET in retrieve()'s Source 3.
 
     The graph-walk used to gate this using only the L3 node's OWN (possibly
     stale) epistemic_state/restricted fields with naive truthy checks — and
     it runs BEFORE run()'s later _reconcile_recalled_fact() (which only
     reconciles facts that already made it into facts_pack) ever executes. A
     fact that has already gone terminal in L1 (Collapsed/Contradicted/
-    Deprecated), or whose restricted bit reads as merely UNKNOWN rather than
-    a confirmed False, must not inflate an unrelated neighbor's relevance
+    Deprecated), whose restricted bit reads as merely UNKNOWN rather than a
+    confirmed False, or whose L1 record is itself confirmed-restricted while
+    the L3 copy is stale, must not inflate an unrelated neighbor's relevance
     score just because the L3 copy hasn't caught up yet (#257
     independent-review round).
 
@@ -260,15 +318,31 @@ def _may_propagate_activation(node: Dict[str, Any]) -> bool:
     _effective_restricted(): those fully reconcile two representations of
     the SAME in-flight fact and fail closed on any disagreement, including a
     missing L1 record. Here, a graph-walk-encountered node commonly has no
-    L1 record at all (L1 only ever holds facts this process itself learned
-    via store_fact) — that is not a disagreement to fail closed on, so this
-    only checks whether L1, when present, disagrees in the specific
-    terminal-resurrection direction."""
+    L1 record at all — that is not itself a disagreement to fail closed on,
+    so this only checks whether L1, when present, disagrees in the specific
+    terminal-resurrection / restriction direction."""
     if node.get("epistemic_state") != "Validated":
         return False
     fact_id = node.get("fact_id")
-    l1_record = get_fact(fact_id) if isinstance(fact_id, str) else None
-    if l1_record is not None and _in(l1_record.get("epistemic_state"), _TERMINAL_ESM_STATES):
+    if _l1_terminal_state_blocks(fact_id) or _l1_restricted_blocks(fact_id):
+        return False
+    return _normalize_restricted_bit(node.get("restricted")) is False
+
+
+def _may_seed_vector_hit(node: Dict[str, Any]) -> bool:
+    """True if a direct vector-search hit `node` (retrieve()'s Source 2) may
+    surface as output and seed graph-walk activation as a SOURCE.
+
+    Unlike _may_propagate_activation, does not require epistemic_state ==
+    "Validated" — a vector hit's own epistemic state has never been
+    restricted to Validated-only (Observed/Hypothesized material can be a
+    legitimate direct hit); only the restricted bit is checked here, but
+    against BOTH the L3 node's own field and L1's (deny-dominant) — a
+    set_restricted() call already applied to L1 must not be defeated by a
+    stale L3 copy that still reads restricted=False (#257 independent-review
+    round 2)."""
+    fact_id = node.get("fact_id")
+    if _l1_restricted_blocks(fact_id):
         return False
     return _normalize_restricted_bit(node.get("restricted")) is False
 
@@ -345,8 +419,8 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
         sim = node.get("_relevance", 0.0)
         if sim < min_sim:
             continue
-        if _normalize_restricted_bit(node.get("restricted")) is not False:
-            continue  # GDPR Art. 18: restricted OR unknown-restricted facts do not take part in processing
+        if not _may_seed_vector_hit(node):
+            continue  # GDPR Art. 18: restricted (L3 own or L1) OR unknown-restricted facts do not take part
         # confidence: 0.0 (not 1.0) for a node missing it, and coerced safely
         # for a malformed non-numeric value — a malformed node must not rank
         # as if maximally confident, or crash the multiplication (#257 review
@@ -374,6 +448,20 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
     for _hop in range(cfg.graph_walk_hops):
         nxt: Dict[str, float] = {}
         for fid, act in current.items():
+            # A stale-terminal-in-L1 or L1-confirmed-restricted SOURCE must
+            # not expand its own outgoing edges either — not only its
+            # targets are gated above. A vector hit that is Validated/
+            # restricted=False in L3 but already Collapsed/Contradicted/
+            # Deprecated (or restricted) in L1 would otherwise still donate
+            # activation to a legitimate unrestricted neighbor via this loop,
+            # even though run() later correctly excludes the stale/restricted
+            # source itself (#257 independent-review round 2). Deliberately
+            # does not require epistemic_state == "Validated" here — a vector
+            # hit's own epistemic state was never restricted to Validated-
+            # only, and this must not newly exclude a legitimate Observed/
+            # Hypothesized source from acting as a walk origin.
+            if _l1_terminal_state_blocks(fid) or _l1_restricted_blocks(fid):
+                continue
             # Outgoing edges by type → weight; only edges with
             # weight > 0 propagate to Validated nodes. Activation is split proportionally to weights
             # (normalized by their sum), not by raw out-degree — edges with
@@ -673,11 +761,21 @@ def generate_answer(
         # epistemic_state to its fact's REAL current state instead of
         # returning the blanket-promoted trace verbatim — a blocked response
         # must never look like validation.
-        facts_by_id = {f["fact_id"]: f for f in facts_pack["facts"] if f.get("fact_id")}
+        # isinstance(..., str), not just truthy: a direct generate_answer()
+        # caller can hand this a fact whose fact_id is an unhashable list/
+        # dict — CanonicalView correctly rejects it as non-canonical
+        # upstream, but a raw dict-comprehension/`.get()` would still crash
+        # on that value as a dict key instead of reaching this intended
+        # fail-closed refusal (#257 independent-review round 2).
+        facts_by_id = {
+            f["fact_id"]: f for f in facts_pack["facts"]
+            if isinstance(f.get("fact_id"), str) and f["fact_id"]
+        }
         refusal_trace = []
         for t in trace:
             entry = dict(t)
-            fact = facts_by_id.get(t.get("fact_id"))
+            fid = t.get("fact_id")
+            fact = facts_by_id.get(fid) if isinstance(fid, str) else None
             # An unmatched/malformed trace entry (no corresponding fact in
             # facts_pack) has no REAL current state to report — leaving
             # whatever epistemic_state it already carried would let a stale
@@ -712,10 +810,24 @@ def generate_answer(
     grounded_trace = []
     for t in trace:
         fid = t.get("fact_id")
-        if fid not in canonical_by_id:
+        # isinstance guard before the dict lookup: an unhashable fid (list/
+        # dict) from a malformed trace entry must not crash this membership
+        # check (#257 independent-review round 2) — canonical_by_id's own
+        # keys are always valid strings (project_canonical() already
+        # requires it), but a mismatched/malformed trace entry's fid is not
+        # guaranteed to be.
+        if not isinstance(fid, str) or fid not in canonical_by_id:
             continue
         entry = dict(t)
-        entry["epistemic_state"] = canonical_by_id[fid].get("epistemic_state")
+        canonical_fact = canonical_by_id[fid]
+        entry["epistemic_state"] = canonical_fact.get("epistemic_state")
+        # source: _reconcile_recalled_fact() may have replaced the in-flight
+        # fact's source with the L3-authoritative value AFTER this trace was
+        # built by build_trace(retrieved) — syncing only epistemic_state
+        # left a stale/disagreeing source in the public trace, so the trace
+        # no longer proved the actually-grounded fact's real source (#257
+        # independent-review round 2).
+        entry["source"] = canonical_fact.get("source")
         grounded_trace.append(entry)
 
     return {
