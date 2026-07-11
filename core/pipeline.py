@@ -28,7 +28,7 @@ from core.l3_graph import get_l3_graph
 from core.embedding import get_embedder, cosine, assert_compatible_embedder
 from core.retrieval_config import get_retrieval_config
 from core.generation import get_generator
-from core.canonical_view import project_canonical
+from core.canonical_view import project_canonical, _in, _normalize_restricted_bit
 from core.rrf import rrf_fuse
 from core import metrics, adaptation
 
@@ -97,41 +97,11 @@ _TERMINAL_ESM_STATES = frozenset({"Collapsed", "Contradicted", "Deprecated"})
 STORE_STATE_CONFLICT = "STORE_STATE_CONFLICT"
 
 
-def _normalize_restricted_bit(value: Any) -> Optional[bool]:
-    """Normalize a `restricted` value read at a known storage-adapter
-    boundary to bool — STRICT about both the source of "missing" and the
-    exact type of a present value (#257 corrective hardening, follow-up).
-
-    Only two things are known-good:
-      - an actual `bool` (True/False);
-      - a real `int` that is exactly 0 or 1 (never `float` — `0.0`/`1.0`
-        must NOT compare equal here; `isinstance(value, int)` alone would
-        also accept them via Python's numeric `==`, so the int check must
-        run before any `== 0`/`== 1` comparison).
-
-    A MISSING value (None) is NOT normalized to False. Two different things
-    can produce None: core.memory's SQLite `facts` table always has
-    `restricted INTEGER DEFAULT 0`, so an L1 read is a KNOWN adapter
-    boundary and would only ever be a genuine 0/1 there — but a physical L3
-    graph node is not guaranteed to carry this field at all (e.g.
-    LadybugL3Graph._COLS does not include "restricted" — an unsupported
-    backend capability, not a value). Conflating "the adapter told us 0"
-    with "this backend never returns the field" would let an
-    unsupported-capability backend silently read as unrestricted. Missing is
-    therefore always UNKNOWN here; callers that know they are reading a
-    definite-0/1 boundary (like L1) will simply never observe a missing
-    value in the first place, since core.pipeline.build_facts_pack() already
-    coerces L1's own read with an explicit bool() over the persisted int.
-
-    Any other present-but-not-0/1/bool value (another int, a string, a
-    collection, ...) is likewise UNKNOWN — never silently coerced to False
-    by a permissive bool(value) over an arbitrary/malformed backend value.
-    """
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, int) and value in (0, 1):
-        return value == 1
-    return None  # UNKNOWN: missing, float, out-of-range int, string, ...
+# _normalize_restricted_bit is defined in core/canonical_view.py (imported
+# above) — CanonicalView is an independent trust boundary and must not rely
+# on pipeline.py's normalization, so pipeline.py imports the single shared
+# implementation instead of maintaining a second copy that could drift out
+# of sync (#257 independent-review round).
 
 
 def _effective_restricted(a: Any, b: Any) -> bool:
@@ -153,10 +123,12 @@ def _effective_epistemic_state(fact_state: Any, l3_state: Any) -> Any:
     never resurrect a fact that another representation already shows in a
     terminal state — and an unresolvable disagreement between the two fails
     closed (STORE_STATE_CONFLICT) rather than silently preferring either
-    side."""
-    if fact_state in _TERMINAL_ESM_STATES:
+    side. Uses _in() (not raw `in`) so an unhashable fact_state/l3_state
+    (e.g. a corrupted node's list/dict epistemic_state) fails closed instead
+    of raising TypeError (#257 independent-review round)."""
+    if _in(fact_state, _TERMINAL_ESM_STATES):
         return fact_state
-    if l3_state in _TERMINAL_ESM_STATES:
+    if _in(l3_state, _TERMINAL_ESM_STATES):
         return l3_state
     if fact_state != l3_state:
         return STORE_STATE_CONFLICT
@@ -270,6 +242,37 @@ _WALK_EDGE_WEIGHTS = {
 _WALK_DEFAULT_EDGE_WEIGHT = 1.0
 
 
+def _may_propagate_activation(node: Dict[str, Any]) -> bool:
+    """True only if `node` (a physical L3 node reached by the graph-walk) may
+    seed or receive spreading-activation credit in retrieve()'s Source 3.
+
+    The graph-walk used to gate this using only the L3 node's OWN (possibly
+    stale) epistemic_state/restricted fields with naive truthy checks — and
+    it runs BEFORE run()'s later _reconcile_recalled_fact() (which only
+    reconciles facts that already made it into facts_pack) ever executes. A
+    fact that has already gone terminal in L1 (Collapsed/Contradicted/
+    Deprecated), or whose restricted bit reads as merely UNKNOWN rather than
+    a confirmed False, must not inflate an unrelated neighbor's relevance
+    score just because the L3 copy hasn't caught up yet (#257
+    independent-review round).
+
+    Deliberately narrower than _effective_epistemic_state()/
+    _effective_restricted(): those fully reconcile two representations of
+    the SAME in-flight fact and fail closed on any disagreement, including a
+    missing L1 record. Here, a graph-walk-encountered node commonly has no
+    L1 record at all (L1 only ever holds facts this process itself learned
+    via store_fact) — that is not a disagreement to fail closed on, so this
+    only checks whether L1, when present, disagrees in the specific
+    terminal-resurrection direction."""
+    if node.get("epistemic_state") != "Validated":
+        return False
+    fact_id = node.get("fact_id")
+    l1_record = get_fact(fact_id) if isinstance(fact_id, str) else None
+    if l1_record is not None and _in(l1_record.get("epistemic_state"), _TERMINAL_ESM_STATES):
+        return False
+    return _normalize_restricted_bit(node.get("restricted")) is False
+
+
 def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
     """
     Hybrid search: cosine of embeddings over the demo seed corpus (opt-in) and
@@ -342,8 +345,8 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
         sim = node.get("_relevance", 0.0)
         if sim < min_sim:
             continue
-        if node.get("restricted"):
-            continue  # GDPR Art. 18: restricted facts do not take part in processing
+        if _normalize_restricted_bit(node.get("restricted")) is not False:
+            continue  # GDPR Art. 18: restricted OR unknown-restricted facts do not take part in processing
         # confidence: 0.0 (not 1.0) for a node missing it, and coerced safely
         # for a malformed non-numeric value — a malformed node must not rank
         # as if maximally confident, or crash the multiplication (#257 review
@@ -382,10 +385,8 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
                 if weight <= 0.0:
                     continue
                 node = graph.get_fact(edge["target"])
-                if node is None or node.get("epistemic_state") != "Validated":
-                    continue
-                if node.get("restricted"):
-                    continue  # GDPR Art. 18: do not propagate activation to restricted facts
+                if node is None or not _may_propagate_activation(node):
+                    continue  # stale-terminal-in-L1 or restricted/UNKNOWN-restricted: do not propagate
                 targets.append((node, weight))
             total_weight = sum(w for _, w in targets)
             if total_weight <= 0.0:

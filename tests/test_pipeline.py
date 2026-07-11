@@ -499,9 +499,11 @@ def test_retrieve_graph_walk_surfaces_linked_facts():
     from core.l3_graph import get_l3_graph
     g = get_l3_graph()
     g.merge_fact({"fact_id": "A", "claim": "sunlight energy photosynthesis",
-                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated"})
+                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated",
+                  "restricted": False})
     g.merge_fact({"fact_id": "B", "claim": "chlorophyll molecule structure",
-                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated"})
+                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated",
+                  "restricted": False})
     g.add_edge("A", "CO_OCCURRED", "B", {})
 
     hits = {h["id"]: h for h in retrieve("sunlight energy")}
@@ -519,7 +521,8 @@ def test_graph_walk_is_multi_hop_with_decay():
     for fid, claim in [("A", "sunlight energy"), ("B", "leaf cells"),
                        ("C", "soil minerals")]:
         g.merge_fact({"fact_id": fid, "claim": claim, "source": "s",
-                      "confidence": 1.0, "epistemic_state": "Validated"})
+                      "confidence": 1.0, "epistemic_state": "Validated",
+                      "restricted": False})
     g.add_edge("A", "CO_OCCURRED", "B", {})
     g.add_edge("B", "CO_OCCURRED", "C", {})
 
@@ -539,7 +542,8 @@ def test_graph_walk_sums_activation_across_paths():
     for fid, claim in [("A", "alpha topic"), ("B", "beta topic"),
                        ("hub", "shared concept"), ("X", "lonely note")]:
         g.merge_fact({"fact_id": fid, "claim": claim, "source": "s",
-                      "confidence": 1.0, "epistemic_state": "Validated"})
+                      "confidence": 1.0, "epistemic_state": "Validated",
+                      "restricted": False})
     g.add_edge("A", "CO_OCCURRED", "hub", {})   # hub reached from both hits
     g.add_edge("B", "CO_OCCURRED", "hub", {})
     g.add_edge("A", "CO_OCCURRED", "X", {})     # X reached from one hit only
@@ -555,7 +559,8 @@ def test_graph_walk_skips_deprecated_neighbors():
     from core.l3_graph import get_l3_graph
     g = get_l3_graph()
     g.merge_fact({"fact_id": "A", "claim": "sunlight energy", "source": "s",
-                  "confidence": 0.9, "epistemic_state": "Validated"})
+                  "confidence": 0.9, "epistemic_state": "Validated",
+                  "restricted": False})
     g.merge_fact({"fact_id": "old", "claim": "outdated note", "source": "s",
                   "confidence": 0.9, "epistemic_state": "Deprecated"})
     g.add_edge("A", "SUPERSEDED_BY", "old", {})
@@ -574,7 +579,8 @@ def test_graph_walk_does_not_propagate_through_truth_maintenance_edges():
     for fid, claim in [("A", "sunlight energy"), ("assoc", "leaf cells"),
                        ("rival", "moonlight myth")]:
         g.merge_fact({"fact_id": fid, "claim": claim, "source": "s",
-                      "confidence": 1.0, "epistemic_state": "Validated"})
+                      "confidence": 1.0, "epistemic_state": "Validated",
+                      "restricted": False})
     g.add_edge("A", "CO_OCCURRED", "assoc", {})   # association → propagates
     g.add_edge("A", "CONTRADICTS", "rival", {})   # truth-maintenance → does not
 
@@ -582,6 +588,67 @@ def test_graph_walk_does_not_propagate_through_truth_maintenance_edges():
     assert "A" in ids                              # direct vector hit
     assert "assoc" in ids                          # pulled in by association
     assert "rival" not in ids                      # contradiction does not spread
+
+
+def test_graph_walk_does_not_propagate_to_node_stale_validated_in_l3_but_terminal_in_l1():
+    """retrieve()'s graph-walk runs BEFORE run()'s later
+    _reconcile_recalled_fact() ever executes, so a node whose L3 copy still
+    reads epistemic_state='Validated' (stale) while its L1 record has
+    already gone terminal (Collapsed/Contradicted/Deprecated) must not
+    receive or pass on spreading-activation credit — the walk must consult
+    L1 itself for terminal-state resurrection, not trust only the L3 node's
+    own possibly-stale epistemic_state (#257 independent-review round)."""
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    g.merge_fact({"fact_id": "seed", "claim": "sunlight energy seed",
+                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated",
+                  "restricted": False})
+    _seed_l1_and_l3("stale-terminal", epistemic_state="Collapsed",
+                     l3_node={"epistemic_state": "Validated", "restricted": False})
+    g.add_edge("seed", "CO_OCCURRED", "stale-terminal", {})
+
+    ids = {h["id"] for h in retrieve("sunlight energy seed", k=5)}
+    assert "seed" in ids
+    assert "stale-terminal" not in ids
+
+
+def test_graph_walk_does_not_propagate_to_node_with_unknown_restricted_bit():
+    """A graph-walk target node whose `restricted` field is merely UNKNOWN
+    (missing/malformed) — not a confirmed False — must not receive or pass
+    on activation, deny-dominant, exactly like a confirmed-True restricted
+    node already does not (#257 independent-review round)."""
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    g.merge_fact({"fact_id": "seed2", "claim": "moonlight tide pattern",
+                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated",
+                  "restricted": False})
+    g.merge_fact({"fact_id": "unknown-restricted", "claim": "tide chart neighbor",
+                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated"})
+    # no "restricted" key at all on "unknown-restricted" — UNKNOWN, not False
+    g.add_edge("seed2", "CO_OCCURRED", "unknown-restricted", {})
+
+    ids = {h["id"] for h in retrieve("moonlight tide pattern", k=5)}
+    assert "seed2" in ids
+    assert "unknown-restricted" not in ids
+
+
+def test_retrieve_excludes_vector_hit_with_unknown_restricted_bit():
+    """A direct vector-search hit whose `restricted` field is merely UNKNOWN
+    (missing/malformed), not a confirmed False, must not surface — deny-
+    dominant, matching how a confirmed-True restricted hit is already
+    excluded (#257 independent-review round)."""
+    from core.pipeline import retrieve
+    from core.l3_graph import get_l3_graph
+    g = get_l3_graph()
+    g.merge_fact({"fact_id": "unknown-restricted-hit",
+                  "claim": "a claim with an unknown restricted bit",
+                  "source": "s", "confidence": 0.9, "epistemic_state": "Validated"})
+    # no "restricted" key at all — UNKNOWN, not False
+
+    ids = {h["id"] for h in retrieve("a claim with an unknown restricted bit")}
+    assert "unknown-restricted-hit" not in ids
 
 
 def test_retrieve_recalls_facts_learned_via_ingest():
@@ -1021,7 +1088,7 @@ def test_retrieve_defaults_missing_epistemic_state_to_observed_not_validated():
     get_l3_graph().merge_fact({
         "fact_id": "malformed-no-esm",
         "claim": "malformed node missing epistemic state entirely",
-        "source": "s", "confidence": 0.9,
+        "source": "s", "confidence": 0.9, "restricted": False,
     })  # no epistemic_state key at all
     hits = {h["id"]: h for h in retrieve("malformed node missing epistemic state entirely")}
     assert hits["malformed-no-esm"]["epistemic_state"] == "Observed"
@@ -1036,6 +1103,7 @@ def test_retrieve_defaults_missing_source_status_to_unknown_not_derived():
         "fact_id": "malformed-no-ss",
         "claim": "malformed node missing source status field entirely",
         "source": "s", "confidence": 0.9, "epistemic_state": "Validated",
+        "restricted": False,
     })  # no source_status key at all
     hits = {h["id"]: h for h in retrieve("malformed node missing source status field entirely")}
     assert hits["malformed-no-ss"]["source_status"] == "UNKNOWN"
@@ -1048,7 +1116,7 @@ def test_retrieve_propagates_persisted_truth_status_from_l3_node():
         "fact_id": "persisted-curator-override",
         "claim": "a curator overridden claim about widgets and gadgets",
         "source": "s", "confidence": 0.9, "epistemic_state": "Validated",
-        "truth_status": "CURATOR_OVERRIDE",
+        "truth_status": "CURATOR_OVERRIDE", "restricted": False,
     })
     hits = {h["id"]: h for h in retrieve("a curator overridden claim about widgets and gadgets")}
     assert hits["persisted-curator-override"]["truth_status"] == "CURATOR_OVERRIDE"
@@ -1061,6 +1129,7 @@ def test_retrieve_missing_truth_status_on_l3_node_surfaces_as_none():
         "fact_id": "no-truth-status",
         "claim": "a node with absolutely no truth status field present",
         "source": "s", "confidence": 0.9, "epistemic_state": "Validated",
+        "restricted": False,
     })
     hits = {h["id"]: h for h in retrieve("a node with absolutely no truth status field present")}
     assert hits["no-truth-status"]["truth_status"] is None
@@ -1771,7 +1840,7 @@ def test_verified_validated_l3_node_missing_source_blocks_via_guardian():
     claim = "a verified claim missing its source field entirely for guardian"
     g.merge_fact({"fact_id": "missing-source-verified", "claim": claim,
                  "confidence": 0.9, "epistemic_state": "Validated",
-                 "truth_status": "VERIFIED"})  # no "source" key at all
+                 "truth_status": "VERIFIED", "restricted": False})  # no "source" key at all
 
     result = run(claim)
 
@@ -1786,7 +1855,7 @@ def test_verified_validated_l3_node_missing_confidence_blocks_via_guardian():
     claim = "a verified claim missing its confidence field entirely for guardian"
     g.merge_fact({"fact_id": "missing-confidence-verified", "claim": claim,
                  "source": "s", "epistemic_state": "Validated",
-                 "truth_status": "VERIFIED"})  # no "confidence" key at all
+                 "truth_status": "VERIFIED", "restricted": False})  # no "confidence" key at all
 
     result = run(claim)
 
@@ -1801,7 +1870,8 @@ def test_malformed_source_and_confidence_types_fail_closed_without_crashing():
     claim = "a claim with malformed source and confidence types for guardian"
     g.merge_fact({"fact_id": "malformed-types", "claim": claim,
                  "source": ["not", "a", "string"], "confidence": "not-a-number",
-                 "epistemic_state": "Validated", "truth_status": "VERIFIED"})
+                 "epistemic_state": "Validated", "truth_status": "VERIFIED",
+                 "restricted": False})
 
     result = run(claim)  # must not raise
 
@@ -1928,6 +1998,22 @@ def test_effective_epistemic_state_matrix():
     assert _effective_epistemic_state("Validated", "ImmutableCore") == STORE_STATE_CONFLICT
 
 
+@pytest.mark.parametrize("fact_state,l3_state", [
+    (["Collapsed"], "Validated"),
+    ("Validated", ["Collapsed"]),
+    ({"s": "Collapsed"}, "Validated"),
+])
+def test_effective_epistemic_state_unhashable_state_fails_closed_without_crashing(
+    fact_state, l3_state,
+):
+    """An unhashable fact_state/l3_state (e.g. a corrupted node's list/dict
+    epistemic_state) must not raise TypeError out of the terminal-state
+    membership check — it must fall through to the equality/disagreement
+    path like any other non-terminal value (#257 independent-review round)."""
+    from core.pipeline import _effective_epistemic_state, STORE_STATE_CONFLICT
+    assert _effective_epistemic_state(fact_state, l3_state) == STORE_STATE_CONFLICT
+
+
 def test_verified_validated_l3_node_with_numeric_string_confidence_blocked(monkeypatch):
     """A recalled L3 node storing confidence as a numeric string (e.g. from a
     legacy/corrupted write) must not ground an answer — the coercion in
@@ -1980,7 +2066,8 @@ def test_verified_validated_l3_node_with_non_finite_confidence_no_answer_no_cras
     claim = f"a verified claim with non finite confidence {raw_confidence!r}"
     g.merge_fact({"fact_id": "non-finite-confidence", "claim": claim,
                  "source": "s", "confidence": raw_confidence,
-                 "epistemic_state": "Validated", "truth_status": "VERIFIED"})
+                 "epistemic_state": "Validated", "truth_status": "VERIFIED",
+                 "restricted": False})
 
     result = run(claim)  # must not raise
 

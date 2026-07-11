@@ -28,7 +28,7 @@
 
 import math
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Mapping
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 
 class CanonicalReadMode(str, Enum):
@@ -117,6 +117,36 @@ def _in(value: Any, known: frozenset) -> bool:
         return False
 
 
+def _normalize_restricted_bit(value: Any) -> Optional[bool]:
+    """Normalize a `restricted` value read at a known storage-adapter
+    boundary to bool — STRICT about both the source of "missing" and the
+    exact type of a present value (#257 corrective hardening, follow-up).
+
+    Only two things are known-good:
+      - an actual `bool` (True/False);
+      - a real `int` that is exactly 0 or 1 (never `float` — `0.0`/`1.0`
+        must NOT compare equal here; `isinstance(value, int)` alone would
+        also accept them via Python's numeric `==`, so the int check must
+        run before any `== 0`/`== 1` comparison).
+
+    A MISSING value (None) is NOT normalized to False — nor is any other
+    present-but-not-0/1/bool value (another int, a string, a collection,
+    ...). Both are UNKNOWN, never silently coerced to False by a permissive
+    bool(value) over an arbitrary/malformed backend value.
+
+    Lives here (not core/pipeline.py) because CanonicalView is an
+    independent trust boundary that must not rely on a caller/pipeline
+    having already normalized this bit — core/pipeline.py imports this
+    function rather than duplicating it, so the two representations of
+    "restricted" can never independently drift out of sync (#257
+    independent-review round)."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int) and value in (0, 1):
+        return value == 1
+    return None  # UNKNOWN: missing, float, out-of-range int, string, ...
+
+
 def is_strict_canonical(fact: Mapping[str, Any]) -> bool:
     """
     True if `fact` may ground a strict, confident factual answer.
@@ -132,10 +162,11 @@ def is_strict_canonical(fact: Mapping[str, Any]) -> bool:
         Deprecated/Collapsed), or unknown/malformed epistemic_state all fail
         closed — this is checked independently of truth_status rather than
         assumed to be implied by it (see STRICT_CANONICAL_ESM_STATES).
-      - the fact is not `restricted` (GDPR Art. 18 processing restriction) —
-        a restricted fact is excluded from grounding exactly like it is
-        already excluded from retrieval (core/pipeline.py::retrieve) and
-        from evidence/review surfaces (core/evidence.py, core/review.py).
+      - `restricted` normalizes to exactly False (GDPR Art. 18 processing
+        restriction) — a confirmed-True OR UNKNOWN (missing/malformed)
+        restricted bit is excluded from grounding, deny-dominant, exactly
+        like it is already excluded from retrieval (core/pipeline.py::retrieve)
+        and from evidence/review surfaces (core/evidence.py, core/review.py).
       - required identity/provenance fields (fact_id, source, claim) are
         present and non-empty.
 
@@ -173,14 +204,24 @@ def is_strict_canonical(fact: Mapping[str, Any]) -> bool:
     # level, so a module-level import here would be circular.
     from core.pipeline import _truth_status_for
     claim_type = fact.get("claim_type", "WORLD_FACT")
-    if _truth_status_for(claim_type, fact.get("source_status")) != VERIFIED_TRUTH_STATUS:
+    try:
+        # _truth_status_for does a raw `source_status in {...}` set
+        # membership check — an unhashable source_status (e.g. a caller-
+        # supplied list/dict) raises TypeError instead of comparing False.
+        # This module is an independent trust boundary and must fail
+        # closed on malformed input, not crash the read path (#257
+        # independent-review round).
+        resolved_status = _truth_status_for(claim_type, fact.get("source_status"))
+    except TypeError:
+        return False
+    if resolved_status != VERIFIED_TRUTH_STATUS:
         return False
 
     if not _in(fact.get("epistemic_state"), STRICT_CANONICAL_ESM_STATES):
         return False
 
-    if fact.get("restricted"):
-        return False
+    if _normalize_restricted_bit(fact.get("restricted")) is not False:
+        return False  # True or UNKNOWN (missing/malformed) both fail closed
 
     if not _has_required_fields(fact):
         return False
@@ -221,4 +262,7 @@ def project_canonical(
     mode = CanonicalReadMode(mode)  # accepts the enum or its raw string value
     if mode is CanonicalReadMode.STRICT:
         return [dict(f) for f in facts if is_strict_canonical(f)]
-    return [dict(f) for f in facts if not f.get("restricted")]
+    return [
+        dict(f) for f in facts
+        if _normalize_restricted_bit(f.get("restricted")) is False
+    ]

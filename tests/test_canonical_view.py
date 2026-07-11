@@ -354,3 +354,52 @@ def test_verified_world_fact_from_external_source_status_remains_valid():
 def test_verified_world_fact_from_other_independent_sources_remains_valid(source_status):
     fact = _verified_fact(claim_type="WORLD_FACT", source_status=source_status)
     assert is_strict_canonical(fact) is True
+
+
+@pytest.mark.parametrize("source_status", [["EXTERNAL"], {"s": "EXTERNAL"}])
+def test_unhashable_source_status_fails_closed_without_crashing(source_status):
+    """_truth_status_for() does a raw `source_status in {...}` set membership
+    check — an unhashable source_status (e.g. a caller-supplied list/dict)
+    must be excluded like any other malformed value, not crash the read path
+    with TypeError (#257 independent-review round)."""
+    fact = _verified_fact(source_status=source_status)
+    assert is_strict_canonical(fact) is False
+    assert project_canonical([fact]) == []
+
+
+# Thread: "restricted UNKNOWN vs False" (core/canonical_view.py) — a missing
+# or malformed `restricted` bit must fail closed exactly like a confirmed
+# True, deny-dominant, both in STRICT and CONTEXTUAL mode (#257
+# independent-review round).
+
+@pytest.mark.parametrize("restricted", [None, 2, 0.0, 1.0, "false", [], {}])
+def test_unknown_restricted_fails_closed_in_strict_mode(restricted):
+    fact = _verified_fact(restricted=restricted)
+    assert is_strict_canonical(fact) is False
+    assert project_canonical([fact]) == []
+
+
+def test_restricted_missing_key_fails_closed_in_strict_mode():
+    fact = _verified_fact()
+    del fact["restricted"]
+    assert is_strict_canonical(fact) is False
+
+
+def test_confirmed_false_restricted_int_is_accepted_in_strict_mode():
+    """A real int 0 (a known storage-adapter boundary, e.g. L1's SQLite
+    `restricted INTEGER DEFAULT 0` column) is confirmed-False, not UNKNOWN."""
+    fact = _verified_fact(restricted=0)
+    assert is_strict_canonical(fact) is True
+
+
+@pytest.mark.parametrize("restricted", [None, 2, 0.0, "false", [], {}])
+def test_unknown_restricted_fails_closed_in_contextual_mode(restricted):
+    fact = _user_claimed_fact(restricted=restricted)
+    assert project_canonical([fact], mode=CanonicalReadMode.CONTEXTUAL) == []
+
+
+def test_confirmed_false_restricted_is_returned_in_contextual_mode():
+    fact = _user_claimed_fact(restricted=False)
+    result = project_canonical([fact], mode=CanonicalReadMode.CONTEXTUAL)
+    assert len(result) == 1
+    assert result[0]["fact_id"] == fact["fact_id"]
