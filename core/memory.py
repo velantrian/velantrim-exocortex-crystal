@@ -635,26 +635,18 @@ def _l0_put_if_fresher(fact_id: str, record: Dict) -> None:
         _l0_put(fact_id, record)
 
 
-# Shared write lock for store_fact() and update_fact() (Codex P1 correction on
-# #248; reused rather than duplicated for #244's follow-up hardening). Both
-# functions serialize their ENTIRE write + same-connection re-read + L0
-# populate sequence through this one lock, so that DB-commit order and
-# L0-populate order can never diverge — including ACROSS the two functions
-# (e.g. a store_fact() re-ingest racing a reconcile.reinforce() update_fact()
-# call on the same fact_id). See store_fact(), update_fact() and
+# Shared facts-row write lock. store_fact(), update_fact(), transition_esm(),
+# set_restricted(), and delete_fact_l1() serialize their ENTIRE SQLite mutation
+# + same-connection re-read + L0 publish/evict sequence through this one lock,
+# so DB-commit order and cache-publish order cannot diverge ACROSS APIs (for
+# example, a transition racing a restriction update). See those functions and
 # _l0_put_if_fresher()'s docstring for why a pre-write `updated_at` comparison
 # alone is insufficient for this. Deliberately a single global lock, not
 # per-fact_id: these writes are already serialized at the SQLite level
 # (single-writer), so this adds no more contention than SQLite itself already
 # imposes, and a per-key lock registry would be unwarranted complexity for the
-# problem this actually is.
-#
-# transition_esm() and set_restricted() do NOT go through this lock: they are
-# lower-contention/administrative writers outside the reinforce/record_
-# occurrence/store_fact hot path this hardening arc has targeted, and each has
-# its own pre-existing (unchanged, not worsened by #244) write-then-populate
-# gap of the same shape — tracked as a separate, future, narrowly-scoped
-# follow-up rather than folded into this PR (see update_fact()'s docstring).
+# problem this actually is. SQLite's BEGIN IMMEDIATE remains the cross-process
+# guard where a writer performs a read/check/write sequence.
 _FACTS_WRITE_LOCK = threading.Lock()
 
 
@@ -872,10 +864,8 @@ def update_fact(fact_id: str, **fields) -> bool:
     concurrent store_fact()/update_fact() call's L0 populate can never be
     clobbered by this call's populate landing later with older data (the same
     class of bug #248 fixed for store_fact() alone; see _FACTS_WRITE_LOCK's
-    docstring). transition_esm() and set_restricted() do not go through this
-    lock and keep their own pre-existing write-then-populate gap of this same
-    shape — a separate, lower-traffic, out-of-scope follow-up, unchanged and
-    not worsened by this fix.
+    docstring). Administrative fact writers use the same lock, so their cache
+    publications cannot land out of SQLite commit order either.
     """
     fields = {k: v for k, v in fields.items() if k in _UPDATABLE}
     existing = get_fact(fact_id)
@@ -954,57 +944,48 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
             f"the transition to '{new_state}' is forbidden"
         )
 
-    fact = get_fact(fact_id)
-    if not fact:
-        return False
+    # The persisted-state read, policy check, mutation, fresh re-read and L0
+    # publish form one ordered unit relative to every other facts-row API in
+    # this process. BEGIN IMMEDIATE gives the read/check/write part the same
+    # serialization across processes. Reading from SQLite here (not a possibly
+    # stale L0 entry) means policy is evaluated against the state being changed.
+    with _FACTS_WRITE_LOCK:
+        with _db() as conn:
+            begin_immediate(conn)
+            row = conn.execute(
+                "SELECT * FROM facts WHERE fact_id = ?", (fact_id,)
+            ).fetchone()
+            if row is None:
+                return False
 
-    current_state = fact.get("epistemic_state", "Observed")
-    allowed = ESM_TRANSITIONS.get(current_state)
-    if allowed is not None and new_state not in allowed:
-        raise ValueError(
-            f"transition_esm: transition '{current_state}' → '{new_state}' is not allowed"
-        )
+            current_state = row["epistemic_state"]
+            allowed = ESM_TRANSITIONS.get(current_state)
+            if allowed is not None and new_state not in allowed:
+                # The caller may have reached us through a stale L0 snapshot
+                # (for example, review read Observed before another process
+                # collapsed the row). Do not leave that stale cache entry live
+                # after reporting policy against the fresh persisted state.
+                _l0_pop(fact_id)
+                raise ValueError(
+                    f"transition_esm: transition '{current_state}' → "
+                    f"'{new_state}' is not allowed"
+                )
 
-    now = datetime.now(timezone.utc).isoformat()
+            now = datetime.now(timezone.utc).isoformat()
+            conn.execute(
+                "UPDATE facts SET epistemic_state = ?, revision = revision + 1, "
+                "updated_at = ? WHERE fact_id = ?",
+                (new_state, now, fact_id),
+            )
+            refreshed_row = conn.execute(
+                "SELECT * FROM facts WHERE fact_id = ?", (fact_id,)
+            ).fetchone()
 
-    # CAS guard: only transition if the persisted state still equals the state we
-    # read (current_state). If a competing/external write changed it since the
-    # L0/DB read, the UPDATE matches 0 rows and we abort instead of clobbering.
-    # Defense-in-depth for future concurrency/async — NOT a full atomicity guarantee.
-    #
-    # `revision` is also bumped here (not just epistemic_state's own CAS column)
-    # so that update_fact()'s revision-based CAS (#244) can detect a transition_esm()
-    # write that landed on this fact_id between update_fact()'s read and write —
-    # without this, update_fact() would see an unchanged revision and incorrectly
-    # believe nothing else had touched the row. This function does NOT go
-    # through _FACTS_WRITE_LOCK, so its own write-then-populate-L0 step below
-    # keeps the same pre-existing race #248/#244 closed for store_fact()/
-    # update_fact() (a delayed populate here could still clobber a newer L0
-    # entry from a faster-completing concurrent writer) — lower-traffic than
-    # the reinforce()/record_occurrence()/store_fact() hot path this hardening
-    # arc has targeted, tracked as a separate, narrowly-scoped follow-up rather
-    # than folded into #244.
-    with _db() as conn:
-        cur = conn.execute(
-            "UPDATE facts SET epistemic_state = ?, revision = revision + 1, updated_at = ? "
-            "WHERE fact_id = ? AND epistemic_state = ?",
-            (new_state, now, fact_id, current_state)
-        )
-        if cur.rowcount != 1:
-            # CAS miss: a competing/external write changed the persisted state
-            # since our read. Evict the now-stale L0 entry so the next get_fact()
-            # re-reads the fresh DB state instead of serving stale cache to a
-            # caller that ignores the return value. Defense-in-depth, not atomicity.
-            _l0_pop(fact_id)
-            return False
-
-    # Update L0 only after the DB write succeeds, so the cache is never poisoned
-    # with a state that did not persist.
-    fact["epistemic_state"] = new_state
-    fact["updated_at"] = now
-    fact["revision"] = fact.get("revision", 0) + 1
-    _l0_put(fact_id, fact)
-    return True
+        refreshed = dict(refreshed_row)
+        refreshed["claim"] = crypto.decrypt(refreshed["claim"])
+        refreshed["metadata"] = json.loads(crypto.decrypt(refreshed["metadata"]))
+        _l0_put(fact_id, refreshed)
+        return True
 
 
 def get_all_facts(epistemic_state: Optional[str] = None) -> list:
@@ -1065,24 +1046,34 @@ def set_restricted(fact_id: str, restricted: bool) -> bool:
 
     Bumps `revision` (see _MIGRATIONS) so update_fact()'s revision-based CAS
     (#244) can detect a set_restricted() write landing on this fact_id between
-    update_fact()'s read and write. Like transition_esm(), this function does
-    not go through _FACTS_WRITE_LOCK — same pre-existing, out-of-scope,
-    lower-traffic write-then-populate-L0 gap noted there.
+    update_fact()'s read and write. The SQLite read/write/fresh-read and L0
+    publish share _FACTS_WRITE_LOCK with every other facts-row mutation.
     """
-    existing = get_fact(fact_id)
-    if existing is None:
-        return False
     val = int(bool(restricted))
-    now = datetime.now(timezone.utc).isoformat()
-    with _db() as conn:
-        conn.execute(
-            "UPDATE facts SET restricted = ?, revision = revision + 1, updated_at = ? "
-            "WHERE fact_id = ?",
-            (val, now, fact_id),
-        )
-    _l0_put(fact_id, {**existing, "restricted": val, "updated_at": now,
-                       "revision": existing.get("revision", 0) + 1})
-    return True
+    with _FACTS_WRITE_LOCK:
+        with _db() as conn:
+            begin_immediate(conn)
+            existing_row = conn.execute(
+                "SELECT fact_id FROM facts WHERE fact_id = ?", (fact_id,)
+            ).fetchone()
+            if existing_row is None:
+                return False
+
+            now = datetime.now(timezone.utc).isoformat()
+            conn.execute(
+                "UPDATE facts SET restricted = ?, revision = revision + 1, "
+                "updated_at = ? WHERE fact_id = ?",
+                (val, now, fact_id),
+            )
+            refreshed_row = conn.execute(
+                "SELECT * FROM facts WHERE fact_id = ?", (fact_id,)
+            ).fetchone()
+
+        refreshed = dict(refreshed_row)
+        refreshed["claim"] = crypto.decrypt(refreshed["claim"])
+        refreshed["metadata"] = json.loads(crypto.decrypt(refreshed["metadata"]))
+        _l0_put(fact_id, refreshed)
+        return True
 
 
 # ─── PHYSICAL DELETION (GDPR Art. 17) ───────────────────────────────────────
@@ -1095,9 +1086,10 @@ def delete_fact_l1(fact_id: str) -> bool:
     Physically delete a fact from L0 (LRU) and L1 (SQLite). Does not touch L3 or the tombstone.
     Returns True if the row in SQLite was actually deleted.
     """
-    _l0_pop(fact_id)
-    with _db() as conn:
-        cur = conn.execute("DELETE FROM facts WHERE fact_id = ?", (fact_id,))
+    with _FACTS_WRITE_LOCK:
+        with _db() as conn:
+            cur = conn.execute("DELETE FROM facts WHERE fact_id = ?", (fact_id,))
+        _l0_pop(fact_id)
         return cur.rowcount > 0
 
 

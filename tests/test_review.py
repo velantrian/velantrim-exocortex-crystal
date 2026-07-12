@@ -4,13 +4,11 @@ The queue is the set of Observed facts: stored in L1 but never promoted to the
 canon. A fact blocked by the gates stays Observed; a fact that passes is
 Validated. Curator approve/reject decisions are accountable (audit chain).
 """
-import pytest
-
 from core import review, audit
 from core.compliance import restrict_processing
 from core.ingest import ingest
 from core.l3_graph import get_l3_graph
-from core.memory import get_fact, store_fact, get_all_facts
+from core.memory import get_fact, store_fact
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -196,10 +194,7 @@ def test_approve_ready_promotes_to_canon(monkeypatch):
 
 
 def test_approve_aborts_on_cas_miss_without_l3_merge(monkeypatch):
-    """Defense-in-depth: if a competing reviewer changes the persisted state after
-    the queue read, approve() hits a CAS miss in transition_esm, aborts, and never
-    merges into the canon. This is not a full thread/process atomicity guarantee.
-    """
+    """A concurrent terminal transition aborts approval before L3 merge."""
     monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
     from core.memory import _db
     fid = _ready_pending("A concurrently collapsed world claim", "cas:rev1")

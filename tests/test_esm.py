@@ -116,11 +116,9 @@ def test_lru_read_refreshes_recency():
     assert "rec_1" not in _L0  # was oldest after rec_0 was refreshed
 
 
-# ─── CAS guard on ESM transitions ───────────────────────────────────────────────
-# Low-severity defense-in-depth: transition_esm only writes when the persisted
-# state still matches the state it read. These tests cover the happy path and a
-# competing-write (stale-cache) abort. They do NOT assert full thread/process
-# atomicity — only that a diverged prior state is detected.
+# ─── Serialized ESM transitions ──────────────────────────────────────────────
+# transition_esm reads and validates the persisted state under the SQLite write
+# transaction; a stale L0 record must never drive transition policy.
 
 def test_transition_esm_happy_path_updates_db_and_l0():
     """Normal transition still returns True and updates both DB and L0."""
@@ -137,13 +135,9 @@ def test_transition_esm_happy_path_updates_db_and_l0():
     assert row["epistemic_state"] == "Validated"
 
 
-def test_transition_esm_cas_miss_aborts_without_clobber():
-    """If a competing write changed the persisted state, the CAS guard aborts.
-
-    Catches the lost-update / stale-cache case; this is defense-in-depth, not a
-    full thread/process atomicity guarantee.
-    """
-    from core.memory import store_fact, transition_esm, get_fact, _db, _L0
+def test_transition_esm_uses_persisted_state_when_l0_is_stale():
+    """Policy is evaluated against SQLite, not a stale cached state."""
+    from core.memory import store_fact, transition_esm, get_fact, _db
     store_fact({"fact_id": "cas_miss", "claim": "x", "source": "s", "confidence": 0.5})
 
     # Competing/external writer mutates the persisted state directly; the L0 cache
@@ -154,20 +148,17 @@ def test_transition_esm_cas_miss_aborts_without_clobber():
             ("Supported", "cas_miss"),
         )
 
-    # current_state read from L0 is still "Observed" → CAS matches 0 rows → abort.
-    assert transition_esm("cas_miss", "Validated") is False
+    # Supported → Validated is legal. The transition must use this persisted
+    # state even though L0 still says Observed.
+    assert transition_esm("cas_miss", "Validated") is True
 
-    # DB keeps the competing state, not the attempted "Validated".
+    # DB and L0 converge on the same just-committed row.
     with _db() as conn:
         row = conn.execute(
             "SELECT epistemic_state FROM facts WHERE fact_id = ?", ("cas_miss",)
         ).fetchone()
-    assert row["epistemic_state"] == "Supported"
-
-    # L0 is not poisoned: the stale entry is evicted on a CAS miss, so a re-read
-    # returns the fresh persisted state, never the attempted "Validated".
-    assert "cas_miss" not in _L0
-    assert get_fact("cas_miss")["epistemic_state"] == "Supported"
+    assert row["epistemic_state"] == "Validated"
+    assert get_fact("cas_miss")["epistemic_state"] == "Validated"
 
 
 # ─── store_fact() ESM preservation on upsert ──────────────────────────────────
