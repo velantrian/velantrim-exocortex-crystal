@@ -38,7 +38,17 @@ jobs:
       - name: Install package
         run: pip install -e .
       - name: Run tests with coverage gate (100%, same as pyproject addopts)
-        run: pytest tests/ --cov=. --cov-fail-under=100
+        shell: bash
+        run: |
+          set -o pipefail
+          pytest tests/ --cov=. --cov-fail-under=100 2>&1 \
+            | tee pytest-${{ matrix.python-version }}.log
+      - name: Upload pytest log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-${{ matrix.python-version }}-log
+          path: pytest-${{ matrix.python-version }}.log
 
   jsonl-integrity:
     runs-on: ubuntu-latest
