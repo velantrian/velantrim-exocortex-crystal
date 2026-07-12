@@ -43,7 +43,10 @@ documented contradiction/immune-layer behaviour, an explicit CanonicalView
 RFC boundary between the physical graph and strict canon, a first retrieval-
 scale benchmark baseline, and a reviewer-facing checkpoint of all of the
 above — improving correctness and documentation clarity, not adding new
-runtime capability beyond the specific bug fixes named in that cycle.
+runtime capability beyond the specific bug fixes named in that cycle. A
+subsequent cycle (PR #257, hardened by PR #258) then implemented the
+strict-grounding slice of that same CanonicalView RFC as real, tested
+runtime behavior — see section 4 below.
 
 ## 3. SOTA position map
 
@@ -80,10 +83,18 @@ grant/reviewer documents predate:
   (no silent auto-resolution). Detail:
   [`docs/CONTRADICTION_POLICY.md`](../CONTRADICTION_POLICY.md),
   [`docs/IMMUNE_LAYER.md`](../IMMUNE_LAYER.md).
-- **CanonicalView RFC boundary**: a named, reviewable proposal distinguishing
-  the physical L3 graph from a trusted-only, `VERIFIED` + trace-valid read
-  projection — explicitly RFC-only, not implemented. Detail:
-  [`docs/CANONICAL_VIEW_RFC.md`](../CANONICAL_VIEW_RFC.md).
+- **CanonicalView RFC boundary — now partially implemented**: a named,
+  reviewable contract distinguishing the physical L3 graph from a
+  trusted-only, `VERIFIED` + trace-valid read projection. The strict-grounding
+  slice is implemented and merged (`core/canonical_view.py`, wired into
+  `core/pipeline.py::generate_answer()`, PR #257) and hardened by a
+  seven-commit corrective cycle (PR #258) that dispositioned all 9 review
+  threads on #257 and closed 17 further independent-review findings — both
+  PRs report 0 unresolved review threads. The RFC's `review`/`full_graph`
+  read modes, a CLI/API `trusted_only` exposure, and the
+  conflicting-`VERIFIED`-facts abstention policy remain unimplemented.
+  Detail: [`docs/CANONICAL_VIEW_RFC.md`](../CANONICAL_VIEW_RFC.md),
+  [`docs/STATUS.md`](../STATUS.md).
 - **L3 retrieval benchmark baseline**: the first reproducible, dependency-free
   measurement of `core.l3_graph`'s SQLite-backend retrieval latency at scale,
   including a disclosed near-linear scaling characteristic — a smoke
@@ -143,7 +154,7 @@ Being explicit about gaps is part of reviewer trust, not a weakness to hide.
 
 | Gap | Status |
 |---|---|
-| CanonicalView implementation | RFC-only ([`docs/CANONICAL_VIEW_RFC.md`](../CANONICAL_VIEW_RFC.md)), not built |
+| CanonicalView implementation | Partially implemented — strict-grounding slice merged (PR #257, hardened PR #258); `review`/`full_graph` modes, CLI/API `trusted_only` exposure, and conflict-abstention policy remain RFC-only ([`docs/CANONICAL_VIEW_RFC.md`](../CANONICAL_VIEW_RFC.md)) |
 | L3 retrieval optimization | Benchmark baseline exists ([`docs/benchmarks/L3_RETRIEVAL_SCALE.md`](../benchmarks/L3_RETRIEVAL_SCALE.md)); the observed near-linear scaling is not yet addressed |
 | Property / invariant test suite | Future work — not started; current suite is example-based (see [`TEST_REPORT.md`](../../TEST_REPORT.md) for the current pass/skip count and coverage) |
 | Independent external adoption | Limited — no PyPI release, no known third-party deployments, no independent citations to date |
@@ -161,6 +172,7 @@ GDPR-oriented controls
 auditable provenance and replayable receipts
 TruthGate-mediated memory admission
 benchmark baseline, not a performance guarantee
+strict CanonicalView grounding implemented for answer generation
 ```
 
 **Avoid:**
@@ -172,7 +184,9 @@ zero hallucinations
 AGI
 consciousness
 production-scale performance guarantee
-implemented trusted-only CanonicalView reads
+implemented trusted-only CanonicalView reads (the full three-mode
+  trusted_only/review/full_graph RFC contract, CLI/API exposure, and
+  conflict-abstention policy remain unimplemented — see section 4)
 ```
 
 ## 9. Suggested short external pitch

@@ -6,7 +6,17 @@
 > authoritative status pages — see those for the live source of truth if
 > this checkpoint ages.
 >
-> **As of:** `main` at commit `4f4d8b0`, July 2026.
+> **⚠️ Partially superseded:** this checkpoint predates PR #257
+> (CanonicalView strict-grounding implementation) and PR #258 (corrective
+> trust-boundary hardening cycle, 0 unresolved review threads on both PRs).
+> Section 3's "CanonicalView — RFC-only, not implemented" row and section 7's
+> "CanonicalView implementation" roadmap item below are **no longer
+> accurate** — see `docs/STATUS.md` and `docs/CANONICAL_VIEW_RFC.md` for the
+> current state. Left in place as historical record rather than silently
+> deleted; do not cite this document's CanonicalView claims as current.
+>
+> **As of:** `main` at commit `4f4d8b0`, July 2026 — superseded by
+> `b2ccc5f99dd71a2fab5b63eb9d2bc93e34664f92` (PR #258 squash-merge).
 
 ---
 
@@ -21,12 +31,14 @@
 - The **graph/canon is the truth boundary, by design**: only the
   `VERIFIED`, trace-valid subgraph is meant to count as canon; the physical
   graph may hold other epistemic/truth states (pending, `USER_CLAIMED`,
-  hypothetical, subjective) alongside it. **This separation is not yet a
-  read-time filter today** — `core.pipeline.retrieve()` reads L3 by
-  similarity and does not filter on `truth_status == VERIFIED` or trace
-  validity, so a `USER_CLAIMED` fact is retrievable, not only a `VERIFIED`
-  one. Closing that gap with a trusted-only read projection is exactly
-  what CanonicalView (section 3, RFC-only) proposes.
+  hypothetical, subjective) alongside it. `core.pipeline.retrieve()` itself
+  still reads L3 by similarity without filtering on `truth_status ==
+  VERIFIED` or trace validity, so a `USER_CLAIMED` fact remains a retrievable
+  *candidate* — but the answer-**grounding** path now closes that gap: PR
+  #257 implemented CanonicalView's strict-grounding slice
+  (`core/canonical_view.py`, wired into `generate_answer()`), hardened by
+  PR #258. See the superseded-content banner above and `docs/STATUS.md` for
+  the current state; section 3 below is out of date on this point.
 - The **LLM is an optional speech layer** — it can phrase an answer from
   admitted facts, but it is never itself a source of truth.
 - **TruthGate, Trace/Receipt, and per-fact provenance** enforce epistemic
@@ -50,8 +62,10 @@
 | [#221](https://github.com/velantrian/velantrim-exocortex-crystal/pull/221) | Contradiction / immune-layer docs | Added `docs/CONTRADICTION_POLICY.md` and `docs/IMMUNE_LAYER.md`, documenting implemented behaviour, current limitations, and the safe conflict-handling policy for `core/contradiction.py`, `core/reconcile.py`, and `core/immune.py` | No — docs-only |
 | [#222](https://github.com/velantrian/velantrim-exocortex-crystal/pull/222) | Correctness hardening | Fixed 5 more small, independent bugs: `truth_gate()`'s `KeyError` on missing confidence, `volition.write_voluntary()`'s implicit `source_status`, `erase_fact()` fabricating tombstones for facts that never existed (plus a follow-up fix for an L3-only orphan case), a raw traceback in the `retrieval-config-set` CLI, and a PII false-positive on ISO dates | Yes — correctness fixes |
 | [#223](https://github.com/velantrian/velantrim-exocortex-crystal/pull/223) | Status sync | Synced `docs/STATUS.md`/`TEST_REPORT.md`/`README.md` test baseline after #222 | No — docs-only |
-| [#224](https://github.com/velantrian/velantrim-exocortex-crystal/pull/224) | CanonicalView RFC (issue #220) | Specifies a proposed read-path contract distinguishing the physical L3 graph from a trusted-only, `VERIFIED` + trace-valid read projection | **No — RFC-only, not implemented.** No code, CLI flag, or API parameter exists for it |
+| [#224](https://github.com/velantrian/velantrim-exocortex-crystal/pull/224) | CanonicalView RFC (issue #220) | Specifies a proposed read-path contract distinguishing the physical L3 graph from a trusted-only, `VERIFIED` + trace-valid read projection | **No — RFC-only at the time of #224.** Superseded in part by #257 below, which implements the strict-grounding slice |
 | [#225](https://github.com/velantrian/velantrim-exocortex-crystal/pull/225) | L3 retrieval benchmark (issue #218) | Adds a dependency-free smoke benchmark and a real local baseline for `core.l3_graph`'s SQLite-backend retrieval latency | **No — benchmark/report only.** Measures current behaviour; does not change or optimize it |
+| [#257](https://github.com/velantrian/velantrim-exocortex-crystal/pull/257) | CanonicalView strict-grounding implementation (issue #220) | Implements the RFC's strict-grounding slice: `core/canonical_view.py`, wired into `generate_answer()` | **Yes — merged runtime hardening.** Not the full RFC — `review`/`full_graph` modes remain unimplemented |
+| [#258](https://github.com/velantrian/velantrim-exocortex-crystal/pull/258) | Corrective trust-boundary hardening (post-#257) | Dispositions all 9 review threads on #257; closes 17 further findings across five independent-review rounds | **Yes — merged runtime hardening.** 0 unresolved review threads on #257 and #258 |
 
 ## 3. Current implementation reality
 
@@ -62,17 +76,21 @@
 | GDPR erasure / restriction paths | **Implemented, within project scope** (see Non-goals — not a legal certification) |
 | Contradiction policy | **Documented** (`docs/CONTRADICTION_POLICY.md`) — detection and safe-surfacing behaviour described; a persistent "contested" marker and a curator-facing resolution command are noted as future work, not yet built |
 | Immune layer | **Documented** (`docs/IMMUNE_LAYER.md`) — threat-memory screening and advisory/strict contradiction handling described as implemented |
-| CanonicalView | **RFC-only, not implemented** (`docs/CANONICAL_VIEW_RFC.md`, issue #220) |
+| CanonicalView | **Partially implemented** — strict-grounding slice (`core/canonical_view.py`, PR #257, hardened by PR #258); `review`/`full_graph` modes remain RFC-only (`docs/CANONICAL_VIEW_RFC.md`, issue #220) |
 | L3 retrieval benchmark | **Benchmark baseline exists** (`docs/benchmarks/L3_RETRIEVAL_SCALE.md`, issue #218) |
 | L3 retrieval optimization | **Not implemented** — the benchmark measures current behaviour, including an observed near-linear latency scaling characteristic; no algorithm change has been made |
 | Property-based invariant suite | **Future work** — not started |
 
 ## 4. Current verified baseline
 
-**1307 passed / 12 skipped / 100% coverage.**
+**1307 passed / 12 skipped / 100% coverage** as of this checkpoint's original
+`main` commit `4f4d8b0`. **Superseded:** the current baseline after PR
+#257/#258 is **1661 passed / 12 skipped / 100% coverage** (`TOTAL 6141
+stmts, 0 missing`) at `main` commit `b2ccc5f99dd71a2fab5b63eb9d2bc93e34664f92`
+— see `TEST_REPORT.md` for the authoritative current number.
 
-This is the current repository test baseline as of this checkpoint (`main`
-at `4f4d8b0`), reproducible via:
+This was the repository test baseline as of this checkpoint's original `main`
+at `4f4d8b0`, reproducible via:
 
 ```bash
 pytest tests/ --cov=. --cov-fail-under=100 -q
@@ -133,9 +151,13 @@ of this work.
 
 ## 7. Remaining roadmap
 
-1. **CanonicalView implementation** — only after the RFC (#220) is reviewed
+1. ~~**CanonicalView implementation** — only after the RFC (#220) is reviewed
    and its open questions (default conflict behaviour, mode-selection
-   surface) are answered.
+   surface) are answered.~~ **Superseded:** the strict-grounding slice is now
+   implemented (PR #257, hardened by PR #258). The RFC's remaining open
+   questions — `review`/`full_graph` modes, CLI/API `trusted_only` exposure,
+   and the conflicting-`VERIFIED`-facts abstention policy — are still open
+   and still block those specific slices (RFC section 9).
 2. **L3 retrieval optimization** — informed by the benchmark baseline
    (#218), not started yet.
 3. **Property/invariant test suite** — a stronger correctness-proof surface
@@ -173,6 +195,7 @@ This checkpoint does not claim, and no document it summarizes claims:
 ---
 
 *This checkpoint reflects PRs #206, #216, #217, #221, #222, #223, #224, and
-#225. For anything not covered here, or if this document appears to
-disagree with a more recent state of `main`, `docs/STATUS.md` and
-`TEST_REPORT.md` are the authoritative sources.*
+#225. It predates PR #257 and PR #258 (see the superseded-content banner at
+the top of this document). For anything not covered here, or if this
+document appears to disagree with a more recent state of `main`,
+`docs/STATUS.md` and `TEST_REPORT.md` are the authoritative sources.*

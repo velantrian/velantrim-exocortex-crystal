@@ -1,24 +1,32 @@
 # CanonicalView / Trusted-Only Read Mode — RFC
 
 ```text
-Status:         PARTIALLY IMPLEMENTED (strict grounding slice)
+Status:         PARTIALLY IMPLEMENTED (strict grounding slice, corrective-
+                hardened by PR #258)
 Implementation: core/canonical_view.py — STRICT mode wired into
                 core/pipeline.py::generate_answer() (the answer-grounding
                 path). CONTEXTUAL mode exists as a pure, tested function but
                 is NOT wired into any default surface. review / full_graph
                 modes below remain PROPOSED, not implemented.
+Canonical main SHA: b2ccc5f99dd71a2fab5b63eb9d2bc93e34664f92 (PR #258
+                squash-merge)
 Scope:          read-path contract only
 ```
 
-This document originally defined a **proposed** read-path contract. A PR
-has since implemented the smallest production-safe runtime slice of it:
-section 4's inclusion rule (`truth_status == VERIFIED`, non-restricted,
+This document originally defined a **proposed** read-path contract. PR #257
+implemented the smallest production-safe runtime slice of it: section 4's
+inclusion rule (`truth_status == VERIFIED`, non-restricted,
 non-Contradicted/Deprecated/Collapsed, identity-complete) as
 `core.canonical_view.is_strict_canonical()` / `project_canonical()`, wired
-as the default grounding filter for confident factual answers. **Not**
-implemented: the `review` / `full_graph` read modes (section 6), trace
-replayability as an inclusion condition, and the conflicting-`VERIFIED`-facts
-surfacing/abstention policy (section 5) — those remain proposed only. See
+as the default grounding filter for confident factual answers. PR #258 is a
+seven-commit corrective-hardening cycle on top of #257 — it dispositioned
+all 9 review threads raised on #257 and closed 17 further findings from five
+rounds of independent re-review (both PRs report **0 unresolved review
+threads**); see [section 11](#11-corrective-hardening-pr-258) below for the
+itemized behavior it added. **Still not** implemented: the `review` /
+`full_graph` read modes (section 6), trace replayability as an inclusion
+condition, and the conflicting-`VERIFIED`-facts surfacing/abstention policy
+(section 5) — those remain proposed only. See
 [Non-goals](#7-non-goals) and [Reviewer-safe wording](#10-reviewer-safe-wording)
 below, both still accurate for the unimplemented remainder.
 
@@ -27,16 +35,19 @@ below, both still accurate for the unimplemented remainder.
 ```text
 Status: PARTIALLY IMPLEMENTED — see the header above and section 9 below for
         exactly which acceptance criteria are met and which remain open.
+        Corrective-hardened by PR #258 (section 11) — 0 unresolved review
+        threads on PR #257 and PR #258.
 Scope:  read-path contract only
 ```
 
 The strict-grounding slice of this RFC is implemented: `core/canonical_view.py`
 (`CanonicalReadMode`, `is_strict_canonical()`, `project_canonical()`), wired
 into `core/pipeline.py::generate_answer()` as the default answer-grounding
-filter. It does not implement every mode or acceptance criterion this RFC
-describes — see section 9 for the itemized breakdown. This RFC remains the
-authoritative contract for the unimplemented remainder (tracked as issue
-#220); do not cite this document as evidence that the whole RFC landed.
+filter, corrective-hardened by PR #258 (section 11). It does not implement
+every mode or acceptance criterion this RFC describes — see section 9 for
+the itemized breakdown. This RFC remains the authoritative contract for the
+unimplemented remainder (tracked as issue #220); do not cite this document
+as evidence that the whole RFC landed.
 
 ## 2. Problem statement
 
@@ -196,7 +207,8 @@ not smuggle in under this name:
 
 ## 9. Acceptance criteria for future implementation
 
-Status per criterion, after the strict-grounding-slice PR:
+Status per criterion, after the strict-grounding-slice PR (#257) and its
+corrective-hardening cycle (#258, section 11):
 
 - ✅ add read-path filter helpers implementing section 4's inclusion rules
   (except trace-replayability — see below): `core/canonical_view.py`.
@@ -230,7 +242,8 @@ Status per criterion, after the strict-grounding-slice PR:
 
 ## 10. Reviewer-safe wording
 
-Accurate language, after the strict-grounding-slice PR:
+Accurate language, after the strict-grounding-slice PR and its
+corrective-hardening cycle (#257, #258):
 
 > Strict CanonicalView grounding is implemented for answer generation
 > (`core/canonical_view.py`, wired into `core/pipeline.py::generate_answer()`).
@@ -248,6 +261,93 @@ Not language like:
 The `review` / `full_graph` modes, trace-replayability as an inclusion
 condition, and the conflicting-`VERIFIED`-facts policy remain unimplemented
 (section 9) — do not claim otherwise.
+
+## 11. Corrective hardening (PR #258)
+
+PR #258 is a seven-commit corrective cycle on top of PR #257: it
+dispositioned all 9 review threads raised on #257, then closed 17 further
+findings surfaced across five rounds of independent re-review. Both PRs
+report **0 unresolved review threads**. It does not add a new mode or expand
+this RFC's scope — it corrects and hardens the strict-grounding slice
+already described above. Implemented behavior:
+
+- **CanonicalView itself** (`core/canonical_view.py`):
+  - Required `fact_id`/`source`/`claim` identity fields must be non-empty
+    strings — a truthy non-string value (list, dict, number) is rejected,
+    not silently accepted.
+  - `confidence` must be a real `int`/`float` (never `bool`), finite, and in
+    `[0.0, 1.0]`; a numeric-looking string, an out-of-range value, `NaN`/
+    `inf`, and an oversized integer that would raise `OverflowError` on
+    conversion (e.g. `10**1000`) all fail closed instead of crashing or
+    passing through.
+  - `truth_status == VERIFIED` is cross-checked against the same
+    `_truth_status_for(claim_type, source_status)` policy function the
+    write/admission path uses, so a `VERIFIED` label inconsistent with its
+    own `claim_type`/`source_status` (e.g. `VERIFIED` + `USER_REPORTED`, or
+    a subjective `claim_type`) fails closed rather than being trusted in
+    isolation.
+  - A direct `generate_answer()`/`project_canonical()` caller that bypasses
+    `core/pipeline.py`'s recall reconciliation is independently protected by
+    all of the above — CanonicalView does not assume an upstream sanitizer
+    already ran.
+- **L1/L3 recall reconciliation** (`core/pipeline.py::_reconcile_recalled_fact`,
+  `_effective_epistemic_state`, `_effective_restricted`):
+  - A terminal epistemic state (`Collapsed`/`Contradicted`/`Deprecated`) on
+    *either* the in-flight fact or the physical L3 node blocks grounding —
+    a stale L3 read can never resurrect a fact another representation
+    already shows as terminal.
+  - An unresolved non-terminal disagreement between the two fails closed via
+    a `STORE_STATE_CONFLICT` sentinel rather than silently preferring
+    either side.
+  - A confirmed restriction — from L1 or from the physical L3 node — blocks
+    grounding.
+  - A backend's **structural** absence of a `restricted` column (e.g.
+    `LadybugL3Graph`, which has no such column at all) is **not** treated as
+    restricted when L1 independently confirms `False` — only a *confirmed*
+    restriction (from either side) blocks. This asymmetry was a deliberate
+    correction: treating "L3 doesn't carry this field" as equivalent to
+    "restricted" made every fact on such a backend permanently unanswerable.
+  - A confidence/`claim_type`/`source_status` disagreement between the
+    in-flight fact and the L3 record fails closed rather than silently
+    combining trust metadata from two different representations.
+  - Trust metadata polluted in L1 by an earlier pre-reconciliation write is
+    restored from the authoritative L3 values.
+  - Malformed/unhashable metadata (e.g. a corrupted node's list/dict
+    `claim_type`) fails closed instead of raising `TypeError`.
+- **Retrieval** (`core/pipeline.py::retrieve`):
+  - A fact already terminal in L1, or confirmed-restricted in L1, cannot
+    seed a vector-hit or receive graph-walk activation — closing a gap where
+    such a fact could inflate an unrelated neighbor's relevance before later
+    reconciliation excluded it.
+  - Vector-search candidates are fetched with a margin
+    (`_VECTOR_SEARCH_FETCH_MARGIN = 3`) before deny-dominant filtering runs,
+    and trimmed to `k` only afterward — so a denied top-ranked candidate can
+    no longer starve a valid lower-ranked one out of the result window.
+  - The same L3-structural-absence-is-not-restricted correction described
+    above applies at this layer too (for the node's own `restricted` field;
+    L1 remains deny-dominant, including on UNKNOWN, unchanged).
+- **TRACE**:
+  - A refusal never reports a false `Validated` trace state, including for
+    an unmatched/malformed trace entry (cleared rather than left stale).
+  - A success trace's reported `epistemic_state` and `source` are synced to
+    the facts that actually grounded the answer, not left from a
+    pre-reconciliation snapshot.
+- **Episodic behavior — compatibility change:** implicit co-recall episodic
+  linking is **removed**. Episodic graph mutations now require an explicit
+  `episode` argument, and occur only after a successful strict-grounded
+  answer, for the facts actually used in that answer.
+  **Residual risk:** episodic graph binding (entity merge, fact-to-entity
+  links, the `CO_OCCURRED` edge pair) is not wrapped in a single transaction
+  — a partial write remains theoretically possible if the backend fails
+  mid-sequence. Current mitigation is a content-free log entry plus the
+  `episode_link.failed` metric; no outbox/transaction wrapper was
+  implemented in this cycle.
+
+Verification: 132 net new regression tests across #258's seven commits;
+`core/canonical_view.py` and `core/pipeline.py` both measured at 100% local
+coverage; CI green on both Python 3.11 and 3.12 (`TOTAL 6141 stmts, 0
+missing, 100.00%`, 1661 passed / 12 skipped) on the squash-merged commit
+`b2ccc5f99dd71a2fab5b63eb9d2bc93e34664f92`.
 
 ## Open questions
 
@@ -267,10 +367,11 @@ condition, and the conflicting-`VERIFIED`-facts policy remain unimplemented
 ## Current recommendation
 
 The strict-grounding slice (section 4's inclusion rule, as the default
-answer-grounding filter) is implemented — see the status header and section
-9. The open questions above are still genuinely open and block the
-remainder: `review`/`full_graph` modes, the conflicting-`VERIFIED`-facts
-policy, and trace-replayability as an inclusion condition should each be
-their own, separately reviewed, narrowly-scoped follow-up PR, not bundled
-together or with unrelated work — the same discipline that produced this
-slice.
+answer-grounding filter) is implemented and corrective-hardened — see the
+status header, section 9, and section 11 (PR #257, hardened by PR #258; 0
+unresolved review threads on both). The open questions above are still
+genuinely open and block the remainder: `review`/`full_graph` modes, the
+conflicting-`VERIFIED`-facts policy, and trace-replayability as an inclusion
+condition should each be their own, separately reviewed, narrowly-scoped
+follow-up PR, not bundled together or with unrelated work — the same
+discipline that produced this slice and its hardening cycle.

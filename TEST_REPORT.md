@@ -15,10 +15,30 @@ audit/provenance write-lock serialization, import-session duplicate safety,
 #216), then the small correctness-hardening follow-up (TruthGate missing
 confidence, voluntary-write source_status, erase_fact no-op safety, CLI
 error handling, PII date false positive, #222), then the mutation-boundary
-quick-wins follow-up (#229): **1377 passed / 12 skipped.**
+quick-wins follow-up (#229), then the CanonicalView strict-grounding
+implementation (#257) and its seven-commit corrective trust-boundary
+hardening cycle (#258, independent-review rounds against #257's own review
+threads plus five further rounds of external re-review): **1661 passed / 12
+skipped.**
 This file and the README badge are the only places that carry the exact
 count; all other documents reference this report so the number cannot
 silently drift.
+
+> **PR #257 + PR #258 note.** PR #257 added `core/canonical_view.py`
+> (`CanonicalReadMode.STRICT`/`CONTEXTUAL`, `is_strict_canonical()`,
+> `project_canonical()`) as a read-time trust boundary wired into
+> `core/pipeline.py::generate_answer()` — physical L3 membership no longer
+> implies verified truth for strict answer grounding. PR #258 is a
+> corrective-hardening cycle on top of it: it disposition all 9 review
+> threads raised on #257, then closed 17 further independent-review findings
+> across five additional rounds, converging on a deny-dominant trust-boundary
+> policy for `restricted`/epistemic-state/trust-metadata reconciliation
+> between L1 and L3 (see `docs/CANONICAL_VIEW_RFC.md`'s corrective-hardening
+> section for the itemized behavior). Both PRs report **0 unresolved review
+> threads** as of the corrective-hardening merge. Net effect on this baseline:
+> 1377 → 1661 passed, measured surface 5860 → 6141 statements, while
+> preserving the 100% coverage gate on both Python 3.11 and 3.12. Canonical
+> `main` SHA after the squash-merge of #258: `b2ccc5f99dd71a2fab5b63eb9d2bc93e34664f92`.
 
 > **Mutation-boundary quick-wins note (#229).** A branch-coverage audit found
 > that 100% line coverage still let two mutants survive the full suite:
@@ -119,10 +139,10 @@ silently drift.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **1377** |
+| **Tests passing** | **1661** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
-| **Total coverage** | **100%** (gate enforced at 100%, repo-wide `--cov=.`) |
+| **Total coverage** | **100%** (gate enforced at 100%, repo-wide `--cov=.`; `TOTAL 6141 stmts, 0 missing`) |
 | Test files | 74 (`tests/test_*.py`) |
 | Python | 3.11 / 3.12 in CI |
 | Runtime dependencies | standard library only |
@@ -170,6 +190,18 @@ pytest tests/ --cov=. --cov-fail-under=100
 
 ## Coverage by module
 
+> **Staleness note.** This per-module table is a historical snapshot from
+> the "Audit hardening" milestone (`Total (repo-wide)` row below: 5811
+> statements) and has not been kept row-for-row current with every later
+> milestone in the narrative above. The **Summary** table above this section
+> is the authoritative, current, repo-wide number (1661 passed / 12 skipped /
+> `TOTAL 6141 stmts, 0 missing, 100%`, per the repo's own convention that
+> only this file and the README badge carry the exact count). Two rows
+> directly touched by the #257/#258 CanonicalView cycle are corrected below
+> for accuracy; the remaining rows are left as their original historical
+> values rather than partially rewritten, since a full row-by-row refresh
+> across every module is out of scope for this docs-sync cycle.
+
 | Module | Stmts | Cover |
 |--------|------:|------:|
 | `core/_registry.py`    | 24  | 100% |
@@ -215,7 +247,8 @@ pytest tests/ --cov=. --cov-fail-under=100
 | `core/pii.py`          | 56  | 100% |
 | `core/api_ingest_policy.py` | 14  | 100% |
 | `core/path_safety.py`       | 32  | 100% |
-| `core/pipeline.py`     | 277 | 100% |
+| `core/canonical_view.py` (added by PR #257, hardened by #258) | 60 | 100% |
+| `core/pipeline.py` (grown by #257/#258's recall-reconciliation/retrieval hardening; other rows in this table predate that work) | 406 | 100% |
 | `core/provenance.py`   | 90  | 100% |
 | `core/provenance_chain.py`  | 46  | 100% |
 | `core/queue.py`        | 47  | 100% |

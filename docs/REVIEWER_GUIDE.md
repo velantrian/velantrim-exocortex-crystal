@@ -145,8 +145,25 @@ A hands-on, reproducible walkthrough lives in
 | **2** | Fail-closed Docker stack from scratch (`Dockerfile`, `docker-compose.yml`, `.dockerignore`) + review fixes | #170, #171 |
 | **3A** | Strict TruthPolicy production default via `ENABLE_TRUTH_POLICY` (on/off/unset pinned) | #172 |
 | **3B** | Write-path TruthGate behaviour pins + `gate_reason` in the force-approve audit | #175 |
+| **CanonicalView** | Strict-grounding read-time trust boundary (`core/canonical_view.py`), wired into `generate_answer()`; disposition all review threads via a corrective hardening cycle | #257, #258 |
 
 Status pages were synced to match merged behaviour in #173 and #174.
+
+## 7a. CanonicalView strict-grounding boundary (PR #257 / #258)
+
+`core/canonical_view.py` implements the strict-grounding slice of
+[`docs/CANONICAL_VIEW_RFC.md`](./CANONICAL_VIEW_RFC.md) (issue #220): physical
+L3 membership does not itself imply verified truth for a confident factual
+answer. `is_strict_canonical()`/`project_canonical()` are wired into
+`core/pipeline.py::generate_answer()` as the default answer-grounding filter.
+PR #258 is a seven-commit corrective-hardening cycle on top of #257 that
+dispositioned all 9 review threads raised on #257 and closed 17 further
+independent-review findings; both PRs report **0 unresolved review threads**.
+See `docs/CANONICAL_VIEW_RFC.md` for the full implemented-behavior breakdown
+and `docs/STATUS.md`'s PR #257/#258 entries for a condensed summary. Not yet
+implemented: `review`/`full_graph` read modes, a CLI/API `trusted_only`
+exposure, and the conflicting-`VERIFIED`-facts abstention policy (RFC
+section 9) — do not cite those as current behaviour.
 
 ## 8. Limitations and deferred work
 
@@ -157,7 +174,12 @@ Explicitly **not** done in this cycle (and not claimed):
 - **Knowledge-graph data verifier** — graph/autolinker data is labelled
   unverified-unless-sourced; a source/evidence-coverage verifier is future work.
 - **Canonical write-path expansion** beyond the current gated paths.
-- **RRF rank fusion** exists as a standalone helper, **not** wired into `retrieve()`.
+- **RRF rank fusion** (`core/rrf.py`) is wired into `retrieve()` to fuse
+  vector/graph/seed rankings (ordering only — it never changes `truth_status`
+  or `confidence`).
+- **CanonicalView's `review`/`full_graph` read modes, CLI/API `trusted_only`
+  exposure, and conflicting-`VERIFIED`-facts abstention policy** remain
+  unimplemented (issue #220, `docs/CANONICAL_VIEW_RFC.md` section 9).
 - Research-Mode / Noetic / AttentionRouter / Graphiti / Titan console / PWA /
   BICA remain research / RFC-level, not runtime.
 

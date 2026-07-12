@@ -65,10 +65,13 @@ Each track was delivered as a separate PR. See `TEST_REPORT.md` and
 ## Recent PRs — response policy and research mode (status)
 
 These PRs are recorded here so the public implementation boundary stays
-explicit. The audited suite is now **1377 passed / 12 skipped / 100% coverage**
+explicit. The audited suite is now **1661 passed / 12 skipped / 100% coverage**
 (see `TEST_REPORT.md`; includes the mutation-boundary quick-wins PR #229 on
 top of the small correctness-hardening PR #222, the P0 integrity follow-up
-PR #216, the audit-hardening PR #206, and #201/#204).
+PR #216, the audit-hardening PR #206, #201/#204, and the CanonicalView
+strict-grounding implementation PR #257 with its corrective trust-boundary
+hardening PR #258). Canonical `main` SHA after #258's squash-merge:
+`b2ccc5f99dd71a2fab5b63eb9d2bc93e34664f92`.
 
 ```text
 PR #201 — deterministic response_policy v0            -> IMPLEMENTED (merged)
@@ -77,6 +80,8 @@ PR #204 — Research Mode v0.5 scaffold (prototypes/)   -> RESEARCH (merged, pro
 PR #216 — P0 integrity follow-up (post-#206)          -> IMPLEMENTED (merged)
 PR #222 — small correctness hardening (post-#216)     -> IMPLEMENTED (merged)
 PR #218 — L3 retrieval-scale smoke benchmark          -> BENCHMARK BASELINE / no runtime behaviour change
+PR #257 — CanonicalView strict-grounding trust boundary -> IMPLEMENTED (merged, partial RFC slice — see docs/CANONICAL_VIEW_RFC.md)
+PR #258 — corrective trust-boundary hardening (post-#257) -> IMPLEMENTED (merged; 0 unresolved review threads on #257 and #258)
 ```
 
 - **PR #201 — `IMPLEMENTED`.** Deterministic read-path `response_policy v0`
@@ -120,6 +125,65 @@ PR #218 — L3 retrieval-scale smoke benchmark          -> BENCHMARK BASELINE / 
   latency at increasing synthetic corpus sizes. Measures existing behaviour
   only — no retrieval algorithm, TruthGate, or L3 schema change; not a
   performance optimization or a CI gate.
+- **PR #257 — `IMPLEMENTED` (partial RFC slice).** Implements the
+  strict-grounding slice of the CanonicalView RFC (issue #220,
+  `docs/CANONICAL_VIEW_RFC.md`): `core/canonical_view.py`
+  (`CanonicalReadMode.STRICT`/`CONTEXTUAL`, `is_strict_canonical()`,
+  `project_canonical()`), wired into `core/pipeline.py::generate_answer()` as
+  the default answer-grounding filter. Physical L3 membership no longer by
+  itself implies verified truth for a confident factual answer. `review` and
+  `full_graph` read modes from the RFC remain **not implemented** — see
+  `docs/CANONICAL_VIEW_RFC.md` section 9 for the itemized breakdown.
+- **PR #258 — `IMPLEMENTED`.** A corrective trust-boundary hardening cycle on
+  top of #257: dispositions all 9 review threads raised on #257, then closes
+  17 further findings from five rounds of independent re-review. Both #257
+  and #258 report **0 unresolved review threads**. Implemented behavior
+  (see `docs/CANONICAL_VIEW_RFC.md`'s corrective-hardening section for full
+  detail):
+  - **CanonicalView** (`core/canonical_view.py`): required `fact_id`/
+    `source`/`claim` are non-empty strings only; `confidence` must be a real
+    `int`/`float` (never `bool`), finite, in `[0.0, 1.0]` — malformed and
+    oversized (e.g. `10**1000`) numeric values fail closed rather than
+    crashing; `truth_status == VERIFIED` is cross-checked against the same
+    write-path policy function (`_truth_status_for`) rather than trusted in
+    isolation, so an inconsistent `claim_type`/`source_status` combination
+    fails closed; direct `generate_answer()`/`project_canonical()` callers
+    that bypass pipeline reconciliation are independently protected, not
+    reliant on an upstream sanitizer.
+  - **L1/L3 reconciliation** (`core/pipeline.py::_reconcile_recalled_fact`):
+    a terminal epistemic state (`Collapsed`/`Contradicted`/`Deprecated`) on
+    either the in-flight fact or the physical L3 node blocks grounding; an
+    unresolved non-terminal disagreement fails closed via a
+    `STORE_STATE_CONFLICT` sentinel; a confirmed restriction on either L1 or
+    L3 blocks; a backend's structural absence of a `restricted` column
+    (e.g. `LadybugL3Graph`, which has no such column at all) is **not**
+    treated as restricted when L1 independently confirms `False` — only a
+    *confirmed* restriction (from either side) blocks; a
+    confidence/claim_type/source_status disagreement between the in-flight
+    fact and the L3 record fails closed; and polluted L1 trust metadata
+    (left behind by an earlier pre-reconciliation write) is restored from
+    the authoritative L3 values.
+  - **Retrieval** (`core/pipeline.py::retrieve`): a fact already terminal in
+    L1, or confirmed-restricted in L1, cannot seed or receive graph-walk
+    activation; vector-search candidates are fetched with a margin
+    (`_VECTOR_SEARCH_FETCH_MARGIN`) and trimmed after deny-dominant
+    filtering, so a denied top-ranked candidate cannot starve a valid
+    lower-ranked one out of the `k`-sized result window; malformed trust
+    metadata (unhashable `claim_type`/`source_status`, oversized confidence
+    integers) fails closed instead of crashing.
+  - **TRACE**: a refusal never reports a false `Validated` trace state; a
+    success trace's reported `epistemic_state` and `source` are synced to
+    the facts that actually grounded the answer, not left from a
+    pre-reconciliation snapshot.
+  - **Episodic behavior — compatibility change**: implicit co-recall
+    episodic linking is **removed**. Episodic graph mutations now require an
+    explicit `episode` argument, and occur only after a successful
+    strict-grounded answer, for the facts actually used in that answer.
+    **Residual risk**: episodic graph binding is not fully transactional —
+    a partial write remains theoretically possible on a backend failure
+    mid-write. Current mitigation is a content-free log entry plus the
+    `episode_link.failed` metric; no outbox/transaction wrapper was
+    implemented in this cycle.
 - **PR #204 — `RESEARCH` (prototype scaffold only).** The Research Mode v0.5 scaffold
   was merged under `prototypes/research_mode/` (`prototypes/research_mode/essence_card.py`),
   not in `core/`, and `prototypes/` is excluded from the installable package list. It
@@ -164,7 +228,7 @@ behaviour and must not be cited as implemented Crystal capabilities.
 
 ```text
 docs/research/dialogue-cultivation-layer.md -> RESEARCH / DOCUMENTED_ONLY
-docs/CANONICAL_VIEW_RFC.md                  -> PROPOSED / RFC-only, NOT IMPLEMENTED
+docs/CANONICAL_VIEW_RFC.md                  -> PARTIALLY IMPLEMENTED (strict-grounding slice) — see below
 ```
 
 - **Presence & Dialogue Cultivation Layer — `RESEARCH / DOCUMENTED_ONLY`.** This RFC
@@ -173,13 +237,19 @@ docs/CANONICAL_VIEW_RFC.md                  -> PROPOSED / RFC-only, NOT IMPLEMEN
   sentience, consciousness, emotion, personhood, biological life or implemented
   autonomous companion behaviour. It does not add code, storage, workers, TruthGate
   wiring, Canon writes or runtime integration.
-- **CanonicalView / Trusted-Only Read Mode — `PROPOSED / RFC-only` (issue #220).**
-  Specifies a read-path contract distinguishing the physical L3 graph from a
-  trusted-only, `VERIFIED` + trace-valid read projection. No code, CLI flag,
-  API parameter, or test in this repository implements it; do not cite
-  `trusted_only`/`review`/`full_graph` read modes as current Crystal
-  behaviour until a separate implementation PR lands and is tested per the
-  RFC's own acceptance criteria.
+- **CanonicalView / Trusted-Only Read Mode — `PARTIALLY IMPLEMENTED` (issue #220,
+  PR #257, hardened by PR #258).** The RFC's strict-grounding slice (section 4's
+  inclusion rule) is implemented: `core/canonical_view.py`
+  (`CanonicalReadMode.STRICT`/`CONTEXTUAL`, `is_strict_canonical()`,
+  `project_canonical()`), wired into `core/pipeline.py::generate_answer()` as the
+  default answer-grounding filter, with 132 net new regression tests across
+  PR #258's seven commits. `CONTEXTUAL` mode exists as a tested pure function but
+  is **not** wired into any default surface. The RFC's `review`/`full_graph` read
+  modes, a CLI `--trusted-only` flag, an API `trusted_only` parameter, and the
+  conflicting-`VERIFIED`-facts surfacing/abstention policy remain **not
+  implemented** — do not cite those as current Crystal behaviour. See
+  `docs/CANONICAL_VIEW_RFC.md` section 9 for the itemized acceptance-criteria
+  breakdown.
 
 ## Implementation reality matrix
 
@@ -203,6 +273,7 @@ _A companion documented evaluation lens (dimensions and criteria only, no status
 | Graphiti / Neo4j | OPTIONAL / RESEARCH | optional advanced backend inspiration | Not Crystal truth authority | Keep stdlib/local-first Crystal core |
 | Knowledge graph / WSC data | RESEARCH / UNVERIFIED unless sourced | draft graph / autolinker prototype if no evidence | Do not call verified canon without real sources/evidence_refs | Data verifier after schema confirmation |
 | Presence & Dialogue Cultivation | RESEARCH / DOCUMENTED_ONLY | future dialogue continuity and anti-sycophancy research | No sentience, consciousness, emotion, personhood, biological life or implemented companion-runtime claim | Keep as research-only RFC unless separately prototyped, tested and audited |
+| CanonicalView / trusted-only read boundary | PARTIALLY IMPLEMENTED (strict-grounding slice, PR #257, hardened PR #258) | physical L3 membership does not itself imply verified truth for confident answer grounding | `review`/`full_graph` modes, CLI/API `trusted_only` exposure, and conflicting-`VERIFIED`-facts abstention remain unimplemented (RFC section 9) — do not overclaim | Track remaining RFC slices (issue #220) as separate, narrowly-scoped follow-up PRs |
 
 ## Crystal hardening sequence (status)
 
