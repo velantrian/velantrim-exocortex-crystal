@@ -343,11 +343,18 @@ already described above. Implemented behavior:
   `episode_link.failed` metric; no outbox/transaction wrapper was
   implemented in this cycle.
 
-Verification: 132 net new regression tests across #258's seven commits;
-`core/canonical_view.py` and `core/pipeline.py` both measured at 100% local
-coverage; CI green on both Python 3.11 and 3.12 (`TOTAL 6141 stmts, 0
-missing, 100.00%`, 1661 passed / 12 skipped) on the squash-merged commit
-`b2ccc5f99dd71a2fab5b63eb9d2bc93e34664f92`.
+Verification: **123 net new passed tests** across #258's seven commits,
+verified against actual CI job logs — base run
+[`29126595217`](https://github.com/velantrian/velantrim-exocortex-crystal/actions/runs/29126595217)
+on `5c3fdc7` (PR #257) reports 1538 passed; final run
+[`29170583707`](https://github.com/velantrian/velantrim-exocortex-crystal/actions/runs/29170583707)
+on `b2ccc5f` reports 1661 passed (1661 − 1538 = 123). `core/canonical_view.py`
+and `core/pipeline.py` both measured at 100% local coverage; CI green on both
+Python 3.11 and 3.12 (`TOTAL 6141 stmts, 0 missing, 100.00%`, 1661 passed /
+12 skipped) on the squash-merged commit
+`b2ccc5f99dd71a2fab5b63eb9d2bc93e34664f92`. All five independent-review
+rounds against #258 were Codex automated re-review, not an external human
+audit.
 
 ## Open questions
 

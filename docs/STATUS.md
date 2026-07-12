@@ -135,9 +135,10 @@ PR #258 — corrective trust-boundary hardening (post-#257) -> IMPLEMENTED (merg
   `full_graph` read modes from the RFC remain **not implemented** — see
   `docs/CANONICAL_VIEW_RFC.md` section 9 for the itemized breakdown.
 - **PR #258 — `IMPLEMENTED`.** A corrective trust-boundary hardening cycle on
-  top of #257: dispositions all 9 review threads raised on #257, then closes
-  17 further findings from five rounds of independent re-review. Both #257
-  and #258 report **0 unresolved review threads**. Implemented behavior
+  top of #257: dispositioned all 9 review threads raised on #257, then
+  resolved 17 further findings from five rounds of independent automated
+  re-review (Codex, not an external human audit). Both #257 and #258 report
+  **0 unresolved review threads**. Implemented behavior
   (see `docs/CANONICAL_VIEW_RFC.md`'s corrective-hardening section for full
   detail):
   - **CanonicalView** (`core/canonical_view.py`): required `fact_id`/
@@ -242,8 +243,13 @@ docs/CANONICAL_VIEW_RFC.md                  -> PARTIALLY IMPLEMENTED (strict-gro
   inclusion rule) is implemented: `core/canonical_view.py`
   (`CanonicalReadMode.STRICT`/`CONTEXTUAL`, `is_strict_canonical()`,
   `project_canonical()`), wired into `core/pipeline.py::generate_answer()` as the
-  default answer-grounding filter, with 132 net new regression tests across
-  PR #258's seven commits. `CONTEXTUAL` mode exists as a tested pure function but
+  default answer-grounding filter, with 123 net new passed tests across PR
+  #258's seven commits (verified: base CI run
+  [`29126595217`](https://github.com/velantrian/velantrim-exocortex-crystal/actions/runs/29126595217)
+  on `5c3fdc7` reports 1538 passed; final CI run
+  [`29170583707`](https://github.com/velantrian/velantrim-exocortex-crystal/actions/runs/29170583707)
+  on `b2ccc5f` reports 1661 passed; 1661 − 1538 = 123). `CONTEXTUAL` mode
+  exists as a tested pure function but
   is **not** wired into any default surface. The RFC's `review`/`full_graph` read
   modes, a CLI `--trusted-only` flag, an API `trusted_only` parameter, and the
   conflicting-`VERIFIED`-facts surfacing/abstention policy remain **not

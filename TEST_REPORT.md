@@ -18,8 +18,8 @@ error handling, PII date false positive, #222), then the mutation-boundary
 quick-wins follow-up (#229), then the CanonicalView strict-grounding
 implementation (#257) and its seven-commit corrective trust-boundary
 hardening cycle (#258, independent-review rounds against #257's own review
-threads plus five further rounds of external re-review): **1661 passed / 12
-skipped.**
+threads plus five further rounds of independent automated re-review via
+Codex): **1661 passed / 12 skipped.**
 This file and the README badge are the only places that carry the exact
 count; all other documents reference this report so the number cannot
 silently drift.
@@ -29,16 +29,23 @@ silently drift.
 > `project_canonical()`) as a read-time trust boundary wired into
 > `core/pipeline.py::generate_answer()` — physical L3 membership no longer
 > implies verified truth for strict answer grounding. PR #258 is a
-> corrective-hardening cycle on top of it: it disposition all 9 review
+> corrective-hardening cycle on top of it: it dispositioned all 9 review
 > threads raised on #257, then closed 17 further independent-review findings
-> across five additional rounds, converging on a deny-dominant trust-boundary
+> across five additional rounds (all via Codex's automated re-review, not an
+> external human audit), converging on a deny-dominant trust-boundary
 > policy for `restricted`/epistemic-state/trust-metadata reconciliation
 > between L1 and L3 (see `docs/CANONICAL_VIEW_RFC.md`'s corrective-hardening
 > section for the itemized behavior). Both PRs report **0 unresolved review
-> threads** as of the corrective-hardening merge. Net effect on this baseline:
-> 1377 → 1661 passed, measured surface 5860 → 6141 statements, while
-> preserving the 100% coverage gate on both Python 3.11 and 3.12. Canonical
-> `main` SHA after the squash-merge of #258: `b2ccc5f99dd71a2fab5b63eb9d2bc93e34664f92`.
+> threads** as of the corrective-hardening merge. Net effect, verified against
+> actual CI job logs (not assumed): base CI run
+> [`29126595217`](https://github.com/velantrian/velantrim-exocortex-crystal/actions/runs/29126595217)
+> on `5c3fdc7` (PR #257) reports 1538 passed; final CI run
+> [`29170583707`](https://github.com/velantrian/velantrim-exocortex-crystal/actions/runs/29170583707)
+> on `b2ccc5f` (PR #258 squash-merge) reports 1661 passed — **123 net new
+> passed tests** (1661 − 1538). Measured surface 6022 → 6141 statements (+119),
+> while preserving the 100% coverage gate on both Python 3.11 and 3.12.
+> Canonical `main` SHA after the squash-merge of #258:
+> `b2ccc5f99dd71a2fab5b63eb9d2bc93e34664f92`.
 
 > **Mutation-boundary quick-wins note (#229).** A branch-coverage audit found
 > that 100% line coverage still let two mutants survive the full suite:
