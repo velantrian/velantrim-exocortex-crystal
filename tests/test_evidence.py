@@ -7,6 +7,16 @@ from core import evidence, knowledge, provenance, memory
 from core.ingest import ingest
 
 
+def _tamper_claim_at_rest(fact_id, claim):
+    """Simulate out-of-band DB tampering; public APIs reject this rewrite."""
+    with memory._db() as conn:
+        conn.execute(
+            "UPDATE facts SET claim = ?, revision = revision + 1 WHERE fact_id = ?",
+            (memory.crypto.encrypt(claim), fact_id),
+        )
+    memory._L0.clear()
+
+
 # ─── attach / list ────────────────────────────────────────────────────────────
 
 def test_attach_and_list_evidence():
@@ -91,7 +101,7 @@ def test_verify_evidence_ok():
 def test_verify_detects_modified_claim():
     fid = ingest("Water boils at 100C")["fact"]["fact_id"]
     evidence.attach_evidence(fid, "phys.txt")
-    memory.update_fact(fid, claim="Water boils at 90C now")
+    _tamper_claim_at_rest(fid, "Water boils at 90C now")
     report = evidence.verify_evidence(fid)
     assert report[0]["status"] == "modified"
 

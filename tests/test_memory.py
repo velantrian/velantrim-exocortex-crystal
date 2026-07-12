@@ -58,6 +58,51 @@ def test_store_fact_upsert_updates_existing_row():
     assert f["confidence"] == pytest.approx(0.9)
 
 
+@pytest.mark.parametrize(
+    "state",
+    sorted(memory.CLAIM_IDENTITY_LOCKED_STATES),
+)
+def test_store_fact_rejects_promoted_or_historical_claim_rewrite(state):
+    store_fact({"fact_id": "locked", "claim": "original", "source": "s",
+                "epistemic_state": state})
+
+    with pytest.raises(memory.ClaimIdentityError, match="create a new fact"):
+        store_fact({"fact_id": "locked", "claim": "rewritten", "source": "s"})
+
+    fact = get_fact("locked")
+    assert fact["claim"] == "original"
+    assert fact["epistemic_state"] == state
+
+
+def test_store_fact_allows_same_claim_and_non_identity_updates_after_validation():
+    store_fact({"fact_id": "same", "claim": "stable", "source": "s",
+                "confidence": 0.5, "epistemic_state": "Validated"})
+
+    store_fact({"fact_id": "same", "claim": "stable", "source": "s2",
+                "confidence": 0.9, "metadata": {"reviewed": True}})
+
+    fact = get_fact("same")
+    assert fact["claim"] == "stable"
+    assert fact["epistemic_state"] == "Validated"
+    assert fact["confidence"] == pytest.approx(0.9)
+    assert fact["metadata"] == {"reviewed": True}
+
+
+def test_update_fact_rejects_validated_claim_rewrite_but_allows_same_text():
+    from core.memory import update_fact
+
+    store_fact({"fact_id": "locked-update", "claim": "stable", "source": "s",
+                "epistemic_state": "Validated"})
+
+    with pytest.raises(memory.ClaimIdentityError, match="claim identity"):
+        update_fact("locked-update", claim="different")
+
+    assert update_fact("locked-update", claim="stable", metadata={"ok": True}) is True
+    fact = get_fact("locked-update")
+    assert fact["claim"] == "stable"
+    assert fact["metadata"] == {"ok": True}
+
+
 def test_store_fact_upsert_preserves_restricted_and_created_at_in_l0():
     """A conflict-update must not poison the L0 cache with a reset `restricted`
     flag or a fresh `created_at` — both must reflect the persisted DB row, not
@@ -710,18 +755,16 @@ def test_store_fact_l0_reflects_actual_l1_winner_not_capture_time_order(monkeypa
 
 
 def test_store_fact_sequential_behavior_unchanged_by_freshness_guard():
-    """The store_fact()-specific lock must not change store_fact()'s normal
-    (non-racing) contract: the second call's claim/source/confidence win, and
-    epistemic_state/restricted are preserved from the persisted row rather
-    than reset — exactly as before this PR."""
+    """Normal same-claim upserts still update non-identity fields while
+    preserving persisted epistemic_state/restricted values."""
     store_fact({"fact_id": "seq1", "claim": "v1", "source": "s1", "confidence": 0.5})
     transition_esm("seq1", "Validated")
     set_restricted("seq1", True)
 
-    store_fact({"fact_id": "seq1", "claim": "v2", "source": "s2", "confidence": 0.8})
+    store_fact({"fact_id": "seq1", "claim": "v1", "source": "s2", "confidence": 0.8})
 
     cached = get_fact("seq1")
-    assert cached["claim"] == "v2"
+    assert cached["claim"] == "v1"
     assert cached["source"] == "s2"
     assert cached["confidence"] == 0.8
     assert cached["epistemic_state"] == "Validated"    # preserved, not reset
@@ -729,6 +772,6 @@ def test_store_fact_sequential_behavior_unchanged_by_freshness_guard():
 
     _L0.clear()  # force the L1 read path too
     persisted = get_fact("seq1")
-    assert persisted["claim"] == "v2"
+    assert persisted["claim"] == "v1"
     assert persisted["epistemic_state"] == "Validated"
     assert persisted["restricted"] == 1

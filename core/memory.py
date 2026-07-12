@@ -113,9 +113,23 @@ SUBJECTIVE_CLAIM_TYPES = {
 # ─── RING ZERO / VALUES CORE: immutable facts (I6) ─────────────────────────
 IMMUTABLE_FACT_IDS = {"VALUES_CORE", "RING_ZERO"}
 
+# Once a fact has evidentiary support or has entered a terminal historical
+# state, its text is its identity. Rewriting that text under the same fact_id
+# would let evidence/validation for claim A silently describe claim B. Draft
+# states (Observed/Hypothesized) may still be refined before promotion.
+CLAIM_IDENTITY_LOCKED_STATES = {
+    "Supported", "Validated", "ImmutableCore",
+    "Contradicted", "Deprecated", "Collapsed",
+}
+
 
 class ImmutableStateError(Exception):
     """Raised when attempting to transition a Ring Zero / VALUES_CORE fact."""
+    pass
+
+
+class ClaimIdentityError(ValueError):
+    """Raised when promoted/historical fact text is rewritten in place."""
     pass
 
 
@@ -594,14 +608,32 @@ _FACTS_WRITE_LOCK = threading.Lock()
 
 # ─── API ───────────────────────────────────────────────────────────────────────
 
+def _assert_claim_identity(
+    fact_id: str,
+    existing_claim: str,
+    incoming_claim: str,
+    epistemic_state: str,
+) -> None:
+    """Reject an in-place text rewrite once the fact identity is locked."""
+    if (
+        epistemic_state in CLAIM_IDENTITY_LOCKED_STATES
+        and incoming_claim != existing_claim
+    ):
+        raise ClaimIdentityError(
+            f"claim identity for '{fact_id}' is locked in state "
+            f"'{epistemic_state}'; create a new fact and supersede the old one"
+        )
+
 def store_fact(fact: Dict) -> None:
     """
     Store a fact in L0 (LRU RAM) and L1 (SQLite).
 
     New facts: epistemic_state from the call is persisted and cached.
-    Existing facts (conflict): epistemic_state is PRESERVED from the DB;
-    other fields (claim, source, confidence, etc.) are still updated.
-    Use transition_esm() to advance epistemic state explicitly.
+    Existing facts (conflict): epistemic_state is PRESERVED from the DB.
+    Claim text may be refined only while the persisted state is Observed or
+    Hypothesized. Supported/validated/terminal claims have stable identity;
+    replace them by creating a new fact and calling reconcile.supersede().
+    Other fields remain updateable. Use transition_esm() to advance state.
 
     A direct write to the L3 graph is only via the TruthGate (not here).
     """
@@ -659,6 +691,23 @@ def store_fact(fact: Dict) -> None:
     # interleaved.
     with _FACTS_WRITE_LOCK:
         with _db() as conn:
+            # Serialize the identity check + upsert against writers in other
+            # processes too. Without the DB write lock, a concurrent
+            # transition_esm() could promote the fact after this check but
+            # before the upsert, letting a stale draft-state decision rewrite
+            # an already-promoted claim.
+            begin_immediate(conn)
+            existing_row = conn.execute(
+                "SELECT claim, epistemic_state FROM facts WHERE fact_id = ?",
+                (fact_id,),
+            ).fetchone()
+            if existing_row is not None:
+                _assert_claim_identity(
+                    fact_id,
+                    crypto.decrypt(existing_row["claim"]),
+                    record["claim"],
+                    existing_row["epistemic_state"],
+                )
             conn.execute("""
                 INSERT INTO facts
                     (fact_id, claim, source, confidence, epistemic_state,
@@ -780,6 +829,14 @@ def update_fact(fact_id: str, **fields) -> bool:
     existing = get_fact(fact_id)
     if existing is None or not fields:
         return False
+
+    if "claim" in fields:
+        _assert_claim_identity(
+            fact_id,
+            existing.get("claim", ""),
+            fields["claim"],
+            existing.get("epistemic_state", "Observed"),
+        )
 
     expected_revision = existing["revision"]
     now = datetime.now(timezone.utc).isoformat()
