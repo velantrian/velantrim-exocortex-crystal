@@ -7,17 +7,19 @@
 #   entry_hash = sha256(seq | ts | event | fact_id | detail | prev_hash)
 #
 # Because every entry commits to the previous entry's hash, editing, deleting or
-# reordering ANY past entry changes its hash and breaks every link after it —
-# verify_audit_log() detects this. This makes the erasure (Art. 17) and
+# reordering an entry breaks its hash or a surviving link. A durable checkpoint
+# in the same transaction pins the latest seq/hash so deleting the event-table
+# tail is also detected by verify_audit_log(). This makes the erasure (Art. 17) and
 # restriction (Art. 18) registers accountable: you can demonstrate the log has
 # not been altered ("integrity and confidentiality", Art. 5(2)(f); accountability,
 # Art. 5(2) / 24).
 #
 # Signing (optional): when VELANTRIM_AUDIT_KEY is set, each entry also carries an
 # HMAC-SHA256 signature. The hash chain alone is tamper-EVIDENT (an attacker who
-# rewrites the whole chain leaves a consistent-but-different head); the HMAC makes
-# it tamper-PROOF against anyone without the key. Off by default — the chain still
-# detects edits, deletions and reordering without any key.
+# rewrites the whole chain leaves a consistent-but-different head); the HMAC
+# prevents forging signed entry content without the key. Off by default.
+# Same-database checkpoints do not detect rollback/replacement of the entire DB;
+# that requires an externally held checkpoint or backup.
 #
 # The log is content-free: detail holds reasons/actors/hashes, never the claim.
 
@@ -80,6 +82,18 @@ def append_event(
             last = conn.execute(
                 "SELECT seq, entry_hash FROM audit_log ORDER BY seq DESC LIMIT 1"
             ).fetchone()
+            checkpoint = conn.execute(
+                "SELECT seq, head_hash FROM chain_checkpoints "
+                "WHERE chain_name = 'audit' AND scope_id = ''"
+            ).fetchone()
+            if checkpoint is None and last is not None:
+                raise RuntimeError("audit chain checkpoint missing")
+            if checkpoint is not None and (
+                last is None
+                or checkpoint["seq"] != last["seq"]
+                or checkpoint["head_hash"] != last["entry_hash"]
+            ):
+                raise RuntimeError("audit chain checkpoint mismatch")
             prev_hash = last["entry_hash"] if last else _GENESIS
             seq = (last["seq"] + 1) if last else 1
             entry_hash = _entry_hash(seq, ts, event, fact_id, detail_json, prev_hash)
@@ -90,6 +104,19 @@ def append_event(
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 (seq, ts, event, fact_id, detail_json, prev_hash, entry_hash, signature),
             )
+            if checkpoint is None:
+                conn.execute(
+                    "INSERT INTO chain_checkpoints "
+                    "(chain_name, scope_id, seq, head_hash) "
+                    "VALUES ('audit', '', ?, ?)",
+                    (seq, entry_hash),
+                )
+            else:
+                conn.execute(
+                    "UPDATE chain_checkpoints SET seq = ?, head_hash = ? "
+                    "WHERE chain_name = 'audit' AND scope_id = ''",
+                    (seq, entry_hash),
+                )
             return seq, entry_hash, signature
 
     seq, entry_hash, signature = memory.call_with_lock_retry(_write)
@@ -113,19 +140,26 @@ def verify_audit_log() -> Dict[str, Any]:
     """
     Verify the integrity of the audit chain.
 
-    Recomputes every entry hash and checks the prev_hash links and seq sequence.
+    Recomputes every entry hash, checks the prev_hash links and seq sequence,
+    then compares the replayed tail with the transactionally pinned checkpoint.
     If a signing key is configured and entries are signed, also verifies the
     HMACs. Returns:
       ok          — chain (and signatures, if checked) intact
       length      — number of entries
       broken_at   — seq of the first bad entry, or None
       error       — reason for the break, or None
+      checkpointed— a pinned head exists (required for a non-empty chain)
       signed      — every entry carries a signature
       verified    — signatures were present and checked against the key
     """
     key = _audit_key()
     with memory._db() as conn:
+        conn.execute("BEGIN")
         rows = conn.execute("SELECT * FROM audit_log ORDER BY seq").fetchall()
+        checkpoint = conn.execute(
+            "SELECT seq, head_hash FROM chain_checkpoints "
+            "WHERE chain_name = 'audit' AND scope_id = ''"
+        ).fetchone()
 
     prev = _GENESIS
     expected_seq = 1
@@ -134,7 +168,8 @@ def verify_audit_log() -> Dict[str, Any]:
 
     def fail(seq, error):
         return {"ok": False, "length": len(rows), "broken_at": seq,
-                "error": error, "signed": signed_all, "verified": checked_sigs}
+                "error": error, "checkpointed": checkpoint is not None,
+                "signed": signed_all, "verified": checked_sigs}
 
     for r in rows:
         if r["seq"] != expected_seq:
@@ -154,5 +189,13 @@ def verify_audit_log() -> Dict[str, Any]:
         prev = r["entry_hash"]
         expected_seq += 1
 
+    if checkpoint is None and rows:
+        return fail(expected_seq, "chain checkpoint missing")
+    if checkpoint is not None and (
+        checkpoint["seq"] != len(rows) or checkpoint["head_hash"] != prev
+    ):
+        return fail(checkpoint["seq"], "checkpoint mismatch (tail truncated or replaced)")
+
     return {"ok": True, "length": len(rows), "broken_at": None, "error": None,
+            "checkpointed": checkpoint is not None,
             "signed": signed_all, "verified": checked_sigs}
