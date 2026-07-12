@@ -18,16 +18,24 @@ error handling, PII date false positive, #222), then the mutation-boundary
 quick-wins follow-up (#229), and finally the integrity-candidate stack
 (concurrent schema migration, promoted-claim identity protection,
 audit/provenance tail checkpoints, and serialized fact writers):
-**1465 passed / 12 skipped.**
+**1685 passed / 12 skipped.**
 This file and the README badge are the only places that carry the exact
 count; all other documents reference this report so the number cannot
 silently drift.
 
+> **Integrated hardening verification (2026-07-12).** GitHub Actions passed the
+> complete suite independently on Python 3.11 and Python 3.12: **1685 passed /
+> 12 skipped / 0 failed**, with **6235 measured statements** and the enforced
+> **100.00% repo-wide coverage gate**. The same cycle also passed Ruff, Gitleaks,
+> Bandit, pip-audit, Docker build, eval-gate and JSONL-integrity checks. Pytest
+> logs are retained as CI artifacts for both Python versions.
+
 > **Integrity-candidate note (2026-07-10).** The current stacked Draft PRs add
 > schema-versioned migration serialization, immutable claim identity after
 > promotion, same-database head checkpoints for audit/provenance tail deletion,
-> and one SQLite→L0 publication order across facts-row writers. The suite grew
-> 1377 → 1465 tests and the measured surface 5860 → 6031 statements while
+> and one SQLite→L0 publication order across facts-row writers. The integrated suite now measures
+> 1685 tests and 6235 statements (up from the 1377-test / 5860-statement
+> pre-hardening baseline) while
 > preserving the 100% line-coverage gate. Same-database checkpoints do not
 > claim to detect rollback/replacement of the complete database; that requires
 > an externally held checkpoint or backup.
@@ -131,7 +139,7 @@ silently drift.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **1465** |
+| **Tests passing** | **1685** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **100%** (gate enforced at 100%, repo-wide `--cov=.`) |
@@ -180,77 +188,23 @@ pytest tests/ --cov=. --cov-fail-under=100
 > authoritative gate is CI (`.github/workflows/ci.yml`, Python 3.11 + 3.12),
 > which installs the full environment and enforces the same flags.
 
-## Coverage by module
+## Coverage summary
 
-| Module | Stmts | Cover |
-|--------|------:|------:|
-| `core/_registry.py`    | 28  | 100% |
-| `core/adaptation.py`   | 22  | 100% |
-| `core/adapters/bibtex_adapter.py`   | 85 | 100% |
-| `core/adapters/epub_adapter.py`     | 83 | 100% |
-| `core/adapters/pdf_adapter.py`      | 46 | 100% |
-| `core/adapters/rdf_adapter.py`      | 33 | 100% |
-| `core/adapters/wikidata_adapter.py` | 66 | 100% |
-| `core/adapters/yaml_adapter.py`     | 30 | 100% |
-| `core/aio.py`          | 10  | 100% |
-| `core/analogy.py`      | 86  | 100% |
-| `core/api.py`          | 124 | 100% |
-| `core/audit.py`        | 87  | 100% |
-| `core/cli.py`          | 327 | 100% |
-| `core/compliance.py`   | 44  | 100% |
-| `core/concept.py`      | 96  | 100% |
-| `core/consolidate.py`  | 49  | 100% |
-| `core/contradiction.py`| 59  | 100% |
-| `core/crypto.py`       | 62  | 100% |
-| `core/demo_seed.py`    | 1   | 100% |
-| `core/embedding.py`    | 104 | 100% |
-| `core/erasure.py`      | 57  | 100% |
-| `core/eval.py`         | 207 | 100% |
-| `core/evidence.py`     | 91  | 100% |
-| `core/fractal.py`      | 93  | 100% |
-| `core/generation.py`   | 54  | 100% |
-| `core/health.py`       | 14  | 100% |
-| `core/immune.py`       | 94  | 100% |
-| `core/imports.py`      | 90  | 100% |
-| `core/ingest.py`       | 122 | 100% |
-| `core/invariant_check.py`   | 64  | 100% |
-| `core/kb_ingest.py`    | 49  | 100% |
-| `core/knowledge.py`    | 145 | 100% |
-| `core/l3_graph.py`     | 288 | 100% |
-| `core/mcp_server.py`   | 105 | 100% |
-| `core/memory.py`       | 332 | 100% |
-| `core/metrics.py`      | 10  | 100% |
-| `core/mosc.py`         | 93  | 100% |
-| `core/neurocore.py`    | 54  | 100% |
-| `core/neurogenesis.py` | 96  | 100% |
-| `core/observe.py`      | 35  | 100% |
-| `core/pii.py`          | 69  | 100% |
-| `core/api_ingest_policy.py` | 14  | 100% |
-| `core/path_safety.py`       | 32  | 100% |
-| `core/pipeline.py`     | 277 | 100% |
-| `core/provenance.py`   | 90  | 100% |
-| `core/provenance_chain.py`  | 66  | 100% |
-| `core/queue.py`        | 47  | 100% |
-| `core/reconcile.py`    | 136 | 100% |
-| `core/refusal_reasons.py`   | 26  | 100% |
-| `core/response_policy.py`   | 43  | 100% |
-| `core/retrieval_config.py`  | 69  | 100% |
-| `core/review.py`       | 195 | 100% |
-| `core/rrf.py`          | 37  | 100% |
-| `core/salience.py`     | 19  | 100% |
-| `core/span_extract.py` | 22  | 100% |
-| `core/trace.py`             | 26  | 100% |
-| `core/trace_visualize.py`   | 73  | 100% |
-| `core/truth_gate.py`        | 25  | 100% |
-| `core/velum.py`             | 106 | 100% |
-| `core/volition.py`          | 75  | 100% |
-| `scripts/eval_gate.py`      | 46  | 100% |
-| `scripts/eval_track.py`     | 72  | 100% |
-| `scripts/trace_visualize.py`| 22  | 100% |
-| root tooling (`audit_metadata` 109, `check_rfc_duplicates` 44, `fill_dependencies` 42, `adaptive_threshold_module` 29, `velantrim_migrate_v3_1` 393) | 617 | 100% |
-| `prototypes/` (5 research prototypes) | 279 | 100% |
-| `utils/rfc_parser.py`       | 13  | 100% |
-| **Total (repo-wide)**       | **6031** | **100%** |
+| Metric | Verified value |
+|---|---:|
+| Repo-wide measured statements | **6235** |
+| Missing statements | **0** |
+| Total line coverage | **100.00%** |
+| `core/audit.py` | 90 / 90 |
+| `core/l3_graph.py` | 288 / 288 |
+| `core/memory.py` | 341 / 341 |
+| `core/pipeline.py` | 406 / 406 |
+| `core/provenance_chain.py` | 69 / 69 |
+
+The complete per-file table is emitted by pytest-cov and retained in the
+Python 3.11 and 3.12 CI log artifacts. Keeping the generated table in CI rather
+than copying every row into this document prevents per-module counts from
+silently drifting after code-only changes.
 
 ## What the tests cover
 
