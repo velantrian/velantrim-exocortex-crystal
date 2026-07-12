@@ -146,18 +146,6 @@ jobs:
       - name: Build hardened runtime image
         run: docker build --tag velantrim-ci .
 
-  source-snapshot:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Upload reconciliation source files
-        uses: actions/upload-artifact@v4
-        with:
-          name: reconciliation-source-snapshot
-          path: |
-            core/memory.py
-            core/pipeline.py
-
   reconciliation-repair:
     if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'agent/optimize-sqlite-vector-search'
     runs-on: ubuntu-latest
@@ -175,7 +163,6 @@ jobs:
 
           memory = Path('core/memory.py')
           pipeline = Path('core/pipeline.py')
-          ci = Path('.github/workflows/ci.yml')
 
           m = memory.read_text()
           old = '''# ─── Columns that can be updated individually without changing the ESM state ─────────
@@ -310,16 +297,6 @@ jobs:
           if old not in p:
               raise SystemExit('pipeline comment anchor not found')
           pipeline.write_text(p.replace(old, new, 1))
-
-          c = ci.read_text()
-          marker = '\n  source-snapshot:\n'
-          if marker not in c:
-              raise SystemExit('temporary CI marker not found')
-          ci.write_text(c.split(marker, 1)[0] + '\n')
-
-          helper = Path('.github/workflows/reconcile-repair.yml')
-          if helper.exists():
-              helper.unlink()
           PY
       - name: Verify syntax and focused regression tests
         run: |
@@ -331,11 +308,11 @@ jobs:
             tests/test_pipeline.py::test_recall_uses_l3_record_claim_and_source_not_transient_item \
             tests/test_pipeline.py::test_recall_reconciliation_syncs_trace_source_not_just_epistemic_state \
             tests/test_pipeline.py::test_recall_reconciliation_resyncs_l1_claim_and_source_after_pollution
-      - name: Commit verified repair and clean temporary scaffolding
+      - name: Commit verified core repair
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
+          git add core/memory.py core/pipeline.py
           git diff --cached --check
           git commit -m "fix: reconcile canonical repair with claim identity"
           git push origin HEAD:agent/optimize-sqlite-vector-search
