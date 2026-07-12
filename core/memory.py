@@ -831,6 +831,17 @@ def get_fact(fact_id: str) -> Optional[Dict]:
 _UPDATABLE = {"claim", "source", "confidence", "significance",
               "claim_type", "source_status", "metadata"}
 
+# A Canon/L3 reconciliation occasionally has to repair an L1 row that was just
+# created from an untrusted transient retrieval item before the physical L3 node
+# was loaded. That is not a user-requested claim rewrite: it restores the same
+# fact_id to the already-persisted canonical record. Keep this privilege
+# process-local, thread-local and private so public update_fact()/store_fact()
+# callers cannot opt out of claim-identity protection with a keyword flag.
+_CANON_REPAIR_CONTEXT = threading.local()
+_CANON_REPAIRABLE_FIELDS = {
+    "claim", "source", "confidence", "claim_type", "source_status",
+}
+
 
 def update_fact(fact_id: str, **fields) -> bool:
     """
@@ -872,7 +883,10 @@ def update_fact(fact_id: str, **fields) -> bool:
     if existing is None or not fields:
         return False
 
-    if "claim" in fields:
+    if (
+        "claim" in fields
+        and not getattr(_CANON_REPAIR_CONTEXT, "enabled", False)
+    ):
         _assert_claim_identity(
             fact_id,
             existing.get("claim", ""),
@@ -928,6 +942,29 @@ def update_fact(fact_id: str, **fields) -> bool:
         # going through this same lock.
         _l0_put(fact_id, refreshed)
         return True
+
+
+def _repair_fact_from_canon(fact_id: str, **fields) -> bool:
+    """Repair L1 from an already-persisted physical L3 record.
+
+    This is the sole internal exception to promoted claim-identity locking. It
+    exists for ordinary recall reconciliation after build_facts_pack() created
+    or refreshed L1 from a transient retrieval item before the authoritative L3
+    node was loaded. Only trust-relevant fields already validated by
+    pipeline._reconcile_recalled_fact() are accepted. The privilege is scoped to
+    this synchronous call and cannot be requested through the public API.
+    """
+    canon_fields = {
+        key: value
+        for key, value in fields.items()
+        if key in _CANON_REPAIRABLE_FIELDS
+    }
+    previous = getattr(_CANON_REPAIR_CONTEXT, "enabled", False)
+    _CANON_REPAIR_CONTEXT.enabled = True
+    try:
+        return update_fact(fact_id, **canon_fields)
+    finally:
+        _CANON_REPAIR_CONTEXT.enabled = previous
 
 
 def transition_esm(fact_id: str, new_state: str) -> bool:

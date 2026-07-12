@@ -20,9 +20,9 @@ from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from core.trace import build_trace, promote_trace, format_trace
 from core.memory import (
-    store_fact, get_fact, update_fact, transition_esm, ESM_TRANSITIONS,
-    l3_secondary_sync_admissible, DEFAULT_SOURCE_STATUS,
-    CLAIM_TYPES, SOURCE_STATUSES,
+    store_fact, get_fact, update_fact, _repair_fact_from_canon,
+    transition_esm, ESM_TRANSITIONS, l3_secondary_sync_admissible,
+    DEFAULT_SOURCE_STATUS, CLAIM_TYPES, SOURCE_STATUSES,
 )
 from core.queue import get_outbox_queue
 from core.l3_graph import get_l3_graph
@@ -96,7 +96,8 @@ def _safe_source(value: Any) -> Optional[str]:
 # distributed-consistency redesign. It also re-syncs L1's claim/source via
 # update_fact() when build_facts_pack()'s earlier store_fact() call is
 # detected to have polluted them with a disagreeing transient value (#257
-# independent-review round 2) — the only write this reconciliation performs.
+# independent-review round 2) — through a narrow private Canon-repair path;
+# public update_fact()/store_fact() claim-identity locking remains unchanged.
 
 _TERMINAL_ESM_STATES = frozenset({"Collapsed", "Contradicted", "Deprecated"})
 
@@ -275,7 +276,11 @@ def _reconcile_recalled_fact(fact: Dict[str, Any], existing_node: Dict[str, Any]
     if _in(l3_source_status, SOURCE_STATUSES) and fact.get("source_status") != l3_source_status:
         resync_fields["source_status"] = l3_source_status
     if resync_fields:
-        update_fact(fact["fact_id"], **resync_fields)
+        # Public update_fact() correctly rejects promoted claim rewrites. This
+        # narrow private path is different: L3 is already the physical
+        # canonical record for this fact_id, and the write only repairs the L1
+        # copy created/refreshed from an untrusted transient retrieval item.
+        _repair_fact_from_canon(fact["fact_id"], **resync_fields)
     fact["claim"] = l3_claim
     fact["source"] = l3_source
     fact["confidence"] = l3_confidence
