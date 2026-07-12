@@ -29,6 +29,7 @@
 # chain insert fails.
 
 import hashlib
+import threading
 from datetime import datetime, timezone
 from typing import Dict, Any, List
 
@@ -36,6 +37,14 @@ from core import memory
 
 # Per-fact chains start from this genesis link (same convention as core/audit.py).
 _GENESIS = "0" * 64
+
+# SQLite still provides the cross-process serialization boundary through
+# BEGIN IMMEDIATE. This process-local lock prevents a burst of worker threads
+# from starving one another inside sqlite3's busy/retry path and silently
+# exhausting append()'s bounded retries. A provenance chain is ordered by
+# definition, so serializing its short tail-read + insert transaction does not
+# reduce any meaningful parallelism.
+_APPEND_LOCK = threading.RLock()
 
 
 def _now() -> str:
@@ -148,7 +157,8 @@ class ProvenanceChain:
                     )
 
         try:
-            memory.call_with_lock_retry(_write)
+            with _APPEND_LOCK:
+                memory.call_with_lock_retry(_write)
             return True
         except Exception:
             return False
