@@ -34,6 +34,13 @@ def test_cosine_orthogonal_and_zero_norm():
     assert cosine([0.0, 0.0], [1.0, 1.0]) == 0.0  # zero norm guarded
 
 
+def test_cosine_can_reuse_precomputed_left_norm():
+    a = [3.0, 4.0]
+    b = [4.0, 3.0]
+    assert cosine(a, b, a_norm=5.0) == pytest.approx(cosine(a, b))
+    assert cosine([0.0, 0.0], b, a_norm=0.0) == 0.0
+
+
 def test_related_text_scores_higher_than_unrelated():
     e = HashingEmbedder()
     q = e.embed("Tell me about the Sun")

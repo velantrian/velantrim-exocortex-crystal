@@ -333,17 +333,23 @@ def test_verify_receipt_reports_evidence_drift(monkeypatch):
     monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
     from core import provenance, evidence
     from core.pipeline import run
-    from core.memory import update_fact
+    from core import memory
     # source_status="EXTERNAL": truth_status=VERIFIED, so CanonicalView strict
-    # grounding (core/canonical_view.py) treats this fact as groundable — this
-    # test is about receipt/evidence-drift replay, not ingest write-policy.
+    # grounding treats this fact as groundable. This test is about receipt/
+    # evidence-drift replay, while the hardening path simulates DB tampering.
     fid = ingest("The Eiffel Tower is in Paris",
                  source_status="EXTERNAL")["fact"]["fact_id"]
     evidence.attach_evidence(fid, "guide.pdf", source_kind="file",
                             claim="The Eiffel Tower is in Paris")
     receipt = provenance.build_receipt(run("where is the Eiffel Tower"))
-    # Drift the underlying fact AFTER sealing the receipt → the span must flag it.
-    update_fact(fid, claim="The Eiffel Tower is in Berlin")
+    # Public mutation APIs reject promoted-claim rewrites. Simulate an
+    # out-of-band SQLite tamper after sealing the receipt; replay must flag it.
+    with memory._db() as conn:
+        conn.execute(
+            "UPDATE facts SET claim = ?, revision = revision + 1 WHERE fact_id = ?",
+            (memory.crypto.encrypt("The Eiffel Tower is in Berlin"), fid),
+        )
+    memory._L0.clear()
     verified = provenance.verify_receipt(receipt)
     statuses = [e["status"]
                 for cit in verified.get("citations", [])

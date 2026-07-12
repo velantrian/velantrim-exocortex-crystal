@@ -109,6 +109,23 @@ def test_vector_search_ranks_by_similarity(tmp_path):
     assert "_relevance" in hits[0] and "_score" in hits[0]
 
 
+def test_vector_search_materializes_candidates_with_one_select(tmp_path):
+    """Regression: vector search must not issue one get_fact SELECT per hit."""
+    g = _g(tmp_path)
+    for i in range(25):
+        g.merge_fact(_fact(f"f{i}", f"shared benchmark topic item {i}"))
+
+    statements = []
+    g._conn.set_trace_callback(statements.append)
+    hits = g.vector_search(get_embedder().embed("shared benchmark topic"), k=5)
+    g._conn.set_trace_callback(None)
+
+    selects = [sql for sql in statements if sql.lstrip().upper().startswith("SELECT")]
+    assert len(selects) == 1
+    assert "JOIN nodes" in selects[0]
+    assert len(hits) == 5
+
+
 # ─── entities ─────────────────────────────────────────────────────────────────
 
 def test_entities_round_trip(tmp_path):

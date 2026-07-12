@@ -1,26 +1,33 @@
 # Follow-up: Issue #196 — Claim rewrite / semantic integrity
 
 **Priority:** P0/P1  
-**Status:** Not implemented in PR #206 — tracked as explicit follow-up  
-**Branch target:** `cursor/claim-versioning-196-0d0d` (future)
+**Status:** Minimal blocking policy implemented in the Issue #196 fix PR
 
 ## Problem
 
-Today, `update_fact()` can rewrite `claim` text on an existing `fact_id` without
-recording claim version history or a content hash. A receipt or trace that cites
-`fact_id` alone cannot detect silent semantic drift after the citation was sealed.
+Before the Issue #196 fix, `store_fact()` / `update_fact()` could rewrite claim
+text on an existing promoted `fact_id` without resetting its epistemic state.
+Evidence and validation for claim A could therefore silently describe claim B.
 
 This is **not** fully addressed by the audit-hardening work in PR #206. Semantic
 integrity of cited claims remains incomplete until this follow-up lands.
 
-## Proposed scope (minimal)
+## Implemented minimal policy
 
-1. Add `claim_hash` (sha256 of normalized claim) on every ingest/store path.
-2. On `update_fact(claim=...)`, bump `claim_version` and append to a lightweight
-   per-fact version ledger (or block claim mutation outside `supersede()`).
-3. Extend `provenance.verify_receipt()` to compare sealed `claim_sha256` against
-   live fact + version metadata; surface `modified` / `version_mismatch`.
-4. Tests pinning receipt replay after claim rewrite.
+1. `Observed` / `Hypothesized` claims may still be refined in place.
+2. `Supported`, `Validated`, `ImmutableCore`, `Contradicted`, `Deprecated`, and
+   `Collapsed` claims have locked text identity.
+3. `store_fact()` and `update_fact(claim=...)` raise `ClaimIdentityError` when a
+   locked claim's text changes; same-text and non-identity updates remain valid.
+4. Replacement content must use a new `fact_id` plus `reconcile.supersede()`.
+5. The store path serializes identity-check + upsert with `BEGIN IMMEDIATE`, so
+   another process cannot promote a draft between the check and write.
+6. Receipt/evidence modification tests now simulate out-of-band DB tampering,
+   proving replay still detects unauthorized drift.
+
+Claim hashes/version history remain a possible future enhancement for explicit
+rectification workflows; they are no longer required to close the silent
+promoted-claim rewrite path.
 
 ## Non-goals for the follow-up PR
 
@@ -29,6 +36,6 @@ integrity of cited claims remains incomplete until this follow-up lands.
 
 ## Acceptance criteria
 
-- [ ] No silent claim rewrite on existing canon ids without version audit trail
-- [ ] Receipt replay flags semantic change even when `fact_id` is stable
-- [ ] 100% coverage gate preserved
+- [x] No silent claim rewrite on promoted/historical canon ids
+- [x] Receipt replay flags out-of-band semantic change when `fact_id` is stable
+- [x] 100% coverage gate preserved

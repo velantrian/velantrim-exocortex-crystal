@@ -2,7 +2,7 @@
 
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
-`v0.3.0` · 🧪 **1377 tests** · 🎯 **100% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v0.3.0` · 🧪 **1465 tests** · 🎯 **100% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
 
 > Velantrim Crystal is **not another chatbot**. It is a **verifiable memory layer**
 > that AI systems write to and read from. Every stored fact carries provenance,
@@ -221,8 +221,10 @@ This repository includes a lightweight but comprehensive quality layer designed 
 | Gate | What it checks |
 |---|---|
 | **pytest** (full suite, 100% coverage gate — baseline in [TEST_REPORT.md](./TEST_REPORT.md)) | Core memory, pipeline, provenance, GDPR controls, ESM transitions, review queue |
+| **code-quality** (CI) | Ruff lint on production, prototype and repository-tooling Python surfaces |
 | **jsonl-integrity** (CI) | Valid JSON, required fields, no duplicate `chunk_id` in the knowledge corpus |
-| **security** (CI) | `bandit` static security lint + `pip-audit` dependency vulnerability scan |
+| **security** (CI) | Gitleaks committed-secret scan + `bandit` static security lint + `pip-audit` dependency vulnerability scan |
+| **docker-build** (CI) | Reproducible build of the hardened runtime image |
 | **JSON schemas** (`schemas/`) | Machine-readable canonical definitions of `fact`, `trace` and `metadata` enums |
 
 Run locally:

@@ -109,9 +109,11 @@ evidence span store (`core/evidence.py`).
   ESM states, claim types, and source statuses).
 - **Tamper-evident audit log (GDPR Art. 5(2)/24/30)** — `core/audit.py` keeps an
   append-only hash chain of compliance events (erase / restrict / unrestrict).
-  Editing, deleting or reordering any past entry breaks the chain and is caught
-  by `verify_audit_log()` (CLI `audit-verify`). Optional per-entry HMAC signing
-  (`VELANTRIM_AUDIT_KEY`) adds forgery resistance.
+  Replay catches edits, gaps and reordering; a transactionally advanced
+  checkpoint also catches deletion of the event-table tail (`audit-verify`).
+  Optional per-entry HMAC signing (`VELANTRIM_AUDIT_KEY`) prevents forging
+  signed entry content. Detecting replacement/rollback of the whole SQLite
+  database still requires an externally held checkpoint or backup.
 - **Encryption at rest (opt-in, GDPR Art. 32)** — `core/crypto.py` provides
   authenticated, field-level encryption of the personal-data columns. With
   `cryptography` installed it uses Fernet (AES-128-CBC + HMAC); otherwise a

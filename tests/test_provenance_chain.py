@@ -12,8 +12,6 @@ Covers the seven behaviours required by the audit spec:
 """
 import threading
 
-import pytest
-
 from core import memory
 from core.provenance_chain import ProvenanceChain, _compute_hash, _GENESIS
 from core.erasure import erase_fact
@@ -119,6 +117,81 @@ def test_sequence_gap_fails_verification():
     assert v["status"] == "tampered"
     assert v["error"] == "sequence gap or reordering"
     assert v["broken_at"] == 2
+
+
+def test_deleting_provenance_tail_is_detected_by_checkpoint():
+    pc = ProvenanceChain()
+    assert pc.append(fact_id="f1", event_type="ingest")
+    assert pc.append(fact_id="f1", event_type="promote")
+    with memory._db() as conn:
+        conn.execute(
+            "DELETE FROM provenance_chain WHERE fact_id = ? AND seq = 2",
+            ("f1",),
+        )
+
+    v = pc.verify("f1")
+    assert v["ok"] is False
+    assert v["broken_at"] == 2
+    assert v["error"] == "checkpoint mismatch (tail truncated or replaced)"
+    assert pc.append(fact_id="f1", event_type="restrict") is False
+
+
+def test_deleting_entire_provenance_chain_with_checkpoint_is_detected():
+    pc = ProvenanceChain()
+    assert pc.append(fact_id="f1", event_type="ingest")
+    with memory._db() as conn:
+        conn.execute("DELETE FROM provenance_chain WHERE fact_id = ?", ("f1",))
+
+    v = pc.verify("f1")
+    assert v["status"] == "tampered"
+    assert v["length"] == 0
+    assert v["broken_at"] == 1
+    assert "checkpoint mismatch" in v["error"]
+
+
+def test_missing_provenance_checkpoint_is_detected_and_blocks_append():
+    pc = ProvenanceChain()
+    assert pc.append(fact_id="f1", event_type="ingest")
+    with memory._db() as conn:
+        conn.execute(
+            "DELETE FROM chain_checkpoints "
+            "WHERE chain_name = 'provenance' AND scope_id = ?",
+            ("f1",),
+        )
+
+    v = pc.verify("f1")
+    assert v["status"] == "tampered"
+    assert v["error"] == "chain checkpoint missing"
+    assert pc.append(fact_id="f1", event_type="promote") is False
+
+
+def test_tampering_provenance_checkpoint_head_is_detected():
+    pc = ProvenanceChain()
+    assert pc.append(fact_id="f1", event_type="ingest")
+    with memory._db() as conn:
+        conn.execute(
+            "UPDATE chain_checkpoints SET head_hash = ? "
+            "WHERE chain_name = 'provenance' AND scope_id = ?",
+            ("f" * 64, "f1"),
+        )
+    v = pc.verify("f1")
+    assert v["ok"] is False
+    assert "checkpoint mismatch" in v["error"]
+
+
+def test_schema_v2_migration_backfills_legacy_provenance_checkpoint():
+    pc = ProvenanceChain()
+    assert pc.append(fact_id="f1", event_type="ingest")
+    with memory._db() as conn:
+        conn.execute(
+            "DELETE FROM chain_checkpoints "
+            "WHERE chain_name = 'provenance' AND scope_id = ?",
+            ("f1",),
+        )
+        conn.execute("PRAGMA user_version = 1")
+
+    v = pc.verify("f1")
+    assert v["ok"] is True
 
 
 def test_broken_prev_hash_link_fails_verification():

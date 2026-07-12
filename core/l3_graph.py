@@ -21,6 +21,7 @@
 import functools
 import json
 import logging
+import math
 import os
 import sqlite3
 import threading
@@ -241,8 +242,9 @@ class MockL3Graph(L3GraphBackend):
     ) -> List[Dict[str, Any]]:
         from core.embedding import cosine
         scored = []
+        query_norm = math.sqrt(sum(value * value for value in query_vector))
         for fact_id, vec in self._vectors.items():
-            sim = cosine(query_vector, vec)
+            sim = cosine(query_vector, vec, a_norm=query_norm)
             if sim <= 0.0:
                 continue
             node = dict(self._nodes[fact_id])
@@ -313,9 +315,10 @@ class SqliteL3Graph(L3GraphBackend):
     (default ./data/velantrim_l3.db); ':memory:' gives an ephemeral instance.
 
     Node payloads are stored as JSON; vectors as a JSON array of floats. Vector
-    search is a linear cosine scan (fine for the MVP working-set; the LadybugDB
-    backend adds a real vector index for scale). The embedder fingerprint is
-    persisted in a meta row, so an embedder swap is detected across restarts too.
+    search materializes vectors and node payloads in one joined linear scan
+    (fine for the MVP working-set; the LadybugDB backend adds a real vector
+    index for scale). The embedder fingerprint is persisted in a meta row, so
+    an embedder swap is detected across restarts too.
     """
 
     def __init__(self, db_path: Optional[str] = None) -> None:
@@ -491,13 +494,22 @@ class SqliteL3Graph(L3GraphBackend):
     ) -> List[Dict[str, Any]]:
         from core.embedding import cosine
         scored = []
-        for r in self._conn.execute("SELECT fact_id, vec FROM vectors"):
-            sim = cosine(query_vector, json.loads(r["vec"]))
+        query_norm = math.sqrt(sum(value * value for value in query_vector))
+        # Materialize the vector and its node payload in one SQLite statement.
+        # The old implementation scanned vectors and then called get_fact() for
+        # every positive-similarity candidate, turning one search into roughly
+        # N+1 SELECTs for common overlapping corpora.
+        rows = self._conn.execute(
+            "SELECT v.fact_id, v.vec, n.data "
+            "FROM vectors AS v JOIN nodes AS n ON n.fact_id = v.fact_id"
+        )
+        for r in rows:
+            sim = cosine(
+                query_vector, json.loads(r["vec"]), a_norm=query_norm,
+            )
             if sim <= 0.0:
                 continue
-            node = self.get_fact(r["fact_id"])
-            if node is None:
-                continue
+            node = json.loads(r["data"])
             node["_relevance"] = round(sim, 6)
             node["_score"] = round(_salience_score(sim, node.get("significance", 0.5)), 6)
             scored.append(node)
@@ -605,7 +617,8 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
     def _serialize(fact: Dict[str, Any]) -> Dict[str, Any]:
         # metadata is base64-encoded: LadybugDB auto-parses a STRING like {..}/[..]
         # as a map/list and loses JSON quotes, so we hide JSON behind base64.
-        import json, base64
+        import base64
+        import json
         out = {}
         for col in LadybugL3Graph._COLS:
             if col == "metadata":
@@ -617,7 +630,8 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
 
     @staticmethod
     def _row_to_fact(row: list, cols: list) -> Dict[str, Any]:
-        import json, base64
+        import base64
+        import json
         d = dict(zip(cols, row))
         if "metadata" in d and isinstance(d["metadata"], str):
             try:
@@ -673,7 +687,8 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
         self, src_id: str, rel_type: str, dst_id: str,
         props: Optional[Dict[str, Any]] = None,
     ) -> None:
-        import json, base64
+        import base64
+        import json
         # props in base64 for the same reason as metadata (see _serialize).
         payload = base64.b64encode(json.dumps(props or {}).encode("utf-8")).decode("ascii")
         self._conn.execute(
@@ -700,7 +715,8 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
     def get_edges(
         self, fact_id: str, rel_type: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
-        import json, base64
+        import base64
+        import json
         cypher = "MATCH (a:Fact {fact_id: $id})-[e:EDGE]->(b:Fact)"
         params: Dict[str, Any] = {"id": fact_id}
         if rel_type is not None:
@@ -721,7 +737,8 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
     def incoming_edges(
         self, fact_id: str, rel_type: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
-        import json, base64
+        import base64
+        import json
         cypher = "MATCH (a:Fact)-[e:EDGE]->(b:Fact {fact_id: $id})"
         params: Dict[str, Any] = {"id": fact_id}
         if rel_type is not None:

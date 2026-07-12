@@ -1,6 +1,6 @@
 # L3 Retrieval-Scale Smoke Benchmark
 
-**Status:** benchmark baseline only. No runtime behaviour change.
+**Status:** historical baseline + measured SQLite retrieval optimization.
 **Script:** [`scripts/bench_l3_retrieval.py`](../../scripts/bench_l3_retrieval.py)
 **Issue:** #218
 
@@ -16,9 +16,10 @@ a correctness one. Do not conflate the two.
 Velantrim Crystal has strong correctness/eval/security discipline (100% test
 coverage, a deterministic eval gate), but until now had no reproducible
 measurement of how `core.l3_graph`'s retrieval latency behaves as the local
-knowledge base grows. This benchmark exists to establish that baseline —
-**not** to optimize anything. It is a smoke measurement for reviewer
-confidence and future engineering decisions, not a production SLO.
+knowledge base grows. It first established the historical baseline below and
+now also records a same-machine before/after result for the joined-scan
+optimization. It remains a smoke measurement for reviewer confidence, not a
+production SLO.
 
 ## 2. What it measures
 
@@ -54,8 +55,9 @@ confidence and future engineering decisions, not a production SLO.
   out of scope for a dependency-free, reproducible-anywhere benchmark; the
   SQLite backend's docstring already notes LadybugDB "adds a real vector
   index for scale," which this benchmark does not attempt to verify.
-- **Not a production capacity guarantee, and not an optimization.** No
-  retrieval algorithm, schema, or TruthGate change is part of this work.
+- **Not a production capacity guarantee.** The measured optimization changes
+  only candidate materialization/cosine bookkeeping; it does not add an ANN
+  index or change TruthGate, ranking weights, or the positive-similarity rule.
 - **Not embedding *quality*.** The `hashing` embedder is deterministic and
   dependency-free but is explicitly documented elsewhere
   (`core/embedding.py`) as not a semantic embedder; this benchmark only
@@ -129,7 +131,7 @@ JSON shape (`--json-out`):
 }
 ```
 
-## 6. Current baseline (local run)
+## 6. Historical pre-optimization baseline (local run)
 
 Measured in this session's sandboxed container — see Caveats before reading
 anything into absolute numbers.
@@ -152,46 +154,63 @@ size.
 **30,000 facts was not run for this baseline.** The 10,000-fact size alone
 took ~8.5 minutes wall-clock in this sandboxed container; extrapolating the
 ~10x-per-10x-facts scaling observed between the three measured sizes, 30,000
-would be expected to take on the order of tens of minutes here. This is
-itself a direct illustration of the Caveats section below (retrieval latency
-scaling with corpus size due to the per-candidate `get_fact()` pattern), not
-an omission — a future run on faster hardware, or after the follow-up
-retrieval-algorithm work referenced in Caveats, may find `--sizes
-1000,10000,30000` practical.
+would be expected to take on the order of tens of minutes here. The historical
+code mixed a linear cosine scan with per-candidate point reads. A future
+30,000-fact run is still opt-in because the optimized SQLite path remains an
+exact linear scan.
 
 Latency scales close to linearly with fact count across the three measured
-points (100 → 1,000 is ~10.4x; 1,000 → 10,000 is ~10.3x), consistent with
-the `get_fact()`-per-candidate behaviour described in Caveats: with this
-synthetic corpus, most candidates clear the `similarity > 0` bar, so
-`vector_search()`'s cost is dominated by roughly one point-query per stored
-fact, not by the cosine-scoring pass itself.
+points (100 → 1,000 is ~10.4x; 1,000 → 10,000 is ~10.3x). With this
+vocabulary-overlapping corpus, most candidates clear the `similarity > 0` bar.
 
-## 7. Caveats
+## 7. Same-machine optimization A/B (2026-07-10)
+
+Both runs used Python `3.12.13` on
+`Linux-6.12.47-x86_64-with-glibc2.39`, the same sandbox and benchmark command:
+
+```text
+python scripts/bench_l3_retrieval.py --sizes 100,1000
+```
+
+The before run used parent commit `d56066a`; the after run used the working
+tree containing the joined scan and precomputed query norm. Each size includes
+10 discarded warmups and 100 measured searches over the same 20 deterministic
+queries.
+
+| Facts | Version | p50 | p95 | max |
+|---:|:---|---:|---:|---:|
+| 100 | before | 30.867 ms | 37.729 ms | 38.490 ms |
+| 100 | after | 24.532 ms | 30.297 ms | 37.012 ms |
+| 1,000 | before | 309.465 ms | 340.945 ms | 378.449 ms |
+| 1,000 | after | 250.736 ms | 283.286 ms | 300.451 ms |
+
+Observed reduction: **20.5% p50 / 19.7% p95** at 100 facts and **19.0% p50 /
+16.9% p95** at 1,000 facts. These are local measurements, not a general SLO.
+The structural regression test is the portable guarantee: SQLite candidate
+materialization uses exactly one joined `SELECT`, instead of a vector scan plus
+up to one `get_fact()` query per positive candidate. The path is still O(N)
+because exact cosine scoring remains linear.
+
+## 8. Caveats
 
 - **This is a local smoke baseline, not a universal performance guarantee.**
   Numbers depend on hardware, Python version, filesystem, SQLite build,
   backend, and machine load at run time. Do not cite these numbers as a
   general Crystal performance claim.
-- **`vector_search()` does more than a single linear scan.** For every
-  candidate row whose cosine similarity is `> 0`, the SQLite backend issues
-  a *separate* `get_fact()` point-query to materialize the full node before
-  scoring and truncating to `k`. With the synthetic corpus (short,
-  vocabulary-overlapping claims), most or all candidates clear the `> 0`
-  bar, so a single `vector_search()` call can issue on the order of *N*
-  additional point-queries, not just one scan of the vectors table. This
-  benchmark surfaces that behaviour as observed; it does not change it —
-  that would be retrieval-algorithm work, explicitly out of scope for this
-  PR (tracked as a possible follow-up, not started here).
+- **`vector_search()` is still an exact linear scan.** The SQLite backend now
+  joins vectors to node payloads in one statement and reuses the query-vector
+  norm, but it still decodes and cosine-scores every stored vector. Use the
+  optional LadybugDB backend when an indexed vector search is required.
 - **30,000 facts can be slow on constrained machines**, consistent with the
-  point above — the per-query cost is not fixed, it grows with corpus size.
+  point above — exact-scan query cost grows with corpus size.
   `--sizes` defaults to `1000,10000` for this reason; 30,000 is opt-in.
 - **The synthetic corpus is adversarial-adjacent for a hashing embedder in
   one specific way**: all claims share most of their vocabulary
   ("Benchmark fact NNNNNN belongs to topic_NN and group_NN"), so genuine
   semantic separation is weak and most facts will show *some* similarity to
   any query. This is a deliberate, disclosed property of the fixture, not a
-  hidden skew — real-world corpora with more varied text may or may not
-  trigger the same `get_fact()`-per-candidate pattern to the same degree.
+  hidden skew — real-world corpora with more varied text may produce a
+  different absolute latency profile.
 - **Database size at measurement time includes any open WAL/SHM sidecar
   files**; the number is not necessarily the file size after a clean
   shutdown/checkpoint.
