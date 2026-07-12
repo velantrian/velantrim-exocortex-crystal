@@ -225,11 +225,17 @@ def approve(fact_id: str, *, actor: Optional[str] = None,
     if actor is None or not actor.strip():
         actor = "curator"  # backward-compatible default for non-force approve
 
-    # CAS guard: if the persisted state changed under us (a competing
-    # writer/reviewer), transition_esm returns False and evicts the stale L0
-    # entry. Abort the approval before any L3 merge / success audit — do not
-    # resurrect a concurrently rejected/collapsed fact. Defense-in-depth.
-    if not transition_esm(fact_id, "Validated"):
+    # If the persisted state changed after the queue read (a competing
+    # writer/reviewer), DB-first transition_esm either returns False because
+    # the row disappeared or raises ValueError because the new persisted state
+    # cannot legally reach Validated. Treat both as a concurrency conflict and
+    # abort before any L3 merge / success audit — never resurrect a rejected or
+    # collapsed fact from the stale review snapshot.
+    try:
+        transitioned = transition_esm(fact_id, "Validated")
+    except ValueError:
+        transitioned = False
+    if not transitioned:
         return {"found": True, "fact_id": fact_id, "approved": False,
                 "reason": "ESM CAS conflict: fact state changed concurrently",
                 "diagnosis": diag["verdict"]}

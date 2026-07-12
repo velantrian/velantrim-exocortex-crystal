@@ -71,10 +71,12 @@ def _stable_bucket(feature: str) -> tuple[int, float]:
     return idx, sign
 
 
-def cosine(a: List[float], b: List[float]) -> float:
-    """Cosine similarity of two vectors (0.0 when the norm is zero)."""
+def cosine(
+    a: List[float], b: List[float], *, a_norm: Optional[float] = None,
+) -> float:
+    """Cosine similarity, optionally reusing a precomputed norm for ``a``."""
     dot = sum(x * y for x, y in zip(a, b))
-    na = math.sqrt(sum(x * x for x in a))
+    na = a_norm if a_norm is not None else math.sqrt(sum(x * x for x in a))
     nb = math.sqrt(sum(y * y for y in b))
     if na == 0.0 or nb == 0.0:
         return 0.0

@@ -1,8 +1,8 @@
 # Velantrim Crystal — Current Status
 
-> Date: 2026-07-06
+> Date: 2026-07-12
 > Scope: public Crystal repository status note
-> Status: docs-only integrity map; does not change runtime behaviour
+> Status: current implementation and release-verification map
 
 ## Reading rule
 
@@ -15,6 +15,24 @@ Titan / Full = research laboratory and future architecture.
 ```
 
 Do not treat Titan, V9, V10, Noetic, Research PWA, BICA, or private Full Exo-Cortex notes as current Crystal runtime unless a feature is implemented, tested, and listed here or in `TEST_REPORT.md`.
+
+
+## 2026-07-12 verified integration checkpoint
+
+- CanonicalView strict/contextual projection is implemented and retained.
+- SQLite schema initialization and all facts-row writers are serialized.
+- Promoted/historical claim identity is protected on public mutation paths.
+- Canon→L1 repair uses a narrow private reconciliation path and does not expose
+  an identity-bypass flag to public callers.
+- Audit and per-fact provenance append paths are serialized in-process and by
+  SQLite across processes; transactionally pinned heads detect suffix
+  truncation while the same-database checkpoint remains.
+- SQLite vector search removes the prior N+1 node-read pattern but remains an
+  exact O(N) scan, not ANN.
+- CI independently preserves Python 3.11/3.12 results and pytest log artifacts,
+  with Ruff, Gitleaks, Bandit, pip-audit, Docker, eval and JSONL gates.
+- Current exact baseline: **1685 passed / 12 skipped / 0 failed / 6235
+  statements / 100.00% coverage**.
 
 ## Status vocabulary
 
@@ -65,10 +83,10 @@ Each track was delivered as a separate PR. See `TEST_REPORT.md` and
 ## Recent PRs — response policy and research mode (status)
 
 These PRs are recorded here so the public implementation boundary stays
-explicit. The audited suite is now **1377 passed / 12 skipped / 100% coverage**
-(see `TEST_REPORT.md`; includes the mutation-boundary quick-wins PR #229 on
-top of the small correctness-hardening PR #222, the P0 integrity follow-up
-PR #216, the audit-hardening PR #206, and #201/#204).
+explicit. The integrated hardening candidate is now **1685 passed / 12 skipped /
+0 failed / 100% coverage** (see `TEST_REPORT.md`; includes concurrent schema migration,
+promoted-claim identity protection, audit/provenance tail checkpoints, and the
+shared fact-writer ordering contract on top of the prior audited baseline).
 
 ```text
 PR #201 — deterministic response_policy v0            -> IMPLEMENTED (merged)
@@ -77,6 +95,7 @@ PR #204 — Research Mode v0.5 scaffold (prototypes/)   -> RESEARCH (merged, pro
 PR #216 — P0 integrity follow-up (post-#206)          -> IMPLEMENTED (merged)
 PR #222 — small correctness hardening (post-#216)     -> IMPLEMENTED (merged)
 PR #218 — L3 retrieval-scale smoke benchmark          -> BENCHMARK BASELINE / no runtime behaviour change
+PR #256 — SQLite integrity + release gates + vector read -> VERIFIED HARDENING CANDIDATE
 ```
 
 - **PR #201 — `IMPLEMENTED`.** Deterministic read-path `response_policy v0`
@@ -164,7 +183,7 @@ behaviour and must not be cited as implemented Crystal capabilities.
 
 ```text
 docs/research/dialogue-cultivation-layer.md -> RESEARCH / DOCUMENTED_ONLY
-docs/CANONICAL_VIEW_RFC.md                  -> PROPOSED / RFC-only, NOT IMPLEMENTED
+docs/CANONICAL_VIEW_RFC.md                  -> IMPLEMENTED CORE PROJECTION / broader modes planned
 ```
 
 - **Presence & Dialogue Cultivation Layer — `RESEARCH / DOCUMENTED_ONLY`.** This RFC
@@ -173,13 +192,13 @@ docs/CANONICAL_VIEW_RFC.md                  -> PROPOSED / RFC-only, NOT IMPLEMEN
   sentience, consciousness, emotion, personhood, biological life or implemented
   autonomous companion behaviour. It does not add code, storage, workers, TruthGate
   wiring, Canon writes or runtime integration.
-- **CanonicalView / Trusted-Only Read Mode — `PROPOSED / RFC-only` (issue #220).**
-  Specifies a read-path contract distinguishing the physical L3 graph from a
-  trusted-only, `VERIFIED` + trace-valid read projection. No code, CLI flag,
-  API parameter, or test in this repository implements it; do not cite
-  `trusted_only`/`review`/`full_graph` read modes as current Crystal
-  behaviour until a separate implementation PR lands and is tested per the
-  RFC's own acceptance criteria.
+- **CanonicalView / Trusted-Only Read Mode — `IMPLEMENTED CORE PROJECTION`.**
+  `core/canonical_view.py` implements fail-closed strict and contextual
+  projections. Strict grounding requires VERIFIED facts in the admitted ESM
+  states, rejects restricted or malformed records, and is integrated into the
+  read path. Broader reviewer/full-graph operator surfaces, dedicated CLI/API
+  selectors and an externally exposed trusted-only mode remain planned; do not
+  describe those broader surfaces as implemented.
 
 ## Implementation reality matrix
 

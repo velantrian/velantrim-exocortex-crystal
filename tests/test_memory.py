@@ -4,6 +4,8 @@ Focus: L0→L1 fallback, get_all_facts, and the input-validation / not-found
 branches of store_fact / transition_esm.
 """
 import sqlite3
+import threading
+import time
 
 import pytest
 
@@ -54,6 +56,51 @@ def test_store_fact_upsert_updates_existing_row():
     f = get_fact("up1")
     assert f["claim"] == "v2"
     assert f["confidence"] == pytest.approx(0.9)
+
+
+@pytest.mark.parametrize(
+    "state",
+    sorted(memory.CLAIM_IDENTITY_LOCKED_STATES),
+)
+def test_store_fact_rejects_promoted_or_historical_claim_rewrite(state):
+    store_fact({"fact_id": "locked", "claim": "original", "source": "s",
+                "epistemic_state": state})
+
+    with pytest.raises(memory.ClaimIdentityError, match="create a new fact"):
+        store_fact({"fact_id": "locked", "claim": "rewritten", "source": "s"})
+
+    fact = get_fact("locked")
+    assert fact["claim"] == "original"
+    assert fact["epistemic_state"] == state
+
+
+def test_store_fact_allows_same_claim_and_non_identity_updates_after_validation():
+    store_fact({"fact_id": "same", "claim": "stable", "source": "s",
+                "confidence": 0.5, "epistemic_state": "Validated"})
+
+    store_fact({"fact_id": "same", "claim": "stable", "source": "s2",
+                "confidence": 0.9, "metadata": {"reviewed": True}})
+
+    fact = get_fact("same")
+    assert fact["claim"] == "stable"
+    assert fact["epistemic_state"] == "Validated"
+    assert fact["confidence"] == pytest.approx(0.9)
+    assert fact["metadata"] == {"reviewed": True}
+
+
+def test_update_fact_rejects_validated_claim_rewrite_but_allows_same_text():
+    from core.memory import update_fact
+
+    store_fact({"fact_id": "locked-update", "claim": "stable", "source": "s",
+                "epistemic_state": "Validated"})
+
+    with pytest.raises(memory.ClaimIdentityError, match="claim identity"):
+        update_fact("locked-update", claim="different")
+
+    assert update_fact("locked-update", claim="stable", metadata={"ok": True}) is True
+    fact = get_fact("locked-update")
+    assert fact["claim"] == "stable"
+    assert fact["metadata"] == {"ok": True}
 
 
 def test_store_fact_upsert_preserves_restricted_and_created_at_in_l0():
@@ -347,6 +394,89 @@ def test_migration_adds_columns_to_legacy_table(monkeypatch, tmp_path):
     assert f["significance"] == pytest.approx(0.3)
 
 
+def test_schema_initialization_serializes_concurrent_migrations(monkeypatch):
+    """Fresh-database migration must run once under concurrent first opens.
+
+    Regression for #244's revision migration: every connection used to run a
+    PRAGMA-table_info/ALTER check independently, so two audit worker threads
+    could both observe revision as missing and the loser raised
+    ``OperationalError: duplicate column name: revision``.
+    """
+    real_migrate = memory._migrate
+    state_lock = threading.Lock()
+    state = {"active": 0, "max_active": 0, "calls": 0}
+
+    def slow_migrate(conn):
+        with state_lock:
+            state["active"] += 1
+            state["calls"] += 1
+            state["max_active"] = max(state["max_active"], state["active"])
+        try:
+            # Widen the old check-then-ALTER race deterministically enough for
+            # the regression while the fixed path keeps this section locked.
+            time.sleep(0.02)
+            real_migrate(conn)
+        finally:
+            with state_lock:
+                state["active"] -= 1
+
+    monkeypatch.setattr(memory, "_migrate", slow_migrate)
+    errors = []
+
+    def first_open():
+        try:
+            with memory._db():
+                pass
+        except Exception as exc:  # noqa: BLE001 — asserted below
+            errors.append(exc)
+
+    threads = [threading.Thread(target=first_open) for _ in range(8)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert errors == []
+    assert state == {"active": 0, "max_active": 1, "calls": 1}
+    with sqlite3.connect(memory.SQLITE_PATH) as conn:
+        columns = [row[1] for row in conn.execute("PRAGMA table_info(facts)")]
+        version = conn.execute("PRAGMA user_version").fetchone()[0]
+    assert columns.count("revision") == 1
+    assert version == memory._SCHEMA_VERSION
+
+
+def test_schema_initialization_rejects_newer_database_version():
+    """Older code must fail closed instead of opening a newer schema."""
+    with sqlite3.connect(memory.SQLITE_PATH) as conn:
+        conn.execute(f"PRAGMA user_version = {memory._SCHEMA_VERSION + 1}")
+    with pytest.raises(RuntimeError, match="newer than supported"):
+        with memory._db():
+            pass
+
+
+def test_schema_initialization_rolls_back_and_can_retry(monkeypatch):
+    """A failed migration must not publish its schema version or poison retry."""
+    real_migrate = memory._migrate
+
+    def broken_migrate(conn):
+        raise RuntimeError("simulated migration failure")
+
+    monkeypatch.setattr(memory, "_migrate", broken_migrate)
+    with pytest.raises(RuntimeError, match="simulated migration failure"):
+        with memory._db():
+            pass
+
+    with sqlite3.connect(memory.SQLITE_PATH) as conn:
+        assert conn.execute("PRAGMA user_version").fetchone()[0] == 0
+
+    # A later clean startup must be able to initialize the same file.
+    monkeypatch.setattr(memory, "_migrate", real_migrate)
+    with memory._db():
+        pass
+    with sqlite3.connect(memory.SQLITE_PATH) as conn:
+        assert conn.execute("PRAGMA user_version").fetchone()[0] == memory._SCHEMA_VERSION
+
+
 # ─── call_with_lock_retry (audit/provenance_chain write-lock contention) ─────
 
 def test_call_with_lock_retry_retries_transient_lock_then_succeeds(monkeypatch):
@@ -625,18 +755,16 @@ def test_store_fact_l0_reflects_actual_l1_winner_not_capture_time_order(monkeypa
 
 
 def test_store_fact_sequential_behavior_unchanged_by_freshness_guard():
-    """The store_fact()-specific lock must not change store_fact()'s normal
-    (non-racing) contract: the second call's claim/source/confidence win, and
-    epistemic_state/restricted are preserved from the persisted row rather
-    than reset — exactly as before this PR."""
+    """Normal same-claim upserts still update non-identity fields while
+    preserving persisted epistemic_state/restricted values."""
     store_fact({"fact_id": "seq1", "claim": "v1", "source": "s1", "confidence": 0.5})
     transition_esm("seq1", "Validated")
     set_restricted("seq1", True)
 
-    store_fact({"fact_id": "seq1", "claim": "v2", "source": "s2", "confidence": 0.8})
+    store_fact({"fact_id": "seq1", "claim": "v1", "source": "s2", "confidence": 0.8})
 
     cached = get_fact("seq1")
-    assert cached["claim"] == "v2"
+    assert cached["claim"] == "v1"
     assert cached["source"] == "s2"
     assert cached["confidence"] == 0.8
     assert cached["epistemic_state"] == "Validated"    # preserved, not reset
@@ -644,6 +772,67 @@ def test_store_fact_sequential_behavior_unchanged_by_freshness_guard():
 
     _L0.clear()  # force the L1 read path too
     persisted = get_fact("seq1")
-    assert persisted["claim"] == "v2"
+    assert persisted["claim"] == "v1"
     assert persisted["epistemic_state"] == "Validated"
     assert persisted["restricted"] == 1
+
+
+def test_transition_and_restriction_publish_in_sqlite_commit_order(monkeypatch):
+    """A delayed transition cache publish must not erase a later restriction.
+
+    Before both APIs shared _FACTS_WRITE_LOCK, transition_esm() could commit,
+    pause before its L0 publish, let set_restricted() commit and publish, then
+    overwrite L0 with its older pre-restriction snapshot. The database was
+    correct while immediate reads from L0 were stale.
+    """
+    store_fact({"fact_id": "writer_order", "claim": "x", "source": "s"})
+    real_l0_put = memory._l0_put
+    transition_at_publish = threading.Event()
+    release_transition = threading.Event()
+    results = {}
+
+    def delayed_l0_put(fact_id, record):
+        if (
+            fact_id == "writer_order"
+            and threading.current_thread().name == "transition-writer"
+        ):
+            transition_at_publish.set()
+            assert release_transition.wait(timeout=2)
+        real_l0_put(fact_id, record)
+
+    monkeypatch.setattr(memory, "_l0_put", delayed_l0_put)
+
+    transition_thread = threading.Thread(
+        name="transition-writer",
+        target=lambda: results.setdefault(
+            "transition", transition_esm("writer_order", "Validated")
+        ),
+    )
+    restriction_thread = threading.Thread(
+        name="restriction-writer",
+        target=lambda: results.setdefault(
+            "restriction", set_restricted("writer_order", True)
+        ),
+    )
+
+    transition_thread.start()
+    assert transition_at_publish.wait(timeout=2)
+    restriction_thread.start()
+    time.sleep(0.05)
+    assert restriction_thread.is_alive()  # blocked behind the shared writer lock
+    release_transition.set()
+    transition_thread.join(timeout=2)
+    restriction_thread.join(timeout=2)
+
+    assert not transition_thread.is_alive()
+    assert not restriction_thread.is_alive()
+    assert results == {"transition": True, "restriction": True}
+
+    cached = memory._l0_get("writer_order")
+    with memory._db() as conn:
+        persisted = dict(conn.execute(
+            "SELECT * FROM facts WHERE fact_id = ?", ("writer_order",)
+        ).fetchone())
+    assert cached["epistemic_state"] == persisted["epistemic_state"] == "Validated"
+    assert cached["restricted"] == persisted["restricted"] == 1
+    assert cached["revision"] == persisted["revision"] == 2

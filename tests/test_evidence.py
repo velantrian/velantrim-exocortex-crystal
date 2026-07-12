@@ -7,6 +7,16 @@ from core import evidence, knowledge, provenance, memory
 from core.ingest import ingest
 
 
+def _tamper_claim_at_rest(fact_id, claim):
+    """Simulate out-of-band DB tampering; public APIs reject this rewrite."""
+    with memory._db() as conn:
+        conn.execute(
+            "UPDATE facts SET claim = ?, revision = revision + 1 WHERE fact_id = ?",
+            (memory.crypto.encrypt(claim), fact_id),
+        )
+    memory._L0.clear()
+
+
 # ─── attach / list ────────────────────────────────────────────────────────────
 
 def test_attach_and_list_evidence():
@@ -91,7 +101,7 @@ def test_verify_evidence_ok():
 def test_verify_detects_modified_claim():
     fid = ingest("Water boils at 100C")["fact"]["fact_id"]
     evidence.attach_evidence(fid, "phys.txt")
-    memory.update_fact(fid, claim="Water boils at 90C now")
+    _tamper_claim_at_rest(fid, "Water boils at 90C now")
     report = evidence.verify_evidence(fid)
     assert report[0]["status"] == "modified"
 
@@ -234,8 +244,8 @@ def test_ingest_claims_can_disable_evidence():
 
 def _answer_with_evidence():
     # source_status="EXTERNAL": truth_status=VERIFIED, so CanonicalView strict
-    # grounding (core/canonical_view.py) treats this fact as groundable — these
-    # tests are about receipt/evidence embedding mechanics, not ingest policy.
+    # grounding treats this fact as groundable. These tests are about receipt/
+    # evidence embedding mechanics, not ingest write-policy.
     fid = ingest("Jupiter is the largest planet",
                  source_status="EXTERNAL")["fact"]["fact_id"]
     evidence.attach_evidence(fid, "planets.md", source_kind="file")
@@ -273,10 +283,8 @@ def test_receipt_v2_detects_removed_evidence():
 
 
 def test_evidence_free_citation_keeps_v1_shape():
-    # A receipt over facts without evidence must keep the original 5-key citation.
-    # source_status="EXTERNAL" so the fact is groundable under CanonicalView
-    # strict grounding (core/canonical_view.py) — this test is about citation
-    # shape, not ingest write-policy.
+    # source_status="EXTERNAL" keeps this fact groundable under CanonicalView;
+    # this test is about citation shape, not ingest write-policy.
     ingest("A plain fact about salt", source_status="EXTERNAL")
     from core.pipeline import run
     receipt = provenance.build_receipt(run("salt"))

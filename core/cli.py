@@ -26,7 +26,7 @@ from core.compliance import (
 )
 from core.audit import audit_log, verify_audit_log
 from core import (pii, provenance, immune, fractal, neurogenesis, concept,
-                  volition, velum, analogy, knowledge, neurocore, eval as _eval,
+                  volition, velum, analogy, neurocore, eval as _eval,
                   evidence, imports, review, retrieval_config, mosc, kb_ingest,
                   invariant_check as _invariant_check, health)
 

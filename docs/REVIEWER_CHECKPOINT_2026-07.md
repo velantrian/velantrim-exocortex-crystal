@@ -97,17 +97,17 @@ Issue #218 added a dependency-free retrieval-scale smoke benchmark:
 - Documented local baseline at **100 / 1,000 / 10,000 facts**; **30,000 is
   opt-in** and was not run for the documented baseline (10,000 alone took
   ~8.5 minutes in the sandboxed container used to measure it).
-- The baseline showed **near-linear latency scaling** with corpus size in
-  that sandbox, traced in the report to a specific, disclosed mechanism:
-  `vector_search()` issues a separate point-query for every candidate that
-  clears a similarity threshold, not only a single scan.
+- The historical baseline showed **near-linear latency scaling** with corpus
+  size. The integrity-candidate follow-up removes its per-candidate point
+  queries, materializes candidates with one joined `SELECT`, and reuses the
+  query-vector norm. Exact cosine scoring remains linear.
 - **This is a local smoke baseline, not a production performance
   guarantee.** Numbers depend on hardware, Python version, filesystem, and
   machine load.
 
-**The benchmark exposes current retrieval behaviour; it does not optimize
-it.** No retrieval algorithm, schema, or TruthGate change was made as part
-of this work.
+The report preserves the historical numbers and adds a same-machine A/B for
+the optimization. No schema, TruthGate, ranking-weight, or admission-policy
+change is part of it.
 
 ## 6. Why this matters for reviewers
 
