@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from core.trace import build_trace, promote_trace, format_trace
 from core.memory import (
-    store_fact, get_fact, update_fact, _repair_fact_from_canon,
+    store_fact, get_fact, _repair_fact_from_canon,
     transition_esm, ESM_TRANSITIONS, l3_secondary_sync_admissible,
     DEFAULT_SOURCE_STATUS, CLAIM_TYPES, SOURCE_STATUSES,
 )
