@@ -27,6 +27,7 @@ import os
 import json
 import hmac
 import hashlib
+import threading
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 
@@ -34,6 +35,12 @@ from core import memory
 
 _GENESIS = "0" * 64
 _ENV_AUDIT_KEY = "VELANTRIM_AUDIT_KEY"
+
+# The audit ledger has one global order, so its in-process append path is
+# serialized explicitly. BEGIN IMMEDIATE and lock retry remain the cross-process
+# safety boundary; this lock prevents worker-thread bursts from exhausting the
+# bounded SQLite retry loop and losing an accountability event.
+_APPEND_LOCK = threading.RLock()
 
 
 def _now() -> str:
@@ -119,7 +126,8 @@ def append_event(
                 )
             return seq, entry_hash, signature
 
-    seq, entry_hash, signature = memory.call_with_lock_retry(_write)
+    with _APPEND_LOCK:
+        seq, entry_hash, signature = memory.call_with_lock_retry(_write)
     return {"seq": seq, "ts": ts, "event": event, "fact_id": fact_id,
             "entry_hash": entry_hash, "signed": signature is not None}
 
