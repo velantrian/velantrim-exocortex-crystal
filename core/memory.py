@@ -339,6 +339,18 @@ _EVIDENCE_MIGRATIONS = [
     ("section", "TEXT"),  # human-readable source location (heading/page/section)
 ]
 
+# SQLite's PRAGMA user_version is the single schema-version marker for the L1
+# database. Version 1 covers the full DDL above plus every entry in
+# _MIGRATIONS/_EVIDENCE_MIGRATIONS, including the revision CAS token added in
+# #244. Future schema changes must increment this value.
+_SCHEMA_VERSION = 1
+
+# Serializes first-open schema initialization within this process. The
+# BEGIN IMMEDIATE inside _ensure_schema provides the corresponding
+# cross-process serialization: a second process re-checks user_version only
+# after the first process commits its migration.
+_SCHEMA_INIT_LOCK = threading.Lock()
+
 
 def _migrate(conn) -> None:
     """Add missing columns to existing tables (idempotent)."""
@@ -350,6 +362,77 @@ def _migrate(conn) -> None:
     for column, ddl in _EVIDENCE_MIGRATIONS:
         if column not in ev_cols:
             conn.execute(f"ALTER TABLE evidence_spans ADD COLUMN {column} {ddl}")
+
+
+def _schema_version(conn) -> int:
+    """Return the SQLite schema version stored in PRAGMA user_version."""
+    return int(conn.execute("PRAGMA user_version").fetchone()[0])
+
+
+def _require_supported_schema(version: int) -> None:
+    """Fail closed rather than opening a database created by newer code."""
+    if version > _SCHEMA_VERSION:
+        raise RuntimeError(
+            f"database schema version {version} is newer than supported "
+            f"version {_SCHEMA_VERSION}"
+        )
+
+
+def _ensure_schema(conn) -> None:
+    """Create/migrate the L1 schema exactly once, safely under concurrency.
+
+    The old connection-open path ran PRAGMA table_info followed by ALTER TABLE
+    on every connection. Two threads opening a fresh or legacy database could
+    both observe a missing column and then race to add it, making the loser
+    fail with ``duplicate column name``. A process-local lock closes the thread
+    race; BEGIN IMMEDIATE plus a version re-check closes the same race across
+    multiple worker processes.
+    """
+    version = _schema_version(conn)
+    _require_supported_schema(version)
+    if version == _SCHEMA_VERSION:
+        return
+
+    with _SCHEMA_INIT_LOCK:
+        # Another thread may have completed initialization while this caller
+        # waited for the process-local lock.
+        version = _schema_version(conn)
+        _require_supported_schema(version)
+        if version == _SCHEMA_VERSION:
+            return
+
+        # WAL is a persistent database-file property. Set it on the one
+        # initialization path instead of making every read connection repeat
+        # a journal-mode write.
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("BEGIN IMMEDIATE")
+        try:
+            # A different process may have migrated the file while this
+            # process waited for SQLite's write lock. Re-check under the lock
+            # before issuing any ALTER TABLE statement.
+            version = _schema_version(conn)
+            _require_supported_schema(version)
+            if version < _SCHEMA_VERSION:
+                for ddl in (
+                    _DDL,
+                    _OUTBOX_DDL,
+                    _IMMUNE_DDL,
+                    _NEUROCORE_DDL,
+                    _EVIDENCE_DDL,
+                    _IMPORT_SESSION_DDL,
+                    _REVIEW_SESSION_DDL,
+                    _TOMBSTONE_DDL,
+                    _AUDIT_DDL,
+                    _PROVENANCE_CHAIN_DDL,
+                    _PROVENANCE_CHAIN_INDEX_DDL,
+                ):
+                    conn.execute(ddl)
+                _migrate(conn)
+                conn.execute(f"PRAGMA user_version = {_SCHEMA_VERSION}")
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
 
 
 def begin_immediate(conn) -> None:
@@ -396,7 +479,7 @@ def call_with_lock_retry(fn, retries: int = 5, base_delay: float = 0.05):
 
 @contextmanager
 def _db():
-    """Connection per operation — no global state, no database-is-locked."""
+    """Open one operation-scoped connection after ensuring the schema."""
     db_dir = os.path.dirname(SQLITE_PATH)
     if db_dir:
         os.makedirs(db_dir, exist_ok=True)
@@ -406,22 +489,7 @@ def _db():
     # instead of sqlite3's 5s default before raising "database is locked".
     conn = sqlite3.connect(SQLITE_PATH, timeout=30.0)
     conn.row_factory = sqlite3.Row
-    # WAL: the writer does not block readers (better concurrency for evidence/audit).
-    # It is a property of the DB file — set once and persisted; repeating it is harmless.
-    conn.execute("PRAGMA journal_mode=WAL")
-    conn.execute(_DDL)
-    conn.execute(_OUTBOX_DDL)
-    conn.execute(_IMMUNE_DDL)
-    conn.execute(_NEUROCORE_DDL)
-    conn.execute(_EVIDENCE_DDL)
-    conn.execute(_IMPORT_SESSION_DDL)
-    conn.execute(_REVIEW_SESSION_DDL)
-    conn.execute(_TOMBSTONE_DDL)
-    conn.execute(_AUDIT_DDL)
-    conn.execute(_PROVENANCE_CHAIN_DDL)
-    conn.execute(_PROVENANCE_CHAIN_INDEX_DDL)
-    _migrate(conn)
-    conn.commit()
+    _ensure_schema(conn)
     try:
         yield conn
         conn.commit()
