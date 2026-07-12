@@ -63,14 +63,10 @@ jobs:
         run: |
           python -c "
           import json, sys
-
-          # Fields every chunk must carry. 'layer' is intentionally excluded:
-          # the document header chunk (idx 0) belongs to no memory layer.
           REQUIRED_FIELDS = ['chunk_id', 'title', 'content']
           path = 'docs/archive/Velantrim_V8_Crystal_Sprint1.jsonl'
           errors = []
           ids_seen = {}
-
           with open(path) as f:
               for i, line in enumerate(f, 1):
                   if not line.strip():
@@ -80,18 +76,15 @@ jobs:
                   except json.JSONDecodeError as e:
                       errors.append(f'Line {i}: JSON parse error: {e}')
                       continue
-
                   for field in REQUIRED_FIELDS:
                       if not obj.get(field):
                           errors.append(f'Line {i}: missing required field \"{field}\" in chunk {obj.get(\"chunk_id\", \"?\")}')
-
                   cid = obj.get('chunk_id')
                   if cid:
                       if cid in ids_seen:
                           errors.append(f'Line {i}: duplicate chunk_id \"{cid}\" (first at line {ids_seen[cid]})')
                       else:
                           ids_seen[cid] = i
-
           if errors:
               print('❌ JSONL validation failed:')
               for e in errors:
@@ -334,7 +327,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
           pip install -e .
-          pytest -q \
+          pytest -q --no-cov \
             tests/test_pipeline.py::test_recall_uses_l3_record_claim_and_source_not_transient_item \
             tests/test_pipeline.py::test_recall_reconciliation_syncs_trace_source_not_just_epistemic_state \
             tests/test_pipeline.py::test_recall_reconciliation_resyncs_l1_claim_and_source_after_pollution
