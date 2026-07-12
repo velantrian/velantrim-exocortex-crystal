@@ -605,7 +605,8 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
     def _serialize(fact: Dict[str, Any]) -> Dict[str, Any]:
         # metadata is base64-encoded: LadybugDB auto-parses a STRING like {..}/[..]
         # as a map/list and loses JSON quotes, so we hide JSON behind base64.
-        import json, base64
+        import base64
+        import json
         out = {}
         for col in LadybugL3Graph._COLS:
             if col == "metadata":
@@ -617,7 +618,8 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
 
     @staticmethod
     def _row_to_fact(row: list, cols: list) -> Dict[str, Any]:
-        import json, base64
+        import base64
+        import json
         d = dict(zip(cols, row))
         if "metadata" in d and isinstance(d["metadata"], str):
             try:
@@ -673,7 +675,8 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
         self, src_id: str, rel_type: str, dst_id: str,
         props: Optional[Dict[str, Any]] = None,
     ) -> None:
-        import json, base64
+        import base64
+        import json
         # props in base64 for the same reason as metadata (see _serialize).
         payload = base64.b64encode(json.dumps(props or {}).encode("utf-8")).decode("ascii")
         self._conn.execute(
@@ -700,7 +703,8 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
     def get_edges(
         self, fact_id: str, rel_type: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
-        import json, base64
+        import base64
+        import json
         cypher = "MATCH (a:Fact {fact_id: $id})-[e:EDGE]->(b:Fact)"
         params: Dict[str, Any] = {"id": fact_id}
         if rel_type is not None:
@@ -721,7 +725,8 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
     def incoming_edges(
         self, fact_id: str, rel_type: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
-        import json, base64
+        import base64
+        import json
         cypher = "MATCH (a:Fact)-[e:EDGE]->(b:Fact {fact_id: $id})"
         params: Dict[str, Any] = {"id": fact_id}
         if rel_type is not None:

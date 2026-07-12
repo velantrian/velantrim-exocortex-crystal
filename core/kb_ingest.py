@@ -24,7 +24,6 @@ from typing import Any, Dict, List, Optional
 
 from core.imports import predict_claim
 from core.path_safety import resolve_safe_path
-from core import knowledge as _kb
 from core.memory import SOURCE_STATUSES, CLAIM_TYPES
 
 _VERDICT_KEYS = ("accept", "duplicate", "blocked", "conflict")
