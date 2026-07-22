@@ -59,7 +59,7 @@ Claim
 → immutable Event Log
 → deterministic Epistemic State projection
 → rebuildable read models and indexes
-→ task-specific PULL selection
+→ task-specific context selection
 → auditable Receipt
 ```
 
