@@ -1,6 +1,6 @@
 # Velantrim Crystal — Current Status
 
-> Date: 2026-07-12
+> Date: 2026-07-22
 > Scope: public Crystal repository status note
 > Status: current implementation and release-verification map
 
@@ -192,7 +192,7 @@ behaviour and must not be cited as implemented Crystal capabilities.
 
 ```text
 docs/research/dialogue-cultivation-layer.md     -> RESEARCH / DOCUMENTED_ONLY
-docs/research/native-kernel-compatibility.md    -> RESEARCH / DOCUMENTED_ONLY / OPTIONAL COMPATIBILITY
+docs/research/native-kernel-compatibility.md    -> RESEARCH / DOCUMENTED_ONLY (optional compatibility)
 docs/CANONICAL_VIEW_RFC.md                      -> IMPLEMENTED CORE PROJECTION / broader modes planned
 ```
 
