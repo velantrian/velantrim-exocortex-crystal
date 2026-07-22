@@ -187,7 +187,41 @@ hands-on, reproducible CLI demo walkthrough with real captured output
   bio-inspired modules already present in `core/` are tested baseline mechanisms
   and engineering metaphors — **not** biological-cognition claims and **not** the
   full Personal Research Mode, which is tracked separately (Notion / local
-  research builds) and is not a deliverable of this grant phase.
+  research builds) and is not a deliverable of this grant phase;
+- Velantrim Native Kernel as Crystal runtime, storage replacement, live
+  dual-write system, current source of truth, or funded deliverable.
+
+### Native Kernel research boundary
+
+The Velantrim Native Kernel is a separate Titan / Full Exo-Cortex research track.
+It explores event-sourced claims, deterministic projections, validity intervals,
+conflict lifecycle, rebuildable read models and auditable receipts.
+
+Crystal does not depend on this experimental kernel. The research track may be
+mentioned only as an optional future R&D source of narrowly scoped mechanisms.
+Any adaptation into Crystal requires a separate RFC, threat model, tests,
+reproducible evaluation, security review, pull request and implementation-status
+update.
+
+Allowed grant wording:
+
+```text
+In a separate Titan research track, Velantrim is exploring an event-sourced
+Native Kernel. Crystal remains an independent verifiable memory infrastructure.
+Future work may selectively evaluate validated mechanisms through separate RFCs
+and review.
+```
+
+Disallowed grant wording:
+
+```text
+Crystal already runs on the Native Kernel.
+The Native Kernel is Crystal's production source of truth.
+Prototype benchmarks prove Crystal production scalability.
+The kernel provides consciousness or autonomous truth.
+```
+
+See `docs/research/native-kernel-compatibility.md` for the full boundary.
 
 ## Success criteria
 
