@@ -16,6 +16,15 @@ Titan / Full = research laboratory and future architecture.
 
 Do not treat Titan, V9, V10, Noetic, Research PWA, BICA, or private Full Exo-Cortex notes as current Crystal runtime unless a feature is implemented, tested, and listed here or in `TEST_REPORT.md`.
 
+## 2026-07-22 documentation-only Native Kernel boundary
+
+- Added `docs/research/native-kernel-compatibility.md` as a strict Crystal-facing
+  boundary for the separate Titan / Full Exo-Cortex Native Kernel research track.
+- Status: `RESEARCH / DOCUMENTED_ONLY / NOT_IMPLEMENTED`.
+- This adds no runtime code, storage, projection, event log, dual-write, Canon path,
+  TruthGate wiring, grant deliverable, or implementation claim.
+- Crystal remains independent of the Native Kernel; any future adaptation requires a
+  separate RFC, tests, threat model, review, pull request, and status update.
 
 ## 2026-07-12 verified integration checkpoint
 
@@ -182,8 +191,9 @@ The following documents are architecture notes only. They do not change runtime
 behaviour and must not be cited as implemented Crystal capabilities.
 
 ```text
-docs/research/dialogue-cultivation-layer.md -> RESEARCH / DOCUMENTED_ONLY
-docs/CANONICAL_VIEW_RFC.md                  -> IMPLEMENTED CORE PROJECTION / broader modes planned
+docs/research/dialogue-cultivation-layer.md     -> RESEARCH / DOCUMENTED_ONLY
+docs/research/native-kernel-compatibility.md    -> RESEARCH / DOCUMENTED_ONLY / OPTIONAL COMPATIBILITY
+docs/CANONICAL_VIEW_RFC.md                      -> IMPLEMENTED CORE PROJECTION / broader modes planned
 ```
 
 - **Presence & Dialogue Cultivation Layer — `RESEARCH / DOCUMENTED_ONLY`.** This RFC
@@ -192,6 +202,13 @@ docs/CANONICAL_VIEW_RFC.md                  -> IMPLEMENTED CORE PROJECTION / bro
   sentience, consciousness, emotion, personhood, biological life or implemented
   autonomous companion behaviour. It does not add code, storage, workers, TruthGate
   wiring, Canon writes or runtime integration.
+- **Native Kernel compatibility — `RESEARCH / DOCUMENTED_ONLY`.** This boundary note
+  records the separate Titan / Full Exo-Cortex event-sourced memory research direction
+  and identifies narrowly scoped candidate primitives such as claim lineage,
+  deterministic projection rebuild, validity intervals, contradiction lifecycle and
+  stronger event-envelope integrity. It does not add a Native Kernel runtime, storage
+  replacement, live dual-write, direct Canon path, current grant deliverable or
+  production-readiness claim.
 - **CanonicalView / Trusted-Only Read Mode — `IMPLEMENTED CORE PROJECTION`.**
   `core/canonical_view.py` implements fail-closed strict and contextual
   projections. Strict grounding requires VERIFIED facts in the admitted ESM
@@ -217,6 +234,7 @@ _A companion documented evaluation lens (dimensions and criteria only, no status
 | Dedup / scale design | DOCUMENTED / CANDIDATE | exact/semantic dedup roadmap | Frequency is not independent evidence | Future separate work |
 | Docker deployment | IMPLEMENTED | secure local-first deployment defaults | #170 + #171: `Dockerfile`, `docker-compose.yml`, `.dockerignore`; non-root `velantrim` user; named-volume default; `VELANTRIM_API_TOKEN` fail-fast; safe image default host `127.0.0.1`; compose loopback exposure `127.0.0.1:8000:8000` | Maintain alongside `SECURITY.md` |
 | Titan console | RESEARCH / TITAN ONLY | demo/research UI | Not production Crystal UI | Keep outside Crystal runtime claim |
+| Velantrim Native Kernel compatibility | RESEARCH / DOCUMENTED_ONLY | optional source of narrowly scoped event-sourced trust primitives | Not Crystal runtime, storage, source of truth, live dual-write, or current grant deliverable | Evaluate each mechanism through a separate RFC and PR only |
 | Noetic Orchestration | RESEARCH | future external attention / cognitive routing | Not wired into `/query` as Crystal runtime | Keep as RFC only |
 | BICA Alignment | RESEARCH / GRANT LANGUAGE | BICA-informed mapping only | Not a BICA implementation | Use only as cautious framing |
 | Graphiti / Neo4j | OPTIONAL / RESEARCH | optional advanced backend inspiration | Not Crystal truth authority | Keep stdlib/local-first Crystal core |
