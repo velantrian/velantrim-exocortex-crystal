@@ -24,6 +24,16 @@ def test_privileged_ingest_deduplicates_and_marks_unresolved(monkeypatch):
     assert metadata["evidence_resolution"] == "DECLARED_NOT_RESOLVED"
 
 
+def test_public_ingest_ignores_blank_evidence_references(monkeypatch):
+    """Blank declarations carry no evidence and must normalize to an empty list."""
+    monkeypatch.delenv("VELANTRIM_API_PRIVILEGED_INGEST", raising=False)
+    result = resolve_api_ingest(
+        source_status="USER_REPORTED",
+        evidence_refs=["   "],
+    )
+    assert result == {"source_status": "USER_REPORTED"}
+
+
 @pytest.mark.parametrize(
     "refs, message",
     [
