@@ -9,6 +9,8 @@ independently verifiable milestone.
 
 These answers are written to be accurate to the repository as it exists today.
 Where something is a grant deliverable rather than existing code, it says so.
+The detailed reviewer contract is maintained in
+[baseline-funded-delta-matrix.md](./baseline-funded-delta-matrix.md).
 
 ---
 
@@ -32,10 +34,11 @@ A reproducible, deployable, local-first open-source MVP:
    health) — a baseline optional API already exists today (`pip install '.[api]'`,
    `velantrim-api`: token-guarded review endpoints + `/health`, a thin async
    wrapper over `core/aio.py`); M2 hardens and extends it into a documented,
-   tested service layer;
+   capability-gated and tested service layer;
 3. production-strength source-span receipts (a baseline exists in
    `core/evidence.py` + Receipt v2);
-4. an evaluation harness wired as a CI quality gate (baseline in `core/eval.py`);
+4. an expanded evaluation harness with calibrated regression gates (a baseline CI
+   gate already exists in `core/eval.py` + `scripts/eval_gate.py`);
 5. a small, source-linked knowledge-base package;
 6. initial multilingual readiness.
 
@@ -52,17 +55,27 @@ provenance receipts with sealed source-span evidence; a baseline evidence store
 (`core/evidence.py`); a baseline evaluation harness (`core/eval.py`); external
 ingestion for txt/md/json/jsonl/ndjson/csv; GDPR-relevant erasure, restriction,
 record-of-processing and audit logging; opt-in encryption at rest; and a
-read-only MCP server. The grant hardens and deploys this, it does not start it.
+read-only MCP server. The grant hardens, scales and deploys this; it does not
+start it.
 
-### Q4. Why is approximately €50,000 reasonable?
+### Q4. Why is approximately €50,000 reasonable if much of the baseline exists?
 
 €50,000 is the upper boundary normally allowed for a *first* NGI0 Commons Fund
 proposal. The budget is split into nine independently verifiable milestones
 (see [funding-use-plan.md](./funding-use-plan.md)), each mapped to a concrete
-repository artifact and a euro amount. Core engineering carries most of the
-weight; model/API evaluation and contractor support are deliberately small and
-bounded. NLnet pays on milestone completion, so each euro is checkable against
-public commits.
+repository artifact and a euro amount.
+
+The baseline is explicitly excluded from paid acceptance. Each milestone follows:
+
+```text
+baseline today + funded engineering delta = independently verifiable deliverable
+```
+
+The delta matrix states what is already implemented, what new work funding buys and
+which public artifact proves completion. Core engineering carries most of the weight;
+model/API evaluation and contractor support are deliberately small and bounded.
+NLnet pays on milestone completion, so each euro is checkable against public commits,
+tests, reports and release artifacts.
 
 ### Q5. Why are model/API costs in the budget if this is open infrastructure?
 
@@ -83,6 +96,9 @@ receipt-replay survival); and CI gates so quality cannot silently regress. We do
 **not** claim to eliminate hallucination — the claim is *reduced unsupported
 factual promotion* through structured, source-linked memory.
 
+Each funded milestone adds its own acceptance evidence rather than relying on a
+narrative progress report.
+
 ### Q7. What is the European / public-interest dimension?
 
 Local-first by default (no mandatory cloud, no telemetry, no outbound calls),
@@ -92,6 +108,10 @@ access path for major European languages. The output is reusable open-source
 infrastructure for the digital commons, not a single consumer app — suitable for
 schools, libraries, archives, research groups and public-sector bodies that need
 inspectable, sovereign memory.
+
+For API and curator hardening, the project also maintains a non-certification
+[EU service security readiness checklist](../security/eu-service-security-readiness.md)
+covering secure design, deployment, continuity, operations and maintenance.
 
 ### Q8. How will you ensure sustainability beyond the grant?
 
@@ -105,21 +125,29 @@ product.
 ### Q9. What if the awarded amount is lower than requested?
 
 The plan is viable under partial funding. Priority order: (1) local-first
-stabilisation; (2) metadata/trace/evidence validation; (3) hardened FastAPI layer (extends the `.[api]` baseline);
-(4) evaluation as a CI gate; (5) documentation; (6) a small knowledge-base
-package; (7) initial multilingual support. Adapters, broad model evaluation,
-mobile apps, cloud sync and specialised models are deferred to later phases.
+stabilisation; (2) metadata/trace/evidence validation; (3) hardened FastAPI layer
+(extends the `.[api]` baseline); (4) evaluation expansion and regression quality;
+(5) documentation; (6) a small knowledge-base package; (7) initial multilingual
+support. Adapters, broad model evaluation, mobile apps, cloud sync and specialised
+models are deferred to later phases.
+
+The retained milestones keep their acceptance criteria; later milestones are removed
+rather than redefining already implemented baseline work as a paid deliverable.
 
 ### Q10. What are the main risks and how are they controlled?
 
-The chief risks are **scope creep** and **over-generalisation**. They are
-controlled by deliberately constraining this phase to one core problem —
-verifiable local-first AI memory — and three early use contexts: personal /
+The chief risks are **scope creep**, **over-generalisation** and **baseline/deliverable
+confusion**. They are controlled by deliberately constraining this phase to one core
+problem — verifiable local-first AI memory — and three early use contexts: personal /
 research knowledge workflows, educational / civic multilingual knowledge support,
-and developer-facing local / FastAPI integration. Medicine, finance, agriculture,
-public-administration deployments, mobile apps and a specialised model are
-explicitly **out of scope for this phase** and belong to future, separately
-funded work.
+and developer-facing local / FastAPI integration.
+
+Medicine, finance, agriculture, public-administration deployments, mobile apps,
+production multi-tenancy and a specialised model are explicitly **out of scope for
+this phase** and belong to future, separately funded work. New cognitive or
+neuromorphic research is also isolated from the funded MVP; for example, intrinsic-
+noise consolidation is documented as research-only and cannot write to Canon or
+change grant milestones.
 
 ---
 
