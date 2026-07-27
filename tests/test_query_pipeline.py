@@ -230,3 +230,113 @@ def test_http_ask_surface_preserves_memory(monkeypatch):
     assert body["query_policy"] == "canonical_read_only"
     assert get_fact(fact_id) == l1_before
     assert _graph_snapshot() == graph_before
+
+
+def test_query_helper_defensive_branches(monkeypatch):
+    from core import query_pipeline
+
+    assert query_pipeline._safe_retrieval_score("bad") == 0.0
+    assert query_pipeline._safe_retrieval_score(10**1000) == 0.0
+    assert query_pipeline._safe_retrieval_score(float("nan")) == 0.0
+    assert query_pipeline._lexical_tokens(None) == set()
+    assert query_pipeline._resolve_canonical_fact({}) is None
+
+    with pytest.raises(ValueError, match="empty query"):
+        query_pipeline.query("   ")
+
+    blocked = query_pipeline.query("no canon", episode={"where": "test"})
+    assert blocked["episode"]["recorded"] is False
+
+
+def test_resolve_fails_closed_on_l1_terminal_restriction_and_drift(monkeypatch):
+    from core import query_pipeline
+    from core.l3_graph import get_l3_graph
+
+    node = {
+        "fact_id": "resolve:fixture",
+        "claim": "A canonical fixture",
+        "source": "fixture",
+        "confidence": 0.9,
+        "epistemic_state": "Validated",
+        "claim_type": "WORLD_FACT",
+        "source_status": "EXTERNAL",
+        "truth_status": "VERIFIED",
+        "restricted": False,
+    }
+    get_l3_graph().merge_fact(node)
+
+    monkeypatch.setattr(
+        query_pipeline,
+        "get_fact",
+        lambda _fid: {
+            **node,
+            "epistemic_state": "Contradicted",
+            "restricted": True,
+        },
+    )
+    terminal = query_pipeline._resolve_canonical_fact({"id": node["fact_id"]})
+    assert terminal["epistemic_state"] == "Contradicted"
+    assert terminal["restricted"] is True
+
+    monkeypatch.setattr(
+        query_pipeline,
+        "get_fact",
+        lambda _fid: {
+            **node,
+            "epistemic_state": "Supported",
+            "confidence": 0.1,
+        },
+    )
+    drifted = query_pipeline._resolve_canonical_fact({"id": node["fact_id"]})
+    assert drifted["epistemic_state"] == query_pipeline.STORE_STATE_CONFLICT
+
+
+def test_lexical_fallback_skips_empty_and_unrelated_claims(monkeypatch):
+    from core import query_pipeline
+
+    class FakeGraph:
+        def all_facts(self):
+            return [
+                {"fact_id": "empty", "claim": None},
+                {"fact_id": "other", "claim": "completely unrelated words"},
+            ]
+
+        def embedder_fingerprint(self):
+            return None
+
+    monkeypatch.setattr(query_pipeline, "get_l3_graph", lambda: FakeGraph())
+
+    assert query_pipeline._retrieve_read_only("!!!") == []
+    assert query_pipeline._retrieve_read_only("target phrase") == []
+
+
+def test_guardian_rejection_is_bounded(monkeypatch):
+    from core import query_pipeline
+
+    monkeypatch.setattr(
+        query_pipeline,
+        "_retrieve_read_only",
+        lambda _query: [{"id": "canonical", "_score": 0.9}],
+    )
+    monkeypatch.setattr(
+        query_pipeline,
+        "_resolve_canonical_fact",
+        lambda _item: {
+            "fact_id": "canonical",
+            "claim": "Canonical",
+            "source": "fixture",
+            "confidence": 0.9,
+            "epistemic_state": "Validated",
+            "claim_type": "WORLD_FACT",
+            "source_status": "EXTERNAL",
+            "truth_status": "VERIFIED",
+            "restricted": False,
+            "_score": 0.9,
+        },
+    )
+    monkeypatch.setattr(query_pipeline, "guardian", lambda _pack, _trace: (False, "bad"))
+
+    result = query_pipeline.query("canonical")
+
+    assert result["answer"] is None
+    assert result["reason_code"] == "guardian_rejected_canonical_read"
