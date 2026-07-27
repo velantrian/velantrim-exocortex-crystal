@@ -2,6 +2,8 @@
 
 import asyncio
 
+import pytest
+
 
 def _graph_snapshot():
     from core.l3_graph import get_l3_graph
@@ -17,7 +19,8 @@ def _graph_snapshot():
     }
 
 
-def test_query_reads_existing_canon_without_durable_mutation():
+def test_query_reads_existing_canon_without_durable_or_adaptive_mutation():
+    from core import adaptation
     from core.ingest import ingest
     from core.memory import get_fact
     from core.query_pipeline import query
@@ -33,6 +36,7 @@ def test_query_reads_existing_canon_without_durable_mutation():
 
     l1_before = get_fact(fact_id)
     graph_before = _graph_snapshot()
+    threshold_before = adaptation.verification_threshold()
 
     result = query("Portugal capital city Lisbon")
 
@@ -41,6 +45,7 @@ def test_query_reads_existing_canon_without_durable_mutation():
     assert result["query_policy"] == "canonical_read_only"
     assert get_fact(fact_id) == l1_before
     assert _graph_snapshot() == graph_before
+    assert adaptation.verification_threshold() == threshold_before
 
 
 def test_empty_canon_does_not_ingest_demo_retrieval_or_stamp_embedder():
@@ -60,6 +65,48 @@ def test_empty_canon_does_not_ingest_demo_retrieval_or_stamp_embedder():
     assert graph.all_facts() == []
     assert graph.embedder_fingerprint() is None
     assert _graph_snapshot()["outbox"] == []
+
+
+def test_query_does_not_drain_existing_outbox_entry():
+    from core.memory import enqueue_l3_write, pending_l3_writes
+    from core.query_pipeline import query
+
+    enqueue_l3_write("waiting-for-maintenance")
+    assert pending_l3_writes() == ["waiting-for-maintenance"]
+
+    result = query("nothing has been admitted yet")
+
+    assert result["answer"] is None
+    assert pending_l3_writes() == ["waiting-for-maintenance"]
+
+
+def test_legacy_canon_without_fingerprint_uses_non_mutating_lexical_fallback():
+    from core.l3_graph import get_l3_graph
+    from core.query_pipeline import query
+
+    graph = get_l3_graph()
+    graph.merge_fact(
+        {
+            "fact_id": "legacy:lisbon",
+            "claim": "Lisbon is the capital of Portugal",
+            "source": "legacy-fixture",
+            "confidence": 0.95,
+            "epistemic_state": "Validated",
+            "claim_type": "WORLD_FACT",
+            "source_status": "EXTERNAL",
+            "truth_status": "VERIFIED",
+            "restricted": False,
+        }
+    )
+    assert graph.embedder_fingerprint() is None
+    before = _graph_snapshot()
+
+    result = query("Lisbon capital Portugal")
+
+    assert result["answer"] is not None
+    assert result["read_only"] is True
+    assert graph.embedder_fingerprint() is None
+    assert _graph_snapshot() == before
 
 
 def test_unknown_retrieval_candidate_is_not_written(monkeypatch):
@@ -152,3 +199,34 @@ def test_async_public_query_entrypoint_uses_read_only_pipeline(monkeypatch):
 
     assert result == expected
     assert calls == [("question", {"where": "test"})]
+
+
+def test_http_ask_surface_preserves_memory(monkeypatch):
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    from core import api
+    from core.ingest import ingest
+    from core.memory import get_fact
+
+    admitted = ingest(
+        "Gold is a chemical element",
+        source="reference",
+        source_status="EXTERNAL",
+        confidence=0.95,
+    )
+    fact_id = admitted["fact"]["fact_id"]
+    l1_before = get_fact(fact_id)
+    graph_before = _graph_snapshot()
+
+    monkeypatch.setenv("VELANTRIM_API_ALLOW_UNAUTH_LOCAL", "1")
+    client = TestClient(api.create_app())
+    response = client.post("/ask", json={"query": "tell me about gold"})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["answer"] is not None
+    assert body["read_only"] is True
+    assert body["query_policy"] == "canonical_read_only"
+    assert get_fact(fact_id) == l1_before
+    assert _graph_snapshot() == graph_before
