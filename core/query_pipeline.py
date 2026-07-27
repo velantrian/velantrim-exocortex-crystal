@@ -27,6 +27,7 @@ from core.trace import build_trace
 
 _TERMINAL_ESM_STATES = frozenset({"Collapsed", "Contradicted", "Deprecated"})
 _QUERY_POLICY = "canonical_read_only"
+_DEFAULT_CLAIM_TYPE = "WORLD_FACT"
 
 
 def _safe_retrieval_score(value: Any) -> float:
@@ -72,6 +73,34 @@ def _blocked(
     return result
 
 
+def _trust_metadata_conflicts(l1: Dict[str, Any], node: Dict[str, Any]) -> bool:
+    """True if L1 and L3 genuinely disagree on trust-relevant metadata.
+
+    Both sides are normalized with the SAME defaults and coercion this module
+    already applies when it builds the served fact, so that "L3 omits the field
+    and therefore takes the default" is not mistaken for a real disagreement.
+    Confidence is compared with the tolerance the legacy admission path uses
+    (core.pipeline._fact_metadata_conflicts) instead of raw `!=`, so two
+    mathematically equal floats cannot fail closed on representation alone.
+
+    A genuine disagreement — including a malformed L3 value that coerces to a
+    different number — still conflicts.
+    """
+    if "confidence" in l1 and not math.isclose(
+        _safe_confidence(l1.get("confidence"), 0.0),
+        _safe_confidence(node.get("confidence"), 0.0),
+        abs_tol=1e-9,
+    ):
+        return True
+    if "claim_type" in l1 and l1.get("claim_type", _DEFAULT_CLAIM_TYPE) != node.get(
+        "claim_type", _DEFAULT_CLAIM_TYPE
+    ):
+        return True
+    return bool(
+        "source_status" in l1 and l1.get("source_status") != node.get("source_status")
+    )
+
+
 def _resolve_canonical_fact(item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Resolve one retrieval hit against existing Canon without writing.
 
@@ -109,10 +138,8 @@ def _resolve_canonical_fact(item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
 
         # A hybrid record assembled from disagreeing trust metadata must fail
         # closed rather than silently preferring one representation.
-        for field in ("confidence", "claim_type", "source_status"):
-            if field in l1 and l1.get(field) != node.get(field):
-                state = STORE_STATE_CONFLICT
-                break
+        if _trust_metadata_conflicts(l1, node):
+            state = STORE_STATE_CONFLICT
 
     fact: Dict[str, Any] = {
         "fact_id": fact_id,
@@ -120,7 +147,7 @@ def _resolve_canonical_fact(item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         "source": node.get("source"),
         "confidence": _safe_confidence(node.get("confidence"), 0.0),
         "epistemic_state": state,
-        "claim_type": node.get("claim_type", "WORLD_FACT"),
+        "claim_type": node.get("claim_type", _DEFAULT_CLAIM_TYPE),
         "source_status": node.get("source_status"),
         "significance": node.get("significance", 0.5),
         "truth_status": node.get("truth_status"),
@@ -148,17 +175,22 @@ def _retrieve_read_only(query_text: str) -> List[Dict[str, Any]]:
     fingerprint already exists, that check is read-only and the mature hybrid
     retrieval can be reused. For a legacy/uninitialised store, use a bounded
     lexical scan over existing canonical nodes instead of mutating store metadata.
+
+    The fingerprint is checked BEFORE any full-store read: on the ordinary
+    fingerprinted path retrieve() does its own bounded vector_search, so
+    materializing every canonical node here would be discarded work that grows
+    linearly with the canon on every single HTTP query.
     """
     graph = get_l3_graph()
-    nodes = graph.all_facts()
-    if not nodes:
-        return []
-
     if graph.embedder_fingerprint() is not None:
         return retrieve(query_text)
 
     query_tokens = _lexical_tokens(query_text)
     if not query_tokens:
+        return []
+
+    nodes = graph.all_facts()
+    if not nodes:
         return []
 
     ranked: List[Dict[str, Any]] = []
@@ -176,7 +208,7 @@ def _retrieve_read_only(query_text: str) -> List[Dict[str, Any]]:
                 "text": node.get("claim", ""),
                 "source": node.get("source"),
                 "confidence": _safe_confidence(node.get("confidence"), 0.0),
-                "claim_type": node.get("claim_type", "WORLD_FACT"),
+                "claim_type": node.get("claim_type", _DEFAULT_CLAIM_TYPE),
                 "source_status": node.get("source_status"),
                 "significance": node.get("significance", 0.5),
                 "epistemic_state": node.get("epistemic_state"),

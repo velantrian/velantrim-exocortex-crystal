@@ -340,3 +340,130 @@ def test_guardian_rejection_is_bounded(monkeypatch):
 
     assert result["answer"] is None
     assert result["reason_code"] == "guardian_rejected_canonical_read"
+
+
+def _canonical_node(**overrides):
+    node = {
+        "fact_id": "trust:fixture",
+        "claim": "A canonical fixture claim",
+        "source": "fixture",
+        "confidence": 0.9,
+        "epistemic_state": "Validated",
+        "claim_type": "WORLD_FACT",
+        "source_status": "EXTERNAL",
+        "truth_status": "VERIFIED",
+        "restricted": False,
+    }
+    node.update(overrides)
+    return node
+
+
+def _pin_single_node(monkeypatch, node, l1):
+    """Point the resolver at one L3 node and one L1 row."""
+    from core import query_pipeline
+
+    class _Graph:
+        def get_fact(self, fact_id):
+            return dict(node) if fact_id == node["fact_id"] else None
+
+    monkeypatch.setattr(query_pipeline, "get_l3_graph", lambda: _Graph())
+    monkeypatch.setattr(query_pipeline, "get_fact", lambda _fid: l1)
+
+
+def test_fingerprinted_query_does_not_materialise_whole_canon(monkeypatch):
+    """A fingerprinted store must not be fully scanned on every query.
+
+    retrieve() already does a bounded vector_search. Reading all_facts() first
+    would be discarded work growing linearly with the canon on every HTTP
+    /ask and /receipt call — a remote cost amplifier on the read path.
+    """
+    from core import query_pipeline
+    from core.ingest import ingest
+    from core.l3_graph import get_l3_graph
+
+    ingest(
+        "Portugal's capital city is Lisbon",
+        source="reference",
+        source_status="EXTERNAL",
+        confidence=0.95,
+    )
+    graph = get_l3_graph()
+    assert graph.embedder_fingerprint() is not None
+
+    scans = {"count": 0}
+    real_all_facts = graph.all_facts
+
+    def counting_all_facts():
+        scans["count"] += 1
+        return real_all_facts()
+
+    monkeypatch.setattr(graph, "all_facts", counting_all_facts)
+    monkeypatch.setattr(query_pipeline, "get_l3_graph", lambda: graph)
+
+    result = query_pipeline.query("Portugal capital city Lisbon")
+
+    assert result["answer"] is not None
+    assert scans["count"] == 0
+
+
+def test_equal_confidence_floats_do_not_fail_closed(monkeypatch):
+    """Representation-only float difference is not a trust disagreement."""
+    from core import query_pipeline
+    from core.canonical_view import project_canonical
+
+    node = _canonical_node(fact_id="trust:float", confidence=0.1 + 0.2)
+    _pin_single_node(monkeypatch, node, {**node, "confidence": 0.3})
+
+    fact = query_pipeline._resolve_canonical_fact({"id": "trust:float", "_score": 0.9})
+
+    assert fact["epistemic_state"] != query_pipeline.STORE_STATE_CONFLICT
+    assert project_canonical([fact])
+
+
+def test_l3_node_omitting_claim_type_takes_the_shared_default(monkeypatch):
+    """L3 omitting claim_type is the default, not a disagreement with L1."""
+    from core import query_pipeline
+
+    node = _canonical_node(fact_id="trust:legacy")
+    node.pop("claim_type")
+    _pin_single_node(monkeypatch, node, {**node, "claim_type": "WORLD_FACT"})
+
+    fact = query_pipeline._resolve_canonical_fact({"id": "trust:legacy", "_score": 0.9})
+
+    assert fact["claim_type"] == "WORLD_FACT"
+    assert fact["epistemic_state"] != query_pipeline.STORE_STATE_CONFLICT
+
+
+@pytest.mark.parametrize(
+    "l1_override",
+    [
+        {"confidence": 0.10},
+        {"claim_type": "OPINION"},
+        {"source_status": "USER_REPORTED"},
+    ],
+)
+def test_genuine_trust_metadata_disagreement_still_fails_closed(monkeypatch, l1_override):
+    """Real L1/L3 disagreement must still produce STORE_STATE_CONFLICT."""
+    from core import query_pipeline
+    from core.canonical_view import project_canonical
+
+    node = _canonical_node()
+    _pin_single_node(monkeypatch, node, {**node, **l1_override})
+
+    fact = query_pipeline._resolve_canonical_fact({"id": node["fact_id"], "_score": 0.9})
+
+    assert fact["epistemic_state"] == query_pipeline.STORE_STATE_CONFLICT
+    assert project_canonical([fact]) == []
+
+
+def test_malformed_l3_confidence_still_fails_closed(monkeypatch):
+    """A non-numeric L3 confidence coerces to 0.0 and must not pass silently."""
+    from core import query_pipeline
+
+    node = _canonical_node(fact_id="trust:malformed", confidence="0.95")
+    _pin_single_node(monkeypatch, node, {**node, "confidence": 0.95})
+
+    fact = query_pipeline._resolve_canonical_fact({"id": "trust:malformed", "_score": 0.9})
+
+    assert fact["confidence"] == 0.0
+    assert fact["epistemic_state"] == query_pipeline.STORE_STATE_CONFLICT
