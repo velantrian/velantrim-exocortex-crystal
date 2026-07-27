@@ -63,6 +63,24 @@ The current open core already includes:
 - a fully passing test suite at 100% coverage, enforced by a 100% CI gate
   (current audited baseline in `TEST_REPORT.md`).
 
+## Baseline and funded-delta control
+
+Existing baseline work is not counted again as a funded deliverable. The exact
+reviewer-facing contract for each milestone is maintained in
+[`docs/grants/baseline-funded-delta-matrix.md`](./grants/baseline-funded-delta-matrix.md):
+
+```text
+BASELINE TODAY
+    +
+MEASURABLE FUNDED DELTA
+    =
+INDEPENDENTLY VERIFIABLE DELIVERABLE
+```
+
+When a grant agreement starts, the repository must record the baseline commit or
+release. If current `main` advances before then, the matrix is updated so that the
+funded delta remains real and independently testable.
+
 ## Why this fits public-interest infrastructure
 
 Crystal is relevant to European public-interest technology because it is:
@@ -116,6 +134,11 @@ institutional scale:
   multi-curator workflows, operator guidance, accessibility and
   deployment/security hardening;
 - per-source licence and provenance metadata capture.
+
+The institutional security delta is made concrete in
+[`docs/security/eu-service-security-readiness.md`](./security/eu-service-security-readiness.md).
+That document is a non-certification engineering checklist: it does not claim that
+Crystal is a managed security service or certified under an EU scheme.
 
 **Outcome:** safer corpus ingestion for institutions.
 
@@ -187,7 +210,11 @@ hands-on, reproducible CLI demo walkthrough with real captured output
   bio-inspired modules already present in `core/` are tested baseline mechanisms
   and engineering metaphors — **not** biological-cognition claims and **not** the
   full Personal Research Mode, which is tracked separately (Notion / local
-  research builds) and is not a deliverable of this grant phase.
+  research builds) and is not a deliverable of this grant phase;
+- intrinsic-noise or neuromorphic consolidation research. The external preprint is
+  recorded only in
+  [`docs/research/INTRINSIC_NOISE_CONSOLIDATION_BOUNDARY.md`](./research/INTRINSIC_NOISE_CONSOLIDATION_BOUNDARY.md),
+  with no runtime, Canon, budget or milestone impact.
 
 ## Success criteria
 
@@ -198,7 +225,9 @@ A successful grant phase should produce:
 - source-span receipts for imported knowledge;
 - safe dry-run ingestion workflow;
 - clear documentation for local/offline operation;
-- governance and contributor pathway for public-interest maintenance.
+- governance and contributor pathway for public-interest maintenance;
+- acceptance evidence for every retained milestone as defined in the baseline/delta
+  matrix.
 
 ## GenAI disclosure note
 

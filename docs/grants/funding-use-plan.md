@@ -23,6 +23,24 @@ the programme's lifetime maximum for a single third party is €500,000. NLnet p
 per **completed, independently verifiable milestone**, so every euro below is tied
 to a concrete deliverable that can be checked against the public repository.
 
+## Milestone interpretation rule
+
+Crystal already has a substantial baseline. The grant does not pay to recreate
+features that are already implemented. Every milestone must therefore be read as:
+
+```text
+BASELINE TODAY
+    +
+MEASURABLE FUNDED DELTA
+    =
+INDEPENDENTLY VERIFIABLE DELIVERABLE
+```
+
+The canonical reviewer-facing definitions for all nine milestones are maintained in
+[Grant Baseline → Funded Delta → Acceptance Matrix](./baseline-funded-delta-matrix.md).
+If the repository baseline advances before a grant agreement is signed, that matrix
+must be updated so that funded work remains a real, testable delta.
+
 ---
 
 ## What the funding converts
@@ -39,7 +57,9 @@ run, query over an API, audit, and extend — not just a test suite.
 
 The work plan below maps directly onto the five work packages already defined in
 [GRANT_NLNET_SCOPE.md](../GRANT_NLNET_SCOPE.md) (WP1–WP5), plus the deployment and
-accessibility work needed to make the core usable in practice.
+accessibility work needed to make the core usable in practice. Exact baseline,
+funded-delta and acceptance evidence are defined separately so existing code is not
+mistaken for future paid work.
 
 ---
 
@@ -67,6 +87,14 @@ particular) may be delivered with **part-time contractor or assistant support**
 (documentation, data cleaning, localisation, issue triage, knowledge curation) to
 reduce the risk of a single-maintainer bottleneck. NLnet permits subcontracting;
 the deliverables remain the unit of payment.
+
+### Security hardening interpretation
+
+The phrase “harden the service” is not treated as an untestable umbrella promise.
+M2 and the institutional part of WP2 use
+[EU Service Security Readiness](../security/eu-service-security-readiness.md) as a
+non-certification checklist for authorization, token lifecycle, secure deployment,
+continuity, operational auditability and maintenance evidence.
 
 ---
 
@@ -100,6 +128,10 @@ Priority order:
 
 Mobile applications, cloud synchronisation and specialised model training are
 **out of scope for this grant phase** and belong to potential future funding.
+New cognitive or neuromorphic research is also outside this budget. The current
+intrinsic-noise consolidation note is explicitly isolated in
+[`docs/research/INTRINSIC_NOISE_CONSOLIDATION_BOUNDARY.md`](../research/INTRINSIC_NOISE_CONSOLIDATION_BOUNDARY.md)
+and does not alter milestones, runtime or grant claims.
 
 ---
 
