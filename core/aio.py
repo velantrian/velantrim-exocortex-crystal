@@ -19,11 +19,12 @@ from typing import Any, Dict, Optional
 
 from core import ingest as _ingest_mod
 from core import pipeline as _pipeline_mod
+from core import query_pipeline as _query_mod
 
 
 async def arun(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """Async wrapper around pipeline.run (Query → Gate → Answer)."""
-    return await asyncio.to_thread(_pipeline_mod.run, query, episode)
+    """Async wrapper around the strict read-only query pipeline."""
+    return await asyncio.to_thread(_query_mod.query, query, episode)
 
 
 async def aingest(*args: Any, **kwargs: Any) -> Any:
@@ -32,5 +33,5 @@ async def aingest(*args: Any, **kwargs: Any) -> Any:
 
 
 async def adrain_l3_outbox(graph: Any = None) -> int:
-    """Async wrapper around pipeline.drain_l3_outbox (self-heal re-merge)."""
+    """Async maintenance wrapper around pipeline.drain_l3_outbox."""
     return await asyncio.to_thread(_pipeline_mod.drain_l3_outbox, graph)
