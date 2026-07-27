@@ -12,8 +12,23 @@
 # the on-disk L3 backend is thread-safe (see SqliteL3Graph, check_same_thread).
 #
 # The service exposes the same operations as the CLI, and nothing more: it does
-# NOT add a write path that bypasses the TruthGate. Every /ingest and /ask call
-# goes through the same Guardian + TruthGate pipeline as the CLI.
+# NOT add a write path that bypasses the TruthGate. The two HTTP surfaces have
+# deliberately different contracts:
+#
+#   /ingest          → core.ingest: the admission pipeline, with Guardian and
+#                      TruthGate deciding what may enter Canon.
+#   /ask, /receipt   → core.query_pipeline.query() via core.aio.arun(): the
+#                      strict read-only canonical query path.
+#
+# Asking a question is not an admission decision, so the HTTP read path cannot
+# ingest into L0/L1, promote ESM state, write Canon facts/relations/entities/
+# mentions, drain or enqueue the L3 outbox, record episodic links, initialise an
+# embedding-space fingerprint, or mutate adaptive verification state. It answers
+# only from already-admitted Canon, projected through CanonicalView, and reports
+# a bounded reason_code when that grounding is insufficient.
+#
+# See docs/architecture/read-only-query-boundary.md. The legacy admission-capable
+# core.pipeline.run() remains in use by the CLI ask/receipt commands.
 
 from typing import Any, Dict, List, Optional
 
