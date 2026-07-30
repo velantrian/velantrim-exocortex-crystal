@@ -1,5 +1,7 @@
 # 📌 Velantrim Crystal — Current Status
 
+> 🌐 **Language:** **English** · [Deutsch](./de/STATUS.md)
+
 **Status date:** 2026-07-30  
 **Current implementation truth:** GitHub `main` at `cd6fd44ff4ac8c715121cae1996aa484f11ef250`  
 **Current audited baseline:** [TEST_REPORT.md](../TEST_REPORT.md)
@@ -137,6 +139,12 @@ for conflicts with this status document.
 4. [ARCHITECTURE.md](./ARCHITECTURE.md)
 5. [EVAL.md](./EVAL.md)
 6. [GRANT_NLNET_SCOPE.md](./GRANT_NLNET_SCOPE.md)
+
+German-language reviewer path:
+
+- [de/REVIEWER_GUIDE.md](./de/REVIEWER_GUIDE.md)
+- [de/QUICKSTART.md](./de/QUICKSTART.md)
+- [de/GRANT_OVERVIEW.md](./de/GRANT_OVERVIEW.md)
 
 The previous long-form status snapshot is preserved byte-for-byte at:
 
