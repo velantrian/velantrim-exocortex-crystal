@@ -1,7 +1,6 @@
 # 💶 Grant-Übersicht — Velantrim Crystal
 
-> 🌐 [Deutsche Dokumentation](./README.md) ·
-> [Verbindlicher englischer Grant-Scope](../GRANT_NLNET_SCOPE.md)
+> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md)
 >
 > Diese Seite ist eine Übersetzungs- und Orientierungshilfe. Sie ersetzt weder
 > den eingereichten Antrag noch die englischen Milestone-, Budget- und
@@ -73,7 +72,7 @@ Die exakten Beträge, Prioritäten und Akzeptanznachweise stehen in:
 - [baseline-funded-delta-matrix.md](../grants/baseline-funded-delta-matrix.md)
 - [funding-use-plan.md](../grants/funding-use-plan.md)
 
-## 🧪 Deutsche Dokumentation und M7
+## 🌍 Deutsche Dokumentation und M7
 
 Dieses deutsche Dokumentationspaket ist eine docs-only Baseline-Verbesserung vor
 einer formalen Grant-Fixierung. Es führt kein neues Milestone und keinen neuen
@@ -137,3 +136,7 @@ Die aktuelle Grant-Phase beansprucht nicht:
 4. [reviewer-qa.md](../grants/reviewer-qa.md)
 5. [STATUS.md](../STATUS.md)
 6. [TEST_REPORT.md](../../TEST_REPORT.md)
+
+---
+
+> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md)
