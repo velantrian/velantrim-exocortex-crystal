@@ -1,9 +1,9 @@
 # 🔱 Velantrim ExoCortex — Crystal
 
-### *Nachweisbare, lokale und quelloffene Speicherinfrastruktur für vertrauenswürdige KI*
+> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](./README.fr.md)  
+> 📚 [Deutsche Dokumentation](./docs/de/README.md) · [Documentation française](./docs/fr/README.md)
 
-> 🌐 **Sprache:** [English](./README.md) · **Deutsch**  
-> 📚 **Deutsche Dokumentation:** [docs/de/README.md](./docs/de/README.md)
+### *Nachweisbare, lokale und quelloffene Speicherinfrastruktur für vertrauenswürdige KI*
 
 `v0.3.0` · 🧪 **1713 bestanden / 12 übersprungen** · 🎯 **100 % Abdeckung** · 🐍 **Standardlaufzeit nur mit Python-Standardbibliothek** · ⚖️ **AGPL-3.0** · 🔒 **Local-first**
 
@@ -256,3 +256,7 @@ Crystal steht unter **AGPL-3.0**. Siehe [LICENSE](./LICENSE),
 [SECURITY.md](./SECURITY.md) und [PRIVACY.md](./PRIVACY.md).
 
 > **📊 Kanon = zugelassene Wahrheit** · **🔗 Provenienz = Vertrauen** · **🏠 Local-first = Kontrolle**
+
+---
+
+> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](./README.fr.md)
