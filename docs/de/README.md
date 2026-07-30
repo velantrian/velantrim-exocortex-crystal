@@ -1,6 +1,6 @@
 # 🇩🇪 Deutsche Dokumentation — Velantrim Crystal
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md)
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md)
 
 ## 🔒 Übersetzungs- und Autoritätsregel
 
@@ -8,8 +8,8 @@ Diese Seiten sind eine gepflegte deutschsprachige Orientierung für Reviewer,
 Institutionen und Mitwirkende. Sie ändern weder Runtime noch Grant-Scope.
 
 ```text
-GitHub main + englische Kerndokumente       = verbindliche Quelle
-Deutsche, französische und spanische Seiten = Übersetzungen und Lesehilfen
+GitHub main + englische Kerndokumente                    = verbindliche Quelle
+Deutsche, französische, spanische und italienische Seiten = Übersetzungen und Lesehilfen
 ```
 
 Bei einer Abweichung gelten:
@@ -66,10 +66,10 @@ Bei Änderungen an einem übersetzten Bereich gilt:
 4. keine neuen Zahlen oder Claims nur in einer Übersetzung einführen
 ```
 
-Der deutsche Paketstand wurde auf Basis von Crystal `main@2641748` erneut
+Der deutsche Paketstand wurde auf Basis von Crystal `main@30e87df4` erneut
 synchronisiert. Der letzte Runtime-verändernde Checkpoint bleibt PR #265 /
 `cd6fd44`.
 
 ---
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md)
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md)

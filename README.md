@@ -1,7 +1,7 @@
 # 🔱 Velantrim ExoCortex — Crystal
 
-> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md)  
-> 📚 [German documentation](./docs/de/README.md) · [Documentation française](./docs/fr/README.md) · [Documentación en español](./docs/es/README.md)
+> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md)  
+> 📚 [German documentation](./docs/de/README.md) · [Documentation française](./docs/fr/README.md) · [Documentación en español](./docs/es/README.md) · [Documentazione italiana](./docs/it/README.md)
 
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
@@ -246,6 +246,7 @@ Localized reviewer paths:
 - 🇩🇪 [German reviewer guide](./docs/de/REVIEWER_GUIDE.md) · [Quickstart](./docs/de/QUICKSTART.md) · [Grant overview](./docs/de/GRANT_OVERVIEW.md)
 - 🇫🇷 [Guide reviewer français](./docs/fr/REVIEWER_GUIDE.md) · [Démarrage rapide](./docs/fr/QUICKSTART.md) · [Vue subvention](./docs/fr/GRANT_OVERVIEW.md)
 - 🇪🇸 [Guía para reviewers](./docs/es/REVIEWER_GUIDE.md) · [Inicio rápido](./docs/es/QUICKSTART.md) · [Resumen de subvención](./docs/es/GRANT_OVERVIEW.md)
+- 🇮🇹 [Guida per reviewer](./docs/it/REVIEWER_GUIDE.md) · [Avvio rapido](./docs/it/QUICKSTART.md) · [Panoramica della sovvenzione](./docs/it/GRANT_OVERVIEW.md)
 
 The pre-synchronization long-form README is preserved under
 `docs/archive/grant-sync/README_PRE_SYNC_2026-07-30.md` for historical context.
@@ -262,4 +263,4 @@ Crystal is licensed under **AGPL-3.0**. See [LICENSE](./LICENSE),
 
 ---
 
-> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md)
+> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md)
