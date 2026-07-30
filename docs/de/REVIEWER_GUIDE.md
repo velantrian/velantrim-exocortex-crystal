@@ -1,7 +1,6 @@
 # 🔍 Reviewer-Leitfaden — Velantrim Crystal
 
-> 🌐 [Deutsche Dokumentation](./README.md) ·
-> [Verbindlicher englischer Reviewer Guide](../REVIEWER_GUIDE.md)
+> 🌐 🇬🇧 [English](../REVIEWER_GUIDE.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/REVIEWER_GUIDE.md)
 >
 > Diese Seite ist eine deutschsprachige Prüfroute. Sie führt keine neue
 > Runtime-, Grant-, Compliance- oder Sicherheitsbehauptung ein. Bei Abweichungen
@@ -197,3 +196,7 @@ Ein Reviewer sollte nach der Prüfung beantworten können:
 3. Wie wird eine Antwort auf Fakten und Evidenz zurückgeführt?
 4. Welche Grenzen sind implementiert und welche nur geplant?
 5. Welcher Grant-Delta bleibt nach Abzug der bestehenden Baseline übrig?
+
+---
+
+> 🌐 🇬🇧 [English](../REVIEWER_GUIDE.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/REVIEWER_GUIDE.md)

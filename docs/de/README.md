@@ -1,7 +1,6 @@
 # 🇩🇪 Deutsche Dokumentation — Velantrim Crystal
 
-> 🌐 [Deutscher Projektüberblick](../../README.de.md) ·
-> [English documentation](../../README.md)
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/README.md)
 
 ## 🔒 Übersetzungs- und Autoritätsregel
 
@@ -10,7 +9,7 @@ Institutionen und Mitwirkende. Sie ändern weder Runtime noch Grant-Scope.
 
 ```text
 GitHub main + englische Kerndokumente = verbindliche Quelle
-Deutsche Dokumente                  = Übersetzung und Lesehilfe
+Deutsche und französische Dokumente  = Übersetzungen und Lesehilfen
 ```
 
 Bei einer Abweichung gelten:
@@ -63,10 +62,14 @@ Bei Änderungen an einem übersetzten Bereich gilt:
 ```text
 1. englische Quelle aktualisieren und mergen
 2. aktuellen main-Stand prüfen
-3. deutsche Übersetzung in separatem docs-only PR synchronisieren
-4. keine neuen Zahlen oder Claims nur in der Übersetzung einführen
+3. Übersetzungen in einem separaten docs-only PR synchronisieren
+4. keine neuen Zahlen oder Claims nur in einer Übersetzung einführen
 ```
 
-Der deutsche Paketstand wurde auf Basis von Crystal `main@d82abc7` erstellt.
-Der letzte Runtime-verändernde Checkpoint bleibt PR #265 / `cd6fd44`; die
-nachfolgende Änderung PR #266 war dokumentations- und grantbezogen.
+Der deutsche Paketstand wurde auf Basis von Crystal `main@356a09ba` erneut
+synchronisiert. Der letzte Runtime-verändernde Checkpoint bleibt PR #265 /
+`cd6fd44`.
+
+---
+
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/README.md)

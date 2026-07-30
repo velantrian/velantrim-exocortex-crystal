@@ -1,7 +1,6 @@
 # 📖 Glossar — Velantrim Crystal auf Deutsch
 
-> 🌐 [Deutsche Dokumentation](./README.md) ·
-> [Englische Architektur](../ARCHITECTURE.md)
+> 🌐 🇬🇧 [English](../ARCHITECTURE.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/GLOSSARY.md)
 >
 > Dieses Glossar vereinheitlicht die deutsche Sprache, ersetzt aber keine
 > englische API-, Schema- oder Codebezeichnung. Bezeichner in Codeblöcken und
@@ -113,3 +112,7 @@ Vermeiden:
 - Vermischung von Titan und Crystal;
 - automatische Gleichsetzung von Graphinhalt mit verifizierter Wahrheit;
 - Darstellung eines offenen PRs oder RFCs als Runtime.
+
+---
+
+> 🌐 🇬🇧 [English](../ARCHITECTURE.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/GLOSSARY.md)

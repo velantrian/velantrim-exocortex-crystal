@@ -1,7 +1,7 @@
 # 🔱 Velantrim ExoCortex — Crystal
 
-> 🌐 **Language:** **English** · [Deutsch](./README.de.md)  
-> 🇩🇪 [German reviewer documentation](./docs/de/README.md)
+> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md)  
+> 📚 [German documentation](./docs/de/README.md) · [Documentation française](./docs/fr/README.md)
 
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
@@ -241,12 +241,10 @@ Read in this order:
 6. [docs/EVAL.md](./docs/EVAL.md)
 7. [docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)
 
-German-language entry points:
+Localized reviewer paths:
 
-- [README.de.md](./README.de.md)
-- [docs/de/REVIEWER_GUIDE.md](./docs/de/REVIEWER_GUIDE.md)
-- [docs/de/QUICKSTART.md](./docs/de/QUICKSTART.md)
-- [docs/de/GRANT_OVERVIEW.md](./docs/de/GRANT_OVERVIEW.md)
+- 🇩🇪 [German reviewer guide](./docs/de/REVIEWER_GUIDE.md) · [Quickstart](./docs/de/QUICKSTART.md) · [Grant overview](./docs/de/GRANT_OVERVIEW.md)
+- 🇫🇷 [Guide reviewer français](./docs/fr/REVIEWER_GUIDE.md) · [Démarrage rapide](./docs/fr/QUICKSTART.md) · [Vue subvention](./docs/fr/GRANT_OVERVIEW.md)
 
 The pre-synchronization long-form README is preserved under
 `docs/archive/grant-sync/README_PRE_SYNC_2026-07-30.md` for historical context.
@@ -260,3 +258,7 @@ Crystal is licensed under **AGPL-3.0**. See [LICENSE](./LICENSE),
 [SECURITY.md](./SECURITY.md), and [PRIVACY.md](./PRIVACY.md).
 
 > **📊 Canon = admitted truth** · **🔗 Provenance = trust** · **🏠 Local-first = control**
+
+---
+
+> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md)
