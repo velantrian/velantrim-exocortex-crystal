@@ -1,6 +1,6 @@
 # 💶 Resumen de la subvención — Velantrim Crystal
 
-> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 [Deutsch](../de/GRANT_OVERVIEW.md) · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md) · 🇪🇸 **Español**
+> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 [Deutsch](../de/GRANT_OVERVIEW.md) · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md) · 🇪🇸 **Español** · 🇮🇹 [Italiano](../it/GRANT_OVERVIEW.md)
 >
 > Esta página es una ayuda de traducción y orientación. No sustituye la solicitud
 > presentada ni los documentos ingleses de milestones, presupuesto y criterios de
@@ -138,4 +138,4 @@ La fase actual no afirma ofrecer:
 
 ---
 
-> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 [Deutsch](../de/GRANT_OVERVIEW.md) · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md) · 🇪🇸 **Español**
+> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 [Deutsch](../de/GRANT_OVERVIEW.md) · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md) · 🇪🇸 **Español** · 🇮🇹 [Italiano](../it/GRANT_OVERVIEW.md)
