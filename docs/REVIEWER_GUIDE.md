@@ -1,5 +1,7 @@
 # Reviewer Guide — Velantrim ExoCortex (Crystal)
 
+> 🌐 **Language:** **English** · [Deutsch](./de/REVIEWER_GUIDE.md)
+
 > A fast, honest path for a reviewer to understand what Crystal is, verify it
 > runs, and check its core epistemic guarantees. Reflects the audit-hardening
 > work completed in this cycle (Tracks 1–3B).

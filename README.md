@@ -1,5 +1,8 @@
 # 🔱 Velantrim ExoCortex — Crystal
 
+> 🌐 **Language:** **English** · [Deutsch](./README.de.md)  
+> 🇩🇪 [German reviewer documentation](./docs/de/README.md)
+
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
 `v0.3.0` · 🧪 **1713 passed / 12 skipped** · 🎯 **100% coverage** · 🐍 **pure-stdlib default runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
@@ -237,6 +240,13 @@ Read in this order:
 5. [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
 6. [docs/EVAL.md](./docs/EVAL.md)
 7. [docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)
+
+German-language entry points:
+
+- [README.de.md](./README.de.md)
+- [docs/de/REVIEWER_GUIDE.md](./docs/de/REVIEWER_GUIDE.md)
+- [docs/de/QUICKSTART.md](./docs/de/QUICKSTART.md)
+- [docs/de/GRANT_OVERVIEW.md](./docs/de/GRANT_OVERVIEW.md)
 
 The pre-synchronization long-form README is preserved under
 `docs/archive/grant-sync/README_PRE_SYNC_2026-07-30.md` for historical context.
