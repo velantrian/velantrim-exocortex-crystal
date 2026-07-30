@@ -1,9 +1,9 @@
 # 📌 Velantrim Crystal — Aktueller Status
 
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/STATUS.md)
+> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md)
 
 **Statusdatum:** 30. Juli 2026  
-**Aktueller Repository-Stand für diese Übersetzung:** `main@356a09ba`  
+**Aktueller Repository-Stand für diese Übersetzung:** `main@2641748`  
 **Letzter Runtime-verändernder Checkpoint:** PR #265 / `cd6fd44`  
 **Verbindliche Testbasis:** [TEST_REPORT.md](../../TEST_REPORT.md)
 
@@ -147,4 +147,4 @@ werden.
 
 ---
 
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/STATUS.md)
+> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md)
