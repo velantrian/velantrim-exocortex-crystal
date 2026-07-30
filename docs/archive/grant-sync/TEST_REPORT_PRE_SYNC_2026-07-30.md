@@ -1,0 +1,282 @@
+# Test Report
+
+Honest, reproducible test results for Velantrim ExoCortex — Crystal. No inflated
+numbers: run the commands below and compare the figures.
+
+**Current audited baseline after v0.2.0 + TRACE Visualization v0 + CI coverage fixes + Crystal Invariant Checker + Refusal Reasons Taxonomy v0.1 + PR #137 safe repo hygiene/toolchain hardening + PRs #142–#144 Codex P2 hardening + PR #152 reviewer tooling, then the v0.3.0 reviewer-preview audit-hardening
+milestone (RRF helper #163, exact-dedup #164, per-fact ProvenanceChain #168,
+Docker hardening #170/#171, strict TruthPolicy default #172, write-path
+TruthGate audit #175), then the post-tag PDF span fix #182, then the ESM
+CAS-guard hardening, then the deterministic response_policy v0 (#201) and the
+Research Mode v0.5 scaffold under `prototypes/research_mode/` (#204), then the audit-hardening
+PR (Ring Zero sync guards, API epistemic ingest policy, force-override metadata,
+#206), then the P0 integrity follow-up (store_fact L0 cache consistency,
+audit/provenance write-lock serialization, import-session duplicate safety,
+#216), then the small correctness-hardening follow-up (TruthGate missing
+confidence, voluntary-write source_status, erase_fact no-op safety, CLI
+error handling, PII date false positive, #222), then the mutation-boundary
+quick-wins follow-up (#229), and finally the integrity-candidate stack
+(concurrent schema migration, promoted-claim identity protection,
+audit/provenance tail checkpoints, and serialized fact writers):
+**1685 passed / 12 skipped.**
+This file and the README badge are the only places that carry the exact
+count; all other documents reference this report so the number cannot
+silently drift.
+
+> **Integrated hardening verification (2026-07-12).** GitHub Actions passed the
+> complete suite independently on Python 3.11 and Python 3.12: **1685 passed /
+> 12 skipped / 0 failed**, with **6235 measured statements** and the enforced
+> **100.00% repo-wide coverage gate**. The same cycle also passed Ruff, Gitleaks,
+> Bandit, pip-audit, Docker build, eval-gate and JSONL-integrity checks. Pytest
+> logs are retained as CI artifacts for both Python versions.
+
+> **Integrity-candidate note (2026-07-10).** The current stacked Draft PRs add
+> schema-versioned migration serialization, immutable claim identity after
+> promotion, same-database head checkpoints for audit/provenance tail deletion,
+> and one SQLite→L0 publication order across facts-row writers. The integrated suite now measures
+> 1685 tests and 6235 statements (up from the 1377-test / 5860-statement
+> pre-hardening baseline) while
+> preserving the 100% line-coverage gate. Same-database checkpoints do not
+> claim to detect rollback/replacement of the complete database; that requires
+> an externally held checkpoint or backup.
+
+> **Mutation-boundary quick-wins note (#229).** A branch-coverage audit found
+> that 100% line coverage still let two mutants survive the full suite:
+> `truth_gate()`'s confidence check (`confidence < min_confidence`) with `<`
+> flipped to `<=`, and `reconcile.reinforce()`'s agreement formula with its
+> `obs + 1` denominator flipped to `obs + 2`. Both are now killed: exact-value
+> tests pin `reinforce()`'s agreement/disagreement math for observations 1→3,
+> boundary tests pin that `confidence == min_confidence` is admitted (the
+> strict `<` contract) on both the explicit and adaptive-threshold paths, and
+> an exhaustive 8×8 `ESM_TRANSITIONS` matrix test locks the epistemic-state
+> transition policy against silent edits. Tests-only change (no runtime files
+> touched); added 70 tests (1307 → 1377) while preserving the 100% coverage
+> gate — the measured statement surface is unchanged at 5860.
+
+> **Small correctness-hardening note.** Five audit-confirmed correctness/UX
+> bugs fixed after #216 merged, plus two Codex-review follow-ups: (1)
+> `truth_gate()` treats a missing `confidence` as a controlled rejection
+> instead of raising `KeyError`; (2) `volition.write_voluntary()` now passes
+> `source_status="USER_REPORTED"` explicitly instead of relying on
+> `classify_claim()`'s fallback; (3) `erase_fact()` is a true no-op for a
+> `fact_id` that never existed (no tombstone/audit/provenance event) while
+> still correctly erasing an L3-only orphan (a fact_id present only in the
+> canonical graph, not L1 — the Codex-review fix); (4) the
+> `retrieval-config-set` CLI returns a controlled `invalid retrieval
+> config: ...` error instead of a raw traceback on malformed numeric input;
+> (5) `pii.py`'s PHONE detector no longer false-flags a bare ISO-8601 date,
+> validated via `datetime.strptime` rather than shape alone (the
+> shape-only version, caught in Codex review, would have wrongly exempted
+> phone-like values such as `5555-12-34`). Added 8 tests (1299 → 1307) and
+> grew the measured surface by 25 statements (5835 → 5860) while preserving
+> the 100% coverage gate.
+
+> **P0 integrity follow-up note.** Three audit-confirmed integrity bugs fixed
+> after #206 merged: (1) `store_fact()` upsert no longer poisons the L0 cache
+> with a reset `restricted` flag or a fresh `created_at` on a conflict-update —
+> both are now re-read from the persisted row, like `epistemic_state` already
+> was; (2) `audit.append_event()` / `provenance_chain.append()` serialize their
+> read-tail-then-insert sequence with `BEGIN IMMEDIATE` plus a bounded retry
+> (`memory.call_with_lock_retry`) instead of racing on a computed `seq`, which
+> could drop events under concurrent writers (e.g. FastAPI's thread pool); (3)
+> `knowledge.ingest_claims()` now reports `new_fact_ids` (facts this call
+> actually created) separately from `fact_ids` (all accepted, including
+> duplicate hits of pre-existing facts), and `imports.import_file()` enrolls
+> only `new_fact_ids` into the import session — a session that only duplicated
+> an existing claim can no longer `erase_session()`/`restrict_session()` a fact
+> it never created. Added 7 tests (1292 → 1299) and grew the measured surface
+> by 24 statements (5811 → 5835) while preserving the 100% coverage gate.
+
+> **Audit hardening note.** Ring Zero sync-path guards, HTTP API token alignment,
+> ingest path sandboxing (`core/path_safety.py`), RRF wired into `retrieve()`,
+> Guardian baseline contract, eval-gate script pytest coverage, API epistemic
+> ingest policy, and force-override metadata added 40 tests (1252 → 1292) and
+> grew the measured surface by 350 statements (5461 → 5811) while preserving the
+> 100% coverage gate.
+
+> **PR #137 note.** The safe repo hygiene / toolchain hardening pass added 11
+> tests (1130 → 1141) and grew the measured surface by 28 statements
+> (5130 → 5158) while preserving the 100% coverage gate.
+
+> **PRs #142–#144 note.** The Codex P2 review hardening passes (adapter
+> parsing robustness, runtime bug fixes, eval_track completeness) added 17
+> tests (1141 → 1158) and grew the measured surface by 134 statements
+> (5158 → 5292) while preserving the 100% coverage gate.
+
+> **PR #152 note.** PR #152 added read-only reviewer tooling for `velantrim trace`
+> and `velantrim health`, adding 10 tests (1158 → 1168) and growing the measured
+> surface by 42 statements (5292 → 5334) while preserving the 100% coverage gate.
+
+> **v0.3.0 reviewer-preview note.** The audit-hardening milestone — RRF helper
+> (#163), exact-duplicate ingest dedup (#164), per-fact ProvenanceChain (#168),
+> Docker hardening (#170/#171), strict TruthPolicy production default (#172) and
+> the write-path TruthGate audit (#175) — took the suite 1168 → 1209 tests and
+> the measured surface 5334 → 5461 statements while preserving the 100% coverage
+> gate. After this milestone the runtime is frozen (reviewer-facing packaging
+> only).
+
+> **PR #182 note.** A post-tag span fix for repeated identical PDF paragraphs
+> (#182, `core/adapters/pdf_adapter.py`) added 1 test in `tests/test_wp1_spans.py`,
+> taking the suite 1209 → 1210 while preserving the 100% coverage gate. PR #183
+> was docs-only (epistemic dogfooding cases log) and did not change the count.
+
+> **PR #201 note.** PR #201 merged the deterministic read-path `response_policy v0`
+> module (`core/response_policy.py`, `docs/RESPONSE_POLICY_V0.md`), adding 11 tests
+> in `tests/test_response_policy.py` while preserving the 100% coverage gate. It is
+> a pure read-path policy: it does not change write-path admission, does not write
+> to Canon/L3, and does not replace the TruthGate.
+
+> **PR #204 note.** PR #204 merged the **Research Mode v0.5 scaffold** under
+> `prototypes/research_mode/` (`prototypes/research_mode/essence_card.py`), adding
+> 20 tests in `tests/test_research_mode_essence_card.py` while preserving the 100%
+> coverage gate. This PR **changed the suite total** to the current 1252 passed /
+> 12 skipped. The scaffold is immutable data contracts, a pure transition helper
+> and validators only: it is **not** wired into runtime, TruthGate, storage,
+> extractors, workers or a dashboard, and lives under `prototypes/` (excluded from
+> the installable package list), not in `core/`.
+
+## Summary
+
+| Metric | Value |
+|--------|-------|
+| **Tests passing** | **1685** |
+| Tests skipped | 12 |
+| Tests failing | 0 |
+| **Total coverage** | **100%** (gate enforced at 100%, repo-wide `--cov=.`) |
+| Test files | 74 (`tests/test_*.py`) |
+| Python | 3.11 / 3.12 in CI |
+| Runtime dependencies | standard library only |
+
+The 100% coverage gate is enforced in `pyproject.toml` (`--cov=. --cov-fail-under=100`)
+and in CI with the same flags. The 12 skipped tests cover optional backends
+(LadybugDB, sentence-transformers, Neo4j, Anthropic) that are not installed in
+the default environment; their backend-specific code paths are excluded via
+`pragma: no cover`. Reaching the figures below requires the dev environment from
+`requirements-dev.txt` (it installs the optional layers — FastAPI, cryptography,
+PyYAML, pypdf, rdflib, ebooklib, requests — that the suite exercises so coverage
+reflects the whole codebase; none of them are runtime dependencies).
+
+## How to reproduce
+
+```bash
+# Recommended: single-step editable install (aligns with the [dev] extra)
+pip install -e '.[dev]'
+pytest tests/ --cov=. --cov-fail-under=100
+```
+
+The `requirements-dev.txt` file is the equivalent CI path and stays aligned with
+the `[dev]` extra; either installs the same environment. On CI:
+
+```bash
+pip install -r requirements-dev.txt
+pip install -e .
+pytest tests/ --cov=. --cov-fail-under=100
+```
+
+> **Coverage reproducibility note.** The 100% figure is measured under the
+> **full dev environment** above (all `requirements-dev.txt` / `[dev]` optional
+> layers installed, plus the editable install). In a **partial or pytest-only
+> environment** — where one or more of those layers (FastAPI/httpx,
+> cryptography, PyYAML, pypdf, rdflib, ebooklib, requests) is missing — the
+> matching test modules `pytest.importorskip(...)` and skip, which leaves the
+> optional API and knowledge-adapter surfaces they exercise **uncovered**.
+> Coverage then reports **below 100% and the `--cov-fail-under=100` gate
+> "fails" locally**, even though nothing is actually broken — you are simply
+> not running the tests that cover those lines. If you see a coverage failure,
+> first confirm the full dev environment is installed (no `SKIPPED` lines for
+> the API/adapter modules) before treating it as a real regression. The
+> authoritative gate is CI (`.github/workflows/ci.yml`, Python 3.11 + 3.12),
+> which installs the full environment and enforces the same flags.
+
+## Coverage summary
+
+| Metric | Verified value |
+|---|---:|
+| Repo-wide measured statements | **6235** |
+| Missing statements | **0** |
+| Total line coverage | **100.00%** |
+| `core/audit.py` | 90 / 90 |
+| `core/l3_graph.py` | 288 / 288 |
+| `core/memory.py` | 341 / 341 |
+| `core/pipeline.py` | 406 / 406 |
+| `core/provenance_chain.py` | 69 / 69 |
+
+The complete per-file table is emitted by pytest-cov and retained in the
+Python 3.11 and 3.12 CI log artifacts. Keeping the generated table in CI rather
+than copying every row into this document prevents per-module counts from
+silently drifting after code-only changes.
+
+## What the tests cover
+
+| Area | Test file |
+|------|-----------|
+| Memory layers (L0/L1), ESM transitions, Ring Zero (I6) | `test_memory.py`, `test_esm.py` |
+| End-to-end pipeline (retrieve → gate → L3 → answer) | `test_pipeline.py`, `test_guardian_contract.py` |
+| Ingest path sandboxing (`core/path_safety.py`) | `test_path_safety.py` |
+| CI eval quality gate script | `test_eval_gate_script.py` |
+| Pluggable re-merge queue (SQLite/Redis backends, fallback) & async entry points | `test_queue.py` |
+| Immune / CRISPR Memory Guard (RFC0072) — threat memory, screening, strict/learn, CLI | `test_immune.py` |
+| Fractal Memory Layer (RFC0070) — anchor strength, reanchor/spill, decay protection, CLI | `test_fractal.py` |
+| Concept Emergence (RFC0066) — Hebbian weights, union-find clustering, emerge/lookup, CLI | `test_concept.py` |
+| Memory Volition (RFC0065) — salience, voluntary writes through the gates, rehearsal, CLI | `test_volition.py` |
+| L1.5 Velum (RFC0016) — synaptic edges, signals, session decay, GC, degree cache, CLI | `test_velum.py` |
+| Analogy Graph / Bridges / CREATIVE (RFC0067) — edges, structural similarity, bridges, temperature, CLI | `test_analogy.py` |
+| Neurogenesis Dynamic Growth (RFC0073) — plasticity, pattern separation, growth/prune, CLI | `test_neurogenesis.py` |
+| NeuroCore Phase 0 (RFC0068) — passive plasticity tracker, threshold, I68 isolation, CLI | `test_neurocore.py` |
+| External knowledge ingestion (RFC0063) — txt/md/json/jsonl/csv parsers, TruthGate routing, `learn` CLI | `test_knowledge.py` |
+| Optional knowledge adapters (WP4) — YAML, PDF, RDF/Linked Data, EPUB, BibTeX, Wikidata | `test_adapters.py` |
+| Source span offsets (WP1) — `locate_claim`, `extract_section`, `snippet_around` pure utilities | `test_span_extract.py` |
+| Source span offsets (WP1) integration — `ingest_text` / `ingest_claims` span recording, adapter-supplied spans, PDF page chunks | `test_wp1_spans.py` |
+| Evaluation harness — retrieval/trace/receipt + source-span coverage & contradiction precision/recall, `eval` CLI | `test_eval.py` |
+| Per-release eval tracking (WP3) — trend logging, Markdown trend report, `eval_track` CLI | `test_eval_track.py` |
+| TRACE Visualization v0 — read-only receipt formatter (Markdown + DOT), per-citation verify status, trace-array input, CLI | `test_trace_visualize.py` |
+| Crystal Invariant Checker — read-only at-rest invariant scan, 3 implemented checks + 2 SKIPPED_UNSUPPORTED, exit codes, reason_code integration | `test_invariant_check.py` |
+| Refusal Reasons Taxonomy v0.1 — 13 reason codes, severity levels, API (get/list/is_valid/format), module constants | `test_refusal_reasons.py` |
+| Reviewer tooling (PR #152) — `velantrim trace` read-only receipt/trace pretty-printer (file/stdin, `--json`, unrecognized→exit 1) and `velantrim health` diagnostic memory-health score | `test_cli.py`, `test_health.py` |
+| Import sessions & dry-run review (WP2) — predict-without-write, session restrict/erase, `learn --dry-run` | `test_imports.py` |
+| Curator review queue (WP2) — pending/diagnose/approve/reject, audited force override | `test_review.py` |
+| Resumable review sessions (WP2) — create/resume/record/complete, stable-order batch, no-write invariant | `test_review_resumable.py` |
+| Force override audit pinning (WP2) — RuntimeWarning, content-free, audit event, metric, rejection guards | `test_force_override_audit.py` |
+| KB dry-run batch manifest (WP2/WP4) — JSONL/JSON/NDJSON manifest, accept/block/conflict verdicts, no-write, CLI | `test_kb_dryrun.py` |
+| Optional FastAPI service layer — endpoint parity with the CLI, no gate bypass | `test_api.py` |
+| Read-only MCP server (JSON-RPC over stdio) | `test_mcp_server.py` |
+| L3 canonical graph adapter & backends | `test_l3_graph.py` |
+| On-disk SQLite L3 backend (persistence, erase, vectors, entities) | `test_l3_sqlite.py` |
+| Packaging contract (entry point, version, package surface) | `test_packaging.py` |
+| Embeddings (hashing + optional sbert) | `test_embedding.py` |
+| Answer generation (extractive + optional Claude) + A9 LLM call safety (bounded retry/backoff) | `test_generation.py` |
+| Ingestion & claim-type classification | `test_ingest.py` |
+| Truth maintenance (reinforce/supersede/contradict) | `test_reconcile.py` |
+| Contradiction classifier (negation/antonym/numeric, auto-contradict) | `test_contradiction.py` |
+| Consolidation / FSRS-style decay | `test_consolidate.py` |
+| Provenance trace | `test_trace.py` |
+| Verifiable answer receipts (digest, HMAC, replay/drift detection) | `test_provenance.py` |
+| Evidence span store + Receipt v2 (source-span provenance, replay, `evidence` CLI) | `test_evidence.py` |
+| GDPR Art. 17 physical erasure, cascade & tombstones | `test_erasure.py` |
+| GDPR Art. 18 restriction & Art. 30 record-of-processing | `test_compliance.py` |
+| GDPR Art. 32 encryption at rest (round-trip, tamper, at-rest ciphertext) | `test_crypto.py` |
+| Tamper-evident audit log (hash chain, tamper detection, HMAC signing) | `test_audit.py` |
+| PII detection & redaction (email/phone/card/IPv4/IBAN, Luhn, overlap) | `test_pii.py` |
+| Adaptive TruthGate threshold | `test_adaptation.py` |
+| Observability & metrics | `test_observe.py`, `test_metrics.py` |
+| Migration tooling & rollback | `test_migration.py`, `test_migration_extra.py` |
+| Metadata audit scripts | `test_audit_scripts.py`, `test_audit_regressions.py` |
+| P0 cross-audit hardening (`VELANTRIM_DB` isolation, `_sync_l3` outbox recovery, consolidate None guard) | `test_p0_hardening.py` |
+| RFC parsing | `test_rfc_parser.py` |
+| Biological-inspiration prototypes | `test_bio_modules.py`, `test_hybrid_biological_memory.py` |
+
+*The per-module table below was regenerated on 2026-06-17 for the v0.3.0 reviewer
+preview (audit-hardening milestone: RRF #163, exact-dedup #164, ProvenanceChain
+#168, Docker hardening #170/#171, strict TruthPolicy default #172, write-path
+TruthGate audit #175) from a live `--cov=.` run at 1209 passed / 12 skipped /
+100%. The post-tag PDF span fix #182 then added one test in
+`tests/test_wp1_spans.py` (1209 → 1210); the ESM CAS-guard hardening then added
+two tests in `tests/test_esm.py`, then the CAS-miss caller-abort guards added four
+tests across `tests/test_review.py`, `tests/test_ingest.py` and `tests/test_pipeline.py`,
+then `response_policy v0` (#201, 11 tests) and the Research Mode v0.5 scaffold
+(#204, 20 tests), then the audit-hardening PR (40 tests across Ring Zero sync
+guards, API epistemic ingest policy, path sandbox, RRF behavior, and
+force-override metadata), so the current total is **1292 passed / 12 skipped /
+100%** (confirmed by CI). The per-module rows predate #182 and will be
+regenerated at the next full audit. All figures are reproduced by running the
+commands above.*
