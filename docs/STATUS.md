@@ -1,6 +1,6 @@
 # 📌 Velantrim Crystal — Current Status
 
-> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./de/STATUS.md) · 🇫🇷 [Français](./fr/STATUS.md) · 🇪🇸 [Español](./es/STATUS.md)
+> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./de/STATUS.md) · 🇫🇷 [Français](./fr/STATUS.md) · 🇪🇸 [Español](./es/STATUS.md) · 🇮🇹 [Italiano](./it/STATUS.md)
 
 **Status date:** 2026-07-30  
 **Current implementation truth:** GitHub `main` at `cd6fd44ff4ac8c715121cae1996aa484f11ef250`  
@@ -145,6 +145,7 @@ Localized reviewer paths:
 - 🇩🇪 [Reviewer-Leitfaden](./de/REVIEWER_GUIDE.md) · [Schnellstart](./de/QUICKSTART.md) · [Grant-Übersicht](./de/GRANT_OVERVIEW.md)
 - 🇫🇷 [Guide reviewer](./fr/REVIEWER_GUIDE.md) · [Démarrage rapide](./fr/QUICKSTART.md) · [Vue subvention](./fr/GRANT_OVERVIEW.md)
 - 🇪🇸 [Guía para reviewers](./es/REVIEWER_GUIDE.md) · [Inicio rápido](./es/QUICKSTART.md) · [Resumen de subvención](./es/GRANT_OVERVIEW.md)
+- 🇮🇹 [Guida per reviewer](./it/REVIEWER_GUIDE.md) · [Avvio rapido](./it/QUICKSTART.md) · [Panoramica della sovvenzione](./it/GRANT_OVERVIEW.md)
 
 The previous long-form status snapshot is preserved byte-for-byte at:
 
@@ -152,4 +153,4 @@ The previous long-form status snapshot is preserved byte-for-byte at:
 
 ---
 
-> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./de/STATUS.md) · 🇫🇷 [Français](./fr/STATUS.md) · 🇪🇸 [Español](./es/STATUS.md)
+> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./de/STATUS.md) · 🇫🇷 [Français](./fr/STATUS.md) · 🇪🇸 [Español](./es/STATUS.md) · 🇮🇹 [Italiano](./it/STATUS.md)
