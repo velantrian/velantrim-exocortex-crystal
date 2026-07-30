@@ -1,7 +1,6 @@
 # 🚀 Schnellstart — Velantrim Crystal
 
-> 🌐 [Deutsche Dokumentation](./README.md) ·
-> [English quick paths](../../README.md)
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/QUICKSTART.md)
 >
 > **Hinweis:** Befehle, Paketnamen, Umgebungsvariablen und API-Pfade werden nicht
 > übersetzt. Bei Abweichungen gelten die englischen Dokumente und GitHub `main`.
@@ -150,3 +149,7 @@ nicht als vollständig mutationsfreier Pfad beschrieben.
 - [Glossar](./GLOSSARY.md)
 - [Verbindliche Architektur](../ARCHITECTURE.md)
 - [Verbindliche Evaluation](../EVAL.md)
+
+---
+
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/QUICKSTART.md)
