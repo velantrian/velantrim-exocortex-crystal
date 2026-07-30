@@ -1,6 +1,6 @@
 # 📖 Glossar — Velantrim Crystal auf Deutsch
 
-> 🌐 🇬🇧 [English](../ARCHITECTURE.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/GLOSSARY.md)
+> 🌐 🇬🇧 [English](../ARCHITECTURE.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/GLOSSARY.md) · 🇪🇸 [Español](../es/GLOSSARY.md)
 >
 > Dieses Glossar vereinheitlicht die deutsche Sprache, ersetzt aber keine
 > englische API-, Schema- oder Codebezeichnung. Bezeichner in Codeblöcken und
@@ -115,4 +115,4 @@ Vermeiden:
 
 ---
 
-> 🌐 🇬🇧 [English](../ARCHITECTURE.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/GLOSSARY.md)
+> 🌐 🇬🇧 [English](../ARCHITECTURE.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/GLOSSARY.md) · 🇪🇸 [Español](../es/GLOSSARY.md)
