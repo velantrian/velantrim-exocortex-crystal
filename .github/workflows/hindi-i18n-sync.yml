@@ -1,0 +1,100 @@
+name: Temporary Hindi i18n sync
+
+on:
+  push:
+    branches:
+      - agent/crystal-hindi-documentation
+
+permissions:
+  contents: write
+
+jobs:
+  sync-markdown:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/crystal-hindi-documentation
+          fetch-depth: 0
+
+      - name: Add Hindi navigation to localized Markdown
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          root_files = [
+              Path('README.md'),
+              Path('README.de.md'),
+              Path('README.fr.md'),
+              Path('README.es.md'),
+              Path('README.it.md'),
+              Path('README.ru.md'),
+              Path('README.zh-CN.md'),
+              Path('README.ar.md'),
+              Path('README.ja.md'),
+          ]
+          docs_files = [Path('docs/STATUS.md'), Path('docs/REVIEWER_GUIDE.md')]
+          names = ['README.md', 'QUICKSTART.md', 'STATUS.md', 'REVIEWER_GUIDE.md', 'GRANT_OVERVIEW.md', 'GLOSSARY.md']
+          for lang in ['de', 'fr', 'es', 'it', 'ru', 'zh-CN', 'ar', 'ja']:
+              docs_files.extend(Path('docs') / lang / name for name in names)
+
+          changed = []
+          for path in root_files + docs_files:
+              text = path.read_text(encoding='utf-8')
+              lines = text.splitlines()
+              out = []
+              for line in lines:
+                  if line.startswith('> 🌐') and 'हिन्दी' not in line:
+                      if path.parent == Path('.'):
+                          link = './README.hi.md'
+                      elif path == Path('docs/STATUS.md'):
+                          link = './hi/STATUS.md'
+                      elif path == Path('docs/REVIEWER_GUIDE.md'):
+                          link = './hi/REVIEWER_GUIDE.md'
+                      else:
+                          link = f'../hi/{path.name}'
+                      line += f' · 🇮🇳 [हिन्दी]({link})'
+                  if line.startswith('> 📚') and 'हिन्दी दस्तावेज़' not in line and path.parent == Path('.'):
+                      line += ' · [हिन्दी दस्तावेज़](./docs/hi/README.md)'
+                  out.append(line)
+              new = '\n'.join(out)
+              if text.endswith('\n'):
+                  new += '\n'
+
+              if path.parent.parent == Path('docs') and path.name in {'README.md', 'STATUS.md'}:
+                  new = re.sub(r'main@[0-9a-f]{8}', 'main@c5a34a64', new)
+
+              if path == Path('README.md') and '🇮🇳 [हिन्दी reviewer guide]' not in new:
+                  anchor = '- 🇯🇵 [日本語 reviewer guide](./docs/ja/REVIEWER_GUIDE.md) · [クイックスタート](./docs/ja/QUICKSTART.md) · [Grant 概要](./docs/ja/GRANT_OVERVIEW.md)'
+                  addition = anchor + '\n- 🇮🇳 [हिन्दी reviewer guide](./docs/hi/REVIEWER_GUIDE.md) · [Quickstart](./docs/hi/QUICKSTART.md) · [Grant overview](./docs/hi/GRANT_OVERVIEW.md)'
+                  new = new.replace(anchor, addition)
+
+              if path == Path('docs/STATUS.md') and '🇮🇳 [हिन्दी reviewer guide]' not in new:
+                  anchor = '- 🇯🇵 [日本語 reviewer guide](./ja/REVIEWER_GUIDE.md) · [クイックスタート](./ja/QUICKSTART.md) · [Grant 概要](./ja/GRANT_OVERVIEW.md)'
+                  addition = anchor + '\n- 🇮🇳 [हिन्दी reviewer guide](./hi/REVIEWER_GUIDE.md) · [Quickstart](./hi/QUICKSTART.md) · [Grant overview](./hi/GRANT_OVERVIEW.md)'
+                  new = new.replace(anchor, addition)
+
+              if new != text:
+                  path.write_text(new, encoding='utf-8')
+                  changed.append(str(path))
+
+          print(f'updated {len(changed)} Markdown files')
+          for item in changed:
+              print(item)
+          PY
+
+      - name: Commit synchronized Markdown
+        shell: bash
+        run: |
+          if git diff --quiet -- '*.md'; then
+            echo 'No Markdown changes required.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- '*.md'
+          git commit -m 'docs(i18n): synchronize Hindi navigation'
+          git push origin HEAD:agent/crystal-hindi-documentation
