@@ -70,15 +70,21 @@ curl http://127.0.0.1:8000/health
 
 ### TruthGate
 
-Strict policy production default है। केवल `ENABLE_TRUTH_POLICY=off` legacy bypass enable करता है।
-`LLM_OUTPUT` अकेले `WORLD_FACT` के रूप में Canon में automatically admitted नहीं होता।
+`LLM_OUTPUT` अकेले `WORLD_FACT` के रूप में admitted नहीं हो सकता। यह Ring Zero
+rule non-configurable है। पुराने `ENABLE_TRUTH_POLICY` values — `off` सहित — अब
+inert हैं; process environment इसे disable नहीं कर सकता। Tests, demos और
+migrations को gate कमजोर करने के बजाय honest independent provenance देना होगा
+या उपयुक्त non-world-fact type चुनना होगा।
+
+Authoritative behavior proof `tests/test_truth_gate.py` है और decision record
+[`ADR-011`](../adr/ADR-011-NON_CONFIGURABLE_TRUTH_POLICY.md) है।
 
 ```bash
 velantrim invariant-check
 ```
 
-`invariant-check` existing L3 state का read-only scan है। यह TruthGate admission स्वयं execute नहीं करता।
-Authoritative behavior proof `tests/test_truth_gate.py` है।
+`invariant-check` existing L3 state का read-only scan है। यह TruthGate admission
+स्वयं execute नहीं करता, इसलिए केवल यह command LLM-origin block का proof नहीं है।
 
 ### Receipt
 
@@ -100,34 +106,37 @@ velantrim audit-verify
 
 ### Accountable override
 
-Blocked fact का curator force-override, `review_force_approve` और concrete `gate_reason` के साथ record होता है।
-Override silent नहीं होता।
+Blocked fact का curator force-override `review_force_approve`, actor, reason और
+concrete `gate_reason` के साथ record होता है। Override TruthGate decision को
+बदलता नहीं; वह अलग explicit governance action है।
 
-## 7. HTTP read-only boundary
+## 7. Read-only query boundary
 
 ```text
-POST /ask, GET /receipt
-→ core.aio.arun()
-→ core.query_pipeline.query()
-→ existing Canon only
-→ CanonicalView
-→ answer / bounded refusal
+HTTP /ask, /receipt
+CLI ask, receipt
+MCP search
+→ core.query_pipeline
+→ existing L3 facts only
+→ confident answer के लिए CanonicalView
+→ answer / bounded refusal / inspection rows
 ```
 
-यह guarantee केवल HTTP `/ask` और `/receipt` तक सीमित है। CLI compatibility path और MCP residual scope तक
-इसी zero-mutation claim का विस्तार न करें।
+इन query/search surfaces पर L0/L1 facts create नहीं होते, ESM transition नहीं
+होता, L3 mutate नहीं होता, outbox touch नहीं होता, episode record नहीं होता और
+unset embedding fingerprint initialize नहीं होता। MCP search inspection surface
+है; यह दावा नहीं करता कि हर physical L3 node strict Canon का हिस्सा है।
 
 ## 8. मुख्य limitations
 
 - `ProvenanceChain` lifecycle wiring में erase path के बाहर follow-up बाकी है;
 - knowledge graph data verifier future work है;
-- canonical write-path expansion सीमित है;
-- RRF rank fusion helper `retrieve()` से connected नहीं है;
+- physical L3 और strict CanonicalView समान नहीं हैं;
+- adaptive confidence threshold अभी context-dependent है;
 - Research Mode / Noetic / Titan console / PWA / BICA runtime नहीं हैं।
 
 ## 9. Reviewer checklist
 
-- [ ] diff केवल Markdown है;
 - [ ] technical identifiers बदले नहीं गए;
 - [ ] relative links सही हैं;
 - [ ] हिन्दी claim अंग्रेज़ी authoritative source से अधिक मजबूत नहीं है;
