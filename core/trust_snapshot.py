@@ -130,9 +130,18 @@ class TrustSnapshot:
 
         state_raw = l3.get("epistemic_state")
         state = _string_or_none(state_raw)
+        confidence = _confidence_or_none(l3.get("confidence"))
         l3_restricted = normalize_restricted_bit(l3.get("restricted"))
         restricted = l3_restricted
         conflicts: list[str] = []
+
+        # Confidence is a trust field, not display metadata. Missing, malformed,
+        # non-finite or out-of-range L3 confidence is itself a store-integrity
+        # conflict even when no L1 row exists. Preserve the unknown as None in the
+        # typed snapshot; the compatibility mapping may use a legacy safe sentinel.
+        if confidence is None:
+            conflicts.append("confidence")
+            state = STORE_STATE_CONFLICT
 
         if l1 is not None:
             l1_state_raw = l1.get("epistemic_state")
@@ -170,7 +179,7 @@ class TrustSnapshot:
             fact_id=fact_id,
             claim=_string_or_none(l3.get("claim")),
             source=_string_or_none(l3.get("source")),
-            confidence=_confidence_or_none(l3.get("confidence")),
+            confidence=confidence,
             epistemic_state=state,
             claim_type=_claim_type_value(l3),
             source_status=_source_status_value(l3),
@@ -182,12 +191,19 @@ class TrustSnapshot:
         )
 
     def to_fact_dict(self) -> dict[str, Any]:
-        """Return a fresh compatibility dict for existing Guardian/View code."""
+        """Return a fresh compatibility dict for existing Guardian/View code.
+
+        Existing mapping consumers historically receive 0.0 for malformed
+        confidence. Preserve that safe outward sentinel during this narrow
+        migration while the typed snapshot retains None plus a confidence
+        conflict, so unknown/corrupt metadata is not confused with a real zero
+        inside the trust boundary.
+        """
         return {
             "fact_id": self.fact_id,
             "claim": self.claim,
             "source": self.source,
-            "confidence": self.confidence,
+            "confidence": 0.0 if self.confidence is None else self.confidence,
             "epistemic_state": self.epistemic_state,
             "claim_type": self.claim_type,
             "source_status": self.source_status,
