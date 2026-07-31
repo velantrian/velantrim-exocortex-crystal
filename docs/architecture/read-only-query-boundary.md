@@ -105,18 +105,43 @@ Processing-restricted rows are excluded before claim/source content is returned.
 `query()` additionally runs Guardian's structural check and CanonicalView's
 strict projection before producing a confident answer.
 
-## Trust reconciliation
+## Immutable trust reconciliation
 
 L3 supplies stored claim and verdict fields. L1 is consulted deny-dominantly for
-a newer terminal ESM state or processing restriction.
+a newer terminal ESM state, processing restriction or trust-metadata drift.
+
+The resolver does not assemble those fields by mutating a shared dictionary.
+It first creates a frozen, slotted `core.trust_snapshot.TrustSnapshot`, completes
+all consistency decisions, and only then emits a fresh compatibility mapping for
+Guardian and CanonicalView.
+
+```text
+physical L3 node
+        +
+optional L1 deny state
+        +
+retrieval score
+        ↓
+immutable TrustSnapshot
+        ↓
+fresh fact mapping
+        ↓
+Guardian + CanonicalView
+```
 
 Representation-only differences do not create false trust conflicts:
 
-- confidence uses the established numeric tolerance;
-- missing `claim_type` uses the same default as the served fact;
+- confidence uses numeric tolerance;
+- missing L3 `claim_type` uses the established `WORLD_FACT` default;
 - equivalent normalized values remain equivalent.
 
-Genuine confidence, claim-type or source-status disagreement still fails closed.
+Genuine confidence, claim-type, source-status or non-terminal ESM disagreement
+sets the snapshot to `STORE_STATE_CONFLICT` and records only content-free
+conflict categories. Malformed confidence becomes unknown rather than being
+coerced into a trusted `0.0` value. A confirmed restriction on either store wins.
+
+This is a boundary-object baseline, not a repository-wide fact-schema migration.
+See [ADR-012](../adr/ADR-012-IMMUTABLE_TRUST_SNAPSHOT.md).
 
 ## Stable query response markers
 
@@ -156,7 +181,9 @@ Additional tests assert that:
 - restricted search rows and their content are not returned;
 - invalid search limits fail explicitly;
 - CLI `ask` and `receipt` call the public read-only query service directly;
-- MCP search delegates to the public read-only search contract.
+- MCP search delegates to the public read-only search contract;
+- trust snapshots are frozen, scalar-only and independent of input mutation;
+- L1 terminal states/restrictions and genuine metadata drift fail closed.
 
 Repository CI remains the authoritative verification evidence for each merged
 revision.
@@ -166,6 +193,11 @@ revision.
 `core.pipeline.run()` remains admission-capable for legacy/internal callers that
 explicitly choose it. It is no longer used by CLI `ask` or `receipt`. Removing or
 renaming that compatibility function requires a separate deprecation cycle.
+
+The legacy admission path still reconciles transient mutable fact dictionaries
+through its existing behaviour-pinned functions. Adopting `TrustSnapshot` there
+requires a separate migration because that path intentionally performs L1 repair
+and L3 admission work, unlike this pure read boundary.
 
 ## Grant boundary
 
