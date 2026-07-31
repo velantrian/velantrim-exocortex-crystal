@@ -44,7 +44,7 @@ A translation must never strengthen the English source. In particular, it must n
 ## 4. Preserved identifiers
 
 Contract identifiers, code symbols, CLI commands, environment variables, paths, and API endpoints remain unchanged.
-The required identifier list is maintained in `locales.json` and includes:
+The machine-enforced core list is maintained in `locales.json` and includes:
 
 ```text
 TruthGate
@@ -53,10 +53,9 @@ CanonicalView
 TRACE
 Receipt
 Canon
-ProvenanceChain
-WORLD_FACT
-LLM_OUTPUT
 ```
+
+Additional identifiers such as `ProvenanceChain`, `WORLD_FACT`, and `LLM_OUTPUT` must also remain unchanged wherever they occur, but older glossaries are not required to introduce terms absent from their source version.
 
 Localized prose may explain these terms, but must not rename them.
 
