@@ -33,9 +33,7 @@ def test_version_is_pep440_valid(pyproject):
 
 def test_console_script_target_is_importable(pyproject):
     target = pyproject["project"]["scripts"]["velantrim"]
-    # The installed CLI must enter the read-only query wrapper; the wrapper
-    # delegates every non-query command to the established core.cli module.
-    assert target == "core.cli_entry:main"
+    assert target == "core.cli:main"
     module, _, func = target.partition(":")
     import importlib
     entry = getattr(importlib.import_module(module), func)
