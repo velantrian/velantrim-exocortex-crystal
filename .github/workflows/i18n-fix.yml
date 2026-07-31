@@ -1,0 +1,47 @@
+name: Temporary i18n repair
+
+on:
+  push:
+    branches:
+      - agent/crystal-i18n-maintenance
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/crystal-i18n-maintenance
+      - name: Repair canonical English selector links
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          files = [
+              Path('docs/ja/QUICKSTART.md'),
+              Path('docs/hi/QUICKSTART.md'),
+              Path('docs/ja/GLOSSARY.md'),
+              Path('docs/hi/GLOSSARY.md'),
+          ]
+          for path in files:
+              text = path.read_text(encoding='utf-8')
+              if path.name == 'QUICKSTART.md':
+                  text = text.replace('[English](../QUICKSTART.md)', '[English](../../README.md)')
+              else:
+                  text = text.replace('[English](../GLOSSARY.md)', '[English](../../README.md)')
+              path.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit repair
+        run: |
+          if git diff --quiet -- '*.md'; then
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- '*.md'
+          git commit -m 'docs(i18n): repair canonical selector links'
+          git push origin HEAD:agent/crystal-i18n-maintenance
