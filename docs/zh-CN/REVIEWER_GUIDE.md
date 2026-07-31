@@ -1,6 +1,6 @@
 # 🔍 Reviewer 指南 — Velantrim Crystal
 
-> 🌐 🇬🇧 [English](../REVIEWER_GUIDE.md) · 🇩🇪 [Deutsch](../de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](../fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](../es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](../it/REVIEWER_GUIDE.md) · 🇷🇺 [Русский](../ru/REVIEWER_GUIDE.md) · 🇨🇳 **简体中文** · 🇸🇦 [العربية](../ar/REVIEWER_GUIDE.md)
+> 🌐 🇬🇧 [English](../REVIEWER_GUIDE.md) · 🇩🇪 [Deutsch](../de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](../fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](../es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](../it/REVIEWER_GUIDE.md) · 🇷🇺 [Русский](../ru/REVIEWER_GUIDE.md) · 🇨🇳 **简体中文** · 🇸🇦 [العربية](../ar/REVIEWER_GUIDE.md) · 🇯🇵 [日本語](../ja/REVIEWER_GUIDE.md)
 >
 > 本页提供简体中文验证路线，不引入新的 runtime、grant、compliance 或
 > security claim。如有差异，以 GitHub `main`、[docs/STATUS.md](../STATUS.md)
@@ -187,4 +187,4 @@ Reviewer 应明确区分现有 baseline 与申请的 delta：
 
 ---
 
-> 🌐 🇬🇧 [English](../REVIEWER_GUIDE.md) · 🇩🇪 [Deutsch](../de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](../fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](../es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](../it/REVIEWER_GUIDE.md) · 🇷🇺 [Русский](../ru/REVIEWER_GUIDE.md) · 🇨🇳 **简体中文** · 🇸🇦 [العربية](../ar/REVIEWER_GUIDE.md)
+> 🌐 🇬🇧 [English](../REVIEWER_GUIDE.md) · 🇩🇪 [Deutsch](../de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](../fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](../es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](../it/REVIEWER_GUIDE.md) · 🇷🇺 [Русский](../ru/REVIEWER_GUIDE.md) · 🇨🇳 **简体中文** · 🇸🇦 [العربية](../ar/REVIEWER_GUIDE.md) · 🇯🇵 [日本語](../ja/REVIEWER_GUIDE.md)

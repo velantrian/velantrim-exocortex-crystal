@@ -1,6 +1,6 @@
 # 🔍 دليل المراجع — Velantrim Crystal
 
-> 🌐 🇬🇧 [English](../REVIEWER_GUIDE.md) · 🇩🇪 [Deutsch](../de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](../fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](../es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](../it/REVIEWER_GUIDE.md) · 🇷🇺 [Русский](../ru/REVIEWER_GUIDE.md) · 🇨🇳 [简体中文](../zh-CN/REVIEWER_GUIDE.md) · 🇸🇦 **العربية**
+> 🌐 🇬🇧 [English](../REVIEWER_GUIDE.md) · 🇩🇪 [Deutsch](../de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](../fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](../es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](../it/REVIEWER_GUIDE.md) · 🇷🇺 [Русский](../ru/REVIEWER_GUIDE.md) · 🇨🇳 [简体中文](../zh-CN/REVIEWER_GUIDE.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/REVIEWER_GUIDE.md)
 >
 > توفر هذه الصفحة مسار تحقق بالعربية. لا تقدم claim جديداً حول runtime أو المنحة
 > أو compliance أو security. عند الاختلاف تكون GitHub `main` و[docs/STATUS.md](../STATUS.md)
@@ -187,4 +187,4 @@ deliverable قابلة للتحقق المستقل
 
 ---
 
-> 🌐 🇬🇧 [English](../REVIEWER_GUIDE.md) · 🇩🇪 [Deutsch](../de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](../fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](../es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](../it/REVIEWER_GUIDE.md) · 🇷🇺 [Русский](../ru/REVIEWER_GUIDE.md) · 🇨🇳 [简体中文](../zh-CN/REVIEWER_GUIDE.md) · 🇸🇦 **العربية**
+> 🌐 🇬🇧 [English](../REVIEWER_GUIDE.md) · 🇩🇪 [Deutsch](../de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](../fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](../es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](../it/REVIEWER_GUIDE.md) · 🇷🇺 [Русский](../ru/REVIEWER_GUIDE.md) · 🇨🇳 [简体中文](../zh-CN/REVIEWER_GUIDE.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/REVIEWER_GUIDE.md)

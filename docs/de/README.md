@@ -1,6 +1,6 @@
 # 🇩🇪 Deutsche Dokumentation — Velantrim Crystal
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 [العربية](../ar/README.md)
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 [العربية](../ar/README.md) · 🇯🇵 [日本語](../ja/README.md)
 
 ## 🔒 Übersetzungs- und Autoritätsregel
 
@@ -66,10 +66,10 @@ Bei Änderungen an einem übersetzten Bereich gilt:
 4. keine neuen Zahlen oder Claims nur in einer Übersetzung einführen
 ```
 
-Der deutsche Paketstand wurde auf Basis von Crystal `main@9f90cb60` erneut
+Der deutsche Paketstand wurde auf Basis von Crystal `main@14bc0659` erneut
 synchronisiert. Der letzte Runtime-verändernde Checkpoint bleibt PR #265 /
 `cd6fd44`.
 
 ---
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 [العربية](../ar/README.md)
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 [العربية](../ar/README.md) · 🇯🇵 [日本語](../ja/README.md)
