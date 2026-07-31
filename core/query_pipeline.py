@@ -12,22 +12,20 @@ import re
 from typing import Any, Dict, List, Optional
 
 from core import metrics
-from core.canonical_view import _normalize_restricted_bit
 from core.l3_graph import get_l3_graph
 from core.memory import get_fact
-from core.pipeline import (
-    STORE_STATE_CONFLICT,
-    _safe_confidence,
-    generate_answer,
-    guardian,
-    retrieve,
-)
+from core.pipeline import _safe_confidence, generate_answer, guardian, retrieve
 from core.retrieval_config import get_retrieval_config
 from core.trace import build_trace
+from core.trust_snapshot import (
+    DEFAULT_CLAIM_TYPE as _DEFAULT_CLAIM_TYPE,
+    STORE_STATE_CONFLICT as _STORE_STATE_CONFLICT,
+    TrustSnapshot,
+)
 
-_TERMINAL_ESM_STATES = frozenset({"Collapsed", "Contradicted", "Deprecated"})
+# Backward-compatible module-level export used by existing tests/callers.
+STORE_STATE_CONFLICT = _STORE_STATE_CONFLICT
 _QUERY_POLICY = "canonical_read_only"
-_DEFAULT_CLAIM_TYPE = "WORLD_FACT"
 
 
 def _safe_retrieval_score(value: Any) -> float:
@@ -83,40 +81,14 @@ def _blocked(
     return result
 
 
-def _trust_metadata_conflicts(l1: Dict[str, Any], node: Dict[str, Any]) -> bool:
-    """True if L1 and L3 genuinely disagree on trust-relevant metadata.
-
-    Both sides are normalized with the SAME defaults and coercion this module
-    already applies when it builds the served fact, so that "L3 omits the field
-    and therefore takes the default" is not mistaken for a real disagreement.
-    Confidence is compared with the tolerance the legacy admission path uses
-    (core.pipeline._fact_metadata_conflicts) instead of raw `!=`, so two
-    mathematically equal floats cannot fail closed on representation alone.
-
-    A genuine disagreement — including a malformed L3 value that coerces to a
-    different number — still conflicts.
-    """
-    if "confidence" in l1 and not math.isclose(
-        _safe_confidence(l1.get("confidence"), 0.0),
-        _safe_confidence(node.get("confidence"), 0.0),
-        abs_tol=1e-9,
-    ):
-        return True
-    if "claim_type" in l1 and l1.get("claim_type", _DEFAULT_CLAIM_TYPE) != node.get(
-        "claim_type", _DEFAULT_CLAIM_TYPE
-    ):
-        return True
-    return bool(
-        "source_status" in l1 and l1.get("source_status") != node.get("source_status")
-    )
-
-
 def _resolve_canonical_fact(item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    """Resolve one retrieval hit against existing graph memory without writing.
+    """Resolve one retrieval hit through an immutable trust snapshot.
 
-    L3 supplies stored content and verdict fields. L1 is consulted only as a
-    deny-dominant read for a newer terminal ESM state or processing restriction.
-    Missing/non-canonical retrieval hits return None and remain outside memory.
+    L3 supplies content and verdict fields. L1 is consulted deny-dominantly for
+    a newer terminal ESM state, processing restriction or trust-metadata drift.
+    The snapshot is immutable while those representations are reconciled; a
+    fresh compatibility dict is created only after the decision is complete.
+    Missing graph facts return None and remain outside memory.
     """
     fact_id = item.get("id") or item.get("fact_id")
     if not isinstance(fact_id, str) or not fact_id:
@@ -126,47 +98,13 @@ def _resolve_canonical_fact(item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     if node is None:
         return None
 
-    state = node.get("epistemic_state")
-    l3_restricted = _normalize_restricted_bit(node.get("restricted"))
-    restricted: Optional[bool] = l3_restricted
-
-    l1 = get_fact(fact_id)
-    if l1 is not None:
-        l1_state = l1.get("epistemic_state")
-        if l1_state in _TERMINAL_ESM_STATES:
-            state = l1_state
-        elif l1_state is not None and state != l1_state:
-            state = STORE_STATE_CONFLICT
-
-        l1_restricted = _normalize_restricted_bit(l1.get("restricted"))
-        if l1_restricted is True or l3_restricted is True:
-            restricted = True
-        elif l1_restricted is False:
-            # Some L3 backends do not persist this bit. A typed L1 false is the
-            # existing authoritative fallback used by the legacy pipeline.
-            restricted = False
-
-        # A hybrid record assembled from disagreeing trust metadata must fail
-        # closed rather than silently preferring one representation.
-        if _trust_metadata_conflicts(l1, node):
-            state = STORE_STATE_CONFLICT
-
-    fact: Dict[str, Any] = {
-        "fact_id": fact_id,
-        "claim": node.get("claim"),
-        "source": node.get("source"),
-        "confidence": _safe_confidence(node.get("confidence"), 0.0),
-        "epistemic_state": state,
-        "claim_type": node.get("claim_type", _DEFAULT_CLAIM_TYPE),
-        "source_status": node.get("source_status"),
-        "significance": node.get("significance", 0.5),
-        "truth_status": node.get("truth_status"),
-        "restricted": restricted,
-        "_score": _safe_retrieval_score(
-            item.get("_score", item.get("_relevance", 0.0))
-        ),
-    }
-    return fact
+    snapshot = TrustSnapshot.from_records(
+        fact_id=fact_id,
+        l3=node,
+        l1=get_fact(fact_id),
+        retrieval_score=item.get("_score", item.get("_relevance", 0.0)),
+    )
+    return snapshot.to_fact_dict()
 
 
 _TOKEN_RE = re.compile(r"[a-zA-Zа-яА-ЯёЁ0-9_]{2,}")
