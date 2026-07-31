@@ -18,8 +18,10 @@ Homepage = "https://github.com/velantrian/velantrim-exocortex-crystal"
 Repository = "https://github.com/velantrian/velantrim-exocortex-crystal"
 
 # The CLI entry point: `velantrim <command>` after `pip install .`.
+# Query commands are intercepted by core.cli_entry so ask/receipt use the
+# strict read-only boundary; all other commands delegate to core.cli.
 [project.scripts]
-velantrim = "core.cli:main"
+velantrim = "core.cli_entry:main"
 velantrim-mcp = "core.mcp_server:main"
 velantrim-api = "core.api:main"
 
