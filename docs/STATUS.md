@@ -1,6 +1,6 @@
 # 📌 Velantrim Crystal — Current Status
 
-> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./de/STATUS.md) · 🇫🇷 [Français](./fr/STATUS.md) · 🇪🇸 [Español](./es/STATUS.md) · 🇮🇹 [Italiano](./it/STATUS.md) · 🇷🇺 [Русский](./ru/STATUS.md)
+> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./de/STATUS.md) · 🇫🇷 [Français](./fr/STATUS.md) · 🇪🇸 [Español](./es/STATUS.md) · 🇮🇹 [Italiano](./it/STATUS.md) · 🇷🇺 [Русский](./ru/STATUS.md) · 🇨🇳 [简体中文](./zh-CN/STATUS.md)
 
 **Status date:** 2026-07-30  
 **Current implementation truth:** GitHub `main` at `cd6fd44ff4ac8c715121cae1996aa484f11ef250`  
@@ -147,6 +147,7 @@ Localized reviewer paths:
 - 🇪🇸 [Guía para reviewers](./es/REVIEWER_GUIDE.md) · [Inicio rápido](./es/QUICKSTART.md) · [Resumen de subvención](./es/GRANT_OVERVIEW.md)
 - 🇮🇹 [Guida per reviewer](./it/REVIEWER_GUIDE.md) · [Avvio rapido](./it/QUICKSTART.md) · [Panoramica della sovvenzione](./it/GRANT_OVERVIEW.md)
 - 🇷🇺 [Руководство reviewer](./ru/REVIEWER_GUIDE.md) · [Быстрый старт](./ru/QUICKSTART.md) · [Обзор гранта](./ru/GRANT_OVERVIEW.md)
+- 🇨🇳 [Reviewer 指南](./zh-CN/REVIEWER_GUIDE.md) · [快速开始](./zh-CN/QUICKSTART.md) · [Grant 概览](./zh-CN/GRANT_OVERVIEW.md)
 
 The previous long-form status snapshot is preserved byte-for-byte at:
 
@@ -154,4 +155,4 @@ The previous long-form status snapshot is preserved byte-for-byte at:
 
 ---
 
-> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./de/STATUS.md) · 🇫🇷 [Français](./fr/STATUS.md) · 🇪🇸 [Español](./es/STATUS.md) · 🇮🇹 [Italiano](./it/STATUS.md) · 🇷🇺 [Русский](./ru/STATUS.md)
+> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./de/STATUS.md) · 🇫🇷 [Français](./fr/STATUS.md) · 🇪🇸 [Español](./es/STATUS.md) · 🇮🇹 [Italiano](./it/STATUS.md) · 🇷🇺 [Русский](./ru/STATUS.md) · 🇨🇳 [简体中文](./zh-CN/STATUS.md)
