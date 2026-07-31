@@ -1,6 +1,6 @@
 # Claim Metadata Glossary
 
-> Date: 2026-06-20
+> Date: 2026-08-01
 > Scope: as-built terminology reference for Crystal's claim / verification / origin vocabulary.
 > Status: docs-only. Describes already-implemented runtime fields and discipline; changes nothing.
 
@@ -16,7 +16,7 @@ Ground truth is the code (`core/memory.py`, `core/pipeline.py`,
 `core/truth_gate.py`) plus the audited baseline in `TEST_REPORT.md`. Where this
 glossary and any forward-looking contract doc disagree, **the code wins**.
 
-```
+```text
 memory ≠ knowledge
 experience ≠ world fact
 importance ≠ confidence
@@ -31,7 +31,7 @@ signal ≠ decision
 | Modality | `claim_type` | What kind of statement is it? | `core/memory.py` `CLAIM_TYPES` |
 | Origin | `source_status` | Where did the claim come from? | `core/memory.py` `SOURCE_STATUSES` |
 | Verification (internal) | `epistemic_state` (ESM) | How verified is it, as a persisted lifecycle state? | `core/memory.py` `ESM_STATES` / `ESM_TRANSITIONS` |
-| Verification (outward) | `truth_status` | A derived, outward-facing label | `core/pipeline.py` `_truth_status_for` (not stored) |
+| Verification (outward) | `truth_status` | A derived, outward-facing label | `core/pipeline.py` `_truth_status_for` |
 | Reliability | `confidence` | How reliable is the support? | `facts.confidence`; `core/reconcile.py` `reinforce()` |
 | Retrieval priority | `significance` / salience | How important for attention/retrieval? | `facts.significance`; `core/salience.py` |
 
@@ -77,13 +77,13 @@ This is the **internal** verification axis, distinct from the outward-facing
 
 ## 4. `truth_status` — derived, outward-facing overlay
 
-`truth_status` is **derived** at read time by `core/pipeline.py`
-`_truth_status_for(claim_type, source_status)` and overlaid onto a fact; it is
-**not a stored database column** and **not** the source of truth. Indicative
-values: `VERIFIED`, `USER_CLAIMED`, `UNVERIFIED`.
+`truth_status` is derived from claim and source metadata by
+`core/pipeline.py::_truth_status_for` and carried on runtime fact projections.
+It is not the primary persisted lifecycle authority. Indicative values include
+`VERIFIED`, `USER_CLAIMED`, `UNVERIFIED`, `SUBJECTIVE` and `HYPOTHESIS`.
 
-- `epistemic_state="Validated"` (persisted) and `truth_status="VERIFIED"`
-  (derived) are **related but distinct** — do not treat them as one field.
+- `epistemic_state="Validated"` and `truth_status="VERIFIED"` are **related but
+  distinct** — do not treat them as one field.
 - This glossary does **not** add a new `epistemic_status` enum; the persisted
   axis stays `epistemic_state`.
 
@@ -106,7 +106,7 @@ attention ordering**. They are **ranking-only**: they never set or change
 
 - **Receipt** (`core/provenance.py`, Receipt v2): a content-sealed, **replayable
   evidence path** for an answer; verifiable offline.
-- **TRACE** (`core/trace.py`): the recorded grounding/reasoning path.
+- **TRACE** (`core/trace.py`): the recorded grounding path.
 - **Per-fact provenance chain** (`core/provenance_chain.py`): an append-only,
   hash-chained lifecycle log scoped to a single fact.
 - **Audit ledger** (`core/audit.py`): an append-only, hash-chained record of
@@ -114,31 +114,44 @@ attention ordering**. They are **ranking-only**: they never set or change
 - **Evidence spans** (`core/evidence.py`): source-span records linking a fact to
   where it came from.
 
-Together these provide **auditability** and source-grounded, replayable proof —
-not a correctness guarantee.
+Together these provide auditability and source-grounded, replayable proof — not
+a correctness guarantee.
 
 ## 8. TruthGate — admissibility boundary
 
 `core/truth_gate.py` is the **admissibility boundary**, not a metaphysical truth
-engine. It returns a decision `(passed, reason)`; the **caller** performs any
-write. Under the default **strict TruthPolicy**, it enforces unsupported-claim
-prevention — e.g. `LLM_OUTPUT` cannot become a `WORLD_FACT` without an
-independent source — while letting subjective claims pass as subjective. Legacy /
-opt-out deployments with `ENABLE_TRUTH_POLICY=off` bypass this strict block and
-should be treated as review/audit exceptions, not the recommended policy. It
-decides what is **admissible**, not what is ultimately true.
+engine. It returns a decision `(passed, reason)`; the caller performs any write.
+
+The following Ring Zero rule is unconditional:
+
+```text
+source_status = LLM_OUTPUT
++
+claim_type = WORLD_FACT
+→ rejected without an independent source
+```
+
+No environment variable or runtime mode can disable that decision. Historical
+`ENABLE_TRUTH_POLICY` values, including `off`, are inert. Tests, demos and
+migrations must provide honest provenance or choose an appropriate non-world-fact
+claim type instead of weakening the gate. See
+`docs/adr/ADR-011-NON_CONFIGURABLE_TRUTH_POLICY.md`.
+
+TruthGate decides what is **admissible under policy**, not what is ultimately
+true. When `min_confidence` is omitted, the confidence threshold still comes
+from `core/adaptation`, so threshold-dependent decisions remain contextual.
 
 ## 9. Guardian — invariant / safety / scope boundary
 
-Guardian is the companion safety/permission/invariant check on the write path.
-It enforces scope and protection invariants (e.g. immutable Ring Zero) alongside
-the TruthGate before anything reaches the canonical graph.
+Guardian is the companion structural and invariant check on the write path. It
+enforces the FactsPack/TRACE contract before TruthGate admission. It does not
+serve as an oracle of objective truth.
 
 ## Discipline — what these axes do NOT permit
 
-- **`LLM_OUTPUT` cannot prove itself** — under the default strict TruthPolicy it
-  is not a `WORLD_FACT` without an independent source (the `ENABLE_TRUTH_POLICY=off`
-  legacy bypass is a review/audit exception, not the recommended policy).
+- **`LLM_OUTPUT` cannot prove itself** — it is not admissible as a `WORLD_FACT`
+  without an independent source, and deployment configuration cannot disable
+  this rule.
 - **`USER_REPORTED` is not automatically a world fact** — it is a sourced claim,
   not verified canon.
 - **Subjective material** (`EMOTION` / `OPINION` / `INTERPRETATION` /
@@ -148,8 +161,8 @@ the TruthGate before anything reaches the canonical graph.
   tracking updates frequency metadata only.
 - **Signal ≠ decision** — conflict/contradiction detection surfaces *candidates*;
   supersede / contradict stay explicit.
-- **Canon writes remain controlled** — the TruthGate is the only entry; there is
-  **no automatic `ADMIT` / `SUPERSEDE`**.
+- **Canon writes remain controlled** — TruthGate governs automatic admission;
+  the explicit curator force-override is separate, attributed and audited.
 
 ## Relationship to other docs
 
@@ -168,9 +181,7 @@ This document is descriptive only. It does **not**:
 
 - introduce ClaimVersion nodes;
 - introduce a new `epistemic_status` enum;
-- change TruthGate behaviour;
 - change schemas;
-- change runtime behaviour;
 - add bitemporal fields (`valid_time` / `transaction_time`);
 - add event sourcing;
 - add cache / snapshot systems;

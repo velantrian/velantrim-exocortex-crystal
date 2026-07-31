@@ -1,6 +1,6 @@
 # Implementation Reality Matrix
 
-> Date: 2026-06-17
+> Date: 2026-08-01
 > Scope: current implementation/status matrix for public Crystal planning
 > Status: docs-only. Canonical detailed audit matrix. `docs/STATUS.md` carries the high-level summary; `docs/IMPLEMENTATION_STATUS.md` is the component-level implemented/RFC/vision map.
 
@@ -21,8 +21,9 @@
 ```text
 Track 1  — ProvenanceChain per-fact event chain
 Track 2  — Docker hardening from scratch
-Track 3A — TruthPolicy production default
+Track 3A — TruthPolicy production default (historical baseline)
 Track 3B — Write-path TruthGate audit/tests
+Track 3C — remove runtime TruthPolicy bypass; make Ring Zero invariant fixed
 ```
 
 ## Matrix
@@ -31,7 +32,7 @@ Track 3B — Write-path TruthGate audit/tests
 |---|---|---|---|---|
 | Crystal local memory core | IMPLEMENTED | `TEST_REPORT.md`, CI | keep status synced | Crystal |
 | TruthGate / Guardian boundary | IMPLEMENTED / evolving | tests for all relevant write/read paths | bypass risk if alternate paths exist | Crystal |
-| TruthPolicy production default | IMPLEMENTED | `ENABLE_TRUTH_POLICY` on/off/unset behaviour pinned in `tests/test_truth_gate.py` (Track 3A, #172) | strict is the secure default; the legacy bypass must be opted into via `ENABLE_TRUTH_POLICY=off` | Crystal hardening |
+| TruthPolicy LLM-world-fact block | IMPLEMENTED / NON-CONFIGURABLE | `tests/test_truth_gate.py`; ADR-011 | `ENABLE_TRUTH_POLICY` is no longer read; historical values such as `off` are inert, so deployment configuration cannot disable the `LLM_OUTPUT` + `WORLD_FACT` rejection | Crystal hardening |
 | Write-path TruthGate audit | IMPLEMENTED | `tests/test_write_path_gate.py` + `core/review.py` `gate_reason` audit detail (Track 3B, #175) | force-approve path is pinned: it still calls TruthGate and records the blocking `gate_reason` (content-free) | Crystal hardening |
 | TRACE / Receipt | IMPLEMENTED | receipt replay tests | overclaim if replay scope unclear | Crystal |
 | Per-fact ProvenanceChain | IMPLEMENTED | `core/provenance_chain.py` (append-only, hash-chained) + tests; wired into the erase path (Track 1, #168) | per-fact chain exists and the GDPR erase path records events; broader lifecycle wiring (other state transitions) remains follow-up | Crystal hardening |
@@ -52,6 +53,7 @@ Track 3B — Write-path TruthGate audit/tests
 - Per-fact ProvenanceChain is implemented in Crystal (Track 1, #168: `core/provenance_chain.py`, wired into the erase path); the separate Titan regression is unrelated.
 - No `/facts` POST endpoint should be assumed for Track 3B.
 - Major write paths route through TruthGate; Track 3B (#175) pinned behaviour and audit detail with tests (`tests/test_write_path_gate.py`).
+- Track 3C supersedes the configurable part of Track 3A: the former `ENABLE_TRUTH_POLICY=off` bypass has been removed from runtime code. See `docs/adr/ADR-011-NON_CONFIGURABLE_TRUTH_POLICY.md`.
 
 ## Rule
 

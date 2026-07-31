@@ -4,7 +4,7 @@
 
 > A fast, honest path for a reviewer to understand what Crystal is, verify it
 > runs, and check its core epistemic guarantees. Reflects the audit-hardening
-> work completed in this cycle (Tracks 1–3B).
+> work completed in this cycle (Tracks 1–3C).
 >
 > Status of this doc: docs-only. It points to the authoritative status pages and
 > does not itself make new runtime claims.
@@ -96,20 +96,22 @@ Security properties (Track 2, #170 + #171):
 
 All commands are stdlib-only CLI (`velantrim …` after `pip install .`):
 
-**TruthGate (strict by default — Track 3A, #172).**
-The strict policy is the production default; only `ENABLE_TRUTH_POLICY=off` opts
-into the legacy bypass. Under the strict policy an `LLM_OUTPUT` cannot become a
-`WORLD_FACT` on its own. This admission behaviour (on/off/unset) is pinned by
-`tests/test_truth_gate.py` — that is the authoritative proof, not a CLI command.
+**TruthGate (non-configurable Ring Zero policy — Track 3C).**
+An `LLM_OUTPUT` cannot become a `WORLD_FACT` on its own. This rule is no longer
+controlled by process environment: historical `ENABLE_TRUTH_POLICY` values,
+including `off`, are inert. Tests, demos and migrations must provide honest
+independent provenance or use an appropriate non-world-fact type; they may not
+weaken the production gate. The authoritative behaviour pins live in
+`tests/test_truth_gate.py` and the decision record is
+[`docs/adr/ADR-011-NON_CONFIGURABLE_TRUTH_POLICY.md`](./adr/ADR-011-NON_CONFIGURABLE_TRUTH_POLICY.md).
 
 ```bash
 velantrim invariant-check          # read-only at-rest scan of existing L3 facts
 ```
 
 Note: `invariant-check` is a read-only at-rest scan of the current L3 state; it
-does **not** call TruthGate or exercise `ENABLE_TRUTH_POLICY`, so it does not by
-itself prove that an `LLM_OUTPUT` write is blocked (see `tests/test_truth_gate.py`
-for that).
+does **not** call TruthGate, so it does not by itself prove that an `LLM_OUTPUT`
+write is blocked. See `tests/test_truth_gate.py` for that admission proof.
 
 **Receipt (sealed, replayable provenance).**
 
@@ -134,7 +136,9 @@ Note: `velantrim history` reads truth-maintenance graph edges via `fact_history`
 **Write-path gate + accountable overrides (Track 3B, #175).**
 Curator force-overrides of a blocked fact are recorded under
 `review_force_approve` with a `gate_reason` (the specific reason the gate
-blocked) — overrides are never silent. See `tests/test_write_path_gate.py`.
+blocked) — overrides are never silent. The override does not change the
+TruthGate decision; it is a separate, explicit governance action. See
+`tests/test_write_path_gate.py`.
 
 A hands-on, reproducible walkthrough lives in
 [`docs/REVIEWER_DEMO.md`](./REVIEWER_DEMO.md) and [`docs/DEMO.md`](./DEMO.md).
@@ -145,10 +149,12 @@ A hands-on, reproducible walkthrough lives in
 |---|---|---|
 | **1** | Per-fact, append-only, hash-chained `ProvenanceChain` (`core/provenance_chain.py`), wired into the erase path | #168 |
 | **2** | Fail-closed Docker stack from scratch (`Dockerfile`, `docker-compose.yml`, `.dockerignore`) + review fixes | #170, #171 |
-| **3A** | Strict TruthPolicy production default via `ENABLE_TRUTH_POLICY` (on/off/unset pinned) | #172 |
+| **3A** | Strict TruthPolicy production default via `ENABLE_TRUTH_POLICY` (historical baseline) | #172 |
 | **3B** | Write-path TruthGate behaviour pins + `gate_reason` in the force-approve audit | #175 |
+| **3C** | Removed the environment opt-out; `LLM_OUTPUT` → `WORLD_FACT` rejection is now non-configurable Ring Zero policy | current hardening PR |
 
-Status pages were synced to match merged behaviour in #173 and #174.
+Track 3C supersedes only the configurable portion of Track 3A. Archived handoff
+and changelog records may still describe the former toggle as historical fact.
 
 ## 8. Limitations and deferred work
 
@@ -159,7 +165,6 @@ Explicitly **not** done in this cycle (and not claimed):
 - **Knowledge-graph data verifier** — graph/autolinker data is labelled
   unverified-unless-sourced; a source/evidence-coverage verifier is future work.
 - **Canonical write-path expansion** beyond the current gated paths.
-- **RRF rank fusion** exists as a standalone helper, **not** wired into `retrieve()`.
 - Research-Mode / Noetic / AttentionRouter / Graphiti / Titan console / PWA /
   BICA remain research / RFC-level, not runtime.
 

@@ -6,6 +6,9 @@ consequences. Statuses: **Accepted** (governs the current design) or
 **Accepted / RFC-aligned** (governs a future layer that is documentation-only
 today).
 
+Additional focused ADRs may live under [`docs/adr/`](./adr/), including
+[ADR-011: Non-configurable TruthPolicy](./adr/ADR-011-NON_CONFIGURABLE_TRUTH_POLICY.md).
+
 ---
 
 ## ADR-001: Separate Truth from Speech
@@ -102,31 +105,30 @@ today).
 
 ## ADR-007: TruthGate as an admission / decision function
 
-- **Status:** Accepted
+- **Status:** Accepted; environment-policy clause superseded by ADR-011
 - **Context:** Admission control and persistence are easy to conflate. If the
   verification boundary also performed writes, the decision logic and the
   canon-mutation logic would be entangled, making the boundary harder to audit
-  and to reason about.
+  and reason about.
 - **Decision:** TruthGate is an *admission / decision function*: it takes the
   evidence package and returns a decision plus a reason (`(passed, reason)`); it
   does not write to the database and does not mutate canon. Transitioning a fact
-  into the Validated state and merging it into the L3 canon is performed by the
-  caller (e.g. the pipeline, ingest, or the curator review path) only when
-  admission passes. It is *not* a pure function of the evidence package alone:
-  when `min_confidence` is omitted it reads the contextual threshold from
-  `core/adaptation` (`adaptation.verification_threshold()`) and it reads
-  `ENABLE_TRUTH_POLICY` at call time, so the same input can decide differently
-  as that context changes. The curator force-override (ADR-004) remains the
-  documented exception that can admit a gate-blocked fact, with an audited
-  actor + reason.
+  into Validated and merging it into L3 is performed by the caller only when
+  admission passes. It is not a pure function of the evidence package alone
+  when `min_confidence` is omitted because it reads the contextual threshold
+  from `core/adaptation`. However, the `LLM_OUTPUT` + `WORLD_FACT` rejection is
+  fixed Ring Zero policy: ADR-011 removes the former `ENABLE_TRUTH_POLICY`
+  environment dependency. The curator force-override (ADR-004) remains the
+  documented, explicit governance exception; it does not change the gate's
+  decision and must preserve the blocking reason.
 - **Consequences:**
-  - the verification decision has no canon/DB write side-effects, and is
-    testable with the threshold and `ENABLE_TRUTH_POLICY` held fixed (it is not
-    guaranteed replayable across changing threshold/env state);
-  - every canon write is attributable to an explicit caller, not to the gate;
-  - the gate can be invoked for dry-run / preview without risk of mutation;
-  - this is an architectural boundary, not a concurrency guarantee — atomicity
-    of the subsequent write remains the caller's responsibility.
+  - the verification decision has no canon/DB write side effects;
+  - confidence-threshold decisions are testable with the threshold fixed;
+  - process environment cannot disable the model-origin world-fact block;
+  - every canon write is attributable to an explicit caller or audited curator
+    action, not to an implicit gate write;
+  - the gate can be invoked for dry-run/preview without mutation;
+  - atomicity of the subsequent write remains the caller's responsibility.
 
 ## ADR-008: Append-only reconcile; caller decides
 
@@ -138,65 +140,54 @@ today).
   `record_occurrence` records a frequency signal only — it is *not* treated as
   independent evidence and never changes confidence, truth_status, or the
   epistemic state. `find_conflicts` returns candidate matches for review, not
-  verdicts. Reconcile also exposes *explicit, caller-invoked* truth-maintenance
-  operations — `supersede()` and `contradict()` — which **do** transition
-  epistemic state (`transition_esm`), sync the change into L3 (`_sync_l3` →
-  `merge_fact`) and add graph edges. These are deliberate, never automatic: the
-  decision to invoke them stays with the caller, pipeline, or human curator.
+  verdicts. Reconcile also exposes explicit, caller-invoked truth-maintenance
+  operations — `supersede()` and `contradict()` — which transition epistemic
+  state, sync the change into L3 and add graph edges. The decision to invoke
+  them stays with the caller or human curator.
 - **Consequences:**
   - repeated occurrences raise frequency, never truth or confidence;
-  - corroboration that *does* raise confidence stays an explicit, separate
-    `reinforce()` decision;
+  - corroboration that raises confidence stays an explicit `reinforce()` decision;
   - conflict signals are inputs to a decision, never the decision itself;
-  - reason attribution is recorded for the *force-approve* and *reject* paths
-    (`review.approve(force=True, …, reason=…)` and `review.reject(…, reason=…)`);
-    a normal `review.approve()` records actor (and optional note/diagnosis) but
-    **not** a reason, and `supersede()` / `contradict()` / `transition_esm()` do
-    not take actor/reason at all — so attribution for those is the calling
-    context's responsibility, not a guarantee of the function signature.
+  - reason attribution is recorded for force-approve and reject paths; calling
+    context remains responsible where lower-level functions lack actor/reason.
 
 ## ADR-009: Stdlib-only runtime core; optional lazy extras
 
 - **Status:** Accepted
 - **Context:** Dependency-free claims are easy to overstate. A precise boundary
-  is needed between the core runtime (which must run locally with no external
-  packages) and optional capabilities that legitimately require extras.
-- **Decision:** The runtime core (memory, pipeline, ingest, TruthGate,
-  reconcile, consolidation) is standard-library-only. Optional backends and
-  capabilities are lazy and opt-in: the Neo4j backend is optional and is *not*
-  in the default backend chain (the default chain falls back to embedded /
-  SQLite / in-memory backends), and optional generators/adapters may require
-  external extras. The whole repository is **not** claimed to be
-  dependency-free.
+  is needed between the core runtime and optional capabilities requiring extras.
+- **Decision:** The runtime core is standard-library-only. Optional backends and
+  capabilities are lazy and opt-in: Neo4j is optional and not in the default
+  backend chain; optional generators/adapters may require external extras. The
+  whole repository is not claimed to be dependency-free.
 - **Consequences:**
-  - the default local-first runtime installs and runs without third-party
-    packages;
-  - Neo4j is imported lazily and raises a clear, actionable error only when it
-    is explicitly selected and its driver is absent;
-  - grant-facing wording must say *"runtime core is stdlib-only; optional
-    extras such as Neo4j / generators / adapters may require external
-    dependencies"* — never *"the entire repository is dependency-free"*;
+  - the default local-first runtime installs without third-party packages;
+  - Neo4j imports lazily and errors clearly only when explicitly selected;
+  - grant-facing wording says the runtime core is stdlib-only while optional
+    extras may require dependencies;
   - optional extras extend the trust/dependency boundary and stay opt-in.
 
 ## ADR-010: Bio-named modules are engineering metaphors
 
 - **Status:** Accepted
 - **Context:** Several modules carry biologically or cognitively inspired names
-  (e.g. neurogenesis, immune, neurocore, fractal, salience, adaptation). Such
-  names can be misread as claims of biological or conscious implementation. This
-  ADR extends [ADR-006](#adr-006-research-inspirations-are-non-normative).
+  such as neurogenesis, immune, neurocore, fractal, salience and adaptation.
+  These can be misread as biological or conscious implementation claims.
 - **Decision:** Bio/cognitive names are engineering metaphors, not biological
   implementation claims. They describe deterministic, auditable mechanisms over
-  the existing canon; they do not assert brain-like, conscious, or
-  neuroplastic runtime behavior. Disclaimers in code docstrings stay
-  synchronized with [METAPHOR_VS_MECHANISM.md](./METAPHOR_VS_MECHANISM.md),
-  which is the canonical mapping from metaphor to mechanism.
+  existing memory and do not assert brain-like, conscious or neuroplastic
+  runtime behavior. Disclaimers stay synchronized with
+  [METAPHOR_VS_MECHANISM.md](./METAPHOR_VS_MECHANISM.md).
 - **Consequences:**
-  - no consciousness / brain / neuroplasticity overclaim in code, docs, or
-    grant materials;
-  - each metaphor-named module documents the concrete mechanism it implements;
-  - [METAPHOR_VS_MECHANISM.md](./METAPHOR_VS_MECHANISM.md) and
-    [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) remain the sources of
-    truth for what is actually implemented;
-  - adding or renaming a metaphor-named module requires updating the metaphor
-    mapping in the same change.
+  - no consciousness/brain/neuroplasticity overclaim in code, docs or grants;
+  - each metaphor-named module documents its concrete mechanism;
+  - `METAPHOR_VS_MECHANISM.md` and `IMPLEMENTATION_STATUS.md` remain sources of
+    truth for implemented behavior;
+  - adding or renaming a metaphor-named module requires updating the mapping.
+
+## ADR-011: TruthPolicy is non-configurable Ring Zero policy
+
+The focused accepted decision is maintained at
+[`docs/adr/ADR-011-NON_CONFIGURABLE_TRUTH_POLICY.md`](./adr/ADR-011-NON_CONFIGURABLE_TRUTH_POLICY.md).
+It supersedes only ADR-007's former environment-dependent policy clause; all
+other ADR-007 admission/write separation remains in force.
