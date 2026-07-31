@@ -55,7 +55,10 @@ CAPABILITY = "reader"
 def _tool_search(query: str, k: int = 5) -> Any:
     from core.query_pipeline import search
 
-    hits = search(query, k=int(k))
+    hits = [
+        hit for hit in search(query, k=int(k))
+        if hit.get("restricted") is False
+    ]
     return [
         {
             "fact_id": h.get("fact_id"),
