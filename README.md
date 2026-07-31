@@ -58,8 +58,8 @@ input / document / agent event
 
 ### Read-only query service
 
-PR #265 introduced the strict HTTP boundary. The same service now defines the
-supported installed CLI query commands and MCP search:
+PR #265 introduced the strict HTTP boundary. The same service now defines CLI
+`ask` / `receipt` and MCP search:
 
 ```text
 HTTP POST /ask, GET /receipt
@@ -67,7 +67,8 @@ HTTP POST /ask, GET /receipt
 → core.query_pipeline.query()
 
 velantrim ask / receipt
-→ core.cli_entry
+python -m core.cli ask / receipt
+→ core.cli.main()
 → core.query_pipeline.query()
 
 MCP search
@@ -86,16 +87,11 @@ Guardian structural check and CanonicalView strict projection in `query()`.
 
 ### Explicit compatibility residual
 
-The public guarantee is narrow and testable:
-
-- `core.pipeline.run()` remains an admission-capable compatibility path;
-- direct `python -m core.cli` or direct imports of `core.cli.main` preserve the
-  historical module behaviour;
-- the supported installed CLI surface is the `velantrim` console command routed
-  through `core.cli_entry`.
-
-Removing or renaming the legacy admitting path requires a separate deprecation
-cycle. See [docs/architecture/read-only-query-boundary.md](./docs/architecture/read-only-query-boundary.md).
+`core.pipeline.run()` remains an admission-capable compatibility function for
+legacy/internal callers that explicitly choose it. CLI `ask` and `receipt` no
+longer use it. Removing or renaming that function requires a separate
+deprecation cycle. See
+[docs/architecture/read-only-query-boundary.md](./docs/architecture/read-only-query-boundary.md).
 
 ---
 
