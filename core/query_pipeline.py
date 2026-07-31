@@ -246,9 +246,10 @@ def search(query_text: str, k: int = 5) -> List[Dict[str, Any]]:
     """Read-only ranked search over facts already present in graph memory.
 
     This is the public search contract for inspection surfaces such as MCP. It
-    does not run answer generation or admission policy and never stores unknown
-    retrieval candidates. Trust/status fields are returned explicitly so callers
-    do not mistake physical graph membership for strict CanonicalView grounding.
+    does not run answer generation or admission policy, never stores unknown
+    retrieval candidates, and excludes processing-restricted rows before any
+    claim/source content is returned. Trust/status fields remain explicit so a
+    caller cannot mistake physical graph membership for strict grounding.
     """
     if not isinstance(query_text, str) or not query_text.strip():
         raise ValueError("search: empty query")
@@ -256,7 +257,11 @@ def search(query_text: str, k: int = 5) -> List[Dict[str, Any]]:
         raise ValueError("search: k must be a positive integer")
 
     retrieved = _retrieve_read_only(query_text, k=k)
-    return _public_search_facts(_resolve_retrieval_hits(retrieved))
+    facts = [
+        fact for fact in _resolve_retrieval_hits(retrieved)
+        if fact.get("restricted") is False
+    ]
+    return _public_search_facts(facts)
 
 
 def query(
