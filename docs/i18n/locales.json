@@ -17,10 +17,7 @@
     "CanonicalView",
     "TRACE",
     "Receipt",
-    "Canon",
-    "ProvenanceChain",
-    "WORLD_FACT",
-    "LLM_OUTPUT"
+    "Canon"
   ],
   "locales": [
     {"code": "en", "label": "English", "flag": "🇬🇧", "root_readme": "README.md", "docs_dir": "docs"},
