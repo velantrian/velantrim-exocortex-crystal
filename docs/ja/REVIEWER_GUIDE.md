@@ -70,15 +70,21 @@ curl http://127.0.0.1:8000/health
 
 ### TruthGate
 
-strict policy は production default です。`ENABLE_TRUTH_POLICY=off` のみ legacy bypass を有効にします。
-`LLM_OUTPUT` は、それ単独では `WORLD_FACT` として Canon に自動登録されません。
+`LLM_OUTPUT` は、それ単独では `WORLD_FACT` として admission されません。
+この Ring Zero rule は non-configurable です。旧 `ENABLE_TRUTH_POLICY` の値
+（`off` を含む）は現在 inert で、process environment から無効化できません。
+Test、demo、migration は gate を弱めず、正直な independent provenance または
+適切な non-world-fact type を使用する必要があります。
+
+正本となる behavior proof は `tests/test_truth_gate.py`、decision record は
+[`ADR-011`](../adr/ADR-011-NON_CONFIGURABLE_TRUTH_POLICY.md) です。
 
 ```bash
 velantrim invariant-check
 ```
 
-`invariant-check` は既存 L3 state の read-only scan です。TruthGate admission 自体を実行する command ではありません。
-正本となる behavior proof は `tests/test_truth_gate.py` です。
+`invariant-check` は既存 L3 state の read-only scan です。TruthGate admission 自体を
+実行しないため、この command だけでは LLM-origin block の proof になりません。
 
 ### Receipt
 
@@ -100,34 +106,36 @@ velantrim audit-verify
 
 ### Accountable override
 
-blocked fact の curator force-override は `review_force_approve` と具体的な `gate_reason` を伴って記録されます。
-override は silent ではありません。
+blocked fact の curator force-override は `review_force_approve`、actor、reason、
+具体的な `gate_reason` とともに記録されます。override は TruthGate decision を
+変更せず、別の明示的 governance action です。
 
-## 7. HTTP read-only boundary
+## 7. Read-only query boundary
 
 ```text
-POST /ask, GET /receipt
-→ core.aio.arun()
-→ core.query_pipeline.query()
-→ existing Canon only
-→ CanonicalView
-→ answer / bounded refusal
+HTTP /ask, /receipt
+CLI ask, receipt
+MCP search
+→ core.query_pipeline
+→ existing L3 facts only
+→ CanonicalView for confident answers
+→ answer / bounded refusal / inspection rows
 ```
 
-この guarantee は HTTP `/ask` と `/receipt` に限定されます。CLI compatibility path と MCP の残余 scope を
-同じ zero-mutation claim に拡張しないでください。
+これらの query/search surface は L0/L1 fact を作成せず、ESM transition、L3 mutation、
+outbox operation、episode recording、unset embedding fingerprint initialization を行いません。
+MCP search は inspection surface であり、全 L3 node が strict Canon であるという claim ではありません。
 
 ## 8. 主要 limitation
 
 - `ProvenanceChain` lifecycle wiring は erase path 以外に follow-up が残る;
 - knowledge graph data verifier は future work;
-- canonical write-path expansion は限定的;
-- RRF rank fusion helper は `retrieve()` に未接続;
+- physical L3 と strict CanonicalView は同一ではない;
+- adaptive confidence threshold は context-dependent のまま;
 - Research Mode / Noetic / Titan console / PWA / BICA は runtime ではない。
 
 ## 9. Reviewer checklist
 
-- [ ] diff が Markdown-only か;
 - [ ] technical identifier が変更されていないか;
 - [ ] relative link が正しいか;
 - [ ] 日本語 claim が英語正本より強くなっていないか;
