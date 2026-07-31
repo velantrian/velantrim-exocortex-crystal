@@ -1,6 +1,6 @@
 # 🇷🇺 Документация на русском — Velantrim Crystal
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 **Русский**
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 **Русский** · 🇨🇳 [简体中文](../zh-CN/README.md)
 
 ## 🔒 Правило перевода и авторитетности
 
@@ -9,7 +9,7 @@
 
 ```text
 GitHub main + нормативные английские документы = авторитетный источник
-Немецкий, французский, испанский, итальянский и русский = переводы и вспомогательные материалы
+Немецкий, французский, испанский, итальянский, русский и китайский = переводы и вспомогательные материалы
 ```
 
 При расхождениях действует следующий порядок:
@@ -63,9 +63,9 @@ GitHub main + нормативные английские документы = �
 4. не вводить новые числа или claims только в переводе
 ```
 
-Русский пакет подготовлен на основе Crystal `main@dee0b9a0`. Последним
+Русский пакет подготовлен на основе Crystal `main@edf54367`. Последним
 checkpoint, изменившим runtime, остаётся PR #265 / `cd6fd44`.
 
 ---
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 **Русский**
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 **Русский** · 🇨🇳 [简体中文](../zh-CN/README.md)
