@@ -1,6 +1,6 @@
 # 📖 Glossario — Velantrim Crystal in italiano
 
-> 🌐 🇬🇧 [English](../ARCHITECTURE.md) · 🇩🇪 [Deutsch](../de/GLOSSARY.md) · 🇫🇷 [Français](../fr/GLOSSARY.md) · 🇪🇸 [Español](../es/GLOSSARY.md) · 🇮🇹 **Italiano**
+> 🌐 🇬🇧 [English](../ARCHITECTURE.md) · 🇩🇪 [Deutsch](../de/GLOSSARY.md) · 🇫🇷 [Français](../fr/GLOSSARY.md) · 🇪🇸 [Español](../es/GLOSSARY.md) · 🇮🇹 **Italiano** · 🇷🇺 [Русский](../ru/GLOSSARY.md)
 >
 > Questo glossario armonizza la terminologia italiana. Non sostituisce nomi API,
 > schema o codice in inglese. Gli identificatori nei blocchi di codice e nelle
@@ -112,4 +112,4 @@ Evitare:
 
 ---
 
-> 🌐 🇬🇧 [English](../ARCHITECTURE.md) · 🇩🇪 [Deutsch](../de/GLOSSARY.md) · 🇫🇷 [Français](../fr/GLOSSARY.md) · 🇪🇸 [Español](../es/GLOSSARY.md) · 🇮🇹 **Italiano**
+> 🌐 🇬🇧 [English](../ARCHITECTURE.md) · 🇩🇪 [Deutsch](../de/GLOSSARY.md) · 🇫🇷 [Français](../fr/GLOSSARY.md) · 🇪🇸 [Español](../es/GLOSSARY.md) · 🇮🇹 **Italiano** · 🇷🇺 [Русский](../ru/GLOSSARY.md)

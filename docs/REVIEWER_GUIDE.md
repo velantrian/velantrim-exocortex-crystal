@@ -1,6 +1,6 @@
 # Reviewer Guide — Velantrim ExoCortex (Crystal)
 
-> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](./fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](./es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](./it/REVIEWER_GUIDE.md)
+> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](./fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](./es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](./it/REVIEWER_GUIDE.md) · 🇷🇺 [Русский](./ru/REVIEWER_GUIDE.md)
 
 > A fast, honest path for a reviewer to understand what Crystal is, verify it
 > runs, and check its core epistemic guarantees. Reflects the audit-hardening
@@ -169,4 +169,4 @@ and [`docs/STATUS.md`](./STATUS.md).
 
 ---
 
-> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](./fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](./es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](./it/REVIEWER_GUIDE.md)
+> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](./fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](./es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](./it/REVIEWER_GUIDE.md) · 🇷🇺 [Русский](./ru/REVIEWER_GUIDE.md)
