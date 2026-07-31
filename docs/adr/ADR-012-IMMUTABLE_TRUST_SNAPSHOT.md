@@ -33,7 +33,7 @@ The snapshot:
   than coercing it into a trusted default;
 - records disagreement categories in a content-free immutable tuple;
 - sets `epistemic_state=STORE_STATE_CONFLICT` when trust representations
-  genuinely disagree;
+  genuinely disagree or when a required L3 trust field is malformed;
 - emits a fresh compatibility dictionary only after reconciliation is complete.
 
 `CanonicalView`, Guardian and existing answer/receipt code continue consuming a
@@ -64,19 +64,28 @@ Important details:
 - non-terminal ESM drift fails closed;
 - confidence comparisons use numeric tolerance;
 - missing L3 `claim_type` uses the established `WORLD_FACT` default;
-- malformed confidence is unknown, never silently normalized to `0.0` inside
-  the snapshot;
+- malformed or missing L3 confidence remains unknown (`None`) inside the typed
+  snapshot, adds the content-free `confidence` conflict category and forces
+  `STORE_STATE_CONFLICT` even when no L1 row exists;
+- the temporary compatibility mapping preserves the historical safe `0.0`
+  confidence sentinel for existing mapping consumers. That sentinel is not the
+  snapshot's internal truth and cannot erase the recorded conflict;
 - retrieval score remains ranking metadata and never changes trust state.
 
 ## Consequences
 
 - reconciliation decisions cannot be changed by accidental in-place mutation;
-- store disagreement becomes explicit and content-free;
-- malformed trust metadata fails closed earlier;
-- public search/answer shapes remain compatible;
+- store disagreement and malformed required metadata become explicit and
+  content-free;
+- unknown/corrupt confidence is distinguishable from a genuine numeric zero
+  inside the typed boundary;
+- public search/answer mapping shapes remain compatible during the narrow
+  migration;
 - the legacy admission-capable pipeline remains unchanged in this PR;
 - future work may adopt the same boundary object in other paths only through
-  separate behaviour-pinned migrations.
+  separate behaviour-pinned migrations;
+- removal of the outward `0.0` compatibility sentinel is deferred until
+  downstream mapping consumers accept optional typed confidence directly.
 
 ## Non-goals
 
@@ -91,5 +100,6 @@ Important details:
 
 `tests/test_trust_snapshot.py` pins immutability, strict scalar normalization,
 L1 deny dominance, restriction handling, metadata drift, content-free conflict
-categories and fresh compatibility mappings. Existing query-boundary tests pin
-end-to-end behaviour.
+categories, internal `None` versus outward `0.0` compatibility behaviour and
+fresh compatibility mappings. Existing query-boundary tests pin end-to-end
+behaviour.
