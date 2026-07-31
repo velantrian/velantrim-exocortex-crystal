@@ -5,8 +5,15 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 LANGS = {
-    "de": "Deutsch", "fr": "Français", "es": "Español", "it": "Italiano",
-    "ru": "Русский", "zh": "简体中文", "ar": "العربية", "ja": "日本語", "hi": "हिन्दी",
+    "de": ("Deutsch", "de"),
+    "fr": ("Français", "fr"),
+    "es": ("Español", "es"),
+    "it": ("Italiano", "it"),
+    "ru": ("Русский", "ru"),
+    "zh-CN": ("简体中文", "zh-CN"),
+    "ar": ("العربية", "ar"),
+    "ja": ("日本語", "ja"),
+    "hi": ("हिन्दी", "hi"),
 }
 REQUIRED = ("README.md", "QUICKSTART.md", "STATUS.md", "REVIEWER_GUIDE.md", "GRANT_OVERVIEW.md", "GLOSSARY.md")
 SELECTOR_TOKENS = ("English", "Deutsch", "Français", "Español", "Italiano", "Русский", "简体中文", "العربية", "日本語", "हिन्दी")
@@ -18,11 +25,11 @@ for p in (policy, status):
     if not p.exists():
         errors.append(f"missing governance file: {p.relative_to(ROOT)}")
 
-for code, label in LANGS.items():
-    root_readme = ROOT / f"README.{code}.md"
+for root_code, (label, docs_code) in LANGS.items():
+    root_readme = ROOT / f"README.{root_code}.md"
     if not root_readme.exists():
         errors.append(f"missing root localization: {root_readme.name}")
-    lang_dir = ROOT / "docs" / code
+    lang_dir = ROOT / "docs" / docs_code
     for name in REQUIRED:
         p = lang_dir / name
         if not p.exists():
@@ -40,9 +47,9 @@ for p in root_readmes:
 
 if status.exists():
     text = status.read_text(encoding="utf-8")
-    for code, label in LANGS.items():
-        if f"`{code}`" not in text or label not in text:
-            errors.append(f"translation status missing language row: {code} / {label}")
+    for root_code, (label, _docs_code) in LANGS.items():
+        if f"`{root_code}`" not in text or label not in text:
+            errors.append(f"translation status missing language row: {root_code} / {label}")
 
 if errors:
     print("❌ i18n documentation validation failed:")
