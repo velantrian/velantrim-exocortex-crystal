@@ -219,9 +219,13 @@ def test_missing_l1_trust_fields_do_not_invent_disagreement():
     "bad",
     ["0.9", True, None, float("nan"), float("inf"), -0.1, 1.1, 10**1000],
 )
-def test_malformed_l3_confidence_remains_unknown_not_coerced_to_zero(bad):
+def test_malformed_l3_confidence_is_unknown_and_fails_closed(bad):
     snapshot = _snapshot(l3=_l3(confidence=bad))
+
     assert snapshot.confidence is None
+    assert snapshot.epistemic_state == STORE_STATE_CONFLICT
+    assert snapshot.conflict_fields == ("confidence",)
+    assert snapshot.to_fact_dict()["confidence"] == 0.0
 
 
 def test_malformed_confidence_with_l1_row_is_a_store_conflict():
@@ -230,8 +234,10 @@ def test_malformed_confidence_with_l1_row_is_a_store_conflict():
         l1={**_l3(), "confidence": 0.9},
     )
 
+    assert snapshot.confidence is None
     assert snapshot.epistemic_state == STORE_STATE_CONFLICT
     assert snapshot.conflict_fields == ("confidence",)
+    assert snapshot.to_fact_dict()["confidence"] == 0.0
 
 
 @pytest.mark.parametrize("field", ["claim", "source", "epistemic_state", "truth_status"])
