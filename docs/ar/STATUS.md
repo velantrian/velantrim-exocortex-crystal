@@ -1,9 +1,9 @@
 # 📌 Velantrim Crystal — الحالة الحالية
 
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 [简体中文](../zh-CN/STATUS.md) · 🇸🇦 **العربية**
+> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 [简体中文](../zh-CN/STATUS.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/STATUS.md)
 
 **تاريخ الحالة:** 31 يوليو 2026  
-**حالة المستودع المستخدمة لهذه الترجمة:** `main@9f90cb60`  
+**حالة المستودع المستخدمة لهذه الترجمة:** `main@14bc0659`  
 **آخر checkpoint غيّر runtime:** PR #265 / `cd6fd44`  
 **baseline الاختبارات المعيارية:** [TEST_REPORT.md](../../TEST_REPORT.md)
 
@@ -129,4 +129,4 @@ BASELINE_NOT_MOVED
 
 ---
 
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 [简体中文](../zh-CN/STATUS.md) · 🇸🇦 **العربية**
+> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 [简体中文](../zh-CN/STATUS.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/STATUS.md)
