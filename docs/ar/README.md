@@ -1,6 +1,6 @@
 # 🇸🇦 التوثيق العربي — Velantrim Crystal
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/README.md)
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/README.md) · 🇮🇳 [हिन्दी](../hi/README.md)
 
 ## 🔒 قاعدة الترجمة والمرجعية
 
@@ -63,9 +63,9 @@ GitHub main + الوثائق الإنجليزية المعيارية = المص�
 4. عدم إدخال رقم أو claim جديد في ترجمة فقط
 ```
 
-أُعدّت الحزمة العربية على أساس Crystal `main@14bc0659`. ويظل آخر checkpoint غيّر
+أُعدّت الحزمة العربية على أساس Crystal `main@c5a34a64`. ويظل آخر checkpoint غيّر
 runtime هو PR #265 / `cd6fd44`.
 
 ---
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/README.md)
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/README.md) · 🇮🇳 [हिन्दी](../hi/README.md)

@@ -1,6 +1,6 @@
 # 📚 Velantrim Crystal — 日本語ドキュメント
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 [العربية](../ar/README.md) · 🇯🇵 **日本語**
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 [العربية](../ar/README.md) · 🇯🇵 **日本語** · 🇮🇳 [हिन्दी](../hi/README.md)
 
 このディレクトリには、日本語話者の reviewer と contributor のための保守された
 ドキュメントが含まれます。
@@ -9,7 +9,7 @@
 
 - 実装の正本: GitHub `main`;
 - 英語の正本ドキュメント: `README.md` と `docs/` 配下の英語文書;
-- この翻訳の同期基準: `main@14bc0659`;
+- この翻訳の同期基準: `main@c5a34a64`;
 - audited runtime checkpoint: `cd6fd44`;
 - 相違がある場合は英語版と `TEST_REPORT.md` が優先されます。
 
@@ -42,4 +42,4 @@ code、CLI command、environment variable、path、API endpoint は英語表記�
 
 ---
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 [العربية](../ar/README.md) · 🇯🇵 **日本語**
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 [العربية](../ar/README.md) · 🇯🇵 **日本語** · 🇮🇳 [हिन्दी](../hi/README.md)

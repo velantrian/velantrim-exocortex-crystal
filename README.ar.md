@@ -1,7 +1,7 @@
 # 🔱 Velantrim ExoCortex — Crystal
 
-> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 **العربية**   · 🇯🇵 [日本語](./README.ja.md)
-> 📚 [التوثيق الألماني](./docs/de/README.md) · [الفرنسي](./docs/fr/README.md) · [الإسباني](./docs/es/README.md) · [الإيطالي](./docs/it/README.md) · [الروسي](./docs/ru/README.md) · [الصيني المبسّط](./docs/zh-CN/README.md) · [العربي](./docs/ar/README.md) · [日本語ドキュメント](./docs/ja/README.md)
+> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 **العربية**   · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
+> 📚 [التوثيق الألماني](./docs/de/README.md) · [الفرنسي](./docs/fr/README.md) · [الإسباني](./docs/es/README.md) · [الإيطالي](./docs/it/README.md) · [الروسي](./docs/ru/README.md) · [الصيني المبسّط](./docs/zh-CN/README.md) · [العربي](./docs/ar/README.md) · [日本語ドキュメント](./docs/ja/README.md) · [हिन्दी दस्तावेज़](./docs/hi/README.md)
 
 ### *بنية ذاكرة قابلة للتحقق، محلية أولاً ومفتوحة المصدر لذكاء اصطناعي جدير بالثقة*
 
@@ -250,4 +250,4 @@ Crystal مرخص بموجب **AGPL-3.0**. راجع [LICENSE](./LICENSE)،
 
 ---
 
-> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](./README.ja.md)
+> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)

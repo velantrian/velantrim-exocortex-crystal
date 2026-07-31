@@ -1,6 +1,6 @@
 # 📖 مسرد المصطلحات — Velantrim Crystal بالعربية
 
-> 🌐 🇬🇧 [English](../ARCHITECTURE.md) · 🇩🇪 [Deutsch](../de/GLOSSARY.md) · 🇫🇷 [Français](../fr/GLOSSARY.md) · 🇪🇸 [Español](../es/GLOSSARY.md) · 🇮🇹 [Italiano](../it/GLOSSARY.md) · 🇷🇺 [Русский](../ru/GLOSSARY.md) · 🇨🇳 [简体中文](../zh-CN/GLOSSARY.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/GLOSSARY.md)
+> 🌐 🇬🇧 [English](../ARCHITECTURE.md) · 🇩🇪 [Deutsch](../de/GLOSSARY.md) · 🇫🇷 [Français](../fr/GLOSSARY.md) · 🇪🇸 [Español](../es/GLOSSARY.md) · 🇮🇹 [Italiano](../it/GLOSSARY.md) · 🇷🇺 [Русский](../ru/GLOSSARY.md) · 🇨🇳 [简体中文](../zh-CN/GLOSSARY.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/GLOSSARY.md) · 🇮🇳 [हिन्दी](../hi/GLOSSARY.md)
 >
 > يوحّد هذا المسرد المصطلحات العربية، لكنه لا يستبدل أسماء API أو schema أو
 > code identifiers الإنجليزية. تبقى المعرفات داخل code blocks والواجهات من دون تغيير.
@@ -110,4 +110,4 @@ Trajectory replay = تكرار execution path لأغراض evaluation
 
 ---
 
-> 🌐 🇬🇧 [English](../ARCHITECTURE.md) · 🇩🇪 [Deutsch](../de/GLOSSARY.md) · 🇫🇷 [Français](../fr/GLOSSARY.md) · 🇪🇸 [Español](../es/GLOSSARY.md) · 🇮🇹 [Italiano](../it/GLOSSARY.md) · 🇷🇺 [Русский](../ru/GLOSSARY.md) · 🇨🇳 [简体中文](../zh-CN/GLOSSARY.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/GLOSSARY.md)
+> 🌐 🇬🇧 [English](../ARCHITECTURE.md) · 🇩🇪 [Deutsch](../de/GLOSSARY.md) · 🇫🇷 [Français](../fr/GLOSSARY.md) · 🇪🇸 [Español](../es/GLOSSARY.md) · 🇮🇹 [Italiano](../it/GLOSSARY.md) · 🇷🇺 [Русский](../ru/GLOSSARY.md) · 🇨🇳 [简体中文](../zh-CN/GLOSSARY.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/GLOSSARY.md) · 🇮🇳 [हिन्दी](../hi/GLOSSARY.md)
