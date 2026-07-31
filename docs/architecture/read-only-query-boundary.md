@@ -1,8 +1,8 @@
 # Read-Only Query Boundary
 
-**Status:** `IMPLEMENTED · PR_265_MERGED · HTTP_QUERY_SURFACES_ONLY · BASELINE_HARDENING`  
-**Implementation commit:** `cd6fd44ff4ac8c715121cae1996aa484f11ef250`  
-**Invariant:** asking a question must not become ingestion, promotion, maintenance or research-state mutation.
+**Status:** `IMPLEMENTED · HTTP + CLI + MCP_SEARCH · BASELINE_HARDENING`  
+**Initial HTTP implementation:** merged PR #265 (`cd6fd44`)  
+**Invariant:** asking a question or searching memory must not become ingestion, promotion, maintenance or research-state mutation.
 
 ## Why this boundary exists
 
@@ -17,24 +17,55 @@ admission / ESM transition / L3 merge
 That compatibility path can store retrieved rows in L0/L1, promote a previously
 unknown candidate, drain the L3 outbox and optionally add episodic graph links.
 Those behaviours belong to explicit admission or maintenance operations—not an
-ordinary HTTP question.
+ordinary query.
 
-PR #265 introduced a separate HTTP query contract:
+Crystal therefore exposes one read-only service module for public query surfaces:
 
 ```text
-HTTP /ask or /receipt
+core.query_pipeline.query()   → answer / bounded refusal
+core.query_pipeline.search()  → ranked existing graph facts
+```
+
+## Routed public surfaces
+
+### HTTP
+
+```text
+POST /ask or GET /receipt
     → core.aio.arun
     → core.query_pipeline.query
-    → read existing L3 Canon
-    → resolve deny-dominant L1 restrictions/state
-    → Guardian structural check
-    → CanonicalView strict projection
-    → bounded answer or insufficient-evidence result
 ```
+
+### CLI
+
+```text
+velantrim ask <query>
+velantrim receipt <query>
+python -m core.cli ask <query>
+python -m core.cli receipt <query>
+    → core.cli.main
+    → core.query_pipeline.query
+```
+
+The read-only route is implemented inside the canonical CLI module itself. All
+other established commands retain their existing explicit write/read behaviour.
+
+### MCP search
+
+```text
+MCP tools/call: search
+    → core.mcp_server._tool_search
+    → core.query_pipeline.search
+```
+
+The search contract resolves candidates only against facts already present in
+L3, reads L1 deny-dominantly for restrictions and terminal state, excludes
+processing-restricted rows before returning content, and never stores unknown
+retrieval candidates.
 
 ## Forbidden durable effects
 
-`core.query_pipeline.query()` must not:
+The read-only query/search service must not:
 
 - create or update L0/L1 fact rows;
 - transition ESM state;
@@ -42,34 +73,42 @@ HTTP /ask or /receipt
 - create, update or delete L3 facts, relations, entities or mentions;
 - drain, enqueue or clear the L3 outbox;
 - attach evidence or add audit events;
-- initialize an embedding-space fingerprint merely because a question was asked;
+- initialize an embedding-space fingerprint merely because a query was made;
 - record episodic context;
 - trigger NeuroCore, reconsolidation or adaptive/research-state writes.
 
-It may read local storage, compute retrieval and rendering results, increment
-content-free process metrics, and create the requested response/receipt object. An
-optional configured generator may phrase an answer, but CanonicalView remains the
-grounding authority.
+It may read local storage, compute retrieval/rendering results, increment
+content-free in-process query metrics, and create the requested response or
+receipt object. An optional configured generator may phrase an answer, but
+CanonicalView remains the strict grounding authority for `query()`.
 
 ## Retrieval behaviour
 
-When the canonical store already has an embedding fingerprint, the query path may
-reuse the mature hybrid retriever because its compatibility check is then
-read-only.
+When the graph store already has an embedding fingerprint, the service may reuse
+the mature hybrid retriever because its compatibility check is then read-only.
 
-For a legacy store that contains canonical nodes but has no fingerprint, the HTTP
-query path performs a bounded lexical scan. It does not stamp metadata as a side
-effect of reading. Retrieval candidates that do not resolve to an existing L3
-canonical node are discarded and never written into memory.
+For a legacy store containing graph nodes but no fingerprint, the service uses a
+bounded lexical scan. It does not stamp metadata as a side effect of reading.
+Candidates that do not resolve to an existing L3 fact are discarded and never
+written into memory.
 
-The normal fingerprinted path checks the fingerprint before considering a
-full-store lexical fallback, avoiding unnecessary whole-Canon materialization on
-every HTTP request.
+The fingerprint is checked before any full-store lexical fallback. On the normal
+fingerprinted path, no unnecessary whole-graph materialization is performed.
+
+## Search is not strict Canon
+
+`search()` is an inspection/retrieval surface, not an answer-authority surface.
+It returns explicit `truth_status`, `claim_type` and `epistemic_state` metadata
+and must not imply that every physical L3 node belongs to strict CanonicalView.
+Processing-restricted rows are excluded before claim/source content is returned.
+
+`query()` additionally runs Guardian's structural check and CanonicalView's
+strict projection before producing a confident answer.
 
 ## Trust reconciliation
 
-L3 supplies canonical claim and verdict fields. L1 is consulted deny-dominantly
-for a newer terminal ESM state or a processing restriction.
+L3 supplies stored claim and verdict fields. L1 is consulted deny-dominantly for
+a newer terminal ESM state or processing restriction.
 
 Representation-only differences do not create false trust conflicts:
 
@@ -79,9 +118,9 @@ Representation-only differences do not create false trust conflicts:
 
 Genuine confidence, claim-type or source-status disagreement still fails closed.
 
-## Stable response markers
+## Stable query response markers
 
-Every result from the implemented HTTP path contains:
+Every result from `core.query_pipeline.query()` contains:
 
 ```json
 {
@@ -102,7 +141,8 @@ was not recorded.
 
 ## Acceptance evidence
 
-Regression tests assert that an HTTP query leaves unchanged:
+Regression tests assert that HTTP, CLI query commands and MCP search leave
+unchanged:
 
 - L1 fact contents;
 - L3 facts, edges and mentions;
@@ -111,24 +151,21 @@ Regression tests assert that an HTTP query leaves unchanged:
 - adaptive verification state;
 - unknown retrieval candidates.
 
-They also assert that `core.aio.arun()`—and therefore FastAPI `/ask` and `/receipt`—
-delegates to the strict read-only query pipeline.
+Additional tests assert that:
 
-CI run `30284938992` completed all seven permanent jobs successfully on the
-reviewed PR head, including 1713 passed, 12 skipped and 100% coverage on Python
-3.11, plus the Python 3.12 matrix job, Ruff, security, Docker, eval and JSONL gates.
+- restricted search rows and their content are not returned;
+- invalid search limits fail explicitly;
+- CLI `ask` and `receipt` call the public read-only query service directly;
+- MCP search delegates to the public read-only search contract.
 
-## Residual compatibility scope
+Repository CI remains the authoritative verification evidence for each merged
+revision.
 
-This implementation does **not** claim that every historical caller is migrated:
+## Explicit compatibility residual
 
-- `core.pipeline.run()` remains admission-capable;
-- CLI `ask` and `receipt` still call that compatibility path;
-- MCP exposes no explicit mutation tools, but MCP search currently calls retrieval
-  code that may initialize an unset embedding fingerprint.
-
-MCP is therefore outside the zero-mutation HTTP guarantee until a separate
-follow-up removes or explicitly governs that metadata side effect.
+`core.pipeline.run()` remains admission-capable for legacy/internal callers that
+explicitly choose it. It is no longer used by CLI `ask` or `receipt`. Removing or
+renaming that compatibility function requires a separate deprecation cycle.
 
 ## Grant boundary
 

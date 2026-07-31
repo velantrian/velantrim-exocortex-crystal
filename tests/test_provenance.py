@@ -162,9 +162,23 @@ def test_unsigned_when_no_key(monkeypatch):
 
 # ─── CLI ──────────────────────────────────────────────────────────────────────
 
+def _seed_cli_receipt_fact():
+    """Explicitly admit one source fact; read-only receipt must never seed it."""
+    claim = "DNA carries genetic information"
+    result = ingest(
+        claim,
+        source="reference",
+        source_status="EXTERNAL",
+        confidence=0.95,
+    )
+    assert result["accepted"] is True
+    return claim
+
+
 def test_cli_receipt_then_verify(capsys):
     from core.cli import main
-    assert main(["receipt", "How does DNA work?"]) == 0
+    claim = _seed_cli_receipt_fact()
+    assert main(["receipt", claim]) == 0
     receipt_json = capsys.readouterr().out.strip()
     receipt = json.loads(receipt_json)
     assert receipt["digest"]
@@ -186,14 +200,15 @@ def test_cli_receipt_then_verify(capsys):
 
 def test_cli_receipt_blocked_returns_1(monkeypatch, capsys):
     from core import cli
-    monkeypatch.setattr(cli, "run", lambda q: {"answer": None, "error": "no results"})
+    monkeypatch.setattr(cli, "query", lambda q: {"answer": None, "error": "no results"})
     assert cli.main(["receipt", "nothing matches"]) == 1
     assert json.loads(capsys.readouterr().out.strip())["error"] == "no results"
 
 
 def test_cli_verify_receipt_from_file(tmp_path, capsys):
     from core.cli import main
-    main(["receipt", "How does DNA work?"])
+    claim = _seed_cli_receipt_fact()
+    assert main(["receipt", claim]) == 0
     receipt_json = capsys.readouterr().out.strip()
     path = tmp_path / "receipt.json"
     path.write_text(receipt_json, encoding="utf-8")

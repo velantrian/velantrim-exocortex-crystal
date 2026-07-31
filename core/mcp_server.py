@@ -13,12 +13,12 @@
 # capability gating for write tools is a future roadmap step, not an implemented
 # mechanism today.
 #
-# Enforcement model (what actually protects the canon today): allowlist-based
+# Enforcement model (what actually protects the graph today): allowlist-based
 # read-only registration. Only the tools in READ_ONLY_TOOLS exist, and
 # `tools/call` refuses any name that is not in that registry — so a client never
-# sees a write tool and a model cannot call one by accident. There is no runtime
-# capability/role check; safety comes from the fact that no mutating tool is
-# registered at all.
+# sees a write tool and a model cannot call one by accident. Search additionally
+# routes through core.query_pipeline.search(), which avoids query-triggered L1/L3
+# writes and never initializes an unset embedding fingerprint.
 #
 # Transport: newline-delimited JSON-RPC 2.0 over stdin/stdout (the MCP stdio
 # transport). Run as:
@@ -53,15 +53,21 @@ CAPABILITY = "reader"
 # subsystem cannot break the whole server at import time.
 
 def _tool_search(query: str, k: int = 5) -> Any:
-    from core.pipeline import retrieve
-    hits = retrieve(query, k=int(k))
+    from core.query_pipeline import search
+
+    hits = [
+        hit for hit in search(query, k=int(k))
+        if hit.get("restricted") is False
+    ]
     return [
         {
-            "fact_id": h.get("id"),
-            "text": h.get("text"),
+            "fact_id": h.get("fact_id"),
+            "text": h.get("claim"),
             "source": h.get("source"),
-            "score": h.get("_score"),
+            "score": h.get("score"),
             "epistemic_state": h.get("epistemic_state"),
+            "truth_status": h.get("truth_status"),
+            "claim_type": h.get("claim_type"),
         }
         for h in hits
     ]
@@ -79,10 +85,9 @@ def _tool_get_fact(fact_id: str) -> Any:
         return {"found": False, "fact_id": fact_id}
     if fact.get("restricted"):
         # GDPR Art. 18: processing is restricted for this fact. Unlike
-        # pipeline.retrieve (which silently excludes restricted nodes from
-        # search/graph-walk), a direct by-id lookup must say something — so
-        # get_fact refuses with a stable reason code instead of returning the
-        # claim text or any other raw stored field.
+        # read-only search (which excludes restricted rows through resolution),
+        # a direct by-id lookup must say something — so get_fact refuses with a
+        # stable reason code instead of returning claim text or other raw fields.
         return {
             "found": True,
             "fact_id": fact_id,
@@ -140,8 +145,9 @@ def _register(tool: _Tool) -> None:
 
 _register(_Tool(
     "search",
-    "Read-only semantic + graph search over the canonical memory. Returns ranked "
-    "facts. Does not write anything.",
+    "Read-only semantic + graph search over existing memory. Returns ranked "
+    "facts with explicit epistemic metadata. Does not write anything or stamp "
+    "an unset embedding fingerprint.",
     {
         "type": "object",
         "properties": {
@@ -155,9 +161,8 @@ _register(_Tool(
 
 _register(_Tool(
     "memory_report",
-    "Read-only observability report over the L3 canonical graph: fact counts by "
-    "ESM state / claim type / truth status, edges by type, contradictions and "
-    "weak facts.",
+    "Read-only observability report over the L3 graph: fact counts by ESM state "
+    "/ claim type / truth status, edges by type, contradictions and weak facts.",
     {"type": "object", "properties": {}},
     lambda args: _tool_memory_report(),
 ))
@@ -187,11 +192,11 @@ _register(_Tool(
 
 _register(_Tool(
     "find_conflicts",
-    "Read-only: list canonical WORLD_FACTs that conflict with a claim. Candidates "
+    "Read-only: list graph WORLD_FACTs that conflict with a claim. Candidates "
     "are classified CONTRADICTION / REFINEMENT / RELATED. Does not write anything.",
     {
         "type": "object",
-        "properties": {"claim": _str_prop("the claim to check against the canon")},
+        "properties": {"claim": _str_prop("the claim to check against memory")},
         "required": ["claim"],
     },
     lambda args: _tool_find_conflicts(args["claim"]),
@@ -199,7 +204,7 @@ _register(_Tool(
 
 _register(_Tool(
     "verify_receipt",
-    "Read-only: replay a provenance receipt against the current canon and report "
+    "Read-only: replay a provenance receipt against current memory and report "
     "drift (erased / restricted / modified / contradicted).",
     {
         "type": "object",

@@ -11,9 +11,10 @@
 > epistemic state and provenance metadata. Automatic admission into the canonical
 > graph remains governed by Guardian + TruthGate.
 
-> **Implementation truth:** GitHub `main`. The current audited implementation
+> **Implementation truth:** GitHub `main`. The published audited implementation
 > checkpoint is commit `cd6fd44` from merged PR #265. Exact verification evidence
-> is maintained in [TEST_REPORT.md](./TEST_REPORT.md).
+> is maintained in [TEST_REPORT.md](./TEST_REPORT.md); newer corrective revisions
+> remain subject to their own repository CI evidence.
 
 ---
 
@@ -52,36 +53,45 @@ input / document / agent event
 → classification and evidence
 → Guardian + TruthGate
 → L0/L1 operational memory
-→ admitted L3 canonical graph
+→ admitted L3 graph memory
 ```
 
-### HTTP query path
+### Read-only query service
 
-Merged PR #265 introduced a separate strict read-only HTTP query contract:
+PR #265 introduced the strict HTTP boundary. The same service now defines CLI
+`ask` / `receipt` and MCP search:
 
 ```text
-POST /ask, GET /receipt
+HTTP POST /ask, GET /receipt
 → core.aio.arun()
 → core.query_pipeline.query()
-→ existing Canon only
-→ CanonicalView
-→ answer / bounded refusal
+
+velantrim ask / receipt
+python -m core.cli ask / receipt
+→ core.cli.main()
+→ core.query_pipeline.query()
+
+MCP search
+→ core.mcp_server
+→ core.query_pipeline.search()
 ```
 
-For these HTTP surfaces, asking a question does not ingest into L0/L1, transition
-ESM, write L3 facts or edges, drain the outbox, record episode links, initialize an
-embedding fingerprint, or mutate adaptive verification state.
+For these surfaces, asking or searching does not ingest into L0/L1, transition
+ESM, write L3 facts or edges, drain the outbox, record episode links, initialize
+an unset embedding fingerprint, or mutate adaptive verification state.
 
-### Explicit residual scope
+MCP search is an inspection surface, not a strict-Canon assertion: it returns
+explicit epistemic metadata and excludes processing-restricted rows before
+returning stored claim/source content. Confident answers still require the
+Guardian structural check and CanonicalView strict projection in `query()`.
 
-The read-only guarantee is intentionally narrow and honest:
+### Explicit compatibility residual
 
-- CLI `ask` and `receipt` still use the legacy admission-capable compatibility path;
-- `core.pipeline.run()` remains available;
-- MCP exposes no explicit mutation tools, but MCP search may initialize an unset
-  embedding fingerprint and is therefore not described as a zero-mutation path.
-
-See [docs/architecture/read-only-query-boundary.md](./docs/architecture/read-only-query-boundary.md).
+`core.pipeline.run()` remains an admission-capable compatibility function for
+legacy/internal callers that explicitly choose it. CLI `ask` and `receipt` no
+longer use it. Removing or renaming that function requires a separate
+deprecation cycle. See
+[docs/architecture/read-only-query-boundary.md](./docs/architecture/read-only-query-boundary.md).
 
 ---
 
@@ -92,7 +102,7 @@ See [docs/architecture/read-only-query-boundary.md](./docs/architecture/read-onl
 | **L0** | in-process working cache | fast, rebuildable |
 | **L1** | SQLite/WAL operational memory | states, restrictions, updates |
 | **L2** | pending and curator-review path | not automatically canonical |
-| **L3** | canonical graph | automatic admission only through TruthGate |
+| **L3** | graph-backed memory | automatic admission only through TruthGate |
 | **TRACE / Receipt** | proof layer | explains grounding and detects drift |
 
 The physical graph can carry different truth statuses. In the strict sense,
@@ -160,8 +170,9 @@ python -m core.mcp_server
 ```
 
 MCP offers inspection-oriented tools such as search, memory reports, fact history,
-conflict lookup and receipt verification. It has no explicit canonical write tool;
-the embedding-fingerprint residual above still applies.
+conflict lookup and receipt verification. It has no canonical write tool. Search
+uses the zero-durable-mutation service and does not initialize an unset embedding
+fingerprint merely because a client searched memory.
 
 ---
 
