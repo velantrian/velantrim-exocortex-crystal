@@ -1,0 +1,86 @@
+name: Temporary Arabic i18n sync
+
+on:
+  push:
+    branches:
+      - agent/crystal-arabic-documentation
+
+permissions:
+  contents: write
+
+jobs:
+  sync-markdown:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/crystal-arabic-documentation
+          fetch-depth: 0
+
+      - name: Add Arabic navigation to localized Markdown
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          root_files = [
+              Path('README.md'),
+              Path('README.de.md'),
+              Path('README.fr.md'),
+              Path('README.es.md'),
+              Path('README.it.md'),
+              Path('README.ru.md'),
+              Path('README.zh-CN.md'),
+          ]
+          docs_files = [Path('docs/STATUS.md'), Path('docs/REVIEWER_GUIDE.md')]
+          names = ['README.md', 'QUICKSTART.md', 'STATUS.md', 'REVIEWER_GUIDE.md', 'GRANT_OVERVIEW.md', 'GLOSSARY.md']
+          for lang in ['de', 'fr', 'es', 'it', 'ru', 'zh-CN']:
+              docs_files.extend(Path('docs') / lang / name for name in names)
+
+          changed = []
+          for path in root_files + docs_files:
+              text = path.read_text(encoding='utf-8')
+              lines = text.splitlines()
+              out = []
+              for line in lines:
+                  if line.startswith('> 🌐') and 'العربية' not in line:
+                      if path.parent == Path('.'):
+                          link = './README.ar.md'
+                      elif path == Path('docs/STATUS.md'):
+                          link = './ar/STATUS.md'
+                      elif path == Path('docs/REVIEWER_GUIDE.md'):
+                          link = './ar/REVIEWER_GUIDE.md'
+                      else:
+                          link = f'../ar/{path.name}'
+                      line += f' · 🇸🇦 [العربية]({link})'
+                  if line.startswith('> 📚') and 'التوثيق العربي' not in line and path.parent == Path('.'):
+                      line += ' · [التوثيق العربي](./docs/ar/README.md)'
+                  out.append(line)
+              new = '\n'.join(out)
+              if text.endswith('\n'):
+                  new += '\n'
+              if path.parent.parent == Path('docs') and path.name in {'README.md', 'STATUS.md'}:
+                  new = re.sub(r'main@[0-9a-f]{8}', 'main@9f90cb60', new)
+              if new != text:
+                  path.write_text(new, encoding='utf-8')
+                  changed.append(str(path))
+
+          print(f'updated {len(changed)} Markdown files')
+          for item in changed:
+              print(item)
+          PY
+
+      - name: Commit synchronized Markdown
+        shell: bash
+        run: |
+          if git diff --quiet -- '*.md'; then
+            echo 'No Markdown changes required.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- '*.md'
+          git commit -m 'docs(i18n): synchronize Arabic navigation'
+          git push origin HEAD:agent/crystal-arabic-documentation
