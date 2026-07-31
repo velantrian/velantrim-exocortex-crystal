@@ -64,6 +64,35 @@ def test_public_search_reads_existing_graph_without_stamping_fingerprint():
     assert _graph_snapshot() == before
 
 
+def test_public_search_excludes_restricted_rows_and_content():
+    from core.compliance import restrict_processing
+    from core.l3_graph import get_l3_graph
+    from core.memory import store_fact
+    from core.query_pipeline import search
+
+    fact = {
+        "fact_id": "search:restricted",
+        "claim": "Private Zephyrstone research note",
+        "source": "private-fixture",
+        "confidence": 0.95,
+        "epistemic_state": "Validated",
+        "claim_type": "WORLD_FACT",
+        "source_status": "EXTERNAL",
+        "truth_status": "VERIFIED",
+        "restricted": False,
+    }
+    store_fact(fact)
+    get_l3_graph().merge_fact(fact)
+    restrict_processing(fact["fact_id"], reason="dispute")
+    before = _graph_snapshot()
+
+    rows = search("Zephyrstone research", k=5)
+
+    assert rows == []
+    assert "Zephyrstone" not in json.dumps(rows)
+    assert _graph_snapshot() == before
+
+
 @pytest.mark.parametrize("query,k,error", [
     ("   ", 5, "empty query"),
     ("valid", True, "positive integer"),
