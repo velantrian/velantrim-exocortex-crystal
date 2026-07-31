@@ -1,6 +1,6 @@
 # Read-Only Query Boundary
 
-**Status:** `IMPLEMENTED · HTTP + INSTALLED_CLI + MCP_SEARCH · BASELINE_HARDENING`  
+**Status:** `IMPLEMENTED · HTTP + CLI + MCP_SEARCH · BASELINE_HARDENING`  
 **Initial HTTP implementation:** merged PR #265 (`cd6fd44`)  
 **Invariant:** asking a question or searching memory must not become ingestion, promotion, maintenance or research-state mutation.
 
@@ -36,17 +36,19 @@ POST /ask or GET /receipt
     → core.query_pipeline.query
 ```
 
-### Installed CLI
+### CLI
 
 ```text
 velantrim ask <query>
 velantrim receipt <query>
-    → core.cli_entry
+python -m core.cli ask <query>
+python -m core.cli receipt <query>
+    → core.cli.main
     → core.query_pipeline.query
 ```
 
-`core.cli_entry` intercepts only the installed command's `ask` and `receipt`
-operations. All other established commands delegate unchanged to `core.cli`.
+The read-only route is implemented inside the canonical CLI module itself. All
+other established commands retain their existing explicit write/read behaviour.
 
 ### MCP search
 
@@ -139,8 +141,8 @@ was not recorded.
 
 ## Acceptance evidence
 
-Regression tests assert that HTTP, installed CLI query commands and MCP search
-leave unchanged:
+Regression tests assert that HTTP, CLI query commands and MCP search leave
+unchanged:
 
 - L1 fact contents;
 - L3 facts, edges and mentions;
@@ -153,8 +155,7 @@ Additional tests assert that:
 
 - restricted search rows and their content are not returned;
 - invalid search limits fail explicitly;
-- `velantrim ask` and `velantrim receipt` enter the read-only service;
-- non-query CLI commands retain their existing delegation path;
+- CLI `ask` and `receipt` call the public read-only query service directly;
 - MCP search delegates to the public read-only search contract.
 
 Repository CI remains the authoritative verification evidence for each merged
@@ -162,16 +163,9 @@ revision.
 
 ## Explicit compatibility residual
 
-The following compatibility surfaces remain intentionally outside the public
-cross-surface guarantee:
-
-- `core.pipeline.run()` remains admission-capable for legacy/internal callers;
-- direct invocation of `python -m core.cli` still enters the historical module;
-- direct imports of `core.cli.main` preserve historical behaviour.
-
-The installed `velantrim` command is the supported CLI surface. Removing or
-renaming the legacy admitting path requires a separate deprecation cycle and is
-not hidden inside this hardening change.
+`core.pipeline.run()` remains admission-capable for legacy/internal callers that
+explicitly choose it. It is no longer used by CLI `ask` or `receipt`. Removing or
+renaming that compatibility function requires a separate deprecation cycle.
 
 ## Grant boundary
 
