@@ -1,9 +1,9 @@
 # 📌 Velantrim Crystal — Estado actual
 
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 **Español** · 🇮🇹 [Italiano](../it/STATUS.md)
+> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 **Español** · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md)
 
 **Fecha del estado:** 30 de julio de 2026  
-**Estado del repositorio utilizado para esta traducción:** `main@30e87df4`  
+**Estado del repositorio utilizado para esta traducción:** `main@dee0b9a0`  
 **Último checkpoint con cambios de runtime:** PR #265 / `cd6fd44`  
 **Baseline normativa de tests:** [TEST_REPORT.md](../../TEST_REPORT.md)
 
@@ -142,4 +142,4 @@ lenguaje de subvención y comprobarse frente al estado normativo.
 
 ---
 
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 **Español** · 🇮🇹 [Italiano](../it/STATUS.md)
+> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 **Español** · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md)
