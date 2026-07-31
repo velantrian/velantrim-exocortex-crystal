@@ -1,6 +1,6 @@
 # 💶 Grant-Übersicht — Velantrim Crystal
 
-> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md) · 🇪🇸 [Español](../es/GRANT_OVERVIEW.md) · 🇮🇹 [Italiano](../it/GRANT_OVERVIEW.md) · 🇷🇺 [Русский](../ru/GRANT_OVERVIEW.md) · 🇨🇳 [简体中文](../zh-CN/GRANT_OVERVIEW.md)
+> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md) · 🇪🇸 [Español](../es/GRANT_OVERVIEW.md) · 🇮🇹 [Italiano](../it/GRANT_OVERVIEW.md) · 🇷🇺 [Русский](../ru/GRANT_OVERVIEW.md) · 🇨🇳 [简体中文](../zh-CN/GRANT_OVERVIEW.md) · 🇸🇦 [العربية](../ar/GRANT_OVERVIEW.md)
 >
 > Diese Seite ist eine Übersetzungs- und Orientierungshilfe. Sie ersetzt weder
 > den eingereichten Antrag noch die englischen Milestone-, Budget- und
@@ -139,4 +139,4 @@ Die aktuelle Grant-Phase beansprucht nicht:
 
 ---
 
-> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md) · 🇪🇸 [Español](../es/GRANT_OVERVIEW.md) · 🇮🇹 [Italiano](../it/GRANT_OVERVIEW.md) · 🇷🇺 [Русский](../ru/GRANT_OVERVIEW.md) · 🇨🇳 [简体中文](../zh-CN/GRANT_OVERVIEW.md)
+> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md) · 🇪🇸 [Español](../es/GRANT_OVERVIEW.md) · 🇮🇹 [Italiano](../it/GRANT_OVERVIEW.md) · 🇷🇺 [Русский](../ru/GRANT_OVERVIEW.md) · 🇨🇳 [简体中文](../zh-CN/GRANT_OVERVIEW.md) · 🇸🇦 [العربية](../ar/GRANT_OVERVIEW.md)
