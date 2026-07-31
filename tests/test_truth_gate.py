@@ -1,8 +1,7 @@
-"""Pin tests for core/truth_gate.py — the extracted verification boundary.
+"""Pin tests for core/truth_gate.py — the extracted admission boundary.
 
-The extraction (core/pipeline.py → core/truth_gate.py) is move-only: these
-tests pin the import compatibility and the exact gate behaviour so any future
-"improvement" that changes semantics fails loudly.
+These tests pin import compatibility and exact gate behaviour so any future
+change that weakens Ring Zero fails loudly.
 """
 import pytest
 
@@ -28,7 +27,7 @@ def test_pipeline_monkeypatch_compatibility(monkeypatch):
     assert "pinned" in res["error"]
 
 
-# ─── Gate behaviour pins (verbatim semantics from the pipeline era) ───────────
+# ─── Gate behaviour pins ──────────────────────────────────────────────────────
 
 def _fact(**kw):
     base = {"fact_id": "f1", "source": "probe", "confidence": 0.9,
@@ -89,9 +88,9 @@ def test_default_threshold_comes_from_adaptation(monkeypatch):
 
 
 # ─── Threshold boundary (mutation-killing pins) ───────────────────────────────
-# The gate comparison is strict `<` (truth_gate.py): confidence EQUAL to the
-# threshold is sufficient evidence and must be admitted. These pins make an
-# accidental `<` → `<=` (or the inverse) regression fail loudly.
+# The gate comparison is strict `<`: confidence EQUAL to the threshold is
+# sufficient evidence and must be admitted. These pins make an accidental
+# `<` → `<=` (or inverse) regression fail loudly.
 
 def test_confidence_exactly_at_threshold_passes():
     ok, reason = truth_gate({"facts": [_fact(confidence=0.5)]},
@@ -114,30 +113,30 @@ def test_adaptive_threshold_boundary_also_admits_equality(monkeypatch):
     assert ok is True and reason is None
 
 
-# ─── Track 3A: ENABLE_TRUTH_POLICY production default ─────────────────────────
+# ─── Ring Zero: policy cannot be disabled by process environment ──────────────
 
-def test_truth_policy_on_blocks_llm_output_world_fact(monkeypatch):
-    """ENABLE_TRUTH_POLICY=on enforces the strict rule: an LLM_OUTPUT cannot be
-    admitted as a WORLD_FACT."""
-    monkeypatch.setenv("ENABLE_TRUTH_POLICY", "on")
+@pytest.mark.parametrize("value", ["off", "OFF", "false", "0", "legacy", "on"])
+def test_truth_policy_environment_cannot_admit_llm_world_fact(monkeypatch, value):
+    """Historical ENABLE_TRUTH_POLICY values are inert. No process environment
+    value may turn model output into independent evidence about the world."""
+    monkeypatch.setenv("ENABLE_TRUTH_POLICY", value)
     ok, reason = truth_gate(
         {"facts": [_fact(source_status="LLM_OUTPUT")]}, min_confidence=0.0)
-    assert ok is False and "LLM_OUTPUT cannot be WORLD_FACT" in reason
+    assert ok is False
+    assert "LLM_OUTPUT cannot be WORLD_FACT" in reason
 
 
-def test_truth_policy_off_is_legacy_bypass(monkeypatch):
-    """ENABLE_TRUTH_POLICY=off is the legacy bypass: the SAME LLM_OUTPUT +
-    WORLD_FACT case is no longer blocked by the policy and is judged on
-    source + confidence alone (here: present + sufficient → passes)."""
-    monkeypatch.setenv("ENABLE_TRUTH_POLICY", "off")
-    ok, reason = truth_gate(
-        {"facts": [_fact(source_status="LLM_OUTPUT")]}, min_confidence=0.0)
-    assert ok is True and reason is None
-
-
-def test_truth_policy_unset_defaults_to_strict(monkeypatch):
-    """An unset ENABLE_TRUTH_POLICY defaults to strict ON (secure by default)."""
+def test_truth_policy_unset_is_strict(monkeypatch):
     monkeypatch.delenv("ENABLE_TRUTH_POLICY", raising=False)
     ok, reason = truth_gate(
         {"facts": [_fact(source_status="LLM_OUTPUT")]}, min_confidence=0.0)
     assert ok is False and "LLM_OUTPUT cannot be WORLD_FACT" in reason
+
+
+def test_environment_does_not_change_legitimate_external_fact(monkeypatch):
+    """Removing the bypass does not make unrelated policy environment values
+    influence a legitimately sourced WORLD_FACT."""
+    monkeypatch.setenv("ENABLE_TRUTH_POLICY", "off")
+    ok, reason = truth_gate(
+        {"facts": [_fact(source_status="EXTERNAL")]}, min_confidence=0.5)
+    assert ok is True and reason is None
