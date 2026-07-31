@@ -19,10 +19,12 @@ from core.retrieval_config import get_retrieval_config
 from core.trace import build_trace
 from core.trust_snapshot import (
     DEFAULT_CLAIM_TYPE as _DEFAULT_CLAIM_TYPE,
-    STORE_STATE_CONFLICT,
+    STORE_STATE_CONFLICT as _STORE_STATE_CONFLICT,
     TrustSnapshot,
 )
 
+# Backward-compatible module-level export used by existing tests/callers.
+STORE_STATE_CONFLICT = _STORE_STATE_CONFLICT
 _QUERY_POLICY = "canonical_read_only"
 
 
