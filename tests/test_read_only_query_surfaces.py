@@ -124,15 +124,15 @@ def test_public_search_discards_unknown_candidates(monkeypatch):
     assert _graph_snapshot() == before
 
 
-def test_installed_cli_ask_is_read_only(capsys):
-    from core import cli_entry
+def test_cli_ask_is_read_only(capsys):
+    from core.cli import main
     from core.memory import get_fact
 
     fact_id = _seed_verified()
     l1_before = get_fact(fact_id)
     graph_before = _graph_snapshot()
 
-    rc = cli_entry.main(["ask", "Saturn rings"])
+    rc = main(["ask", "Saturn rings"])
 
     assert rc == 0
     assert "rings" in capsys.readouterr().out.lower()
@@ -140,13 +140,13 @@ def test_installed_cli_ask_is_read_only(capsys):
     assert _graph_snapshot() == graph_before
 
 
-def test_installed_cli_receipt_success_is_read_only(capsys):
-    from core import cli_entry
+def test_cli_receipt_success_is_read_only(capsys):
+    from core.cli import main
 
     _seed_verified("Mercury is the closest planet to the Sun")
     before = _graph_snapshot()
 
-    rc = cli_entry.main(["receipt", "Mercury closest planet Sun"])
+    rc = main(["receipt", "Mercury closest planet Sun"])
 
     assert rc == 0
     payload = json.loads(capsys.readouterr().out)
@@ -154,36 +154,38 @@ def test_installed_cli_receipt_success_is_read_only(capsys):
     assert _graph_snapshot() == before
 
 
-def test_installed_cli_receipt_failure_is_bounded(capsys):
-    from core import cli_entry
+def test_cli_receipt_failure_is_bounded(capsys):
+    from core.cli import main
 
-    rc = cli_entry.main(["receipt", "nothing is stored"])
+    rc = main(["receipt", "nothing is stored"])
 
     assert rc == 1
     payload = json.loads(capsys.readouterr().out)
     assert "error" in payload
 
 
-def test_installed_cli_delegates_non_query_and_malformed_query(monkeypatch):
-    from core import cli_entry
+def test_cli_query_commands_route_to_public_service(monkeypatch, capsys):
+    from core import cli
 
     calls = []
-    monkeypatch.setattr(cli_entry.legacy_cli, "main", lambda args: calls.append(args) or 7)
 
-    assert cli_entry.main(["report"]) == 7
-    assert cli_entry.main(["ask"]) == 7
-    assert calls == [["report"], ["ask"]]
+    def fake_query(text):
+        calls.append(text)
+        return {
+            "answer": "read-only answer",
+            "facts": [],
+            "trace": [],
+            "read_only": True,
+            "query_policy": "canonical_read_only",
+        }
 
+    monkeypatch.setattr(cli, "query", fake_query)
 
-def test_installed_cli_reads_process_argv_when_omitted(monkeypatch):
-    from core import cli_entry
-
-    calls = []
-    monkeypatch.setattr(cli_entry.sys, "argv", ["velantrim", "report"])
-    monkeypatch.setattr(cli_entry.legacy_cli, "main", lambda args: calls.append(args) or 0)
-
-    assert cli_entry.main() == 0
-    assert calls == [["report"]]
+    assert cli.main(["ask", "first"]) == 0
+    assert "read-only answer" in capsys.readouterr().out
+    assert cli.main(["receipt", "second"]) == 0
+    json.loads(capsys.readouterr().out)
+    assert calls == ["first", "second"]
 
 
 def test_mcp_search_uses_read_only_service_and_preserves_fingerprint(monkeypatch):
