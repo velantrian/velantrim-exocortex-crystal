@@ -20,6 +20,13 @@ jobs:
       - name: Lint production and tooling code
         run: ruff check core scripts prototypes utils *.py
 
+  i18n-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate translation documentation
+        run: python scripts/check_i18n_docs.py
+
   test:
     runs-on: ubuntu-latest
     strategy:
