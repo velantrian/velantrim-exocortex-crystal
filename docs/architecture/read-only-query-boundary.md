@@ -137,8 +137,12 @@ Representation-only differences do not create false trust conflicts:
 
 Genuine confidence, claim-type, source-status or non-terminal ESM disagreement
 sets the snapshot to `STORE_STATE_CONFLICT` and records only content-free
-conflict categories. Malformed confidence becomes unknown rather than being
-coerced into a trusted `0.0` value. A confirmed restriction on either store wins.
+conflict categories. Missing or malformed L3 confidence also creates a
+`confidence` conflict and is retained internally as unknown (`None`) rather than
+being confused with a real numeric zero. During this narrow migration the fresh
+compatibility mapping still emits the historical safe `0.0` sentinel for
+existing mapping consumers; the conflict state/category remains authoritative.
+A confirmed restriction on either store wins.
 
 This is a boundary-object baseline, not a repository-wide fact-schema migration.
 See [ADR-012](../adr/ADR-012-IMMUTABLE_TRUST_SNAPSHOT.md).
@@ -183,7 +187,9 @@ Additional tests assert that:
 - CLI `ask` and `receipt` call the public read-only query service directly;
 - MCP search delegates to the public read-only search contract;
 - trust snapshots are frozen, scalar-only and independent of input mutation;
-- L1 terminal states/restrictions and genuine metadata drift fail closed.
+- L1 terminal states/restrictions and genuine metadata drift fail closed;
+- malformed confidence remains unknown internally, forces a store conflict and
+  cannot become admissible through the outward compatibility sentinel.
 
 Repository CI remains the authoritative verification evidence for each merged
 revision.
