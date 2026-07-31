@@ -1,6 +1,6 @@
 # 💶 Panoramica della sovvenzione — Velantrim Crystal
 
-> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 [Deutsch](../de/GRANT_OVERVIEW.md) · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md) · 🇪🇸 [Español](../es/GRANT_OVERVIEW.md) · 🇮🇹 **Italiano** · 🇷🇺 [Русский](../ru/GRANT_OVERVIEW.md) · 🇨🇳 [简体中文](../zh-CN/GRANT_OVERVIEW.md) · 🇸🇦 [العربية](../ar/GRANT_OVERVIEW.md) · 🇯🇵 [日本語](../ja/GRANT_OVERVIEW.md)
+> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 [Deutsch](../de/GRANT_OVERVIEW.md) · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md) · 🇪🇸 [Español](../es/GRANT_OVERVIEW.md) · 🇮🇹 **Italiano** · 🇷🇺 [Русский](../ru/GRANT_OVERVIEW.md) · 🇨🇳 [简体中文](../zh-CN/GRANT_OVERVIEW.md) · 🇸🇦 [العربية](../ar/GRANT_OVERVIEW.md) · 🇯🇵 [日本語](../ja/GRANT_OVERVIEW.md) · 🇮🇳 [हिन्दी](../hi/GRANT_OVERVIEW.md)
 >
 > Questa pagina è un supporto di traduzione e orientamento. Non sostituisce la
 > proposta presentata né i documenti inglesi su milestone, budget e criteri di
@@ -138,4 +138,4 @@ La fase attuale non rivendica:
 
 ---
 
-> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 [Deutsch](../de/GRANT_OVERVIEW.md) · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md) · 🇪🇸 [Español](../es/GRANT_OVERVIEW.md) · 🇮🇹 **Italiano** · 🇷🇺 [Русский](../ru/GRANT_OVERVIEW.md) · 🇨🇳 [简体中文](../zh-CN/GRANT_OVERVIEW.md) · 🇸🇦 [العربية](../ar/GRANT_OVERVIEW.md) · 🇯🇵 [日本語](../ja/GRANT_OVERVIEW.md)
+> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 [Deutsch](../de/GRANT_OVERVIEW.md) · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md) · 🇪🇸 [Español](../es/GRANT_OVERVIEW.md) · 🇮🇹 **Italiano** · 🇷🇺 [Русский](../ru/GRANT_OVERVIEW.md) · 🇨🇳 [简体中文](../zh-CN/GRANT_OVERVIEW.md) · 🇸🇦 [العربية](../ar/GRANT_OVERVIEW.md) · 🇯🇵 [日本語](../ja/GRANT_OVERVIEW.md) · 🇮🇳 [हिन्दी](../hi/GRANT_OVERVIEW.md)

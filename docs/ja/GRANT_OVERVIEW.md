@@ -1,6 +1,6 @@
 # 💶 Grant 概要 — Velantrim Crystal
 
-> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 [Deutsch](../de/GRANT_OVERVIEW.md) · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md) · 🇪🇸 [Español](../es/GRANT_OVERVIEW.md) · 🇮🇹 [Italiano](../it/GRANT_OVERVIEW.md) · 🇷🇺 [Русский](../ru/GRANT_OVERVIEW.md) · 🇨🇳 [简体中文](../zh-CN/GRANT_OVERVIEW.md) · 🇸🇦 [العربية](../ar/GRANT_OVERVIEW.md) · 🇯🇵 **日本語**
+> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 [Deutsch](../de/GRANT_OVERVIEW.md) · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md) · 🇪🇸 [Español](../es/GRANT_OVERVIEW.md) · 🇮🇹 [Italiano](../it/GRANT_OVERVIEW.md) · 🇷🇺 [Русский](../ru/GRANT_OVERVIEW.md) · 🇨🇳 [简体中文](../zh-CN/GRANT_OVERVIEW.md) · 🇸🇦 [العربية](../ar/GRANT_OVERVIEW.md) · 🇯🇵 **日本語** · 🇮🇳 [हिन्दी](../hi/GRANT_OVERVIEW.md)
 
 この文書は、日本語 reviewer のための概要です。法的・契約上・grant scope の正本は英語文書です。
 
@@ -103,4 +103,4 @@ separate RFC/PR、baseline fixed の条件を守る必要があります。
 
 ---
 
-> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 [Deutsch](../de/GRANT_OVERVIEW.md) · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md) · 🇪🇸 [Español](../es/GRANT_OVERVIEW.md) · 🇮🇹 [Italiano](../it/GRANT_OVERVIEW.md) · 🇷🇺 [Русский](../ru/GRANT_OVERVIEW.md) · 🇨🇳 [简体中文](../zh-CN/GRANT_OVERVIEW.md) · 🇸🇦 [العربية](../ar/GRANT_OVERVIEW.md) · 🇯🇵 **日本語**
+> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 [Deutsch](../de/GRANT_OVERVIEW.md) · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md) · 🇪🇸 [Español](../es/GRANT_OVERVIEW.md) · 🇮🇹 [Italiano](../it/GRANT_OVERVIEW.md) · 🇷🇺 [Русский](../ru/GRANT_OVERVIEW.md) · 🇨🇳 [简体中文](../zh-CN/GRANT_OVERVIEW.md) · 🇸🇦 [العربية](../ar/GRANT_OVERVIEW.md) · 🇯🇵 **日本語** · 🇮🇳 [हिन्दी](../hi/GRANT_OVERVIEW.md)

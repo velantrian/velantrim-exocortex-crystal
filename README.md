@@ -1,7 +1,7 @@
 # 🔱 Velantrim ExoCortex — Crystal
 
-> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md)   · 🇯🇵 [日本語](./README.ja.md)
-> 📚 [German documentation](./docs/de/README.md) · [Documentation française](./docs/fr/README.md) · [Documentación en español](./docs/es/README.md) · [Documentazione italiana](./docs/it/README.md) · [Документация на русском](./docs/ru/README.md) · [简体中文文档](./docs/zh-CN/README.md) · [التوثيق العربي](./docs/ar/README.md) · [日本語ドキュメント](./docs/ja/README.md)
+> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md)   · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
+> 📚 [German documentation](./docs/de/README.md) · [Documentation française](./docs/fr/README.md) · [Documentación en español](./docs/es/README.md) · [Documentazione italiana](./docs/it/README.md) · [Документация на русском](./docs/ru/README.md) · [简体中文文档](./docs/zh-CN/README.md) · [التوثيق العربي](./docs/ar/README.md) · [日本語ドキュメント](./docs/ja/README.md) · [हिन्दी दस्तावेज़](./docs/hi/README.md)
 
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
@@ -251,6 +251,7 @@ Localized reviewer paths:
 - 🇨🇳 [Reviewer 指南](./docs/zh-CN/REVIEWER_GUIDE.md) · [快速开始](./docs/zh-CN/QUICKSTART.md) · [Grant 概览](./docs/zh-CN/GRANT_OVERVIEW.md)
 - 🇸🇦 [دليل المراجع](./docs/ar/REVIEWER_GUIDE.md) · [البدء السريع](./docs/ar/QUICKSTART.md) · [نظرة عامة على المنحة](./docs/ar/GRANT_OVERVIEW.md)
 - 🇯🇵 [日本語 reviewer guide](./docs/ja/REVIEWER_GUIDE.md) · [クイックスタート](./docs/ja/QUICKSTART.md) · [Grant 概要](./docs/ja/GRANT_OVERVIEW.md)
+- 🇮🇳 [हिन्दी reviewer guide](./docs/hi/REVIEWER_GUIDE.md) · [Quickstart](./docs/hi/QUICKSTART.md) · [Grant overview](./docs/hi/GRANT_OVERVIEW.md)
 
 The pre-synchronization long-form README is preserved under
 `docs/archive/grant-sync/README_PRE_SYNC_2026-07-30.md` for historical context.
@@ -267,4 +268,4 @@ Crystal is licensed under **AGPL-3.0**. See [LICENSE](./LICENSE),
 
 ---
 
-> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md)
+> 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
