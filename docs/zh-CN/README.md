@@ -1,6 +1,6 @@
 # 🇨🇳 简体中文文档 — Velantrim Crystal
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 **简体中文**
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 **简体中文** · 🇸🇦 [العربية](../ar/README.md)
 
 ## 🔒 翻译与权威规则
 
@@ -62,9 +62,9 @@ GitHub main + 英文规范文档 = 权威来源
 4. 不在翻译中单独引入新数字或新 claim
 ```
 
-本简体中文包基于 Crystal `main@edf54367`。最后一个改变 runtime 的 checkpoint
+本简体中文包基于 Crystal `main@9f90cb60`。最后一个改变 runtime 的 checkpoint
 仍是 PR #265 / `cd6fd44`。
 
 ---
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 **简体中文**
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 **简体中文** · 🇸🇦 [العربية](../ar/README.md)

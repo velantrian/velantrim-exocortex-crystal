@@ -1,9 +1,9 @@
 # 📌 Velantrim Crystal — 当前状态
 
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 **简体中文**
+> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 **简体中文** · 🇸🇦 [العربية](../ar/STATUS.md)
 
 **状态日期：** 2026-07-31  
-**本翻译对应的 repository 状态：** `main@edf54367`  
+**本翻译对应的 repository 状态：** `main@9f90cb60`  
 **最后一个改变 runtime 的 checkpoint：** PR #265 / `cd6fd44`  
 **权威测试 baseline：** [TEST_REPORT.md](../../TEST_REPORT.md)
 
@@ -137,4 +137,4 @@ BASELINE_NOT_MOVED
 
 ---
 
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 **简体中文**
+> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 **简体中文** · 🇸🇦 [العربية](../ar/STATUS.md)
