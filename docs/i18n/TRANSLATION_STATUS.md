@@ -12,7 +12,7 @@
 | 🇪🇸 Español | `es` | `README.es.md` | `docs/es/` | current | `fb3db12e` |
 | 🇮🇹 Italiano | `it` | `README.it.md` | `docs/it/` | current | `fb3db12e` |
 | 🇷🇺 Русский | `ru` | `README.ru.md` | `docs/ru/` | current | `fb3db12e` |
-| 🇨🇳 简体中文 | `zh` | `README.zh.md` | `docs/zh/` | current | `fb3db12e` |
+| 🇨🇳 简体中文 | `zh-CN` | `README.zh-CN.md` | `docs/zh-CN/` | current | `fb3db12e` |
 | 🇸🇦 العربية | `ar` | `README.ar.md` | `docs/ar/` | current | `fb3db12e` |
 | 🇯🇵 日本語 | `ja` | `README.ja.md` | `docs/ja/` | current | `fb3db12e` |
 | 🇮🇳 हिन्दी | `hi` | `README.hi.md` | `docs/hi/` | current | `fb3db12e` |
