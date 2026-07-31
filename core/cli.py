@@ -15,7 +15,7 @@ import sys
 from typing import Optional, List
 
 from core.ingest import ingest
-from core.pipeline import run
+from core.query_pipeline import query
 from core.path_safety import resolve_safe_path
 from core.reconcile import fact_history, find_conflicts
 from core.observe import memory_report, format_report
@@ -68,7 +68,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     p_ing = sub.add_parser("ingest", help="accept an utterance into memory")
     p_ing.add_argument("text")
-    p_ask = sub.add_parser("ask", help="ask (retrieve → gate → answer)")
+    p_ask = sub.add_parser("ask", help="ask existing memory (strict read-only query)")
     p_ask.add_argument("query")
     p_hist = sub.add_parser("history", help="truth provenance of a fact")
     p_hist.add_argument("fact_id")
@@ -95,7 +95,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_redact = sub.add_parser("redact", help="detect & redact PII in text (GDPR Art. 5)")
     p_redact.add_argument("text")
     p_receipt = sub.add_parser(
-        "receipt", help="ask, then emit a tamper-evident provenance receipt (JSON)")
+        "receipt", help="read-only ask, then emit a tamper-evident provenance receipt (JSON)")
     p_receipt.add_argument("query")
     p_verify = sub.add_parser(
         "verify-receipt", help="replay a provenance receipt against the canon")
@@ -323,7 +323,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             **({"reason": res["reason"]} if not res["accepted"] else {}),
         }, ensure_ascii=False))
     elif args.cmd == "ask":
-        res = run(args.query)
+        res = query(args.query)
         print(res.get("answer") or f"[blocked] {res.get('error')}")
     elif args.cmd == "history":
         print(json.dumps(fact_history(args.fact_id), ensure_ascii=False))
@@ -350,7 +350,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(json.dumps({"redacted": redacted, "found": pii.summary(found)},
                          ensure_ascii=False))
     elif args.cmd == "receipt":
-        res = run(args.query)
+        res = query(args.query)
         if res.get("answer") is None:
             print(json.dumps({"error": res.get("error")}, ensure_ascii=False))
             return 1
