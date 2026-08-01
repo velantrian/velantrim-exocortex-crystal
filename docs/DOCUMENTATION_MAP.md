@@ -1,27 +1,26 @@
 # 🧭 Crystal Documentation Map
 
-This page routes readers to the smallest authoritative document for their goal.
-It exists to keep `README.md` readable and to reduce duplicate or drifting
-implementation claims.
+This page routes each reader to the smallest authoritative document and prevents
+duplicate implementation claims.
 
 ## Start here by audience
 
 | Audience | First document | Then read |
 |---|---|---|
 | New user | [README](../README.md) | [Quick start](./QUICKSTART.md), [Architecture](./ARCHITECTURE.md) |
-| Grant reviewer | [Reviewer guide](./REVIEWER_GUIDE.md) | [Reviewer demo](./REVIEWER_DEMO.md), [Test report](../TEST_REPORT.md), [Grant scope](./GRANT_NLNET_SCOPE.md) |
-| Engineer | [Architecture](./ARCHITECTURE.md) | [Implementation status](./IMPLEMENTATION_STATUS.md), [ADR index](./ADR.md), [Failure modes](./FAILURE_MODES.md) |
+| Grant reviewer | [Reviewer guide](./REVIEWER_GUIDE.md) | [Test report](../TEST_REPORT.md), [Grant scope](./GRANT_NLNET_SCOPE.md) |
+| Engineer | [Implementation status](./IMPLEMENTATION_STATUS.md) | [ADR index](./ADR.md), [Failure modes](./FAILURE_MODES.md) |
+| Operator | [Quick start](./QUICKSTART.md) | [Conflict-resolution surfaces](./CONFLICT_RESOLUTION_SURFACES.md), [Threat model](./security/threat-model.md) |
 | Security reviewer | [Security policy](../SECURITY.md) | [Threat model](./security/threat-model.md), [Privacy](../PRIVACY.md) |
-| Researcher | [Implementation status](./IMPLEMENTATION_STATUS.md) | [Roadmap](../ROADMAP.md), RFC documents, [Metaphor vs mechanism](./METAPHOR_VS_MECHANISM.md) |
-| Operator | [Quick start](./QUICKSTART.md) | [Architecture](./ARCHITECTURE.md), [EU service security readiness](./security/eu-service-security-readiness.md), [Threat model](./security/threat-model.md) |
-| Contributor | [Contributing](../CONTRIBUTING.md) | [Governance](../GOVERNANCE.md), [Test report](../TEST_REPORT.md) |
+| Researcher | [Implementation status](./IMPLEMENTATION_STATUS.md) | [Roadmap](../ROADMAP.md), RFCs, [Metaphor vs mechanism](./METAPHOR_VS_MECHANISM.md) |
+| Contributor | [Contributing](../CONTRIBUTING.md) | [Test report](../TEST_REPORT.md), [Governance](../GOVERNANCE.md) |
 
 ## Authority hierarchy
 
 ```text
 GitHub main code and tests
         ↓
-TEST_REPORT.md + docs/status/implementation-manifest.json
+TEST_REPORT.md + implementation-manifest.json
         ↓
 docs/STATUS.md + docs/IMPLEMENTATION_STATUS.md
         ↓
@@ -32,61 +31,55 @@ localized translations
 RFC, roadmap and research documents
 ```
 
-When two documents disagree, prefer the higher surface and open a documentation
-correction. Notion is the synchronized strategy and grant map; it does not
-replace merged code as implementation truth.
+Notion is the synchronized strategy/grant map; it does not replace merged code
+as implementation truth.
 
 ## Core architecture and trust
 
-- [Architecture](./ARCHITECTURE.md) — normative system boundaries and Ring Zero.
-- [Implementation status](./IMPLEMENTATION_STATUS.md) — implemented, partial,
-  RFC, vision and out-of-scope classification.
-- [Read-only query boundary](./architecture/read-only-query-boundary.md) — HTTP,
-  CLI and MCP search without durable mutation.
-- [ADR-011: non-configurable TruthGate invariant](./adr/ADR-011-NON_CONFIGURABLE_TRUTH_POLICY.md).
-- [ADR-012: immutable TrustSnapshot](./adr/ADR-012-IMMUTABLE_TRUST_SNAPSHOT.md).
-- [ADR-013: documentation status manifest](./adr/ADR-013-DOCUMENTATION_STATUS_MANIFEST.md).
-- [Ring Zero mutation gate](./testing/RING_ZERO_MUTATION_GATE.md).
-- [CanonicalView RFC](./CANONICAL_VIEW_RFC.md) — physical L3 versus strict Canon.
+- [Architecture](./ARCHITECTURE.md)
+- [Implementation status](./IMPLEMENTATION_STATUS.md)
+- [Read-only query boundary](./architecture/read-only-query-boundary.md)
+- [Conflict-resolution surfaces](./CONFLICT_RESOLUTION_SURFACES.md)
+- [Ring Zero mutation gate](./testing/RING_ZERO_MUTATION_GATE.md)
+- [CanonicalView RFC](./CANONICAL_VIEW_RFC.md)
+- [ADR index](./ADR.md)
 
-## Evidence, provenance and evaluation
+## Evidence, state and performance
 
-- [Test report](../TEST_REPORT.md) — exact verified checkpoint and metrics.
-- [Evaluation](./EVAL.md) — evaluation architecture and datasets.
-- [Evaluation metrics](./EVALUATION_METRICS.md).
-- [Failure modes](./FAILURE_MODES.md).
-- [L3 retrieval scale benchmark](./benchmarks/L3_RETRIEVAL_SCALE.md).
+- [Test report](../TEST_REPORT.md)
+- [Current status](./STATUS.md)
+- [Evaluation](./EVAL.md)
+- [Failure modes](./FAILURE_MODES.md)
+- [L3 retrieval benchmark](./benchmarks/L3_RETRIEVAL_SCALE.md)
 
-## Grant and public-claim boundary
+The ESM runtime has one machine-readable specification derived from the shared
+transition matrix. Performance history uses versioned scheduled/manual artifacts
+and comparable-run reporting; shared PR-runner latency is not a hard SLO.
 
-- [NLnet scope](./GRANT_NLNET_SCOPE.md).
-- [Baseline versus funded delta](./grants/baseline-funded-delta-matrix.md).
-- [Funding use plan](./grants/funding-use-plan.md).
-- [Evaluation replay adoption decision](./grants/evaluation-replay-adoption.md).
+## Grant boundary
 
-The proposal is submitted and under review. These documents do not claim that
-funding has been awarded.
+- [NLnet scope](./GRANT_NLNET_SCOPE.md)
+- [Baseline versus funded delta](./grants/baseline-funded-delta-matrix.md)
+- [Funding use plan](./grants/funding-use-plan.md)
 
-## Current engineering backlog
+The proposal remains submitted and under review; funding is not claimed as
+awarded.
 
-The next recommended packages are intentionally separate from this documentation
-hardening change:
+## Completed hardening workstream
 
-1. **Contradiction decision contract** — typed `ContradictionReport`, explicit
-   coexist/supersede/contextualize/review outcomes and no automatic winner based
-   only on confidence.
-2. **ESM transition specification** — one machine-checkable transition table and
-   invariant checker shared by admission, review and reconciliation.
-3. **Performance history** — scheduled fixed-runner retrieval benchmarks with
-   historical JSON results, not unstable latency gates on shared PR runners.
-4. **Advisory topic facets** — multi-label navigation metadata where
-   `topic_score` is never truth, evidence quality or source authority.
-5. **Role and multi-curator hardening** — authentication scopes, accountable
-   review decisions and conflict-safe concurrent workflows.
+The documentation/read-only/trust hardening sequence through PR #300 is complete:
+read-only queries, non-configurable TruthGate policy, immutable snapshots,
+mutation testing, contradiction decisions, ESM specification, performance
+history, public conflict surfaces and exact status synchronization.
+
+## Future roadmap
+
+Independent future packages include advisory topic facets, production IAM and
+multi-curator authorization, broader provenance lifecycle wiring, controlled
+performance SLOs, wider mutation coverage and separate Titan research.
 
 ## Translation policy
 
-English code-facing documents are normative. Localized documents are maintained
-reader surfaces and should link back to the authoritative English status and test
-report. Translation freshness must not be inferred from file modification time
-alone.
+English code-facing documents are normative. Localized pages are maintained
+reader surfaces and link back to the authoritative English status and test
+report.
