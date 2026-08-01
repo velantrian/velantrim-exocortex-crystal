@@ -10,7 +10,7 @@ duplicate implementation claims.
 | New user | [README](../README.md) | [Quick start](./QUICKSTART.md), [Architecture](./ARCHITECTURE.md) |
 | Grant reviewer | [Reviewer guide](./REVIEWER_GUIDE.md) | [Test report](../TEST_REPORT.md), [Grant scope](./GRANT_NLNET_SCOPE.md) |
 | Engineer | [Implementation status](./IMPLEMENTATION_STATUS.md) | [ADR index](./ADR.md), [Failure modes](./FAILURE_MODES.md) |
-| Operator | [Quick start](./QUICKSTART.md) | [Conflict-resolution surfaces](./CONFLICT_RESOLUTION_SURFACES.md), [Threat model](./security/threat-model.md) |
+| Operator | [Quick start](./QUICKSTART.md) | [Conflict-resolution surfaces](./CONFLICT_RESOLUTION_SURFACES.md), [Topic facets and curator IAM](./TOPIC_FACETS_AND_CURATOR_IAM.md) |
 | Security reviewer | [Security policy](../SECURITY.md) | [Threat model](./security/threat-model.md), [Privacy](../PRIVACY.md) |
 | Researcher | [Implementation status](./IMPLEMENTATION_STATUS.md) | [Roadmap](../ROADMAP.md), RFCs, [Metaphor vs mechanism](./METAPHOR_VS_MECHANISM.md) |
 | Contributor | [Contributing](../CONTRIBUTING.md) | [Test report](../TEST_REPORT.md), [Governance](../GOVERNANCE.md) |
@@ -24,9 +24,9 @@ TEST_REPORT.md + implementation-manifest.json
         ↓
 docs/STATUS.md + docs/IMPLEMENTATION_STATUS.md
         ↓
-README and reviewer guides
+English README capability contract
         ↓
-localized translations
+semantically aligned localized READMEs
         ↓
 RFC, roadmap and research documents
 ```
@@ -40,6 +40,7 @@ as implementation truth.
 - [Implementation status](./IMPLEMENTATION_STATUS.md)
 - [Read-only query boundary](./architecture/read-only-query-boundary.md)
 - [Conflict-resolution surfaces](./CONFLICT_RESOLUTION_SURFACES.md)
+- [Topic facets and curator IAM](./TOPIC_FACETS_AND_CURATOR_IAM.md)
 - [Ring Zero mutation gate](./testing/RING_ZERO_MUTATION_GATE.md)
 - [CanonicalView RFC](./CANONICAL_VIEW_RFC.md)
 - [ADR index](./ADR.md)
@@ -48,6 +49,7 @@ as implementation truth.
 
 - [Test report](../TEST_REPORT.md)
 - [Current status](./STATUS.md)
+- [Implementation manifest](./status/implementation-manifest.json)
 - [Evaluation](./EVAL.md)
 - [Failure modes](./FAILURE_MODES.md)
 - [L3 retrieval benchmark](./benchmarks/L3_RETRIEVAL_SCALE.md)
@@ -67,19 +69,23 @@ awarded.
 
 ## Completed hardening workstream
 
-The documentation/read-only/trust hardening sequence through PR #300 is complete:
+The documentation/read-only/trust hardening sequence through PR #302 is complete:
 read-only queries, non-configurable TruthGate policy, immutable snapshots,
 mutation testing, contradiction decisions, ESM specification, performance
-history, public conflict surfaces and exact status synchronization.
+history, public conflict surfaces, advisory topic facets, scoped curator
+authorization, process-local decision leases and synchronized multilingual
+README surfaces.
 
-## Future roadmap
+## Independent future roadmap
 
-Independent future packages include advisory topic facets, production IAM and
-multi-curator authorization, broader provenance lifecycle wiring, controlled
-performance SLOs, wider mutation coverage and separate Titan research.
+Future packages include an external distributed lease adapter, production
+identity-provider and multi-tenant policy integration, broader provenance
+lifecycle wiring, controlled performance SLOs, wider mutation coverage and
+separate Titan research.
 
 ## Translation policy
 
-English code-facing documents are normative. Localized pages are maintained
-reader surfaces and link back to the authoritative English status and test
-report.
+English code-facing documents remain normative. The ten top-level README files
+share one capability and safety contract. `docs-status` checks their checkpoint,
+metrics, core safety markers and local links so translations cannot silently
+retain an obsolete architecture description.
