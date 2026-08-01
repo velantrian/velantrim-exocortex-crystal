@@ -54,6 +54,12 @@ def validate_esm_spec() -> dict[str, Any]:
             "transition table contains unknown source states: "
             + ", ".join(sorted(extra_sources))
         )
+    missing_sources = states - set(ESM_TRANSITIONS)
+    if missing_sources:
+        errors.append(
+            "transition table is missing source states: "
+            + ", ".join(sorted(missing_sources))
+        )
 
     for source, targets in ESM_TRANSITIONS.items():
         if not isinstance(targets, (set, frozenset)):
