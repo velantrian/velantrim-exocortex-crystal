@@ -13,7 +13,7 @@ implementation claims.
 | Engineer | [Architecture](./ARCHITECTURE.md) | [Implementation status](./IMPLEMENTATION_STATUS.md), [ADR index](./ADR.md), [Failure modes](./FAILURE_MODES.md) |
 | Security reviewer | [Security policy](../SECURITY.md) | [Threat model](./security/threat-model.md), [Privacy](../PRIVACY.md) |
 | Researcher | [Implementation status](./IMPLEMENTATION_STATUS.md) | [Roadmap](../ROADMAP.md), RFC documents, [Metaphor vs mechanism](./METAPHOR_VS_MECHANISM.md) |
-| Operator | [Quick start](./QUICKSTART.md) | [API guide](./API.md), [Deployment](./DEPLOYMENT.md), [Operations](./OPERATIONS.md) |
+| Operator | [Quick start](./QUICKSTART.md) | [Architecture](./ARCHITECTURE.md), [EU service security readiness](./security/eu-service-security-readiness.md), [Threat model](./security/threat-model.md) |
 | Contributor | [Contributing](../CONTRIBUTING.md) | [Governance](../GOVERNANCE.md), [Test report](../TEST_REPORT.md) |
 
 ## Authority hierarchy
