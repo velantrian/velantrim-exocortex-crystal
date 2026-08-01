@@ -70,6 +70,8 @@ def test_validate_raw_result_sorts_sizes_and_returns_fresh_copy():
         ({**_raw(), "sizes": [_size(10), _size(10)]}, "duplicate fact size"),
         ({**_raw(), "sizes": [_size(top_k=-1)]}, "non-negative integer"),
         ({**_raw(), "sizes": [_size(p50_ms="slow")]}, "must be numeric"),
+        ({**_raw(), "sizes": [_size(p50_ms=float("nan"))]}, "must be finite"),
+        ({**_raw(), "sizes": [_size(p95_ms=float("inf"), max_ms=float("inf"))]}, "must be finite"),
         ({**_raw(), "sizes": [_size(load_seconds=-1.0)]}, "must be >= 0.0"),
         ({**_raw(), "sizes": [_size(p50_ms=21.0)]}, "not ordered"),
     ],
@@ -90,6 +92,7 @@ def test_pack_validate_and_summarize_history():
             "runner_arch": "X64",
             "event": "schedule",
             "ref": "",
+            "sha": None,
             "ignored": "not copied",
         },
     )
@@ -166,13 +169,15 @@ def test_compare_histories_reports_warning_only_for_comparable_workloads():
     assert "⚠️" in markdown
     assert "Informational only" in markdown
 
-    different_workload = _history(_size(1000, p50_ms=20, p95_ms=40, top_k=5))
+    different_workload = _history(
+        _size(1000, p50_ms=20, p95_ms=40, max_ms=50, top_k=5)
+    )
     mismatch = history.compare_histories(baseline, different_workload)
     assert mismatch["rows"][0]["workload_match"] is False
     assert mismatch["warning_sizes"] == []
 
     different_backend = history.pack_history(
-        _raw(_size(1000, p50_ms=20, p95_ms=40), backend="other"),
+        _raw(_size(1000, p50_ms=20, p95_ms=40, max_ms=50), backend="other"),
         collected_at="2026-08-01T08:00:00+00:00",
     )
     environment = history.compare_histories(baseline, different_backend)
@@ -193,6 +198,8 @@ def test_compare_handles_zero_baseline_no_shared_sizes_and_bad_ratio():
 
     with pytest.raises(ValueError, match="warn_ratio"):
         history.compare_histories(zero, current, warn_ratio=0)
+    with pytest.raises(ValueError, match="finite"):
+        history.compare_histories(zero, current, warn_ratio=float("inf"))
 
 
 def test_pack_and_compare_cli_write_files(tmp_path, capsys):
