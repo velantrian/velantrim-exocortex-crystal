@@ -13,16 +13,24 @@ import hashlib
 import json
 from typing import Any, Iterable, Mapping, Optional
 
-from core.memory import ESM_STATES, TERMINAL_STATES, _ALLOWED_TRANSITIONS
+from core.memory import ESM_STATES, ESM_TRANSITIONS, IMMUTABLE_FACT_IDS
 
 ESM_SPEC_SCHEMA_VERSION = 1
-ENTRY_STATES = frozenset({"Observed", "ImmutableCore"})
-ISOLATED_ENTRY_STATES = frozenset({"ImmutableCore"})
+DEFAULT_ENTRY_STATES = frozenset({"Observed"})
+
+
+def _terminal_states() -> frozenset[str]:
+    """Derive terminal states from the active runtime table."""
+    return frozenset(
+        state
+        for state in ESM_STATES
+        if not ESM_TRANSITIONS.get(state, set())
+    )
 
 
 def _sorted_transition_table() -> dict[str, list[str]]:
     return {
-        source: sorted(_ALLOWED_TRANSITIONS.get(source, frozenset()))
+        source: sorted(ESM_TRANSITIONS.get(source, set()))
         for source in sorted(ESM_STATES)
     }
 
@@ -31,26 +39,23 @@ def validate_esm_spec() -> dict[str, Any]:
     """Validate structural and reachability invariants of the runtime ESM table."""
     errors: list[str] = []
     states = set(ESM_STATES)
-    terminals = set(TERMINAL_STATES)
-    entries = set(ENTRY_STATES)
+    entries = set(DEFAULT_ENTRY_STATES)
 
     if not states:
         errors.append("ESM_STATES must not be empty")
     if any(not isinstance(state, str) or not state.strip() for state in states):
         errors.append("every ESM state must be a non-blank string")
-    if not terminals <= states:
-        errors.append("TERMINAL_STATES must be a subset of ESM_STATES")
     if not entries <= states:
-        errors.append("ENTRY_STATES must be a subset of ESM_STATES")
+        errors.append("DEFAULT_ENTRY_STATES must be a subset of ESM_STATES")
 
-    extra_sources = set(_ALLOWED_TRANSITIONS) - states
+    extra_sources = set(ESM_TRANSITIONS) - states
     if extra_sources:
         errors.append(
             "transition table contains unknown source states: "
             + ", ".join(sorted(extra_sources))
         )
 
-    for source, targets in _ALLOWED_TRANSITIONS.items():
+    for source, targets in ESM_TRANSITIONS.items():
         if not isinstance(targets, (set, frozenset)):
             errors.append(f"transition targets for {source!r} must be a set/frozenset")
             continue
@@ -63,39 +68,34 @@ def validate_esm_spec() -> dict[str, Any]:
         if source in targets:
             errors.append(f"self-transition is not allowed for {source!r}")
 
-    for terminal in terminals:
-        if _ALLOWED_TRANSITIONS.get(terminal, frozenset()):
-            errors.append(f"terminal state {terminal!r} must have no outgoing transitions")
-
-    reachable = set(ISOLATED_ENTRY_STATES)
-    queue: deque[str] = deque(sorted(entries - ISOLATED_ENTRY_STATES))
-    reachable.update(queue)
+    reachable = set(entries)
+    queue: deque[str] = deque(sorted(entries))
     while queue:
         source = queue.popleft()
-        for target in _ALLOWED_TRANSITIONS.get(source, frozenset()):
-            if target not in reachable:
+        for target in ESM_TRANSITIONS.get(source, set()):
+            if target in states and target not in reachable:
                 reachable.add(target)
                 queue.append(target)
     unreachable = states - reachable
     if unreachable:
         errors.append(
-            "states unreachable from declared entry states: "
+            "states unreachable from declared default entry states: "
             + ", ".join(sorted(unreachable))
         )
 
     if any(
-        target == "ImmutableCore"
-        for targets in _ALLOWED_TRANSITIONS.values()
-        for target in targets
+        not isinstance(fact_id, str) or not fact_id.strip()
+        for fact_id in IMMUTABLE_FACT_IDS
     ):
-        errors.append("ImmutableCore must be created explicitly, never reached by transition")
+        errors.append("IMMUTABLE_FACT_IDS must contain only non-blank strings")
 
+    terminals = _terminal_states()
     return {
         "valid": not errors,
         "errors": errors,
         "state_count": len(states),
         "terminal_count": len(terminals),
-        "transition_count": sum(len(targets) for targets in _ALLOWED_TRANSITIONS.values()),
+        "transition_count": sum(len(targets) for targets in ESM_TRANSITIONS.values()),
         "reachable_states": sorted(reachable),
     }
 
@@ -103,13 +103,14 @@ def validate_esm_spec() -> dict[str, Any]:
 def esm_spec() -> dict[str, Any]:
     """Return a fresh JSON-serializable descriptor of the active runtime ESM."""
     table = _sorted_transition_table()
+    terminals = _terminal_states()
     validation = validate_esm_spec()
     sealed = {
         "schema_version": ESM_SPEC_SCHEMA_VERSION,
         "states": sorted(ESM_STATES),
-        "entry_states": sorted(ENTRY_STATES),
-        "isolated_entry_states": sorted(ISOLATED_ENTRY_STATES),
-        "terminal_states": sorted(TERMINAL_STATES),
+        "default_entry_states": sorted(DEFAULT_ENTRY_STATES),
+        "terminal_states": sorted(terminals),
+        "protected_fact_ids": sorted(IMMUTABLE_FACT_IDS),
         "transitions": table,
     }
     canonical = json.dumps(
@@ -123,14 +124,18 @@ def esm_spec() -> dict[str, Any]:
 
 
 def transition_allowed(source: Any, target: Any) -> bool:
-    """Fail-closed query over the active runtime transition table."""
+    """Fail-closed query over the active runtime transition table.
+
+    This answers matrix membership only. `memory.transition_esm()` remains the
+    write authority and may additionally reject protected fact IDs.
+    """
     if not isinstance(source, str) or not isinstance(target, str):
         return False
-    return target in _ALLOWED_TRANSITIONS.get(source, frozenset())
+    return target in ESM_TRANSITIONS.get(source, set())
 
 
 def shortest_transition_path(source: Any, target: Any) -> Optional[list[str]]:
-    """Return the shortest allowed state path, or None when no path exists."""
+    """Return the shortest matrix path, or None when no path exists."""
     if not isinstance(source, str) or not isinstance(target, str):
         return None
     if source not in ESM_STATES or target not in ESM_STATES:
@@ -142,7 +147,7 @@ def shortest_transition_path(source: Any, target: Any) -> Optional[list[str]]:
     visited = {source}
     while queue:
         current, path = queue.popleft()
-        for next_state in sorted(_ALLOWED_TRANSITIONS.get(current, frozenset())):
+        for next_state in sorted(ESM_TRANSITIONS.get(current, set())):
             if next_state == target:
                 return [*path, next_state]
             if next_state not in visited:
@@ -180,9 +185,8 @@ def validate_state_records(records: Iterable[Mapping[str, Any]]) -> dict[str, An
 
 
 __all__ = [
-    "ENTRY_STATES",
+    "DEFAULT_ENTRY_STATES",
     "ESM_SPEC_SCHEMA_VERSION",
-    "ISOLATED_ENTRY_STATES",
     "esm_spec",
     "shortest_transition_path",
     "transition_allowed",
