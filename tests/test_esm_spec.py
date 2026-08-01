@@ -37,7 +37,7 @@ def test_transition_queries_fail_closed_and_find_shortest_paths():
     assert esm.shortest_transition_path("Observed", "Observed") == ["Observed"]
     assert esm.shortest_transition_path("Observed", "Deprecated") == [
         "Observed",
-        "Hypothesized",
+        "Contradicted",
         "Deprecated",
     ]
     assert esm.shortest_transition_path("Validated", "Hypothesized") is None
