@@ -35,6 +35,14 @@ jobs:
       - name: Kill declared Ring Zero mutants
         run: bash scripts/ring_zero_mutation_gate.sh
 
+  docs-status:
+    name: docs-status
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate documentation status manifest and active surfaces
+        run: bash scripts/check_docs_status.sh
+
   test:
     runs-on: ubuntu-latest
     strategy:
