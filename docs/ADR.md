@@ -17,6 +17,8 @@ Statuses:
 | [ADR-012](./adr/ADR-012-IMMUTABLE_TRUST_SNAPSHOT.md) | read-time L3/L1 trust reconciliation uses an immutable snapshot | Accepted baseline |
 | [ADR-013](./adr/ADR-013-DOCUMENTATION_STATUS_MANIFEST.md) | active implementation claims use a machine-checkable status manifest | Accepted baseline |
 | [ADR-014](./adr/ADR-014-EXPLICIT_CONTRADICTION_DECISIONS.md) | a current contradiction requires an explicit, report-bound curator disposition | Accepted baseline |
+| [ADR-015](./adr/ADR-015-ESM_MACHINE_SPEC.md) | one machine-readable ESM descriptor is derived from the runtime matrix | Accepted baseline |
+| [ADR-016](./adr/ADR-016-INFORMATIONAL_BENCHMARK_HISTORY.md) | hosted-runner retrieval history is scheduled, versioned and informational | Accepted baseline |
 
 ---
 
@@ -164,3 +166,11 @@ See [ADR-013](./adr/ADR-013-DOCUMENTATION_STATUS_MANIFEST.md).
 ## ADR-014: Explicit contradiction decisions
 
 See [ADR-014](./adr/ADR-014-EXPLICIT_CONTRADICTION_DECISIONS.md).
+
+## ADR-015: ESM machine specification
+
+See [ADR-015](./adr/ADR-015-ESM_MACHINE_SPEC.md).
+
+## ADR-016: Informational benchmark history
+
+See [ADR-016](./adr/ADR-016-INFORMATIONAL_BENCHMARK_HISTORY.md).

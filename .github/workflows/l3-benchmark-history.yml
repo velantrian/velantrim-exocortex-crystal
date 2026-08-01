@@ -1,0 +1,66 @@
+name: L3 Benchmark History
+
+on:
+  schedule:
+    - cron: "17 3 * * 0"
+  workflow_dispatch:
+    inputs:
+      sizes:
+        description: "Comma-separated synthetic fact counts"
+        required: false
+        default: "1000,10000"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: l3-benchmark-history
+  cancel-in-progress: false
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BENCH_SIZES: ${{ inputs.sizes || '1000,10000' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run existing deterministic L3 benchmark
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p benchmark-artifacts
+          python scripts/bench_l3_retrieval.py \
+            --sizes "$BENCH_SIZES" \
+            --json-out benchmark-artifacts/raw.json \
+            2>&1 | tee benchmark-artifacts/benchmark.log
+      - name: Package versioned history artifact
+        run: |
+          python scripts/l3_benchmark_history.py pack \
+            --input benchmark-artifacts/raw.json \
+            --output benchmark-artifacts/history.json \
+            --summary-out benchmark-artifacts/summary.md \
+            --collected-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --repository "${{ github.repository }}" \
+            --workflow "${{ github.workflow }}" \
+            --event "${{ github.event_name }}" \
+            --run-id "${{ github.run_id }}" \
+            --run-number "${{ github.run_number }}" \
+            --run-attempt "${{ github.run_attempt }}" \
+            --ref "${{ github.ref }}" \
+            --sha "${{ github.sha }}" \
+            --runner-os "${{ runner.os }}" \
+            --runner-arch "${{ runner.arch }}"
+      - name: Publish informational summary
+        run: cat benchmark-artifacts/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload benchmark history
+        uses: actions/upload-artifact@v4
+        with:
+          name: l3-retrieval-history-${{ github.run_number }}-${{ github.run_attempt }}
+          path: benchmark-artifacts/
+          retention-days: 90
+          if-no-files-found: error
