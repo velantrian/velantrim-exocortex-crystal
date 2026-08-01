@@ -1,15 +1,29 @@
+import pytest
+
 from core.contradiction_report import ConflictDisposition
 from core.curator_auth import (
     CuratorCapability,
     CuratorLeaseRegistry,
     CuratorPrincipal,
     CuratorRole,
+    DecisionLease,
     authorize_conflict_decision,
 )
 
 
 def principal(role, *, scopes=frozenset({"fact:*"})):
     return CuratorPrincipal("alice", frozenset({role}), scopes)
+
+
+def test_principal_validation_fails_closed():
+    with pytest.raises(ValueError, match="actor_id"):
+        CuratorPrincipal("", frozenset({CuratorRole.ADMIN}))
+    with pytest.raises(ValueError, match="at least one"):
+        CuratorPrincipal("alice", frozenset())
+    with pytest.raises(TypeError, match="CuratorRole"):
+        CuratorPrincipal("alice", frozenset({"ADMIN"}))  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="scopes"):
+        CuratorPrincipal("alice", frozenset({CuratorRole.ADMIN}), frozenset({""}))
 
 
 def test_reviewer_can_only_coexist():
@@ -64,6 +78,12 @@ def test_actor_and_fact_scopes_fail_closed():
     assert not authorize_conflict_decision(
         scoped,
         actor="alice",
+        disposition="COEXIST",
+        candidate_fact_id="outside",
+    ).allowed
+    assert not authorize_conflict_decision(
+        scoped,
+        actor="alice",
         disposition="SUPERSEDE",
         candidate_fact_id="new",
         target_fact_ids=("old-2",),
@@ -77,14 +97,34 @@ def test_actor_and_fact_scopes_fail_closed():
     ).allowed
 
 
-def test_review_required_is_not_executable():
-    result = authorize_conflict_decision(
-        principal(CuratorRole.ADMIN),
+def test_unknown_and_review_required_dispositions_are_not_executable():
+    admin = principal(CuratorRole.ADMIN)
+    assert not authorize_conflict_decision(
+        admin,
+        actor="alice",
+        disposition="UNKNOWN",
+        candidate_fact_id="new",
+    ).allowed
+    assert not authorize_conflict_decision(
+        admin,
         actor="alice",
         disposition="REVIEW_REQUIRED",
         candidate_fact_id="new",
-    )
-    assert not result.allowed
+    ).allowed
+
+
+def test_lease_key_and_acquire_validation():
+    with pytest.raises(ValueError, match="candidate_fact_id"):
+        CuratorLeaseRegistry.lease_key("", "report")
+    with pytest.raises(ValueError, match="candidate_fact_id"):
+        CuratorLeaseRegistry.lease_key("fact", "")
+    registry = CuratorLeaseRegistry()
+    with pytest.raises(ValueError, match="owner"):
+        registry.acquire(candidate_fact_id="fact", report_id="report", owner="")
+    with pytest.raises(ValueError, match="ttl_seconds"):
+        registry.acquire(
+            candidate_fact_id="fact", report_id="report", owner="alice", ttl_seconds=0
+        )
 
 
 def test_lease_registry_blocks_parallel_owner_and_releases_exact_token():
@@ -107,6 +147,10 @@ def test_lease_registry_blocks_parallel_owner_and_releases_exact_token():
         )
         is None
     )
+    wrong_owner = DecisionLease(first.key, "mallory", first.token, first.expires_at)
+    wrong_token = DecisionLease(first.key, first.owner, "wrong", first.expires_at)
+    assert not registry.release(wrong_owner)
+    assert not registry.release(wrong_token)
     assert registry.release(first)
     assert not registry.release(first)
 
