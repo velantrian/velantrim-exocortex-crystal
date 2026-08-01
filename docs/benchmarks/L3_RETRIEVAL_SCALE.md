@@ -33,12 +33,10 @@ Fixed workload fields are included in every JSON size row:
 
 ```text
 measured_searches_total = 100
-a query_templates       = 20
+query_templates         = 20
 top_k                    = 10
 warmup_queries           = 10
 ```
-
-The label above is descriptive; the actual JSON key is `query_templates`.
 
 ## What it measures
 
@@ -189,9 +187,11 @@ The path remains O(N); this optimization did not introduce an ANN index.
 }
 ```
 
-The packer validates required fields, non-negative metrics, unique positive fact
-sizes and ordered p50 ≤ p95 ≤ max latency values. Malformed artifacts fail
-packaging rather than becoming history.
+The packer validates required fields, finite non-negative metrics, unique positive
+fact sizes and ordered p50 ≤ p95 ≤ max latency values. Null or blank workflow
+metadata is omitted instead of becoming a misleading string value.
+
+Malformed artifacts fail packaging rather than becoming history.
 
 ## Caveats
 
