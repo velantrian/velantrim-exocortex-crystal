@@ -1,18 +1,18 @@
 # 🧪 Velantrim Crystal — Test Report
 
 **Status:** current verified runtime baseline  
-**Runtime checkpoint:** `b10a7446dc6c88fd319161ac983263554f93107b`  
-**Merged change:** PR #300 — explicit conflict-resolution CLI and HTTP surfaces  
+**Runtime checkpoint:** `f91299c44a1a1850fa516f3abb96c916326f7a8c`  
+**Merged change:** PR #302 — advisory topic facets and scoped curator IAM  
 **Verification date:** 2026-08-01  
 **Status manifest:** [docs/status/implementation-manifest.json](./docs/status/implementation-manifest.json)
 
 ## Exact baseline
 
 ```text
-Python 3.11:          1838 passed / 12 skipped
-Python 3.12:          1838 passed / 12 skipped
+Python 3.11:          1853 passed / 12 skipped
+Python 3.12:          1853 passed / 12 skipped
 Failed:               0
-Measured statements:  7051
+Measured statements:  7236
 Coverage:              100.00% coverage
 Ring Zero mutation:   7/7 declared mutants killed
 CI topology:          9 permanent CI jobs
@@ -30,7 +30,7 @@ CI topology:          9 permanent CI jobs
 | `eval-gate` | retrieval, grounding, contradiction and refusal metrics |
 | `jsonl-integrity` | corpus parsing and duplicate identifiers |
 | `Ring Zero mutation gate` | seven declared semantic mutations must be killed |
-| `docs-status` | manifest, metrics, active status surfaces and local links |
+| `docs-status` | manifest, metrics, active status surfaces, localized READMEs and local links |
 
 ## Verified implementation sequence
 
@@ -43,11 +43,21 @@ CI topology:          9 permanent CI jobs
 - **#297:** machine-readable ESM specification derived from the runtime matrix.
 - **#298:** scheduled/manual L3 benchmark history and comparable-run reporting.
 - **#300:** validated CLI and authenticated FastAPI conflict-resolution surfaces.
+- **#302:** advisory topic facets, scoped curator roles/capabilities and process-local decision leases.
+
+## PR #302 boundaries
+
+- `TopicFacet` metadata supports navigation, filtering and grouping only.
+- A topic score is not truth, evidence quality or Canon admission permission.
+- `CuratorPrincipal` binds the authenticated actor to roles and fact scopes.
+- `REVIEWER` may resolve only `COEXIST`; higher-risk dispositions require broader capabilities.
+- `CuratorLeaseRegistry` prevents concurrent decisions only within one process.
+- Distributed deployments must provide an external lease adapter; report freshness and ESM CAS remain authoritative.
 
 ## Reproduction
 
 ```bash
-git checkout b10a7446dc6c88fd319161ac983263554f93107b
+git checkout f91299c44a1a1850fa516f3abb96c916326f7a8c
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
@@ -63,4 +73,5 @@ bash scripts/check_docs_status.sh
 This evidence demonstrates tested behavior at the recorded checkpoint. It does
 not claim universal truth detection, absence of every defect, zero
 hallucinations, legal certification, security certification, production
-multi-tenant readiness, or Titan/Full Exo-Cortex functionality.
+multi-tenant readiness, distributed lease safety, or Titan/Full ExoCortex
+functionality.
