@@ -43,8 +43,9 @@ replace merged code as implementation truth.
   RFC, vision and out-of-scope classification.
 - [Read-only query boundary](./architecture/read-only-query-boundary.md) — HTTP,
   CLI and MCP search without durable mutation.
-- [ADR-011: non-configurable TruthGate invariant](./adr/ADR-011-NONCONFIGURABLE_TRUTH_POLICY.md).
+- [ADR-011: non-configurable TruthGate invariant](./adr/ADR-011-NON_CONFIGURABLE_TRUTH_POLICY.md).
 - [ADR-012: immutable TrustSnapshot](./adr/ADR-012-IMMUTABLE_TRUST_SNAPSHOT.md).
+- [ADR-013: documentation status manifest](./adr/ADR-013-DOCUMENTATION_STATUS_MANIFEST.md).
 - [Ring Zero mutation gate](./testing/RING_ZERO_MUTATION_GATE.md).
 - [CanonicalView RFC](./CANONICAL_VIEW_RFC.md) — physical L3 versus strict Canon.
 
