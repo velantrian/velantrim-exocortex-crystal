@@ -39,8 +39,6 @@ jobs:
             --json-out benchmark-artifacts/raw.json \
             2>&1 | tee benchmark-artifacts/benchmark.log
       - name: Package versioned history artifact
-        env:
-          COLLECTED_AT: ${{ github.event.repository.updated_at }}
         run: |
           python scripts/l3_benchmark_history.py pack \
             --input benchmark-artifacts/raw.json \
