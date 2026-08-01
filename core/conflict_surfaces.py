@@ -89,8 +89,7 @@ def register_conflict_routes(
         target_fact_ids: list[str] = Field(default_factory=list)
         expected_report_id: Optional[str] = None
 
-    @app.post("/review/resolve-conflict", dependencies=list(dependencies))
-    async def resolve_conflict_endpoint(req: ResolveConflictRequest) -> dict[str, Any]:
+    async def resolve_conflict_endpoint(req) -> dict[str, Any]:
         try:
             return await asyncio.to_thread(
                 resolve_conflict_payload,
@@ -103,6 +102,11 @@ def register_conflict_routes(
             )
         except ValueError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    resolve_conflict_endpoint.__annotations__["req"] = ResolveConflictRequest
+    app.post("/review/resolve-conflict", dependencies=list(dependencies))(
+        resolve_conflict_endpoint
+    )
 
 
 def main(argv: Optional[list[str]] = None) -> int:
