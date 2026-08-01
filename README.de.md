@@ -60,40 +60,176 @@ Ein Themenlabel ist kein Wahrheitsurteil.
 
 ## 🏛️ Architektur im Überblick
 
+Die drei folgenden Karten zeigen dasselbe System aus ergänzenden Blickwinkeln:
+**Zweck**, **Informationsfluss** und **Modulbeziehungen**.
+
+### 🧠 Mindmap — Zweck und Fähigkeitsgrenzen
+
 ```text
-Eingabe / ausdrücklicher Import
-        ↓
-Aussagenklassifikation + Evidenzmetadaten
-        ↓
-Observed-Zustand in L0/L1
-        ↓
-Guardian → TruthGate → Einschränkungs-/Widerspruchsprüfung
-        ↓
-physischer L3-Graph mit mehreren Zuständen
+🧠 Velantrim ExoCortex — Crystal
+│
+├── 🎯 Zweck
+│   ├── Nachweisbarer Speicher für KI
+│   ├── Lokale Vertrauensinfrastruktur
+│   └── Evidenzgestützte Antworten und Entscheidungen
+│
+├── 🏛️ Speichermodell
+│   ├── L0 — prozessinterner Arbeitscache
+│   ├── L1 — operativer Lebenszyklusspeicher
+│   ├── L2 — Grenze für Pending und Review
+│   └── L3 — graphbasierter Mehrzustandsspeicher
+│
+├── 🛡️ Vertrauensgrenze
+│   ├── Guardian — Struktur- und Richtlinienprüfungen
+│   ├── TruthGate — Zulassungsgrenze
+│   ├── TrustSnapshot — unveränderliche Leseabstimmung
+│   └── CanonicalView — strenge Vertrauensprojektion
+│
+├── 📜 Evidenz und Auditierbarkeit
+│   ├── Provenienz und Evidenzspannen
+│   ├── TRACE — Herkunft der Begründung
+│   └── Receipt — Replay- und Manipulationsnachweis
+│
+├── ⚖️ Review und Widersprüche
+│   ├── Review-Warteschlangen und fortsetzbare Sitzungen
+│   ├── unveränderlicher ContradictionReport
+│   ├── COEXIST
+│   ├── CONTEXTUALIZE
+│   └── SUPERSEDE
+│
+├── 🏷️ Beratende Navigation
+│   └── TopicFacet — mehrwertige, nicht autoritative Metadaten
+│
+├── 🔐 Governance und Koordination
+│   ├── bereichsgebundene Kuratorenrollen und Fähigkeiten
+│   ├── Bindung an den authentifizierten Actor
+│   └── prozesslokale Decision Leases
+│
+└── 📊 Verifikation
+    ├── deterministische Tests und Evaluation
+    ├── 100 % Zeilenabdeckung
+    ├── Ring-Zero-Mutation-Gate
+    └── versionierte Benchmark-Historie
+```
 
-öffentliche Abfrage/Suche
-        ↓ nur lesend
-Kandidatenabruf → unveränderlicher TrustSnapshot
-        ↓
-Guardian + CanonicalView STRICT
-        ↓
-FactsPack + TRACE → Antwort / Ablehnung / Receipt
+### 🏗️ ASCII-Architektur — wie Informationen fließen
 
-ungelöster Widerspruch
-        ↓
-unveränderlicher ContradictionReport
-        ↓
-Actor-/Rollen-/Bereichsprüfung + Decision Lease
-        ↓
-ausdrückliche Kuratorenentscheidung + Begründung
-        ↓
-auditierbarer kanonischer Schreibpfad
+```text
+┌─────────────────────────────────────────────────────────────────────┐
+│              🔱 Velantrim ExoCortex — Crystal                      │
+│      Lokale, nachweisbare Speicherinfrastruktur für KI             │
+└─────────────────────────────────────────────────────────────────────┘
 
-Thematische Navigation
-        ↓
-beratende TopicFacet-Metadaten
-        ↓
-nur Filtern/Gruppieren — keine Aufnahme in den Canon
+                        📥 Ausdrückliche Aufnahme
+                                  │
+                                  ▼
+                🧾 Aussagentyp + Quelle + Evidenzspanne
+                                  │
+                                  ▼
+                       🧠 L0 / L1 Observed-Zustand
+                                  │
+                                  ▼
+          🛡️ Guardian ──► ⚖️ TruthGate ──► 🚧 Einschränkungen
+                                  │
+                    ┌─────────────┴─────────────┐
+                    │                           │
+                    ▼                           ▼
+          ⏳ L2 Pending / Review       🏛️ Physischer L3-Graph
+                    │                           │
+                    │                           ▼
+                    │                 📜 Provenienz / TRACE
+                    │                           │
+                    └─────────────┬─────────────┘
+                                  │
+                                  ▼
+                      📐 Unveränderlicher TrustSnapshot
+                                  │
+                                  ▼
+                 🛡️ Guardian + CanonicalView STRICT
+                                  │
+                    ┌─────────────┴─────────────┐
+                    │                           │
+                    ▼                           ▼
+            💬 Begründete Antwort       🚫 Begrenzte Ablehnung
+                    │
+                    ▼
+             🧾 Reproduzierbares Receipt
+
+⚖️ Ungelöster Widerspruch
+        │
+        ▼
+📋 Unveränderlicher ContradictionReport
+        │
+        ▼
+🔐 bereichsgebundener Principal + Fähigkeit + Decision Lease
+        │
+        ▼
+🧑‍⚖️ ausdrückliches COEXIST / CONTEXTUALIZE / SUPERSEDE
+        │
+        ▼
+📜 auditierbarer kanonischer Schreibpfad
+
+🏷️ TopicFacet-Metadaten ──► Navigation / Filtern / Gruppieren
+                           └─► niemals Autorität über Wahrheit, ESM, Evidenz oder Canon
+```
+
+### 🌳 Beziehungsbaum — wie die Module verbunden sind
+
+```text
+🌳 Crystal-Systembeziehungen
+│
+├── 🧠 Speicherschicht
+│   ├── L0 ──► schneller, rekonstruierbarer Arbeitscache
+│   ├── L1 ──► Lebenszyklus, Einschränkungen und offene Arbeit
+│   ├── L2 ──► logische Review-Grenze
+│   └── L3 ──► graphbasierte Mehrzustandsspeicherung
+│
+├── 🛡️ Vertrauensschicht
+│   ├── Guardian ──► Struktur- und Richtlinienvalidierung
+│   ├── TruthGate ──► Zulassungsentscheidung
+│   ├── TrustSnapshot ──► deny-dominante L1/L3-Abstimmung
+│   └── CanonicalView ──► strenge Begründungsprojektion
+│
+├── 📜 Evidenzschicht
+│   ├── Quellenmetadaten
+│   ├── Evidenzspannen
+│   ├── Provenienz
+│   ├── TRACE
+│   └── Receipt
+│
+├── ⚖️ Review-Schicht
+│   ├── Review-Warteschlange
+│   ├── fortsetzbare Review-Sitzung
+│   ├── ContradictionReport
+│   └── ausdrückliche Disposition
+│       ├── COEXIST
+│       ├── CONTEXTUALIZE
+│       └── SUPERSEDE
+│
+├── 🔐 Autorisierungsschicht
+│   ├── CuratorPrincipal
+│   ├── Rolle und bereichsgebundene Fähigkeit
+│   ├── Übereinstimmung mit authentifiziertem Actor
+│   └── prozesslokales Decision Lease
+│
+├── 🏷️ Beratende Schicht
+│   └── TopicFacet
+│       ├── mehrwertig
+│       ├── Score nur für Relevanz
+│       └── keine Autorität über Wahrheit oder Zulassung
+│
+├── 🔎 Öffentliche Abfrageschicht
+│   ├── HTTP /ask und /receipt
+│   ├── CLI ask und receipt
+│   └── MCP search
+│       └── gemeinsame Read-only-Abfragepipeline
+│
+└── 📊 Verifikationsschicht
+    ├── Tests unter Python 3.11 / 3.12
+    ├── Coverage-Gate
+    ├── Ring-Zero-Mutation-Gate
+    ├── Sicherheits- und Containerprüfungen
+    └── Benchmark-Historie
 ```
 
 ### Zentrale Unterscheidungen
