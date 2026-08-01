@@ -1,3 +1,5 @@
+import pytest
+
 from core.topic_facets import (
     TopicFacet,
     attach_facets,
@@ -18,6 +20,19 @@ def test_topic_facet_normalizes_and_serializes():
     }
 
 
+def test_topic_facet_validation_fails_closed():
+    with pytest.raises(TypeError, match="label must be a string"):
+        TopicFacet(123)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="facet label must match"):
+        TopicFacet("bad label!")
+    with pytest.raises(TypeError, match="score must be numeric"):
+        TopicFacet("valid", True)
+    with pytest.raises(ValueError, match="between 0 and 1"):
+        TopicFacet("valid", 1.1)
+    with pytest.raises(ValueError, match="facet origin"):
+        TopicFacet("valid", origin="unknown")
+
+
 def test_canonicalization_prefers_score_then_curator_origin():
     facets = canonicalize_facets(
         [
@@ -31,6 +46,8 @@ def test_canonicalization_prefers_score_then_curator_origin():
         TopicFacet("ai", 0.9, "model"),
         TopicFacet("security", 0.8, "curator"),
     )
+    with pytest.raises(TypeError, match="TopicFacet"):
+        canonicalize_facets(["ai"])  # type: ignore[list-item]
 
 
 def test_attach_facets_preserves_authority_fields_and_metadata():
@@ -59,6 +76,7 @@ def test_read_facets_ignores_malformed_entries():
         }
     }
     assert read_facets(record) == (TopicFacet("valid", 0.5, "rule"),)
+    assert read_facets({"metadata": {"topic_facets": "not-a-sequence"}}) == ()
 
 
 def test_matches_and_filters_are_advisory():
@@ -69,3 +87,5 @@ def test_matches_and_filters_are_advisory():
     assert matches_facets(records[0], all_of=["AI", "safety"], min_score=0.7)
     assert not matches_facets(records[0], all_of=["ai"], min_score=0.95)
     assert [item["fact_id"] for item in filter_records(records, any_of=["biology"])] == ["b"]
+    with pytest.raises(ValueError, match="min_score"):
+        matches_facets({}, min_score=-0.1)
