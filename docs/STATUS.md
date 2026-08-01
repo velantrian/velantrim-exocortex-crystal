@@ -25,7 +25,7 @@ Failed:      0
 Statements:  7051
 Coverage:    100.00%
 Mutation:    7/7 targeted Ring Zero mutants killed
-CI:          9 permanent jobs
+CI:          9 permanent CI jobs
 ```
 
 ## Completed hardening sequence
