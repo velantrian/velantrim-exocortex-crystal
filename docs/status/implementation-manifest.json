@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "status_date": "2026-08-01",
+  "version": "0.3.0",
+  "verified_runtime_checkpoint": {
+    "commit": "916097f049f2e71fa679571ac897e9d887957f4f",
+    "short": "916097f",
+    "pull_request": 292,
+    "description": "Ring Zero mutation gate on top of unified read-only query, non-configurable TruthGate policy, and immutable TrustSnapshot"
+  },
+  "tests": {
+    "python_versions": ["3.11", "3.12"],
+    "passed": 1780,
+    "skipped": 12,
+    "failed": 0,
+    "measured_statements": 6484,
+    "coverage_percent": 100.0
+  },
+  "ci": {
+    "job_count": 9,
+    "jobs": [
+      "code-quality",
+      "test (3.11)",
+      "test (3.12)",
+      "jsonl-integrity",
+      "eval-gate",
+      "security",
+      "docker-build",
+      "Ring Zero mutation gate",
+      "docs-status"
+    ]
+  },
+  "mutation_gate": {
+    "declared_mutants": 7,
+    "killed_mutants": 7,
+    "scope": "targeted Ring Zero semantic mutations"
+  },
+  "implemented_boundaries": {
+    "public_query_surfaces_read_only": true,
+    "read_only_surfaces": [
+      "HTTP /ask",
+      "HTTP /receipt",
+      "CLI ask",
+      "CLI receipt",
+      "MCP search"
+    ],
+    "truth_policy_runtime_bypass_present": false,
+    "immutable_trust_snapshot": true,
+    "resumable_review_sessions": true,
+    "physical_l3_equals_strict_canon": false
+  },
+  "grant": {
+    "program": "NLnet NGI0 Commons Fund",
+    "status": "submitted_under_review",
+    "awarded": false
+  },
+  "authority": {
+    "runtime": "GitHub main",
+    "strategy": "Notion Crystal pages",
+    "research_track": "Titan / Full Exo-Cortex"
+  }
+}

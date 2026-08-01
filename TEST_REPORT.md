@@ -1,105 +1,165 @@
 # 🧪 Velantrim Crystal — Test Report
 
-**Status:** current audited baseline  
-**Implementation commit:** `cd6fd44ff4ac8c715121cae1996aa484f11ef250`  
-**Merged change:** PR #265 — read-only HTTP query boundary  
-**Verification date:** 2026-07-27  
-**Document synchronization:** 2026-07-30
+**Status:** current verified runtime baseline  
+**Runtime checkpoint:** `916097f049f2e71fa679571ac897e9d887957f4f`  
+**Merged change:** PR #292 — targeted Ring Zero mutation gate  
+**Verification date:** 2026-08-01  
+**Status manifest:** [docs/status/implementation-manifest.json](./docs/status/implementation-manifest.json)
 
 ## Exact baseline
 
 ```text
-Python 3.11 full suite: 1713 passed
-Skipped:                12
-Failed:                  0
-Measured statements:    6389
-Coverage:                100.00%
+Python 3.11:          1780 passed / 12 skipped
+Python 3.12:          1780 passed / 12 skipped
+Failed:               0
+Measured statements:  6484
+Coverage:              100.00% coverage
+Ring Zero mutation:   7/7 declared mutants killed
 ```
 
-The CI matrix also completed successfully on Python 3.12. The authoritative
-pre-merge GitHub Actions run for PR #265 was `30284938992`; all seven permanent
-jobs passed on the reviewed head before squash merge.
+The runtime checkpoint was verified on both supported Python versions. The
+current repository CI topology contains **9 permanent CI jobs**; the
+`docs-status` job was added by the documentation-hardening change after the
+runtime checkpoint and validates that active public documents continue to report
+this baseline consistently.
 
 ## Permanent CI jobs
 
-| Job | Result | Boundary checked |
-|---|---|---|
-| `test (3.11)` | success | full pytest suite and 100% coverage gate |
-| `test (3.12)` | success | supported-version compatibility and coverage |
-| `code-quality` | success | Ruff |
-| `security` | success | Gitleaks, Bandit and pip-audit |
-| `docker-build` | success | hardened image build |
-| `eval-gate` | success | retrieval, grounding, contradiction and boundary metrics |
-| `jsonl-integrity` | success | corpus format and duplicate-id controls |
+| Job | Boundary checked |
+|---|---|
+| `test (3.11)` | full pytest suite and 100% line-coverage gate |
+| `test (3.12)` | supported-version compatibility and the same coverage gate |
+| `code-quality` | Ruff over production and repository tooling code |
+| `security` | Gitleaks, Bandit and pip-audit |
+| `docker-build` | hardened runtime image build |
+| `eval-gate` | retrieval, grounding, contradiction and refusal metrics |
+| `jsonl-integrity` | corpus parsing, required fields and duplicate identifiers |
+| `Ring Zero mutation gate` | seven declared semantic mutations must be killed |
+| `docs-status` | manifest, README, STATUS, TEST_REPORT and implementation-status consistency |
 
-## What PR #265 added to the verified baseline
+## What the verified sequence added
 
-PR #265 separated ordinary HTTP query execution from admission-capable memory
-operations:
+### PR #289 — unified public read-only query boundary
 
-```text
-/ingest         → admission path, Guardian + TruthGate
-/ask, /receipt  → core.query_pipeline.query(), strict read-only Canon path
-```
+HTTP `/ask` and `/receipt`, CLI `ask` and `receipt`, and MCP search use the same
+zero-durable-mutation query service.
 
-The regression suite verifies that the HTTP query path does not:
+Regression tests pin that these surfaces do not:
 
-- ingest or update L0/L1 facts;
+- create or update L0/L1 facts;
 - transition ESM state;
-- write L3 facts, edges, entities or mentions;
-- enqueue or drain the L3 outbox;
-- record episodic graph links;
-- initialize an embedding fingerprint;
+- write L3 facts, relations, entities or mentions;
+- enqueue, drain or clear the L3 outbox;
+- record episodic context;
+- initialize an unset embedding fingerprint;
 - mutate adaptive verification state;
 - store unknown retrieval candidates.
 
-The same cycle fixed two independently reviewed P1 findings:
+Restricted rows are excluded before claim/source content is returned by search.
 
-1. unnecessary full-Canon materialization on the ordinary fingerprinted path;
-2. false `STORE_STATE_CONFLICT` results caused only by equivalent float/default
-   representations.
+### PR #290 — non-configurable LLM-origin TruthGate rule
 
-Genuine trust-metadata disagreement remains fail-closed.
+The runtime read of `ENABLE_TRUTH_POLICY` was removed. Historical values such as
+`off`, `false`, `0` and `legacy` no longer weaken the rule.
+
+```text
+LLM_OUTPUT + WORLD_FACT
+        ↓
+not eligible for automatic VERIFIED admission
+```
+
+This is an admission-policy invariant, not a claim that TruthGate independently
+knows objective truth.
+
+### PR #291 — immutable TrustSnapshot
+
+Read-time reconciliation now first creates a frozen, slotted `TrustSnapshot`
+from physical L3, optional deny-dominant L1 state and ranking metadata.
+
+The dedicated tests pin:
+
+- immutability and scalar-only retained state;
+- terminal ESM dominance;
+- processing-restriction dominance;
+- non-terminal ESM disagreement;
+- confidence, claim-type and source-status drift;
+- malformed metadata failing closed;
+- content-free conflict categories;
+- compatibility mapping freshness.
+
+Malformed confidence remains `None` inside the snapshot and forces a conflict;
+the temporary outward mapping preserves the historical safe `0.0` sentinel for
+existing mapping consumers.
+
+### PR #292 — targeted Ring Zero mutation gate
+
+The executable mutation harness creates isolated temporary workspaces, applies
+seven fixed semantic mutations and runs the tests assigned to each mutation.
+
+Declared mutations cover:
+
+1. TruthGate threshold `<` changed to `<=`;
+2. LLM-origin block redirected away from `LLM_OUTPUT`;
+3. strict `VERIFIED` predicate inverted;
+4. processing-restriction deny predicate inverted;
+5. strict ESM allowlist inverted;
+6. malformed-confidence conflict condition inverted;
+7. Receipt digest equality inverted.
+
+A mutation is counted as killed only when pytest exits with a normal test failure
+(return code `1`). A surviving mutation, missing source fragment, duplicate source
+fragment, missing test, collection failure or internal pytest error fails the CI
+job.
 
 ## Reproduction
 
 ```bash
-git checkout cd6fd44ff4ac8c715121cae1996aa484f11ef250
+git checkout 916097f049f2e71fa679571ac897e9d887957f4f
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -e '.[dev]'
 pytest tests/ --cov=. --cov-fail-under=100
 python scripts/eval_gate.py --out-dir eval-artifacts
+bash scripts/ring_zero_mutation_gate.sh
 ```
 
 Expected properties:
 
-- no failed test;
+- no failed ordinary test;
 - required coverage remains 100%;
-- eval gate prints `PASSED`;
+- eval gate reports success;
+- all seven declared mutations are killed;
 - generated evaluation artifacts remain outside tracked source files;
-- the working tree stays clean after verification.
+- the checked-out source tree is not modified by the mutation harness.
+
+For the current documentation branch or later `main`, also run:
+
+```bash
+bash scripts/check_docs_status.sh
+```
 
 ## Evidence discipline
 
-This report is the sole repository document that carries the exact active test,
-skip, statement and coverage baseline. Other active documents should link here
-rather than copying mutable counts, except for the compact README status line.
+This report and the machine-readable manifest are the authoritative repository
+surfaces for exact test counts, statement counts, coverage and verified
+checkpoint. Other active documents may repeat the compact status line only when
+the `docs-status` gate confirms consistency.
 
-The previous long-form report is preserved byte-for-byte at:
-
-`docs/archive/grant-sync/TEST_REPORT_PRE_SYNC_2026-07-30.md`
+A modification timestamp alone does not prove that a translation or historical
+report describes the newest implementation.
 
 ## Limits
 
-This evidence demonstrates the tested repository state at the recorded commit. It
-does not claim:
+This evidence demonstrates tested behavior at the recorded checkpoint. It does
+not claim:
 
 - absence of every defect;
+- universal truth detection;
+- zero hallucinations;
 - legal GDPR certification;
 - security certification;
 - production multi-tenant readiness;
-- zero hallucinations;
-- universal truth detection;
+- full domain correctness of every source;
+- repository-wide mutation adequacy beyond the declared Ring Zero mutations;
 - Titan or Full Exo-Cortex functionality in Crystal.

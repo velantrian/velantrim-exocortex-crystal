@@ -1,135 +1,222 @@
 # Implementation Status: Crystal vs Full Exo-Cortex
 
-This page exists so a reviewer never has to guess which statements describe
-**implemented, tested repository behaviour** and which describe **RFC-level
-architecture or long-term vision**. Statuses below are derived from the code
-and test suite actually present in this repository (audited baseline in
-[TEST_REPORT.md](../TEST_REPORT.md)) — not from roadmap ambition.
+This page prevents implemented Crystal behavior from being mixed with RFC,
+roadmap, Titan or broader Exo-Cortex concepts.
 
-## The three documentation surfaces
+**Status date:** 2026-08-01  
+**Verified runtime checkpoint:** `916097f`  
+**Exact test evidence:** [TEST_REPORT.md](../TEST_REPORT.md)  
+**Machine-readable status:** [status/implementation-manifest.json](./status/implementation-manifest.json)
 
-Velantrim has three distinct surfaces, and reviewer-facing Crystal documents
-must not mix them without explicit status labels:
+## Status vocabulary
 
-1. **Crystal Core** — the grant/reviewer-facing open-source core in this
-   repository: local-first memory, typed claims, TruthGate, trace/receipts,
-   auditability and GDPR-oriented controls.
-2. **Full Velantrim Exo-Cortex** — the broader architecture vision: Mode
-   Layer, Observer action policies, procedural memory, temporal reasoning and
-   future cognitive extensions. RFC/roadmap material unless explicitly present
-   in code and tests.
-3. **Velantrim Culture** — symbols, myths, language, rituals and creative
-   artifacts. Intentionally **outside** the Crystal grant core.
+- **Implemented** — code and behavior-pinning tests are merged.
+- **Implemented baseline** — usable slice exists; broader lifecycle integration or
+  policy hardening remains.
+- **Partial** — some mechanisms exist, but the complete contract is not yet
+  implemented.
+- **RFC / roadmap** — documented design; no current runtime claim.
+- **Vision / research** — long-term direction outside the current public core.
+- **Out of scope** — intentionally not part of Crystal.
 
-## Status table
+## Three distinct project surfaces
 
-Statuses: **Implemented** (code + tests in this repo), **Partial** (baseline
-exists; hardening or formal docs pending), **RFC / roadmap** (design idea, no
-runtime feature), **Vision** (research direction), **Out of scope** (not part
-of Crystal).
+1. **Crystal Core** — this repository: local-first verifiable memory,
+   admission/read boundaries, provenance, review and evaluation.
+2. **Titan / Full Exo-Cortex** — broader cognitive architecture and experimental
+   integrations. Separate research track unless a capability is explicitly
+   migrated through an RFC and tested Crystal PR.
+3. **Velantrim Culture** — symbolic, linguistic and creative materials outside
+   the Crystal engineering and grant core.
 
-| Component | Status | In Crystal current core? | Notes |
-|---|---|---|---|
-| Local-first storage | Implemented | Yes | SQLite/WAL L1; dependency-free SQLite default for L3 canon, evidence, receipts, audit and operational state |
-| TruthGate | Implemented | Yes | `core/truth_gate.py` (extracted, behaviour-pinned); type-aware; the only automatic entry into L3 |
-| Trace / Receipt | Implemented | Yes | `core/trace.py`, `core/provenance.py`; sealed, replayable receipts with strict-provenance replay |
-| Per-fact Provenance Chain | Implemented (baseline) | Yes | `core/provenance_chain.py` (Sprint1 P1-5 / I89); per-`fact_id` append-only hash chain, distinct from the global `audit.py` ledger and per-answer `provenance.py` receipts. Tamper-evident `verify()`; empty chain reported as `empty_chain` (never a verified non-empty chain). Currently wired into the GDPR erasure path only; broader lifecycle wiring (ingest/promote/restrict) is follow-up. |
-| Guardian | Implemented (baseline contract) | Baseline | `core/pipeline.py` — `guardian_diagnose()` with documented detect → pass/block contract (`GUARDIAN_CONTRACT`); runs before TruthGate. Full policy routing (flag → action) remains future work |
-| FactsPack | Partial | Baseline | Grounding pack used by the answer path; explicit conflict/contestation policy is a future RFC |
-| Review queue + web UI | Implemented | Yes | `core/review.py`, token-guarded HTTP API, static Kanban UI; roles/multi-curator workflows are grant-scope hardening |
-| Resumable Review Sessions | Implemented | Yes | `core/review.py` (`create_session`, `resume_session`, `record_session_decision`, `complete_session`); `core/memory.py` `review_sessions` table; 14 behaviour-pinned tests in `tests/test_review_resumable.py` |
-| GDPR-oriented controls | Partial | Baseline | Erasure, restriction, record-of-processing, tamper-evident audit, PII redaction, opt-in field encryption; "GDPR-oriented", **not** a certification claim |
-| Eval gate | Implemented | Yes | English corpus CI-gated; Russian corpus report-only; expansion planned |
-| Memory observability | Implemented | Yes | `core/observe.py` — read-only `memory_report` over L3 (states, statuses, contradictions) |
-| RRF rank fusion (retrieval ordering) | Implemented | Yes | `core/rrf.py` (PR #163) fused into `pipeline.retrieve()` for vector + graph-walk + seed rankings. Ordering only — does **not** assign `truth_status`, change `confidence`, or bypass TruthGate/Guardian |
-| Exact-duplicate ingest dedup (Variant B) | Implemented | Yes | `core/ingest.py` + `core/reconcile.record_occurrence` (PR #164). An exact repeat updates occurrence metadata only — `occurrences` / `last_seen` / `sources_seen` / `fingerprint_sha256` (separate from `observations`). Does **not** call `reinforce()`, does **not** increase `confidence`, and is **not** counted as independent evidence: a duplicate occurrence is frequency metadata, not evidence. Legacy normalized-id migration / normalized-claim index is tracked separately in #165 and is **not** implemented. |
-| Fractal Memory baseline (multi-scale anchoring) | Implemented (baseline) | Yes | `core/fractal.py` (RFC0070) implements SHORT→MEDIUM→LONG→CORE anchoring with CORE exempt from decay and `fractal-*` CLI support. This refers only to the Crystal baseline implementation — a memory **anchoring** mechanism, **not** a cognitive Fractal Attention system — and not to the broader Personal Research Mode concept "Fractal Memory = Structure + Attention + Consolidation". |
-| Observer **action policy** (flag → action routing) | RFC / roadmap | No | Observability exists (read-only); a policy that routes flags to receivers/actions does not |
-| Mode Layer | RFC / roadmap | No runtime feature | Policy-boundary concept only; nothing in code or tests |
-| Imagination Mode / Spark | RFC / roadmap | No runtime feature | Sandboxed creative/exploratory reasoning layer; see [SPARK_RFC.md](./SPARK_RFC.md) and boundary note below |
-| Mode Router | RFC / roadmap | No runtime feature | Future explicit/rule-based design |
-| Temporal reasoning / bi-temporal claims | RFC / roadmap | No | Future RFC; no schema fields today |
-| Provenance grades (BRONZE/SILVER/GOLD) | RFC / roadmap | No | Future RFC; no schema fields today |
-| Essence Engine | Vision | No | Meaning-oriented future layer |
-| Umwelt / Lens Layer | Vision | No | Multi-view knowledge-graph concept |
-| Velantrim Culture | Out of scope | No | Separate culture/vision layer, intentionally outside the grant core |
+## Current implementation table
 
-If a component is not in this table, assume it is **not** an implemented
-Crystal feature unless `core/` and `tests/` demonstrably contain it.
-
-For biological or cognitive naming conventions, see
-[`METAPHOR_VS_MECHANISM.md`](./METAPHOR_VS_MECHANISM.md); names such as CRISPR
-Guard or Neurogenesis are engineering metaphors unless explicitly implemented as
-software mechanisms.
-
-## Out of Scope for the Current Grant / Reviewer Phase
-
-The following are **not** current Crystal runtime deliverables and must not be
-presented as implemented grant features:
-
-- Fractal Attention;
-- broader Personal Research Mode Fractal Memory beyond the implemented Crystal
-  multi-scale anchoring baseline;
-- Memory Reconsolidation Queue;
-- Essence Engine runtime;
-- Sleep Cycle v2 as a meaning/reconsolidation engine;
-- World-Relation Layer / Umwelt / Innenwelt / Habitus / Habitat;
-- Habitus Tracker;
-- autonomous personality rewriting;
-- artificial consciousness, AGI, or brain-like implementation claims;
-- production multi-tenant hosting without a dedicated auth/security layer.
-
-Crystal's current reviewer snapshot may include tested baseline components, such as read-only
-observability, trace/receipt tooling, and the implemented Fractal Memory
-anchoring layer. These must not be confused with the broader private research
-architecture.
-
-## Reviewer Package
-
-For external reviewers and grant/university evaluation:
-
-- [Reviewer Overview](REVIEWER_OVERVIEW.md)
-- [Architecture Decision Records](ADR.md)
-- [Failure Modes and Mitigations](FAILURE_MODES.md)
-- [Evaluation Metrics](EVALUATION_METRICS.md)
-
-Research inspirations are tracked separately as non-normative context and must
-not be treated as implementation status (ADR-006).
-
-## Imagination Mode boundary (RFC-level, stated early on purpose)
-
-Mode Layer and Imagination Mode are documented here as **RFC-level architecture
-boundaries**, not Crystal runtime features. When they are designed, one rule is
-fixed in advance: Imagination output (creative drafts, cultural artifacts,
-myths, language variants, design fiction) stays **sandboxed** — it cannot
-become `VERIFIED`, `WORLD_FACT` or L3 canon without explicit human review and a
-Guardian/TruthGate-compatible promotion. This is the same Ring Zero invariant
-that already governs `LLM_OUTPUT` today (see
-[ARCHITECTURE.md](./ARCHITECTURE.md), "Ring Zero").
-
-## Graph backends (role summary)
-
-| Component | Role |
-|---|---|
-| SQLite | dependency-free default: local canon, metadata, evidence, receipts, audit |
-| LadybugDB | active embedded graph backend candidate (Kuzu lineage) |
-| KuzuDB | legacy/archived predecessor (upstream archived Oct. 2025) — compatibility reference, **not** the primary future dependency |
-| Neo4j | optional inspector/demo/audit tooling — never required runtime |
-
-## Future RFC backlog (documentation backlog only — nothing here is implemented)
-
-| RFC | Purpose | Status |
+| Component | Status | Current boundary |
 |---|---|---|
-| GUARDIAN_CONTRACT | Formal detect → flag/block/pass behaviour of Guardian | Baseline in code (`guardian_diagnose`); extended policy doc future |
-| TRUTHGATE_BEHAVIOR | Hard blocks, thresholds, conflict handling in one document | Future |
-| FACTSPACK_POLICY | Evidence requirements + explicit contradiction/contested-answer policy | Future |
-| WRITE_POLICY | Allowed write targets per mode | Future |
-| OBSERVER_ACTION_POLICY | Observer flag → receiver/action routing | Future |
-| STATE_MACHINE | Complete ESM ↔ truth_status transition map | Future |
-| MEMORY_MAPPING | L0–L7 ↔ fractal anchoring ↔ storage mapping | Future |
-| RFC_MODE_LAYER | Modes, fallback, explicit triggers | Future |
-| RFC_PROVENANCE_GRADES | BRONZE/SILVER/GOLD evidence tiers | Future |
-| RFC_TEMPORAL_LAYER | Bi-temporal claim fields and temporal reasoning | Future |
-| [RFC_HARNESS_REPLAY_OPTIMIZATION](./RFC_HARNESS_REPLAY_OPTIMIZATION.md) | Trajectory record/replay + human-approved harness optimization | Proposed (drafted, RFC-only) |
-| [EPISTEMIC_INFRASTRUCTURE_UPGRADE](./EPISTEMIC_INFRASTRUCTURE_UPGRADE.md) | Temporal Layer, Context/Scope, Conflict Resolution, Negative Knowledge, Known Unknowns, Plausibility Pre-Filter, Confidence Calibration, Epistemic Debt | Future RFC / v0.3.0+ research roadmap / no runtime feature / no schema fields today |
-| [SPARK_RFC](./SPARK_RFC.md) | Spark Layer (sandboxed generative/exploratory reasoning), Imagination Mode, Spark-to-Crystal Bridge, Mode Layer integration; explicit boundary from Velantrim Culture | Future RFC / v0.3.0+ research roadmap / no runtime feature |
+| Local-first L0/L1 storage | Implemented | in-process L0 plus SQLite/WAL operational state |
+| Pluggable L3 graph storage | Implemented baseline | SQLite dependency-free default; optional adapters have different maturity levels |
+| TruthGate | Implemented | admission policy; automatic L3 admission boundary, not an objective-truth oracle |
+| Non-configurable LLM-origin rule | Implemented | runtime TruthPolicy bypass removed; `LLM_OUTPUT + WORLD_FACT` cannot automatically become `VERIFIED` |
+| Guardian | Implemented baseline | structural detect/pass/block contract before admission and on strict read grounding |
+| CanonicalView | Implemented | strict read projection; physical L3 membership is not strict Canon |
+| **Unified public read-only query boundary** | **Implemented** | HTTP `/ask`/`receipt`, CLI `ask`/`receipt`, MCP search use `core.query_pipeline`; zero durable mutation contract |
+| Legacy `core.pipeline.run()` | Compatibility residual | explicit internal/admission-capable path; no longer used by public CLI query commands |
+| **Immutable TrustSnapshot** | **Implemented baseline** | frozen L3/L1 read reconciliation for `core.query_pipeline`; legacy write path migration is separate work |
+| TRACE | Implemented | answer grounding trace |
+| Receipt and replay | Implemented | tamper-evident digest, optional HMAC, citation replay and source-span support |
+| Per-fact provenance chain | Implemented baseline | append-only hash chain; broader ingest/promote/restrict lifecycle wiring remains |
+| Evidence spans | Implemented baseline | source URI/kind, chunk, offsets and hashes; institutional hardening remains |
+| Import sessions and dry run | Implemented baseline | import accountability and preview behavior |
+| Review queue and web UI | Implemented | token-guarded review surface; role model remains limited |
+| Resumable review sessions | Implemented | create, resume, record decision and complete session |
+| RRF retrieval fusion | Implemented | ranking only; never assigns truth status or bypasses policy |
+| Exact duplicate occurrence tracking | Implemented | frequency metadata only; does not increase confidence or count as independent evidence |
+| Memory observability | Implemented | read-only reports over states, statuses and contradictions |
+| Deterministic eval gate | Implemented | retrieval, grounding, contradiction and refusal controls |
+| **Ring Zero mutation gate** | **Implemented** | seven declared semantic mutants; all must be killed; collection/internal errors fail closed |
+| Documentation status manifest | Implemented baseline | active README/STATUS/TEST_REPORT consistency checked by CI |
+| GDPR-relevant controls | Partial | erasure, restriction, record of processing, audit, redaction and opt-in encryption; not certification |
+| Contradiction detection | Implemented baseline | detection exists; complete typed decision contract remains future work |
+| Contradiction decision policy | Partial / RFC needed | no complete coexist/supersede/contextualize/review contract yet |
+| Roles and multi-curator authorization | Partial | current token boundary is not a production multi-tenant IAM model |
+| Retrieval scale benchmark | Implemented baseline | local benchmark exists; scheduled fixed-runner history is not yet implemented |
+| Fractal Memory anchoring baseline | Implemented baseline | SHORT→MEDIUM→LONG→CORE anchoring; not cognitive Fractal Attention |
+
+If a component is absent from this table, assume it is not an implemented Crystal
+feature until matching code and tests demonstrate otherwise.
+
+## Current trust topology
+
+```text
+explicit ingest
+→ pending L0/L1 state
+→ Guardian
+→ TruthGate
+→ contradiction/restriction checks
+→ physical L3 multi-status graph
+
+public query/search
+→ read-only candidate retrieval
+→ immutable TrustSnapshot
+→ Guardian + CanonicalView STRICT
+→ FactsPack + TRACE
+→ answer / bounded refusal / Receipt
+```
+
+Important invariants:
+
+```text
+Physical L3 ≠ strict Canon
+retrieval score ≠ truth
+confidence ≠ independent evidence
+topic/domain score ≠ epistemic confidence
+LLM output ≠ independent factual source
+query ≠ ingest
+```
+
+## Implemented public query surfaces
+
+The read-only guarantee applies to:
+
+- HTTP `POST /ask`;
+- HTTP `GET /receipt`;
+- CLI `velantrim ask`;
+- CLI `velantrim receipt`;
+- direct `python -m core.cli ask/receipt`;
+- MCP search.
+
+These surfaces must not create/update L0/L1 facts, transition ESM, write L3,
+operate the outbox, add episodic links, initialize an unset embedding fingerprint,
+store unknown candidates or mutate adaptive verification state.
+
+MCP search is an inspection surface, not a strict-Canon declaration. Confident
+factual answers additionally require Guardian and CanonicalView strict grounding.
+
+## Mutation evidence boundary
+
+The targeted mutation gate currently covers seven load-bearing conditions:
+
+1. TruthGate confidence threshold comparison;
+2. LLM-origin factual rejection;
+3. exact `VERIFIED` requirement;
+4. processing restriction exclusion;
+5. strict ESM allowlist;
+6. malformed-confidence store conflict;
+7. Receipt digest equality.
+
+This is executable evidence that assigned tests detect those semantic changes. It
+is not a claim of repository-wide mutation adequacy.
+
+## Partial work and next engineering packages
+
+### 1. Contradiction decision contract
+
+Needed artifacts:
+
+- typed `ContradictionReport`;
+- explicit outcomes: `COEXIST`, `SUPERSEDE`, `CONTEXTUALIZE`, `REVIEW_REQUIRED`;
+- temporal and scope-difference representation;
+- evidence comparison without automatic winner-by-confidence;
+- review queue integration and accountable curator decision.
+
+### 2. ESM transition specification
+
+One machine-checkable transition table should be shared by admission, review and
+reconciliation. It must define allowed transitions, terminal states, authority,
+side effects and invalid-transition behavior.
+
+### 3. Performance history
+
+The existing L3 retrieval benchmark should gain scheduled execution on a stable
+runner, historical JSON output and trend reporting. Shared PR runner latency
+should not become a brittle hard SLO.
+
+### 4. Advisory topic facets
+
+A future domain classifier must be multi-label, optional and non-authoritative.
+
+```text
+topic_score ≠ truth
+               ≠ evidence quality
+               ≠ source authority
+               ≠ epistemic confidence
+```
+
+It must not assign `VERIFIED`, change ESM, write directly to L3, erase facts or
+resolve contradictions.
+
+### 5. Roles and multi-curator hardening
+
+Production shared-service use requires scoped identity, accountable review
+actors, concurrent decision safety and auditable authorization boundaries.
+
+## RFC / roadmap only
+
+| Component | Status | Boundary |
+|---|---|---|
+| Observer action policy | RFC / roadmap | read-only observability exists; automatic flag→action routing does not |
+| Mode Layer and Mode Router | RFC / roadmap | no current runtime mode authority |
+| Imagination Mode / Spark | RFC / roadmap | must remain sandboxed and non-authoritative |
+| Temporal / bi-temporal claims | RFC / roadmap | no complete current schema or reasoning engine |
+| Provenance grades | RFC / roadmap | BRONZE/SILVER/GOLD are not current schema fields |
+| KnownUnknown / research-question objects | RFC / roadmap | should be review/research objects, not strict facts |
+| Autonomous question generation | Research | no current autonomous runtime |
+| Advanced causal contradiction resolution | Research | no current causal resolver |
+| Distributed replication | Research | not current Crystal baseline |
+| Titan cognitive integration | Separate research track | outside current grant-facing runtime |
+| Artificial consciousness claims | Out of scope | no such implementation claim |
+| Velantrim Culture | Out of scope | intentionally separate from Crystal engineering core |
+
+## Graph backend role summary
+
+| Backend | Role |
+|---|---|
+| SQLite | dependency-free verified baseline |
+| LadybugDB | optional embedded graph adapter/candidate |
+| Kuzu lineage | legacy/reference context, not mandatory runtime |
+| Neo4j | optional inspection/demo integration |
+| Mock | contract and test support |
+
+Backend choice must not weaken TruthGate, CanonicalView, restrictions or Receipt
+contracts.
+
+## Grant and public-claim rule
+
+The NLnet NGI0 Commons Fund proposal is submitted and under review. Funding is
+not claimed as awarded.
+
+Already-merged work remains baseline. Future RFCs, Titan mechanisms and research
+ideas are not silently counted as funded Crystal deliverables.
+
+## Documentation routes
+
+- [README](../README.md)
+- [Documentation map](./DOCUMENTATION_MAP.md)
+- [Current status](./STATUS.md)
+- [Architecture](./ARCHITECTURE.md)
+- [ADR index](./ADR.md)
+- [Test report](../TEST_REPORT.md)
+- [Failure modes](./FAILURE_MODES.md)
+- [Evaluation](./EVAL.md)
+- [Grant scope](./GRANT_NLNET_SCOPE.md)
+- [Metaphor vs mechanism](./METAPHOR_VS_MECHANISM.md)
