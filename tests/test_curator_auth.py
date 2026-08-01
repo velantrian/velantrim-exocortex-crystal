@@ -127,6 +127,11 @@ def test_lease_key_and_acquire_validation():
         )
 
 
+def test_missing_lease_is_not_active():
+    registry = CuratorLeaseRegistry()
+    assert not registry.is_active(candidate_fact_id="missing", report_id="report")
+
+
 def test_lease_registry_blocks_parallel_owner_and_releases_exact_token():
     now = [10.0]
     registry = CuratorLeaseRegistry(clock=lambda: now[0])
