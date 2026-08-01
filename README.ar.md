@@ -1,105 +1,129 @@
 # 🔱 Velantrim ExoCortex — Crystal
 
-> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 **العربية**   · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
-> 📚 [التوثيق الألماني](./docs/de/README.md) · [الفرنسي](./docs/fr/README.md) · [الإسباني](./docs/es/README.md) · [الإيطالي](./docs/it/README.md) · [الروسي](./docs/ru/README.md) · [الصيني المبسّط](./docs/zh-CN/README.md) · [العربي](./docs/ar/README.md) · [日本語ドキュメント](./docs/ja/README.md) · [हिन्दी दस्तावेज़](./docs/hi/README.md)
+> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
 
-### *بنية ذاكرة قابلة للتحقق، محلية أولاً ومفتوحة المصدر لذكاء اصطناعي جدير بالثقة*
+### بنية ذاكرة قابلة للتحقق ومحلية أولاً لأنظمة ذكاء اصطناعي موثوقة
 
-`v0.3.0` · 🧪 **1713 اختباراً ناجحاً / 12 متجاوزاً** · 🎯 **تغطية 100%** · 🐍 **مسار التشغيل الافتراضي يعتمد مكتبة Python القياسية** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v0.3.0` · 🧪 **نجح 1853 اختباراً / تم تجاوز 12** · 🎯 **تغطية 100%** · 🧬 **تم كشف 7/7 من الطفرات المعلنة** · ✅ **9 مهام CI** · 🐍 **مسار التشغيل الافتراضي يعتمد مكتبة Python القياسية فقط** · ⚖️ **AGPL-3.0**
 
-> Crystal طبقة ذاكرة قابلة للتحقق، وليست روبوت محادثة آخر. يحتفظ كل `claim`
-> بالمصدر والحالة المعرفية وبيانات `provenance`. ويظل الإدخال التلقائي إلى الرسم
-> البياني القانوني محكوماً بواسطة **Guardian + TruthGate**.
+> Crystal ليس روبوت محادثة آخر. إنه حدٌّ للذاكرة والأدلة والقرارات، يسجل ماهية
+> الادعاء ومصدره وحالته المعرفية، وما إذا كان يجوز أن يؤسس إجابة، وكيف تمت
+> معالجة التناقض بقرار صريح.
 
-> **المصدر المعياري:** الكود المدمج في GitHub `main` والوثائق الإنجليزية يحددان
-> حقيقة التنفيذ وحدود المنحة. هذه النسخة العربية ترجمة مصانة للمراجعين والمؤسسات
-> والمساهمين الناطقين بالعربية. عند الاختلاف يُرجع إلى [README.md](./README.md)،
-> و[docs/STATUS.md](./docs/STATUS.md)، و[TEST_REPORT.md](./TEST_REPORT.md).
+**نقطة التشغيل المتحقق منها:** `f91299c44a1a1850fa516f3abb96c916326f7a8c` — تم دمج PR #302.  
+**الأدلة الدقيقة:** [TEST_REPORT.md](./TEST_REPORT.md) و
+[بيان التنفيذ المقروء آلياً](./docs/status/implementation-manifest.json).
+
+> تحافظ هذه الترجمة على حدود القدرات والأمان والحالة نفسها الموجودة في README
+> الإنجليزي. تبقى أسماء API الثابتة بصيغتها البرمجية، بينما صيغت الشروحات بلغة
+> عربية طبيعية.
 
 ---
 
-## 🧭 Crystal في دقيقة واحدة
+## 🎯 لماذا يوجد Crystal؟
 
-Crystal هو النواة العامة الموجّهة للتحقق والمنح في Velantrim:
-
-- ذاكرة تشغيلية محلية L0/L1؛
-- خلفيات محلية للرسم البياني القانوني L3؛
-- حدود إدخال عبر Guardian وTruthGate؛
-- `CanonicalView` لإجابات قائمة على أدلة معتمدة؛
-- TRACE و`Receipt` قابلة لإعادة التحقق؛
-- `Evidence Span` وطوابير مراجعة وجلسات استيراد؛
-- آليات تقنية للمحو وتقييد المعالجة ذات صلة بـ GDPR؛
-- تقييم حتمي وبوابات جودة في CI؛
-- واجهات FastAPI وMCP اختيارية.
-
-Crystal **ليس** Titan أو Personal ExoCortex الكامل، ولا نظام تشغيل معرفياً
-مستقلاً، ولا مشروع وعي، ولا وكيلاً ذاتي التعديل. قد تؤثر أفكار البحث في RFCs
-مستقبلية، لكنها ليست قدرات runtime حالية.
+تخلط أنظمة ذكاء اصطناعي كثيرة بين المستندات المصدرية، وأقوال المستخدم، ومخرجات
+النموذج، والفرضيات، والمقاطع المسترجعة، والذاكرة الدائمة داخل سياق واحد أو مخزن
+متجهي واحد. عندئذ قد يكتسب النص السلس سلطة لا تدعمها أدلته.
 
 ```text
-GitHub Crystal main = حقيقة التنفيذ العامة
-Notion Crystal       = خريطة استراتيجية ومنحة متزامنة
-Titan / Full         = مسار بحث منفصل
+الادعاء المقنع ليس موثوقاً تلقائياً.
+عقدة الرسم البياني ليست جزءاً من Canon الصارم تلقائياً.
+درجة الاسترجاع ليست دليلاً.
+مخرجات النموذج ليست مصدراً مستقلاً.
+التناقض لا يختار الفائز بنفسه.
+وسم الموضوع ليس حكماً على الحقيقة.
 ```
 
----
+## 🧠 القدرات الأساسية
 
-## 🛡️ حدود الثقة الحالية
+- ادعاءات محددة النوع ودورة حياة معرفية صريحة؛
+- بيانات المصدر ومقاطع الأدلة وسجل المنشأ؛
+- حدود قبول عبر Guardian وTruthGate؛
+- رسم L3 مادي متعدد الحالات منفصل عن Canon الصارم؛
+- تسوية قراءة `TrustSnapshot` غير قابلة للتغيير وتعطي الأولوية للرفض؛
+- استعلامات عامة HTTP وCLI وMCP للقراءة فقط؛
+- TRACE وReceipts قابلة لإعادة التشغيل وتكشف العبث؛
+- قيود معالجة ومحو وتدقيق وجلسات استيراد؛
+- طوابير مراجعة وجلسات قابلة للاستئناف؛
+- تقارير تناقض محددة النوع وغير قابلة للتغيير؛
+- قرارات صريحة `COEXIST` و`CONTEXTUALIZE` و`SUPERSEDE`؛
+- حل التعارض عبر CLI وHTTP موثّق؛
+- أدوار قيّمين محددة النطاق وleases محلية للقرارات؛
+- faceting موضوعي إرشادي لا يمنح أي سلطة معرفية؛
+- مواصفة ESM مقروءة آلياً؛
+- تقييم حتمي وتغطية 100% وRing Zero mutation gate؛
+- سجل إصدارات لاختبارات L3 المعيارية.
 
-### مسار الإدخال
+## 🏛️ نظرة معمارية
 
 ```text
-إدخال / مستند / حدث وكيل
-→ تصنيف وأدلة
-→ Guardian + TruthGate
-→ ذاكرة تشغيلية L0/L1
-→ رسم بياني قانوني L3 بعد القبول
+إدخال صريح
+→ تصنيف الادعاء + بيانات الأدلة
+→ حالة Observed في L0/L1
+→ Guardian → TruthGate → فحوص القيود والتناقض
+→ رسم L3 مادي متعدد الحالات
+
+استعلام عام
+→ استرجاع للقراءة فقط
+→ TrustSnapshot غير قابل للتغيير
+→ Guardian + CanonicalView STRICT
+→ FactsPack + TRACE
+→ إجابة / رفض / Receipt
+
+تناقض غير محلول
+→ ContradictionReport غير قابل للتغيير
+→ تفويض actor/الدور/النطاق + decision lease
+→ قرار صريح من القيّم + السبب
+→ مسار كتابة قانوني قابل للتدقيق
+
+تنقل موضوعي
+→ TopicFacet إرشادي
+→ تصفية وتجميع فقط — بلا قبول في Canon
 ```
-
-### مسار استعلام HTTP
-
-أدخل PR #265 عقد قراءة صارماً ومنفصلاً:
 
 ```text
-POST /ask, GET /receipt
-→ core.aio.arun()
-→ core.query_pipeline.query()
-→ Canon موجود مسبقاً فقط
-→ CanonicalView
-→ إجابة أو رفض محدود
+رسم L3 المادي ≠ Canon الصارم
+الاستعلام ≠ الإدخال
+الثقة ≠ دليل مستقل
+مخرجات LLM ≠ مصدر حقائق مستقل
+صلة الموضوع ≠ الحقيقة
+lease محلية ≠ ضمان تنسيق موزع
 ```
 
-في هذه الأسطح، طرح السؤال لا يكتب في L0/L1 أو L3، ولا يغيّر ESM، ولا يشغّل
-outbox، ولا يسجل روابط حلقية، ولا يهيّئ `embedding fingerprint` مفقوداً، ولا
-يعدّل حالة التحقق التكيفية.
+TruthGate بوابة لسياسة القبول، وليس عرّافاً يعرف الحقيقة الموضوعية بصورة مستقلة.
+أما Canon الصارم فهو إسقاط قراءة تسمح به السياسة بناءً على الأدلة والحالة وESM
+وقيود المعالجة.
 
-### الحدود المتبقية المعلنة
+## 🛡️ حد الاستعلام العام للقراءة فقط
 
-- أوامر CLI `ask` و`receipt` ما زالت تستخدم `core.pipeline.run()` القادر على الإدخال؛
-- `core.pipeline.run()` ما زال متاحاً؛
-- MCP لا يعرض أداة كتابة قانونية صريحة، لكن البحث قد يهيّئ `embedding fingerprint`
-  غير مضبوط.
+تستخدم `HTTP /ask` و`HTTP /receipt` و`CLI ask` و`CLI receipt` و`MCP search`
+المسار المشترك `core.query_pipeline`. وهي لا تنشئ حقائق، ولا تغيّر ESM، ولا تكتب
+في L3، ولا تشغّل outbox، ولا تهيّئ embedding fingerprint.
 
-لذلك ضمان القراءة فقط دقيق ومحدود، وليس تعميماً على كل المسارات. راجع
-[read-only-query-boundary.md](./docs/architecture/read-only-query-boundary.md).
+راجع [Read-Only Query Boundary](./docs/architecture/read-only-query-boundary.md).
 
----
+## ⚖️ حل التناقضات بقرار صريح
 
-## 🧠 نموذج الذاكرة
+```bash
+python -m core.conflict_surfaces FACT_ID \
+  --disposition COEXIST \
+  --actor alice \
+  --reason "الادعاءات تصف سياقات مختلفة" \
+  --expected-report-id REPORT_ID
+```
 
-| الطبقة | الدور | الحد |
-|---|---|---|
-| **L0** | cache عمل داخل العملية | سريع وقابل لإعادة البناء |
-| **L1** | ذاكرة تشغيلية SQLite/WAL | حالات وقيود وتحديثات |
-| **L2** | claims معلقة ومراجعة قيّمة | ليست قانونية تلقائياً |
-| **L3** | الرسم البياني القانوني | الإدخال التلقائي فقط عبر TruthGate |
-| **TRACE / Receipt** | طبقة إثبات | تشرح grounding وتكشف الانحراف |
+في FastAPI يجب تسجيل `POST /review/resolve-conflict` مع مصادقة التطبيق المضيف.
+يتحقق `core.curator_auth` من actor والصلاحيات والنطاق. تحمي
+`CuratorLeaseRegistry` عملية واحدة فقط؛ ويتطلب النشر الموزع محول lease خارجياً.
 
-قد يحتوي الرسم البياني المادي حالات حقيقة مختلفة. وبالمعنى الصارم، يشير
-**Canon** إلى الإسقاط المتحقق والصالح وفق TRACE والمسموح بالسياسة، لا إلى كل
-عقدة في backend الرسم البياني.
+راجع [واجهات حل التعارض](./docs/CONFLICT_RESOLUTION_SURFACES.md) و
+[Topic facets وcurator IAM](./docs/TOPIC_FACETS_AND_CURATOR_IAM.md).
 
----
+## 🏷️ faceting موضوعي إرشادي
+
+يوفر `core.topic_facets` وسوماً موحدة للتنقل والتصفية والتجميع. تقيس الدرجة صلة
+الموضوع فقط، ولا تغيّر حالة الحقيقة أو الأدلة أو ESM أو عضوية Canon الصارم.
 
 ## 🚀 البدء السريع
 
@@ -110,144 +134,36 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -e '.[dev]'
 pytest tests/ --cov=. --cov-fail-under=100
-python scripts/eval_gate.py --out-dir eval-artifacts
 ```
 
-استخدام CLI الأساسي:
+## 📚 مسار الوثائق
 
-```bash
-velantrim ingest "Water boils at 100C at sea level"
-velantrim ask "how does water behave"
-velantrim receipt "how does water behave" > receipt.json
-velantrim verify-receipt receipt.json
-```
+- [خريطة الوثائق](./docs/DOCUMENTATION_MAP.md)
+- [الحالة الحالية](./docs/STATUS.md)
+- [المعمارية](./docs/ARCHITECTURE.md)
+- [تقرير الاختبارات](./TEST_REPORT.md)
+- [التقييم](./docs/EVAL.md)
+- [نطاق NLnet](./docs/GRANT_NLNET_SCOPE.md)
 
-backend محلي دائم لـ L3:
-
-```bash
-VELANTRIM_L3_BACKEND=sqlite \
-VELANTRIM_L3_PATH=./data/canon.db \
-velantrim ask "..."
-```
-
-الدليل التفصيلي: [docs/ar/QUICKSTART.md](./docs/ar/QUICKSTART.md).
-
----
-
-## 🔌 الواجهات الاختيارية
-
-### FastAPI
-
-```bash
-pip install '.[api]'
-velantrim-api
-```
-
-| الطريقة | المسار | العقد |
-|---|---|---|
-| `GET` | `/health` | liveness/readiness |
-| `POST` | `/ingest` | إدخال عبر Guardian + TruthGate |
-| `POST` | `/ask` | استعلام قانوني للقراءة فقط |
-| `GET` | `/receipt?q=...` | قراءة مع Receipt |
-| `POST` | `/verify-receipt` | إعادة تحقق Receipt مقابل الحالة الحالية |
-| `GET` | `/evidence/{fact_id}` | عرض أدلة عام وفق السياسة |
-
-FastAPI وUvicorn إضافات اختيارية. لا يتطلب runtime الافتراضي خدمة سحابية أو
-مزود نموذج خارجي.
-
-### MCP
-
-```bash
-python -m core.mcp_server
-```
-
-يوفر MCP أدوات فحص للبحث وتقارير الذاكرة وتاريخ الحقائق والتعارضات والتحقق من
-Receipt. وتظل الحدود المتعلقة بـ `embedding fingerprint` قائمة.
-
----
-
-## 🧪 التقييم
-
-يتضمن Crystal baseline حتمية تقيس:
-
-- retrieval `hit@k` وMRR؛
-- اكتمال TRACE والبيانات الوصفية؛
-- تغطية Evidence Span؛
-- بقاء Receipt عند replay؛
-- precision وrecall لاكتشاف التعارض؛
-- الرفض الصحيح عند حدود الثقة؛
-- حدود regression في CI.
-
-تنفيذ replay الحتمي في Titan عمل سابق موثق، وليس runtime منسوخاً إلى Crystal.
-أي تطبيق لاحق يجب أن يمدد stack التقييم الحالي، ويظل offline وغير سلطوي، ويحافظ
-على TruthGate وحدود الاستعلام.
-
----
-
-## 💶 حدود المنحة
-
-قُدّم المشروع إلى **NLnet NGI0 Commons Fund** وهو قيد المراجعة. لا يدّعي المستودع
-أن التمويل قد مُنح.
+## ✅ خط الأساس المتحقق منه
 
 ```text
-BASELINE الحالية
-    +
-DELTA ممولة وقابلة للقياس
-    =
-DELIVERABLE قابلة للتحقق المستقل
+Python 3.11: 1853 passed / 12 skipped
+Python 3.12: 1853 passed / 12 skipped
+Statements:  7236
+Coverage:    100.00%
+Mutation:    7/7 declared Ring Zero mutants killed
+CI jobs:     9
 ```
 
-يبقى العمل المدمج سابقاً ضمن baseline ولا يُحتسب مرة أخرى كعمل مدفوع. ولا تُضاف
-آليات معرفية أو neuromorphic أو Titan سراً إلى نطاق Crystal.
+## 🚧 حدود الادعاء
 
-ملخص عربي: [docs/ar/GRANT_OVERVIEW.md](./docs/ar/GRANT_OVERVIEW.md)  
-المصادر المعيارية:
+لا يدّعي Crystal اكتشاف الحقيقة عالمياً، أو إزالة جميع الهلوسات، أو تقديم شهادة
+GDPR أو أمنية، أو الجاهزية لخدمة إنتاج متعددة المستأجرين، أو تحقيق وعي اصطناعي،
+أو تنفيذ Titan/Full ExoCortex. تعمل leases الحالية داخل عملية واحدة فقط؛ ويبقى
+التنسيق الموزع وربط مزود هوية خارجي عملاً مستقلاً.
 
-- [docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)
-- [docs/grants/baseline-funded-delta-matrix.md](./docs/grants/baseline-funded-delta-matrix.md)
-- [docs/grants/funding-use-plan.md](./docs/grants/funding-use-plan.md)
-- [docs/grants/evaluation-replay-adoption.md](./docs/grants/evaluation-replay-adoption.md)
+## 🤝 المساهمة والترخيص
 
----
-
-## ✅ بوابات التحقق
-
-| البوابة | الغرض |
-|---|---|
-| pytest + coverage | المجموعة الكاملة مع شرط تغطية 100% |
-| Ruff | lint للكود وأدوات المستودع |
-| Gitleaks | اكتشاف الأسرار الملتزم بها |
-| Bandit | تحليل أمني ثابت لـ Python |
-| pip-audit | تدقيق ثغرات الاعتماديات |
-| Docker build | بناء صورة hardened قابلة للتكرار |
-| eval-gate | ضبط regression في retrieval وgrounding والتعارض |
-| JSONL integrity | التحقق من بنية corpus وتكرار المعرفات |
-
-تقلل هذه الفحوص المخاطر، لكنها لا تثبت غياب كل عيب ولا تمثل شهادة قانونية أو
-أمنية.
-
----
-
-## 📚 مسار المراجع العربي
-
-1. [docs/ar/REVIEWER_GUIDE.md](./docs/ar/REVIEWER_GUIDE.md)
-2. [docs/ar/QUICKSTART.md](./docs/ar/QUICKSTART.md)
-3. [docs/ar/STATUS.md](./docs/ar/STATUS.md)
-4. [docs/ar/GRANT_OVERVIEW.md](./docs/ar/GRANT_OVERVIEW.md)
-5. [docs/ar/GLOSSARY.md](./docs/ar/GLOSSARY.md)
-6. [TEST_REPORT.md](./TEST_REPORT.md) — النتائج المعيارية
-7. [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) — المعمارية المعيارية
-
----
-
-## ⚖️ الترخيص والمساهمة
-
-Crystal مرخص بموجب **AGPL-3.0**. راجع [LICENSE](./LICENSE)،
-و[CONTRIBUTING.md](./CONTRIBUTING.md)، و[GOVERNANCE.md](./GOVERNANCE.md)،
-و[SECURITY.md](./SECURITY.md)، و[PRIVACY.md](./PRIVACY.md).
-
-> **📊 Canon = حقيقة مقبولة** · **🔗 Provenance = ثقة** · **🏠 Local-first = تحكم**
-
----
-
-> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
+راجع [CONTRIBUTING.md](./CONTRIBUTING.md) و[SECURITY.md](./SECURITY.md) و
+[GOVERNANCE.md](./GOVERNANCE.md) و[AGPL-3.0](./LICENSE).

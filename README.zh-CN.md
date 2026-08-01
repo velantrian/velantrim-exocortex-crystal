@@ -1,104 +1,127 @@
 # 🔱 Velantrim ExoCortex — Crystal
 
-> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 **简体中文**   · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
-> 📚 [德语文档](./docs/de/README.md) · [法语文档](./docs/fr/README.md) · [西班牙语文档](./docs/es/README.md) · [意大利语文档](./docs/it/README.md) · [俄语文档](./docs/ru/README.md) · [简体中文文档](./docs/zh-CN/README.md) · [التوثيق العربي](./docs/ar/README.md) · [日本語ドキュメント](./docs/ja/README.md) · [हिन्दी दस्तावेज़](./docs/hi/README.md)
+> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 **简体中文** · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
 
-### *面向可信 AI 的可验证、本地优先、开源记忆基础设施*
+### 面向可信 AI 系统的可验证、本地优先记忆基础设施
 
-`v0.3.0` · 🧪 **1713 项通过 / 12 项跳过** · 🎯 **100% 覆盖率** · 🐍 **默认运行时仅依赖 Python 标准库** · ⚖️ **AGPL-3.0** · 🔒 **本地优先**
+`v0.3.0` · 🧪 **1853 项测试通过 / 12 项跳过** · 🎯 **100% 覆盖率** · 🧬 **7/7 个声明的变异体被检出** · ✅ **9 个 CI 任务** · 🐍 **默认运行时仅依赖 Python 标准库** · ⚖️ **AGPL-3.0**
 
-> Crystal 是可验证的记忆层，而不是另一个聊天机器人。每个 claim 都保留
-> 来源、认识论状态和 provenance 元数据。自动进入 canonical graph 的过程
-> 仍由 **Guardian + TruthGate** 管理。
+> Crystal 不是另一个聊天机器人，而是一条记忆、证据与决策边界。它记录
+> 一条陈述是什么、来自哪里、处于何种认知状态、能否作为回答依据，以及
+> 矛盾是如何通过明确决定得到处理的。
 
-> **权威来源：** GitHub `main` 中已合并的代码与英文规范文档决定实现状态和
-> grant 范围。本简体中文版本是面向 reviewer、机构和中文贡献者的维护性翻译。
-> 如有差异，以 [README.md](./README.md)、[docs/STATUS.md](./docs/STATUS.md)
-> 和 [TEST_REPORT.md](./TEST_REPORT.md) 为准。
+**已验证的运行时检查点：** `f91299c44a1a1850fa516f3abb96c916326f7a8c` — 已合并 PR #302。  
+**精确证据：** [TEST_REPORT.md](./TEST_REPORT.md) 与
+[机器可读实现清单](./docs/status/implementation-manifest.json)。
+
+> 本译文与英文 README 保持相同的功能、安全和状态边界。稳定的 API 标识符
+> 保留代码中的原名，说明文字则使用自然中文表达。
 
 ---
 
-## 🧭 一分钟了解 Crystal
+## 🎯 为什么需要 Crystal
 
-Crystal 是 Velantrim 面向公开 grant 的核心：
-
-- 本地 L0/L1 operational memory；
-- 本地 L3 canonical graph backend；
-- Guardian 与 TruthGate admission control；
-- 用于严格 grounding 的 `CanonicalView`；
-- 可重放的 TRACE、provenance 与 Receipt；
-- Evidence Span、review queue 与 import session；
-- 与 GDPR 相关的技术性删除和处理限制机制；
-- 确定性 evaluation 与 CI quality gate；
-- 可选的 FastAPI 与 MCP 接口。
-
-Crystal **不是** Titan、完整 Personal ExoCortex、自主认知操作系统、意识项目
-或自我修改 agent。研究概念可进入未来 RFC，但不代表当前 runtime capability。
+许多 AI 系统会把源文档、用户陈述、模型输出、假设、检索片段和持久记忆
+混在同一上下文或向量库中。这样一来，表达流畅的文字可能获得其证据并不
+支持的权威性。
 
 ```text
-GitHub Crystal main = 公开实现事实
-Notion Crystal       = 同步的战略与 grant 地图
-Titan / Full         = 独立研究轨道
+表达有说服力，不等于可信。
+图中的节点，不等于严格 Canon。
+检索分数，不等于证据。
+模型输出，不等于独立来源。
+矛盾不会自行选出赢家。
+主题标签不是事实真伪判定。
 ```
 
----
+## 🧠 主要能力
 
-## 🛡️ 当前信任边界
+- 类型化陈述与明确的认知生命周期；
+- 来源、证据片段和溯源元数据；
+- Guardian 与 TruthGate 准入边界；
+- 与严格 Canon 分离的多状态物理 L3 图；
+- 不可变、拒绝优先的 `TrustSnapshot` 读取协调；
+- 严格只读的公开 HTTP、CLI 与 MCP 查询；
+- TRACE 与可重放、可检测篡改的 Receipt；
+- 处理限制、删除、审计和导入会话控制；
+- 审核队列与可恢复审核会话；
+- 类型化、不可变的矛盾报告；
+- 明确的 `COEXIST`、`CONTEXTUALIZE` 与 `SUPERSEDE` 决定；
+- 通过 CLI 和已认证 HTTP 进行冲突处理；
+- 受 scope 限制的策展角色/权限与进程内 decision lease；
+- 不赋予权威的多标签主题 facet；
+- 从运行时转换派生的机器可读 ESM 规范；
+- 确定性评估、100% 行覆盖与 Ring Zero mutation gate；
+- 带版本化产物的 L3 基准历史。
 
-### Admission 路径
+## 🏛️ 架构概览
 
 ```text
-输入 / 文档 / agent 事件
-→ 分类与 evidence
-→ Guardian + TruthGate
-→ L0/L1 operational memory
-→ 已准入的 L3 canonical graph
+显式 ingest
+→ 陈述分类 + 证据元数据
+→ L0/L1 中的 Observed 状态
+→ Guardian → TruthGate → 限制/矛盾检查
+→ 多状态物理 L3 图
+
+公开查询
+→ 只读 retrieval
+→ 不可变 TrustSnapshot
+→ Guardian + CanonicalView STRICT
+→ FactsPack + TRACE
+→ 回答 / 拒绝 / Receipt
+
+未解决的矛盾
+→ 不可变 ContradictionReport
+→ actor/角色/scope 授权 + decision lease
+→ 策展者明确决定 + 原因
+→ 可审计的 canonical 写入路径
+
+主题导航
+→ 建议性 TopicFacet
+→ 仅用于筛选/分组 — 不会准入 Canon
 ```
-
-### HTTP 查询路径
-
-已合并的 PR #265 引入了独立的严格只读 HTTP 查询合同：
 
 ```text
-POST /ask, GET /receipt
-→ core.aio.arun()
-→ core.query_pipeline.query()
-→ 仅使用既有 Canon
-→ CanonicalView
-→ 回答或有界拒绝
+物理 L3 图 ≠ 严格 Canon
+query ≠ ingest
+confidence ≠ 独立证据
+LLM 输出 ≠ 独立事实来源
+主题相关性 ≠ 真值
+本地 lease ≠ 分布式协调保证
 ```
 
-对这些 HTTP surface，提问不会写入 L0/L1，不会转换 ESM，不会写入 L3 fact
-或 edge，不会处理 outbox，不会记录 episode link，不会初始化 embedding
-fingerprint，也不会改变 adaptive verification state。
+TruthGate 是准入策略门，而不是独立判断客观真理的预言机。严格 Canon 是
+根据证据、状态、ESM 和处理限制形成的、由策略允许的读取投影。
 
-### 明确披露的剩余范围
+## 🛡️ 公开只读查询边界
 
-只读保证是精确而非泛化的：
+`HTTP /ask`、`HTTP /receipt`、`CLI ask`、`CLI receipt` 和 `MCP search`
+共同使用 `core.query_pipeline`。它们不会创建事实、转换 ESM、写入 L3、
+处理 outbox，也不会初始化 embedding fingerprint。
 
-- CLI `ask` 与 `receipt` 仍使用可执行 admission 的历史兼容路径；
-- `core.pipeline.run()` 仍然可用；
-- MCP 不提供显式 canonical write tool，但搜索可能初始化尚未设置的
-  embedding fingerprint，因此不称为零变更路径。
+详见 [Read-Only Query Boundary](./docs/architecture/read-only-query-boundary.md)。
 
-详见 [read-only-query-boundary.md](./docs/architecture/read-only-query-boundary.md)。
+## ⚖️ 明确处理矛盾
 
----
+```bash
+python -m core.conflict_surfaces FACT_ID \
+  --disposition COEXIST \
+  --actor alice \
+  --reason "这些陈述描述的是不同情境" \
+  --expected-report-id REPORT_ID
+```
 
-## 🧠 记忆模型
+在 FastAPI 中，`POST /review/resolve-conflict` 必须使用宿主应用的认证机制。
+`core.curator_auth` 检查 actor、权限和 scope。`CuratorLeaseRegistry` 只能保护
+单个进程；分布式部署必须提供外部 lease 适配器。
 
-| 层 | 角色 | 边界 |
-|---|---|---|
-| **L0** | 进程内工作缓存 | 快速、可重建 |
-| **L1** | SQLite/WAL operational memory | 状态、限制与更新 |
-| **L2** | pending claim 与 curator review | 不会自动成为 canonical |
-| **L3** | canonical graph | 自动准入只能经过 TruthGate |
-| **TRACE / Receipt** | proof layer | 解释 grounding 并检测 drift |
+详见 [冲突处理接口](./docs/CONFLICT_RESOLUTION_SURFACES.md) 与
+[主题 facet 和 curator IAM](./docs/TOPIC_FACETS_AND_CURATOR_IAM.md)。
 
-物理 graph 可以保存不同 truth status。严格意义上的 **Canon** 仅指 VERIFIED、
-TRACE 有效且 policy 允许的投影，而不是 graph backend 中的每个节点。
+## 🏷️ 建议性主题 facet
 
----
+`core.topic_facets` 提供用于导航、筛选和分组的规范化标签。facet 分数只表示
+主题相关性，不会改变 truth status、证据、ESM 或严格 Canon 成员资格。
 
 ## 🚀 快速开始
 
@@ -109,143 +132,35 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -e '.[dev]'
 pytest tests/ --cov=. --cov-fail-under=100
-python scripts/eval_gate.py --out-dir eval-artifacts
 ```
 
-基础 CLI：
+## 📚 文档入口
 
-```bash
-velantrim ingest "Water boils at 100C at sea level"
-velantrim ask "how does water behave"
-velantrim receipt "how does water behave" > receipt.json
-velantrim verify-receipt receipt.json
-```
+- [文档地图](./docs/DOCUMENTATION_MAP.md)
+- [当前状态](./docs/STATUS.md)
+- [架构](./docs/ARCHITECTURE.md)
+- [测试报告](./TEST_REPORT.md)
+- [评估](./docs/EVAL.md)
+- [NLnet 范围](./docs/GRANT_NLNET_SCOPE.md)
 
-本地持久化且无额外依赖的 L3 backend：
-
-```bash
-VELANTRIM_L3_BACKEND=sqlite \
-VELANTRIM_L3_PATH=./data/canon.db \
-velantrim ask "..."
-```
-
-详细步骤见 [docs/zh-CN/QUICKSTART.md](./docs/zh-CN/QUICKSTART.md)。
-
----
-
-## 🔌 可选接口
-
-### FastAPI
-
-```bash
-pip install '.[api]'
-velantrim-api
-```
-
-| 方法 | 路径 | 合同 |
-|---|---|---|
-| `GET` | `/health` | liveness/readiness |
-| `POST` | `/ingest` | 经 Guardian + TruthGate admission |
-| `POST` | `/ask` | 严格只读 canonical query |
-| `GET` | `/receipt?q=...` | 只读 query 加 Receipt |
-| `POST` | `/verify-receipt` | 对当前状态重放 Receipt |
-| `GET` | `/evidence/{fact_id}` | 按 policy 输出 public evidence view |
-
-FastAPI 与 Uvicorn 是可选 extra。默认 runtime 不要求 cloud service 或第三方
-model provider。
-
-### MCP
-
-```bash
-python -m core.mcp_server
-```
-
-MCP 提供面向检查的搜索、memory report、fact history、conflict lookup 与
-Receipt verification 工具。上述 embedding fingerprint 剩余边界仍然适用。
-
----
-
-## 🧪 Evaluation
-
-Crystal 已包含确定性的 evaluation baseline：
-
-- retrieval `hit@k` 与 MRR；
-- TRACE 与 metadata 完整性；
-- Evidence Span 覆盖率；
-- Receipt replay survival；
-- contradiction precision 与 recall；
-- trust-boundary refusal check；
-- CI regression floor 与 ceiling。
-
-Titan 的确定性 replay 实现属于已审查的 prior art，而不是已复制到 Crystal
-的 runtime。未来实现必须扩展现有 Crystal evaluation stack，保持 offline、
-non-authoritative，并维持 baseline / funded delta 规则。
-
----
-
-## 💶 Grant 边界
-
-项目已提交至 **NLnet NGI0 Commons Fund** 评审。公开 repository **不声称**
-资金已经获批。
+## ✅ 已验证基线
 
 ```text
-当前 BASELINE
-    +
-可测量的 FUNDED DELTA
-    =
-可独立验证的 DELIVERABLE
+Python 3.11: 1853 passed / 12 skipped
+Python 3.12: 1853 passed / 12 skipped
+Statements:  7236
+Coverage:    100.00%
+Mutation:    7/7 declared Ring Zero mutants killed
+CI jobs:     9
 ```
 
-已合并工作保持为 baseline，不会再次计为付费交付。认知、neuromorphic 或
-Titan 机制不会被静默加入 Crystal grant scope。
+## 🚧 声明边界
 
-中文摘要：[docs/zh-CN/GRANT_OVERVIEW.md](./docs/zh-CN/GRANT_OVERVIEW.md)  
-英文权威来源：
+Crystal 不声称能够普遍识别真理、完全消除幻觉、提供 GDPR 或安全认证、已具备
+生产级多租户能力、实现人工意识或具备 Titan/Full ExoCortex 功能。当前 lease
+仅在单进程内有效；分布式协调和外部身份提供方集成仍是独立工作。
 
-- [docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)
-- [docs/grants/baseline-funded-delta-matrix.md](./docs/grants/baseline-funded-delta-matrix.md)
-- [docs/grants/funding-use-plan.md](./docs/grants/funding-use-plan.md)
-- [docs/grants/evaluation-replay-adoption.md](./docs/grants/evaluation-replay-adoption.md)
+## 🤝 参与与许可
 
----
-
-## ✅ 验证 Gate
-
-| Gate | 用途 |
-|---|---|
-| pytest + coverage | 完整测试套件与强制 100% line coverage |
-| Ruff | production code 与 repository tooling lint |
-| Gitleaks | 检测已提交的 secret |
-| Bandit | Python 静态安全检查 |
-| pip-audit | dependency vulnerability audit |
-| Docker build | 可复现的 hardened image build |
-| eval-gate | retrieval、grounding 与 contradiction regression control |
-| JSONL integrity | corpus 结构与重复 ID 检查 |
-
-这些控制可以降低风险，但不能证明不存在任何缺陷，也不构成法律或安全认证。
-
----
-
-## 📚 中文 Reviewer 路径
-
-1. [docs/zh-CN/REVIEWER_GUIDE.md](./docs/zh-CN/REVIEWER_GUIDE.md)
-2. [docs/zh-CN/QUICKSTART.md](./docs/zh-CN/QUICKSTART.md)
-3. [docs/zh-CN/STATUS.md](./docs/zh-CN/STATUS.md)
-4. [docs/zh-CN/GRANT_OVERVIEW.md](./docs/zh-CN/GRANT_OVERVIEW.md)
-5. [docs/zh-CN/GLOSSARY.md](./docs/zh-CN/GLOSSARY.md)
-6. [TEST_REPORT.md](./TEST_REPORT.md) — 权威测试结果
-7. [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) — 权威架构说明
-
----
-
-## ⚖️ 许可证与贡献
-
-Crystal 采用 **AGPL-3.0**。参见 [LICENSE](./LICENSE)、
-[CONTRIBUTING.md](./CONTRIBUTING.md)、[GOVERNANCE.md](./GOVERNANCE.md)、
-[SECURITY.md](./SECURITY.md) 与 [PRIVACY.md](./PRIVACY.md)。
-
-> **📊 Canon = 已准入事实** · **🔗 Provenance = 信任** · **🏠 Local-first = 控制**
-
----
-
-> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 **简体中文** · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
+参见 [CONTRIBUTING.md](./CONTRIBUTING.md)、[SECURITY.md](./SECURITY.md)、
+[GOVERNANCE.md](./GOVERNANCE.md) 与 [AGPL-3.0](./LICENSE)。

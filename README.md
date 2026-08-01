@@ -4,16 +4,20 @@
 
 ### Verifiable, local-first memory infrastructure for trustworthy AI systems
 
-`v0.3.0` · 🧪 **1838 passed / 12 skipped** · 🎯 **100% coverage** · 🧬 **7/7 declared mutants killed** · ✅ **9 CI jobs** · 🐍 **pure-stdlib default runtime** · ⚖️ **AGPL-3.0**
+`v0.3.0` · 🧪 **1853 passed / 12 skipped** · 🎯 **100% coverage** · 🧬 **7/7 declared mutants killed** · ✅ **9 CI jobs** · 🐍 **pure-stdlib default runtime** · ⚖️ **AGPL-3.0**
 
 > Crystal is not another chatbot. It is a memory, evidence and decision boundary
 > that records what a claim is, where it came from, what state it is in, whether
 > it may ground an answer, and how contradictions were explicitly resolved.
 
-**Verified runtime checkpoint:** `b10a7446dc6c88fd319161ac983263554f93107b` — merged PR #300.  
+**Verified runtime checkpoint:** `f91299c44a1a1850fa516f3abb96c916326f7a8c` — merged PR #302.  
 **Implementation truth:** code and tests merged into GitHub `main`.  
 **Exact evidence:** [TEST_REPORT.md](./TEST_REPORT.md) and the
 [machine-readable implementation manifest](./docs/status/implementation-manifest.json).
+
+> **Localization contract:** every top-level translated README follows this
+> document's capability, safety and status boundaries. Stable API identifiers
+> remain in English/code form; explanatory prose is translated naturally.
 
 ---
 
@@ -32,22 +36,25 @@ A graph node is not automatically strict Canon.
 A retrieval score is not evidence.
 A model output is not an independent source.
 A contradiction does not select its own winner.
+A topic label is not a truth verdict.
 ```
 
 ## 🧠 What Crystal provides
 
-- typed claims and explicit epistemic lifecycle state;
+- typed claims and an explicit epistemic lifecycle;
 - source, evidence-span and provenance metadata;
 - Guardian and TruthGate admission boundaries;
 - a multi-status physical L3 graph separated from strict Canon;
-- immutable deny-dominant `TrustSnapshot` read reconciliation;
+- immutable, deny-dominant `TrustSnapshot` read reconciliation;
 - read-only public HTTP, CLI and MCP query surfaces;
-- TRACE and replayable/tamper-evident Receipts;
+- TRACE and replayable, tamper-evident Receipts;
 - restriction, erasure, audit and import-session controls;
 - review queues and resumable review sessions;
 - typed immutable contradiction reports;
 - explicit `COEXIST`, `CONTEXTUALIZE` and `SUPERSEDE` decisions;
 - CLI and authenticated HTTP conflict-resolution surfaces;
+- scoped curator roles/capabilities and in-process decision leases;
+- advisory multi-label topic facets that never grant authority;
 - a machine-readable ESM specification derived from runtime transitions;
 - deterministic evaluation, 100% line coverage and a Ring Zero mutation gate;
 - scheduled/manual L3 benchmark history with versioned artifacts.
@@ -79,9 +86,17 @@ unresolved contradiction
         ↓
 immutable ContradictionReport
         ↓
-explicit curator disposition + actor + reason
+actor/scoped role authorization + decision lease
+        ↓
+explicit curator disposition + reason
         ↓
 audited canonical write path
+
+topic navigation
+        ↓
+advisory TopicFacet metadata
+        ↓
+filtering/grouping only — never Canon admission
 ```
 
 ### Central distinctions
@@ -92,6 +107,8 @@ query ≠ ingest
 confidence ≠ independent evidence
 LLM output ≠ independent factual source
 contradiction ≠ automatic winner
+topic relevance ≠ truth or evidence quality
+local lease ≠ distributed coordination guarantee
 ```
 
 TruthGate is an admission-policy gate, not an oracle that independently knows
@@ -110,6 +127,8 @@ status, ESM state, confidence shape and processing restrictions.
 | CanonicalView | strict grounding projection | graph membership does not imply trust |
 | TRACE / Receipt | proof and replay layer | grounding, drift and tamper evidence |
 | ContradictionReport | immutable conflict object | no confidence-only winner selection |
+| TopicFacet | navigation metadata | never changes truth, ESM or Canon |
+| CuratorPrincipal / lease | authorization and coordination helper | host identity + external lease required at scale |
 
 ## 🔎 Crystal versus classic RAG
 
@@ -120,8 +139,9 @@ status, ESM state, confidence shape and processing restrictions.
 | Track lifecycle and contradictions | usually external logic | first-class state and reports |
 | Prevent generated text becoming its own source | not inherent | Ring Zero admission invariant |
 | Replay answer evidence | optional | TRACE and Receipt architecture |
-| Resolve contradictions accountably | application-specific | explicit audited dispositions |
-| Run without mandatory cloud/model provider | varies | pure-stdlib local-first baseline |
+| Resolve contradictions accountably | application-specific | explicit authorized and audited dispositions |
+| Organize by topic without changing trust | application-specific | advisory topic facets |
+| Run without a mandatory cloud/model provider | varies | pure-stdlib local-first baseline |
 
 ## 🛡️ Public read-only query boundary
 
@@ -153,8 +173,20 @@ python -m core.conflict_surfaces FACT_ID \
 ```
 
 For hosted FastAPI deployments, register `POST /review/resolve-conflict` with the
-host application's authentication dependency. See
-[Conflict-resolution surfaces](./docs/CONFLICT_RESOLUTION_SURFACES.md).
+host application's authentication dependency. `core.curator_auth` can map a
+host-authenticated principal to scoped capabilities; `CuratorLeaseRegistry`
+prevents parallel decisions only within one process. Distributed deployments
+must supply an external lease adapter.
+
+See [Conflict-resolution surfaces](./docs/CONFLICT_RESOLUTION_SURFACES.md) and
+[Topic facets and curator IAM](./docs/TOPIC_FACETS_AND_CURATOR_IAM.md).
+
+## 🏷️ Advisory topic facets
+
+`core.topic_facets` attaches normalized multi-label metadata for navigation,
+filtering and grouping. Facet score means topic relevance only. It never changes
+truth status, evidence, ESM state, contradiction outcomes or strict Canon
+membership.
 
 ## 🚀 Quick start
 
@@ -175,7 +207,9 @@ Continue with [QUICKSTART.md](./docs/QUICKSTART.md).
 - [Current status](./docs/STATUS.md)
 - [Implementation status](./docs/IMPLEMENTATION_STATUS.md)
 - [Architecture](./docs/ARCHITECTURE.md)
+- [Read-only query boundary](./docs/architecture/read-only-query-boundary.md)
 - [Conflict-resolution surfaces](./docs/CONFLICT_RESOLUTION_SURFACES.md)
+- [Topic facets and curator IAM](./docs/TOPIC_FACETS_AND_CURATOR_IAM.md)
 - [Test report](./TEST_REPORT.md)
 - [Evaluation](./docs/EVAL.md)
 - [Failure modes](./docs/FAILURE_MODES.md)
@@ -184,9 +218,9 @@ Continue with [QUICKSTART.md](./docs/QUICKSTART.md).
 ## ✅ Verified baseline
 
 ```text
-Python 3.11: 1838 passed / 12 skipped
-Python 3.12: 1838 passed / 12 skipped
-Statements:  7051
+Python 3.11: 1853 passed / 12 skipped
+Python 3.12: 1853 passed / 12 skipped
+Statements:  7236
 Coverage:    100.00%
 Mutation:    7/7 declared Ring Zero mutants killed
 CI jobs:     9
@@ -196,9 +230,10 @@ CI jobs:     9
 
 Crystal does not claim universal truth detection, zero hallucinations, legal
 GDPR certification, security certification, production multi-tenant readiness,
-artificial consciousness or Titan/Full Exo-Cortex functionality. Future topic
-facets, production IAM, broader provenance wiring and Titan integration remain
-independent roadmap work.
+artificial consciousness or Titan/Full Exo-Cortex functionality. Current
+curator leases are process-local; production distributed coordination, external
+identity-provider integration, broader provenance wiring and Titan integration
+remain independent roadmap work.
 
 ## 🤝 Contributing and license
 

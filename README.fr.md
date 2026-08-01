@@ -2,110 +2,131 @@
 
 > 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 **Français** · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
 
-### *Infrastructure de mémoire vérifiable, locale et open source pour une IA digne de confiance*
+### Infrastructure de mémoire vérifiable et locale pour des systèmes d’IA dignes de confiance
 
-`v0.3.0` · 🧪 **1713 réussis / 12 ignorés** · 🎯 **100 % de couverture** · 🐍 **runtime par défaut fondé sur la bibliothèque standard** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v0.3.0` · 🧪 **1853 tests réussis / 12 ignorés** · 🎯 **couverture de 100 %** · 🧬 **7/7 mutants déclarés éliminés** · ✅ **9 tâches CI** · 🐍 **runtime par défaut limité à la bibliothèque standard Python** · ⚖️ **AGPL-3.0**
 
-> Crystal est une couche de mémoire vérifiable, pas un chatbot supplémentaire.
-> Chaque claim conserve sa source, son état épistémique et ses métadonnées de
-> provenance. L’admission automatique dans le graphe canonique reste contrôlée
-> par **Guardian + TruthGate**.
+> Crystal n’est pas un chatbot de plus. C’est une frontière de mémoire, de preuve
+> et de décision qui conserve la nature d’une affirmation, son origine, son état
+> épistémique, son droit éventuel à fonder une réponse et la manière dont une
+> contradiction a été explicitement résolue.
 
-> **Source normative :** le code fusionné sur GitHub `main` et les documents
-> anglais font autorité pour l’implémentation et le périmètre de la subvention.
-> Cette version française est une traduction maintenue pour les reviewers,
-> institutions et contributeurs francophones. En cas d’écart, consulter
-> [README.md](./README.md), [docs/STATUS.md](./docs/STATUS.md) et
-> [TEST_REPORT.md](./TEST_REPORT.md).
+**Checkpoint runtime vérifié :** `f91299c44a1a1850fa516f3abb96c916326f7a8c` — PR #302 fusionnée.  
+**Preuves exactes :** [TEST_REPORT.md](./TEST_REPORT.md) et le
+[manifeste d’implémentation](./docs/status/implementation-manifest.json).
+
+> Cette traduction conserve les mêmes limites fonctionnelles et de sécurité que
+> le README anglais. Les noms d’API stables restent dans leur forme de code.
 
 ---
 
-## 🧭 Crystal en une minute
+## 🎯 Pourquoi Crystal existe
 
-Crystal est le noyau public orienté subvention de Velantrim :
-
-- mémoire opérationnelle locale L0/L1 ;
-- backends locaux du graphe canonique L3 ;
-- contrôles d’admission Guardian et TruthGate ;
-- `CanonicalView` pour les réponses strictement fondées ;
-- TRACE, provenance et Receipts rejouables ;
-- Evidence Spans, files de revue et sessions d’import ;
-- mécanismes techniques d’effacement et de limitation du traitement liés au RGPD ;
-- évaluation déterministe et seuils de qualité CI ;
-- interfaces FastAPI et MCP optionnelles.
-
-Crystal n’est **pas** Titan, le Personal ExoCortex complet, un système cognitif
-autonome, un projet de conscience ou un agent auto-modifiant. Les idées de
-recherche peuvent nourrir de futurs RFC, mais elles ne constituent pas des
-capacités runtime actuelles.
+Les systèmes d’IA mélangent souvent documents sources, déclarations utilisateur,
+sorties de modèle, hypothèses, fragments retrouvés et mémoire durable. Un texte
+fluide peut alors recevoir une autorité que ses preuves ne justifient pas.
 
 ```text
-GitHub Crystal main = vérité d’implémentation publique
-Notion Crystal       = carte stratégique et grant synchronisée
-Titan / Full         = piste de recherche séparée
+Une affirmation convaincante n’est pas automatiquement fiable.
+Un nœud du graphe n’est pas automatiquement du Canon strict.
+Un score de retrieval n’est pas une preuve.
+Une sortie de modèle n’est pas une source indépendante.
+Une contradiction ne choisit pas elle-même son gagnant.
+Une étiquette thématique n’est pas un verdict de vérité.
 ```
 
----
+## 🧠 Capacités principales
 
-## 🛡️ Frontière de confiance actuelle
+- affirmations typées et cycle de vie épistémique explicite ;
+- métadonnées de source, d’evidence span et de provenance ;
+- frontières d’admission Guardian et TruthGate ;
+- graphe physique L3 multi-états distinct du Canon strict ;
+- réconciliation immuable et deny-dominant via `TrustSnapshot` ;
+- requêtes publiques HTTP, CLI et MCP strictement en lecture ;
+- TRACE et Receipts rejouables, avec détection d’altération ;
+- restrictions, effacement, audit et sessions d’import ;
+- files de revue et sessions reprenables ;
+- rapports de contradiction typés et immuables ;
+- décisions `COEXIST`, `CONTEXTUALIZE` et `SUPERSEDE` explicites ;
+- résolution de conflits par CLI et HTTP authentifié ;
+- rôles de curateur limités par scope et leases locaux de décision ;
+- facettes thématiques consultatives qui n’accordent aucune autorité ;
+- spécification ESM lisible par machine ;
+- évaluation déterministe, couverture de 100 % et mutation gate Ring Zero ;
+- historique versionné des benchmarks L3.
 
-### Chemin d’admission
+## 🏛️ Architecture
 
 ```text
-entrée / document / événement d’agent
-→ classification et preuves
-→ Guardian + TruthGate
-→ mémoire opérationnelle L0/L1
-→ graphe canonique L3 admis
+ingestion explicite
+→ classification + preuve
+→ état Observed L0/L1
+→ Guardian → TruthGate → contrôles de restriction/contradiction
+→ graphe physique L3 multi-états
+
+requête publique
+→ retrieval en lecture seule
+→ TrustSnapshot immuable
+→ Guardian + CanonicalView STRICT
+→ FactsPack + TRACE
+→ réponse / refus / Receipt
+
+contradiction non résolue
+→ ContradictionReport immuable
+→ autorisation actor/rôle/scope + decision lease
+→ décision explicite du curateur + justification
+→ écriture canonique auditable
+
+navigation thématique
+→ TopicFacet consultative
+→ filtrage/regroupement uniquement — jamais d’admission au Canon
 ```
-
-### Chemin de requête HTTP
-
-Le PR #265 a introduit un contrat HTTP de lecture strictement séparé :
 
 ```text
-POST /ask, GET /receipt
-→ core.aio.arun()
-→ core.query_pipeline.query()
-→ Canon existant uniquement
-→ CanonicalView
-→ réponse ou refus borné
+Graphe L3 physique ≠ Canon strict
+requête ≠ ingestion
+confiance ≠ preuve indépendante
+sortie LLM ≠ source factuelle indépendante
+pertinence thématique ≠ vérité
+lease local ≠ coordination distribuée garantie
 ```
 
-Pour ces surfaces HTTP, poser une question n’ingère rien dans L0/L1, ne fait pas
-évoluer ESM, n’écrit ni fait ni arête L3, ne vide pas l’outbox, n’enregistre pas
-de lien épisodique, n’initialise pas d’empreinte d’embedding et ne modifie pas
-l’état de vérification adaptative.
+TruthGate est une porte de politique d’admission, pas un oracle de vérité
+objective. Le Canon strict est une projection de lecture autorisée par les
+règles sur la preuve, le statut, l’état ESM et les restrictions de traitement.
 
-### Périmètre résiduel explicitement déclaré
+## 🛡️ Requêtes publiques en lecture seule
 
-- les commandes CLI `ask` et `receipt` utilisent encore le chemin historique
-  compatible avec l’admission ;
-- `core.pipeline.run()` reste disponible ;
-- MCP ne fournit aucun outil explicite d’écriture canonique, mais une recherche
-  peut initialiser une empreinte d’embedding absente.
+`HTTP /ask`, `HTTP /receipt`, `CLI ask`, `CLI receipt` et `MCP search` utilisent
+`core.query_pipeline`. Ils ne créent pas de faits, ne font pas évoluer ESM,
+n’écrivent pas dans L3, ne traitent pas l’outbox et n’initialisent pas d’empreinte
+d’embedding.
 
-La garantie de lecture seule est donc volontairement précise, pas généralisée.
-Voir la spécification normative
-[read-only-query-boundary.md](./docs/architecture/read-only-query-boundary.md).
+Voir [Read-Only Query Boundary](./docs/architecture/read-only-query-boundary.md).
 
----
+## ⚖️ Résolution explicite des contradictions
 
-## 🧠 Modèle de mémoire
+```bash
+python -m core.conflict_surfaces FACT_ID \
+  --disposition COEXIST \
+  --actor alice \
+  --reason "les affirmations décrivent des contextes différents" \
+  --expected-report-id REPORT_ID
+```
 
-| Couche | Rôle | Frontière |
-|---|---|---|
-| **L0** | cache de travail en mémoire | rapide, reconstruisible |
-| **L1** | mémoire opérationnelle SQLite/WAL | états, restrictions, mises à jour |
-| **L2** | claims en attente et revue curatoriale | pas automatiquement canonique |
-| **L3** | graphe canonique | admission automatique uniquement via TruthGate |
-| **TRACE / Receipt** | couche de preuve | explique le fondement et détecte la dérive |
+Pour FastAPI, `POST /review/resolve-conflict` doit utiliser l’authentification de
+l’application hôte. `core.curator_auth` vérifie l’actor, les capacités et le
+scope. `CuratorLeaseRegistry` protège uniquement un processus ; un déploiement
+distribué exige un adaptateur de lease externe.
 
-Le graphe physique peut contenir plusieurs statuts de vérité. Au sens strict,
-le **Canon** désigne uniquement la projection vérifiée, valide selon TRACE et
-autorisée par les règles — pas chaque nœud présent dans un backend de graphe.
+Voir [Conflict-resolution surfaces](./docs/CONFLICT_RESOLUTION_SURFACES.md) et
+[Topic facets and curator IAM](./docs/TOPIC_FACETS_AND_CURATOR_IAM.md).
 
----
+## 🏷️ Facettes thématiques
+
+`core.topic_facets` fournit des étiquettes normalisées pour la navigation et le
+filtrage. Leur score mesure uniquement la pertinence thématique. Il ne modifie ni
+le statut de vérité, ni les preuves, ni ESM, ni le Canon strict.
 
 ## 🚀 Démarrage rapide
 
@@ -116,146 +137,38 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -e '.[dev]'
 pytest tests/ --cov=. --cov-fail-under=100
-python scripts/eval_gate.py --out-dir eval-artifacts
 ```
 
-Utilisation CLI de base :
+## 📚 Documentation
 
-```bash
-velantrim ingest "Water boils at 100C at sea level"
-velantrim ask "how does water behave"
-velantrim receipt "how does water behave" > receipt.json
-velantrim verify-receipt receipt.json
-```
+- [Carte de la documentation](./docs/DOCUMENTATION_MAP.md)
+- [Statut actuel](./docs/STATUS.md)
+- [Architecture](./docs/ARCHITECTURE.md)
+- [Rapport de tests](./TEST_REPORT.md)
+- [Évaluation](./docs/EVAL.md)
+- [Périmètre NLnet](./docs/GRANT_NLNET_SCOPE.md)
 
-Backend L3 SQLite persistant et local :
-
-```bash
-VELANTRIM_L3_BACKEND=sqlite \
-VELANTRIM_L3_PATH=./data/canon.db \
-velantrim ask "..."
-```
-
-Guide détaillé : [docs/fr/QUICKSTART.md](./docs/fr/QUICKSTART.md).
-
----
-
-## 🔌 Interfaces optionnelles
-
-### FastAPI
-
-```bash
-pip install '.[api]'
-velantrim-api
-```
-
-| Méthode | Chemin | Contrat |
-|---|---|---|
-| `GET` | `/health` | liveness/readiness |
-| `POST` | `/ingest` | admission via Guardian + TruthGate |
-| `POST` | `/ask` | requête canonique strictement en lecture |
-| `GET` | `/receipt?q=...` | lecture avec Receipt |
-| `POST` | `/verify-receipt` | replay du Receipt contre l’état actuel |
-| `GET` | `/evidence/{fact_id}` | vue publique des preuves selon la politique |
-
-FastAPI et Uvicorn sont des extras optionnels. Le runtime par défaut ne nécessite
-ni service cloud ni fournisseur de modèle tiers.
-
-### MCP
-
-```bash
-python -m core.mcp_server
-```
-
-MCP fournit des outils d’inspection pour la recherche, les rapports mémoire,
-l’historique des faits, les conflits et la vérification des Receipts. La limite
-résiduelle liée à l’empreinte d’embedding reste applicable.
-
----
-
-## 🧪 Évaluation
-
-Crystal inclut déjà une baseline déterministe :
-
-- `hit@k` et MRR pour le retrieval ;
-- complétude TRACE et métadonnées ;
-- couverture des Evidence Spans ;
-- survie au Receipt replay ;
-- précision et rappel de la détection des contradictions ;
-- tests de refus aux frontières de confiance ;
-- seuils et plafonds de régression CI.
-
-L’implémentation de replay déterministe de Titan est une antériorité technique
-revue, pas une runtime Crystal copiée. Toute future implémentation devra étendre
-le stack d’évaluation existant, rester hors ligne, non autoritative et préserver
-TruthGate ainsi que les frontières de requête.
-
----
-
-## 💶 Frontière de subvention
-
-Le projet a été soumis au **NLnet NGI0 Commons Fund** et se trouve en cours
-d’évaluation. Le dépôt n’affirme pas qu’un financement a déjà été accordé.
+## ✅ Baseline vérifiée
 
 ```text
-BASELINE ACTUELLE
-    +
-DELTA FINANCÉ MESURABLE
-    =
-LIVRABLE VÉRIFIABLE INDÉPENDAMMENT
+Python 3.11: 1853 passed / 12 skipped
+Python 3.12: 1853 passed / 12 skipped
+Statements:  7236
+Coverage:    100.00%
+Mutation:    7/7 declared Ring Zero mutants killed
+CI jobs:     9
 ```
 
-Le travail déjà fusionné reste la baseline et n’est pas recompté comme livraison
-payée. Les mécanismes cognitifs, neuromorphiques ou Titan ne sont pas ajoutés
-silencieusement au périmètre Crystal.
+## 🚧 Limite des affirmations
 
-Résumé français : [docs/fr/GRANT_OVERVIEW.md](./docs/fr/GRANT_OVERVIEW.md)  
-Sources normatives :
+Crystal ne prétend pas détecter universellement la vérité, éliminer toute
+hallucination, fournir une certification GDPR ou de sécurité, être prêt pour un
+service multi-tenant de production, réaliser une conscience artificielle ou
+implémenter Titan/Full ExoCortex. Les leases actuels sont locaux au processus ;
+la coordination distribuée et l’intégration d’un fournisseur d’identité restent
+des travaux indépendants.
 
-- [docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)
-- [docs/grants/baseline-funded-delta-matrix.md](./docs/grants/baseline-funded-delta-matrix.md)
-- [docs/grants/funding-use-plan.md](./docs/grants/funding-use-plan.md)
+## 🤝 Contribution et licence
 
----
-
-## ✅ Portes de vérification
-
-| Gate | Fonction |
-|---|---|
-| pytest + coverage | suite complète avec seuil obligatoire de 100 % |
-| Ruff | lint du code et des outils du dépôt |
-| Gitleaks | détection de secrets versionnés |
-| Bandit | analyse statique de sécurité Python |
-| pip-audit | audit des vulnérabilités de dépendances |
-| Docker build | construction reproductible de l’image durcie |
-| eval-gate | contrôle des régressions retrieval, grounding et contradictions |
-| JSONL integrity | structure du corpus et détection des identifiants dupliqués |
-
-Ces contrôles réduisent le risque ; ils ne prouvent pas l’absence de tout défaut
-et ne constituent ni certification juridique ni certification de sécurité.
-
----
-
-## 📚 Parcours reviewer en français
-
-1. [docs/fr/REVIEWER_GUIDE.md](./docs/fr/REVIEWER_GUIDE.md)
-2. [docs/fr/QUICKSTART.md](./docs/fr/QUICKSTART.md)
-3. [docs/fr/STATUS.md](./docs/fr/STATUS.md)
-4. [docs/fr/GRANT_OVERVIEW.md](./docs/fr/GRANT_OVERVIEW.md)
-5. [docs/fr/GLOSSARY.md](./docs/fr/GLOSSARY.md)
-6. [TEST_REPORT.md](./TEST_REPORT.md) — résultats normatifs
-7. [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) — architecture normative
-
----
-
-## ⚖️ Licence et contribution
-
-Crystal est distribué sous **AGPL-3.0**. Voir [LICENSE](./LICENSE),
-[CONTRIBUTING.md](./CONTRIBUTING.md), [GOVERNANCE.md](./GOVERNANCE.md),
-[SECURITY.md](./SECURITY.md) et [PRIVACY.md](./PRIVACY.md).
-
-> **📊 Canon = vérité admise** · **🔗 Provenance = confiance** · **🏠 Local-first = contrôle**
-
----
-
-> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 **Français** · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
+Voir [CONTRIBUTING.md](./CONTRIBUTING.md), [SECURITY.md](./SECURITY.md),
+[GOVERNANCE.md](./GOVERNANCE.md) et [AGPL-3.0](./LICENSE).

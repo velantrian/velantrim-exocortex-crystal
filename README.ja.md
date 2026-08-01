@@ -1,104 +1,132 @@
 # 🔱 Velantrim ExoCortex — Crystal
 
-> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 **日本語**   · 🇮🇳 [हिन्दी](./README.hi.md)
-> 📚 [German documentation](./docs/de/README.md) · [Documentation française](./docs/fr/README.md) · [Documentación en español](./docs/es/README.md) · [Documentazione italiana](./docs/it/README.md) · [Документация на русском](./docs/ru/README.md) · [简体中文文档](./docs/zh-CN/README.md) · [التوثيق العربي](./docs/ar/README.md) · [日本語ドキュメント](./docs/ja/README.md) · [हिन्दी दस्तावेज़](./docs/hi/README.md)
+> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 **日本語** · 🇮🇳 [हिन्दी](./README.hi.md)
 
-### *信頼できる AI のための、検証可能・ローカルファースト・オープンソースなメモリ基盤*
+### 信頼できる AI システムのための、検証可能でローカルファーストなメモリ基盤
 
-`v0.3.0` · 🧪 **1713 passed / 12 skipped** · 🎯 **100% coverage** · 🐍 **pure-stdlib default runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v0.3.0` · 🧪 **1853 件成功 / 12 件スキップ** · 🎯 **カバレッジ 100%** · 🧬 **宣言済み変異 7/7 を検出** · ✅ **CI 9 ジョブ** · 🐍 **既定ランタイムは Python 標準ライブラリのみ** · ⚖️ **AGPL-3.0**
 
-> Crystal は、単なるチャットボットではなく、検証可能なメモリ層です。
-> 事実には出典、認識論的状態、provenance メタデータが付与されます。
-> canonical graph への自動登録は、Guardian + TruthGate によって制御されます。
+> Crystal は、単なるチャットボットではありません。主張の内容、出典、
+> 認識論的状態、回答の根拠として利用できるかどうか、そして矛盾がどの
+> 明示的な判断によって処理されたかを記録する、メモリ・証拠・意思決定の
+> 境界です。
 
-> **正本:** 実装と grant に関する最終的な正本は GitHub `main` 上の英語文書です。
-> この日本語版は、日本語話者の reviewer と contributor のための保守された翻訳です。
-> 相違がある場合は、英語文書と [TEST_REPORT.md](./TEST_REPORT.md) が優先されます。
+**検証済みランタイム・チェックポイント:** `f91299c44a1a1850fa516f3abb96c916326f7a8c` — PR #302 マージ済み。  
+**正確な検証結果:** [TEST_REPORT.md](./TEST_REPORT.md) と
+[機械可読の実装マニフェスト](./docs/status/implementation-manifest.json)。
+
+> この翻訳は、英語版 README と同じ機能・安全性・状態の境界を維持します。
+> 安定した API 識別子はコード表記のまま残し、説明文は自然な日本語で記述しています。
 
 ---
 
-## 🧭 1分で分かる Crystal
+## 🎯 Crystal が必要な理由
 
-Crystal は、Velantrim の公開・grant-facing コアです。
-
-- ローカル L0/L1 operational memory;
-- ローカル L3 canonical graph backend;
-- Guardian と TruthGate による admission control;
-- CanonicalView による grounding;
-- TRACE、provenance、replayable Receipt;
-- evidence span、review queue、import session;
-- GDPR 関連の削除・処理制限メカニズム;
-- deterministic evaluation と CI quality gate;
-- optional FastAPI と read-oriented MCP surface。
-
-Crystal は **Titan**、完全な Personal Exo-Cortex、自律的な cognitive OS、
-意識プロジェクト、自己改変エージェントではありません。研究アイデアは将来の RFC に
-影響する可能性がありますが、現在の runtime capability ではありません。
+多くの AI システムは、原資料、ユーザーの主張、モデル出力、仮説、検索で
+得た断片、永続メモリを、同じコンテキストやベクトルストアに混在させます。
+その結果、流暢な文章が、証拠に裏付けられていない権威を獲得することがあります。
 
 ```text
-GitHub Crystal main = 公開実装の正本
-Notion Crystal       = 同期された戦略・grant マップ
-Titan / Full         = 別の研究トラック
+説得力のある主張が、自動的に信頼できるわけではない。
+グラフのノードが、自動的に厳格な Canon になるわけではない。
+検索スコアは証拠ではない。
+モデル出力は独立した情報源ではない。
+矛盾が自動的に勝者を決めることはない。
+トピックラベルは真偽判定ではない。
 ```
 
----
+## 🧠 主な機能
 
-## 🛡️ Trust boundary
+- 型付き主張と明示的な認識論的ライフサイクル;
+- 出典、evidence span、provenance のメタデータ;
+- Guardian と TruthGate による登録境界;
+- 厳格な Canon と分離された多状態の物理 L3 グラフ;
+- 不変かつ deny-dominant な `TrustSnapshot` 読み取り調停;
+- 厳密に読み取り専用の公開 HTTP・CLI・MCP クエリ;
+- TRACE と、再実行可能で改ざんを検出できる Receipt;
+- 処理制限、消去、監査、インポートセッション;
+- レビューキューと再開可能なレビューセッション;
+- 型付きで不変の矛盾レポート;
+- 明示的な `COEXIST`、`CONTEXTUALIZE`、`SUPERSEDE` 判断;
+- CLI と認証付き HTTP による競合解決;
+- scope で制限されたキュレーター権限とプロセス内 decision lease;
+- 権威を付与しない複数ラベルのトピック facet;
+- ランタイム遷移から生成される機械可読 ESM 仕様;
+- 決定論的評価、100% 行カバレッジ、Ring Zero mutation gate;
+- バージョン管理された L3 ベンチマーク履歴。
 
-### Admission path
+## 🏛️ アーキテクチャ概要
 
 ```text
-input / document / agent event
-→ classification and evidence
-→ Guardian + TruthGate
-→ L0/L1 operational memory
-→ admitted L3 canonical graph
+明示的な ingest
+→ 主張分類 + 証拠メタデータ
+→ L0/L1 の Observed 状態
+→ Guardian → TruthGate → 制限/矛盾チェック
+→ 多状態の物理 L3 グラフ
+
+公開クエリ
+→ 読み取り専用 retrieval
+→ 不変 TrustSnapshot
+→ Guardian + CanonicalView STRICT
+→ FactsPack + TRACE
+→ 回答 / 拒否 / Receipt
+
+未解決の矛盾
+→ 不変 ContradictionReport
+→ actor/役割/scope の認可 + decision lease
+→ キュレーターによる明示的判断 + 理由
+→ 監査可能な canonical 書き込み経路
+
+トピックによるナビゲーション
+→ 助言的な TopicFacet
+→ 絞り込み/分類のみ — Canon への登録には使わない
 ```
-
-### HTTP query path
-
-PR #265 で導入された HTTP query path は、admission path から明確に分離されています。
 
 ```text
-POST /ask, GET /receipt
-→ core.aio.arun()
-→ core.query_pipeline.query()
-→ existing Canon only
-→ CanonicalView
-→ answer / bounded refusal
+物理 L3 グラフ ≠ 厳格な Canon
+query ≠ ingest
+confidence ≠ 独立した証拠
+LLM 出力 ≠ 独立した事実情報源
+トピック関連度 ≠ 真実性
+ローカル lease ≠ 分散協調の保証
 ```
 
-これらの HTTP surface で質問しても、L0/L1 への ingest、ESM transition、
-L3 fact/edge write、outbox drain、episode link 記録、embedding fingerprint 初期化、
-adaptive verification state の変更は行われません。
+TruthGate は登録方針を適用するゲートであり、客観的真実を独立に知る
+オラクルではありません。厳格な Canon は、証拠、状態、ESM、処理制限に
+基づいて方針が許可した読み取り投影です。
 
-### 明示されている残余スコープ
+## 🛡️ 公開クエリの読み取り専用境界
 
-- CLI `ask` と `receipt` は、従来の admission-capable compatibility path を使用します;
-- `core.pipeline.run()` は引き続き利用可能です;
-- MCP には明示的な canonical write tool はありませんが、search により未設定の
-  embedding fingerprint が初期化される可能性があります。
+`HTTP /ask`、`HTTP /receipt`、`CLI ask`、`CLI receipt`、`MCP search` は
+`core.query_pipeline` を共有します。これらは事実を作成せず、ESM を遷移
+させず、L3 に書き込まず、outbox を処理せず、embedding fingerprint を
+初期化しません。
 
-詳細は英語の正本仕様
-[read-only-query-boundary.md](./docs/architecture/read-only-query-boundary.md) を参照してください。
+詳細は [Read-Only Query Boundary](./docs/architecture/read-only-query-boundary.md) を参照してください。
 
----
+## ⚖️ 矛盾の明示的な解決
 
-## 🧠 Memory model
+```bash
+python -m core.conflict_surfaces FACT_ID \
+  --disposition COEXIST \
+  --actor alice \
+  --reason "各主張は異なる文脈を説明している" \
+  --expected-report-id REPORT_ID
+```
 
-| Layer | 役割 | 境界 |
-|---|---|---|
-| **L0** | process 内 working cache | 高速・再構築可能 |
-| **L1** | SQLite/WAL operational memory | state、restriction、update |
-| **L2** | pending / curator review path | 自動で canonical にはならない |
-| **L3** | canonical graph | 自動登録は TruthGate 経由のみ |
-| **TRACE / Receipt** | proof layer | grounding を説明し drift を検出 |
+FastAPI の `POST /review/resolve-conflict` は、ホストアプリケーションの
+認証機構とともに登録する必要があります。`core.curator_auth` は actor、
+権限、scope を検証します。`CuratorLeaseRegistry` が保護できるのは単一
+プロセス内だけであり、分散構成では外部 lease アダプターが必要です。
 
-物理 graph には異なる truth status が存在し得ます。厳密な意味での Canon は、
-VERIFIED、TRACE-valid、policy-allowed な projection であり、graph backend に存在する
-すべての node を意味しません。
+[競合解決サーフェス](./docs/CONFLICT_RESOLUTION_SURFACES.md) と
+[トピック facet / curator IAM](./docs/TOPIC_FACETS_AND_CURATOR_IAM.md) を参照してください。
 
----
+## 🏷️ 助言的なトピック facet
+
+`core.topic_facets` は、ナビゲーション、絞り込み、分類のための正規化
+ラベルを提供します。スコアはトピック関連度のみを表し、truth status、
+証拠、ESM、厳格な Canon への所属を変更しません。
 
 ## 🚀 クイックスタート
 
@@ -109,145 +137,36 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -e '.[dev]'
 pytest tests/ --cov=. --cov-fail-under=100
-python scripts/eval_gate.py --out-dir eval-artifacts
 ```
 
-基本 CLI:
+## 📚 ドキュメント
 
-```bash
-velantrim ingest "Water boils at 100C at sea level"
-velantrim ask "how does water behave"
-velantrim receipt "how does water behave" > receipt.json
-velantrim verify-receipt receipt.json
-```
+- [ドキュメントマップ](./docs/DOCUMENTATION_MAP.md)
+- [現在の状態](./docs/STATUS.md)
+- [アーキテクチャ](./docs/ARCHITECTURE.md)
+- [テストレポート](./TEST_REPORT.md)
+- [評価](./docs/EVAL.md)
+- [NLnet の範囲](./docs/GRANT_NLNET_SCOPE.md)
 
-dependency-free な永続 L3 backend:
-
-```bash
-VELANTRIM_L3_BACKEND=sqlite \
-VELANTRIM_L3_PATH=./data/canon.db \
-velantrim ask "..."
-```
-
-段階的な手順は [docs/ja/QUICKSTART.md](./docs/ja/QUICKSTART.md) にあります。
-
----
-
-## 🔌 Optional interfaces
-
-### FastAPI
-
-```bash
-pip install '.[api]'
-velantrim-api
-```
-
-| Method | Path | Contract |
-|---|---|---|
-| `GET` | `/health` | liveness/readiness |
-| `POST` | `/ingest` | Guardian + TruthGate を通る admission |
-| `POST` | `/ask` | strict read-only canonical query |
-| `GET` | `/receipt?q=...` | read-only query + Receipt |
-| `POST` | `/verify-receipt` | 現在状態に対する Receipt replay |
-| `GET` | `/evidence/{fact_id}` | policy-aware evidence view |
-
-FastAPI と Uvicorn は optional extra です。default runtime は cloud service や
-外部 model provider を必須としません。
-
-### MCP
-
-```bash
-python -m core.mcp_server
-```
-
-MCP は search、memory report、fact history、conflict lookup、Receipt verification などの
-inspection-oriented tool を提供します。上記の fingerprint に関する残余境界は残ります。
-
----
-
-## 🧪 Evaluation
-
-Crystal には deterministic evaluation baseline が含まれています。
-
-- retrieval hit@k / MRR;
-- TRACE / metadata completeness;
-- source-span coverage;
-- Receipt replay survival;
-- contradiction precision / recall;
-- trust-boundary refusal check;
-- CI regression floor / ceiling。
-
-Titan の deterministic replay 実装は prior art として記録されていますが、
-Crystal runtime にコピーされてはいません。将来の実装は既存の Crystal evaluation stack を
-拡張し、offline・non-authoritative を維持し、funded baseline/delta rule を守る必要があります。
-
----
-
-## 💶 Grant boundary
-
-このプロジェクトは NLnet NGI0 Commons Fund に提出され、review 中です。
-公開 repository は、資金提供が決定したとは主張しません。
+## ✅ 検証済みベースライン
 
 ```text
-BASELINE TODAY
-    +
-MEASURABLE FUNDED DELTA
-    =
-INDEPENDENTLY VERIFIABLE DELIVERABLE
+Python 3.11: 1853 passed / 12 skipped
+Python 3.12: 1853 passed / 12 skipped
+Statements:  7236
+Coverage:    100.00%
+Mutation:    7/7 declared Ring Zero mutants killed
+CI jobs:     9
 ```
 
-merge 済みの作業は baseline であり、paid deliverable として再計上されません。
-新しい cognitive、neuromorphic、Titan mechanism が Crystal grant scope に暗黙に
-追加されることもありません。
+## 🚧 主張の範囲
 
-日本語概要: [docs/ja/GRANT_OVERVIEW.md](./docs/ja/GRANT_OVERVIEW.md)
+Crystal は、普遍的な真偽判定、あらゆる幻覚の排除、GDPR/セキュリティ認証、
+本番マルチテナント対応、人工意識、Titan/Full ExoCortex の実装を主張しません。
+現在の lease はプロセス内に限定されます。分散協調と外部 ID プロバイダー
+との統合は、独立した今後の作業です。
 
-正本となる英語文書:
+## 🤝 コントリビューションとライセンス
 
-- [docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)
-- [docs/grants/baseline-funded-delta-matrix.md](./docs/grants/baseline-funded-delta-matrix.md)
-- [docs/grants/funding-use-plan.md](./docs/grants/funding-use-plan.md)
-
----
-
-## ✅ Verification gates
-
-| Gate | 目的 |
-|---|---|
-| pytest + coverage | 100% line coverage を必須とする full suite |
-| Ruff | production / tooling code lint |
-| Gitleaks | committed secret 検出 |
-| Bandit | Python static security check |
-| pip-audit | dependency vulnerability report |
-| Docker build | hardened image の再現可能 build |
-| eval-gate | retrieval / grounding / contradiction regression control |
-| JSONL integrity | corpus structure / duplicate-id check |
-
-これらの control はリスクを低減しますが、あらゆる defect の不存在を証明せず、
-法的または security certification を構成しません。
-
----
-
-## 📚 日本語 reviewer path
-
-1. [docs/ja/REVIEWER_GUIDE.md](./docs/ja/REVIEWER_GUIDE.md)
-2. [docs/ja/QUICKSTART.md](./docs/ja/QUICKSTART.md)
-3. [docs/ja/STATUS.md](./docs/ja/STATUS.md)
-4. [docs/ja/GRANT_OVERVIEW.md](./docs/ja/GRANT_OVERVIEW.md)
-5. [docs/ja/GLOSSARY.md](./docs/ja/GLOSSARY.md)
-6. [TEST_REPORT.md](./TEST_REPORT.md) — 正本となる test evidence
-7. [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) — 正本となる architecture
-
----
-
-## ⚖️ License and contribution
-
-Crystal は **AGPL-3.0** で提供されます。[LICENSE](./LICENSE)、
-[CONTRIBUTING.md](./CONTRIBUTING.md)、[GOVERNANCE.md](./GOVERNANCE.md)、
-[SECURITY.md](./SECURITY.md)、[PRIVACY.md](./PRIVACY.md) を参照してください。
-
-> **📊 Canon = admitted truth** · **🔗 Provenance = trust** · **🏠 Local-first = control**
-
----
-
-> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 **日本語** · 🇮🇳 [हिन्दी](./README.hi.md)
+[CONTRIBUTING.md](./CONTRIBUTING.md)、[SECURITY.md](./SECURITY.md)、
+[GOVERNANCE.md](./GOVERNANCE.md)、[AGPL-3.0](./LICENSE) を参照してください。

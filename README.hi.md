@@ -1,104 +1,135 @@
 # 🔱 Velantrim ExoCortex — Crystal
 
-> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 **हिन्दी**  
-> 📚 [German documentation](./docs/de/README.md) · [Documentation française](./docs/fr/README.md) · [Documentación en español](./docs/es/README.md) · [Documentazione italiana](./docs/it/README.md) · [Документация на русском](./docs/ru/README.md) · [简体中文文档](./docs/zh-CN/README.md) · [التوثيق العربي](./docs/ar/README.md) · [日本語ドキュメント](./docs/ja/README.md) · [हिन्दी दस्तावेज़](./docs/hi/README.md)
+> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 **हिन्दी**
 
-### *विश्वसनीय AI के लिए सत्यापनीय, local-first और open-source memory infrastructure*
+### विश्वसनीय AI प्रणालियों के लिए सत्यापनीय, स्थानीय-प्रथम स्मृति अवसंरचना
 
-`v0.3.0` · 🧪 **1713 passed / 12 skipped** · 🎯 **100% coverage** · 🐍 **pure-stdlib default runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v0.3.0` · 🧪 **1853 परीक्षण सफल / 12 छोड़े गए** · 🎯 **100% कवरेज** · 🧬 **घोषित 7/7 म्यूटेंट पकड़े गए** · ✅ **9 CI कार्य** · 🐍 **डिफ़ॉल्ट रनटाइम केवल Python मानक लाइब्रेरी पर** · ⚖️ **AGPL-3.0**
 
-> Crystal केवल chatbot नहीं, बल्कि एक सत्यापनीय memory layer है।
-> प्रत्येक fact के साथ source, epistemic state और provenance metadata जुड़े होते हैं।
-> canonical graph में automatic admission को Guardian + TruthGate नियंत्रित करते हैं।
+> Crystal कोई दूसरा चैटबॉट नहीं है। यह स्मृति, प्रमाण और निर्णय की सीमा है, जो
+> दर्ज करती है कि कोई दावा क्या है, उसका स्रोत क्या है, उसकी ज्ञानमीमांसात्मक
+> अवस्था क्या है, क्या वह उत्तर का आधार बन सकता है, और विरोधाभास को किस स्पष्ट
+> निर्णय से सुलझाया गया।
 
-> **प्रामाणिक स्रोत:** implementation और grant से संबंधित अंतिम authoritative source GitHub `main` पर अंग्रेज़ी दस्तावेज़ हैं।
-> यह हिन्दी संस्करण हिन्दी-भाषी reviewer और contributor के लिए अनुरक्षित अनुवाद है।
-> किसी अंतर की स्थिति में अंग्रेज़ी दस्तावेज़ और [TEST_REPORT.md](./TEST_REPORT.md) प्राथमिक होंगे।
+**सत्यापित रनटाइम चेकपॉइंट:** `f91299c44a1a1850fa516f3abb96c916326f7a8c` — PR #302 मर्ज किया गया।  
+**सटीक प्रमाण:** [TEST_REPORT.md](./TEST_REPORT.md) और
+[मशीन-पठनीय implementation manifest](./docs/status/implementation-manifest.json)।
+
+> यह अनुवाद अंग्रेज़ी README की वही कार्यात्मक, सुरक्षा और स्थिति सीमाएँ रखता
+> है। स्थिर API पहचानकर्ता कोड वाली मूल वर्तनी में रखे गए हैं, जबकि व्याख्या
+> स्वाभाविक हिन्दी में लिखी गई है।
 
 ---
 
-## 🧭 एक मिनट में Crystal
+## 🎯 Crystal की आवश्यकता क्यों है
 
-Crystal, Velantrim का सार्वजनिक और grant-facing core है।
-
-- local L0/L1 operational memory;
-- local L3 canonical graph backend;
-- Guardian और TruthGate द्वारा admission control;
-- CanonicalView द्वारा grounding;
-- TRACE, provenance और replayable Receipt;
-- evidence span, review queue और import session;
-- GDPR-संबंधित erasure और processing-restriction mechanisms;
-- deterministic evaluation और CI quality gate;
-- optional FastAPI और read-oriented MCP surface।
-
-Crystal **Titan**, पूर्ण Personal Exo-Cortex, autonomous cognitive OS,
-consciousness project या self-modifying agent नहीं है। Research ideas भविष्य के RFC को प्रभावित कर सकती हैं,
-लेकिन वे वर्तमान runtime capability नहीं हैं।
+कई AI प्रणालियाँ स्रोत दस्तावेज़, उपयोगकर्ता के दावे, मॉडल आउटपुट, परिकल्पनाएँ,
+प्राप्त अंश और दीर्घकालिक स्मृति को एक ही संदर्भ या वेक्टर स्टोर में मिला देती
+हैं। इससे धाराप्रवाह पाठ को ऐसा अधिकार मिल सकता है जिसे उसके प्रमाण समर्थन नहीं
+करते।
 
 ```text
-GitHub Crystal main = सार्वजनिक implementation का authoritative source
-Notion Crystal       = synchronized strategy / grant map
-Titan / Full         = अलग research track
+प्रभावशाली दावा अपने-आप विश्वसनीय नहीं होता।
+ग्राफ का नोड अपने-आप कठोर Canon नहीं होता।
+Retrieval score प्रमाण नहीं है।
+मॉडल आउटपुट स्वतंत्र स्रोत नहीं है।
+विरोधाभास स्वयं विजेता नहीं चुनता।
+विषय-लेबल सत्य का निर्णय नहीं है।
 ```
 
----
+## 🧠 मुख्य क्षमताएँ
 
-## 🛡️ Trust boundary
+- प्रकारबद्ध दावे और स्पष्ट ज्ञानमीमांसात्मक जीवनचक्र;
+- स्रोत, evidence span और provenance मेटाडेटा;
+- Guardian और TruthGate प्रवेश सीमाएँ;
+- कठोर Canon से अलग बहु-अवस्था भौतिक L3 ग्राफ;
+- अपरिवर्तनीय और deny-dominant `TrustSnapshot` पठन-सामंजस्य;
+- केवल-पठन वाली सार्वजनिक HTTP, CLI और MCP क्वेरी;
+- TRACE और पुनःचलाने योग्य, छेड़छाड़-पहचानने वाले Receipt;
+- प्रसंस्करण प्रतिबंध, मिटाना, ऑडिट और आयात सत्र;
+- समीक्षा कतारें और फिर से शुरू किए जा सकने वाले समीक्षा सत्र;
+- प्रकारबद्ध, अपरिवर्तनीय विरोधाभास रिपोर्ट;
+- स्पष्ट `COEXIST`, `CONTEXTUALIZE` और `SUPERSEDE` निर्णय;
+- CLI और प्रमाणीकृत HTTP से संघर्ष समाधान;
+- scope-सीमित क्यूरेटर भूमिकाएँ और प्रक्रिया-स्थानीय decision lease;
+- अधिकार न देने वाले बहु-लेबल विषय facet;
+- रनटाइम संक्रमणों से बनी मशीन-पठनीय ESM विनिर्देश;
+- नियतात्मक मूल्यांकन, 100% पंक्ति कवरेज और Ring Zero mutation gate;
+- संस्करणबद्ध L3 बेंचमार्क इतिहास।
 
-### Admission path
+## 🏛️ स्थापत्य अवलोकन
 
 ```text
-input / document / agent event
-→ classification and evidence
-→ Guardian + TruthGate
-→ L0/L1 operational memory
-→ admitted L3 canonical graph
+स्पष्ट ingest
+→ दावे का वर्गीकरण + प्रमाण मेटाडेटा
+→ L0/L1 में Observed अवस्था
+→ Guardian → TruthGate → प्रतिबंध/विरोधाभास जाँच
+→ बहु-अवस्था भौतिक L3 ग्राफ
+
+सार्वजनिक क्वेरी
+→ केवल-पठन retrieval
+→ अपरिवर्तनीय TrustSnapshot
+→ Guardian + CanonicalView STRICT
+→ FactsPack + TRACE
+→ उत्तर / अस्वीकार / Receipt
+
+अनसुलझा विरोधाभास
+→ अपरिवर्तनीय ContradictionReport
+→ actor/भूमिका/scope प्राधिकरण + decision lease
+→ क्यूरेटर का स्पष्ट निर्णय + कारण
+→ ऑडिट योग्य canonical लेखन पथ
+
+विषय-आधारित नेविगेशन
+→ सलाहकारी TopicFacet
+→ केवल फ़िल्टर/समूह — Canon में प्रवेश नहीं
 ```
-
-### HTTP query path
-
-PR #265 में जोड़ा गया HTTP query path, admission path से स्पष्ट रूप से अलग है।
 
 ```text
-POST /ask, GET /receipt
-→ core.aio.arun()
-→ core.query_pipeline.query()
-→ existing Canon only
-→ CanonicalView
-→ answer / bounded refusal
+भौतिक L3 ग्राफ ≠ कठोर Canon
+query ≠ ingest
+confidence ≠ स्वतंत्र प्रमाण
+LLM आउटपुट ≠ स्वतंत्र तथ्य-स्रोत
+विषय-संबंधिता ≠ सत्य
+स्थानीय lease ≠ वितरित समन्वय की गारंटी
 ```
 
-इन HTTP surfaces पर प्रश्न करने से L0/L1 ingest, ESM transition,
-L3 fact/edge write, outbox drain, episode link recording, embedding fingerprint initialization
-या adaptive verification state में परिवर्तन नहीं होता।
+TruthGate प्रवेश-नीति का द्वार है, वस्तुनिष्ठ सत्य को स्वतंत्र रूप से जानने वाला
+oracle नहीं। कठोर Canon प्रमाण, स्थिति, ESM और प्रसंस्करण प्रतिबंधों पर आधारित
+नीति-अनुमत पठन projection है।
 
-### स्पष्ट residual scope
+## 🛡️ सार्वजनिक केवल-पठन क्वेरी सीमा
 
-- CLI `ask` और `receipt` legacy admission-capable compatibility path का उपयोग करते हैं;
-- `core.pipeline.run()` उपलब्ध रहता है;
-- MCP में कोई explicit canonical write tool नहीं है, पर search किसी unset embedding fingerprint को initialize कर सकता है।
+`HTTP /ask`, `HTTP /receipt`, `CLI ask`, `CLI receipt` और `MCP search`
+`core.query_pipeline` साझा करते हैं। वे तथ्य नहीं बनाते, ESM नहीं बदलते, L3 में
+नहीं लिखते, outbox नहीं चलाते और embedding fingerprint प्रारंभ नहीं करते।
 
-विवरण के लिए authoritative अंग्रेज़ी specification
-[read-only-query-boundary.md](./docs/architecture/read-only-query-boundary.md) देखें।
+विवरण: [Read-Only Query Boundary](./docs/architecture/read-only-query-boundary.md)।
 
----
+## ⚖️ विरोधाभास का स्पष्ट समाधान
 
-## 🧠 Memory model
+```bash
+python -m core.conflict_surfaces FACT_ID \
+  --disposition COEXIST \
+  --actor alice \
+  --reason "दावे अलग संदर्भों का वर्णन करते हैं" \
+  --expected-report-id REPORT_ID
+```
 
-| Layer | भूमिका | सीमा |
-|---|---|---|
-| **L0** | process के भीतर working cache | तेज़, पुनर्निर्माण योग्य |
-| **L1** | SQLite/WAL operational memory | state, restriction, update |
-| **L2** | pending / curator review path | स्वतः canonical नहीं बनता |
-| **L3** | canonical graph | automatic admission केवल TruthGate से |
-| **TRACE / Receipt** | proof layer | grounding समझाता है और drift पहचानता है |
+FastAPI में `POST /review/resolve-conflict` को होस्ट अनुप्रयोग की प्रमाणीकरण
+व्यवस्था के साथ पंजीकृत करना आवश्यक है। `core.curator_auth` actor, क्षमता और
+scope जाँचता है। `CuratorLeaseRegistry` केवल एक प्रक्रिया की रक्षा करता है;
+वितरित तैनाती के लिए बाहरी lease adapter आवश्यक है।
 
-Physical graph में अलग-अलग truth status मौजूद हो सकते हैं। कठोर अर्थ में Canon,
-VERIFIED, TRACE-valid और policy-allowed projection है; इसका अर्थ graph backend में मौजूद हर node नहीं है।
+देखें [Conflict-resolution surfaces](./docs/CONFLICT_RESOLUTION_SURFACES.md) और
+[Topic facets and curator IAM](./docs/TOPIC_FACETS_AND_CURATOR_IAM.md)।
 
----
+## 🏷️ सलाहकारी विषय facet
 
-## 🚀 Quickstart
+`core.topic_facets` नेविगेशन, फ़िल्टर और समूह बनाने के लिए सामान्यीकृत लेबल देता
+है। score केवल विषय-संबंधिता दर्शाता है; वह truth status, प्रमाण, ESM या कठोर
+Canon सदस्यता नहीं बदलता।
+
+## 🚀 त्वरित आरंभ
 
 ```bash
 git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
@@ -107,142 +138,36 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -e '.[dev]'
 pytest tests/ --cov=. --cov-fail-under=100
-python scripts/eval_gate.py --out-dir eval-artifacts
 ```
 
-मूल CLI:
+## 📚 दस्तावेज़
 
-```bash
-velantrim ingest "Water boils at 100C at sea level"
-velantrim ask "how does water behave"
-velantrim receipt "how does water behave" > receipt.json
-velantrim verify-receipt receipt.json
-```
+- [दस्तावेज़ मानचित्र](./docs/DOCUMENTATION_MAP.md)
+- [वर्तमान स्थिति](./docs/STATUS.md)
+- [स्थापत्य](./docs/ARCHITECTURE.md)
+- [परीक्षण रिपोर्ट](./TEST_REPORT.md)
+- [मूल्यांकन](./docs/EVAL.md)
+- [NLnet दायरा](./docs/GRANT_NLNET_SCOPE.md)
 
-dependency-free persistent L3 backend:
-
-```bash
-VELANTRIM_L3_BACKEND=sqlite \
-VELANTRIM_L3_PATH=./data/canon.db \
-velantrim ask "..."
-```
-
-चरणबद्ध निर्देश [docs/hi/QUICKSTART.md](./docs/hi/QUICKSTART.md) में हैं।
-
----
-
-## 🔌 Optional interfaces
-
-### FastAPI
-
-```bash
-pip install '.[api]'
-velantrim-api
-```
-
-| Method | Path | Contract |
-|---|---|---|
-| `GET` | `/health` | liveness/readiness |
-| `POST` | `/ingest` | Guardian + TruthGate से गुजरने वाला admission |
-| `POST` | `/ask` | strict read-only canonical query |
-| `GET` | `/receipt?q=...` | read-only query + Receipt |
-| `POST` | `/verify-receipt` | वर्तमान state के विरुद्ध Receipt replay |
-| `GET` | `/evidence/{fact_id}` | policy-aware evidence view |
-
-FastAPI और Uvicorn optional extras हैं। Default runtime को cloud service या external model provider की आवश्यकता नहीं है।
-
-### MCP
-
-```bash
-python -m core.mcp_server
-```
-
-MCP search, memory report, fact history, conflict lookup और Receipt verification जैसे
-inspection-oriented tools देता है। ऊपर बताई गई fingerprint residual boundary बनी रहती है।
-
----
-
-## 🧪 Evaluation
-
-Crystal में deterministic evaluation baseline शामिल है।
-
-- retrieval hit@k / MRR;
-- TRACE / metadata completeness;
-- source-span coverage;
-- Receipt replay survival;
-- contradiction precision / recall;
-- trust-boundary refusal checks;
-- CI regression floor / ceiling।
-
-Titan की deterministic replay implementation को prior art के रूप में दर्ज किया गया है,
-लेकिन उसे Crystal runtime में copy नहीं किया गया है। कोई भविष्य implementation मौजूदा Crystal evaluation stack को
-extend करेगी, offline और non-authoritative रहेगी, और funded baseline/delta rule का पालन करेगी।
-
----
-
-## 💶 Grant boundary
-
-यह project NLnet NGI0 Commons Fund में submit किया गया है और review में है।
-Public repository यह दावा नहीं करती कि funding award हो चुकी है।
+## ✅ सत्यापित आधाररेखा
 
 ```text
-BASELINE TODAY
-    +
-MEASURABLE FUNDED DELTA
-    =
-INDEPENDENTLY VERIFIABLE DELIVERABLE
+Python 3.11: 1853 passed / 12 skipped
+Python 3.12: 1853 passed / 12 skipped
+Statements:  7236
+Coverage:    100.00%
+Mutation:    7/7 declared Ring Zero mutants killed
+CI jobs:     9
 ```
 
-पहले से merged कार्य baseline है और उसे paid deliverable के रूप में दोबारा नहीं गिना जाता।
-कोई नया cognitive, neuromorphic या Titan mechanism स्वतः Crystal grant scope में नहीं जुड़ता।
+## 🚧 दावों की सीमा
 
-हिन्दी overview: [docs/hi/GRANT_OVERVIEW.md](./docs/hi/GRANT_OVERVIEW.md)
+Crystal सार्वभौमिक सत्य-पहचान, सभी hallucination का अंत, GDPR या सुरक्षा
+प्रमाणीकरण, production multi-tenant readiness, कृत्रिम चेतना या Titan/Full
+ExoCortex लागू करने का दावा नहीं करता। वर्तमान lease केवल एक प्रक्रिया तक
+सीमित हैं; वितरित समन्वय और बाहरी पहचान प्रदाता का एकीकरण स्वतंत्र भावी कार्य हैं।
 
-Authoritative अंग्रेज़ी दस्तावेज़:
+## 🤝 योगदान और लाइसेंस
 
-- [docs/GRANT_NLNET_SCOPE.md](./docs/GRANT_NLNET_SCOPE.md)
-- [docs/grants/baseline-funded-delta-matrix.md](./docs/grants/baseline-funded-delta-matrix.md)
-- [docs/grants/funding-use-plan.md](./docs/grants/funding-use-plan.md)
-
----
-
-## ✅ Verification gates
-
-| Gate | उद्देश्य |
-|---|---|
-| pytest + coverage | 100% line coverage वाला full suite |
-| Ruff | production / tooling code lint |
-| Gitleaks | committed secrets की पहचान |
-| Bandit | Python static security check |
-| pip-audit | dependency vulnerability report |
-| Docker build | hardened image का reproducible build |
-| eval-gate | retrieval / grounding / contradiction regression control |
-| JSONL integrity | corpus structure / duplicate-id check |
-
-ये controls जोखिम घटाते हैं, लेकिन सभी defects की अनुपस्थिति सिद्ध नहीं करते और न ही legal या security certification बनते हैं।
-
----
-
-## 📚 हिन्दी reviewer path
-
-1. [docs/hi/REVIEWER_GUIDE.md](./docs/hi/REVIEWER_GUIDE.md)
-2. [docs/hi/QUICKSTART.md](./docs/hi/QUICKSTART.md)
-3. [docs/hi/STATUS.md](./docs/hi/STATUS.md)
-4. [docs/hi/GRANT_OVERVIEW.md](./docs/hi/GRANT_OVERVIEW.md)
-5. [docs/hi/GLOSSARY.md](./docs/hi/GLOSSARY.md)
-6. [TEST_REPORT.md](./TEST_REPORT.md) — authoritative test evidence
-7. [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) — authoritative architecture
-
----
-
-## ⚖️ License and contribution
-
-Crystal **AGPL-3.0** के अंतर्गत उपलब्ध है। [LICENSE](./LICENSE),
-[CONTRIBUTING.md](./CONTRIBUTING.md), [GOVERNANCE.md](./GOVERNANCE.md),
-[SECURITY.md](./SECURITY.md) और [PRIVACY.md](./PRIVACY.md) देखें।
-
-> **📊 Canon = admitted truth** · **🔗 Provenance = trust** · **🏠 Local-first = control**
-
----
-
-> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 **हिन्दी**
+[CONTRIBUTING.md](./CONTRIBUTING.md), [SECURITY.md](./SECURITY.md),
+[GOVERNANCE.md](./GOVERNANCE.md) और [AGPL-3.0](./LICENSE) देखें।
