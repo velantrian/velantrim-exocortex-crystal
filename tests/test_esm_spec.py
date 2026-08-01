@@ -16,10 +16,13 @@ def test_active_spec_is_valid_deterministic_json_and_fresh():
         "valid": True,
         "errors": [],
         "state_count": 8,
-        "terminal_count": 3,
-        "transition_count": 19,
+        "terminal_count": 2,
+        "transition_count": 15,
         "reachable_states": sorted(first["states"]),
     }
+    assert first["default_entry_states"] == ["Observed"]
+    assert first["terminal_states"] == ["Collapsed", "ImmutableCore"]
+    assert first["protected_fact_ids"] == ["RING_ZERO", "VALUES_CORE"]
     assert len(first["sha256"]) == 64
     assert json.loads(json.dumps(first)) == first
 
@@ -29,6 +32,7 @@ def test_active_spec_is_valid_deterministic_json_and_fresh():
 
 def test_transition_queries_fail_closed_and_find_shortest_paths():
     assert esm.transition_allowed("Observed", "Validated") is True
+    assert esm.transition_allowed("Validated", "ImmutableCore") is True
     assert esm.transition_allowed("Validated", "Hypothesized") is False
     assert esm.transition_allowed("Unknown", "Validated") is False
     assert esm.transition_allowed([], "Validated") is False
@@ -37,6 +41,7 @@ def test_transition_queries_fail_closed_and_find_shortest_paths():
     assert esm.shortest_transition_path("Observed", "Observed") == ["Observed"]
     assert esm.shortest_transition_path("Observed", "Deprecated") == [
         "Observed",
+        "Validated",
         "Contradicted",
         "Deprecated",
     ]
@@ -96,40 +101,34 @@ def test_state_record_validation_is_read_only_and_preserves_only_safe_state_shap
 
 def test_validator_reports_empty_and_malformed_state_universes(monkeypatch):
     monkeypatch.setattr(esm, "ESM_STATES", frozenset())
-    monkeypatch.setattr(esm, "TERMINAL_STATES", frozenset())
-    monkeypatch.setattr(esm, "ENTRY_STATES", frozenset())
-    monkeypatch.setattr(esm, "ISOLATED_ENTRY_STATES", frozenset())
-    monkeypatch.setattr(esm, "_ALLOWED_TRANSITIONS", {})
+    monkeypatch.setattr(esm, "DEFAULT_ENTRY_STATES", frozenset())
+    monkeypatch.setattr(esm, "IMMUTABLE_FACT_IDS", frozenset())
+    monkeypatch.setattr(esm, "ESM_TRANSITIONS", {})
 
     empty = esm.validate_esm_spec()
     assert empty["valid"] is False
     assert "ESM_STATES must not be empty" in empty["errors"]
 
     monkeypatch.setattr(esm, "ESM_STATES", frozenset({"Observed", " "}))
-    monkeypatch.setattr(esm, "ENTRY_STATES", frozenset({"Observed"}))
-    monkeypatch.setattr(esm, "_ALLOWED_TRANSITIONS", {"Observed": frozenset({" "})})
+    monkeypatch.setattr(esm, "DEFAULT_ENTRY_STATES", frozenset({"Observed"}))
+    monkeypatch.setattr(esm, "ESM_TRANSITIONS", {"Observed": {" "}, " ": set()})
     malformed = esm.validate_esm_spec()
     assert "every ESM state must be a non-blank string" in malformed["errors"]
 
 
-def test_validator_reports_all_structural_transition_failures(monkeypatch):
-    states = frozenset(
-        {"Observed", "Validated", "Deprecated", "ImmutableCore", "Orphan"}
-    )
+def test_validator_reports_structural_transition_failures(monkeypatch):
+    states = frozenset({"Observed", "Validated", "Collapsed", "Orphan"})
     monkeypatch.setattr(esm, "ESM_STATES", states)
-    monkeypatch.setattr(esm, "TERMINAL_STATES", frozenset({"Deprecated", "ImmutableCore"}))
-    monkeypatch.setattr(esm, "ENTRY_STATES", frozenset({"Observed", "ImmutableCore"}))
-    monkeypatch.setattr(esm, "ISOLATED_ENTRY_STATES", frozenset({"ImmutableCore"}))
+    monkeypatch.setattr(esm, "DEFAULT_ENTRY_STATES", frozenset({"Observed"}))
+    monkeypatch.setattr(esm, "IMMUTABLE_FACT_IDS", frozenset({"RING_ZERO"}))
     monkeypatch.setattr(
         esm,
-        "_ALLOWED_TRANSITIONS",
+        "ESM_TRANSITIONS",
         {
-            "Observed": frozenset(
-                {"Observed", "Validated", "ImmutableCore", "Unknown"}
-            ),
-            "Validated": ["Deprecated"],
-            "Deprecated": frozenset({"Validated"}),
-            "Extra": frozenset({"Validated"}),
+            "Observed": {"Observed", "Validated", "Unknown"},
+            "Validated": ["Collapsed"],
+            "Extra": {"Collapsed"},
+            "Collapsed": set(),
         },
     )
 
@@ -141,18 +140,15 @@ def test_validator_reports_all_structural_transition_failures(monkeypatch):
     assert "targets for 'Validated' must be a set/frozenset" in text
     assert "unknown targets: Unknown" in text
     assert "self-transition is not allowed for 'Observed'" in text
-    assert "terminal state 'Deprecated' must have no outgoing transitions" in text
-    assert "states unreachable from declared entry states: Orphan" in text
-    assert "ImmutableCore must be created explicitly" in text
+    assert "states unreachable from declared default entry states: Orphan" in text
 
 
-def test_validator_reports_invalid_terminal_and_entry_subsets(monkeypatch):
+def test_validator_reports_invalid_entries_and_protected_ids(monkeypatch):
     monkeypatch.setattr(esm, "ESM_STATES", frozenset({"Observed"}))
-    monkeypatch.setattr(esm, "TERMINAL_STATES", frozenset({"MissingTerminal"}))
-    monkeypatch.setattr(esm, "ENTRY_STATES", frozenset({"MissingEntry"}))
-    monkeypatch.setattr(esm, "ISOLATED_ENTRY_STATES", frozenset())
-    monkeypatch.setattr(esm, "_ALLOWED_TRANSITIONS", {})
+    monkeypatch.setattr(esm, "DEFAULT_ENTRY_STATES", frozenset({"MissingEntry"}))
+    monkeypatch.setattr(esm, "IMMUTABLE_FACT_IDS", frozenset({" "}))
+    monkeypatch.setattr(esm, "ESM_TRANSITIONS", {"Observed": set()})
 
     report = esm.validate_esm_spec()
-    assert "TERMINAL_STATES must be a subset of ESM_STATES" in report["errors"]
-    assert "ENTRY_STATES must be a subset of ESM_STATES" in report["errors"]
+    assert "DEFAULT_ENTRY_STATES must be a subset of ESM_STATES" in report["errors"]
+    assert "IMMUTABLE_FACT_IDS must contain only non-blank strings" in report["errors"]
