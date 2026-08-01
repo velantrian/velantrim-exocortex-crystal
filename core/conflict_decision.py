@@ -116,7 +116,7 @@ def apply_conflict_decision(
     """
     try:
         selected = ConflictDisposition(disposition)
-    except ValueError:
+    except (TypeError, ValueError):
         return {"applied": False, "reason": "unknown conflict disposition"}
 
     fact_id = fact.get("fact_id")
@@ -218,6 +218,9 @@ def apply_conflict_decision(
                 deprecated = False
             if not deprecated:
                 partial_targets.append(target_id)
+                partial_props = dict(edge_props)
+                partial_props["partial_supersede"] = True
+                graph.add_edge(fact_id, REL_CONTRADICTS, target_id, partial_props)
                 continue
             old_l1 = get_fact(target_id)
             old_l3 = graph.get_fact(target_id) or {}
