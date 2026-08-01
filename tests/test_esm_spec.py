@@ -137,6 +137,7 @@ def test_validator_reports_structural_transition_failures(monkeypatch):
 
     assert report["valid"] is False
     assert "unknown source states: Extra" in text
+    assert "missing source states: Orphan" in text
     assert "targets for 'Validated' must be a set/frozenset" in text
     assert "unknown targets: Unknown" in text
     assert "self-transition is not allowed for 'Observed'" in text
