@@ -15,7 +15,7 @@ Failed:               0
 Measured statements:  7051
 Coverage:              100.00% coverage
 Ring Zero mutation:   7/7 declared mutants killed
-Permanent CI jobs:    9
+CI topology:          9 permanent CI jobs
 ```
 
 ## Permanent CI jobs
