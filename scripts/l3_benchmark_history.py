@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import json
+import math
 from pathlib import Path
 import sys
 from typing import Any, Mapping, Optional, Sequence
@@ -55,6 +56,8 @@ def _number(value: Any, field: str, *, minimum: float = 0.0) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise ValueError(f"{field} must be numeric")
     result = float(value)
+    if not math.isfinite(result):
+        raise ValueError(f"{field} must be finite")
     if result < minimum:
         raise ValueError(f"{field} must be >= {minimum}")
     return result
@@ -137,6 +140,7 @@ def pack_history(
         for field in _RUN_FIELDS
         if run_metadata is not None
         and field in run_metadata
+        and run_metadata[field] is not None
         and str(run_metadata[field]).strip()
     }
     return {
