@@ -3,17 +3,17 @@
   "status_date": "2026-08-01",
   "version": "0.3.0",
   "verified_runtime_checkpoint": {
-    "commit": "b10a7446dc6c88fd319161ac983263554f93107b",
-    "short": "b10a744",
-    "pull_request": 300,
-    "description": "Explicit CLI and authenticated HTTP conflict-resolution surfaces on top of read-only queries, immutable trust snapshots, contradiction decisions, ESM specification and performance history"
+    "commit": "f91299c44a1a1850fa516f3abb96c916326f7a8c",
+    "short": "f91299c",
+    "pull_request": 302,
+    "description": "Advisory multi-label topic facets, scoped curator roles and capabilities, and process-local decision leases on top of the verified conflict-resolution runtime"
   },
   "tests": {
     "python_versions": ["3.11", "3.12"],
-    "passed": 1838,
+    "passed": 1853,
     "skipped": 12,
     "failed": 0,
-    "measured_statements": 7051,
+    "measured_statements": 7236,
     "coverage_percent": 100.0
   },
   "ci": {
@@ -43,6 +43,11 @@
     "explicit_conflict_decisions": true,
     "public_conflict_resolution_cli": true,
     "public_conflict_resolution_http": true,
+    "advisory_topic_facets": true,
+    "topic_facets_authoritative": false,
+    "scoped_curator_authorization": true,
+    "process_local_decision_leases": true,
+    "distributed_decision_lease_adapter": false,
     "machine_readable_esm_spec": true,
     "scheduled_performance_history": true,
     "resumable_review_sessions": true,
