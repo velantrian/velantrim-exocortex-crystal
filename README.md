@@ -289,8 +289,8 @@ VELANTRIM_L3_PATH=./data/canon.db \
 velantrim ask "..."
 ```
 
-See the full [Quickstart](./docs/QUICKSTART.md) and reproducible
-[Reviewer Demo](./docs/REVIEWER_DEMO.md).
+See the reproducible [Reviewer Demo](./docs/REVIEWER_DEMO.md) and
+[CLI demonstration](./docs/DEMO.md).
 
 ---
 
