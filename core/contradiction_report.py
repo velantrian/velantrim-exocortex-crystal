@@ -117,9 +117,19 @@ class ContradictionReport:
             ref = ConflictReference.from_candidate(candidate)
             if ref.fact_id == candidate_fact_id:
                 continue
-            # Stable first-seen semantics: duplicate retrieval hits cannot inflate
-            # the report or create repeated audit identifiers.
-            refs_by_id.setdefault(ref.fact_id, ref)
+            # Duplicate retrieval hits cannot inflate the report. Selection is
+            # deterministic and order-independent: retain the lexicographic max
+            # of score/kind/signal for the same fact id. This selects report
+            # metadata only; it never selects an epistemic winner.
+            current = refs_by_id.get(ref.fact_id)
+            current_key = (
+                current.similarity,
+                current.kind,
+                current.signal or "",
+            ) if current is not None else None
+            ref_key = (ref.similarity, ref.kind, ref.signal or "")
+            if current_key is None or ref_key > current_key:
+                refs_by_id[ref.fact_id] = ref
         refs = tuple(sorted(refs_by_id.values(), key=lambda ref: ref.fact_id))
         if not refs:
             raise ValueError("ContradictionReport requires at least one conflict")
