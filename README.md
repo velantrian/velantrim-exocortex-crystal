@@ -61,42 +61,176 @@ A topic label is not a truth verdict.
 
 ## 🏛️ Architecture at a glance
 
+The three maps below show the same system from complementary viewpoints:
+**purpose**, **information flow**, and **module relationships**.
+
+### 🧠 Mindmap — purpose and capability boundaries
+
 ```text
-Input / explicit ingest
-        ↓
-claim classification + evidence metadata
-        ↓
-L0/L1 Observed state
-        ↓
-Guardian → TruthGate → restriction/contradiction checks
-        ↓
-physical L3 multi-status graph
+🧠 Velantrim ExoCortex — Crystal
+│
+├── 🎯 Purpose
+│   ├── Verifiable memory for AI
+│   ├── Local-first trust infrastructure
+│   └── Evidence-backed answers and decisions
+│
+├── 🏛️ Memory Model
+│   ├── L0 — in-process working cache
+│   ├── L1 — operational lifecycle memory
+│   ├── L2 — pending and review boundary
+│   └── L3 — graph-backed multi-status memory
+│
+├── 🛡️ Trust Boundary
+│   ├── Guardian — structural and policy checks
+│   ├── TruthGate — admission-policy boundary
+│   ├── TrustSnapshot — immutable read reconciliation
+│   └── CanonicalView — strict trusted projection
+│
+├── 📜 Evidence and Auditability
+│   ├── Provenance and evidence spans
+│   ├── TRACE — grounding lineage
+│   └── Receipt — replay and tamper evidence
+│
+├── ⚖️ Review and Contradictions
+│   ├── Review queues and resumable sessions
+│   ├── Immutable ContradictionReport
+│   ├── COEXIST
+│   ├── CONTEXTUALIZE
+│   └── SUPERSEDE
+│
+├── 🏷️ Advisory Navigation
+│   └── TopicFacet — multi-label, non-authoritative metadata
+│
+├── 🔐 Governance and Coordination
+│   ├── Scoped curator roles and capabilities
+│   ├── Authenticated actor binding
+│   └── Process-local decision leases
+│
+└── 📊 Verification
+    ├── Deterministic tests and evaluation
+    ├── 100% line coverage
+    ├── Ring Zero mutation gate
+    └── Versioned benchmark history
+```
 
-public query/search
-        ↓ read only
-candidate retrieval
-        ↓
-immutable TrustSnapshot
-        ↓
-Guardian + CanonicalView STRICT
-        ↓
-FactsPack + TRACE → answer / refusal / Receipt
+### 🏗️ ASCII architecture — how information moves
 
-unresolved contradiction
-        ↓
-immutable ContradictionReport
-        ↓
-actor/scoped role authorization + decision lease
-        ↓
-explicit curator disposition + reason
-        ↓
-audited canonical write path
+```text
+┌─────────────────────────────────────────────────────────────────────┐
+│              🔱 Velantrim ExoCortex — Crystal                      │
+│      Local-first verifiable memory infrastructure for AI           │
+└─────────────────────────────────────────────────────────────────────┘
 
-topic navigation
-        ↓
-advisory TopicFacet metadata
-        ↓
-filtering/grouping only — never Canon admission
+                         📥 Explicit ingest
+                                │
+                                ▼
+                 🧾 Claim type + source + evidence span
+                                │
+                                ▼
+                      🧠 L0 / L1 Observed state
+                                │
+                                ▼
+             🛡️ Guardian ──► ⚖️ TruthGate ──► 🚧 restrictions
+                                │
+                  ┌─────────────┴─────────────┐
+                  │                           │
+                  ▼                           ▼
+        ⏳ L2 pending / review       🏛️ Physical L3 graph
+                  │                           │
+                  │                           ▼
+                  │                 📜 provenance / TRACE
+                  │                           │
+                  └─────────────┬─────────────┘
+                                │
+                                ▼
+                    📐 Immutable TrustSnapshot
+                                │
+                                ▼
+                  🛡️ Guardian + CanonicalView STRICT
+                                │
+                   ┌────────────┴────────────┐
+                   │                         │
+                   ▼                         ▼
+          💬 Grounded answer        🚫 Bounded refusal
+                   │
+                   ▼
+          🧾 Replayable Receipt
+
+⚖️ Unresolved contradiction
+        │
+        ▼
+📋 Immutable ContradictionReport
+        │
+        ▼
+🔐 scoped principal + capability + decision lease
+        │
+        ▼
+🧑‍⚖️ explicit COEXIST / CONTEXTUALIZE / SUPERSEDE
+        │
+        ▼
+📜 audited canonical write path
+
+🏷️ TopicFacet metadata ──► navigation / filtering / grouping only
+                         └─► never truth, ESM, evidence or Canon authority
+```
+
+### 🌳 Relation tree — how the modules connect
+
+```text
+🌳 Crystal System Relations
+│
+├── 🧠 Memory Layer
+│   ├── L0 ──► fast, rebuildable working cache
+│   ├── L1 ──► lifecycle, restrictions and pending work
+│   ├── L2 ──► logical review boundary
+│   └── L3 ──► graph-backed multi-status storage
+│
+├── 🛡️ Trust Layer
+│   ├── Guardian ──► structural and policy validation
+│   ├── TruthGate ──► admission decision
+│   ├── TrustSnapshot ──► deny-dominant L1/L3 reconciliation
+│   └── CanonicalView ──► strict grounding projection
+│
+├── 📜 Evidence Layer
+│   ├── Source metadata
+│   ├── Evidence spans
+│   ├── Provenance
+│   ├── TRACE
+│   └── Receipt
+│
+├── ⚖️ Review Layer
+│   ├── Review queue
+│   ├── Resumable review session
+│   ├── ContradictionReport
+│   └── Explicit disposition
+│       ├── COEXIST
+│       ├── CONTEXTUALIZE
+│       └── SUPERSEDE
+│
+├── 🔐 Authorization Layer
+│   ├── CuratorPrincipal
+│   ├── Role and scoped capability
+│   ├── authenticated actor match
+│   └── process-local decision lease
+│
+├── 🏷️ Advisory Layer
+│   └── TopicFacet
+│       ├── multi-label
+│       ├── relevance-only score
+│       └── no authority over truth or admission
+│
+├── 🔎 Public Query Layer
+│   ├── HTTP /ask and /receipt
+│   ├── CLI ask and receipt
+│   └── MCP search
+│       └── shared read-only query pipeline
+│
+└── 📊 Verification Layer
+    ├── Python 3.11 / 3.12 tests
+    ├── coverage gate
+    ├── Ring Zero mutation gate
+    ├── security and container checks
+    └── benchmark history
 ```
 
 ### Central distinctions
@@ -230,7 +364,7 @@ CI jobs:     9
 
 Crystal does not claim universal truth detection, zero hallucinations, legal
 GDPR certification, security certification, production multi-tenant readiness,
-artificial consciousness or Titan/Full Exo-Cortex functionality. Current
+artificial consciousness or Titan/Full ExoCortex functionality. Current
 curator leases are process-local; production distributed coordination, external
 identity-provider integration, broader provenance wiring and Titan integration
 remain independent roadmap work.
