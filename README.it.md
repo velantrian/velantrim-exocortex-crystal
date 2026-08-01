@@ -57,39 +57,189 @@ Un’etichetta tematica non è un verdetto di verità.
 - valutazione deterministica, copertura 100% e mutation gate Ring Zero;
 - storico versionato dei benchmark L3.
 
-## 🏛️ Architettura
+## 🏛️ Architettura in sintesi
+
+Le tre mappe mostrano lo stesso sistema da prospettive complementari:
+**scopo**, **flusso delle informazioni** e **relazioni tra i moduli**.
+
+### 🧠 Mindmap — scopo e confini delle capacità
 
 ```text
-ingest esplicito
-→ classificazione + evidenza
-→ stato Observed in L0/L1
-→ Guardian → TruthGate → controlli restrizione/contraddizione
-→ grafo fisico L3 multi-stato
-
-query pubblica
-→ retrieval in sola lettura
-→ TrustSnapshot immutabile
-→ Guardian + CanonicalView STRICT
-→ FactsPack + TRACE
-→ risposta / rifiuto / Receipt
-
-contraddizione irrisolta
-→ ContradictionReport immutabile
-→ autorizzazione actor/ruolo/scope + decision lease
-→ decisione esplicita del curatore + motivazione
-→ percorso di scrittura canonico auditabile
-
-navigazione tematica
-→ TopicFacet consultiva
-→ solo filtro/raggruppamento — mai ammissione al Canon
+🧠 Velantrim ExoCortex — Crystal
+│
+├── 🎯 Scopo
+│   ├── Memoria verificabile per l’IA
+│   ├── Infrastruttura di fiducia local-first
+│   └── Risposte e decisioni fondate su evidenze
+│
+├── 🏛️ Modello di memoria
+│   ├── L0 — cache di lavoro interna al processo
+│   ├── L1 — memoria operativa del ciclo di vita
+│   ├── L2 — confine di attesa e revisione
+│   └── L3 — memoria multi-stato basata su grafo
+│
+├── 🛡️ Confine di fiducia
+│   ├── Guardian — controlli strutturali e di policy
+│   ├── TruthGate — confine della policy di ammissione
+│   ├── TrustSnapshot — riconciliazione immutabile in lettura
+│   └── CanonicalView — proiezione rigorosa e fidata
+│
+├── 📜 Evidenze e auditabilità
+│   ├── Provenienza ed evidence span
+│   ├── TRACE — linea di fondazione
+│   └── Receipt — replay e prova di alterazione
+│
+├── ⚖️ Revisione e contraddizioni
+│   ├── Code e sessioni di revisione riprendibili
+│   ├── ContradictionReport immutabile
+│   ├── COEXIST
+│   ├── CONTEXTUALIZE
+│   └── SUPERSEDE
+│
+├── 🏷️ Navigazione consultiva
+│   └── TopicFacet — metadato multi-etichetta non autoritativo
+│
+├── 🔐 Governance e coordinamento
+│   ├── Ruoli e capacità del curatore limitati per scope
+│   ├── Associazione con actor autenticato
+│   └── Lease decisionali locali al processo
+│
+└── 📊 Verifica
+    ├── Test e valutazione deterministici
+    ├── Copertura delle linee al 100%
+    ├── Mutation gate Ring Zero
+    └── Storico versionato dei benchmark
 ```
+
+### 🏗️ Architettura ASCII — come fluiscono le informazioni
+
+```text
+┌─────────────────────────────────────────────────────────────────────┐
+│              🔱 Velantrim ExoCortex — Crystal                      │
+│      Infrastruttura local-first di memoria verificabile per IA     │
+└─────────────────────────────────────────────────────────────────────┘
+
+                          📥 Ingest esplicito
+                                  │
+                                  ▼
+             🧾 Tipo di affermazione + fonte + evidence span
+                                  │
+                                  ▼
+                       🧠 Stato Observed L0 / L1
+                                  │
+                                  ▼
+            🛡️ Guardian ──► ⚖️ TruthGate ──► 🚧 restrizioni
+                                  │
+                    ┌─────────────┴─────────────┐
+                    │                           │
+                    ▼                           ▼
+          ⏳ L2 in attesa / revisione   🏛️ Grafo fisico L3
+                    │                           │
+                    │                           ▼
+                    │                 📜 provenienza / TRACE
+                    │                           │
+                    └─────────────┬─────────────┘
+                                  │
+                                  ▼
+                      📐 TrustSnapshot immutabile
+                                  │
+                                  ▼
+                    🛡️ Guardian + CanonicalView STRICT
+                                  │
+                     ┌────────────┴────────────┐
+                     │                         │
+                     ▼                         ▼
+           💬 Risposta fondata        🚫 Rifiuto circoscritto
+                     │
+                     ▼
+              🧾 Receipt riproducibile
+
+⚖️ Contraddizione irrisolta
+        │
+        ▼
+📋 ContradictionReport immutabile
+        │
+        ▼
+🔐 principal con scope + capacità + decision lease
+        │
+        ▼
+🧑‍⚖️ COEXIST / CONTEXTUALIZE / SUPERSEDE esplicito
+        │
+        ▼
+📜 percorso di scrittura canonico auditabile
+
+🏷️ Metadati TopicFacet ──► navigazione / filtro / raggruppamento
+                          └─► mai autorità su verità, ESM, evidenza o Canon
+```
+
+### 🌳 Albero delle relazioni — come si collegano i moduli
+
+```text
+🌳 Relazioni del sistema Crystal
+│
+├── 🧠 Livello di memoria
+│   ├── L0 ──► cache di lavoro veloce e ricostruibile
+│   ├── L1 ──► ciclo di vita, restrizioni e lavoro in sospeso
+│   ├── L2 ──► confine logico di revisione
+│   └── L3 ──► archivio multi-stato basato su grafo
+│
+├── 🛡️ Livello di fiducia
+│   ├── Guardian ──► validazione strutturale e di policy
+│   ├── TruthGate ──► decisione di ammissione
+│   ├── TrustSnapshot ──► riconciliazione L1/L3 deny-dominant
+│   └── CanonicalView ──► proiezione rigorosa di fondazione
+│
+├── 📜 Livello delle evidenze
+│   ├── Metadati della fonte
+│   ├── Evidence span
+│   ├── Provenienza
+│   ├── TRACE
+│   └── Receipt
+│
+├── ⚖️ Livello di revisione
+│   ├── Coda di revisione
+│   ├── Sessione di revisione riprendibile
+│   ├── ContradictionReport
+│   └── Disposizione esplicita
+│       ├── COEXIST
+│       ├── CONTEXTUALIZE
+│       └── SUPERSEDE
+│
+├── 🔐 Livello di autorizzazione
+│   ├── CuratorPrincipal
+│   ├── Ruolo e capacità limitati per scope
+│   ├── Corrispondenza con actor autenticato
+│   └── Decision lease locale al processo
+│
+├── 🏷️ Livello consultivo
+│   └── TopicFacet
+│       ├── multi-etichetta
+│       ├── punteggio di sola rilevanza
+│       └── nessuna autorità su verità o ammissione
+│
+├── 🔎 Livello pubblico di query
+│   ├── HTTP /ask e /receipt
+│   ├── CLI ask e receipt
+│   └── MCP search
+│       └── pipeline condivisa in sola lettura
+│
+└── 📊 Livello di verifica
+    ├── Test Python 3.11 / 3.12
+    ├── Gate di copertura
+    ├── Mutation gate Ring Zero
+    ├── Controlli di sicurezza e container
+    └── Storico dei benchmark
+```
+
+### Distinzioni centrali
 
 ```text
 Grafo fisico L3 ≠ Canon rigoroso
 query ≠ ingest
 confidence ≠ evidenza indipendente
 output LLM ≠ fonte fattuale indipendente
-rilevanza tematica ≠ verità
+contraddizione ≠ vincitore automatico
+rilevanza tematica ≠ verità o qualità dell’evidenza
 lease locale ≠ coordinamento distribuito garantito
 ```
 
