@@ -20,6 +20,21 @@ jobs:
       - name: Lint production and tooling code
         run: ruff check core scripts prototypes utils *.py
 
+  ring-zero-mutation:
+    name: Ring Zero mutation gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install focused test dependency
+        run: python -m pip install --upgrade pip "pytest>=8,<9"
+      - name: Kill declared Ring Zero mutants
+        run: bash scripts/ring_zero_mutation_gate.sh
+
   test:
     runs-on: ubuntu-latest
     strategy:
