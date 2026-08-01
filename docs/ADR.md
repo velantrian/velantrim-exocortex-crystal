@@ -16,6 +16,7 @@ Statuses:
 | [ADR-011](./adr/ADR-011-NON_CONFIGURABLE_TRUTH_POLICY.md) | LLM-origin world-fact rejection is non-configurable Ring Zero policy | Accepted |
 | [ADR-012](./adr/ADR-012-IMMUTABLE_TRUST_SNAPSHOT.md) | read-time L3/L1 trust reconciliation uses an immutable snapshot | Accepted baseline |
 | [ADR-013](./adr/ADR-013-DOCUMENTATION_STATUS_MANIFEST.md) | active implementation claims use a machine-checkable status manifest | Accepted baseline |
+| [ADR-014](./adr/ADR-014-EXPLICIT_CONTRADICTION_DECISIONS.md) | a current contradiction requires an explicit, report-bound curator disposition | Accepted baseline |
 
 ---
 
@@ -159,3 +160,7 @@ See [ADR-012](./adr/ADR-012-IMMUTABLE_TRUST_SNAPSHOT.md).
 ## ADR-013: Machine-checkable documentation status
 
 See [ADR-013](./adr/ADR-013-DOCUMENTATION_STATUS_MANIFEST.md).
+
+## ADR-014: Explicit contradiction decisions
+
+See [ADR-014](./adr/ADR-014-EXPLICIT_CONTRADICTION_DECISIONS.md).
