@@ -5,7 +5,9 @@ python - <<'PY'
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
+from urllib.parse import unquote
 
 root = Path.cwd()
 manifest_path = root / "docs/status/implementation-manifest.json"
@@ -55,7 +57,11 @@ required: dict[str, list[str]] = {
 }
 
 for relative, needles in required.items():
-    text = (root / relative).read_text(encoding="utf-8")
+    path = root / relative
+    if not path.is_file():
+        errors.append(f"required active document is missing: {relative}")
+        continue
+    text = path.read_text(encoding="utf-8")
     for needle in needles:
         if needle not in text:
             errors.append(f"{relative}: missing required status marker: {needle!r}")
@@ -68,10 +74,52 @@ forbidden: dict[str, list[str]] = {
 }
 
 for relative, needles in forbidden.items():
-    text = (root / relative).read_text(encoding="utf-8")
+    path = root / relative
+    if not path.is_file():
+        continue
+    text = path.read_text(encoding="utf-8")
     for needle in needles:
         if needle in text:
             errors.append(f"{relative}: stale marker remains: {needle!r}")
+
+# Validate relative Markdown links on the active authoritative reader surfaces.
+# This deliberately checks file existence only; headings/anchors remain a human
+# documentation concern. External, mailto and same-page anchor links are skipped.
+active_link_surfaces = [
+    "README.md",
+    "README.ru.md",
+    "TEST_REPORT.md",
+    "docs/STATUS.md",
+    "docs/IMPLEMENTATION_STATUS.md",
+    "docs/DOCUMENTATION_MAP.md",
+    "docs/QUICKSTART.md",
+    "docs/ADR.md",
+]
+link_pattern = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
+
+for relative in active_link_surfaces:
+    source = root / relative
+    if not source.is_file():
+        errors.append(f"active link surface is missing: {relative}")
+        continue
+    text = source.read_text(encoding="utf-8")
+    for raw_target in link_pattern.findall(text):
+        target = raw_target.strip().strip("<>")
+        if not target or target.startswith(("#", "http://", "https://", "mailto:")):
+            continue
+        # Markdown optionally permits a quoted link title after whitespace.
+        target = target.split(maxsplit=1)[0]
+        target = unquote(target.split("#", 1)[0].split("?", 1)[0])
+        if not target:
+            continue
+        resolved = (source.parent / target).resolve()
+        try:
+            resolved.relative_to(root.resolve())
+        except ValueError:
+            errors.append(f"{relative}: local link escapes repository: {raw_target!r}")
+            continue
+        if not resolved.exists():
+            errors.append(f"{relative}: broken local link: {raw_target!r}")
 
 if errors:
     print("❌ Documentation status validation failed:")
@@ -82,6 +130,7 @@ if errors:
 print(
     "✅ Documentation status is internally consistent: "
     f"checkpoint={checkpoint_short}, tests={english_metric}, "
-    f"coverage={coverage}, jobs={job_count}, mutants={mutants}"
+    f"coverage={coverage}, jobs={job_count}, mutants={mutants}; "
+    f"local links checked on {len(active_link_surfaces)} active surfaces"
 )
 PY
