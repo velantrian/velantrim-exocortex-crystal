@@ -13,7 +13,7 @@ Statuses:
 
 | ADR | Decision | Status |
 |---|---|---|
-| [ADR-011](./adr/ADR-011-NONCONFIGURABLE_TRUTH_POLICY.md) | LLM-origin world-fact rejection is non-configurable Ring Zero policy | Accepted |
+| [ADR-011](./adr/ADR-011-NON_CONFIGURABLE_TRUTH_POLICY.md) | LLM-origin world-fact rejection is non-configurable Ring Zero policy | Accepted |
 | [ADR-012](./adr/ADR-012-IMMUTABLE_TRUST_SNAPSHOT.md) | read-time L3/L1 trust reconciliation uses an immutable snapshot | Accepted baseline |
 | [ADR-013](./adr/ADR-013-DOCUMENTATION_STATUS_MANIFEST.md) | active implementation claims use a machine-checkable status manifest | Accepted baseline |
 
@@ -150,7 +150,7 @@ Statuses:
 
 ## ADR-011: TruthPolicy is non-configurable Ring Zero policy
 
-See [ADR-011](./adr/ADR-011-NONCONFIGURABLE_TRUTH_POLICY.md).
+See [ADR-011](./adr/ADR-011-NON_CONFIGURABLE_TRUTH_POLICY.md).
 
 ## ADR-012: Immutable TrustSnapshot at the read boundary
 
