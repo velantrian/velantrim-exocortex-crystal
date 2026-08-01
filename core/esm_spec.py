@@ -131,6 +131,8 @@ def transition_allowed(source: Any, target: Any) -> bool:
 
 def shortest_transition_path(source: Any, target: Any) -> Optional[list[str]]:
     """Return the shortest allowed state path, or None when no path exists."""
+    if not isinstance(source, str) or not isinstance(target, str):
+        return None
     if source not in ESM_STATES or target not in ESM_STATES:
         return None
     if source == target:
@@ -161,7 +163,11 @@ def validate_state_records(records: Iterable[Mapping[str, Any]]) -> dict[str, An
             )
             continue
         state = record.get("epistemic_state")
-        if state not in ESM_STATES:
+        try:
+            known = state in ESM_STATES
+        except TypeError:
+            known = False
+        if not known:
             invalid.append(
                 {
                     "index": index,
