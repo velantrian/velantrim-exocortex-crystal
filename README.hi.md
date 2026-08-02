@@ -57,45 +57,195 @@ Retrieval score प्रमाण नहीं है।
 - नियतात्मक मूल्यांकन, 100% पंक्ति कवरेज और Ring Zero mutation gate;
 - संस्करणबद्ध L3 बेंचमार्क इतिहास।
 
-## 🏛️ स्थापत्य अवलोकन
+## 🏛️ एक नज़र में आर्किटेक्चर
+
+नीचे दिए गए तीन मानचित्र उसी प्रणाली को तीन पूरक दृष्टिकोणों से दिखाते हैं:
+**उद्देश्य**, **सूचना-प्रवाह**, और **मॉड्यूलों के संबंध**।
+
+### 🧠 Mindmap — उद्देश्य और क्षमता-सीमाएँ
 
 ```text
-स्पष्ट ingest
-→ दावे का वर्गीकरण + प्रमाण मेटाडेटा
-→ L0/L1 में Observed अवस्था
-→ Guardian → TruthGate → प्रतिबंध/विरोधाभास जाँच
-→ बहु-अवस्था भौतिक L3 ग्राफ
-
-सार्वजनिक क्वेरी
-→ केवल-पठन retrieval
-→ अपरिवर्तनीय TrustSnapshot
-→ Guardian + CanonicalView STRICT
-→ FactsPack + TRACE
-→ उत्तर / अस्वीकार / Receipt
-
-अनसुलझा विरोधाभास
-→ अपरिवर्तनीय ContradictionReport
-→ actor/भूमिका/scope प्राधिकरण + decision lease
-→ क्यूरेटर का स्पष्ट निर्णय + कारण
-→ ऑडिट योग्य canonical लेखन पथ
-
-विषय-आधारित नेविगेशन
-→ सलाहकारी TopicFacet
-→ केवल फ़िल्टर/समूह — Canon में प्रवेश नहीं
+🧠 Velantrim ExoCortex — Crystal
+│
+├── 🎯 उद्देश्य
+│   ├── AI के लिए सत्यापनीय स्मृति
+│   ├── स्थानीय-प्रथम trust infrastructure
+│   └── प्रमाण-समर्थित उत्तर और निर्णय
+│
+├── 🏛️ स्मृति मॉडल
+│   ├── L0 — प्रक्रिया के भीतर तेज़ working cache
+│   ├── L1 — परिचालन lifecycle memory
+│   ├── L2 — pending और review सीमा
+│   └── L3 — ग्राफ-आधारित बहु-अवस्था स्मृति
+│
+├── 🛡️ Trust Boundary
+│   ├── Guardian — संरचनात्मक और policy जाँच
+│   ├── TruthGate — admission-policy सीमा
+│   ├── TrustSnapshot — अपरिवर्तनीय read reconciliation
+│   └── CanonicalView — कठोर trusted projection
+│
+├── 📜 प्रमाण और ऑडिटयोग्यता
+│   ├── provenance और evidence spans
+│   ├── TRACE — grounding lineage
+│   └── Receipt — replay और tamper evidence
+│
+├── ⚖️ समीक्षा और विरोधाभास
+│   ├── review queues और resumable sessions
+│   ├── अपरिवर्तनीय ContradictionReport
+│   ├── COEXIST
+│   ├── CONTEXTUALIZE
+│   └── SUPERSEDE
+│
+├── 🏷️ सलाहकारी नेविगेशन
+│   └── TopicFacet — multi-label, non-authoritative metadata
+│
+├── 🔐 शासन और समन्वय
+│   ├── scope-सीमित curator roles और capabilities
+│   ├── authenticated actor binding
+│   └── प्रक्रिया-स्थानीय decision leases
+│
+└── 📊 सत्यापन
+    ├── deterministic tests और evaluation
+    ├── 100% line coverage
+    ├── Ring Zero mutation gate
+    └── versioned benchmark history
 ```
+
+### 🏗️ ASCII आर्किटेक्चर — सूचना कैसे बहती है
+
+```text
+┌─────────────────────────────────────────────────────────────────────┐
+│              🔱 Velantrim ExoCortex — Crystal                      │
+│        AI के लिए local-first सत्यापनीय स्मृति अवसंरचना            │
+└─────────────────────────────────────────────────────────────────────┘
+
+                         📥 स्पष्ट ingest
+                                │
+                                ▼
+               🧾 Claim type + source + evidence span
+                                │
+                                ▼
+                     🧠 L0 / L1 Observed अवस्था
+                                │
+                                ▼
+             🛡️ Guardian ──► ⚖️ TruthGate ──► 🚧 restrictions
+                                │
+                  ┌─────────────┴─────────────┐
+                  │                           │
+                  ▼                           ▼
+           ⏳ L2 pending / review      🏛️ भौतिक L3 ग्राफ
+                  │                           │
+                  │                           ▼
+                  │                 📜 provenance / TRACE
+                  │                           │
+                  └─────────────┬─────────────┘
+                                │
+                                ▼
+                    📐 अपरिवर्तनीय TrustSnapshot
+                                │
+                                ▼
+                  🛡️ Guardian + CanonicalView STRICT
+                                │
+                   ┌────────────┴────────────┐
+                   │                         │
+                   ▼                         ▼
+          💬 प्रमाणित उत्तर          🚫 सीमाबद्ध अस्वीकार
+                   │
+                   ▼
+          🧾 पुनःचलाने योग्य Receipt
+
+⚖️ अनसुलझा विरोधाभास
+        │
+        ▼
+📋 अपरिवर्तनीय ContradictionReport
+        │
+        ▼
+🔐 scoped principal + capability + decision lease
+        │
+        ▼
+🧑‍⚖️ स्पष्ट COEXIST / CONTEXTUALIZE / SUPERSEDE
+        │
+        ▼
+📜 audited canonical write path
+
+🏷️ TopicFacet metadata ──► केवल navigation / filtering / grouping
+                         └─► truth, ESM, evidence या Canon authority कभी नहीं
+```
+
+### 🌳 संबंध-वृक्ष — मॉड्यूल कैसे जुड़े हैं
+
+```text
+🌳 Crystal प्रणाली के संबंध
+│
+├── 🧠 Memory Layer
+│   ├── L0 ──► तेज़, पुनर्निर्माण योग्य working cache
+│   ├── L1 ──► lifecycle, restrictions और pending work
+│   ├── L2 ──► logical review boundary
+│   └── L3 ──► graph-backed multi-status storage
+│
+├── 🛡️ Trust Layer
+│   ├── Guardian ──► structural और policy validation
+│   ├── TruthGate ──► admission decision
+│   ├── TrustSnapshot ──► deny-dominant L1/L3 reconciliation
+│   └── CanonicalView ──► strict grounding projection
+│
+├── 📜 Evidence Layer
+│   ├── source metadata
+│   ├── evidence spans
+│   ├── provenance
+│   ├── TRACE
+│   └── Receipt
+│
+├── ⚖️ Review Layer
+│   ├── review queue
+│   ├── resumable review session
+│   ├── ContradictionReport
+│   └── स्पष्ट disposition
+│       ├── COEXIST
+│       ├── CONTEXTUALIZE
+│       └── SUPERSEDE
+│
+├── 🔐 Authorization Layer
+│   ├── CuratorPrincipal
+│   ├── role और scoped capability
+│   ├── authenticated actor match
+│   └── प्रक्रिया-स्थानीय decision lease
+│
+├── 🏷️ Advisory Layer
+│   └── TopicFacet
+│       ├── multi-label
+│       ├── केवल relevance score
+│       └── truth या admission पर कोई अधिकार नहीं
+│
+├── 🔎 Public Query Layer
+│   ├── HTTP /ask और /receipt
+│   ├── CLI ask और receipt
+│   └── MCP search
+│       └── साझा read-only query pipeline
+│
+└── 📊 Verification Layer
+    ├── Python 3.11 / 3.12 tests
+    ├── coverage gate
+    ├── Ring Zero mutation gate
+    ├── security और container checks
+    └── benchmark history
+```
+
+### केंद्रीय भेद
 
 ```text
 भौतिक L3 ग्राफ ≠ कठोर Canon
 query ≠ ingest
 confidence ≠ स्वतंत्र प्रमाण
 LLM आउटपुट ≠ स्वतंत्र तथ्य-स्रोत
-विषय-संबंधिता ≠ सत्य
+विरोधाभास ≠ स्वचालित विजेता
+विषय-संबंधिता ≠ सत्य या प्रमाण की गुणवत्ता
 स्थानीय lease ≠ वितरित समन्वय की गारंटी
 ```
 
 TruthGate प्रवेश-नीति का द्वार है, वस्तुनिष्ठ सत्य को स्वतंत्र रूप से जानने वाला
-oracle नहीं। कठोर Canon प्रमाण, स्थिति, ESM और प्रसंस्करण प्रतिबंधों पर आधारित
-नीति-अनुमत पठन projection है।
+oracle नहीं। कठोर Canon प्रमाण, स्थिति, ESM अवस्था, confidence की संरचना और
+प्रसंस्करण प्रतिबंधों पर आधारित नीति-अनुमत पठन projection है।
 
 ## 🛡️ सार्वजनिक केवल-पठन क्वेरी सीमा
 
