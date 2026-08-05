@@ -13,7 +13,8 @@ duplicate implementation claims.
 | Operator | [Quick start](./QUICKSTART.md) | [Conflict-resolution surfaces](./CONFLICT_RESOLUTION_SURFACES.md), [Topic facets and curator IAM](./TOPIC_FACETS_AND_CURATOR_IAM.md) |
 | Security reviewer | [Security policy](../SECURITY.md) | [Threat model](./security/threat-model.md), [Privacy](../PRIVACY.md) |
 | Researcher | [Implementation status](./IMPLEMENTATION_STATUS.md) | [Roadmap](../ROADMAP.md), RFCs, [Metaphor vs mechanism](./METAPHOR_VS_MECHANISM.md) |
-| Contributor or AI agent | [Contributing](../CONTRIBUTING.md) | [Documentation sync protocol](./DOCUMENTATION_SYNC_PROTOCOL.md), [Test report](../TEST_REPORT.md), [Governance](../GOVERNANCE.md) |
+| Contributor | [Contributing](../CONTRIBUTING.md) | [Documentation sync protocol](./DOCUMENTATION_SYNC_PROTOCOL.md), [Test report](../TEST_REPORT.md), [Governance](../GOVERNANCE.md) |
+| AI coding agent or automated auditor | [AI agent entry point](./ai/README.md) | [Mandatory agent contract](../AGENTS.md), [Current state](./ai/CURRENT_STATE.md), [Audit playbook](./ai/AUDIT_PLAYBOOK.md) |
 
 ## Authority hierarchy
 
@@ -28,11 +29,26 @@ English README capability contract
         ↓
 semantically aligned localized READMEs
         ↓
+AI context pack (orientation and hand-off)
+        ↓
 RFC, roadmap and research documents
 ```
 
 Notion is the synchronized strategy/grant map; it does not replace merged code
 as implementation truth.
+
+## AI agent context and hand-off
+
+- [AI agent entry point](./ai/README.md)
+- [Current state](./ai/CURRENT_STATE.md)
+- [Component map](./ai/COMPONENT_MAP.md)
+- [Known risks](./ai/KNOWN_RISKS.md)
+- [Audit playbook](./ai/AUDIT_PLAYBOOK.md)
+- [Compact work log](./ai/WORK_LOG.md)
+
+The AI pack reduces context pressure and points agents to the right authority owner,
+files, consumers, tests and risks. It is an orientation map, not a competing source of
+implementation truth.
 
 ## Change and documentation governance
 
@@ -92,8 +108,8 @@ README surfaces.
 
 Future packages include an external distributed lease adapter, production
 identity-provider and multi-tenant policy integration, broader provenance
-lifecycle wiring, controlled performance SLOs, wider mutation coverage and
-separate Titan research.
+lifecycle wiring, controlled performance SLOs, wider mutation coverage, a separately
+reviewed long-document semantic reading layer, and separate Titan research.
 
 ## Translation policy
 
