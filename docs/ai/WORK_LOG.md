@@ -35,6 +35,71 @@ Documentation impact class and Notion record/checkpoint.
 
 ---
 
+## 2026-08-05 — Connectorless GitHub → Notion hand-off
+
+### Scope
+
+PR #312 clarifies how material Crystal analysis and implementation work is preserved when
+the originating AI agent does not have direct Notion connector access.
+
+### Verified baseline
+
+- base: `main@027c7359c883c458e99bbea77ea3e84b1619c780`;
+- branch: `agent/notion-connectorless-handoff`;
+- verified runtime checkpoint remains
+  `f91299c44a1a1850fa516f3abb96c916326f7a8c` (PR #302);
+- this change is documentation/governance only.
+
+### Findings / decisions
+
+- The existing protocol correctly required GitHub to be independently auditable, but
+  treated unavailable Notion access mainly as `BLOCKED`.
+- Not every AI agent has a Notion connector; losing or postponing the analysis itself is
+  therefore unacceptable.
+- GitHub must contain complete public technical/audit continuity: implemented contracts,
+  material findings, known risks, exact evidence and next actions.
+- Notion remains the deeper rationale, alternatives, grant context and synchronized
+  project-history layer.
+- The systems do not need sentence-for-sentence duplication. They must preserve the same
+  decision-bearing facts and evidence.
+- Missing connector status is `HANDOFF_REQUIRED`, not a generic information dead end.
+- `BLOCKED_PRIVACY_OR_PERMISSION` is reserved for a real permission, privacy or
+  unresolved-target problem.
+
+### Changes
+
+- added `docs/ai/NOTION_HANDOFF.md` with access states, connectorless procedure,
+  connected-actor completion procedure and a structured queue template;
+- updated `AGENTS.md` with the GitHub completeness invariant;
+- expanded `docs/DOCUMENTATION_SYNC_PROTOCOL.md` to cover material audits as well as
+  implementation work;
+- updated `docs/ai/README.md` with separate connected and connectorless paths;
+- expanded the PR template with Notion access, synchronization status and hand-off path;
+- linked the route from `docs/DOCUMENTATION_MAP.md`.
+
+### Validation
+
+PR #312 is the mutable record for final head, CI and merge state. The branch changes only
+Markdown documentation and the PR template. Full Crystal CI is required before merge.
+
+### Remaining
+
+- synchronize the same connectorless rule into the Crystal Notion protocol/history pages;
+- run all nine Crystal CI jobs;
+- merge only after CI succeeds and Notion synchronization is recorded;
+- use the hand-off queue for future agents without a connector.
+
+### Synchronization
+
+- class: `GITHUB_AND_NOTION`;
+- GitHub record: PR #312 and `docs/ai/NOTION_HANDOFF.md`;
+- target Notion records: `🔄 Crystal — Code ↔ Documentation Sync Protocol` and
+  `🤖 Crystal — AI Agent Context & Audit Hand-off`;
+- originating actor Notion access: `AVAILABLE`;
+- pre-merge status: `PLANNED` until those records are updated.
+
+---
+
 ## 2026-08-05 — AI context navigation and audit hand-off
 
 ### Scope
