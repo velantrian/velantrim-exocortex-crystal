@@ -15,6 +15,11 @@
 **Exact evidence:** [TEST_REPORT.md](./TEST_REPORT.md) and the
 [machine-readable implementation manifest](./docs/status/implementation-manifest.json).
 
+> 🤖 **AI coding agent or automated auditor:** start with
+> [`docs/ai/README.md`](./docs/ai/README.md), then follow the mandatory reading and
+> verification contract in [`AGENTS.md`](./AGENTS.md). Do not begin by loading the
+> entire repository or treating issues/research PRs as implemented runtime.
+
 > **Localization contract:** every top-level translated README follows this
 > document's capability, safety and status boundaries. Stable API identifiers
 > remain in English/code form; explanatory prose is translated naturally.
@@ -336,6 +341,18 @@ pytest tests/ --cov=. --cov-fail-under=100
 Continue with [QUICKSTART.md](./docs/QUICKSTART.md).
 
 ## 📚 Documentation path
+
+### 🤖 AI agents and automated auditors
+
+- [AI agent entry point](./docs/ai/README.md)
+- [Mandatory agent contract](./AGENTS.md)
+- [Current state](./docs/ai/CURRENT_STATE.md)
+- [Component map](./docs/ai/COMPONENT_MAP.md)
+- [Known risks](./docs/ai/KNOWN_RISKS.md)
+- [Audit playbook](./docs/ai/AUDIT_PLAYBOOK.md)
+- [Compact work log](./docs/ai/WORK_LOG.md)
+
+### Project and reviewer documentation
 
 - [Documentation map](./docs/DOCUMENTATION_MAP.md)
 - [Current status](./docs/STATUS.md)

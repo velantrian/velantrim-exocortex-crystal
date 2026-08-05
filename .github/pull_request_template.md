@@ -21,14 +21,32 @@ Leave blank if not applicable.
 - [ ] New tests added (or existing tests updated) to cover the change.
 - [ ] Coverage gate passes (`python -m pytest tests/ --cov=. --cov-fail-under=100 -q`).
 - [ ] Coverage gate was not bypassed (no `# pragma: no cover` added without justification).
+- [ ] Exact base/head SHAs and relevant CI run are recorded.
+- [ ] Changed contracts were checked at downstream consumers, serializers and public surfaces.
 
 ## Security checklist
 
 - [ ] No direct write to L3 canon that bypasses Guardian/TruthGate.
 - [ ] TruthGate remains the only automatic canon write path.
 - [ ] No new bypass of stdlib-level integrity controls (`ImmutableCore`, HMAC chain, audit log).
+- [ ] Public query/search paths remain read-only with respect to canonical truth state.
+- [ ] Physical L3 is not treated as strict Canon without `TrustSnapshot`/`CanonicalView` reconciliation.
+- [ ] Topic relevance, model output, retrieval score or confidence does not gain truth authority.
 - [ ] No secrets, personal data, private datasets or API keys are committed.
 - [ ] Any new optional external service is opt-in and documented.
+
+## AI context and audit hand-off
+
+Follow [`docs/ai/README.md`](../docs/ai/README.md) and [`AGENTS.md`](../AGENTS.md).
+
+- [ ] `docs/ai/CURRENT_STATE.md` updated, or `NOT_REQUIRED` with reason.
+- [ ] `docs/ai/COMPONENT_MAP.md` updated if ownership/files/tests changed.
+- [ ] `docs/ai/KNOWN_RISKS.md` updated for discovered, changed or closed risks.
+- [ ] `docs/ai/WORK_LOG.md` contains a compact material hand-off.
+- [ ] New enum/type values have exhaustive consumer tests.
+- [ ] Background work documents lifecycle, bounds, retry, recovery and observability.
+- [ ] Open PR/research/issue status is not presented as merged runtime.
+- [ ] This PR is independently green; a later stacked PR is not hiding its defect.
 
 ## Documentation synchronization
 
