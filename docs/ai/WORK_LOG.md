@@ -39,8 +39,8 @@ Documentation impact class and Notion record/checkpoint.
 
 ### Scope
 
-Create a compact, mandatory orientation layer for AI coding agents and automated auditors
-without changing Crystal runtime behavior.
+PR #311 creates a compact, mandatory orientation layer for AI coding agents and
+automated auditors without changing Crystal runtime behavior.
 
 ### Verified baseline
 
@@ -69,26 +69,31 @@ without changing Crystal runtime behavior.
 - added `docs/ai/AUDIT_PLAYBOOK.md`;
 - added `docs/ai/KNOWN_RISKS.md`;
 - added this `docs/ai/WORK_LOG.md`;
-- expanded `AGENTS.md`, README navigation and PR documentation checklist.
+- expanded `AGENTS.md`, README navigation, Documentation Map and PR checklist.
 
 ### Validation
 
-Documentation-only branch. Full repository CI is required before merge. Runtime and
-verified test-count claims remain tied to the existing checkpoint rather than being
-re-measured or silently advanced.
+PR #311 is the authoritative mutable record for the final branch head, CI jobs and merge
+state. The synchronized Notion record stores the final checkpoint after merge. This file
+intentionally does not duplicate transient queued/running CI status.
+
+Runtime and historical test-count claims remain tied to the existing verified checkpoint
+rather than being re-measured or silently advanced by a documentation-only change.
 
 ### Remaining
 
 - keep this pack synchronized through future PRs;
 - periodically reconcile stale issues with implemented status;
-- review the separate long-document Reader Core proposal before implementation;
+- review a separate long-document Reader Core RFC before implementation;
 - do not merge research PRs solely because they are documentation-only.
 
 ### Synchronization
 
 - class: `GITHUB_AND_NOTION`;
-- Notion record required: `🤖 Crystal — AI Agent Context & Audit Hand-off`;
-- after merge, add final PR, merge SHA, CI evidence and remaining limitations.
+- GitHub record: PR #311;
+- Notion record: `🤖 Crystal — AI Agent Context & Audit Hand-off`;
+- after merge, the Notion record receives final merge SHA, CI evidence and remaining
+  limitations.
 
 ---
 
