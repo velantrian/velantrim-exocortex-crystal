@@ -23,8 +23,10 @@ Read in this order:
    files and tests.
 6. [`docs/ai/KNOWN_RISKS.md`](docs/ai/KNOWN_RISKS.md) and recent entries in
    [`docs/ai/WORK_LOG.md`](docs/ai/WORK_LOG.md).
-7. [`docs/ai/AUDIT_PLAYBOOK.md`](docs/ai/AUDIT_PLAYBOOK.md) when auditing or reviewing.
-8. Relevant architecture, ADR, code, tests, CI and runtime composition.
+7. [`docs/ai/NOTION_HANDOFF.md`](docs/ai/NOTION_HANDOFF.md) when Notion access is
+   unavailable or a pending synchronization item exists.
+8. [`docs/ai/AUDIT_PLAYBOOK.md`](docs/ai/AUDIT_PLAYBOOK.md) when auditing or reviewing.
+9. Relevant architecture, ADR, code, tests, CI and runtime composition.
 
 Use documentation as an orientation map. Verify material claims against current code,
 consumers, tests, workflows and configuration.
@@ -204,7 +206,7 @@ Avoid unsupported claims about:
 Defer exact capability/status claims to code, tests, `TEST_REPORT.md`, the implementation
 manifest and CI.
 
-## 12. Documentation synchronization
+## 12. Documentation synchronization and Notion access
 
 Every change follows
 [`docs/DOCUMENTATION_SYNC_PROTOCOL.md`](docs/DOCUMENTATION_SYNC_PROTOCOL.md) and
@@ -214,11 +216,43 @@ Use `GITHUB_AND_NOTION` for new modules, technologies, durable decisions, author
 privacy changes, grant/roadmap changes, cross-project boundaries, deployment changes, or
 implementation/rejection of a documented plan.
 
-If Notion is required but unavailable:
+### GitHub completeness invariant
 
-- mark synchronization `BLOCKED`;
-- keep the PR draft;
-- do not report the task as complete.
+Not all AI agents have a Notion connector. Therefore:
+
+- GitHub must contain the complete public technical contract, material audit findings,
+  known risks, exact evidence and next actions needed to continue the work;
+- no implemented behavior, safety boundary, unresolved risk or required engineering
+  action may exist only in Notion;
+- Notion may contain deeper rationale, alternatives, grant context and historical detail,
+  but it must not be a required dependency for understanding or auditing Crystal;
+- do not duplicate every sentence across both systems: synchronize the decision-bearing
+  facts and evidence needed to prevent drift or loss.
+
+### When Notion is available
+
+- read the related record when the change is `GITHUB_AND_NOTION`;
+- update GitHub and Notion in the same work cycle;
+- after merge, add the final merge SHA, CI/checkpoint evidence, limitations and next
+  actions to Notion.
+
+### When Notion is unavailable
+
+Do not stop a valid analysis merely because the agent lacks a connector.
+
+1. Complete the analysis and public technical documentation in GitHub.
+2. Update the relevant `docs/ai/*` surfaces and add a compact entry to `WORK_LOG.md`.
+3. For `GITHUB_AND_NOTION`, add a structured item to
+   [`docs/ai/NOTION_HANDOFF.md`](docs/ai/NOTION_HANDOFF.md).
+4. Set PR metadata to `Notion access: UNAVAILABLE` and
+   `Notion synchronization: HANDOFF_REQUIRED`.
+5. Do not claim that Notion was updated.
+6. Keep a `GITHUB_AND_NOTION` implementation PR draft until a connected human or AI
+   completes the required Notion synchronization.
+
+Use `BLOCKED_PRIVACY_OR_PERMISSION` only when the hand-off cannot be completed safely,
+the target record cannot be identified, or permissions/privacy prevent synchronization.
+A missing connector alone is `HANDOFF_REQUIRED`, not an information dead end.
 
 Never publish private workspace content, private URLs, secrets, personal information or
 private datasets in this public repository.
@@ -231,6 +265,8 @@ Update the compact pack when material:
 - `docs/ai/COMPONENT_MAP.md` — ownership, files or tests changed;
 - `docs/ai/KNOWN_RISKS.md` — a risk was discovered, changed or closed;
 - `docs/ai/WORK_LOG.md` — significant work or hand-off completed;
+- `docs/ai/NOTION_HANDOFF.md` — Notion is required but unavailable, or a pending hand-off
+  was synchronized;
 - `docs/ai/AUDIT_PLAYBOOK.md` — audit procedure changed.
 
 Do not turn `WORK_LOG.md` into a dump of every commit. Record only decisions, evidence,
@@ -248,6 +284,7 @@ limitations and next actions.
 ## 15. Primary navigation
 
 - `docs/ai/README.md` — AI entry point.
+- `docs/ai/NOTION_HANDOFF.md` — connectorless Notion synchronization queue and procedure.
 - `docs/REVIEWER_GUIDE.md` — canonical external reviewer route.
 - `docs/DOCUMENTATION_MAP.md` — documentation hierarchy and reader routes.
 - `docs/DOCUMENTATION_SYNC_PROTOCOL.md` — GitHub/Notion completion contract.
