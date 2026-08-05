@@ -43,6 +43,7 @@ Follow [`docs/ai/README.md`](../docs/ai/README.md) and [`AGENTS.md`](../AGENTS.m
 - [ ] `docs/ai/COMPONENT_MAP.md` updated if ownership/files/tests changed.
 - [ ] `docs/ai/KNOWN_RISKS.md` updated for discovered, changed or closed risks.
 - [ ] `docs/ai/WORK_LOG.md` contains a compact material hand-off.
+- [ ] `docs/ai/NOTION_HANDOFF.md` updated when Notion is required but unavailable.
 - [ ] New enum/type values have exhaustive consumer tests.
 - [ ] Background work documents lifecycle, bounds, retry, recovery and observability.
 - [ ] Open PR/research/issue status is not presented as merged runtime.
@@ -55,16 +56,24 @@ Do not remove this block; it is the change-history contract for humans and AI ag
 
 - Documentation impact: `NONE` / `GITHUB_ONLY` / `GITHUB_AND_NOTION`
 - GitHub documentation updated (paths, or `NOT_REQUIRED` with reason):
+- GitHub contains complete public technical/audit context without Notion: `YES` / `NO`
 - Public capability/status/grant claims reviewed: `YES` / `NOT_REQUIRED` with reason
-- Notion synchronization: `NOT_REQUIRED` / `PLANNED` / `DONE` / `BLOCKED`
+- Notion access for originating actor: `AVAILABLE` / `UNAVAILABLE` / `NOT_REQUIRED`
+- Notion synchronization: `NOT_REQUIRED` / `PLANNED` / `HANDOFF_REQUIRED` / `SYNCED` / `BLOCKED_PRIVACY_OR_PERMISSION`
+- GitHub hand-off path (required for `HANDOFF_REQUIRED`):
 - Notion record (safe title, internal reference, or public URL):
 - Decision / ADR reference:
 - Historical note: what changed from the original plan, if anything?
 
-For `GITHUB_AND_NOTION`, keep the PR draft until the Notion record contains the
-motivation, intended function, decision, alternatives, trust/authority boundaries,
-grant or roadmap impact, evidence, exact reality status, limitations, and PR link.
-After merge, add the final merge SHA and verified checkpoint to Notion.
+For `GITHUB_AND_NOTION` with direct access, keep the PR draft until the Notion record
+contains the motivation, intended function, decision, alternatives, trust/authority
+boundaries, grant or roadmap impact, evidence, exact reality status, limitations, and PR
+link.
+
+For `GITHUB_AND_NOTION` without direct access, do not abandon the work. Complete the
+GitHub technical/audit record, add a structured item to `docs/ai/NOTION_HANDOFF.md`, set
+`HANDOFF_REQUIRED`, and keep an implementation PR draft until a connected actor records
+`SYNCED`. After merge, add the final merge SHA and verified checkpoint to Notion.
 
 ## Notes for reviewer
 
