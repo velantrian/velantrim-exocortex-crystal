@@ -12,14 +12,41 @@ documentation, grant/status material, and project history describe different rea
 | `TEST_REPORT.md` and implementation manifest | Verified test/status evidence | Derived from current repository evidence |
 | `docs/STATUS.md`, `docs/IMPLEMENTATION_STATUS.md`, ADRs | Current technical contract and decisions | Must match verified `main` |
 | README and reviewer documents | Public capability, usage, and safety contract | Must not overstate implementation |
+| `docs/ai/*` | Compact current state, component map, risk register, audit method and hand-off | GitHub-native continuity for humans and AI agents |
 | Pull request | Proposed change, evidence, review, and limitations | Non-authoritative until merged |
 | Notion Project Hub | Deep rationale, technology/function intent, alternatives, grant/roadmap context, and synchronized history | Strategy/history only; never runtime proof |
 
 Notion can preserve detailed explanations that would overload the public repository.
-GitHub must still contain enough technical information for an external reviewer to
-understand, test, and audit the change without access to the private workspace.
+GitHub must still contain enough technical and audit information for an external reviewer
+or connectorless AI agent to understand, test, continue, and challenge the work without
+access to the private workspace.
 
-## 2. Documentation impact classes
+## 2. GitHub completeness invariant
+
+Not every AI system has direct Notion access. Therefore:
+
+```text
+implemented contract + material audit finding + known risk + exact evidence + next action
+must be understandable from GitHub alone.
+```
+
+No implementation boundary, safety rule, unresolved engineering risk, decision needed to
+continue the work, or proof required for review may exist only in Notion.
+
+This does not require copying every sentence twice. Synchronize the decision-bearing
+facts:
+
+- problem and intended outcome;
+- selected decision and material alternatives;
+- implementation/reality status;
+- authority, truth, privacy and safety boundaries;
+- exact PR/SHA/test/CI evidence;
+- known limitations and required next actions.
+
+Notion remains the richer rationale and historical layer. GitHub remains the complete
+public technical and audit layer.
+
+## 3. Documentation impact classes
 
 Every PR must choose one class.
 
@@ -44,25 +71,45 @@ Required for:
 - changes to grant work packages, roadmap, demonstrators, positioning, or public scope;
 - cross-project boundaries involving Titan, Research Mode, or external labs;
 - implementation, rejection, replacement, or deferral of a previously documented plan;
-- significant changes to user workflows, deployment posture, or operational guarantees.
+- significant changes to user workflows, deployment posture, or operational guarantees;
+- a material audit that changes current state, risk, architecture, roadmap, or an
+  engineering decision.
 
-## 3. Mandatory workflow
+## 4. Notion access states
 
-### Before editing
+| Status | Meaning |
+|---|---|
+| `NOT_REQUIRED` | The work is `NONE` or `GITHUB_ONLY` |
+| `NOTION_AVAILABLE` | The current actor can read and update the relevant Notion record |
+| `HANDOFF_REQUIRED` | The current actor lacks Notion access; a complete GitHub hand-off is required |
+| `SYNCED` | A connected actor updated Notion and recorded the safe reference/evidence |
+| `BLOCKED_PRIVACY_OR_PERMISSION` | Synchronization cannot be completed safely or the required target/permission is unresolved |
 
-1. Read `AGENTS.md`, `docs/REVIEWER_GUIDE.md`, the documentation map, relevant ADRs,
-   current status files, and affected code/tests.
+A missing connector is normally `HANDOFF_REQUIRED`, not a reason to abandon the analysis
+or hide its findings.
+
+## 5. Mandatory workflow
+
+### Before editing or auditing
+
+1. Read `AGENTS.md`, `docs/ai/README.md`, current state, known risks, the reviewer guide,
+   documentation map, relevant ADRs, status files, and affected code/tests.
 2. For `GITHUB_AND_NOTION`, read the related Project Hub record when access exists.
-3. Verify the exact `main` baseline and keep research/roadmap claims separate from
+3. When Notion access does not exist, inspect
+   `docs/ai/NOTION_HANDOFF.md` for pending items and continue from GitHub evidence.
+4. Verify the exact `main` baseline and keep research/roadmap claims separate from
    implemented runtime behavior.
 
-### During the change
+### During the work
 
 1. Capture the problem, intended outcome, assumptions, alternatives, and boundaries.
 2. Use exact status terms: proposed, implemented, tested, wired, enabled, observed.
 3. Update docs in the same branch as the code whenever the technical contract changes.
+4. Record material analysis in GitHub even when it does not immediately change runtime:
+   current state, component map, risks, work log, ADR/RFC, or another appropriate public
+   surface.
 
-### Before review
+### Before review — Notion available
 
 1. Update every affected GitHub surface, which may include:
    - `README.md` and aligned localized README files;
@@ -71,12 +118,48 @@ Required for:
    - `docs/IMPLEMENTATION_STATUS.md`;
    - `docs/status/implementation-manifest.json`;
    - `docs/DOCUMENTATION_MAP.md`;
+   - `docs/ai/CURRENT_STATE.md`;
+   - `docs/ai/COMPONENT_MAP.md`;
+   - `docs/ai/KNOWN_RISKS.md`;
+   - `docs/ai/WORK_LOG.md`;
    - an ADR, security/privacy document, reviewer guide, quick start, or grant document.
 2. Complete the `Documentation synchronization` block in the PR template.
-3. For `GITHUB_AND_NOTION`, create or update the Notion record with the required deep
-   context and link it by a safe title, internal reference, or public URL.
-4. If Notion is unavailable, set the status to `BLOCKED`, keep the PR draft, and do not
-   claim full completion.
+3. Create or update the Notion record with the required deep context.
+4. Record a safe page title, internal reference, or public URL in the PR.
+5. Set synchronization to `SYNCED` before a `GITHUB_AND_NOTION` implementation PR is
+   marked ready for review.
+
+### Before review — Notion unavailable
+
+1. Do not stop a valid audit or implementation solely because the connector is missing.
+2. Complete all required public GitHub documentation and evidence.
+3. Add a structured item to
+   [`docs/ai/NOTION_HANDOFF.md`](./ai/NOTION_HANDOFF.md) containing the problem,
+   findings, decision, alternatives, boundaries, changed files, exact SHA/CI evidence,
+   limitations, intended Notion record title, and next actions.
+4. Set PR fields to:
+   - `Notion access: UNAVAILABLE`;
+   - `Notion synchronization: HANDOFF_REQUIRED`;
+   - `GitHub hand-off: docs/ai/NOTION_HANDOFF.md#...`.
+5. Do not claim that Notion was updated.
+6. Keep a `GITHUB_AND_NOTION` implementation PR draft until a connected actor completes
+   synchronization. Analysis-only findings may remain in the queue without blocking
+   unrelated engineering, but the hand-off must remain visible.
+
+Use `BLOCKED_PRIVACY_OR_PERMISSION` only when the structured hand-off itself cannot be
+completed safely, the target record cannot be identified, or required access is denied.
+
+### Connected actor completion
+
+A human or AI agent with Notion access must:
+
+1. verify the GitHub hand-off against the current PR, SHA, tests and repository state;
+2. create or update the relevant Notion page;
+3. add the safe Notion reference to the PR and hand-off item;
+4. change `HANDOFF_REQUIRED` to `SYNCED`;
+5. preserve the public/private boundary;
+6. after merge, add final merge SHA, CI evidence, deviations, limitations and next
+   actions to Notion.
 
 ### After merge
 
@@ -88,7 +171,10 @@ Update the Notion record with:
 - remaining limitations and follow-up work;
 - grant or roadmap status changes, if any.
 
-## 4. Required Notion record structure
+Also close or mark the corresponding GitHub hand-off item `SYNCED` so agents without
+Notion can see that synchronization was completed.
+
+## 6. Required Notion record structure
 
 A substantial record should include:
 
@@ -97,7 +183,7 @@ A substantial record should include:
 3. **Intended technology or function**
 4. **Selected decision and rationale**
 5. **Alternatives rejected or deferred**
-6. **Implementation summary**
+6. **Implementation or audit summary**
 7. **Truth, Canon, evidence, privacy, and authority boundaries**
 8. **Grant/public-scope impact**
 9. **Tests, CI, PR, issue, and exact SHA evidence**
@@ -105,26 +191,31 @@ A substantial record should include:
 11. **Known limitations**
 12. **Next actions**
 
-## 5. Public/private boundary
+The GitHub hand-off uses the same decision-bearing structure so a connected actor can
+synchronize Notion without reconstructing the analysis from scratch.
+
+## 7. Public/private boundary
 
 Crystal is public. Never copy private workspace notes, personal information, secrets,
 private datasets, or inaccessible Notion content into GitHub. A PR can reference a safe
 Notion page title or internal identifier instead of publishing a private URL.
 
 The reverse boundary is different: Notion may link to public GitHub PRs, issues, commits,
-ADRs, and reports, and may contain longer rationale that is intentionally omitted from
-the compact public documentation.
+ADRs, reports, AI work-log entries and hand-off records, and may contain longer rationale
+that is intentionally omitted from compact public documentation.
 
-## 6. Completion rule
+## 8. Completion rule
 
 ```text
 verified code and tests
-  + public GitHub technical/status documentation
+  + complete public GitHub technical/audit documentation
   + aligned capability and grant claims
   + Notion rationale/history when required
+  + connectorless hand-off when direct Notion access is absent
   + final PR, SHA, evidence, limitations, and follow-up
 = synchronized change
 ```
 
 A Notion plan is not implementation proof. A merged PR with stale status or public docs
-is not complete. A checked box without the corresponding record is not synchronization.
+is not complete. A connectorless analysis hidden only in chat is not a durable hand-off.
+A checked box without the corresponding record is not synchronization.
