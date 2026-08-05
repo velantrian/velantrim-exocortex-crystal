@@ -22,8 +22,10 @@ Before auditing or changing Crystal, read:
 5. [`KNOWN_RISKS.md`](./KNOWN_RISKS.md) — unresolved engineering, operational,
    governance, and research risks.
 6. [`WORK_LOG.md`](./WORK_LOG.md) — compact history of material work and hand-offs.
-7. [`AUDIT_PLAYBOOK.md`](./AUDIT_PLAYBOOK.md) — context-efficient audit procedure.
-8. The relevant architecture, ADR, code, tests, CI and runtime configuration.
+7. [`NOTION_HANDOFF.md`](./NOTION_HANDOFF.md) — connectorless synchronization queue and
+   procedure.
+8. [`AUDIT_PLAYBOOK.md`](./AUDIT_PLAYBOOK.md) — context-efficient audit procedure.
+9. The relevant architecture, ADR, code, tests, CI and runtime configuration.
 
 Do not load the whole repository before completing this orientation pass.
 
@@ -46,6 +48,47 @@ For implemented behavior, prefer evidence in this order:
 
 The lower levels provide orientation and rationale. They do not override executable
 reality.
+
+## GitHub-first continuity
+
+Not every AI agent has a Notion connector. The repository must therefore remain
+sufficient for a connectorless agent to:
+
+- understand current implementation and authority boundaries;
+- perform a material audit;
+- identify risks and downstream consumers;
+- continue an unfinished engineering task;
+- verify tests, CI and exact SHAs;
+- prepare a complete hand-off for later Notion synchronization.
+
+No implemented contract, known risk, material audit finding or required engineering next
+action may exist only in Notion.
+
+Notion remains valuable for deeper rationale, rejected alternatives, grant context and
+project history. The goal is not sentence-for-sentence duplication; it is synchronized
+preservation of the decision-bearing facts.
+
+## Notion access modes
+
+### Agent with Notion access
+
+1. Read the relevant Project Hub record for `GITHUB_AND_NOTION` work.
+2. Update the GitHub technical/audit surfaces.
+3. Update Notion with the deeper rationale and history.
+4. Record the safe Notion title/reference in the PR.
+5. After merge, add final SHA, CI evidence, limitations and next actions.
+
+### Agent without Notion access
+
+1. Continue the analysis from GitHub; do not abandon it because the connector is absent.
+2. Update the relevant GitHub files in this directory and any affected ADR/status/RFC.
+3. Add a structured item to [`NOTION_HANDOFF.md`](./NOTION_HANDOFF.md) for
+   `GITHUB_AND_NOTION` work.
+4. Use `Notion synchronization: HANDOFF_REQUIRED`, never `DONE`.
+5. Keep a `GITHUB_AND_NOTION` implementation PR draft until a connected actor completes
+   the Notion update.
+6. Use `BLOCKED_PRIVACY_OR_PERMISSION` only for a real permission, privacy or unresolved
+   target problem — not merely because the current agent lacks a connector.
 
 ## Status vocabulary
 
@@ -82,8 +125,9 @@ Never collapse these into one claim.
 Every material change follows
 [`../DOCUMENTATION_SYNC_PROTOCOL.md`](../DOCUMENTATION_SYNC_PROTOCOL.md).
 
-For `GITHUB_AND_NOTION` work, update the relevant Notion record before review and add the
-final merge SHA, CI evidence, limitations, and remaining work after merge. Never copy
+For `GITHUB_AND_NOTION` work, update the relevant Notion record directly when access
+exists. Without access, create a complete GitHub-native package and a visible hand-off in
+`NOTION_HANDOFF.md`; a connected actor then synchronizes the deeper record. Never copy
 private workspace content into this public repository.
 
 ## How to use this pack
@@ -98,6 +142,6 @@ orientation map
   → relevant files and consumers
   → tests and CI
   → runtime wiring
-  → documented finding
-  → synchronized hand-off
+  → documented GitHub finding
+  → direct Notion sync or connectorless hand-off
 ```
