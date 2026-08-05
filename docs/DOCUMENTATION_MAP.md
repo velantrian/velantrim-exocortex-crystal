@@ -15,6 +15,7 @@ duplicate implementation claims.
 | Researcher | [Implementation status](./IMPLEMENTATION_STATUS.md) | [Roadmap](../ROADMAP.md), RFCs, [Metaphor vs mechanism](./METAPHOR_VS_MECHANISM.md) |
 | Contributor | [Contributing](../CONTRIBUTING.md) | [Documentation sync protocol](./DOCUMENTATION_SYNC_PROTOCOL.md), [Test report](../TEST_REPORT.md), [Governance](../GOVERNANCE.md) |
 | AI coding agent or automated auditor | [AI agent entry point](./ai/README.md) | [Mandatory agent contract](../AGENTS.md), [Current state](./ai/CURRENT_STATE.md), [Audit playbook](./ai/AUDIT_PLAYBOOK.md) |
+| AI without Notion connector | [Connectorless Notion hand-off](./ai/NOTION_HANDOFF.md) | [Work log](./ai/WORK_LOG.md), [Sync protocol](./DOCUMENTATION_SYNC_PROTOCOL.md) |
 
 ## Authority hierarchy
 
@@ -45,14 +46,21 @@ as implementation truth.
 - [Known risks](./ai/KNOWN_RISKS.md)
 - [Audit playbook](./ai/AUDIT_PLAYBOOK.md)
 - [Compact work log](./ai/WORK_LOG.md)
+- [Connectorless Notion hand-off queue](./ai/NOTION_HANDOFF.md)
 
 The AI pack reduces context pressure and points agents to the right authority owner,
 files, consumers, tests and risks. It is an orientation map, not a competing source of
 implementation truth.
 
+Not all AI agents have direct Notion access. GitHub therefore contains the complete
+public technical/audit context required to continue the work. A connectorless agent
+records `HANDOFF_REQUIRED` in the hand-off queue; a connected human or AI later updates
+Notion and marks the item `SYNCED`.
+
 ## Change and documentation governance
 
 - [Code ↔ Documentation ↔ Notion synchronization protocol](./DOCUMENTATION_SYNC_PROTOCOL.md)
+- [Connectorless Notion hand-off](./ai/NOTION_HANDOFF.md)
 - [Contributing guide](../CONTRIBUTING.md)
 - [Governance](../GOVERNANCE.md)
 - [ADR index](./ADR.md)
@@ -61,6 +69,11 @@ Every PR classifies its documentation impact as `NONE`, `GITHUB_ONLY`, or
 `GITHUB_AND_NOTION`. New technologies, functions, durable decisions, major boundaries,
 grant/roadmap changes, and cross-project decisions require a synchronized Notion record
 in addition to the public GitHub technical contract.
+
+When the originating agent lacks a Notion connector, it must still complete the GitHub
+record and create a structured hand-off. A missing connector is `HANDOFF_REQUIRED`, not a
+reason to lose the analysis. Essential implementation, risk and audit information must
+never exist only in Notion.
 
 ## Core architecture and trust
 
