@@ -24,6 +24,27 @@
 > document's capability, safety and status boundaries. Stable API identifiers
 > remain in English/code form; explanatory prose is translated naturally.
 
+## 🌐 Velantrim ecosystem / Экосистема Velantrim
+
+Crystal is the **grant-facing verifiable-memory track** within the wider Velantrim
+ecosystem. The related projects are independent research tracks rather than hidden
+runtime dependencies:
+
+- [🔱 Titan](https://github.com/velantrian/Velantrim-ExoCortex-Titan) — cognition, orchestration, retrieval, tools and agents;
+- [🧬 Native Kernel](https://github.com/velantrian/velantrim-native-kernel) — long-horizon substrate-neutral event and memory-contract research;
+- [⭐️ Mentaury Soul](https://github.com/velantrian/velantrim-mentaury-soul) — digital individuality, identity continuity, relationships and governed development.
+
+Crystal keeps its own Canon, implementation truth and grant boundary. Being part of
+one ecosystem does **not** mean shared write authority, shared credentials or a
+currently implemented runtime integration.
+
+**По-русски:** Crystal — самостоятельное грантовое направление проверяемой памяти.
+Titan, Native Kernel и Mentaury Soul связаны с ним на уровне общей экосистемы и
+архитектурных исследований, но не получают автоматического права записи в Crystal
+Canon и не считаются его текущими runtime-зависимостями.
+
+📘 [Full bilingual ecosystem and integration-boundary map](./docs/VELANTRIM_ECOSYSTEM.md)
+
 ---
 
 ## 🎯 Why Crystal exists
@@ -355,6 +376,7 @@ Continue with [QUICKSTART.md](./docs/QUICKSTART.md).
 ### Project and reviewer documentation
 
 - [Documentation map](./docs/DOCUMENTATION_MAP.md)
+- [Velantrim ecosystem map](./docs/VELANTRIM_ECOSYSTEM.md)
 - [Current status](./docs/STATUS.md)
 - [Implementation status](./docs/IMPLEMENTATION_STATUS.md)
 - [Architecture](./docs/ARCHITECTURE.md)
