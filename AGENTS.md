@@ -34,6 +34,26 @@ answers can be audited. This repository is the public open core (reviewer-previe
 - For command/usage examples, see `README.md` and `DEMO.md` — do not invent
   commands.
 
+## Documentation synchronization
+
+Every change must follow
+[`docs/DOCUMENTATION_SYNC_PROTOCOL.md`](docs/DOCUMENTATION_SYNC_PROTOCOL.md) and
+classify its impact as `NONE`, `GITHUB_ONLY`, or `GITHUB_AND_NOTION`.
+
+- Update GitHub technical, status, test, public capability, grant, and ADR documents in
+  the same branch whenever their contract changes.
+- Use `GITHUB_AND_NOTION` for new technologies, functions, modules, durable decisions,
+  major boundaries, roadmap/grant changes, cross-project decisions, or implementation
+  of previously documented plans.
+- A required Notion record must explain motivation, intended function, alternatives,
+  decision, boundaries, evidence, exact reality status, limitations, and links to the
+  PR and final merge SHA.
+- If Notion access is unavailable, mark synchronization `BLOCKED`, keep the PR draft,
+  and do not report the task as fully complete.
+- Do not publish private Notion content, private workspace URLs, secrets, or personal
+  information in this public repository. Use a safe page title or internal reference
+  when necessary.
+
 ## Claims discipline
 
 Avoid unsupported capability, compliance, production-readiness,
@@ -44,6 +64,8 @@ Defer status claims to `README.md`, `TEST_REPORT.md`, and CI.
 
 - `README.md` — overview, quick start, positioning.
 - `docs/REVIEWER_GUIDE.md` — canonical reviewer entry point.
+- `docs/DOCUMENTATION_MAP.md` — authority hierarchy and reader routes.
+- `docs/DOCUMENTATION_SYNC_PROTOCOL.md` — mandatory GitHub/Notion change contract.
 - `docs/ARCHITECTURE.md` — architecture and memory/backends/privacy boundaries.
 - `docs/EVAL.md` — evaluation harness, metrics, and CI gate (authoritative).
 - `DEMO.md` and `docs/DEMO.md` — hands-on walkthroughs and command examples.

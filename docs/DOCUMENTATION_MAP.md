@@ -13,7 +13,7 @@ duplicate implementation claims.
 | Operator | [Quick start](./QUICKSTART.md) | [Conflict-resolution surfaces](./CONFLICT_RESOLUTION_SURFACES.md), [Topic facets and curator IAM](./TOPIC_FACETS_AND_CURATOR_IAM.md) |
 | Security reviewer | [Security policy](../SECURITY.md) | [Threat model](./security/threat-model.md), [Privacy](../PRIVACY.md) |
 | Researcher | [Implementation status](./IMPLEMENTATION_STATUS.md) | [Roadmap](../ROADMAP.md), RFCs, [Metaphor vs mechanism](./METAPHOR_VS_MECHANISM.md) |
-| Contributor | [Contributing](../CONTRIBUTING.md) | [Test report](../TEST_REPORT.md), [Governance](../GOVERNANCE.md) |
+| Contributor or AI agent | [Contributing](../CONTRIBUTING.md) | [Documentation sync protocol](./DOCUMENTATION_SYNC_PROTOCOL.md), [Test report](../TEST_REPORT.md), [Governance](../GOVERNANCE.md) |
 
 ## Authority hierarchy
 
@@ -33,6 +33,18 @@ RFC, roadmap and research documents
 
 Notion is the synchronized strategy/grant map; it does not replace merged code
 as implementation truth.
+
+## Change and documentation governance
+
+- [Code ↔ Documentation ↔ Notion synchronization protocol](./DOCUMENTATION_SYNC_PROTOCOL.md)
+- [Contributing guide](../CONTRIBUTING.md)
+- [Governance](../GOVERNANCE.md)
+- [ADR index](./ADR.md)
+
+Every PR classifies its documentation impact as `NONE`, `GITHUB_ONLY`, or
+`GITHUB_AND_NOTION`. New technologies, functions, durable decisions, major boundaries,
+grant/roadmap changes, and cross-project decisions require a synchronized Notion record
+in addition to the public GitHub technical contract.
 
 ## Core architecture and trust
 
