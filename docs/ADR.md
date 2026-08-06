@@ -19,6 +19,7 @@ Statuses:
 | [ADR-014](./adr/ADR-014-EXPLICIT_CONTRADICTION_DECISIONS.md) | a current contradiction requires an explicit, report-bound curator disposition | Accepted baseline |
 | [ADR-015](./adr/ADR-015-ESM_MACHINE_SPEC.md) | one machine-readable ESM descriptor is derived from the runtime matrix | Accepted baseline |
 | [ADR-016](./adr/ADR-016-INFORMATIONAL_BENCHMARK_HISTORY.md) | hosted-runner retrieval history is scheduled, versioned and informational | Accepted baseline |
+| [ADR-017](./adr/ADR-017-CRASH_CONSISTENT_CURATOR_DECISIONS.md) | curator state, audit proof and durable L3 projection intent share one SQLite transaction | Proposed implementation draft |
 
 ---
 
@@ -174,3 +175,7 @@ See [ADR-015](./adr/ADR-015-ESM_MACHINE_SPEC.md).
 ## ADR-016: Informational benchmark history
 
 See [ADR-016](./adr/ADR-016-INFORMATIONAL_BENCHMARK_HISTORY.md).
+
+## ADR-017: Crash-consistent curator decisions
+
+See [ADR-017](./adr/ADR-017-CRASH_CONSISTENT_CURATOR_DECISIONS.md).
