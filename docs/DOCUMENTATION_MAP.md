@@ -51,6 +51,9 @@ receive automatic write authority over Crystal, do not share one Canon by defaul
 and are not current runtime dependencies unless a separately reviewed integration
 is implemented, tested and merged.
 
+The bilingual ecosystem map is the current cross-project navigation and boundary
+reference; it does not authorize runtime integration.
+
 The ecosystem map is bilingual in English and Russian. English remains primary
 for Crystal's public and grant-facing contract. Additional README and documentation
 localizations may be synchronized after the English/Russian boundary text is stable.
