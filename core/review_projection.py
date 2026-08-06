@@ -23,6 +23,8 @@ def _participant_fact(participant: dict[str, Any]) -> dict[str, Any]:
     fact_id = participant.get("fact_id")
     if not isinstance(fact_id, str) or not fact_id:
         raise ProjectionBlocked("malformed projection participant")
+    if fact_id in memory.IMMUTABLE_FACT_IDS:
+        raise ProjectionBlocked(f"participant {fact_id!r} is immutable")
     if memory.get_tombstone(fact_id) is not None:
         raise ProjectionBlocked(f"participant {fact_id!r} was erased")
     fact = memory.get_fact(fact_id)
@@ -75,8 +77,6 @@ def project_review_decision(decision_id: str) -> dict[str, Any]:
             facts[fact["fact_id"]] = fact
 
         graph = get_l3_graph()
-        # Import lazily to avoid making the projection module part of pipeline's
-        # import cycle. Projection is an admitted-decision consumer, not a gate.
         from core.pipeline import _l3_payload
 
         for participant in participants:
@@ -84,8 +84,7 @@ def project_review_decision(decision_id: str) -> dict[str, Any]:
             if not participant.get("merge"):
                 continue
             fact_id = participant["fact_id"]
-            fact = facts[fact_id]
-            payload = _l3_payload(fact)
+            payload = _l3_payload(facts[fact_id])
             explicit_truth = participant.get("truth_status")
             if explicit_truth is not None:
                 payload["truth_status"] = explicit_truth
@@ -110,9 +109,7 @@ def project_review_decision(decision_id: str) -> dict[str, Any]:
             "idempotent": False,
         }
     except ProjectionBlocked as exc:
-        blocked = mark_projection_result(
-            decision_id, status="blocked", error=str(exc)
-        )
+        blocked = mark_projection_result(decision_id, status="blocked", error=str(exc))
         return {
             "ok": False,
             "decision_id": decision_id,
@@ -121,22 +118,24 @@ def project_review_decision(decision_id: str) -> dict[str, Any]:
             "reason": str(exc),
         }
     except Exception as exc:  # backend failure stays durable and retryable
+        # Backend exception messages are untrusted and may include claim/source
+        # payloads. Persist only the exception class and a stable category.
+        safe_error = f"{type(exc).__name__}: projection_backend_failure"
         failed = mark_projection_result(
             decision_id,
             status="failed",
-            error=f"{type(exc).__name__}: {exc}",
+            error=safe_error,
         )
         return {
             "ok": False,
             "decision_id": decision_id,
             "projection_status": "failed",
             "attempts": failed["attempts"],
-            "reason": failed["last_error"],
+            "reason": safe_error,
         }
 
 
 def drain_review_projections(limit: int = 100) -> dict[str, Any]:
-    """Retry pending/failed/blocked commands in deterministic enqueue order."""
     results = [
         project_review_decision(item["decision_id"])
         for item in list_projection_work(limit=limit)
@@ -155,7 +154,6 @@ def review_projection_health() -> dict[str, Any]:
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
-    """Operator CLI for content-light projection status and recovery."""
     parser = argparse.ArgumentParser(prog="python -m core.review_projection")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("status", help="show content-light curator projection health")
