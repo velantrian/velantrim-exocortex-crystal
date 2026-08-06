@@ -27,8 +27,8 @@ class LegacyRetrievalUnavailable(RuntimeError):
     """The backend cannot provide a bounded read for an uninitialised store."""
 
     def __init__(self, message: str, *, reason_code: str = LEGACY_REINDEX_REASON_CODE):
-        super().__init__(message)
         self.reason_code = reason_code
+        super().__init__(f"{reason_code}: {message}")
 
 
 @dataclass(frozen=True)
@@ -91,8 +91,6 @@ def legacy_retrieval_status(graph, *, candidate_limit: Optional[int] = None) -> 
 def _bounded_nodes(graph, candidate_limit: int) -> list[dict[str, Any]]:
     """Read at most ``candidate_limit`` node payloads without ``all_facts``."""
     if isinstance(graph, MockL3Graph):
-        # Mock is an ephemeral test/dev backend. Sorted ids make the bounded
-        # window deterministic across repeated calls.
         ids = sorted(graph._nodes)[:candidate_limit]
         return [dict(graph._nodes[fact_id]) for fact_id in ids]
 
@@ -129,6 +127,11 @@ def bounded_legacy_retrieve(
     limit = legacy_candidate_limit(candidate_limit)
     query_tokens = lexical_tokens(query_text)
     if not query_tokens:
+        return []
+    # A malformed adapter that does not implement the mandatory by-id contract
+    # cannot yield resolvable candidates. Return an empty fail-closed read without
+    # touching any optional full-corpus helper it may expose.
+    if not callable(getattr(graph, "get_fact", None)):
         return []
 
     nodes = _bounded_nodes(graph, limit)
