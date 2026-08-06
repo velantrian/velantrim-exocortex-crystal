@@ -13,7 +13,7 @@ duplicate implementation claims.
 | Operator | [Quick start](./QUICKSTART.md) | [Conflict-resolution surfaces](./CONFLICT_RESOLUTION_SURFACES.md), [Topic facets and curator IAM](./TOPIC_FACETS_AND_CURATOR_IAM.md) |
 | Security reviewer | [Security policy](../SECURITY.md) | [Threat model](./security/threat-model.md), [Privacy](../PRIVACY.md) |
 | Researcher | [Implementation status](./IMPLEMENTATION_STATUS.md) | [Roadmap](../ROADMAP.md), RFCs, [Metaphor vs mechanism](./METAPHOR_VS_MECHANISM.md) |
-| Ecosystem reviewer or cross-project contributor | [Velantrim ecosystem map](./VELANTRIM_ECOSYSTEM.md) | [Integration boundaries](./INTEGRATION_BOUNDARIES.md), [Grant scope](./GRANT_NLNET_SCOPE.md) |
+| Ecosystem reviewer or cross-project contributor | [Velantrim ecosystem map](./VELANTRIM_ECOSYSTEM.md) | [Grant scope](./GRANT_NLNET_SCOPE.md), [Architecture](./ARCHITECTURE.md) |
 | Contributor | [Contributing](../CONTRIBUTING.md) | [Documentation sync protocol](./DOCUMENTATION_SYNC_PROTOCOL.md), [Test report](../TEST_REPORT.md), [Governance](../GOVERNANCE.md) |
 | AI coding agent or automated auditor | [AI agent entry point](./ai/README.md) | [Mandatory agent contract](../AGENTS.md), [Current state](./ai/CURRENT_STATE.md), [Audit playbook](./ai/AUDIT_PLAYBOOK.md) |
 | AI without Notion connector | [Connectorless Notion hand-off](./ai/NOTION_HANDOFF.md) | [Work log](./ai/WORK_LOG.md), [Sync protocol](./DOCUMENTATION_SYNC_PROTOCOL.md) |
@@ -42,7 +42,7 @@ as implementation truth.
 ## Velantrim ecosystem and cross-project boundaries
 
 - [Bilingual Velantrim ecosystem map](./VELANTRIM_ECOSYSTEM.md)
-- [Integration boundaries](./INTEGRATION_BOUNDARIES.md)
+- [Architecture and authority boundaries](./ARCHITECTURE.md)
 - [NLnet grant scope](./GRANT_NLNET_SCOPE.md)
 
 Crystal is the independent grant-facing verifiable-memory track. Titan, Native
