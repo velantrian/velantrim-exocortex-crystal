@@ -2,28 +2,32 @@
 # Velantrim ExoCortex — strict read-only query pipeline.
 #
 # Query is a read operation. It may retrieve and render facts that already exist
-# in the L3 graph, but it must never create or update L0/L1 rows, transition ESM,
-# drain the L3 outbox, write graph nodes/edges, or trigger research telemetry.
+# in the L3 graph, but it must never create/update L0/L1 rows, transition ESM,
+# drain an outbox, write graph state, initialise a fingerprint or rebuild vectors.
 
 from __future__ import annotations
 
 import math
-import re
 from typing import Any, Dict, List, Optional
 
 from core import metrics
 from core.l3_graph import get_l3_graph
+from core.legacy_retrieval import (
+    LEGACY_REINDEX_REASON_CODE,
+    LegacyRetrievalUnavailable,
+    bounded_legacy_retrieve,
+    lexical_tokens as _lexical_tokens,
+)
 from core.memory import get_fact
-from core.pipeline import _safe_confidence, generate_answer, guardian, retrieve
+from core.pipeline import generate_answer, guardian, retrieve
 from core.retrieval_config import get_retrieval_config
 from core.trace import build_trace
 from core.trust_snapshot import (
-    DEFAULT_CLAIM_TYPE as _DEFAULT_CLAIM_TYPE,
     STORE_STATE_CONFLICT as _STORE_STATE_CONFLICT,
     TrustSnapshot,
 )
 
-# Backward-compatible module-level export used by existing tests/callers.
+# Backward-compatible module-level exports used by tests/callers.
 STORE_STATE_CONFLICT = _STORE_STATE_CONFLICT
 _QUERY_POLICY = "canonical_read_only"
 
@@ -53,6 +57,22 @@ def _public_search_facts(facts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return rows
 
 
+def _legacy_metadata(retrieved: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    legacy = [item for item in retrieved if item.get("origin") == "bounded_legacy_lexical"]
+    if not legacy:
+        return None
+    return {
+        "mode": "bounded_legacy_lexical",
+        "candidates_examined": max(
+            int(item.get("_legacy_candidates_examined", 0)) for item in legacy
+        ),
+        "candidate_limit": max(
+            int(item.get("_legacy_candidate_limit", 0)) for item in legacy
+        ),
+        "reindex_recommended": True,
+    }
+
+
 def _blocked(
     reason: str,
     query_text: str,
@@ -61,6 +81,7 @@ def _blocked(
     facts: Optional[List[Dict[str, Any]]] = None,
     trace: Optional[List[Dict[str, Any]]] = None,
     episode_requested: bool = False,
+    retrieval: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     metrics.incr("query.blocked")
     result: Dict[str, Any] = {
@@ -73,6 +94,8 @@ def _blocked(
         "read_only": True,
         "query_policy": _QUERY_POLICY,
     }
+    if retrieval is not None:
+        result["retrieval"] = retrieval
     if episode_requested:
         result["episode"] = {
             "recorded": False,
@@ -82,14 +105,7 @@ def _blocked(
 
 
 def _resolve_canonical_fact(item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    """Resolve one retrieval hit through an immutable trust snapshot.
-
-    L3 supplies content and verdict fields. L1 is consulted deny-dominantly for
-    a newer terminal ESM state, processing restriction or trust-metadata drift.
-    The snapshot is immutable while those representations are reconciled; a
-    fresh compatibility dict is created only after the decision is complete.
-    Missing graph facts return None and remain outside memory.
-    """
+    """Resolve one retrieval hit through an immutable trust snapshot."""
     fact_id = item.get("id") or item.get("fact_id")
     if not isinstance(fact_id, str) or not fact_id:
         return None
@@ -107,67 +123,19 @@ def _resolve_canonical_fact(item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     return snapshot.to_fact_dict()
 
 
-_TOKEN_RE = re.compile(r"[a-zA-Zа-яА-ЯёЁ0-9_]{2,}")
-
-
-def _lexical_tokens(text: Any) -> set[str]:
-    if not isinstance(text, str):
-        return set()
-    return {token.casefold() for token in _TOKEN_RE.findall(text)}
-
-
 def _retrieve_read_only(query_text: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
     """Retrieve without creating an embedding-space fingerprint.
 
-    The legacy retrieve() stamps an unset fingerprint onto the L3 store. When a
-    fingerprint already exists, that check is read-only and the mature hybrid
-    retrieval can be reused. For a legacy/uninitialised store, use a bounded
-    lexical scan over existing graph nodes instead of mutating store metadata.
-
-    The fingerprint is checked BEFORE any full-store read: on the ordinary
-    fingerprinted path retrieve() does its own bounded vector_search, so
-    materializing every graph node here would be discarded work that grows
-    linearly with the store on every single query.
+    A fingerprinted store uses the mature vector/hybrid path. A no-fingerprint
+    Mock or SQLite store uses a deterministic candidate window whose materialised
+    node count is independent of output ``k`` and hard-capped. Other backends
+    fail closed with an operator-actionable reindex reason.
     """
     limit = get_retrieval_config().k if k is None else k
     graph = get_l3_graph()
     if graph.embedder_fingerprint() is not None:
         return retrieve(query_text, k=limit)
-
-    query_tokens = _lexical_tokens(query_text)
-    if not query_tokens:
-        return []
-
-    nodes = graph.all_facts()
-    if not nodes:
-        return []
-
-    ranked: List[Dict[str, Any]] = []
-    for node in nodes:
-        claim_tokens = _lexical_tokens(node.get("claim"))
-        if not claim_tokens:
-            continue
-        overlap = query_tokens & claim_tokens
-        if not overlap:
-            continue
-        score = len(overlap) / max(1, len(query_tokens | claim_tokens))
-        ranked.append(
-            {
-                "id": node.get("fact_id"),
-                "text": node.get("claim", ""),
-                "source": node.get("source"),
-                "confidence": _safe_confidence(node.get("confidence"), 0.0),
-                "claim_type": node.get("claim_type", _DEFAULT_CLAIM_TYPE),
-                "source_status": node.get("source_status"),
-                "significance": node.get("significance", 0.5),
-                "epistemic_state": node.get("epistemic_state"),
-                "truth_status": node.get("truth_status"),
-                "origin": "canonical_lexical_fallback",
-                "_score": round(score, 6),
-            }
-        )
-    ranked.sort(key=lambda item: item["_score"], reverse=True)
-    return ranked[:limit]
+    return bounded_legacy_retrieve(query_text, k=limit, graph=graph)
 
 
 def _resolve_retrieval_hits(retrieved: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -180,50 +148,78 @@ def _resolve_retrieval_hits(retrieved: List[Dict[str, Any]]) -> List[Dict[str, A
     return facts
 
 
-def search(query_text: str, k: int = 5) -> List[Dict[str, Any]]:
-    """Read-only ranked search over facts already present in graph memory.
-
-    This is the public search contract for inspection surfaces such as MCP. It
-    does not run answer generation or admission policy, never stores unknown
-    retrieval candidates, and excludes processing-restricted rows before any
-    claim/source content is returned. Trust/status fields remain explicit so a
-    caller cannot mistake physical graph membership for strict grounding.
-    """
+def search_result(query_text: str, k: int = 5) -> Dict[str, Any]:
+    """Structured read-only search result with stable availability reason codes."""
     if not isinstance(query_text, str) or not query_text.strip():
         raise ValueError("search: empty query")
     if isinstance(k, bool) or not isinstance(k, int) or k < 1:
         raise ValueError("search: k must be a positive integer")
-
-    retrieved = _retrieve_read_only(query_text, k=k)
+    try:
+        retrieved = _retrieve_read_only(query_text, k=k)
+    except LegacyRetrievalUnavailable as exc:
+        return {
+            "results": [],
+            "error": str(exc),
+            "reason_code": exc.reason_code,
+            "read_only": True,
+            "query_policy": _QUERY_POLICY,
+        }
     facts = [
         fact for fact in _resolve_retrieval_hits(retrieved)
         if fact.get("restricted") is False
     ]
-    return _public_search_facts(facts)
+    result: Dict[str, Any] = {
+        "results": _public_search_facts(facts),
+        "reason_code": "ok" if facts else "no_local_retrieval_results",
+        "read_only": True,
+        "query_policy": _QUERY_POLICY,
+    }
+    legacy = _legacy_metadata(retrieved)
+    if legacy is not None:
+        result["retrieval"] = legacy
+    return result
+
+
+def search(query_text: str, k: int = 5) -> List[Dict[str, Any]]:
+    """Backward-compatible list-only search wrapper.
+
+    New public adapters should use :func:`search_result` so an unavailable
+    legacy backend can expose ``legacy_store_requires_reindex`` instead of an
+    ambiguous empty list.
+    """
+    return search_result(query_text, k=k)["results"]
 
 
 def query(
     query_text: str,
     episode: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    """Answer from already-admitted local memory with zero durable mutation.
-
-    This path deliberately does not call pipeline.build_facts_pack(), TruthGate,
-    ESM transition functions, outbox draining, episodic linking, NeuroCore, or
-    any ingestion/reconciliation writer. Unknown retrieval rows are not stored;
-    they produce a bounded insufficient-evidence result.
-    """
+    """Answer from already-admitted local memory with zero durable mutation."""
     if not isinstance(query_text, str) or not query_text.strip():
         raise ValueError("query: empty query")
 
     metrics.incr("query.total")
-    retrieved = _retrieve_read_only(query_text)
+    try:
+        retrieved = _retrieve_read_only(query_text)
+    except LegacyRetrievalUnavailable as exc:
+        return _blocked(
+            str(exc),
+            query_text,
+            reason_code=exc.reason_code,
+            episode_requested=episode is not None,
+            retrieval={
+                "mode": "unavailable_legacy_backend",
+                "reindex_required": True,
+            },
+        )
+    legacy = _legacy_metadata(retrieved)
     if not retrieved:
         return _blocked(
             "Retrieval returned 0 results.",
             query_text,
             reason_code="no_local_retrieval_results",
             episode_requested=episode is not None,
+            retrieval=legacy,
         )
 
     facts = _resolve_retrieval_hits(retrieved)
@@ -233,6 +229,7 @@ def query(
             query_text,
             reason_code="no_canonical_retrieval_results",
             episode_requested=episode is not None,
+            retrieval=legacy,
         )
 
     trace_input = [
@@ -256,11 +253,14 @@ def query(
             facts=facts,
             trace=trace,
             episode_requested=episode is not None,
+            retrieval=legacy,
         )
 
     result = generate_answer(facts_pack, trace)
     result["read_only"] = True
     result["query_policy"] = _QUERY_POLICY
+    if legacy is not None:
+        result["retrieval"] = legacy
     if episode is not None:
         result["episode"] = {
             "recorded": False,
@@ -277,4 +277,10 @@ def query(
 
 run_read_only = query
 
-__all__ = ["query", "run_read_only", "search"]
+__all__ = [
+    "LEGACY_REINDEX_REASON_CODE",
+    "query",
+    "run_read_only",
+    "search",
+    "search_result",
+]
