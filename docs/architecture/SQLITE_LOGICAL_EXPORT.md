@@ -88,7 +88,8 @@ Verification does not open the source profile or source database. It checks:
 - exact bundle file set;
 - completion and manifest schemas;
 - manifest and dataset hashes over the exact bytes parsed by the verifier;
-- `lstat`/`open`/`fstat` identity checks, one descriptor per file and final unchanged-file/directory rechecks;
+- `lstat`/`open`/`fstat` identity checks, one descriptor per file and final
+  unchanged-file/directory rechecks;
 - byte sizes and record counts;
 - strict/canonical JSONL representation;
 - strict deterministic ordering;
@@ -101,9 +102,41 @@ Successful verification proves only bundle integrity and conformance to this exp
 It does not prove target compatibility, successful import, claim truth, strict Canon
 membership, admissibility, safe activation or production readiness.
 
+## Local-first resource contract
+
+The first implementation is deliberately bounded rather than presented as an
+institution-scale migration engine. Export and verification fail closed before accepting
+inputs outside these fixed limits:
+
+| Resource | Limit |
+|---|---:|
+| storage profile or control JSON file | 1 MiB |
+| source SQLite database file | 64 MiB |
+| one canonical JSONL record | 1 MiB |
+| records in one dataset | 200,000 |
+| one dataset file | 64 MiB |
+| aggregate JSONL data in one bundle | 384 MiB |
+
+The source database size and table counts are checked before full dataset materialization.
+The writer also enforces per-record, per-dataset and aggregate byte limits while emitting
+the bundle. The independent verifier validates declared counts and sizes before reading the
+datasets and applies the same record and byte ceilings while parsing.
+
+These limits make memory and disk exposure finite for the current local-first slice. They
+do **not** establish bounded-memory operation proportional to a small batch, support for
+arbitrarily large stores, or institution-scale PostgreSQL migration. Issue #331 tracks the
+required cursor batching, incremental parsing/hashing and disk-backed referential checks.
+PostgreSQL/pgvector work in issue #332 remains blocked on that institutional-scale gate.
+
+Changing these constants is a migration-format and operational-policy change. It requires
+review, adversarial tests, exact-head CI and synchronized documentation; operators must not
+patch limits silently to bypass the fail-closed contract.
+
 ## Current limitations
 
 - physical L3 only; L1 operational memory is not exported;
+- bounded local-first resource envelope; no institution-scale claim;
+- datasets and referential indexes are still materialized within the documented limits;
 - no importer;
 - no target schema mapping;
 - no exact source/target equivalence engine;
@@ -111,4 +144,5 @@ membership, admissibility, safe activation or production readiness.
 - no cutover or rollback receipt;
 - no encryption layer supplied by this command;
 - no online distributed fencing beyond the locked deployment/profile contract;
-- concurrent bundle mutation is detected and rejected, but the verifier does not provide an external filesystem lock to other processes.
+- concurrent bundle mutation is detected and rejected, but the verifier does not provide
+  an external filesystem lock to other processes.
