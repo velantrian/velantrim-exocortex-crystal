@@ -1,9 +1,10 @@
 # Cross-Backend Storage Migration Contract
 
-**Status:** Accepted architecture contract; runtime implementation remains partial/absent
+**Status:** Accepted architecture contract; SQLite export/verification phases implemented, later phases absent
 **Decision issue:** #327
 **Runtime baseline:** SQLite lifecycle from PR #325
 **Documentation language:** English is authoritative during active engineering
+**Implemented operator slice:** [SQLite logical export and verification](./SQLITE_LOGICAL_EXPORT.md)
 
 ## Purpose
 

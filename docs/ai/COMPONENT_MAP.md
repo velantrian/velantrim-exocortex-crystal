@@ -339,3 +339,8 @@ until separately implemented and merged.
 
 PostgreSQL/pgvector, dedicated VectorDB integration and automatic SQLite/PostgreSQL
 switching are research/future deployment profiles, not current Crystal runtime.
+
+## Logical migration export
+
+- `core.storage_migration` — deterministic read-only SQLite physical-L3 export and independent fail-closed bundle verification; no import, activation, PostgreSQL or Canon authority.
+- `core.storage_ops` — exposes `export-logical` and `verify-logical` operator commands.
