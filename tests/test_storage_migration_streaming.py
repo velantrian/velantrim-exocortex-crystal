@@ -271,6 +271,8 @@ def test_dataset_hash_pass_resource_and_io_failures(tmp_path, monkeypatch):
         "nodes"
     ]
 
+    monkeypatch.setattr(m, "MAX_DATASET_BYTES", metadata["bytes"])
+
     real_read = m.os.read
     calls = {"count": 0}
 
