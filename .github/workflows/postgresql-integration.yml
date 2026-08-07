@@ -1,0 +1,56 @@
+name: PostgreSQL inactive import integration
+
+on:
+  pull_request:
+    paths:
+      - "core/postgresql_migration.py"
+      - "core/storage_ops.py"
+      - "tests/test_postgresql_migration_integration.py"
+      - "pyproject.toml"
+      - "requirements-dev.txt"
+      - ".github/workflows/postgresql-integration.yml"
+  push:
+    branches: [main]
+    paths:
+      - "core/postgresql_migration.py"
+      - "core/storage_ops.py"
+      - "tests/test_postgresql_migration_integration.py"
+      - "pyproject.toml"
+      - "requirements-dev.txt"
+      - ".github/workflows/postgresql-integration.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  postgresql-pgvector-integration:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.2-pg16
+        env:
+          POSTGRES_USER: crystal
+          POSTGRES_PASSWORD: crystal-password
+          POSTGRES_DB: crystal
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U crystal -d crystal"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      VELANTRIM_POSTGRES_TEST_DSN: postgresql://crystal:crystal-password@127.0.0.1:5432/crystal
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test and optional PostgreSQL dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip install -e . --no-deps
+      - name: Run real inactive import and exact equivalence
+        run: pytest -q tests/test_postgresql_migration_integration.py --no-cov
