@@ -3,8 +3,6 @@ from __future__ import annotations
 
 import threading
 
-import pytest
-
 from core import audit, review
 from core.l3_graph import get_l3_graph
 from core.memory import get_fact, store_fact
@@ -25,16 +23,18 @@ def _pending(fid: str) -> dict:
 
 
 def test_direct_journal_rejects_immutable_candidate_and_target():
-    with pytest.raises(Exception, match="immutable"):
-        stage_review_decision(
-            decision_id="review:immutable-candidate",
-            fact_id="VALUES_CORE",
-            expected_revision=0,
-            expected_state="Observed",
-            candidate_path=("Validated",),
-            event="review_approve",
-            audit_detail={"actor": "alice"},
-        )
+    candidate_result = stage_review_decision(
+        decision_id="review:immutable-candidate",
+        fact_id="VALUES_CORE",
+        expected_revision=0,
+        expected_state="Observed",
+        candidate_path=("Validated",),
+        event="review_approve",
+        audit_detail={"actor": "alice"},
+    )
+    assert candidate_result["ok"] is False
+    assert candidate_result["created"] is False
+    assert "immutable" in candidate_result["reason"]
 
     candidate = _pending("hardening:candidate")
     result = stage_review_decision(
@@ -55,6 +55,7 @@ def test_direct_journal_rejects_immutable_candidate_and_target():
         ),
     )
     assert result["ok"] is False
+    assert result["created"] is False
     assert "immutable" in result["reason"]
     assert get_fact(candidate["fact_id"])["epistemic_state"] == "Observed"
 
