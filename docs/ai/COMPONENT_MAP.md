@@ -24,6 +24,54 @@ points, not substitutes for consumer and test discovery.
 - Does the write use the canonical admission path?
 - Are erasure, restriction and import-session controls preserved?
 
+## 1A. L3 backend selection and deployment diagnostics
+
+**Purpose:** keep the environment-selected physical L3 backend and non-secret locator
+stable across process restarts and expose read-only deployment health.
+
+**Start with:**
+
+- `core/backend_profiles.py`
+- `core/_registry.py`
+- L3 constructors/factory in `core/l3_graph.py`
+- `core/doctor.py`
+- `docs/architecture/DURABLE_STORAGE_PROFILE.md`
+- `tests/test_backend_profiles.py`
+- `tests/test_storage_profile_path.py`
+- `tests/test_doctor.py`
+
+**Decision owner:** the versioned storage profile controls deployment identity for the
+environment-selected singleton. It does not control epistemic admission or strict reads.
+
+**Current runtime contract:**
+
+```text
+first durable startup
+→ construct requested backend or auto-select LadybugDB/SQLite
+→ atomically persist backend + non-secret locator
+
+later startup
+→ validate profile and checksum
+→ reject backend/locator conflict
+→ construct the locked backend
+→ reject automatic Mock fallback
+```
+
+**Audit questions:**
+
+- Can changing `cwd`, installed optional packages or an environment variable select a
+  different physical store after a profile exists?
+- Is the profile malformed, conflicting or missing when a durable lock is expected?
+- Does a test/programmatic explicit backend remain isolated from the environment-selected
+  runtime singleton?
+- Does `velantrim-doctor` remain read-only and avoid opening or repairing L3?
+- Is profile identity being confused with truth, evidence or Canon authority?
+- Is a backend/locator change being attempted without an explicit verified migration?
+
+**Current limitations:** one default user-level profile is assumed unless
+`VELANTRIM_STORAGE_PROFILE_PATH` is configured; no verified cross-backend migration or
+automatic stale-lock recovery exists.
+
 ## 2. Truth admission and safety
 
 **Purpose:** decide whether a candidate may cross into trusted/canonical state.
@@ -39,8 +87,8 @@ points, not substitutes for consumer and test discovery.
 **Decision owners:** TruthGate for admission policy; Guardian for structural/safety
 constraints.
 
-**Forbidden pattern:** a caller, model, retriever, facet, or curator helper directly
-mutating strict Canon outside the audited write path.
+**Forbidden pattern:** a caller, model, retriever, facet, storage profile or curator helper
+directly mutating strict Canon outside the audited write path.
 
 ## 3. Strict read grounding and reconciliation
 
@@ -182,20 +230,21 @@ epistemic state, contradictions, TruthGate decisions or strict Canon membership.
 
 ## 10. Public surfaces and runtime composition
 
-**Purpose:** expose read/query, ingest, review and conflict operations through stable
-interfaces.
+**Purpose:** expose read/query, ingest, review, conflict and operator diagnostics through
+stable interfaces.
 
 **Start with:**
 
 - `core/api.py`
 - `core/cli.py`
+- `core/doctor.py`
 - MCP modules under `core/`
 - `Dockerfile`
 - package entry points in `pyproject.toml`
 - `.github/workflows/ci.yml`
 
-**Boundary:** public query/search surfaces are read-only. Mutating operations require
-explicitly named and authenticated write/review surfaces.
+**Boundary:** public query/search and doctor surfaces are read-only. Mutating operations
+require explicitly named and authenticated write/review surfaces.
 
 ## 11. Evaluation, mutation and performance evidence
 
@@ -216,6 +265,7 @@ explicitly named and authenticated write/review surfaces.
 - Does the gate measure runtime code or documentation only?
 - Are skipped tests and environment caveats visible?
 - Is a microbenchmark being presented as a production SLO?
+- Was an unavailable automated review service incorrectly presented as approval?
 
 ## 12. Long-document semantic reading
 
@@ -251,3 +301,6 @@ It must not become a second Canon owner or turn summary importance into truth.
 **Authority rule:** GitHub `main` proves implementation. Notion preserves deeper
 rationale, roadmap and grant history. Research PRs and issues remain non-authoritative
 until separately implemented and merged.
+
+PostgreSQL/pgvector, dedicated VectorDB integration and automatic SQLite/PostgreSQL
+switching are research/future deployment profiles, not current Crystal runtime.
