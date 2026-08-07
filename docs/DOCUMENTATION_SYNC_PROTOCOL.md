@@ -112,7 +112,8 @@ or hide its findings.
 ### Before review — Notion available
 
 1. Update every affected GitHub surface, which may include:
-   - `README.md` and aligned localized README files;
+   - `README.md` and affected English technical/status documents;
+   - localized README files only in a dedicated localization PR;
    - `TEST_REPORT.md`;
    - `docs/STATUS.md`;
    - `docs/IMPLEMENTATION_STATUS.md`;
@@ -219,3 +220,23 @@ verified code and tests
 A Notion plan is not implementation proof. A merged PR with stale status or public docs
 is not complete. A connectorless analysis hidden only in chat is not a durable hand-off.
 A checked box without the corresponding record is not synchronization.
+
+## 9. Active language and localization policy
+
+English is the authoritative actively maintained GitHub documentation language while
+Crystal engineering remains in motion.
+
+Existing translated top-level README files are retained as frozen snapshots. They may lag
+mutable test counts, SHAs and capability details. Ordinary runtime, architecture and
+status PRs must not update them automatically.
+
+A later dedicated final localization pass must:
+
+1. start from a frozen English verified checkpoint;
+2. update every supported language coherently;
+3. preserve stable API/code identifiers;
+4. run link and claim-boundary checks;
+5. record its own exact CI evidence.
+
+The `docs-status` job validates current English authority surfaces and the declared freeze
+policy; it does not require stale translations to mirror every mutable checkpoint.

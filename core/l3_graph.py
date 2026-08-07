@@ -1,18 +1,18 @@
 # core/l3_graph.py
-# Velantrim ExoCortex — L3 Canonical Graph (adapter)
+# Velantrim ExoCortex — physical L3 graph adapter.
 #
-# Principle: Graph = Truth. L3 is the single source of canonical truth.
-# The only entry into L3 is via the TruthGate (see pipeline.run). A direct MERGE
-# into the graph bypassing the TruthGate is an architectural bug.
+# Physical L3 is multi-status storage and retrieval state, not truth or strict
+# Canon by membership. Admission remains owned by TruthGate/Guardian, while
+# strict reads are derived through deny-dominant TrustSnapshot/CanonicalView
+# reconciliation.
 #
 # Memory layers (physically distinct fabrics):
-#   SQLite (core/memory.py) — L0/L1 + L2-pending: fast working memory of "now",
-#                             ESM stages Observed/Hypothesized before the gate.
-#   L3 graph (this module)  — canon after the gate: nodes + edges (links, episodes, schemas).
+#   SQLite (core/memory.py) — L0/L1 + L2-pending operational state.
+#   L3 graph (this module)  — typed nodes, vectors, edges, entities and metadata.
 #
-# Pluggable backend. Default `auto`: LadybugDB if installed, then the
-# dependency-free on-disk SQLite backend, then the in-memory mock as a
-# last-resort/dev fallback.
+# Pluggable backend. Environment-selected `auto` may choose a durable backend only
+# during first bootstrap; the persisted storage profile then locks backend and
+# non-secret locator. Automatic fallback to ephemeral Mock fails closed.
 # Optional prod engine — LadybugDB: an embedded, Cypher-compatible graph DB in
 # the Kuzu lineage (the upstream Kuzu repository was archived in Oct. 2025).
 # It ships a vector index and full-text search. Standard Cypher → the backend
@@ -52,7 +52,7 @@ def _salience_score(similarity: float, significance: Any) -> float:
 
 class L3GraphBackend(ABC):
     """
-    Minimal contract of the L3 canonical graph.
+    Minimal contract of the physical L3 multi-status graph.
     All implementations (mock / LadybugDB) must honor it,
     so the backend can be swapped without touching the pipeline.
     """
@@ -307,8 +307,8 @@ def _synchronized(method):
 
 class SqliteL3Graph(L3GraphBackend):
     """
-    On-disk L3 canon backed by SQLite (Python standard library — no external
-    dependency). Same MERGE/edge/vector semantics as MockL3Graph, but the canon
+    On-disk physical L3 backed by SQLite (Python standard library — no external
+    dependency). Same MERGE/edge/vector semantics as MockL3Graph, but the store
     SURVIVES restarts: this is the local-first, dependency-free persistence
     target. Selected with VELANTRIM_L3_BACKEND=sqlite (and is the 'auto' fallback
     when LadybugDB is not installed). The DB file path is VELANTRIM_L3_PATH

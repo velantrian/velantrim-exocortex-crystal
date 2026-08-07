@@ -1,7 +1,7 @@
 # ⚠️ Crystal Known Risks and Open Boundaries
 
-**Status date:** 2026-08-07  
-**Verified runtime checkpoint:** `0ca66cc6e194edd06b5de2a6eb5126a30613957e`
+**Status date:** 2026-08-07
+**Verified runtime checkpoint:** `b0df17a06d552ad2543b6d6e5efe8cd99877cfc0`
 
 This register is an orientation layer. It does not replace issues, ADRs, security
 operations, tests, current code inspection or legal review.
@@ -71,8 +71,21 @@ to process `cwd`. The default was corrected before merge to
 `~/.velantrim/velantrim-storage-profile.json`, with a regression test across working
 directories.
 
-**Remaining boundary:** backend/locator migration, stale-lock recovery, backup/restore and
-multi-instance deployment policy are not solved by the profile lock.
+**Remaining boundary:** PR #325 separately implemented SQLite backup/restore and guarded
+legacy stale-lock recovery. Cross-backend migration, multi-instance deployment policy and
+distributed fencing remain open.
+
+### SQLite storage lifecycle
+
+**Closed by:** PR #325, merge `b0df17a06d552ad2543b6d6e5efe8cd99877cfc0`, validated head `aa822c49c095039de90b92fbe4fe451c7b8f13b7`,
+CI `31182471502`.
+
+The locked SQLite profile now supports online backup, independent verification, restore
+only to a new inactive database/profile, and guarded stale-lock recovery. Independent
+diff review found and closed a new-writer race before final CI.
+
+**Remaining boundary:** this is SQLite deployment continuity, not cross-backend migration,
+automatic activation, distributed fencing or epistemic admission.
 
 ## P0 — permanent trust-boundary regression targets
 
@@ -127,17 +140,18 @@ restrictions and `TrustSnapshot` remain the owners of admission and strict reads
 
 ## P1 — current engineering and operational limitations
 
-### P1.1 Explicit storage migration is absent
+### P1.1 Cross-backend migration runtime is absent
 
-The locked backend and locator cannot be safely changed by editing or deleting the profile.
-No verified SQLite/LadybugDB/Neo4j/PostgreSQL migration command exists.
+ADR-021 defines the required phased contract, but no verified cross-backend import,
+equivalence, cutover or rollback command exists. The approved first implementation slice
+is read-only SQLite logical export plus independent bundle verification.
 
 **Do not claim:** automatic database switching, verified dual-write, lossless cross-backend
-migration or rollback.
+migration, PostgreSQL support or rollback.
 
-**Closure proof:** dry-run plan, source/target identity, fact/edge/evidence/restriction/audit
-counts and hashes, deterministic transformation rules, rollback proof and a structured
-migration receipt.
+**Closure proof:** deterministic export/verify first; then separate inactive-target import,
+source/target exact-state comparison, retrieval evaluation, explicit cutover, rollback
+proof and structured receipts.
 
 ### P1.2 Default profile and stale-lock operations need deployment policy
 
@@ -299,3 +313,12 @@ migration/recovery behavior
 remaining limitations
 GitHub and Notion synchronization
 ```
+
+### P2.6 Frozen localization drift
+
+English is the active authority language. Existing localized READMEs may lag until the
+dedicated final translation pass.
+
+**Control:** do not cite localized mutable metrics as current evidence; keep English
+status/manifest/TEST_REPORT coherent; perform one explicit localization PR after the
+engineering baseline is frozen.

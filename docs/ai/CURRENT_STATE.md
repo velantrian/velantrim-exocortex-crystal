@@ -1,210 +1,114 @@
-# 📍 Crystal Current State
+# Crystal Current State
 
-**Status date:** 2026-08-07  
-**Current `main` head:** `0ca66cc6e194edd06b5de2a6eb5126a30613957e`  
-**Verified runtime checkpoint:** `0ca66cc6e194edd06b5de2a6eb5126a30613957e`  
+**Status date:** 2026-08-07
+**Current documentation base:** `main@5cd0754614327c2ffc14902d5d411e347edf9ae9`
+**Verified runtime checkpoint:** `b0df17a06d552ad2543b6d6e5efe8cd99877cfc0`
+**Validated runtime head/tree:** `aa822c49c095039de90b92fbe4fe451c7b8f13b7` / `6143d7237222935182db86a166541d0ad07887be`
+**Runtime PR / CI:** #325 / `31182471502`
 **Version:** `0.3.0`
 
-This file is a compact orientation snapshot. GitHub `main`, current code, tests and
-completed Actions runs remain implementation truth. Notion stores synchronized rationale,
-strategy and project history; it does not override repository evidence.
+GitHub `main`, executable tests and completed CI are implementation truth. Notion stores
+synchronized rationale and history; it does not override repository evidence.
 
-## 1. Verified hardening checkpoint
+## 1. Verified runtime evidence
 
-The 2026-08-07 hardening sequence was merged and validated on exact PR heads:
+- Python 3.11: **2019 passed / 12 skipped / 0 failed**;
+- Python 3.12: successful under the same strict gate;
+- **8726 measured statements / 100.00% line coverage**;
+- **7/7** declared Ring Zero mutants killed;
+- **9/9** permanent CI jobs successful;
+- security, Ruff, eval, JSONL integrity, docs-status and Docker green.
 
-| Capability | PR | Merge SHA | Exact-head CI |
-|---|---:|---|---:|
-| Crash-consistent curator decisions | #319 | `62879cd2095450de57d11fcf97c13f5f9768ad0b` | `31162857843` |
-| Principal-bound curator writes | #320 | `1414862786aa0c0d4cf4ad152776dd4e55536bf0` | `31164585628` |
-| Bounded legacy retrieval and explicit reindex | #321 | `1748677a5c84e8a9b3af08fcaed0215efebcdd66` | `31166027193` |
-| Durable L3 profile lock and read-only doctor | #322 | `0ca66cc6e194edd06b5de2a6eb5126a30613957e` | `31174042124` |
+The automatic Codex review was unavailable because of quota. That is recorded as absent
+review, not approval. Manual diff review found and fixed the stale-lock recovery race before
+the final exact-head CI.
 
-The final runtime merge commit has tree `721049b198045e1c8504d57f64a0ab44b72ae403`,
-identical to the validated PR #322 head tree.
+## 2. Storage runtime now implemented
 
-Latest runtime evidence:
+PR #322 locked the environment-selected durable L3 backend and non-secret locator across
+restarts and added read-only diagnostics.
 
-- Python 3.11: **1987 passed, 12 skipped, 0 failed**;
-- Python 3.12: successful with the same strict gate;
-- **8231 measured statements, 100.00% line coverage**;
-- **7/7 declared Ring Zero mutants killed**;
-- **9/9 permanent CI jobs successful**;
-- Gitleaks, Bandit, pip-audit, eval, JSONL integrity, Ruff, docs-status and Docker green.
-
-The automatic Codex review attempt on PR #322 was unavailable because the connected
-account had exhausted its code-review quota. That service limitation is recorded in the
-PR timeline and is not represented as independent review evidence. Exact-head CI and the
-manual diff inspection that found and corrected the initial working-directory-relative
-profile path remain the recorded verification evidence.
-
-## 2. Current implemented boundaries
-
-Crystal now includes:
-
-- typed claims and explicit epistemic lifecycle;
-- Guardian and TruthGate admission controls;
-- physical L3 separated from strict Canon;
-- immutable deny-dominant `TrustSnapshot` reconciliation;
-- read-only HTTP, CLI and MCP query surfaces;
-- TRACE, receipts and tamper-evident audit continuity;
-- immutable contradiction reports and explicit `COEXIST`, `CONTEXTUALIZE` and
-  `SUPERSEDE` decisions without an automatic winner;
-- transactional SQLite curator-decision journal/outbox with idempotent L3 projection,
-  restart recovery and structured pending/failed/blocked status;
-- authoritative L1 restriction semantics that remain deny-dominant while secondary L3
-  synchronization is unavailable;
-- principal-derived curator identity, explicit capabilities, normalized candidate/target
-  scopes, current-report pinning and process-local decision leases across bundled write
-  surfaces;
-- ADMIN-only force approval and zero canonical mutation on authorization denial;
-- bounded no-fingerprint lexical retrieval for reviewed Mock/SQLite adapters;
-- stable `legacy_store_requires_reindex` fail-closed behavior for unsupported legacy
-  backends;
-- explicit operator reindex that changes vectors/fingerprint only;
-- durable environment-selected L3 backend and non-secret locator locking across process
-  restarts;
-- fail-closed rejection of malformed profiles, backend/locator drift and automatic
-  fallback to ephemeral Mock;
-- a pure-standard-library, read-only `velantrim-doctor` JSON diagnostic command;
-- advisory topic facets with no truth, evidence or Canon authority;
-- machine-readable ESM specification and recorded retrieval benchmark evidence.
-
-The storage profile is deployment identity only. It does not establish truth, change
-strict Canon membership, bypass Guardian/TruthGate or turn retrieval rank into evidence.
-
-## 3. Retrieval benchmark evidence
-
-PR #321 benchmark run `31165503179` used Python 3.11.15, candidate cap 256 and 30
-measured iterations per case:
-
-| Corpus | p50 | p95 | Maximum candidates examined |
-|---:|---:|---:|---:|
-| 1,000 | 1.465 ms | 1.489 ms | 256 |
-| 10,000 | 1.469 ms | 1.493 ms | 256 |
-| 30,000 | 1.471 ms | 1.498 ms | 256 |
-
-The timing values are contextual hosted-runner evidence, not a latency SLO. The
-load-bearing result is that candidate work remained at or below the configured cap for
-all recorded corpus sizes.
-
-## 4. Durable storage-profile contract
-
-Environment-selected L3 startup now follows:
+PR #325 added the pure-standard-library SQLite lifecycle:
 
 ```text
-read requested backend
-→ read and validate durable profile
-→ reject backend or locator conflict
-→ construct the locked backend
-→ verify constructed backend and locator
-→ cache the process-local singleton
+status
+backup
+verify
+restore to new inactive database/profile
+inspect-lock
+explicit guarded recover-lock
 ```
 
-On a first durable startup, `auto` may select LadybugDB and then SQLite. The durable winner
-and its non-secret locator are persisted. Automatic fallthrough to in-memory Mock is
-rejected; explicit Mock remains available for tests and deliberate development use.
+Backup uses SQLite's online backup API. Verification checks completion, hashes, integrity,
+required tables, counts and profile identity. Restore is no-clobber and does not activate
+the candidate. Lock recovery uses quarantine plus a recovery-owned placeholder and never
+unlinks a lock won by a new initializer.
 
-Default profile location:
+## 3. Authority boundary
 
 ```text
-~/.velantrim/velantrim-storage-profile.json
+storage profile = deployment identity
+backup/restore receipt = operation evidence
+physical L3 = multi-status storage
+strict Canon = deny-dominant trusted read projection
+migration/import != TruthGate admission
 ```
 
-Service, container and multiple-instance deployments should set
-`VELANTRIM_STORAGE_PROFILE_PATH` explicitly. Editing or deleting a profile is not a
-migration. PostgreSQL/pgvector remains a future institutional profile, not current runtime.
+Storage, migration, retrieval rank and vector indexes cannot establish claim truth.
 
-## 5. Important remaining limitations
+## 4. Current architecture decision — issue #327
 
-| Area | Current reality |
-|---|---|
-| Storage migration | backend or locator changes have no verified migration command yet; no silent copy, dual-write or auto-switch is allowed |
-| Multiple deployments | the user-level default profile assumes one default deployment; services, containers and multiple instances should configure an explicit profile path |
-| Profile-lock recovery | a hard crash can leave the bounded lock file and fail closed; no automatic stale-lock deletion is claimed |
-| Distributed coordination | bundled curator lease is process-local; no cross-process fencing or global exactly-once claim |
-| Identity and tenancy | principal composition exists, but production IdP, token lifecycle, tenant isolation and policy administration remain host work |
-| Legacy degraded retrieval | deterministic bounded windows can miss relevant records outside the window; degraded mode explicitly recommends reindex |
-| Performance | benchmark evidence exists, but no production latency/capacity SLO is established |
-| Mutation proof | Ring Zero mutation testing is targeted, not repository-wide |
-| Supply chain | security scanning passes, but dependency/action reproducibility and pinning remain improvement work |
-| Legacy normalized IDs | upgraded stores may still need a reviewed migration or normalized-claim index (#165) |
-| Long documents | no verified multi-pass Reader Core / Semantic Reading Layer exists |
-| Compliance | GDPR-oriented mechanisms and documentation are not legal certification |
-| Production posture | Crystal is not a certified turnkey multi-tenant production service |
-
-## 6. Closed audit findings
-
-- **#315 / PR #319:** crash consistency closed with a durable decision/outbox model,
-  idempotent projection, failure injection and recovery evidence.
-- **#316 / PR #320:** bundled public curator writes now derive identity and authorization
-  from configured/authenticated principals; request and CLI text cannot establish the
-  audit actor.
-- **#317 / PR #321:** public legacy retrieval no longer performs reviewed unbounded
-  Mock/SQLite corpus scans; unsupported adapters fail closed and explicit reindex is
-  available.
-- **PR #322:** per-process L3 `auto` probing can no longer silently drift between durable
-  physical stores after a profile exists, and first-run automatic fallback to ephemeral
-  Mock fails closed. The initial draft's cwd-relative profile location was found during
-  diff review and corrected before exact-head CI and merge.
-
-These closures do not remove the remaining migration, multiple-deployment,
-distributed-coordination, production-identity, recall-quality or operational-capacity
-boundaries listed above.
-
-## 7. Long-document semantic reading
-
-No dedicated multi-pass `Reader Core` / `Semantic Reading Layer` with structural maps,
-coverage tracking, bookmarks, exception/contradiction passes and selective re-reading is
-part of the verified runtime.
-
-A future reading layer should produce source-linked candidate cards and coverage evidence
-upstream of ordinary Guardian and TruthGate admission. It must not become a second Canon
-owner or silently promote summaries, rankings or inferred importance.
-
-## 8. Open work and research interpretation
-
-Open issues and PRs are hypotheses, proposals or mutable work records until merged. Agents
-must inspect their current base, head, diff, checks and review state before citing them.
-
-Material remaining engineering directions include:
-
-- explicit storage migration with dry-run, counts/hashes, evidence/restriction/audit
-  verification, rollback proof and a migration receipt;
-- backup/restore and upgrade guidance for locked storage profiles;
-- an optional PostgreSQL/pgvector institutional RFC only after invariant-equivalence and
-  migration evidence are defined;
-- external lease/fencing adapter for multi-process curator coordination;
-- production identity-provider and tenant-policy integration;
-- broader provenance lifecycle inventory and recovery proof;
-- controlled-runner performance policy;
-- broader mutation testing;
-- reproducible dependency/tool/action pinning;
-- normalized legacy-ID migration or index (#165);
-- a separately reviewed Reader Core RFC.
-
-Research PRs and ecosystem pages must not be represented as Crystal runtime merely because
-they are public or documentation-only.
-
-## 9. Authority and grant boundary
+Issue #327 defines a phased cross-backend migration contract and a proposed
+PostgreSQL/pgvector institutional profile.
 
 ```text
-GitHub main code + tests = implementation truth
-verified runtime checkpoint = 0ca66cc
-Notion = rationale, strategy, grant context and synchronized history
-Storage profile = deployment identity, not epistemic authority
-Physical L3 != strict Canon
-Retrieval rank != evidence or truth
-Model output != independent factual source
-Titan / Full Exo-Cortex / Personal Exo-Cortex = separate research tracks
+preflight
+→ read-only logical export
+→ completed verified bundle
+→ inactive import
+→ exact state equivalence
+→ retrieval-quality evaluation
+→ explicit cutover
+→ optional rollback
 ```
 
-No new award, budget, legal certification, distributed-locking, production-readiness,
-zero-hallucination or artificial-consciousness claim is introduced by this checkpoint.
-PostgreSQL, pgvector and dedicated VectorDB support are not claimed by the runtime.
+Architecture acceptance does not mean runtime implementation.
 
-## 10. Documentation synchronization
+## 5. Approved next runtime slice
 
-The documentation-only follow-up to PR #322 updates this AI context, the component map,
-the known-risk register and the engineering work log, then synchronizes the same immutable
-merge/CI facts into the Crystal Project Hub and Current Architectural Position Notion pages.
+The first implementation slice is intentionally narrow:
+
+```text
+locked SQLite profile
+→ deterministic read-only logical export
+→ backend-neutral completed bundle
+→ independent fail-closed verification
+```
+
+Excluded: target import, activation, rollback, PostgreSQL, pgvector, dual-write, live
+cutover and automatic switching.
+
+## 6. Documentation policy
+
+English is the sole authoritative actively maintained GitHub documentation language during
+engineering. Existing localized READMEs are frozen snapshots and may lag until a dedicated
+final localization pass. Ordinary engineering PRs must not update them.
+
+## 7. Important remaining limitations
+
+- no cross-backend importer or exact-equivalence engine;
+- no cutover/rollback/fencing implementation;
+- no PostgreSQL/pgvector runtime;
+- no distributed curator coordination;
+- no complete production IdP/multi-tenancy;
+- bounded degraded retrieval can trade recall for work limits;
+- performance evidence is not a production SLO;
+- supply-chain pinning remains incomplete;
+- no dedicated verified Reader Core;
+- no legal/security certification claim.
+
+## 8. Synchronization
+
+This issue/PR is `GITHUB_AND_NOTION`. The Project Hub and Current Architectural Position
+must record the same status distinction: accepted contract versus absent runtime. Final
+merge SHA and CI evidence must be added to Notion after merge.

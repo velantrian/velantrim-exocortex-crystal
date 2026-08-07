@@ -257,6 +257,20 @@ A missing connector alone is `HANDOFF_REQUIRED`, not an information dead end.
 Never publish private workspace content, private URLs, secrets, personal information or
 private datasets in this public repository.
 
+### Active documentation language policy
+
+During the current engineering phase, English is the sole authoritative actively
+maintained GitHub documentation language.
+
+- Update `README.md`, English architecture/ADR/status/security/grant documents and
+  `docs/ai/*` in implementation PRs.
+- Do not automatically update localized top-level README files.
+- Existing translations are frozen snapshots and may lag.
+- Translate and reconcile them only in a dedicated final localization PR after the
+  engineering/status baseline is frozen.
+- CI must validate current English evidence without requiring every frozen translation to
+  carry mutable checkpoint numbers.
+
 ## 13. AI context-pack maintenance
 
 Update the compact pack when material:

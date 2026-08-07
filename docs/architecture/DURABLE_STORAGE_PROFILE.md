@@ -151,3 +151,11 @@ This is deployment hardening of the existing local-first foundation:
 - no automatic Canon switch;
 - no claim of production certification;
 - no change to TruthGate, Guardian or strict Canon membership.
+
+## Cross-backend changes
+
+Changing the locked backend or locator after data exists must follow the
+[Cross-Backend Storage Migration Contract](./CROSS_BACKEND_MIGRATION_CONTRACT.md).
+Editing or deleting the profile, installing an adapter, or observing server availability
+is not migration. The [PostgreSQL + pgvector RFC](./POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
+remains proposed and not runtime.
