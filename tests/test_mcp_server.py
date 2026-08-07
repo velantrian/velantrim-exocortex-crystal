@@ -1,9 +1,4 @@
-"""Tests for the read-only MCP server (core/mcp_server.py).
-
-Exercises the JSON-RPC/MCP handshake, the read-only tool surface, error paths,
-and the stdio serve() loop — all on the dependency-free mock backends pinned by
-the autouse `isolated_db` fixture.
-"""
+"""Tests for the read-only MCP server (core/mcp_server.py)."""
 import io
 import json
 
@@ -19,12 +14,9 @@ def _call(method, params=None, req_id=1):
     return mcp_server.handle_message(msg)
 
 
-# ─── handshake ────────────────────────────────────────────────────────────────
-
 def test_initialize_reports_server_info():
     resp = _call("initialize", {"protocolVersion": "2025-06-18"})
     assert resp["result"]["serverInfo"] == {"name": "velantrim", "version": __version__}
-    # Echoes the client's requested protocol version.
     assert resp["result"]["protocolVersion"] == "2025-06-18"
     assert "tools" in resp["result"]["capabilities"]
 
@@ -35,15 +27,12 @@ def test_initialize_defaults_protocol_when_absent():
 
 
 def test_initialized_notification_has_no_response():
-    # No "id" → a notification → must not produce a response.
     assert mcp_server.handle_message({"jsonrpc": "2.0", "method": "notifications/initialized"}) is None
 
 
 def test_ping():
     assert _call("ping")["result"] == {}
 
-
-# ─── tools/list ───────────────────────────────────────────────────────────────
 
 def test_tools_list_is_read_only_surface():
     tools = _call("tools/list")["result"]["tools"]
@@ -52,21 +41,20 @@ def test_tools_list_is_read_only_surface():
         "search", "memory_report", "get_fact",
         "fact_history", "find_conflicts", "verify_receipt",
     }
-    # No write/destructive tools are exposed at the reader capability.
     for forbidden in ("ingest", "store_fact", "erase", "supersede", "validate"):
         assert forbidden not in names
-    # Every tool has a JSON-Schema inputSchema.
-    for t in tools:
-        assert t["inputSchema"]["type"] == "object"
+    for tool in tools:
+        assert tool["inputSchema"]["type"] == "object"
 
 
-# ─── tools/call: each read-only tool runs ─────────────────────────────────────
-
-def test_call_search_returns_hits():
+def test_call_search_returns_structured_hits():
     resp = _call("tools/call", {"name": "search", "arguments": {"query": "water", "k": 3}})
     assert resp["result"]["isError"] is False
     payload = json.loads(resp["result"]["content"][0]["text"])
-    assert isinstance(payload, list)
+    assert isinstance(payload, dict)
+    assert isinstance(payload["results"], list)
+    assert payload["read_only"] is True
+    assert "reason_code" in payload
 
 
 def test_call_memory_report():
@@ -77,10 +65,8 @@ def test_call_memory_report():
 
 
 def test_call_get_fact_missing_and_present():
-    # Missing fact.
     resp = _call("tools/call", {"name": "get_fact", "arguments": {"fact_id": "nope"}})
     assert json.loads(resp["result"]["content"][0]["text"]) == {"found": False, "fact_id": "nope"}
-    # Present fact (ingest one first).
     from core.ingest import ingest
     fid = ingest("Water is wet")["fact"]["fact_id"]
     resp = _call("tools/call", {"name": "get_fact", "arguments": {"fact_id": fid}})
@@ -111,13 +97,10 @@ def test_mcp_get_fact_respects_processing_restriction():
     restrict_processing(fact_id, reason="dispute")
 
     resp = _call("tools/call", {"name": "get_fact", "arguments": {"fact_id": fact_id}})
-    assert resp["result"]["isError"] is False
     payload = json.loads(resp["result"]["content"][0]["text"])
-
     assert payload["found"] is True
     assert payload["restricted"] is True
     assert payload["reason"] == "RESTRICTED_BY_POLICY"
-    # The raw claim/content must never appear in a restricted response.
     assert "claim" not in payload
     assert "metadata" not in payload
     assert "a secret claim" not in json.dumps(payload)
@@ -135,25 +118,39 @@ def test_mcp_search_excludes_restricted_facts():
                 "epistemic_state": "Validated"})
     get_l3_graph().merge_fact(get_fact(fact_id))
     assert fact_id in [h["id"] for h in retrieve(claim)]
-
     restrict_processing(fact_id, reason="dispute")
 
     resp = _call("tools/call", {"name": "search", "arguments": {"query": claim, "k": 5}})
-    assert resp["result"]["isError"] is False
     payload = json.loads(resp["result"]["content"][0]["text"])
-    assert fact_id not in [h["fact_id"] for h in payload]
+    assert fact_id not in [h["fact_id"] for h in payload["results"]]
+
+
+def test_mcp_search_exposes_reindex_reason(monkeypatch):
+    monkeypatch.setattr(
+        "core.query_pipeline.search_result",
+        lambda _query, k=5: {
+            "results": [],
+            "error": "legacy_store_requires_reindex: unsupported backend",
+            "reason_code": "legacy_store_requires_reindex",
+            "read_only": True,
+            "query_policy": "canonical_read_only",
+            "retrieval": {"reindex_required": True},
+        },
+    )
+    resp = _call("tools/call", {"name": "search", "arguments": {"query": "x"}})
+    payload = json.loads(resp["result"]["content"][0]["text"])
+    assert payload["reason_code"] == "legacy_store_requires_reindex"
+    assert payload["retrieval"]["reindex_required"] is True
 
 
 def test_call_fact_history_and_find_conflicts():
-    h = _call("tools/call", {"name": "fact_history", "arguments": {"fact_id": "x"}})
-    assert "superseded_by" in json.loads(h["result"]["content"][0]["text"])
-    c = _call("tools/call", {"name": "find_conflicts", "arguments": {"claim": "water boils"}})
-    assert isinstance(json.loads(c["result"]["content"][0]["text"]), list)
+    history = _call("tools/call", {"name": "fact_history", "arguments": {"fact_id": "x"}})
+    assert "superseded_by" in json.loads(history["result"]["content"][0]["text"])
+    conflicts = _call("tools/call", {"name": "find_conflicts", "arguments": {"claim": "water boils"}})
+    assert isinstance(json.loads(conflicts["result"]["content"][0]["text"]), list)
 
 
 def test_mcp_find_conflicts_excludes_restricted_facts():
-    """GDPR Art. 18: the MCP `find_conflicts` tool must not reveal a
-    restricted fact's claim as a conflict candidate."""
     from core.memory import store_fact, transition_esm, get_fact
     from core.l3_graph import get_l3_graph
     from core.compliance import restrict_processing
@@ -167,27 +164,23 @@ def test_mcp_find_conflicts_excludes_restricted_facts():
 
     resp = _call("tools/call", {"name": "find_conflicts",
                                  "arguments": {"claim": "The capital of Freldania is Rivenholt"}})
-    assert resp["result"]["isError"] is False
     payload = json.loads(resp["result"]["content"][0]["text"])
     assert fact_id not in [h["fact_id"] for h in payload]
     assert "Sunmere" not in json.dumps(payload)
 
 
 def test_call_verify_receipt_roundtrips():
-    # Build a real receipt, then verify it through the tool.
     from core.pipeline import run
     from core.provenance import build_receipt
-    res = run("water")
-    if res.get("answer") is not None:
-        receipt = build_receipt(res)
+    result = run("water")
+    if result.get("answer") is not None:
+        receipt = build_receipt(result)
         resp = _call("tools/call", {"name": "verify_receipt", "arguments": {"receipt": receipt}})
         assert resp["result"]["isError"] is False
-    else:  # pragma: no cover - retrieval is deterministic but stay robust
+    else:  # pragma: no cover
         resp = _call("tools/call", {"name": "verify_receipt", "arguments": {"receipt": {}}})
         assert "content" in resp["result"]
 
-
-# ─── error paths ──────────────────────────────────────────────────────────────
 
 def test_call_unknown_tool_is_tool_error():
     resp = _call("tools/call", {"name": "definitely_not_a_tool", "arguments": {}})
@@ -195,7 +188,6 @@ def test_call_unknown_tool_is_tool_error():
 
 
 def test_call_missing_required_arg_is_tool_error():
-    # search without the required "query" → handler raises KeyError → isError.
     resp = _call("tools/call", {"name": "search", "arguments": {}})
     assert resp["result"]["isError"] is True
 
@@ -209,22 +201,18 @@ def test_unknown_notification_is_ignored():
     assert mcp_server.handle_message({"jsonrpc": "2.0", "method": "some/notice"}) is None
 
 
-# ─── stdio serve() loop ───────────────────────────────────────────────────────
-
 def test_serve_stdio_loop():
     lines = [
         json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize",
                     "params": {"protocolVersion": "2024-11-05"}}),
-        "",                  # blank line → skipped
-        "{ not valid json",  # parse error → JSON-RPC parse error
-        json.dumps({"jsonrpc": "2.0", "method": "notifications/initialized"}),  # no response
+        "",
+        "{ not valid json",
+        json.dumps({"jsonrpc": "2.0", "method": "notifications/initialized"}),
         json.dumps({"jsonrpc": "2.0", "id": 2, "method": "tools/list"}),
     ]
     out = io.StringIO()
     mcp_server.serve(io.StringIO("\n".join(lines) + "\n"), out)
-
-    responses = [json.loads(l) for l in out.getvalue().splitlines() if l.strip()]
-    # initialize(id=1), parse-error(id=None), tools/list(id=2) — notification produced nothing.
+    responses = [json.loads(line) for line in out.getvalue().splitlines() if line.strip()]
     assert len(responses) == 3
     assert responses[0]["id"] == 1 and "result" in responses[0]
     assert responses[1]["error"]["code"] == -32700

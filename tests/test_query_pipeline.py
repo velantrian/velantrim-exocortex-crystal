@@ -234,11 +234,12 @@ def test_http_ask_surface_preserves_memory(monkeypatch):
 
 def test_query_helper_defensive_branches(monkeypatch):
     from core import query_pipeline
+    from core.legacy_retrieval import lexical_tokens
 
     assert query_pipeline._safe_retrieval_score("bad") == 0.0
     assert query_pipeline._safe_retrieval_score(10**1000) == 0.0
     assert query_pipeline._safe_retrieval_score(float("nan")) == 0.0
-    assert query_pipeline._lexical_tokens(None) == set()
+    assert lexical_tokens(None) == set()
     assert query_pipeline._resolve_canonical_fact({}) is None
 
     with pytest.raises(ValueError, match="empty query"):
@@ -291,23 +292,24 @@ def test_resolve_fails_closed_on_l1_terminal_restriction_and_drift(monkeypatch):
     assert drifted["epistemic_state"] == query_pipeline.STORE_STATE_CONFLICT
 
 
-def test_lexical_fallback_skips_empty_and_unrelated_claims(monkeypatch):
+def test_unsupported_legacy_backend_fails_closed_without_full_scan(monkeypatch):
     from core import query_pipeline
 
     class FakeGraph:
         def all_facts(self):
-            return [
-                {"fact_id": "empty", "claim": None},
-                {"fact_id": "other", "claim": "completely unrelated words"},
-            ]
+            raise AssertionError("public legacy retrieval must not scan the corpus")
 
         def embedder_fingerprint(self):
             return None
 
     monkeypatch.setattr(query_pipeline, "get_l3_graph", lambda: FakeGraph())
 
-    assert query_pipeline._retrieve_read_only("!!!") == []
-    assert query_pipeline._retrieve_read_only("target phrase") == []
+    for query in ("!!!", "target phrase"):
+        result = query_pipeline.search_result(query)
+        assert result["results"] == []
+        assert result["reason_code"] == "legacy_store_requires_reindex"
+        assert result["error"].startswith("legacy_store_requires_reindex:")
+        assert result["read_only"] is True
 
 
 def test_guardian_rejection_is_bounded(monkeypatch):
