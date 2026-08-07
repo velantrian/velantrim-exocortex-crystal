@@ -1,114 +1,99 @@
 # Crystal Current State
 
-**Status date:** 2026-08-07
-**Current documentation base:** `main@5cd0754614327c2ffc14902d5d411e347edf9ae9`
-**Verified runtime checkpoint:** `b0df17a06d552ad2543b6d6e5efe8cd99877cfc0`
-**Validated runtime head/tree:** `aa822c49c095039de90b92fbe4fe451c7b8f13b7` / `6143d7237222935182db86a166541d0ad07887be`
-**Runtime PR / CI:** #325 / `31182471502`
+**Status date:** 2026-08-07  
+**Current documentation branch:** `agent/grant-baseline-sync-333`  
+**Verified runtime checkpoint:** `c612c1f7de067b05ed7d01ad82d47a7bc39af23a`  
+**Verified tree:** `17d65f52ac1d985fca249e6c9a183168d6116ffb`  
+**Validated runtime head:** `e70c31bf517039f0dd3f77f7bc4b6d3f03936736`  
+**Runtime PR / CI:** #330 / `31213056560`  
 **Version:** `0.3.0`
 
 GitHub `main`, executable tests and completed CI are implementation truth. Notion stores
-synchronized rationale and history; it does not override repository evidence.
+synchronized rationale, grant context and history; it does not override repository evidence.
 
 ## 1. Verified runtime evidence
 
-- Python 3.11: **2019 passed / 12 skipped / 0 failed**;
-- Python 3.12: successful under the same strict gate;
-- **8726 measured statements / 100.00% line coverage**;
+- Python 3.11: **2047 passed / 12 skipped / 0 failed**;
+- Python 3.12: **2047 passed / 12 skipped / 0 failed**;
+- **9219 measured statements / 100.00% line coverage**;
 - **7/7** declared Ring Zero mutants killed;
 - **9/9** permanent CI jobs successful;
 - security, Ruff, eval, JSONL integrity, docs-status and Docker green.
 
-The automatic Codex review was unavailable because of quota. That is recorded as absent
-review, not approval. Manual diff review found and fixed the stale-lock recovery race before
-the final exact-head CI.
+## 2. Current storage runtime
 
-## 2. Storage runtime now implemented
-
-PR #322 locked the environment-selected durable L3 backend and non-secret locator across
-restarts and added read-only diagnostics.
-
-PR #325 added the pure-standard-library SQLite lifecycle:
+The verified sequence is:
 
 ```text
-status
-backup
-verify
-restore to new inactive database/profile
-inspect-lock
-explicit guarded recover-lock
+locked durable SQLite profile
+→ backup / verify / inactive restore
+→ deterministic logical export
+→ completed canonical JSONL bundle
+→ independent fail-closed verification
 ```
 
-Backup uses SQLite's online backup API. Verification checks completion, hashes, integrity,
-required tables, counts and profile identity. Restore is no-clobber and does not activate
-the candidate. Lock recovery uses quarantine plus a recovery-owned placeholder and never
-unlinks a lock won by a new initializer.
+PR #330 adds export/verification for physical L3 nodes, vectors, edges, entities, mentions
+and metadata. It preserves source/profile identity, canonical ordering, hashes, counts,
+vector dimensions, referential integrity and descriptor-bound TOCTOU protections.
+
+The implementation is explicitly bounded for local-first use:
+
+```text
+control JSON          <= 1 MiB
+source SQLite         <= 64 MiB
+one canonical record <= 1 MiB
+records per dataset  <= 200,000
+one dataset          <= 64 MiB
+aggregate JSONL      <= 384 MiB
+```
 
 ## 3. Authority boundary
 
 ```text
-storage profile = deployment identity
-backup/restore receipt = operation evidence
-physical L3 = multi-status storage
-strict Canon = deny-dominant trusted read projection
-migration/import != TruthGate admission
+storage profile         = deployment identity
+migration bundle        = operation evidence
+physical L3             = multi-status storage
+strict Canon            = deny-dominant trusted read projection
+migration/import        != TruthGate admission
+successful verification != backend activation
 ```
 
-Storage, migration, retrieval rank and vector indexes cannot establish claim truth.
+Guardian, TruthGate, restrictions, TrustSnapshot and CanonicalView remain unchanged.
 
-## 4. Current architecture decision — issue #327
+## 4. PostgreSQL/pgvector position
 
-Issue #327 defines a phased cross-backend migration contract and a proposed
-PostgreSQL/pgvector institutional profile.
+PostgreSQL/pgvector is an optional future institutional profile, not the universal default.
 
 ```text
-preflight
-→ read-only logical export
-→ completed verified bundle
-→ inactive import
-→ exact state equivalence
-→ retrieval-quality evaluation
-→ explicit cutover
-→ optional rollback
+SQLite                = verified local-first/lightweight profile
+PostgreSQL + pgvector = proposed server/institutional profile
 ```
 
-Architecture acceptance does not mean runtime implementation.
+No automatic fallback or capability-based switching is permitted after a durable profile
+exists. Issue #331 must first add streaming/incremental verification and disk-backed
+referential checks. Issue #332 then governs inactive PostgreSQL import and exact-state
+equivalence. Activation, cutover and rollback require later explicit phases.
 
-## 5. Approved next runtime slice
+## 5. Grant baseline
 
-The first implementation slice is intentionally narrow:
+The project is submitted and under review; no award or budget change is claimed.
+Issue #333 freezes the current baseline and recalculates M1–M9 so merged work is not counted
+again as funded delta.
 
-```text
-locked SQLite profile
-→ deterministic read-only logical export
-→ backend-neutral completed bundle
-→ independent fail-closed verification
-```
+## 6. Important remaining limitations
 
-Excluded: target import, activation, rollback, PostgreSQL, pgvector, dual-write, live
-cutover and automatic switching.
-
-## 6. Documentation policy
-
-English is the sole authoritative actively maintained GitHub documentation language during
-engineering. Existing localized READMEs are frozen snapshots and may lag until a dedicated
-final localization pass. Ordinary engineering PRs must not update them.
-
-## 7. Important remaining limitations
-
-- no cross-backend importer or exact-equivalence engine;
+- no institution-scale streaming cross-backend migration (#331);
+- no PostgreSQL/pgvector runtime or exact target equivalence (#332);
 - no cutover/rollback/fencing implementation;
-- no PostgreSQL/pgvector runtime;
 - no distributed curator coordination;
 - no complete production IdP/multi-tenancy;
-- bounded degraded retrieval can trade recall for work limits;
 - performance evidence is not a production SLO;
 - supply-chain pinning remains incomplete;
 - no dedicated verified Reader Core;
-- no legal/security certification claim.
+- no legal/security/GDPR certification claim.
 
-## 8. Synchronization
+## 7. Documentation policy
 
-This issue/PR is `GITHUB_AND_NOTION`. The Project Hub and Current Architectural Position
-must record the same status distinction: accepted contract versus absent runtime. Final
-merge SHA and CI evidence must be added to Notion after merge.
+English is the sole authoritative actively maintained GitHub documentation language during
+engineering. Existing localized READMEs are frozen snapshots and may lag until a dedicated
+final reconciliation pass.
