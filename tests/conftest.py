@@ -31,10 +31,15 @@ def isolated_db(monkeypatch, tmp_path):
     mosc.reset_mosc()
     monkeypatch.setattr(memory, "SQLITE_PATH", str(tmp_path / "test.db"))
     # Pin the deterministic, dependency-free backends so tests never load a
-    # neural model, touch disk, or hit the network (production defaults differ:
-    # L3=auto→LadybugDB, embedder=auto→sbert, generator=extractive,
-    # queue=auto→Redis-if-present). The SQLite queue shares the per-test DB.
+    # neural model, touch shared disk, or hit the network (production defaults
+    # differ: L3=auto→locked durable backend, embedder=auto→sbert,
+    # generator=extractive, queue=auto→Redis-if-present). The SQLite queue
+    # shares the per-test DB.
     monkeypatch.setenv("VELANTRIM_L3_BACKEND", "mock")
+    monkeypatch.setenv(
+        "VELANTRIM_STORAGE_PROFILE_PATH",
+        str(tmp_path / "storage-profile.json"),
+    )
     monkeypatch.setenv("VELANTRIM_EMBEDDER", "hashing")
     monkeypatch.setenv("VELANTRIM_GENERATOR", "extractive")
     monkeypatch.setenv("VELANTRIM_QUEUE_BACKEND", "sqlite")
