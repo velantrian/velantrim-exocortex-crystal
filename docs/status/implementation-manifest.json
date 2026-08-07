@@ -9,14 +9,18 @@
     "tree": "17d65f52ac1d985fca249e6c9a183168d6116ffb",
     "validated_head": "e70c31bf517039f0dd3f77f7bc4b6d3f03936736",
     "pull_request": 330,
-    "ci_run": 31213056560
+    "ci_run": 31213056560,
+    "description": "Deterministic SQLite logical export and independent verification under a bounded local-first resource contract"
   },
   "tests": {
-    "python_versions": ["3.11", "3.12"],
+    "python_versions": [
+      "3.11",
+      "3.12"
+    ],
     "passed": 2047,
     "skipped": 12,
     "failed": 0,
-    "statements": 9219,
+    "measured_statements": 9219,
     "coverage_percent": 100.0
   },
   "ci": {
@@ -28,8 +32,8 @@
       "jsonl-integrity",
       "eval-gate",
       "security",
-      "Docker",
-      "Ring Zero mutation",
+      "docker-build",
+      "Ring Zero mutation gate",
       "docs-status"
     ],
     "all_successful": true
@@ -37,7 +41,7 @@
   "mutation_gate": {
     "declared_mutants": 7,
     "killed_mutants": 7,
-    "status": "PASS"
+    "scope": "targeted Ring Zero semantic mutations"
   },
   "implemented_boundaries": {
     "truth_policy_runtime_bypass_present": false,
@@ -70,26 +74,31 @@
   },
   "documentation": {
     "authoritative_language": "English",
-    "localized_readmes_frozen": true,
-    "localization_policy": "dedicated final reconciliation pass",
+    "localized_readmes": "frozen_snapshots_pending_dedicated_reconciliation_pass",
     "frozen_localized_readme_git_blobs": {
-      "README.ar.md": "6210b8aeb22ef61fd5ceec09d80cd1ae0408b9b4",
-      "README.de.md": "1993e993b0d87b18b93bcb7f76711c697ed4f1c8",
-      "README.es.md": "69306f56214d3f24b4729eac7f00f819fc6a54d5",
-      "README.fr.md": "df56cbb30ac275d5326aa41f5814b21f0a64cc98",
-      "README.hi.md": "6650dd02a580054e41178dccb689ae336238656b",
-      "README.it.md": "b6093b51d0447b4e8fa8b379e6453f657d4f951f",
-      "README.ja.md": "a5887ea37c05b9390831c74a3d87d0b75ad20297",
-      "README.ru.md": "36bc64fb74d5218435ba64f329c92360c59c93ce",
-      "README.zh-CN.md": "c2cbce8a6c4037701cedc7bedf3e8ab03c12c1c3"
+      "README.ar.md": "d63cc0d0771c11ca306d2cc79b728c3eb6301b66",
+      "README.de.md": "2e046a587208d65bc91bc2eab3909d0cadc1f9b9",
+      "README.es.md": "291c0169fa5a3372dabf1a3d1a53807faecc1620",
+      "README.fr.md": "8beaf05c1b70d24efcf38b16e3789c27f9280d67",
+      "README.hi.md": "b1719aec665f51ae47014372b39153551f298653",
+      "README.it.md": "95d5a70194c3c6880b0328262e0bbf923bb31076",
+      "README.ja.md": "1342099544ab718804646b5350ad71e7d404bc65",
+      "README.ru.md": "18e3f4fb566c7217dc65f91022e01d83fefba1df",
+      "README.zh-CN.md": "d2daa042ef0df4e9e343a60e59a1f9c1c664c51d"
     }
   },
   "grant": {
+    "program": "NLnet NGI0 Commons Fund",
     "submitted": true,
     "under_review": true,
     "awarded": false,
     "budget_changed": false,
     "baseline_issue": 333,
     "rule": "Merged baseline work cannot be counted again as funded delta"
+  },
+  "authority": {
+    "runtime": "GitHub main",
+    "verification": "TEST_REPORT.md and this manifest",
+    "strategy_and_history": "Notion Crystal pages"
   }
 }
