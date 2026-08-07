@@ -1,8 +1,9 @@
 # core/storage_migration.py
-# Deterministic read-only SQLite logical export and independent verification.
+# Deterministic bounded-memory SQLite logical export and independent verification.
 
 from __future__ import annotations
 
+import contextvars
 import hashlib
 import json
 import math
@@ -10,9 +11,10 @@ import os
 import shutil
 import sqlite3
 import stat
+import tempfile
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Iterable, Mapping, Optional
+from typing import Any, Callable, Iterable, Iterator, Mapping, Optional
 
 from core.backend_profiles import (
     DEFAULT_PROFILE_PATH,
@@ -36,15 +38,20 @@ MIGRATION_BUNDLE_TYPE = "velantrim-l3-logical-export"
 MIGRATION_MANIFEST = "manifest.json"
 MIGRATION_COMPLETE = "complete.json"
 
-# The first runtime slice is intentionally bounded for local-first deployments.
-# Larger/institutional migration remains blocked on a separately reviewed
-# streaming/disk-backed implementation.
+# Resource ceilings remain explicit and fail closed. The implementation below no
+# longer materializes complete datasets or identifier sets in process memory.
 MAX_CONTROL_FILE_BYTES = 1 * 1024 * 1024
 MAX_SOURCE_SQLITE_BYTES = 64 * 1024 * 1024
 MAX_DATASET_BYTES = 64 * 1024 * 1024
 MAX_BUNDLE_DATA_BYTES = 384 * 1024 * 1024
 MAX_RECORD_BYTES = 1 * 1024 * 1024
 MAX_RECORDS_PER_DATASET = 200_000
+MIGRATION_BATCH_SIZE = 512
+_DATASET_CONSUMER: contextvars.ContextVar[
+    Optional[Callable[[Mapping[str, Any]], None]]
+] = contextvars.ContextVar("migration_dataset_consumer", default=None)
+MIN_TEMP_FREE_BYTES = 8 * 1024 * 1024
+MAX_DANGLING_EXAMPLES = 20
 
 DATASET_FILES = {
     "nodes": "nodes.jsonl",
@@ -81,14 +88,12 @@ def _file_identity(value: os.stat_result) -> tuple[int, int, int, int, int]:
     )
 
 
-def _read_regular_bytes(
+def _open_regular_fd(
     path: Path,
     label: str,
     *,
-    max_bytes: int = MAX_CONTROL_FILE_BYTES,
-) -> tuple[bytes, os.stat_result]:
-    """Read one bounded regular file from one descriptor and reject identity changes."""
-
+    max_bytes: int,
+) -> tuple[int, os.stat_result]:
     try:
         before = path.lstat()
     except FileNotFoundError as exc:
@@ -117,6 +122,22 @@ def _read_regular_bytes(
             raise StorageOperationError(
                 f"{label} exceeds the {max_bytes}-byte resource limit"
             )
+        return fd, opened
+    except Exception:
+        os.close(fd)
+        raise
+
+
+def _read_regular_bytes(
+    path: Path,
+    label: str,
+    *,
+    max_bytes: int = MAX_CONTROL_FILE_BYTES,
+) -> tuple[bytes, os.stat_result]:
+    """Read one small bounded control file from one stable descriptor."""
+
+    fd, opened = _open_regular_fd(path, label, max_bytes=max_bytes)
+    try:
         chunks: list[bytes] = []
         total = 0
         while True:
@@ -136,6 +157,8 @@ def _read_regular_bytes(
         if len(raw) != after.st_size:
             raise StorageOperationError(f"{label} byte-size changed while it was read")
         return raw, after
+    except StorageOperationError:
+        raise
     except OSError as exc:
         raise StorageOperationError(f"cannot read {label} safely: {exc}") from exc
     finally:
@@ -181,6 +204,19 @@ def _require_unchanged_directory(
     )
     if identity != expected_identity:
         raise StorageOperationError(f"{label} changed during verification")
+
+
+def _require_free_disk(path: Path, required: int, label: str) -> None:
+    try:
+        free = shutil.disk_usage(path).free
+    except OSError as exc:
+        raise StorageOperationError(
+            f"cannot inspect temporary disk for {label}: {exc}"
+        ) from exc
+    if free < required:
+        raise StorageOperationError(
+            f"insufficient temporary disk for {label}: required={required}, free={free}"
+        )
 
 
 def _canonical_record_bytes(record: Mapping[str, Any]) -> bytes:
@@ -382,23 +418,84 @@ def _dataset_count(connection: sqlite3.Connection, dataset: str) -> int:
     return value
 
 
+def _cursor_records(cursor: sqlite3.Cursor, dataset: str) -> Iterator[dict[str, Any]]:
+    builder = RECORD_BUILDERS[dataset]
+    while True:
+        rows = cursor.fetchmany(MIGRATION_BATCH_SIZE)
+        if not rows:
+            return
+        for row in rows:
+            yield builder(row)
+
+
+def _edge_spool_records(cursor: sqlite3.Cursor) -> Iterator[dict[str, Any]]:
+    temporary = tempfile.TemporaryDirectory(prefix="velantrim-edge-sort-")
+    spool_path = Path(temporary.name) / "edges.sqlite"
+    connection: Optional[sqlite3.Connection] = None
+    try:
+        os.chmod(temporary.name, 0o700)
+        connection = sqlite3.connect(spool_path)
+        os.chmod(spool_path, 0o600)
+        connection.execute("PRAGMA journal_mode=OFF")
+        connection.execute("PRAGMA synchronous=OFF")
+        connection.execute(
+            "CREATE TABLE records("
+            "src TEXT NOT NULL, rel_type TEXT NOT NULL, dst TEXT NOT NULL, "
+            "props TEXT NOT NULL, line BLOB NOT NULL, "
+            "PRIMARY KEY(src, rel_type, dst, props)) WITHOUT ROWID"
+        )
+        for record in _cursor_records(cursor, "edges"):
+            key = _record_key("edges", record)
+            line = _canonical_record_bytes(record)
+            try:
+                connection.execute(
+                    "INSERT INTO records VALUES (?,?,?,?,?)",
+                    (key[0], key[1], key[2], key[3], line),
+                )
+            except sqlite3.IntegrityError as exc:
+                raise StorageOperationError(
+                    "edges contain a duplicate canonical record"
+                ) from exc
+        connection.commit()
+        ordered = connection.execute(
+            "SELECT line FROM records ORDER BY src, rel_type, dst, props"
+        )
+        while True:
+            rows = ordered.fetchmany(MIGRATION_BATCH_SIZE)
+            if not rows:
+                return
+            for row in rows:
+                yield _strict_json(row[0], "spooled edge record")
+    except StorageOperationError:
+        raise
+    except sqlite3.Error as exc:
+        raise StorageOperationError(f"cannot sort SQLite edges: {exc}") from exc
+    finally:
+        if connection is not None:
+            connection.close()
+        temporary.cleanup()
+
+
 def _export_records(
     connection: sqlite3.Connection, dataset: str
-) -> list[dict[str, Any]]:
+) -> Iterable[dict[str, Any]]:
     try:
-        records = [
-            RECORD_BUILDERS[dataset](row)
-            for row in connection.execute(QUERIES[dataset])
-        ]
+        cursor = connection.execute(QUERIES[dataset])
     except sqlite3.Error as exc:
         raise StorageOperationError(
             f"cannot export SQLite dataset {dataset}: {exc}"
         ) from exc
-    records.sort(key=lambda record: _record_key(dataset, record))
-    return records
+    if dataset == "edges":
+        return _edge_spool_records(cursor)
+    return _cursor_records(cursor, dataset)
 
 
-def _write_dataset(path: Path, records: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
+def _write_dataset(
+    path: Path,
+    records: Iterable[Mapping[str, Any]],
+    *,
+    on_record: Optional[Callable[[Mapping[str, Any]], None]] = None,
+) -> dict[str, Any]:
     count = 0
     total = 0
     digest = hashlib.sha256()
@@ -421,6 +518,8 @@ def _write_dataset(path: Path, records: Iterable[Mapping[str, Any]]) -> dict[str
                     raise StorageOperationError(
                         f"migration dataset exceeds the {MAX_DATASET_BYTES}-byte limit"
                     )
+                if on_record is not None:
+                    on_record(record)
                 handle.write(line)
                 digest.update(line)
             handle.flush()
@@ -431,6 +530,10 @@ def _write_dataset(path: Path, records: Iterable[Mapping[str, Any]]) -> dict[str
         raise StorageOperationError(
             f"cannot write migration dataset {path.name}: {exc}"
         ) from exc
+    finally:
+        closer = getattr(records, "close", None)
+        if callable(closer):
+            closer()
     return {
         "file": path.name,
         "records": count,
@@ -516,7 +619,7 @@ def export_sqlite_logical(
     *,
     profile_path: Optional[Path | str] = None,
 ) -> dict[str, Any]:
-    """Export a bounded locked SQLite physical L3 logical bundle."""
+    """Export a bounded-memory locked SQLite physical L3 logical bundle."""
 
     target = _resolve_operator_path(output, "migration bundle")
     if target.exists() or target.is_symlink():
@@ -530,6 +633,14 @@ def export_sqlite_logical(
     success = False
     try:
         profile_file, profile, database, profile_hash = _read_source(profile_path)
+        required_disk = max(
+            MIN_TEMP_FREE_BYTES,
+            min(MAX_BUNDLE_DATA_BYTES, database.stat().st_size * 4),
+        )
+        _require_free_disk(target.parent, required_disk, "logical export")
+        _require_free_disk(
+            Path(tempfile.gettempdir()), required_disk, "edge sort"
+        )
         connection = _connect_readonly(database)
         try:
             connection.execute("BEGIN")
@@ -540,15 +651,24 @@ def export_sqlite_logical(
             total_data_bytes = 0
             for dataset, filename in DATASET_FILES.items():
                 _dataset_count(connection, dataset)
-                records = _export_records(connection, dataset)
-                if dataset == "vectors" and records:
-                    dimensions = {len(record["vector"]) for record in records}
-                    if len(dimensions) != 1:
+
+                def track_vector(record: Mapping[str, Any]) -> None:
+                    nonlocal vector_dimension
+                    if dataset != "vectors":
+                        return
+                    dimension = len(record["vector"])
+                    if vector_dimension is None:
+                        vector_dimension = dimension
+                    elif vector_dimension != dimension:
                         raise StorageOperationError(
                             "vectors have inconsistent dimensions"
                         )
-                    vector_dimension = dimensions.pop()
-                metadata = _write_dataset(target / filename, records)
+
+                metadata = _write_dataset(
+                    target / filename,
+                    _export_records(connection, dataset),
+                    on_record=track_vector,
+                )
                 total_data_bytes += int(metadata["bytes"])
                 if total_data_bytes > MAX_BUNDLE_DATA_BYTES:
                     raise StorageOperationError(
@@ -595,6 +715,7 @@ def export_sqlite_logical(
             "manifest_sha256": verified["manifest_sha256"],
             "datasets": verified["datasets"],
             "vector_dimension": verified["vector_dimension"],
+            "resource_mode": "bounded-streaming",
         }
     finally:
         if not success:
@@ -680,46 +801,96 @@ def _read_dataset(
 ) -> tuple[list[Mapping[str, Any]], os.stat_result]:
     if path.name != expected.get("file"):
         raise StorageOperationError(f"{dataset} dataset filename mismatch")
-    raw, snapshot = _read_regular_bytes(
+    fd, snapshot = _open_regular_fd(
         path,
         f"{dataset} migration dataset",
         max_bytes=MAX_DATASET_BYTES,
     )
-    if len(raw) != expected.get("bytes"):
-        raise StorageOperationError(f"{dataset} dataset byte-size mismatch")
-    expected_sha = _require_sha256(expected.get("sha256"), f"{dataset} sha256")
-    if hashlib.sha256(raw).hexdigest() != expected_sha:
-        raise StorageOperationError(f"{dataset} dataset SHA-256 mismatch")
-
-    if raw and not raw.endswith(b"\n"):
-        raise StorageOperationError(f"{dataset} dataset must end with a newline")
     records: list[Mapping[str, Any]] = []
-    previous: Optional[tuple[Any, ...]] = None
-    for index, line in enumerate(raw.splitlines(keepends=True), start=1):
-        if len(line) > MAX_RECORD_BYTES:
-            raise StorageOperationError(
-                f"{dataset} record {index} exceeds the record-size resource limit"
-            )
-        if index > MAX_RECORDS_PER_DATASET:
-            raise StorageOperationError(
-                f"{dataset} dataset exceeds the record-count resource limit"
-            )
-        record = _validate_record(
-            dataset, _strict_json(line, f"{dataset} record {index}")
-        )
-        if line != _canonical_record_bytes(record):
-            raise StorageOperationError(
-                f"{dataset} record {index} is not canonical JSON"
-            )
-        key = _record_key(dataset, record)
-        if previous is not None and key <= previous:
-            raise StorageOperationError(f"{dataset} records are not strictly ordered")
-        previous = key
-        records.append(record)
-    if len(records) != expected.get("records"):
-        raise StorageOperationError(f"{dataset} dataset record-count mismatch")
-    return records, snapshot
+    consumer = _DATASET_CONSUMER.get()
+    expected_sha = _require_sha256(expected.get("sha256"), f"{dataset} sha256")
+    try:
+        if snapshot.st_size != expected.get("bytes"):
+            raise StorageOperationError(f"{dataset} dataset byte-size mismatch")
 
+        digest = hashlib.sha256()
+        total = 0
+        while True:
+            chunk = os.read(fd, 64 * 1024)
+            if not chunk:
+                break
+            total += len(chunk)
+            if total > MAX_DATASET_BYTES:
+                raise StorageOperationError(
+                    f"{dataset} dataset exceeds byte resource limits"
+                )
+            digest.update(chunk)
+        hashed = os.fstat(fd)
+        if _file_identity(hashed) != _file_identity(snapshot):
+            raise StorageOperationError(
+                f"{dataset} migration dataset changed while it was read"
+            )
+        if total != expected.get("bytes"):
+            raise StorageOperationError(f"{dataset} dataset byte-size mismatch")
+        if digest.hexdigest() != expected_sha:
+            raise StorageOperationError(f"{dataset} dataset SHA-256 mismatch")
+
+        os.lseek(fd, 0, os.SEEK_SET)
+        count = 0
+        previous: Optional[tuple[Any, ...]] = None
+        with os.fdopen(fd, "rb", buffering=64 * 1024, closefd=False) as handle:
+            while True:
+                line = handle.readline(MAX_RECORD_BYTES + 1)
+                if not line:
+                    break
+                if len(line) > MAX_RECORD_BYTES:
+                    raise StorageOperationError(
+                        f"{dataset} record exceeds the record-size resource limit"
+                    )
+                if not line.endswith(b"\n"):
+                    raise StorageOperationError(
+                        f"{dataset} dataset must end with a newline"
+                    )
+                count += 1
+                if count > MAX_RECORDS_PER_DATASET:
+                    raise StorageOperationError(
+                        f"{dataset} dataset exceeds the record-count resource limit"
+                    )
+                record = _validate_record(
+                    dataset, _strict_json(line, f"{dataset} record {count}")
+                )
+                if line != _canonical_record_bytes(record):
+                    raise StorageOperationError(
+                        f"{dataset} record {count} is not canonical JSON"
+                    )
+                key = _record_key(dataset, record)
+                if previous is not None and key <= previous:
+                    raise StorageOperationError(
+                        f"{dataset} records are not strictly ordered"
+                    )
+                previous = key
+                if consumer is None:
+                    records.append(record)
+                else:
+                    consumer(record)
+        after = os.fstat(fd)
+        if _file_identity(after) != _file_identity(snapshot):
+            raise StorageOperationError(
+                f"{dataset} migration dataset changed while it was read"
+            )
+        if count != expected.get("records"):
+            raise StorageOperationError(
+                f"{dataset} dataset record-count mismatch"
+            )
+        return records, snapshot
+    except StorageOperationError:
+        raise
+    except OSError as exc:
+        raise StorageOperationError(
+            f"cannot read {dataset} migration dataset safely: {exc}"
+        ) from exc
+    finally:
+        os.close(fd)
 
 def _valid_completed_at(value: Any) -> bool:
     if not _non_empty_string(value) or not value.endswith("Z"):
@@ -731,8 +902,54 @@ def _valid_completed_at(value: Any) -> bool:
     return True
 
 
+def _verification_index(
+    parent: Path,
+) -> tuple[tempfile.TemporaryDirectory[str], sqlite3.Connection]:
+    temporary = tempfile.TemporaryDirectory(
+        prefix=".velantrim-migration-verify-",
+        dir=parent,
+    )
+    connection: Optional[sqlite3.Connection] = None
+    try:
+        os.chmod(temporary.name, 0o700)
+        database = Path(temporary.name) / "references.sqlite"
+        connection = sqlite3.connect(database)
+        os.chmod(database, 0o600)
+        connection.executescript(
+            """
+            PRAGMA journal_mode=OFF;
+            PRAGMA synchronous=OFF;
+            CREATE TABLE nodes(id TEXT PRIMARY KEY) WITHOUT ROWID;
+            CREATE TABLE entities(id TEXT PRIMARY KEY) WITHOUT ROWID;
+            CREATE TABLE vectors(
+                fact_id TEXT PRIMARY KEY,
+                dimension INTEGER NOT NULL
+            ) WITHOUT ROWID;
+            CREATE TABLE edges(src TEXT NOT NULL, dst TEXT NOT NULL);
+            CREATE TABLE mentions(fact_id TEXT NOT NULL, entity_id TEXT NOT NULL);
+            """
+        )
+        return temporary, connection
+    except (OSError, sqlite3.Error) as exc:
+        if connection is not None:
+            connection.close()
+        temporary.cleanup()
+        raise StorageOperationError(
+            f"cannot create migration verification index: {exc}"
+        ) from exc
+
+def _missing_examples(
+    connection: sqlite3.Connection,
+    query: str,
+) -> list[Any]:
+    return [
+        row[0] if len(row) == 1 else tuple(row)
+        for row in connection.execute(query).fetchmany(MAX_DANGLING_EXAMPLES)
+    ]
+
+
 def verify_logical_export(bundle: Path | str) -> dict[str, Any]:
-    """Verify a bounded logical export without opening its source deployment."""
+    """Verify a logical export with bounded memory and disk-backed reference checks."""
 
     root = _resolve_operator_path(bundle, "migration bundle")
     root_snapshot = _directory_identity(root, "migration bundle")
@@ -850,30 +1067,91 @@ def verify_logical_export(bundle: Path | str) -> dict[str, Any]:
             f"expected={sorted(allowed)!r}, actual={sorted(actual)!r}"
         )
 
-    dataset_results = {
-        name: _read_dataset(root / filename, name, datasets[name])
-        for name, filename in DATASET_FILES.items()
-    }
-    records = {name: result[0] for name, result in dataset_results.items()}
-    snapshots = {name: result[1] for name, result in dataset_results.items()}
-    node_ids = {record["fact_id"] for record in records["nodes"]}
-    entity_ids = {record["entity_id"] for record in records["entities"]}
-    missing_vectors = sorted(
-        record["fact_id"]
-        for record in records["vectors"]
-        if record["fact_id"] not in node_ids
+    _require_free_disk(
+        root.parent,
+        max(MIN_TEMP_FREE_BYTES, min(total_data_bytes, MAX_BUNDLE_DATA_BYTES)),
+        "logical verification",
     )
-    missing_edges = sorted(
-        (record["src"], record["dst"])
-        for record in records["edges"]
-        if record["src"] not in node_ids or record["dst"] not in node_ids
-    )
-    missing_mentions = sorted(
-        (record["fact_id"], record["entity_id"])
-        for record in records["mentions"]
-        if record["fact_id"] not in node_ids
-        or record["entity_id"] not in entity_ids
-    )
+    temporary, index = _verification_index(root.parent)
+    snapshots: dict[str, os.stat_result] = {}
+    actual_dimension: Optional[int] = None
+
+    def consume_vector(record: Mapping[str, Any]) -> None:
+        nonlocal actual_dimension
+        dimension = len(record["vector"])
+        if actual_dimension is None:
+            actual_dimension = dimension
+        elif actual_dimension != dimension:
+            raise StorageOperationError(
+                "migration vectors have inconsistent dimensions"
+            )
+        index.execute(
+            "INSERT INTO vectors VALUES (?,?)",
+            (record["fact_id"], dimension),
+        )
+
+    try:
+        index.execute("BEGIN")
+        consumers: dict[str, Callable[[Mapping[str, Any]], None]] = {
+            "nodes": lambda record: index.execute(
+                "INSERT INTO nodes VALUES (?)", (record["fact_id"],)
+            ),
+            "vectors": consume_vector,
+            "edges": lambda record: index.execute(
+                "INSERT INTO edges VALUES (?,?)", (record["src"], record["dst"])
+            ),
+            "entities": lambda record: index.execute(
+                "INSERT INTO entities VALUES (?)", (record["entity_id"],)
+            ),
+            "mentions": lambda record: index.execute(
+                "INSERT INTO mentions VALUES (?,?)",
+                (record["fact_id"], record["entity_id"]),
+            ),
+            "meta": lambda _record: None,
+        }
+        for name, filename in DATASET_FILES.items():
+            token = _DATASET_CONSUMER.set(consumers[name])
+            try:
+                _, snapshots[name] = _read_dataset(
+                    root / filename,
+                    name,
+                    datasets[name],
+                )
+            finally:
+                _DATASET_CONSUMER.reset(token)
+        index.commit()
+
+        missing_vectors = _missing_examples(
+            index,
+            "SELECT v.fact_id FROM vectors v "
+            "LEFT JOIN nodes n ON n.id=v.fact_id WHERE n.id IS NULL "
+            "ORDER BY v.fact_id",
+        )
+        missing_edges = _missing_examples(
+            index,
+            "SELECT e.src,e.dst FROM edges e "
+            "LEFT JOIN nodes s ON s.id=e.src "
+            "LEFT JOIN nodes d ON d.id=e.dst "
+            "WHERE s.id IS NULL OR d.id IS NULL ORDER BY e.src,e.dst",
+        )
+        missing_mentions = _missing_examples(
+            index,
+            "SELECT m.fact_id,m.entity_id FROM mentions m "
+            "LEFT JOIN nodes n ON n.id=m.fact_id "
+            "LEFT JOIN entities e ON e.id=m.entity_id "
+            "WHERE n.id IS NULL OR e.id IS NULL "
+            "ORDER BY m.fact_id,m.entity_id",
+        )
+    except StorageOperationError:
+        raise
+    except sqlite3.Error as exc:
+        raise StorageOperationError(
+            f"cannot build migration verification index: {exc}"
+        ) from exc
+    finally:
+        index.close()
+        temporary.cleanup()
+
     if missing_vectors or missing_edges or missing_mentions:
         raise StorageOperationError(
             "migration bundle contains dangling references: "
@@ -882,10 +1160,6 @@ def verify_logical_export(bundle: Path | str) -> dict[str, Any]:
         )
 
     vector_dimension = manifest["vector_dimension"]
-    dimensions = {len(record["vector"]) for record in records["vectors"]}
-    if len(dimensions) > 1:
-        raise StorageOperationError("migration vectors have inconsistent dimensions")
-    actual_dimension = next(iter(dimensions), None)
     if vector_dimension != actual_dimension:
         raise StorageOperationError("migration vector_dimension mismatch")
     if vector_dimension is not None and (
@@ -918,7 +1192,10 @@ def verify_logical_export(bundle: Path | str) -> dict[str, Any]:
         "operation": "verify_logical",
         "bundle": str(root),
         "manifest_sha256": manifest_sha,
-        "datasets": {name: len(value) for name, value in records.items()},
+        "datasets": {
+            name: int(metadata["records"]) for name, metadata in datasets.items()
+        },
         "vector_dimension": vector_dimension,
         "source": source,
+        "resource_mode": "bounded-streaming",
     }
