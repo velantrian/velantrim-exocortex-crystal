@@ -1,25 +1,22 @@
 {
   "schema_version": 1,
-  "status_date": "2026-08-07",
+  "project": "Velantrim Exo-Cortex Crystal",
   "version": "0.3.0",
+  "status_date": "2026-08-07",
   "verified_runtime_checkpoint": {
-    "commit": "b0df17a06d552ad2543b6d6e5efe8cd99877cfc0",
-    "short": "b0df17a",
-    "pull_request": 325,
-    "validated_head": "aa822c49c095039de90b92fbe4fe451c7b8f13b7",
-    "validated_tree": "6143d7237222935182db86a166541d0ad07887be",
-    "ci_run": 31182471502,
-    "description": "Durable SQLite profile lifecycle with online backup, independent verification, inactive no-clobber restore, and guarded stale-lock recovery"
+    "commit": "c612c1f7de067b05ed7d01ad82d47a7bc39af23a",
+    "short": "c612c1f",
+    "tree": "17d65f52ac1d985fca249e6c9a183168d6116ffb",
+    "validated_head": "e70c31bf517039f0dd3f77f7bc4b6d3f03936736",
+    "pull_request": 330,
+    "ci_run": 31213056560
   },
   "tests": {
-    "python_versions": [
-      "3.11",
-      "3.12"
-    ],
-    "passed": 2019,
+    "python_versions": ["3.11", "3.12"],
+    "passed": 2047,
     "skipped": 12,
     "failed": 0,
-    "measured_statements": 8726,
+    "statements": 9219,
     "coverage_percent": 100.0
   },
   "ci": {
@@ -31,62 +28,68 @@
       "jsonl-integrity",
       "eval-gate",
       "security",
-      "docker-build",
-      "Ring Zero mutation gate",
+      "Docker",
+      "Ring Zero mutation",
       "docs-status"
-    ]
+    ],
+    "all_successful": true
   },
   "mutation_gate": {
     "declared_mutants": 7,
     "killed_mutants": 7,
-    "scope": "targeted Ring Zero semantic mutations"
+    "status": "PASS"
   },
   "implemented_boundaries": {
-    "public_query_surfaces_read_only": true,
     "truth_policy_runtime_bypass_present": false,
-    "immutable_trust_snapshot": true,
-    "typed_contradiction_report": true,
-    "explicit_conflict_decisions": true,
-    "public_conflict_resolution_cli": true,
-    "public_conflict_resolution_http": true,
-    "advisory_topic_facets": true,
-    "topic_facets_authoritative": false,
+    "physical_l3_equals_strict_canon": false,
+    "public_query_surfaces_read_only": true,
+    "explicit_contradiction_dispositions": true,
     "scoped_curator_authorization": true,
-    "process_local_decision_leases": true,
-    "distributed_decision_lease_adapter": false,
-    "machine_readable_esm_spec": true,
-    "scheduled_performance_history": true,
-    "resumable_review_sessions": true,
-    "durable_l3_profile": true,
+    "bounded_legacy_retrieval": true,
+    "durable_l3_profile_lock": true,
     "sqlite_storage_lifecycle": true,
+    "sqlite_logical_export_verification": true,
+    "sqlite_logical_export_resource_contract": "bounded-local-first",
     "cross_backend_migration_runtime": false,
     "postgresql_pgvector_runtime": false,
     "automatic_backend_switching": false,
-    "physical_l3_equals_strict_canon": false
+    "distributed_curator_coordination": false,
+    "production_idp_multitenancy": false,
+    "dedicated_reader_core": false
+  },
+  "storage_resource_limits": {
+    "control_file_bytes": 1048576,
+    "source_sqlite_bytes": 67108864,
+    "record_bytes": 1048576,
+    "records_per_dataset": 200000,
+    "dataset_bytes": 67108864,
+    "aggregate_jsonl_bytes": 402653184,
+    "institution_scale_claim": false,
+    "streaming_follow_up_issue": 331,
+    "postgresql_follow_up_issue": 332
   },
   "documentation": {
     "authoritative_language": "English",
-    "localized_readmes": "frozen_snapshots_pending_dedicated_translation_pass",
+    "localized_readmes_frozen": true,
+    "localization_policy": "dedicated final reconciliation pass",
     "frozen_localized_readme_git_blobs": {
-      "README.ar.md": "d63cc0d0771c11ca306d2cc79b728c3eb6301b66",
-      "README.de.md": "2e046a587208d65bc91bc2eab3909d0cadc1f9b9",
-      "README.es.md": "291c0169fa5a3372dabf1a3d1a53807faecc1620",
-      "README.fr.md": "8beaf05c1b70d24efcf38b16e3789c27f9280d67",
-      "README.hi.md": "b1719aec665f51ae47014372b39153551f298653",
-      "README.it.md": "95d5a70194c3c6880b0328262e0bbf923bb31076",
-      "README.ja.md": "1342099544ab718804646b5350ad71e7d404bc65",
-      "README.ru.md": "18e3f4fb566c7217dc65f91022e01d83fefba1df",
-      "README.zh-CN.md": "d2daa042ef0df4e9e343a60e59a1f9c1c664c51d"
+      "README.ar.md": "6210b8aeb22ef61fd5ceec09d80cd1ae0408b9b4",
+      "README.de.md": "1993e993b0d87b18b93bcb7f76711c697ed4f1c8",
+      "README.es.md": "69306f56214d3f24b4729eac7f00f819fc6a54d5",
+      "README.fr.md": "df56cbb30ac275d5326aa41f5814b21f0a64cc98",
+      "README.hi.md": "6650dd02a580054e41178dccb689ae336238656b",
+      "README.it.md": "b6093b51d0447b4e8fa8b379e6453f657d4f951f",
+      "README.ja.md": "a5887ea37c05b9390831c74a3d87d0b75ad20297",
+      "README.ru.md": "36bc64fb74d5218435ba64f329c92360c59c93ce",
+      "README.zh-CN.md": "c2cbce8a6c4037701cedc7bedf3e8ab03c12c1c3"
     }
   },
   "grant": {
-    "program": "NLnet NGI0 Commons Fund",
-    "status": "submitted_under_review",
-    "awarded": false
-  },
-  "authority": {
-    "runtime": "GitHub main",
-    "strategy": "Notion Crystal pages",
-    "research_track": "Titan / Full Exo-Cortex"
+    "submitted": true,
+    "under_review": true,
+    "awarded": false,
+    "budget_changed": false,
+    "baseline_issue": 333,
+    "rule": "Merged baseline work cannot be counted again as funded delta"
   }
 }
