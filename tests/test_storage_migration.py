@@ -395,7 +395,6 @@ def test_referential_and_dimension_guards(tmp_path):
     update_manifest(bundle, lambda x: x.__setitem__("vector_dimension", 3))
     assert_error("dimension mismatch", m.verify_logical_export, bundle)
 
-    # Direct validation reaches the positive-integer guard after equality.
     profile, _ = make_store(tmp_path / "bool-dimension", vectors=("[1]",))
     bundle = tmp_path / "bool-dimension" / "bundle"
     m.export_sqlite_logical(bundle, profile_path=profile)
