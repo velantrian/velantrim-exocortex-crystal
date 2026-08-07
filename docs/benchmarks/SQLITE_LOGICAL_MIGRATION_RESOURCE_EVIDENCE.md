@@ -100,6 +100,11 @@ The bounded implementation provides:
 - cleanup when temporary sorting or verification-index initialization fails;
 - final file, exact-file-set and directory identity rechecks.
 
+Failure-path tests cover oversized logical reads, short reads, descriptor mutation, I/O
+errors and cleanup both before and after temporary verification-index connection creation.
+The oversized-read test lowers the limit to the fixture size with `monkeypatch`; it does not
+allocate the production 64 MiB dataset ceiling merely to exercise the branch.
+
 Full CI evidence at the validated runtime head:
 
 ```text
