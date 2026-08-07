@@ -103,6 +103,35 @@ def test_backend_exception_message_is_not_persisted(monkeypatch):
     assert "projection_backend_failure" in str(health)
 
 
+def test_decision_history_reads_current_projection_status(monkeypatch):
+    fact = _pending("hardening:history-status")
+    graph = get_l3_graph()
+    real_merge = graph.merge_fact
+
+    monkeypatch.setattr(
+        graph,
+        "merge_fact",
+        lambda _payload: (_ for _ in ()).throw(RuntimeError("down")),
+    )
+    result = review.approve(fact["fact_id"], actor="alice")
+    failed = next(
+        item
+        for item in review.decisions(include_claim=False)
+        if item["decision_id"] == result["decision_id"]
+    )
+    assert failed["projection_status"] == "failed"
+
+    monkeypatch.setattr(graph, "merge_fact", real_merge)
+    drained = review.drain_projections()
+    assert drained["completed"] == 1
+    completed = next(
+        item
+        for item in review.decisions(include_claim=False)
+        if item["decision_id"] == result["decision_id"]
+    )
+    assert completed["projection_status"] == "completed"
+
+
 def test_journal_serializes_with_normal_audit_appends():
     # This is a behavioral lock-order smoke test: both operations complete and
     # the final chain remains valid under concurrent start.
