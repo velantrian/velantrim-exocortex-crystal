@@ -15,7 +15,7 @@ from typing import Any, Iterator, Mapping, Optional
 
 L3_BACKEND_ENV = "VELANTRIM_L3_BACKEND"
 PROFILE_PATH_ENV = "VELANTRIM_STORAGE_PROFILE_PATH"
-DEFAULT_PROFILE_PATH = "./data/velantrim-storage-profile.json"
+DEFAULT_PROFILE_PATH = "~/.velantrim/velantrim-storage-profile.json"
 PROFILE_SCHEMA_VERSION = 1
 
 _LOCAL_BACKENDS = {"sqlite", "ladybug"}

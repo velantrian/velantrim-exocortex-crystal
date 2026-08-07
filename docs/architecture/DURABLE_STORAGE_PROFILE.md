@@ -58,8 +58,14 @@ The profile path is controlled by:
 
 ```text
 VELANTRIM_STORAGE_PROFILE_PATH
-default: ./data/velantrim-storage-profile.json
+default: ~/.velantrim/velantrim-storage-profile.json
 ```
+
+The default is anchored in the user's home directory rather than the process working
+directory. The first durable startup stores the selected local backend path as an absolute
+locator, so a later process launched from another directory reuses the same profile and
+physical L3. Deployments that need a system, container or service-specific location should
+set `VELANTRIM_STORAGE_PROFILE_PATH` explicitly.
 
 The profile records only:
 
