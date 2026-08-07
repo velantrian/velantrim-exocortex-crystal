@@ -8,9 +8,8 @@ import importlib
 import json
 import os
 import re
-import shutil
 from pathlib import Path
-from typing import Any, Callable, Iterable, Mapping, Optional
+from typing import Any, Iterable, Mapping, Optional
 
 from core.storage_common import (
     StorageOperationError,
@@ -144,6 +143,7 @@ def _preflight(
     require_tls: bool,
     allow_insecure_test_connection: bool,
     require_absent_schema: bool,
+    require_writable: bool,
 ) -> dict[str, Any]:
     database, role, server_version_num, server_version = _fetch_one(
         connection,
@@ -177,15 +177,19 @@ def _preflight(
         raise StorageOperationError(
             "plaintext PostgreSQL is allowed only with explicit test-only authorization"
         )
-    create_allowed, read_only, in_recovery = _fetch_one(
-        connection,
-        "SELECT has_database_privilege(current_user, current_database(), 'CREATE'), "
-        "current_setting('transaction_read_only')::boolean, pg_is_in_recovery()",
-    )
-    if not bool(create_allowed) or bool(read_only) or bool(in_recovery):
-        raise StorageOperationError(
-            "PostgreSQL target is not writable by the explicit migration role"
+    in_recovery = bool(_fetch_one(connection, "SELECT pg_is_in_recovery()")[0])
+    if in_recovery:
+        raise StorageOperationError("PostgreSQL target is in recovery")
+    if require_writable:
+        create_allowed, read_only = _fetch_one(
+            connection,
+            "SELECT has_database_privilege(current_user, current_database(), 'CREATE'), "
+            "current_setting('transaction_read_only')::boolean",
         )
+        if not bool(create_allowed) or bool(read_only):
+            raise StorageOperationError(
+                "PostgreSQL target is not writable by the explicit migration role"
+            )
     schema_exists = bool(
         _fetch_one(
             connection,
@@ -485,6 +489,7 @@ def _exact_equivalence(
     *,
     target_schema: str,
     datasets: Mapping[str, Mapping[str, Any]],
+    write_evidence: bool,
 ) -> dict[str, dict[str, Any]]:
     schema = _quoted_schema(target_schema)
     result: dict[str, dict[str, Any]] = {}
@@ -495,21 +500,22 @@ def _exact_equivalence(
             dataset=dataset,
         )
         exact = all(actual[key] == expected[key] for key in ("records", "bytes", "sha256"))
-        try:
-            cursor.execute(
-                f"UPDATE {schema}.dataset_evidence SET "
-                "actual_records=%s,actual_bytes=%s,actual_sha256=%s,exact_match=%s "
-                "WHERE dataset=%s",
-                (
-                    actual["records"],
-                    actual["bytes"],
-                    actual["sha256"],
-                    exact,
-                    dataset,
-                ),
-            )
-        except Exception as exc:
-            raise _database_failure("equivalence evidence write", exc) from exc
+        if write_evidence:
+            try:
+                cursor.execute(
+                    f"UPDATE {schema}.dataset_evidence SET "
+                    "actual_records=%s,actual_bytes=%s,actual_sha256=%s,exact_match=%s "
+                    "WHERE dataset=%s",
+                    (
+                        actual["records"],
+                        actual["bytes"],
+                        actual["sha256"],
+                        exact,
+                        dataset,
+                    ),
+                )
+            except Exception as exc:
+                raise _database_failure("equivalence evidence write", exc) from exc
         if not exact:
             raise StorageOperationError(
                 f"PostgreSQL exact-state mismatch for dataset: {dataset}"
@@ -561,10 +567,10 @@ def import_logical_export_to_postgresql(
     bundle_path = _resolve_operator_path(bundle, "migration bundle")
     verified = verify_logical_export(bundle_path)
     manifest = _load_manifest(bundle_path)
-    root = _receipt_root(receipt_directory)
     schema = _target_schema(target_schema)
     driver = _load_psycopg()
     dsn = _dsn_from_environment(dsn_env)
+    root = _receipt_root(receipt_directory)
     connection: Any = None
     try:
         stage = "preflight"
@@ -576,6 +582,7 @@ def import_logical_export_to_postgresql(
             require_tls=require_tls,
             allow_insecure_test_connection=allow_insecure_test_connection,
             require_absent_schema=True,
+            require_writable=True,
         )
         manifest_sha = verified["manifest_sha256"]
         operation_id = _operation_id(
@@ -649,6 +656,7 @@ def import_logical_export_to_postgresql(
                 cursor,
                 target_schema=schema,
                 datasets=datasets,
+                write_evidence=True,
             )
             cursor.execute(
                 f"UPDATE {quoted}.import_control SET state='VERIFIED',"
@@ -735,7 +743,10 @@ def import_logical_export_to_postgresql(
             "active": False,
         }
     except StorageOperationError as exc:
-        _write_failure(root, stage, exc)
+        try:
+            _write_failure(root, stage, exc)
+        except StorageOperationError:
+            pass
         raise
     finally:
         if connection is not None:
@@ -761,8 +772,12 @@ def verify_postgresql_import(
     schema = _target_schema(target_schema)
     driver = _load_psycopg()
     dsn = _dsn_from_environment(dsn_env)
-    connection = _connect(driver, dsn, autocommit=True)
+    connection = _connect(driver, dsn, autocommit=False)
     try:
+        try:
+            connection.execute("SET TRANSACTION READ ONLY")
+        except Exception as exc:
+            raise _database_failure("read-only verification setup", exc) from exc
         preflight = _preflight(
             connection,
             driver_version=driver.__version__,
@@ -770,6 +785,7 @@ def verify_postgresql_import(
             require_tls=require_tls,
             allow_insecure_test_connection=allow_insecure_test_connection,
             require_absent_schema=False,
+            require_writable=False,
         )
         control = _control_row(connection, schema)
         operation_id, state, active, manifest_sha, target_identity, dimension = control
@@ -791,9 +807,16 @@ def verify_postgresql_import(
                 cursor,
                 target_schema=schema,
                 datasets=manifest["datasets"],
+                write_evidence=False,
             )
         finally:
             cursor.close()
+        after = verify_logical_export(bundle_path)
+        if after["manifest_sha256"] != verified["manifest_sha256"]:
+            raise StorageOperationError(
+                "migration bundle changed during PostgreSQL verification"
+            )
+        connection.rollback()
         return {
             "schema_version": POSTGRESQL_IMPORT_SCHEMA_VERSION,
             "status": "PASS",
