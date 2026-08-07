@@ -35,6 +35,65 @@ Documentation impact class and Notion record/checkpoint.
 
 ---
 
+## 2026-08-07 — English status repair and cross-backend migration contract
+
+### Scope
+
+Corrected the failed PR #326 status synchronization, established an English-only active
+documentation policy and defined issue #327's migration/PostgreSQL architecture without
+claiming runtime support.
+
+### Verified baseline
+
+- GitHub main inspected at `5cd0754614327c2ffc14902d5d411e347edf9ae9`;
+- verified runtime remains PR #325 / merge `b0df17a06d552ad2543b6d6e5efe8cd99877cfc0`;
+- validated runtime head/tree: `aa822c49c095039de90b92fbe4fe451c7b8f13b7` / `6143d7237222935182db86a166541d0ad07887be`;
+- exact-head runtime CI: `31182471502`, 9/9 jobs;
+- Python 3.11 evidence: 2019 passed / 12 skipped / 8726 statements /
+  100.00% coverage.
+
+### Findings / decisions
+
+- PR #326's temporary workflow failed on a nonexistent `README.pt-BR.md`, so its merge
+  message overstated synchronization while README/status/manifest remained stale.
+- GitHub executable evidence overrides stale Notion/history claims.
+- English is now the active authority language; localized READMEs are frozen until a
+  dedicated final localization pass.
+- Cross-backend migration is a phased operation, not profile editing or capability-based
+  auto-selection.
+- PostgreSQL/pgvector remains `PROPOSED / NOT RUNTIME`.
+- The first runtime slice is SQLite read-only logical export plus independent verification.
+
+### Changes
+
+- repaired English README/status/manifest/TEST_REPORT and AI context;
+- added the migration contract, PostgreSQL/pgvector RFC and ADR-021;
+- corrected remaining physical-L3 authority wording;
+- changed docs-status to validate English authority surfaces rather than mutable translated
+  metrics;
+- synchronized corrective and planning facts into the two Crystal Notion pages.
+
+### Validation
+
+This branch must pass all nine CI jobs. Architecture documents do not change runtime
+dependencies or enable PostgreSQL.
+
+### Remaining
+
+- implement deterministic SQLite logical export and independent verification;
+- then separately design inactive import and exact-state comparison;
+- keep cutover, rollback and PostgreSQL adapter work in later PRs;
+- translate localized READMEs only after a frozen final English checkpoint.
+
+### Synchronization
+
+- class: `GITHUB_AND_NOTION`;
+- Notion targets: Crystal Project Hub and Current Architectural Position;
+- corrective callouts were added before review; final merge SHA/CI must be added after
+  merge.
+
+---
+
 ## 2026-08-07 — Durable L3 storage profile and doctor merged
 
 ### Scope

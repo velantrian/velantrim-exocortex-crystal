@@ -150,3 +150,14 @@ English code-facing documents remain normative. The ten top-level README files
 share one capability and safety contract. `docs-status` checks their checkpoint,
 metrics, core safety markers and local links so translations cannot silently
 retain an obsolete architecture description.
+
+## Active storage and migration documents
+
+- [Durable storage profile](./architecture/DURABLE_STORAGE_PROFILE.md)
+- [SQLite storage lifecycle](./architecture/SQLITE_STORAGE_LIFECYCLE.md)
+- [Cross-backend migration contract](./architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md)
+- [PostgreSQL + pgvector institutional profile RFC](./architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
+- [ADR-021](./adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md)
+
+English is the active documentation authority. Localized top-level READMEs are frozen
+snapshots pending a dedicated final translation pass.

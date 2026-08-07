@@ -1,19 +1,25 @@
 {
   "schema_version": 1,
-  "status_date": "2026-08-01",
+  "status_date": "2026-08-07",
   "version": "0.3.0",
   "verified_runtime_checkpoint": {
-    "commit": "f91299c44a1a1850fa516f3abb96c916326f7a8c",
-    "short": "f91299c",
-    "pull_request": 302,
-    "description": "Advisory multi-label topic facets, scoped curator roles and capabilities, and process-local decision leases on top of the verified conflict-resolution runtime"
+    "commit": "b0df17a06d552ad2543b6d6e5efe8cd99877cfc0",
+    "short": "b0df17a",
+    "pull_request": 325,
+    "validated_head": "aa822c49c095039de90b92fbe4fe451c7b8f13b7",
+    "validated_tree": "6143d7237222935182db86a166541d0ad07887be",
+    "ci_run": 31182471502,
+    "description": "Durable SQLite profile lifecycle with online backup, independent verification, inactive no-clobber restore, and guarded stale-lock recovery"
   },
   "tests": {
-    "python_versions": ["3.11", "3.12"],
-    "passed": 1853,
+    "python_versions": [
+      "3.11",
+      "3.12"
+    ],
+    "passed": 2019,
     "skipped": 12,
     "failed": 0,
-    "measured_statements": 7236,
+    "measured_statements": 8726,
     "coverage_percent": 100.0
   },
   "ci": {
@@ -51,7 +57,27 @@
     "machine_readable_esm_spec": true,
     "scheduled_performance_history": true,
     "resumable_review_sessions": true,
+    "durable_l3_profile": true,
+    "sqlite_storage_lifecycle": true,
+    "cross_backend_migration_runtime": false,
+    "postgresql_pgvector_runtime": false,
+    "automatic_backend_switching": false,
     "physical_l3_equals_strict_canon": false
+  },
+  "documentation": {
+    "authoritative_language": "English",
+    "localized_readmes": "frozen_snapshots_pending_dedicated_translation_pass",
+    "frozen_localized_readme_git_blobs": {
+      "README.ar.md": "d63cc0d0771c11ca306d2cc79b728c3eb6301b66",
+      "README.de.md": "2e046a587208d65bc91bc2eab3909d0cadc1f9b9",
+      "README.es.md": "291c0169fa5a3372dabf1a3d1a53807faecc1620",
+      "README.fr.md": "8beaf05c1b70d24efcf38b16e3789c27f9280d67",
+      "README.hi.md": "b1719aec665f51ae47014372b39153551f298653",
+      "README.it.md": "95d5a70194c3c6880b0328262e0bbf923bb31076",
+      "README.ja.md": "1342099544ab718804646b5350ad71e7d404bc65",
+      "README.ru.md": "18e3f4fb566c7217dc65f91022e01d83fefba1df",
+      "README.zh-CN.md": "d2daa042ef0df4e9e343a60e59a1f9c1c664c51d"
+    }
   },
   "grant": {
     "program": "NLnet NGI0 Commons Fund",

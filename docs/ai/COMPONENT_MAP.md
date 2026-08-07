@@ -69,8 +69,43 @@ later startup
 - Is a backend/locator change being attempted without an explicit verified migration?
 
 **Current limitations:** one default user-level profile is assumed unless
-`VELANTRIM_STORAGE_PROFILE_PATH` is configured; no verified cross-backend migration or
-automatic stale-lock recovery exists.
+`VELANTRIM_STORAGE_PROFILE_PATH` is configured. SQLite backup/restore and guarded legacy
+stale-lock recovery are implemented; cross-backend logical export/import/cutover remains
+separate work.
+
+## 1B. SQLite lifecycle and cross-backend migration
+
+**Implemented SQLite lifecycle:**
+
+- `core/storage_common.py`
+- `core/storage_backup.py`
+- `core/storage_restore.py`
+- `core/storage_lock.py`
+- `core/storage_ops.py`
+- `docs/architecture/SQLITE_STORAGE_LIFECYCLE.md`
+- storage lifecycle tests
+
+**Architecture-only migration contract:**
+
+- `docs/architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md`
+- `docs/architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md`
+- `docs/adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md`
+
+**Decision owner:** migration operations preserve physical state and deployment identity;
+TruthGate/Guardian and strict read reconciliation retain epistemic authority.
+
+**Approved next runtime slice:** deterministic read-only SQLite logical export and
+independent bundle verification. Import, cutover, rollback and PostgreSQL are not part of
+that slice.
+
+**Audit questions:**
+
+- Is the source opened read-only under one stable snapshot?
+- Are records canonical, deterministically ordered, counted and hashed?
+- Is completion published last and independently verifiable?
+- Are source database/profile and localized documentation unchanged?
+- Is migration receipt language being confused with claim evidence or activation?
+- Are import, cutover or PostgreSQL capabilities being claimed before implementation?
 
 ## 2. Truth admission and safety
 

@@ -209,3 +209,11 @@ This is deployment/recovery hardening of the existing local-first SQLite baselin
 - no second Canon owner;
 - no production certification claim;
 - no PostgreSQL, pgvector or dedicated VectorDB dependency.
+
+## Relationship to cross-backend migration
+
+This lifecycle preserves one SQLite deployment. It is not a backend-neutral migration
+format. Future backend transitions must use the
+[Cross-Backend Storage Migration Contract](./CROSS_BACKEND_MIGRATION_CONTRACT.md).
+The approved first migration slice is deterministic read-only logical export plus
+independent verification; import and cutover remain separate.

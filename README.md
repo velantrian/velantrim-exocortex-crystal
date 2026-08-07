@@ -4,14 +4,14 @@
 
 ### Verifiable, local-first memory infrastructure for trustworthy AI systems
 
-`v0.3.0` · 🧪 **1853 passed / 12 skipped** · 🎯 **100% coverage** · 🧬 **7/7 declared mutants killed** · ✅ **9 CI jobs** · 🐍 **pure-stdlib default runtime** · ⚖️ **AGPL-3.0**
+`v0.3.0` · 🧪 **2019 passed / 12 skipped** · 🎯 **100% coverage** · 🧬 **7/7 declared mutants killed** · ✅ **9 CI jobs** · 🐍 **pure-stdlib default runtime** · ⚖️ **AGPL-3.0**
 
 > Crystal is not another chatbot. It is a memory, evidence and decision boundary
 > that records what a claim is, where it came from, what state it is in, whether
 > it may ground an answer, and how contradictions were explicitly resolved.
 
-**Verified runtime checkpoint:** `f91299c44a1a1850fa516f3abb96c916326f7a8c` — merged PR #302.  
-**Implementation truth:** code and tests merged into GitHub `main`.  
+**Verified runtime checkpoint:** `b0df17a06d552ad2543b6d6e5efe8cd99877cfc0` — merged PR #325.
+**Implementation truth:** code and tests merged into GitHub `main`.
 **Exact evidence:** [TEST_REPORT.md](./TEST_REPORT.md) and the
 [machine-readable implementation manifest](./docs/status/implementation-manifest.json).
 
@@ -20,11 +20,11 @@
 > verification contract in [`AGENTS.md`](./AGENTS.md). Do not begin by loading the
 > entire repository or treating issues/research PRs as implemented runtime.
 
-> **Localization contract:** every top-level translated README follows this
-> document's capability, safety and status boundaries. Stable API identifiers
-> remain in English/code form; explanatory prose is translated naturally.
+> **Documentation language policy:** English is the authoritative actively maintained
+> GitHub documentation language during engineering. Existing localized READMEs are frozen
+> snapshots and may lag until a dedicated final localization pass.
 
-## 🌐 Velantrim ecosystem / Экосистема Velantrim
+## 🌐 Velantrim ecosystem
 
 Crystal is the **grant-facing verifiable-memory track** within the wider Velantrim
 ecosystem. The related projects are independent research tracks rather than hidden
@@ -38,10 +38,6 @@ Crystal keeps its own Canon, implementation truth and grant boundary. Being part
 one ecosystem does **not** mean shared write authority, shared credentials or a
 currently implemented runtime integration.
 
-**По-русски:** Crystal — самостоятельное грантовое направление проверяемой памяти.
-Titan, Native Kernel и Mentaury Soul связаны с ним на уровне общей экосистемы и
-архитектурных исследований, но не получают автоматического права записи в Crystal
-Canon и не считаются его текущими runtime-зависимостями.
 
 📘 [Full bilingual ecosystem and integration-boundary map](./docs/VELANTRIM_ECOSYSTEM.md)
 
@@ -83,7 +79,8 @@ A topic label is not a truth verdict.
 - advisory multi-label topic facets that never grant authority;
 - a machine-readable ESM specification derived from runtime transitions;
 - deterministic evaluation, 100% line coverage and a Ring Zero mutation gate;
-- scheduled/manual L3 benchmark history with versioned artifacts.
+- scheduled/manual L3 benchmark history with versioned artifacts;
+- a locked durable storage profile and verified SQLite backup/restore lifecycle.
 
 ## 🏛️ Architecture at a glance
 
@@ -348,6 +345,18 @@ filtering and grouping. Facet score means topic relevance only. It never changes
 truth status, evidence, ESM state, contradiction outcomes or strict Canon
 membership.
 
+## 🗃️ Storage lifecycle and migration boundary
+
+The verified SQLite profile supports online backup, independent verification, inactive
+no-clobber restore and guarded stale-lock recovery through `velantrim-storage`.
+
+Cross-backend migration is not yet runtime. Issue #327 defines the required phased
+contract, and PostgreSQL/pgvector remains a proposed optional institutional profile.
+
+- [SQLite storage lifecycle](./docs/architecture/SQLITE_STORAGE_LIFECYCLE.md)
+- [Cross-backend migration contract](./docs/architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md)
+- [PostgreSQL + pgvector profile RFC](./docs/architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
+
 ## 🚀 Quick start
 
 ```bash
@@ -383,6 +392,9 @@ Continue with [QUICKSTART.md](./docs/QUICKSTART.md).
 - [Read-only query boundary](./docs/architecture/read-only-query-boundary.md)
 - [Conflict-resolution surfaces](./docs/CONFLICT_RESOLUTION_SURFACES.md)
 - [Topic facets and curator IAM](./docs/TOPIC_FACETS_AND_CURATOR_IAM.md)
+- [SQLite storage lifecycle](./docs/architecture/SQLITE_STORAGE_LIFECYCLE.md)
+- [Cross-backend migration contract](./docs/architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md)
+- [PostgreSQL + pgvector profile RFC](./docs/architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
 - [Test report](./TEST_REPORT.md)
 - [Evaluation](./docs/EVAL.md)
 - [Failure modes](./docs/FAILURE_MODES.md)
@@ -391,9 +403,9 @@ Continue with [QUICKSTART.md](./docs/QUICKSTART.md).
 ## ✅ Verified baseline
 
 ```text
-Python 3.11: 1853 passed / 12 skipped
-Python 3.12: 1853 passed / 12 skipped
-Statements:  7236
+Python 3.11: 2019 passed / 12 skipped
+Python 3.12: 2019 passed / 12 skipped
+Statements:  8726
 Coverage:    100.00%
 Mutation:    7/7 declared Ring Zero mutants killed
 CI jobs:     9

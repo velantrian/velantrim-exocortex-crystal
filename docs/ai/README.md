@@ -145,3 +145,10 @@ orientation map
   → documented GitHub finding
   → direct Notion sync or connectorless hand-off
 ```
+
+## Active documentation language
+
+English is the sole authoritative actively maintained GitHub documentation language during
+the current engineering phase. Existing localized README files are frozen snapshots and
+are updated only in a dedicated final localization pass. Agents must not spend an
+implementation PR rewriting translations or treat their stale metrics as current evidence.

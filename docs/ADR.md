@@ -19,7 +19,11 @@ Statuses:
 | [ADR-014](./adr/ADR-014-EXPLICIT_CONTRADICTION_DECISIONS.md) | a current contradiction requires an explicit, report-bound curator disposition | Accepted baseline |
 | [ADR-015](./adr/ADR-015-ESM_MACHINE_SPEC.md) | one machine-readable ESM descriptor is derived from the runtime matrix | Accepted baseline |
 | [ADR-016](./adr/ADR-016-INFORMATIONAL_BENCHMARK_HISTORY.md) | hosted-runner retrieval history is scheduled, versioned and informational | Accepted baseline |
-| [ADR-017](./adr/ADR-017-CRASH_CONSISTENT_CURATOR_DECISIONS.md) | curator state, audit proof and durable L3 projection intent share one SQLite transaction | Proposed implementation draft |
+| [ADR-017](./adr/ADR-017-CRASH_CONSISTENT_CURATOR_DECISIONS.md) | curator state, audit proof and durable L3 projection intent share one SQLite transaction | Accepted |
+| [ADR-018](./adr/ADR-018-AUTHENTICATED_CURATOR_WRITE_COMPOSITION.md) | bundled curator writes derive identity and authorization from a validated principal | Accepted |
+| [ADR-019](./adr/ADR-019-BOUNDED_LEGACY_RETRIEVAL.md) | degraded legacy retrieval is bounded and explicit reindex is separate | Accepted |
+| [ADR-020](./adr/ADR-020-SQLITE-STORAGE-LIFECYCLE.md) | SQLite backup, verification, inactive restore and guarded lock recovery are explicit operator operations | Accepted |
+| [ADR-021](./adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md) | backend changes require phased logical migration and explicit cutover proof | Accepted architecture contract |
 
 ---
 
@@ -179,3 +183,19 @@ See [ADR-016](./adr/ADR-016-INFORMATIONAL_BENCHMARK_HISTORY.md).
 ## ADR-017: Crash-consistent curator decisions
 
 See [ADR-017](./adr/ADR-017-CRASH_CONSISTENT_CURATOR_DECISIONS.md).
+
+## ADR-018: Authenticated curator write composition
+
+See [ADR-018](./adr/ADR-018-AUTHENTICATED_CURATOR_WRITE_COMPOSITION.md).
+
+## ADR-019: Bounded legacy retrieval
+
+See [ADR-019](./adr/ADR-019-BOUNDED_LEGACY_RETRIEVAL.md).
+
+## ADR-020: SQLite storage lifecycle
+
+See [ADR-020](./adr/ADR-020-SQLITE-STORAGE-LIFECYCLE.md).
+
+## ADR-021: Explicit cross-backend migration contract
+
+See [ADR-021](./adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md).
