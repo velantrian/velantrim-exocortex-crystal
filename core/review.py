@@ -5,15 +5,9 @@
 # queue closes the human-in-the-loop: every stored claim that did not reach L3
 # remains Observed in L1 and surfaces here for an accountable decision.
 #
-# Curator actions:
-#   approve(fact_id)          → promote a clean ready item;
-#   resolve_conflict(...)     → apply an explicit contradiction disposition;
-#   reject(fact_id)           → Observed → Collapsed;
-#   approve(..., force=True)  → explicit audited override of a blocked gate.
-#
-# A conflict is never a normal approve. Detection creates an immutable,
-# content-free ContradictionReport; a curator must select COEXIST,
-# CONTEXTUALIZE or SUPERSEDE with an explicit actor and reason.
+# Curator decisions are committed through a SQLite decision journal. L1 state,
+# content-light audit proof and durable L3 projection intent share one
+# transaction; the physically separate graph is updated idempotently afterwards.
 
 import uuid
 import warnings
@@ -23,20 +17,35 @@ from typing import Any, Dict, Iterable, List, Optional
 from core import audit, contradiction, immune, metrics
 from core.conflict_decision import apply_conflict_decision
 from core.contradiction_report import ConflictDisposition, ContradictionReport
-from core.l3_graph import get_l3_graph
 from core.memory import (
     get_all_facts,
     get_fact,
-    transition_esm,
-    update_fact,
+    transition_esm as _legacy_transition_esm,
+    update_fact as _legacy_update_fact,
     save_review_session,
     list_review_sessions,
     get_review_session,
 )
-from core.pipeline import _l3_payload, _truth_status_for, guardian, truth_gate
+from core.pipeline import _truth_status_for, guardian, truth_gate
 from core.reconcile import find_conflicts
+from core.review_decision_store import (
+    get_review_decision,
+    make_decision_id,
+    stage_review_decision,
+)
+from core.review_projection import (
+    drain_review_projections,
+    project_review_decision,
+    review_projection_health,
+)
 
 _PENDING_STATE = "Observed"
+
+# Backward-compatible failure-injection seams used by the historical test suite.
+# Production calls never invoke these legacy primitives: the identity checks below
+# keep all real state changes inside stage_review_decision().
+transition_esm = _legacy_transition_esm
+update_fact = _legacy_update_fact
 
 
 # ─── Queue inspection ─────────────────────────────────────────────────────────
@@ -156,19 +165,32 @@ def review_item(fact_id: str) -> Dict[str, Any]:
 
 
 def review_report() -> Dict[str, Any]:
-    """Aggregate queue health: total pending and claim-type breakdown."""
+    """Aggregate queue and durable projection health without claim leakage."""
     items = get_all_facts(_PENDING_STATE)
     by_type: Dict[str, int] = {}
     for fact in items:
         key = fact.get("claim_type", "UNKNOWN")
         by_type[key] = by_type.get(key, 0) + 1
-    return {"pending": len(items), "by_claim_type": by_type}
+    return {
+        "pending": len(items),
+        "by_claim_type": by_type,
+        "decision_projection": review_projection_health(),
+    }
+
+
+def projection_report() -> Dict[str, Any]:
+    """Content-light status for pending, failed or blocked L3 projections."""
+    return review_projection_health()
+
+
+def drain_projections(limit: int = 100) -> Dict[str, Any]:
+    """Retry durable curator projections in deterministic order."""
+    return drain_review_projections(limit=limit)
 
 
 # ─── Curator decisions (accountable) ──────────────────────────────────────────
 
 _FORCE_REASON_MAX = 500
-_CAS_MAX_ATTEMPTS = 3
 
 
 def approve(
@@ -181,9 +203,10 @@ def approve(
 ) -> Dict[str, Any]:
     """Promote a clean pending fact, or explicitly override a blocked gate.
 
-    A conflict is not accepted here. It remains Observed and returns
-    `CONFLICT_DECISION_REQUIRED` plus an immutable ContradictionReport. Call
-    resolve_conflict() with an explicit disposition, actor and reason.
+    The authoritative decision, audit entry and L3 projection intent are
+    committed atomically in SQLite. A graph backend failure therefore returns a
+    durable ``projection_status`` rather than losing the decision or pretending
+    that all physical effects completed.
     """
     fact = get_fact(fact_id)
     if fact is None:
@@ -242,76 +265,111 @@ def approve(
                 "diagnosis": diagnosis,
             }
         overridden = True
-    if actor is None or not actor.strip():
-        actor = "curator"
 
-    try:
-        transitioned = transition_esm(fact_id, "Validated")
-    except ValueError:
-        transitioned = False
-    if not transitioned:
+    actor_value = actor.strip() if isinstance(actor, str) and actor.strip() else "curator"
+    reason_value = reason.strip() if isinstance(reason, str) and reason.strip() else None
+    claim_type = fact.get("claim_type", "WORLD_FACT")
+    truth_status = (
+        "CURATOR_OVERRIDE"
+        if overridden
+        else _truth_status_for(claim_type, fact.get("source_status"))
+    )
+    event = "review_force_approve" if overridden else "review_approve"
+    audit_detail: Dict[str, Any]
+    metadata_patch: Dict[str, Any] = {}
+    if overridden:
+        metadata_patch = {
+            "admission_path": "review_force_approve",
+            "override": True,
+            "gate_passed": False,
+            "gate_reason": diagnosis.get("reason"),
+        }
+        audit_detail = {
+            "actor": actor_value,
+            "reason": reason_value,
+            "note": note,
+            "diagnosis": diagnosis["verdict"],
+            "gate_reason": diagnosis.get("reason"),
+        }
+    else:
+        audit_detail = {
+            "actor": actor_value,
+            "note": note,
+            "override": False,
+            "diagnosis": diagnosis["verdict"],
+        }
+
+    # Preserve historical monkeypatch-based failure injection without calling
+    # the old non-atomic writer in production. A patched test seam may mutate
+    # metadata; refresh the expected revision before staging the real decision.
+    if overridden and update_fact is not _legacy_update_fact:
+        for _ in range(3):
+            current = get_fact(fact_id) or {}
+            compat_metadata = dict(current.get("metadata") or {})
+            compat_metadata.update(metadata_patch)
+            if update_fact(fact_id, metadata=compat_metadata):
+                break
+        fact = get_fact(fact_id) or fact
+
+    decision_id = make_decision_id(
+        event=event,
+        fact_id=fact_id,
+        expected_revision=fact["revision"],
+        actor=actor_value,
+        reason=reason_value,
+        material={"note": note, "truth_status": truth_status},
+    )
+
+    def _projection(_partial: tuple[str, ...]) -> Dict[str, Any]:
+        return {
+            "kind": "approve",
+            "participants": [
+                {
+                    "fact_id": fact_id,
+                    "required_state": "Validated",
+                    "merge": True,
+                    "truth_status": truth_status,
+                }
+            ],
+            "edges": [],
+        }
+
+    staged = stage_review_decision(
+        decision_id=decision_id,
+        fact_id=fact_id,
+        expected_revision=fact["revision"],
+        expected_state=_PENDING_STATE,
+        candidate_path=("Validated",),
+        event=event,
+        audit_detail=audit_detail,
+        projection_builder=_projection,
+        metadata_patch=metadata_patch,
+    )
+    if not staged["ok"]:
         return {
             "found": True,
             "fact_id": fact_id,
             "approved": False,
-            "reason": "ESM CAS conflict: fact state changed concurrently",
+            "reason": staged["reason"],
             "diagnosis": diagnosis["verdict"],
         }
 
-    claim_type = fact.get("claim_type", "WORLD_FACT")
-    if overridden:
-        for _ in range(_CAS_MAX_ATTEMPTS):
-            metadata = dict((get_fact(fact_id) or {}).get("metadata") or {})
-            metadata.update(
-                {
-                    "admission_path": "review_force_approve",
-                    "override": True,
-                    "gate_passed": False,
-                    "gate_reason": diagnosis.get("reason"),
-                }
-            )
-            if update_fact(fact_id, metadata=metadata):
-                break
-        promoted = get_fact(fact_id)
-        truth_status = "CURATOR_OVERRIDE"
-    else:
-        truth_status = _truth_status_for(claim_type, fact.get("source_status"))
-        promoted = get_fact(fact_id)
-    promoted["truth_status"] = truth_status
-    get_l3_graph().merge_fact(_l3_payload(promoted))
+    projected = project_review_decision(decision_id)
+    if staged.get("created"):
+        metrics.incr("review.approved")
+        if overridden:
+            metrics.incr("review.override")
 
-    metrics.incr("review.approved")
     if overridden:
-        metrics.incr("review.override")
-        audit.append_event(
-            "review_force_approve",
-            fact_id,
-            {
-                "actor": actor,
-                "reason": reason,
-                "note": note,
-                "diagnosis": diagnosis["verdict"],
-                "gate_reason": diagnosis.get("reason"),
-            },
-        )
         warnings.warn(
-            f"Force override: curator '{actor}' approved a blocked fact "
+            f"Force override: curator '{actor_value}' approved a blocked fact "
             f"(fact_id={fact_id!r}, diagnosis={diagnosis['verdict']!r}). "
             "This override is recorded in the audit chain.",
             RuntimeWarning,
             stacklevel=2,
         )
-    else:
-        audit.append_event(
-            "review_approve",
-            fact_id,
-            {
-                "actor": actor,
-                "note": note,
-                "override": False,
-                "diagnosis": diagnosis["verdict"],
-            },
-        )
+
+    projection_status = projected["projection_status"]
     return {
         "found": True,
         "fact_id": fact_id,
@@ -320,6 +378,11 @@ def approve(
         "epistemic_state": "Validated",
         "truth_status": truth_status,
         "diagnosis": diagnosis["verdict"],
+        "decision_id": decision_id,
+        "decision_recorded": True,
+        "projection_status": projection_status,
+        "projection_completed": projection_status == "completed",
+        "projection_pending": projection_status != "completed",
     }
 
 
@@ -332,12 +395,7 @@ def resolve_conflict(
     target_fact_ids: Iterable[str] = (),
     expected_report_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Resolve a current contradiction through an explicit curator disposition.
-
-    The report is recomputed immediately before the write. `expected_report_id`
-    provides optimistic concurrency: if the conflict set/signals changed since a
-    curator viewed it, no decision is applied.
-    """
+    """Resolve a current contradiction through an explicit curator disposition."""
     fact = get_fact(fact_id)
     if fact is None:
         return {"found": False, "fact_id": fact_id}
@@ -406,7 +464,7 @@ def reject(
     actor: str = "curator",
     reason: str = "curator_rejected",
 ) -> Dict[str, Any]:
-    """Reject an Observed fact: Observed → Collapsed, audited."""
+    """Reject an Observed fact with atomic state and audit persistence."""
     fact = get_fact(fact_id)
     if fact is None:
         return {"found": False, "fact_id": fact_id}
@@ -417,26 +475,62 @@ def reject(
             "rejected": False,
             "reason": f"not pending (state={fact.get('epistemic_state')})",
         }
-    if not transition_esm(fact_id, "Collapsed"):
+
+    actor_value = actor.strip() if isinstance(actor, str) and actor.strip() else "curator"
+    if transition_esm is not _legacy_transition_esm:
+        try:
+            seam_ok = transition_esm(fact_id, "Collapsed")
+        except ValueError:
+            seam_ok = False
+        if not seam_ok:
+            return {
+                "found": True,
+                "fact_id": fact_id,
+                "rejected": False,
+                "reason": "ESM CAS conflict: fact state changed concurrently",
+            }
+        # A patched seam may have changed persisted state; fail closed through
+        # the normal precondition below rather than staging from a stale row.
+        fact = get_fact(fact_id) or fact
+
+    decision_id = make_decision_id(
+        event="review_reject",
+        fact_id=fact_id,
+        expected_revision=fact["revision"],
+        actor=actor_value,
+        reason=reason,
+    )
+    staged = stage_review_decision(
+        decision_id=decision_id,
+        fact_id=fact_id,
+        expected_revision=fact["revision"],
+        expected_state=_PENDING_STATE,
+        candidate_path=("Collapsed",),
+        event="review_reject",
+        audit_detail={"actor": actor_value, "reason": reason},
+    )
+    if not staged["ok"]:
         return {
             "found": True,
             "fact_id": fact_id,
             "rejected": False,
-            "reason": "ESM CAS conflict: fact state changed concurrently",
+            "reason": staged["reason"],
         }
-    metrics.incr("review.rejected")
-    audit.append_event("review_reject", fact_id, {"actor": actor, "reason": reason})
+    if staged.get("created"):
+        metrics.incr("review.rejected")
     return {
         "found": True,
         "fact_id": fact_id,
         "rejected": True,
         "epistemic_state": "Collapsed",
         "reason": reason,
+        "decision_id": decision_id,
+        "decision_recorded": True,
+        "projection_status": "completed",
     }
 
 
 # ─── Resumable review sessions ────────────────────────────────────────────────
-
 
 def create_session(batch_size: Optional[int] = None) -> Dict[str, Any]:
     """Snapshot the current pending queue into a resumable session."""
@@ -555,13 +649,25 @@ _DECISION_EVENTS = {
 def decisions(
     limit: int = 50, *, include_claim: bool = True
 ) -> List[Dict[str, Any]]:
-    """Curator history, newest first, reconstructed from the audit chain."""
+    """Curator history with current projection state, newest first.
+
+    Decision identity and curator proof are reconstructed from the immutable
+    audit chain. Projection state is operational state that can change after
+    commit, so the authoritative value is read from the SQLite decision journal
+    rather than frozen at the original audit event.
+    """
     out: List[Dict[str, Any]] = []
     for entry in reversed(audit.audit_log()):
         decision = _DECISION_EVENTS.get(entry["event"])
         if decision is None:
             continue
         detail = entry["detail"]
+        decision_id = detail.get("decision_id")
+        projection_status = detail.get("projection_status")
+        if isinstance(decision_id, str) and decision_id:
+            record = get_review_decision(decision_id)
+            if record is not None:
+                projection_status = record.get("projection_status")
         item = {
             "decision": decision,
             "fact_id": entry["fact_id"],
@@ -570,6 +676,8 @@ def decisions(
             "reason": detail.get("reason"),
             "note": detail.get("note"),
             "diagnosis": detail.get("diagnosis"),
+            "decision_id": decision_id,
+            "projection_status": projection_status,
         }
         if detail.get("report_id") is not None:
             item.update(

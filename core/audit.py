@@ -42,6 +42,11 @@ _ENV_AUDIT_KEY = "VELANTRIM_AUDIT_KEY"
 # bounded SQLite retry loop and losing an accountability event.
 _APPEND_LOCK = threading.RLock()
 
+# Transaction-aware writers outside this module must serialize against the same
+# ledger lock before reading and appending the audit tail. Keep one lock object;
+# the alias names the broader journal contract without creating a second mutex.
+_AUDIT_LOCK = _APPEND_LOCK
+
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
