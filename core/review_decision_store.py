@@ -176,7 +176,10 @@ def stage_review_decision(
     target_transitions: Iterable[Mapping[str, Any]] = (),
     allow_partial_targets: bool = False,
 ) -> dict[str, Any]:
-    fact_id = _guard_mutable_fact_id(fact_id, role="candidate")
+    try:
+        fact_id = _guard_mutable_fact_id(fact_id, role="candidate")
+    except DecisionConflict as exc:
+        return {"ok": False, "created": False, "reason": str(exc)}
     if not isinstance(decision_id, str) or not decision_id:
         raise ValueError("decision_id must be a non-empty string")
     if not isinstance(event, str) or not event:
