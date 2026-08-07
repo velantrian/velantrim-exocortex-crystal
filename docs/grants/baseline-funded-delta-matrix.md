@@ -1,91 +1,240 @@
 # Grant Baseline → Funded Delta → Acceptance Matrix
 
-**Status:** grant-planning control · documentation only · no new runtime claim  
-**Scope:** NLnet / NGI0 Commons proposal, approximately €50,000  
-**Source of implementation truth:** current GitHub `main`, `TEST_REPORT.md`, `docs/STATUS.md`, reproducible CI artifacts
+**Status:** grant-planning control · documentation only · no award/budget change  
+**Frozen baseline:** `main@c612c1f7de067b05ed7d01ad82d47a7bc39af23a`  
+**Validated head / CI:** `e70c31bf517039f0dd3f77f7bc4b6d3f03936736` / `31213056560`  
+**Baseline evidence:** 2047 passed / 12 skipped / 9219 statements / 100% coverage / 9 CI jobs
 
-## Purpose
-
-Crystal already has a substantial tested baseline. The grant does not pay to recreate
-features that already exist. It funds a measurable conversion from a research-grade
-open core into a reproducible, deployable and institution-ready open-source MVP.
-
-Every milestone must be read as:
+## Control rule
 
 ```text
-BASELINE TODAY
-    +
-MEASURABLE FUNDED DELTA
-    =
-INDEPENDENTLY VERIFIABLE DELIVERABLE
+verified baseline
++
+new measurable funded delta
+=
+independently verifiable public deliverable
 ```
 
-A baseline capability may be reused as the starting point, but it is not itself a
-funded deliverable. If the baseline advances before a grant agreement is signed, this
-matrix must be updated so that funded work remains a real delta.
+Anything merged at or before the frozen baseline is existing capability and cannot be
+counted again as future paid work.
 
-## Milestone matrix
+## M1 — Reproducible local-first runtime and release evidence
 
-| Milestone | Baseline today | Funded delta | Acceptance evidence |
-|---|---|---|---|
-| **M1 — Local-first deployable prototype (€9,000)** | Packaged Python install, CLI, local SQLite/WAL operational store, local L3 backends, Docker build gate, reproducible test instructions. | Stabilised release packaging; clean-clone setup; documented import/export, backup/restore and local deployment path; release-grade configuration validation and upgrade guidance. | Release tag; clean-clone smoke script; documented install/run/backup/restore walkthrough; tests that start from an empty environment; reproducible build evidence. |
-| **M2 — Hardened FastAPI service (€8,000)** | Optional `.[api]` layer with health, ingest, ask, receipt verification, evidence access and token-guarded review endpoints. HTTP `/ask` and `/receipt` use the merged read-only canonical query boundary; CLI/MCP residual scope remains documented. | Capability-based authorization; explicit reader/ingester/curator/auditor boundaries; token lifecycle and revocation; request/rate limits; secure deployment profile; operational audit export; failure-safe API behaviour. | Role-matrix integration tests; denied-by-default tests; token rotation/revocation tests; threat model; hardened local deployment guide; redacted audit/incident export fixture. |
-| **M3 — Production-strength evidence spans and Receipt v2 (€8,000)** | Baseline evidence store and sealed receipts with source identifiers, chunk references, span fields and content-light hashes. | Automatic line/section/character spans for PDF and Markdown; original-snippet retrieval; multi-source corroboration; per-span conflict surfacing; replay at realistic corpus scale. | Exact-span fixture corpus; tamper and replay tests; side-by-side source demonstration; multi-source conflict cases; published evaluation artifact. |
-| **M4 — Evaluation quality gate (€5,000)** | Deterministic retrieval/trace/receipt evaluation, source-span coverage, contradiction precision/recall and an English CI gate; report-only Russian probes. Replay architecture has been reviewed only as prior art and remains `DOCUMENTED_ONLY`. | Larger multi-domain fixtures; calibrated multilingual tracks; generated-answer grounding score; adversarial retrieval and contradiction cases; versioned manifests; deterministic baseline-versus-candidate structural diff; per-release quality trends. | Public fixtures and labels; threshold configuration; CI regression tests; release-versioned `metrics.jsonl`, manifests and reports; documented calibration method; machine-readable structural diff with hard safety blocker counts. |
-| **M5 — Knowledge-base expansion (€7,000)** | Draft knowledge material exists outside the audited Crystal release boundary and is not automatically canonical. | Curated, versioned, source-referenced corpus package with licence/provenance metadata, deduplication, validation and review-safe import workflow. | Corpus manifest; source and licence records; schema/integrity checks; dry-run import report; sample receipts; proof that corpus content is not promoted by bypassing TruthGate. |
-| **M6 — Knowledge adapters (€5,000)** | Optional PDF, YAML and RDF/Linked Data adapters; default runtime remains standard-library only. | Production hardening; precise source spans; licence metadata; Wikidata Q/P label resolution; selected institutional formats such as EPUB, BibTeX or OAI-PMH where agreed. | Adapter fixtures; malformed-input and missing-dependency tests; source/licence preservation tests; documented install hints; no new mandatory runtime dependency. |
-| **M7 — Multilingual access (€4,000)** | English CI gate, report-only Russian corpus, morphology-tolerant optional retrieval and mixed English/Russian documentation. | Localisation structure; selected European-language interface/documentation support; calibrated language-specific evaluation tracks named in the final agreement. | Versioned locale catalogues; language fixtures; documented translation review; per-language evaluation report; no unsupported claim of equal quality across all languages. |
-| **M8 — Model-independence evaluation (€3,000)** | Extractive local answerer is the default; external LLMs are optional and outside the truth boundary. | Comparative evaluation across replaceable language-model interfaces to test whether the same structured memory and receipts preserve factual grounding independently of provider. | Reproducible comparison protocol; multiple model-interface runs; shared FactsPack/receipt inputs; provider-neutral report; no mandatory provider dependency introduced. |
-| **M9 — Documentation, governance and onboarding (€1,000)** | Architecture, reviewer guide, demo, status documents and contributor/governance foundations already exist. | Coherent onboarding path; maintained issue/PR templates; reviewer-ready runbook and demonstrator; documentation QA and current-state navigation. | Documentation inventory; clean-clone reviewer walkthrough; contributor pathway; issue/PR templates; link and command validation; release-linked documentation checkpoint. |
+**Baseline already present**
 
-## M4 replay adoption boundary
+- pure-standard-library default runtime;
+- deterministic tests/evaluation and 100% line coverage;
+- nine-job CI and Ring Zero mutation gate;
+- durable SQLite profile, backup/verify/inactive restore;
+- deterministic bounded SQLite logical export/verify.
 
-The current decision is recorded in
-[`evaluation-replay-adoption.md`](./evaluation-replay-adoption.md).
+**Funded delta**
 
-```text
-Titan replay implementation = reviewed prior art
-Crystal replay runtime       = not implemented
-Current repository change    = documentation and grant control only
-Future M4 implementation     = separate RFC, issue, tests and PR after baseline freeze
-```
+- reproducible wheel/sdist and container artifacts;
+- checksums, SBOM and supported-version manifest;
+- clean-machine installation/reproduction scripts;
+- release-linked exact SHA/CI evidence and documented operational limits.
 
-This clarification does not add a tenth milestone, change the requested amount or
-claim that live trajectory recording, optimization or automatic promotion exists.
+**Acceptance**
 
-## Cross-cutting security delta
+- public release artifacts install on supported Python versions;
+- checksums/SBOM are generated reproducibly;
+- clean-environment smoke tests reproduce the named checkpoint;
+- no existing storage lifecycle work is billed again.
 
-M2 and the institutional part of WP2 should use
-[`docs/security/eu-service-security-readiness.md`](../security/eu-service-security-readiness.md)
-as a non-certification readiness checklist. It converts broad “security hardening”
-language into testable controls around authorization, deployment, continuity,
-operations and maintenance.
+## M2 — Institution-scale portable storage state
 
-## Research boundary
+**Baseline already present**
 
-New cognitive or neuromorphic ideas are not automatically grant work. In particular,
-the external intrinsic-noise consolidation hypothesis is tracked only as a
-research boundary in
-[`docs/research/INTRINSIC_NOISE_CONSOLIDATION_BOUNDARY.md`](../research/INTRINSIC_NOISE_CONSOLIDATION_BOUNDARY.md).
-It does not change current runtime, TruthGate, L3, receipts, milestones or budget.
+- backend-neutral canonical JSONL bundle schema;
+- independent fail-closed verification;
+- fixed local-first resource limits;
+- accepted cross-backend migration architecture and PostgreSQL RFC.
 
-## Change-control rules
+**Funded delta**
 
-1. Do not count an already merged capability as a funded delta.
-2. Record the exact baseline commit or release when a grant agreement starts.
-3. Tie every payment milestone to repository artifacts and acceptance tests created
-   during the funded period.
-4. If scope is reduced, remove later deltas rather than weakening acceptance criteria
-   for the retained milestones.
-5. Keep Research Mode, Personal Exo-Cortex and speculative cognitive mechanisms out
-   of the strict grant implementation claim unless separately approved and verified.
-6. Do not claim certification, legal compliance, production multi-tenancy, zero
-   hallucinations or autonomous self-canonisation.
-7. Treat cross-project implementations as prior art until independently adapted,
-   tested and merged into Crystal.
+- issue #331 streaming/incremental export and verification;
+- cursor batching and incremental same-descriptor hashing/parsing;
+- disk-backed node/entity/reference checks;
+- disk-space preflight, interruption cleanup and large-corpus evidence.
 
-## Reviewer-safe one-line answer
+**Acceptance**
 
-> Crystal already provides the tested trust kernel; the grant funds the measurable
-> engineering delta required to make that kernel reproducible, deployable, secure,
-> scalable, multilingual and independently reviewable as public infrastructure.
+- bounded peak-memory tests at declared corpus sizes;
+- deterministic bundle equality across repeated runs;
+- adversarial oversized/corrupt inputs fail closed;
+- benchmark report includes memory, disk, time and tested limits.
+
+## M3 — Inactive PostgreSQL/pgvector import and exact equivalence
+
+**Baseline already present**
+
+- SQLite local-first source profile;
+- deterministic verified bundle;
+- no-automatic-switching contract;
+- PostgreSQL/pgvector architecture only.
+
+**Funded delta**
+
+- optional PostgreSQL driver extra with version policy;
+- secret-free institutional profile identity;
+- import into an inactive target only;
+- deterministic exact-state equivalence receipts;
+- failure cleanup and retry/idempotency behavior.
+
+**Acceptance**
+
+- identifiers, payloads, vectors, edges, entities, mentions and metadata compare exactly;
+- approved restrictions/erasure/provenance state is not dropped;
+- target cannot serve normal reads/writes before explicit cutover;
+- successful import never changes TruthGate or strict Canon membership.
+
+## M4 — Reproducible retrieval-quality evaluation
+
+**Baseline already present**
+
+- deterministic evaluation infrastructure;
+- bounded retrieval and explicit degraded/reindex behavior;
+- exact vector values in the portable bundle.
+
+**Funded delta**
+
+- exact pgvector search reference implementation;
+- versioned HNSW/IVFFlat corpus and manifests;
+- recall@k, filtered recall, latency, index size, rebuild cost and stale-index tests;
+- machine-readable regression reports.
+
+**Acceptance**
+
+- exact search is the reference baseline;
+- ANN enablement requires accepted recall thresholds;
+- exact-state mismatch cannot be overridden by latency/recall results;
+- indexes remain rebuildable non-authoritative projections.
+
+## M5 — Explicit cutover and rollback proof
+
+**Baseline already present**
+
+- durable profile identity;
+- inactive SQLite restore;
+- migration contract requiring separate activation.
+
+**Funded delta**
+
+- source/target fencing and preflight;
+- immutable cutover receipt;
+- explicit rollback receipt and expiry/window policy;
+- crash-window, retry and partial-failure tests.
+
+**Acceptance**
+
+- source remains authoritative until a valid cutover receipt;
+- no capability-based or reachability-based switching;
+- rollback behavior is deterministic and audited;
+- profile edit/delete is rejected as migration.
+
+## M6 — Server lifecycle and operational security
+
+**Baseline already present**
+
+- scoped curator roles/capabilities;
+- authenticated actor binding on implemented write surfaces;
+- process-local leases and audit receipts;
+- SQLite lifecycle proof.
+
+**Funded delta**
+
+- PostgreSQL least-privilege read/runtime/migration roles;
+- TLS verification and credential rotation/revocation contract;
+- PostgreSQL/pgvector backup, restore drill and upgrade sequencing;
+- audit redaction, timeout/pooling policy and operator diagnostics.
+
+**Acceptance**
+
+- independently tested restore drill;
+- credentials never enter profiles, bundles, receipts, logs or Notion;
+- multi-process tests document transaction/retry semantics;
+- no production IdP, certification or distributed exactly-once overclaim.
+
+## M7 — Evidence and TRACE inspection UX
+
+**Baseline already present**
+
+- source/evidence metadata, provenance, TRACE and receipts;
+- review sessions and contradiction reports;
+- read-only query boundary.
+
+**Funded delta**
+
+- reviewer-facing TRACE/receipt visualization;
+- source-span and policy/evidence navigation;
+- explicit uncertainty, refusal and contradiction views;
+- content-light export for independent audit.
+
+**Acceptance**
+
+- every displayed statement links to immutable evidence/provenance identifiers;
+- UI does not mutate Canon or promote claims;
+- restricted/erased content is denied consistently;
+- automated accessibility and security tests pass.
+
+## M8 — Source-linked semantic reading prototype
+
+**Baseline already present**
+
+- ordinary ingest/admission path;
+- source/evidence spans and review queues;
+- explicit statement that no dedicated Reader Core exists.
+
+**Funded delta**
+
+- bounded multi-pass document structure map;
+- safe segmentation and exact source-span preservation;
+- source-linked candidate cards;
+- coverage, exception, contradiction and re-read reports.
+
+**Acceptance**
+
+- output remains candidate material upstream of Guardian/TruthGate;
+- extraction confidence, importance and truth confidence stay separate;
+- no second Canon owner or automatic promotion;
+- coverage and source-span reproducibility tests pass.
+
+## M9 — Claim discipline, maintenance and independent audit
+
+**Baseline already present**
+
+- docs-status, security, mutation and evaluation gates;
+- English-authoritative documentation policy;
+- machine-readable implementation manifest;
+- public known-risks and audit workflow.
+
+**Funded delta**
+
+- grant/roadmap/security claim-lint gate;
+- dependency/action pinning and scheduled maintenance reports;
+- independent architecture/security review artifacts;
+- release-linked risk closure and remediation evidence.
+
+**Acceptance**
+
+- CI rejects stale SHA/test counts and false PostgreSQL/award/certification claims;
+- actions/dependencies follow a reviewed pin/update policy;
+- independent findings and resolutions are public;
+- grant pages and runtime status remain synchronized.
+
+## Explicit non-scope across M1–M9
+
+- universal truth, zero hallucinations or AGI;
+- consciousness, living digital mind or human-brain simulation;
+- automatic GDPR/legal/security certification;
+- autonomous self-canonization;
+- hidden chain-of-thought storage;
+- automatic backend switching or live dual-write unless separately reviewed;
+- Titan, Native Kernel, Mentaury or Research Mode as current Crystal runtime.
+
+## Change control
+
+Any milestone change must update this matrix, the current status/manifest and synchronized
+Notion grant pages in the same work cycle. Budget or award status may change only from
+verified external grant communication.
