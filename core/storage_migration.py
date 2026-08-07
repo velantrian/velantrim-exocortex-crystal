@@ -808,13 +808,36 @@ def _read_dataset(
     )
     records: list[Mapping[str, Any]] = []
     consumer = _DATASET_CONSUMER.get()
-    count = 0
-    total = 0
-    digest = hashlib.sha256()
-    previous: Optional[tuple[Any, ...]] = None
+    expected_sha = _require_sha256(expected.get("sha256"), f"{dataset} sha256")
     try:
         if snapshot.st_size != expected.get("bytes"):
             raise StorageOperationError(f"{dataset} dataset byte-size mismatch")
+
+        digest = hashlib.sha256()
+        total = 0
+        while True:
+            chunk = os.read(fd, 64 * 1024)
+            if not chunk:
+                break
+            total += len(chunk)
+            if total > MAX_DATASET_BYTES:
+                raise StorageOperationError(
+                    f"{dataset} dataset exceeds byte resource limits"
+                )
+            digest.update(chunk)
+        hashed = os.fstat(fd)
+        if _file_identity(hashed) != _file_identity(snapshot):
+            raise StorageOperationError(
+                f"{dataset} migration dataset changed while it was read"
+            )
+        if total != expected.get("bytes"):
+            raise StorageOperationError(f"{dataset} dataset byte-size mismatch")
+        if digest.hexdigest() != expected_sha:
+            raise StorageOperationError(f"{dataset} dataset SHA-256 mismatch")
+
+        os.lseek(fd, 0, os.SEEK_SET)
+        count = 0
+        previous: Optional[tuple[Any, ...]] = None
         with os.fdopen(fd, "rb", buffering=64 * 1024, closefd=False) as handle:
             while True:
                 line = handle.readline(MAX_RECORD_BYTES + 1)
@@ -822,7 +845,7 @@ def _read_dataset(
                     break
                 if len(line) > MAX_RECORD_BYTES:
                     raise StorageOperationError(
-                        f"{dataset} record {count + 1} exceeds the record-size resource limit"
+                        f"{dataset} record exceeds the record-size resource limit"
                     )
                 if not line.endswith(b"\n"):
                     raise StorageOperationError(
@@ -833,12 +856,6 @@ def _read_dataset(
                     raise StorageOperationError(
                         f"{dataset} dataset exceeds the record-count resource limit"
                     )
-                total += len(line)
-                if total > MAX_DATASET_BYTES:
-                    raise StorageOperationError(
-                        f"{dataset} dataset exceeds byte resource limits"
-                    )
-                digest.update(line)
                 record = _validate_record(
                     dataset, _strict_json(line, f"{dataset} record {count}")
                 )
@@ -861,6 +878,11 @@ def _read_dataset(
             raise StorageOperationError(
                 f"{dataset} migration dataset changed while it was read"
             )
+        if count != expected.get("records"):
+            raise StorageOperationError(
+                f"{dataset} dataset record-count mismatch"
+            )
+        return records, snapshot
     except StorageOperationError:
         raise
     except OSError as exc:
@@ -869,16 +891,6 @@ def _read_dataset(
         ) from exc
     finally:
         os.close(fd)
-
-    if total != expected.get("bytes"):
-        raise StorageOperationError(f"{dataset} dataset byte-size mismatch")
-    expected_sha = _require_sha256(expected.get("sha256"), f"{dataset} sha256")
-    if digest.hexdigest() != expected_sha:
-        raise StorageOperationError(f"{dataset} dataset SHA-256 mismatch")
-    if count != expected.get("records"):
-        raise StorageOperationError(f"{dataset} dataset record-count mismatch")
-    return records, snapshot
-
 
 def _valid_completed_at(value: Any) -> bool:
     if not _non_empty_string(value) or not value.endswith("Z"):
