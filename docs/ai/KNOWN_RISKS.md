@@ -1,10 +1,20 @@
 # ⚠️ Crystal Known Risks and Open Boundaries
 
 **Status date:** 2026-08-07  
-**Verified runtime checkpoint:** `c612c1f7de067b05ed7d01ad82d47a7bc39af23a`  
+**Verified runtime checkpoint:** `f03e24c85922d0bb46d6d9dfee98338972135908`  
 **Validated implementation head / CI:** `e70c31bf517039f0dd3f77f7bc4b6d3f03936736` / `31213056560`
 
 This register is an orientation layer. GitHub `main`, executable tests, completed CI and
+
+## 2026-08-08 — Bounded migration checkpoint
+
+- #331 is implemented by PR #335; fixed cursor batches and disk-backed ordering/reference checks remove complete-dataset/global-ID retention from the production path.
+- Existing local-first size limits remain active. Benchmark `31224005804` is not a production SLO or institution-scale certification.
+- #332 remains open for optional inactive PostgreSQL/pgvector import and exact-state equivalence; activation and cutover remain absent.
+- Resource exhaustion, temporary-disk capacity, interruption cleanup and maximum-envelope testing remain operational concerns for larger deployments.
+- GDPR language remains **GDPR-oriented controls**, not legal compliance or certification.
+- PR #334 remains historical grant/status baseline context; the current runtime authority is PR #335.
+
 current issue/PR state remain authoritative.
 
 ## Severity model

@@ -1,146 +1,60 @@
 # 🗺️ Velantrim Exo-Cortex Crystal — Roadmap
 
-> **Authority rule:** only merged `main` code, tests and exact CI evidence are current
-> implementation truth. Proposed work is not runtime capability.
+> Only merged `main`, executable tests and exact CI are implementation truth.
 
-**Current verified baseline:** `main@c612c1f7de067b05ed7d01ad82d47a7bc39af23a`  
-**Validated head / CI:** `e70c31bf517039de90b92fbe4fe451c7b8f13b7` / `31213056560`  
-**Grant status:** submitted / under review. **No grant award or budget change is claimed.**
+**Current verified baseline:** `main@f03e24c85922d0bb46d6d9dfee98338972135908`  
+**Validated head / CI:** `17ce10ffe12da93be50434c73d08f05a70a5922b` / `31224184351`
 
 ## ✅ Delivered baseline
 
-Crystal currently has:
+Crystal includes the trust/evidence/query/storage lifecycle baseline plus:
 
-- typed claims, evidence spans, provenance and epistemic lifecycle;
-- Guardian and TruthGate admission boundaries;
-- physical L3 multi-status storage separated from strict Canon;
-- immutable deny-dominant trusted read projections;
-- read-only public HTTP, CLI and MCP query paths;
-- TRACE, receipts, replay, restriction and erasure controls;
-- explicit contradiction reports and authorized dispositions;
-- scoped curator authorization with process-local leases;
-- bounded retrieval and explicit reindex refusal;
-- durable backend/locator profile locking;
-- SQLite backup, verify, inactive restore and guarded lock recovery;
-- deterministic SQLite logical export and independent bundle verification;
-- a fixed fail-closed local-first export resource envelope;
-- 2047 tests, 100% coverage, 7/7 declared mutants and 9/9 CI jobs.
+- deterministic bounded-streaming SQLite logical export;
+- disk-backed canonical edge ordering and referential checks;
+- same-descriptor independent verification;
+- cleanup and resource preflight;
+- 2059 tests, 9361 statements, 100% coverage and 9/9 CI;
+- benchmark `31224005804` 2/2 with explicit non-SLO limits.
 
-## 🧱 Current storage position
+## ✅ Completed — issue #331 / PR #335
 
-```text
-SQLite
-  = verified local-first/lightweight default
-
-PostgreSQL + pgvector
-  = optional future institutional profile
-```
-
-No automatic fallback or capability-based switching is permitted after a durable profile
-exists.
-
-## P1 — Institution-scale migration proof (#331)
-
-Goal: remove full-dataset/full-file materialization as a scale blocker.
-
-Deliverables:
-
-- cursor-batched export;
-- incremental descriptor-bound hashing and JSONL parsing;
-- disk-backed referential checks;
-- disk-space/resource preflight;
-- interruption cleanup;
-- large-corpus memory/disk/time benchmarks.
-
-Exit gate: reproducible bounded peak-memory evidence at declared corpus sizes.
+The production path no longer retains complete datasets or global identifier sets. Existing
+64 MiB source/dataset, 200,000-record and 384 MiB aggregate limits remain active. Raising
+them requires a separate evidence-backed change.
 
 ## P1 — Inactive PostgreSQL/pgvector import (#332)
 
-Blocked by #331.
-
-Deliverables:
-
-- optional driver extra and version policy;
-- secret-free institutional profile;
-- inactive target import only;
-- exact state equivalence receipts;
-- exact-search reference and later ANN evaluation;
-- no activation from successful import.
-
-## P1 — Grant baseline and claim gates (#333)
-
-Deliverables:
-
-- freeze the PR #330 baseline;
-- recalculate M1–M9 funded deltas;
-- remove stale storage/auth claims;
-- validate grant, roadmap and security surfaces in CI;
-- preserve submitted/under-review/not-awarded status.
-
-## P2 — Explicit cutover and rollback
-
-Separate reviewed phase after exact target equivalence:
+Next phase only:
 
 ```text
-preflight
-→ source/target fencing
-→ explicit cutover receipt
-→ observed target operation
-→ rollback window
-→ optional explicit rollback receipt
+verified bundle
+→ PostgreSQL preflight
+→ inactive target import
+→ exact state equivalence
+→ import/equivalence receipts
 ```
 
-No live dual-write or zero-downtime claim is assumed.
+No activation, cutover, rollback, dual-write or automatic switching.
+
+## P2 — Exact/ANN evaluation, cutover and rollback
+
+- exact pgvector search reference;
+- versioned HNSW/IVFFlat evaluation;
+- source/target fencing and explicit cutover receipt;
+- rollback proof and expiry policy.
 
 ## P2 — Server lifecycle and security
 
-- PostgreSQL/pgvector backup and independent restore drill;
-- TLS, least-privilege roles and credential rotation;
-- transaction isolation/retry policy;
-- extension/schema upgrade sequencing;
-- audit redaction and operator observability;
-- multi-process tests without distributed exactly-once overclaim.
+- least-privilege roles, TLS and credential rotation;
+- backup/restore/upgrade drills;
+- transaction/retry policy and observability;
+- no certification or distributed exactly-once overclaim.
 
-## P2 — Release and supply-chain hardening
+## P2/P3 — Release evidence and Reader Core research
 
-- reviewer-preview release from the current baseline;
-- wheel/sdist/container artifacts;
-- checksums and SBOM;
-- pinned actions/dependency policy;
-- scheduled security and maintenance updates.
+- reproducible artifacts, checksums, SBOM and dependency pinning;
+- source-linked Reader Core prototype only upstream of Guardian/TruthGate.
 
-## P3 — Source-linked Reader Core prototype
-
-A future semantic reading layer may provide:
-
-- document structure maps;
-- safe segmentation and exact source spans;
-- source-linked candidate cards;
-- coverage, exception, contradiction and re-read reports.
-
-It must remain upstream of ordinary Guardian/TruthGate admission and must never become a
-second Canon owner.
-
-## Explicitly out of scope
-
-- universal truth or zero hallucinations;
-- consciousness, AGI or a living digital mind;
-- automatic GDPR/legal/security certification;
-- automatic backend switching;
-- hidden chain-of-thought storage;
-- production multi-tenant SaaS without a separate reviewed deployment track;
-- Titan, Native Kernel, Mentaury or Research Mode as current Crystal runtime.
-
-## Completion discipline
-
-Every roadmap item requires:
-
-```text
-issue / RFC
-→ narrow implementation PR
-→ tests and failure-path evidence
-→ exact-head CI
-→ status/manifest update
-→ Notion synchronization where required
-→ merge SHA and known limitations
-```
+**No grant award** or budget change is claimed. PostgreSQL runtime, automatic switching,
+production multi-tenancy, universal truth, zero hallucinations and legal certification
+remain out of scope.

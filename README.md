@@ -4,10 +4,10 @@
 
 ### Verifiable, local-first memory infrastructure for trustworthy AI systems
 
-`v0.3.0` · 🧪 **2047 passed / 12 skipped** · 🎯 **100.00% coverage** · 🧬 **7/7 declared mutants killed** · ✅ **9 CI jobs** · 🐍 **pure-standard-library default runtime** · ⚖️ **AGPL-3.0**
+`v0.3.0` · 🧪 **2059 passed / 12 skipped** · 🎯 **100.00% coverage** · 🧬 **7/7 declared mutants killed** · ✅ **9 CI jobs** · 🐍 **pure-standard-library default runtime** · ⚖️ **AGPL-3.0**
 
-**Verified runtime checkpoint:** `c612c1f7de067b05ed7d01ad82d47a7bc39af23a` — merged PR #330.  
-**Validated implementation head / CI:** `e70c31bf517039f0dd3f77f7bc4b6d3f03936736` / `31213056560` — 9/9 successful.
+**Verified runtime checkpoint:** `f03e24c85922d0bb46d6d9dfee98338972135908` — merged PR #335.  
+**Validated implementation head / CI:** `17ce10ffe12da93be50434c73d08f05a70a5922b` / `31224184351` — 9/9 successful.
 
 Crystal is a memory, evidence and decision boundary. It records what a claim is, where it
 came from, what epistemic state it is in, whether it may ground an answer, and how a
@@ -57,11 +57,16 @@ PostgreSQL + pgvector
   = not current runtime
 ```
 
-PR #330 adds a canonical backend-neutral JSONL export for nodes, vectors, edges, entities,
-mentions and metadata, plus independent fail-closed verification. The bundle is operation
-evidence only: it is not claim evidence, TruthGate admission or backend activation.
+PR #335 advances the canonical backend-neutral JSONL path to a bounded-streaming
+implementation. Source rows are consumed in fixed cursor batches; canonical edge ordering
+and referential checks use private disk-backed SQLite state; verification hashes and parses
+from the same descriptor without retaining complete datasets or global identifier sets in
+the production path.
 
-The merged implementation has an explicit local-first resource envelope:
+The bundle remains operation evidence only: it is not claim evidence, TruthGate admission
+or backend activation.
+
+The merged implementation retains the explicit local-first resource envelope:
 
 | Resource | Limit |
 |---|---:|
@@ -72,11 +77,14 @@ The merged implementation has an explicit local-first resource envelope:
 | one dataset | 64 MiB |
 | aggregate JSONL | 384 MiB |
 
-This is not a streaming or institution-scale migration engine. Issue #331 tracks bounded
-cursor batching, incremental verification and disk-backed referential checks. Issue #332
-tracks future inactive PostgreSQL/pgvector import and exact-state equivalence. Cutover,
-rollback, dual-write and automatic backend switching remain absent.
+Issue #331 is implemented by PR #335. Reproducible local-first resource evidence is recorded
+in [SQLite Logical Migration — Bounded Resource Evidence](./docs/benchmarks/SQLITE_LOGICAL_MIGRATION_RESOURCE_EVIDENCE.md):
+an approximately 8x synthetic corpus increase changed Python-traced peak from 1,338,163 to
+1,339,001 bytes. This is not a production SLO or institution-scale certification.
 
+Issue #332 tracks the separate future phase: optional inactive PostgreSQL/pgvector import
+and exact-state equivalence. Cutover, rollback, dual-write and automatic backend switching
+remain absent.
 ## 🛡️ Central non-claims
 
 ```text
