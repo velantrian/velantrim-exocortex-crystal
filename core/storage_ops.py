@@ -1,5 +1,5 @@
 # core/storage_ops.py
-# Pure-stdlib operator CLI for durable SQLite lifecycle and logical export.
+# Operator CLI for durable SQLite lifecycle and governed storage migration.
 
 from __future__ import annotations
 
@@ -8,11 +8,27 @@ import json
 from pathlib import Path
 from typing import Optional
 
+from core.postgresql_migration import (
+    DEFAULT_DSN_ENV,
+    import_logical_export_to_postgresql,
+    verify_postgresql_import,
+)
 from core.storage_backup import create_backup, verify_backup
 from core.storage_common import StorageOperationError
 from core.storage_lock import lock_report, recover_stale_lock, status_report
 from core.storage_migration import export_sqlite_logical, verify_logical_export
 from core.storage_restore import restore_backup
+
+
+def _postgresql_options(command: argparse.ArgumentParser) -> None:
+    command.add_argument("bundle", type=Path)
+    command.add_argument("--target-schema", required=True)
+    command.add_argument("--dsn-env", default=DEFAULT_DSN_ENV)
+    command.add_argument(
+        "--allow-insecure-local-test",
+        action="store_true",
+        help="allow plaintext PostgreSQL only for an explicit local integration test",
+    )
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -51,6 +67,13 @@ def _parser() -> argparse.ArgumentParser:
 
     verify_logical = commands.add_parser("verify-logical")
     verify_logical.add_argument("bundle", type=Path)
+
+    import_postgresql = commands.add_parser("import-postgresql-inactive")
+    _postgresql_options(import_postgresql)
+    import_postgresql.add_argument("--receipts", type=Path, required=True)
+
+    verify_postgresql = commands.add_parser("verify-postgresql-inactive")
+    _postgresql_options(verify_postgresql)
     return parser
 
 
@@ -82,8 +105,25 @@ def main(argv: Optional[list[str]] = None) -> int:
             )
         elif args.command == "export-logical":
             report = export_sqlite_logical(args.output, profile_path=args.profile)
-        else:
+        elif args.command == "verify-logical":
             report = verify_logical_export(args.bundle)
+        elif args.command == "import-postgresql-inactive":
+            report = import_logical_export_to_postgresql(
+                args.bundle,
+                args.receipts,
+                target_schema=args.target_schema,
+                dsn_env=args.dsn_env,
+                require_tls=not args.allow_insecure_local_test,
+                allow_insecure_test_connection=args.allow_insecure_local_test,
+            )
+        else:
+            report = verify_postgresql_import(
+                args.bundle,
+                target_schema=args.target_schema,
+                dsn_env=args.dsn_env,
+                require_tls=not args.allow_insecure_local_test,
+                allow_insecure_test_connection=args.allow_insecure_local_test,
+            )
     except StorageOperationError as exc:
         print(json.dumps({"schema_version": 1, "status": "FAIL", "error": str(exc)}))
         return 2
