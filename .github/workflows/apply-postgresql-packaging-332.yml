@@ -1,0 +1,29 @@
+name: Apply PostgreSQL optional packaging
+
+on:
+  push:
+    branches:
+      - agent/postgresql-inactive-import-332
+    paths:
+      - scripts/apply_postgresql_packaging_332.py
+      - .github/workflows/apply-postgresql-packaging-332.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/postgresql-inactive-import-332
+          fetch-depth: 0
+      - run: python scripts/apply_postgresql_packaging_332.py
+      - run: |
+          rm .github/workflows/apply-postgresql-packaging-332.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "build(storage): add optional PostgreSQL profile"
+          git push origin HEAD:agent/postgresql-inactive-import-332
