@@ -4,7 +4,8 @@
 > implementation truth. Proposed work is not runtime capability.
 
 **Current verified baseline:** `main@c612c1f7de067b05ed7d01ad82d47a7bc39af23a`  
-**Validated head / CI:** `e70c31bf517039f0dd3f77f7bc4b6d3f03936736` / `31213056560`
+**Validated head / CI:** `e70c31bf517039de90b92fbe4fe451c7b8f13b7` / `31213056560`  
+**Grant status:** submitted / under review. **No grant award or budget change is claimed.**
 
 ## ✅ Delivered baseline
 
