@@ -341,7 +341,12 @@ QUERIES = {
 }
 
 COUNT_QUERIES = {
-    dataset: f'SELECT COUNT(*) FROM "{dataset}"' for dataset in DATASET_FILES
+    "nodes": "SELECT COUNT(*) FROM nodes",
+    "vectors": "SELECT COUNT(*) FROM vectors",
+    "edges": "SELECT COUNT(*) FROM edges",
+    "entities": "SELECT COUNT(*) FROM entities",
+    "mentions": "SELECT COUNT(*) FROM mentions",
+    "meta": "SELECT COUNT(*) FROM meta",
 }
 
 
