@@ -1,324 +1,159 @@
 # ⚠️ Crystal Known Risks and Open Boundaries
 
-**Status date:** 2026-08-07
-**Verified runtime checkpoint:** `b0df17a06d552ad2543b6d6e5efe8cd99877cfc0`
+**Status date:** 2026-08-07  
+**Verified runtime checkpoint:** `c612c1f7de067b05ed7d01ad82d47a7bc39af23a`  
+**Validated implementation head / CI:** `e70c31bf517039f0dd3f77f7bc4b6d3f03936736` / `31213056560`
 
-This register is an orientation layer. It does not replace issues, ADRs, security
-operations, tests, current code inspection or legal review.
+This register is an orientation layer. GitHub `main`, executable tests, completed CI and
+current issue/PR state remain authoritative.
 
 ## Severity model
 
-- **P0:** can invalidate core trust, safety, privacy or durable-state claims.
-- **P1:** materially limits production, scale, interoperability or reviewer confidence.
-- **P2:** maintainability, governance, documentation or research debt.
+- **P0** — can invalidate trust, safety, privacy or durable-state guarantees.
+- **P1** — materially limits reliability, scale, interoperability or reviewer confidence.
+- **P2** — maintainability, documentation, governance or research debt.
 
-A risk closes only with merged implementation and explicit evidence. Permanent regression
-targets remain listed even after the originating defect is closed.
+A risk closes only through merged implementation and exact evidence. Historical fixes stay
+listed as regression targets when the invariant remains important.
 
-## Closed material findings — 2026-08-07
+## ✅ Latest verified storage checkpoint
 
-### #315 — curator decision crash consistency
+PR #330 merged as `c612c1f7de067b05ed7d01ad82d47a7bc39af23a` after exact-head CI
+`31213056560` completed all nine jobs successfully.
 
-**Closed by:** PR #319, merge `62879cd2095450de57d11fcf97c13f5f9768ad0b`,
-CI `31162857843`.
+Verified evidence:
 
-SQLite now commits the authority-bearing decision, state/metadata, tamper-evident audit
-proof and durable L3 projection intent together. Projection is idempotent, restartable and
-observable. Restricted/erased/immutable participants fail closed and authoritative L1
-restriction remains deny-dominant during L3 outages.
+- Python 3.11 and 3.12: **2047 passed / 12 skipped / 0 failed**;
+- **9219 statements / 100.00% line coverage**;
+- **7/7** declared Ring Zero mutants killed;
+- security, Ruff, evaluation, JSONL integrity, Docker and docs-status green.
 
-**Remaining boundary:** this is transactional-outbox consistency, not cross-database ACID
-or distributed exactly-once delivery.
+The runtime now has deterministic SQLite logical export and independent bundle verification,
+but only inside the explicit bounded local-first envelope recorded below.
 
-### #316 — authenticated principal binding
+## P0 — permanent regression targets
 
-**Closed by:** PR #320, merge `1414862786aa0c0d4cf4ad152776dd4e55536bf0`,
-CI `31164585628`.
+### P0.1 Guardian or TruthGate bypass
 
-Bundled HTTP and CLI curator writes now derive audit identity from a validated
-`CuratorPrincipal`, enforce capabilities and normalized scopes, pin the current report and
-use a process-local decision lease. Actor text is only an optional exact-match assertion;
-authorization denial has zero canonical mutation.
+No adapter, migration path, query helper, worker or storage backend may establish trusted
+state without the existing admission and safety owners.
 
-**Remaining boundary:** no complete production IdP, token lifecycle, tenant isolation,
-policy administration or distributed fencing is included.
+### P0.2 Physical L3 confused with strict Canon
 
-### #317 — bounded legacy retrieval
+Physical L3 is multi-status storage. Graph membership, retrieval rank, migration success or
+backend choice cannot grant strict Canon membership.
 
-**Closed by:** PR #321, merge `1748677a5c84e8a9b3af08fcaed0215efebcdd66`,
-CI `31166027193`, benchmark `31165503179`.
+### P0.3 Query-to-write contamination
 
-Reviewed Mock/SQLite no-fingerprint reads use a deterministic candidate cap; unsupported
-adapters return `legacy_store_requires_reindex` without a public full-corpus scan. Explicit
-reindex preserves fact/ESM/trust/restriction/edge/audit authority.
+Ordinary HTTP, CLI and MCP query paths must remain read-only with respect to canonical truth
+state, including provider failure, retry and degraded-retrieval paths.
 
-**Remaining boundary:** a bounded window may miss a relevant record outside that window;
-reindex is the preferred recovery path.
+### P0.4 Proof/state split
 
-### Environment-selected L3 backend drift
-
-**Closed by:** PR #322, merge `0ca66cc6e194edd06b5de2a6eb5126a30613957e`,
-validated head `156e974393586ada30feaac2500eae7003cb2885`, CI `31174042124`.
-
-The first durable environment-selected L3 backend and non-secret locator are now persisted
-in a versioned profile. Later `auto` startups resolve to that lock. Malformed profiles,
-backend/locator conflicts, constructor mismatches and automatic fallback to ephemeral Mock
-fail closed. The pure-stdlib `velantrim-doctor` command reports profile/dependency/locator
-health without opening L3 or mutating Canon.
-
-Independent diff inspection found that the first draft stored the profile itself relative
-to process `cwd`. The default was corrected before merge to
-`~/.velantrim/velantrim-storage-profile.json`, with a regression test across working
-directories.
-
-**Remaining boundary:** PR #325 separately implemented SQLite backup/restore and guarded
-legacy stale-lock recovery. Cross-backend migration, multi-instance deployment policy and
-distributed fencing remain open.
-
-### SQLite storage lifecycle
-
-**Closed by:** PR #325, merge `b0df17a06d552ad2543b6d6e5efe8cd99877cfc0`, validated head `aa822c49c095039de90b92fbe4fe451c7b8f13b7`,
-CI `31182471502`.
-
-The locked SQLite profile now supports online backup, independent verification, restore
-only to a new inactive database/profile, and guarded stale-lock recovery. Independent
-diff review found and closed a new-writer race before final CI.
-
-**Remaining boundary:** this is SQLite deployment continuity, not cross-backend migration,
-automatic activation, distributed fencing or epistemic admission.
-
-## P0 — permanent trust-boundary regression targets
-
-### P0.1 TruthGate or Guardian bypass
-
-**Risk:** a new API, adapter, import path, review helper or background process writes
-trusted/canonical state without established admission and safety boundaries.
-
-**Required proof for every affected change:** explicit authority owner, adversarial tests,
-fail-closed dependency behavior, exact-head CI and mutation evidence for the changed
-boundary.
-
-### P0.2 Query-to-write contamination
-
-**Risk:** query, retrieval or read-only surfaces create, promote, reinforce, reindex or
-otherwise mutate canonical memory.
-
-**Required proof:** HTTP, CLI and MCP queries remain read-only across normal, degraded,
-provider-failure and retry paths. Reindex remains a separate explicit operator action.
-
-### P0.3 Strict Canon leakage
-
-**Risk:** restricted, erased, unverified or contested physical L3 records enter strict
-grounding because graph presence, similarity or rank is mistaken for proof.
-
-**Required proof:** deny-dominant immutable reconciliation and consumer-level integration
-tests.
-
-### P0.4 Proof/state split regression
-
-**Risk:** a curator mutation commits without durable audit/projection intent, or a failed
-operation produces success-looking proof.
-
-**Required proof:** transactional decision journal, idempotent recovery, failure injection,
-audit-chain verification and no-resurrection tests remain green.
+A failed or rejected durable mutation must not emit success-looking audit or receipt proof.
+Authority-bearing state, recovery intent and proof must remain crash-consistent.
 
 ### P0.5 Principal identity bypass
 
-**Risk:** a new public write path derives audit identity, capability or target scope from
-untrusted request/CLI text rather than a validated principal.
+Public curator writes must derive identity, capability and scope from a validated principal,
+not request text. Process-local leases must never be described as distributed fencing.
 
-**Required proof:** complete write-surface inventory, actor-spoof tests and zero mutation on
-configuration, capability, scope, report or lease denial.
+### P0.6 Migration authority confusion
 
-### P0.6 Storage-profile authority confusion
+```text
+migration bundle        != claim evidence
+successful verification != TruthGate admission
+successful import       != activation
+retrieval quality       != exact state equivalence
+```
 
-**Risk:** a deployment profile, database connection, graph presence or vector index is
-misrepresented as epistemic authority or used to bypass normal Canon reconciliation.
+## P1 — active engineering limitations
 
-**Required proof:** profile selection remains deployment-only; Guardian, TruthGate,
-restrictions and `TrustSnapshot` remain the owners of admission and strict reads.
+### P1.1 Institution-scale migration is not implemented — #331
 
-## P1 — current engineering and operational limitations
+The current export/verifier enforces fixed limits:
 
-### P1.1 Cross-backend migration runtime is absent
+```text
+control JSON          <= 1 MiB
+source SQLite         <= 64 MiB
+one record            <= 1 MiB
+records per dataset   <= 200,000
+one dataset           <= 64 MiB
+aggregate JSONL       <= 384 MiB
+```
 
-ADR-021 defines the required phased contract, but no verified cross-backend import,
-equivalence, cutover or rollback command exists. The approved first implementation slice
-is read-only SQLite logical export plus independent bundle verification.
+This bounds the current materializing implementation but does not prove bounded peak memory
+for arbitrarily large stores. Issue #331 requires cursor batching, incremental hashing and
+parsing, disk-backed referential checks, disk-space preflight, cleanup and large-corpus
+benchmarks. No institution-scale claim is allowed until that evidence is merged.
 
-**Do not claim:** automatic database switching, verified dual-write, lossless cross-backend
-migration, PostgreSQL support or rollback.
+### P1.2 PostgreSQL/pgvector runtime is absent — #332
 
-**Closure proof:** deterministic export/verify first; then separate inactive-target import,
-source/target exact-state comparison, retrieval evaluation, explicit cutover, rollback
-proof and structured receipts.
+PostgreSQL/pgvector remains a proposed optional institutional profile. Issue #332 covers only
+inactive target import and exact-state equivalence after the migration prerequisites are
+satisfied. Driver/version policy, TLS and credential boundaries, server backup/restore,
+ANN evaluation, cutover, rollback and fencing require explicit evidence.
 
-### P1.2 Default profile and stale-lock operations need deployment policy
-
-The user-level default profile is appropriate for one default local deployment. Services,
-containers and multiple instances should configure `VELANTRIM_STORAGE_PROFILE_PATH`
-explicitly. A hard crash can leave the bounded `.lock` file and cause fail-closed startup;
-no automatic stale-lock deletion is claimed.
-
-**Closure proof:** documented instance identity, safe lock ownership/age semantics,
-operator-assisted recovery and adversarial multi-process tests.
+SQLite remains the verified local-first/lightweight default. Automatic SQLite ↔ PostgreSQL
+fallback or profile-edit migration is forbidden.
 
 ### P1.3 Distributed curator coordination is absent
 
-The included lease registry coordinates one process only.
+The included lease registry coordinates one process only. Multi-process or multi-host claims
+require an external fencing adapter, expiry/ownership semantics and failure tests.
 
-**Do not claim:** distributed locking, global exactly-once decisions or stale-writer
-fencing across processes/hosts.
+### P1.4 Production identity and multi-tenancy are incomplete
 
-**Closure proof:** external adapter contract, ownership/expiry/fencing semantics,
-multi-process failure tests, recovery metrics and deployment documentation.
+Scoped principal composition exists, but production identity issuance, revocation, tenant
+isolation and policy administration remain host responsibilities.
 
-### P1.4 Production identity provider and multi-tenancy are incomplete
+### P1.5 Performance evidence is not a production SLO
 
-Principal composition and scoped capabilities exist, but production identity issuance,
-rotation/revocation, tenant isolation and policy administration remain host responsibilities.
+Current tests and benchmark artifacts do not establish production p50/p95/p99 latency,
+concurrency, capacity or institution-scale resource behavior.
 
-**Closure proof:** tenant model, authenticated identity mapping, authorization matrix,
-isolation tests, revocation/audit behavior and reviewed deployment integration.
+### P1.6 Supply-chain reproducibility remains incomplete
 
-### P1.5 Bounded degraded retrieval trades recall for work limits
+Security gates pass, but development constraints and GitHub Actions should be pinned more
+tightly and maintained through a reviewed update policy.
 
-A deterministic legacy candidate window can miss relevant records outside the window.
-The response exposes degraded mode and recommends reindex.
+### P1.7 Dedicated Reader Core is absent
 
-**Do not claim:** bounded compatibility retrieval has vector-equivalent recall or semantic
-completeness.
+Crystal has evidence spans and admission/proof boundaries, but no verified multi-pass reader
+with structural maps, coverage tracking, bookmarks, exception passes and selective rereads.
+Any future reader must produce source-linked candidates upstream of Guardian and TruthGate.
 
-**Closure direction:** complete reindex, or separately review a bounded indexed lexical
-strategy with measured recall and migration behavior.
+### P1.8 Grant/status synchronization must remain exact — #333 / PR #334
 
-### P1.6 Broader provenance lifecycle wiring
+Grant-facing documents must separate the merged baseline from future funded delta. A
+documentation PR is not complete merely because runtime tests pass: its exact head must pass
+`docs-status`, then merge, and Notion must receive immutable post-merge evidence.
 
-Strong proof exists on central verified paths, but future adapters and less central
-lifecycle operations can introduce orphaned state/proof windows.
+## P2 — governance and maintenance debt
 
-**Closure proof:** mutation/read surface inventory, common receipt/provenance contract,
-replay and recovery tests.
+- historical Notion entries may describe superseded branch states;
+- localized README snapshots intentionally lag until a dedicated reconciliation pass;
+- research/documentation PRs can become stale against `main`;
+- targeted mutation testing is not repository-wide semantic mutation coverage;
+- automated third-party review can be unavailable and must not be represented as approval.
 
-### P1.7 Performance evidence is not a production SLO
+## Grant and compliance claim boundary
 
-The 1k/10k/30k benchmark proves the configured candidate bound on one hosted-runner
-environment. It does not establish production p50/p95/p99, concurrency or capacity.
+The NLnet application is submitted and under review. No award or budget change is claimed.
+Crystal provides GDPR-oriented controls, not legal compliance or certification. It does not
+claim universal truth, zero hallucinations, production multi-tenancy, distributed exactly-once
+behavior, PostgreSQL runtime, Titan integration or consciousness.
 
-**Closure proof:** versioned workload, controlled environment, thresholds, storage-growth
-limits and regression/operations policy.
-
-### P1.8 Mutation testing remains targeted
-
-The checkpoint proves 7/7 declared Ring Zero mutants killed, not repository-wide semantic
-mutation coverage.
-
-**Closure proof:** expanded mutation inventory and bounded execution policy.
-
-### P1.9 Reproducible supply-chain pinning remains incomplete
-
-Gitleaks, Bandit and pip-audit pass. However, development dependencies, security tools and
-GitHub Actions should be constrained/pinned more tightly for reproducibility and reviewable
-updates.
-
-**Closure proof:** versioned constraints/lock strategy, action SHA pinning, scheduled
-newest-compatible checks and automated update policy.
-
-### P1.10 Legacy normalized-ID migration gap (#165)
-
-Pre-normalization stores may retain case/whitespace variants that new ingest does not fully
-deduplicate.
-
-**Closure proof:** reviewed migration or persistent normalized-claim index, collision
-policy, occurrence preservation and backwards-compatibility tests.
-
-### P1.11 Dedicated long-document Reader Core is absent
-
-Crystal has evidence spans and strong admission/proof boundaries, but no verified
-multi-pass reader with structural maps, coverage tracking, bookmarks, exception and
-contradiction passes or selective re-reading.
-
-**Safe direction:** source-linked candidate cards upstream of Guardian and TruthGate; no
-second Canon owner.
-
-## P2 — governance, maintenance and research debt
-
-### P2.1 Research PR accumulation
-
-Research/documentation PRs can become stale against `main`, overlap or be mistaken for
-runtime authority.
-
-**Closure proof:** periodic reconciliation, current status headers and explicit
-merge/close decisions.
-
-### P2.2 Stale issues and historical status text
-
-Issue bodies and old Notion callouts can describe pre-merge reality after implementation
-has moved forward.
-
-**Control:** prefer current issue state, merged PRs, exact-head CI and the newest dated
-snapshot. Preserve old records as history, not current truth.
-
-### P2.3 Documentation/context drift
-
-AI context and Notion snapshots can become stale when mutable heads/checks are copied into
-multiple places.
-
-**Control:** duplicate immutable facts such as final merge SHA, accepted ADR and completed
-CI evidence; keep mutable branch/check status in GitHub and use a clearly dated current
-snapshot.
-
-### P2.4 Compliance and grant overclaim
-
-GDPR-oriented features, public grant materials and roadmap pages can be misread as legal
-certification, funding award or production approval.
-
-**Control:** preserve explicit submission/award, implementation/research and
-mechanism/certification distinctions.
-
-### P2.5 Automated review availability
-
-Codex/Copilot review may be unavailable because of quota, account or integration limits.
-This must not be represented as successful independent review.
-
-**Control:** preserve the service limitation in the PR timeline, require exact-head CI,
-record manual diff findings and do not fabricate approval evidence.
-
-## Research-only boundaries
-
-The following remain proposed/research unless separately implemented and merged:
-
-- PostgreSQL/pgvector institutional deployment profile;
-- dedicated VectorDB integration;
-- automatic cross-backend migration or switching;
-- Essence Workdesk and dialogue-board experiments;
-- cognitive-state, planning and user-intent hypotheses;
-- Native Kernel compatibility/event substrate concepts;
-- Personal Exo-Cortex, Mentaury and Full Exo-Cortex modules;
-- ASR/Small Core active-state recovery;
-- artificial-consciousness or digital-person claims.
-
-## Risk evidence template
+## Closure evidence template
 
 When closing or materially changing a risk, record:
 
 ```text
-risk id
-exact PR, final head and merge SHA
+risk / issue
+exact base, head and merge SHA
 affected authority boundary
-implementation summary
-exact CI run and test/coverage evidence
-runtime wiring/default state
-migration/recovery behavior
+implementation and failure behavior
+exact CI and test evidence
 remaining limitations
 GitHub and Notion synchronization
 ```
-
-### P2.6 Frozen localization drift
-
-English is the active authority language. Existing localized READMEs may lag until the
-dedicated final translation pass.
-
-**Control:** do not cite localized mutable metrics as current evidence; keep English
-status/manifest/TEST_REPORT coherent; perform one explicit localization PR after the
-engineering baseline is frozen.
