@@ -126,4 +126,4 @@ def test_journal_serializes_with_normal_audit_appends():
     assert not thread.is_alive()
     assert failures == []
     assert result["rejected"] is True
-    assert audit.verify_chain()["valid"] is True
+    assert audit.verify_audit_log()["ok"] is True
