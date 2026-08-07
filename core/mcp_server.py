@@ -1,31 +1,5 @@
 # core/mcp_server.py
 # Velantrim ExoCortex — minimal, READ-ONLY MCP server (stdio, JSON-RPC 2.0)
-#
-# Exposes the verifiable memory layer to MCP clients (Claude Desktop, Cursor, any
-# MCP-capable agent) over the standard stdio transport — with ZERO third-party
-# dependencies (pure Python stdlib), honouring the repo's local-first,
-# stdlib-only promise.
-#
-# Scope: this is the READ-ONLY gateway. Every exposed tool is non-mutating
-# (search, observability report, fact lookup, truth-maintenance history,
-# conflict candidates, receipt verification). Write/curate tools (ingest,
-# validate, supersede, erase) are deliberately NOT registered here. Role-based
-# capability gating for write tools is a future roadmap step, not an implemented
-# mechanism today.
-#
-# Enforcement model (what actually protects the graph today): allowlist-based
-# read-only registration. Only the tools in READ_ONLY_TOOLS exist, and
-# `tools/call` refuses any name that is not in that registry — so a client never
-# sees a write tool and a model cannot call one by accident. Search additionally
-# routes through core.query_pipeline.search(), which avoids query-triggered L1/L3
-# writes and never initializes an unset embedding fingerprint.
-#
-# Transport: newline-delimited JSON-RPC 2.0 over stdin/stdout (the MCP stdio
-# transport). Run as:
-#     python -m core.mcp_server
-# Wire into Claude Desktop (claude_desktop_config.json):
-#     {"mcpServers": {"velantrim": {"command": "python",
-#                                    "args": ["-m", "core.mcp_server"]}}}
 
 from __future__ import annotations
 
@@ -37,29 +11,21 @@ from typing import Any, Dict, Optional, Callable
 from core import __version__
 
 logger = logging.getLogger("velantrim.mcp")
-
-# Protocol version advertised if the client does not specify one.
 _DEFAULT_PROTOCOL = "2024-11-05"
 _SERVER_NAME = "velantrim"
-# Informational advertised mode label only — NOT an enforcement mechanism.
-# Read-only safety is provided by allowlist-based registration (READ_ONLY_TOOLS),
-# not by checking this value anywhere. Kept as a public label for clients/imports.
 CAPABILITY = "reader"
 
 
-# ─── Read-only tool implementations ───────────────────────────────────────────
-# Each returns a JSON-serialisable object. Heavy imports are done lazily inside
-# the function so importing this module stays cheap and a failure in one
-# subsystem cannot break the whole server at import time.
-
 def _tool_search(query: str, k: int = 5) -> Any:
-    from core.query_pipeline import search
+    """Structured read-only search with stable retrieval availability codes."""
+    from core.query_pipeline import search_result
 
+    result = search_result(query, k=int(k))
     hits = [
-        hit for hit in search(query, k=int(k))
+        hit for hit in result["results"]
         if hit.get("restricted") is False
     ]
-    return [
+    public = [
         {
             "fact_id": h.get("fact_id"),
             "text": h.get("claim"),
@@ -71,6 +37,17 @@ def _tool_search(query: str, k: int = 5) -> Any:
         }
         for h in hits
     ]
+    response = {
+        "results": public,
+        "reason_code": result["reason_code"],
+        "read_only": True,
+        "query_policy": result["query_policy"],
+    }
+    if result.get("error") is not None:
+        response["error"] = result["error"]
+    if result.get("retrieval") is not None:
+        response["retrieval"] = result["retrieval"]
+    return response
 
 
 def _tool_memory_report() -> Any:
@@ -84,10 +61,6 @@ def _tool_get_fact(fact_id: str) -> Any:
     if fact is None:
         return {"found": False, "fact_id": fact_id}
     if fact.get("restricted"):
-        # GDPR Art. 18: processing is restricted for this fact. Unlike
-        # read-only search (which excludes restricted rows through resolution),
-        # a direct by-id lookup must say something — so get_fact refuses with a
-        # stable reason code instead of returning claim text or other raw fields.
         return {
             "found": True,
             "fact_id": fact_id,
@@ -113,8 +86,6 @@ def _tool_verify_receipt(receipt: Dict[str, Any]) -> Any:
     return verify_receipt(receipt)
 
 
-# ─── Tool registry (read-only) ────────────────────────────────────────────────
-
 class _Tool:
     def __init__(self, name: str, description: str, input_schema: Dict[str, Any],
                  handler: Callable[[Dict[str, Any]], Any]):
@@ -135,7 +106,6 @@ def _str_prop(desc: str) -> Dict[str, str]:
     return {"type": "string", "description": desc}
 
 
-# Registry of the tools available at the read-only ("reader") capability.
 READ_ONLY_TOOLS: Dict[str, _Tool] = {}
 
 
@@ -145,9 +115,10 @@ def _register(tool: _Tool) -> None:
 
 _register(_Tool(
     "search",
-    "Read-only semantic + graph search over existing memory. Returns ranked "
-    "facts with explicit epistemic metadata. Does not write anything or stamp "
-    "an unset embedding fingerprint.",
+    "Read-only bounded search over existing memory. Returns structured results "
+    "with a stable reason_code. A legacy backend that cannot provide bounded "
+    "candidate work returns legacy_store_requires_reindex. The tool never writes "
+    "memory or initialises an embedding fingerprint.",
     {
         "type": "object",
         "properties": {
@@ -218,8 +189,6 @@ _register(_Tool(
 ))
 
 
-# ─── JSON-RPC / MCP message handling ──────────────────────────────────────────
-
 def _result(req_id: Any, result: Any) -> Dict[str, Any]:
     return {"jsonrpc": "2.0", "id": req_id, "result": result}
 
@@ -229,10 +198,7 @@ def _error(req_id: Any, code: int, message: str) -> Dict[str, Any]:
 
 
 def handle_message(msg: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    """Handle one JSON-RPC message.
-
-    Returns a response dict, or None for notifications (messages without an id).
-    """
+    """Handle one JSON-RPC message; notifications return None."""
     req_id = msg.get("id")
     method = msg.get("method")
     is_notification = "id" not in msg
@@ -247,11 +213,9 @@ def handle_message(msg: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         })
 
     if method in ("notifications/initialized", "initialized"):
-        return None  # client handshake notification — no response
-
+        return None
     if method == "ping":
         return _result(req_id, {})
-
     if method == "tools/list":
         return _result(req_id, {"tools": [t.manifest() for t in READ_ONLY_TOOLS.values()]})
 
@@ -261,7 +225,6 @@ def handle_message(msg: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         arguments = params.get("arguments") or {}
         tool = READ_ONLY_TOOLS.get(name)
         if tool is None:
-            # Unknown/unavailable tool: report as a tool error, not a protocol error.
             return _result(req_id, {
                 "content": [{"type": "text",
                              "text": f"Unknown or unavailable tool: {name!r}"}],
@@ -274,7 +237,7 @@ def handle_message(msg: Dict[str, Any]) -> Optional[Dict[str, Any]]:
                 "content": [{"type": "text", "text": text}],
                 "isError": False,
             })
-        except Exception as exc:  # noqa: BLE001 — surface tool errors, don't crash the server
+        except Exception as exc:  # noqa: BLE001
             logger.exception("tool %s failed", name)
             return _result(req_id, {
                 "content": [{"type": "text",
@@ -283,13 +246,11 @@ def handle_message(msg: Dict[str, Any]) -> Optional[Dict[str, Any]]:
             })
 
     if is_notification:
-        return None  # ignore unknown notifications
-
+        return None
     return _error(req_id, -32601, f"Method not found: {method}")
 
 
 def serve(stdin=None, stdout=None) -> None:
-    """Run the stdio loop: read newline-delimited JSON-RPC, write responses."""
     stdin = stdin if stdin is not None else sys.stdin
     stdout = stdout if stdout is not None else sys.stdout
     for line in stdin:

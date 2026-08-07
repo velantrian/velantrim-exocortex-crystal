@@ -210,17 +210,20 @@ def test_mcp_search_uses_read_only_service_and_preserves_fingerprint(monkeypatch
     assert graph.embedder_fingerprint() is None
     before = _graph_snapshot()
     calls = []
-    real_search = query_pipeline.search
+    real_search = query_pipeline.search_result
 
     def tracked_search(query, k=5):
         calls.append((query, k))
         return real_search(query, k=k)
 
-    monkeypatch.setattr(query_pipeline, "search", tracked_search)
+    monkeypatch.setattr(query_pipeline, "search_result", tracked_search)
 
-    rows = mcp_server._tool_search("Neptune ice giant", k=2)
+    response = mcp_server._tool_search("Neptune ice giant", k=2)
 
     assert calls == [("Neptune ice giant", 2)]
-    assert rows[0]["fact_id"] == fact["fact_id"]
-    assert rows[0]["truth_status"] == "VERIFIED"
+    assert response["reason_code"] == "ok"
+    assert response["read_only"] is True
+    assert response["query_policy"] == "canonical_read_only"
+    assert response["results"][0]["fact_id"] == fact["fact_id"]
+    assert response["results"][0]["truth_status"] == "VERIFIED"
     assert _graph_snapshot() == before
