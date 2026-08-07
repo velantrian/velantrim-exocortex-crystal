@@ -443,8 +443,7 @@ work_entry = f"""## 2026-08-08 — PR #{PR} bounded migration merged
 - #331 becomes merged baseline after this status synchronization; #332 remains the next inactive PostgreSQL import/equivalence phase.
 
 """
-insert = work.index("Add new entries at the top")
-insert = work.index("\n", insert) + 1
+insert = work.index("\n## ") + 1
 work = work[:insert] + "\n" + work_entry + work[insert:]
 write("docs/ai/WORK_LOG.md", work)
 
