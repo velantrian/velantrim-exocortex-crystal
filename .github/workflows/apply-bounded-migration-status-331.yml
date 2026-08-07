@@ -1,0 +1,31 @@
+name: Apply bounded migration status patch
+
+on:
+  push:
+    branches:
+      - agent/bounded-migration-status-331
+    paths:
+      - scripts/apply_bounded_migration_status_331.py
+      - .github/workflows/apply-bounded-migration-status-331.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/bounded-migration-status-331
+          fetch-depth: 0
+      - name: Apply status patch
+        run: python scripts/apply_bounded_migration_status_331.py
+      - name: Remove one-shot workflow and commit
+        run: |
+          rm .github/workflows/apply-bounded-migration-status-331.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "docs(status): publish bounded migration checkpoint"
+          git push origin HEAD:agent/bounded-migration-status-331
