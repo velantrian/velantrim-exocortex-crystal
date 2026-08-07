@@ -43,6 +43,13 @@ dev = [
     "rdflib>=7.0",            # core/adapters rdf adapter (WP4)
     "ebooklib>=0.18",         # core/adapters epub adapter (WP4)
     "requests>=2.28",         # core/adapters wikidata adapter (WP4)
+    "psycopg[binary]>=3.3,<3.4", # optional PostgreSQL migration profile tests
+]
+# Optional institutional PostgreSQL/pgvector migration profile. The driver is
+# lazy-loaded only by explicit inactive-import/verification operator commands.
+# The default install remains pure standard library.
+postgresql = [
+    "psycopg[binary]>=3.3,<3.4",
 ]
 # L3 graph backend. On first durable environment-selected startup, `auto`
 # prefers LadybugDB and then SQLite. The selected backend and non-secret
