@@ -5,30 +5,9 @@
 # library; FastAPI/uvicorn are only needed to expose the memory core over HTTP.
 # Install with:  pip install ".[api]"
 #
-# The import of fastapi is guarded so that merely importing core.api on a
-# stdlib-only install does not crash — create_app() raises a clear, actionable
-# error instead. The endpoints are thin async wrappers over core/aio.py
-# (asyncio.to_thread), so the synchronous pipeline never blocks the event loop;
-# the on-disk L3 backend is thread-safe (see SqliteL3Graph, check_same_thread).
-#
-# The service exposes the same operations as the CLI, and nothing more: it does
-# NOT add a write path that bypasses the TruthGate. The two HTTP surfaces have
-# deliberately different contracts:
-#
-#   /ingest          → core.ingest: the admission pipeline, with Guardian and
-#                      TruthGate deciding what may enter Canon.
-#   /ask, /receipt   → core.query_pipeline.query() via core.aio.arun(): the
-#                      strict read-only canonical query path.
-#
-# Asking a question is not an admission decision, so the HTTP read path cannot
-# ingest into L0/L1, promote ESM state, write Canon facts/relations/entities/
-# mentions, drain or enqueue the L3 outbox, record episodic links, initialise an
-# embedding-space fingerprint, or mutate adaptive verification state. It answers
-# only from already-admitted Canon, projected through CanonicalView, and reports
-# a bounded reason_code when that grounding is insufficient.
-#
-# See docs/architecture/read-only-query-boundary.md. The legacy admission-capable
-# core.pipeline.run() remains in use by the CLI ask/receipt commands.
+# Read endpoints are bearer-token guarded. Curator writes add a second
+# fail-closed layer: the authenticated token maps to one configured
+# CuratorPrincipal, and request text never establishes audit identity.
 
 from typing import Any, Dict, List, Optional
 
@@ -51,10 +30,7 @@ _INSTALL_HINT = (
 
 
 def create_app():
-    """Build and return the Velantrim FastAPI application.
-
-    Raises RuntimeError with an install hint if FastAPI is not available.
-    """
+    """Build and return the Velantrim FastAPI application."""
     if not _HAS_FASTAPI:
         raise RuntimeError(_INSTALL_HINT)
 
@@ -65,6 +41,15 @@ def create_app():
 
     from core import aio, evidence, provenance, review
     from core.api_ingest_policy import resolve_api_ingest
+    from core.conflict_surfaces import register_conflict_routes
+    from core.curator_auth import CuratorPrincipal
+    from core.curator_runtime import (
+        PrincipalConfigurationError,
+        approve_as_principal,
+        principal_from_environment,
+        reject_as_principal,
+        synthetic_local_admin_principal,
+    )
 
     app = FastAPI(
         title="Velantrim Crystal",
@@ -72,26 +57,30 @@ def create_app():
         description="Verifiable, local-first AI memory — HTTP service layer.",
     )
 
-    # ─── API token guard (fail closed) ──────────────────────────────────────────
-    # Every memory-facing endpoint requires authentication by default. Unguarded:
-    # GET /health (liveness) and GET /review/ui (static data-free shell).
-    #
-    #   * VELANTRIM_API_TOKEN set        → require `Authorization: Bearer <token>`
-    #                                      (constant-time compare).
-    #   * VELANTRIM_API_TOKEN unset      → the service FAILS CLOSED: guarded
-    #                                      endpoints return 401. To run an
-    #                                      unauthenticated local-dev instance you
-    #                                      must opt in explicitly with
-    #                                      VELANTRIM_API_ALLOW_UNAUTH_LOCAL=1.
-    #
-    # An unconfigured service is no longer implicitly open (see SECURITY.md).
+    def _configured_api_token() -> str:
+        raw = os.environ.get("VELANTRIM_API_TOKEN")
+        if raw is None or raw == "":
+            return ""
+        if raw != raw.strip():
+            raise HTTPException(
+                status_code=401,
+                detail="API authentication configuration is invalid: "
+                       "VELANTRIM_API_TOKEN must not be blank or padded with whitespace.",
+            )
+        return raw
+
+    def _explicit_unauth_local() -> bool:
+        raw_token = os.environ.get("VELANTRIM_API_TOKEN")
+        return (
+            (raw_token is None or raw_token == "")
+            and os.environ.get("VELANTRIM_API_ALLOW_UNAUTH_LOCAL") == "1"
+        )
+
     def _require_api_token(
             authorization: Optional[str] = Header(None)) -> None:
-        expected = os.environ.get("VELANTRIM_API_TOKEN", "")
+        expected = _configured_api_token()
         if not expected:
-            # No token configured: allow only the explicit local-dev bypass,
-            # otherwise refuse rather than silently exposing the canon.
-            if os.environ.get("VELANTRIM_API_ALLOW_UNAUTH_LOCAL") == "1":
+            if _explicit_unauth_local():
                 return
             raise HTTPException(
                 status_code=401,
@@ -106,9 +95,17 @@ def create_app():
             raise HTTPException(status_code=401,
                                 detail="missing or invalid bearer token")
 
-    _guarded = [Depends(_require_api_token)]
+    def _require_curator_principal(
+            authorization: Optional[str] = Header(None)) -> CuratorPrincipal:
+        _require_api_token(authorization)
+        if _explicit_unauth_local():
+            return synthetic_local_admin_principal()
+        try:
+            return principal_from_environment()
+        except PrincipalConfigurationError as exc:
+            raise HTTPException(status_code=403, detail=str(exc)) from exc
 
-    # ─── request models ────────────────────────────────────────────────────────
+    _guarded = [Depends(_require_api_token)]
     _MAX_UTTERANCE = 10_000
 
     class IngestRequest(BaseModel):
@@ -116,7 +113,6 @@ def create_app():
                           description="The utterance to ingest.")
         source: str = "api"
         confidence: float = Field(0.6, ge=0.0, le=1.0)
-        # None → auto-derived from utterance salience; explicit value wins.
         significance: Optional[float] = Field(None, ge=0.0, le=1.0)
         claim_type: Optional[str] = None
         source_status: Optional[str] = None
@@ -132,29 +128,22 @@ def create_app():
 
     class ApproveRequest(BaseModel):
         fact_id: str = Field(..., min_length=1)
-        # No default identity: force=True demands an explicit actor (422
-        # otherwise); a non-force approve falls back to "curator" in
-        # review.approve() for backward compatibility.
         actor: Optional[str] = Field(None, min_length=1)
         note: Optional[str] = None
         force: bool = False
-        # Required (non-empty, <=500 chars) when force=True — see review.approve().
         reason: Optional[str] = Field(None, max_length=500)
 
     class RejectRequest(BaseModel):
         fact_id: str = Field(..., min_length=1)
-        actor: str = Field("curator", min_length=1)
+        actor: Optional[str] = Field(None, min_length=1)
         reason: str = "curator_rejected"
 
-    # ─── endpoints ───────────────────────────────────────────────────────────────
     @app.get("/health")
     async def health() -> Dict[str, Any]:
-        """Liveness/readiness probe — no canon access, always cheap."""
         return {"status": "ok", "service": "velantrim-crystal", "version": __version__}
 
     @app.post("/ingest", dependencies=_guarded)
     async def ingest_endpoint(req: IngestRequest) -> Dict[str, Any]:
-        """Ingest an utterance through the full Guardian + TruthGate path."""
         try:
             policy = resolve_api_ingest(
                 source_status=req.source_status,
@@ -175,32 +164,24 @@ def create_app():
             kwargs["metadata"] = policy["metadata"]
         try:
             return await aio.aingest(req.text, **kwargs)
-        except ValueError as e:  # invalid claim_type / source_status etc.
+        except ValueError as e:
             raise HTTPException(status_code=422, detail=str(e))
 
     @app.post("/ask", dependencies=_guarded)
     async def ask_endpoint(req: AskRequest) -> Dict[str, Any]:
-        """Run the verifiable pipeline. Returns the answer or a blocked result.
-
-        A blocked result (insufficient grounding, gate failure) is returned with
-        HTTP 200 and answer=null plus an `error` field — it is a valid, expected
-        outcome of a verifiable system, not a server error.
-        """
         return await aio.arun(req.query)
 
     @app.get("/receipt", dependencies=_guarded)
     async def receipt_endpoint(
             q: str = Query(..., min_length=1, max_length=_MAX_UTTERANCE)) -> Dict[str, Any]:
-        """Run a query and return a replayable provenance receipt."""
         result = await aio.arun(q)
         try:
             return await asyncio.to_thread(provenance.build_receipt, result)
-        except ValueError as e:  # blocked result has no answer to attest to
+        except ValueError as e:
             raise HTTPException(status_code=422, detail=str(e))
 
     @app.post("/verify-receipt", dependencies=_guarded)
     async def verify_receipt_endpoint(req: VerifyRequest) -> Dict[str, Any]:
-        """Verify a receipt and replay its citations against the current canon."""
         return await asyncio.to_thread(
             provenance.verify_receipt, req.receipt,
             strict_provenance=req.strict_provenance,
@@ -208,86 +189,98 @@ def create_app():
 
     @app.get("/evidence/{fact_id}", dependencies=_guarded)
     async def evidence_endpoint(fact_id: str) -> List[Dict[str, Any]]:
-        """List the source-span evidence records attached to a fact.
-
-        GDPR Art. 18: returns [] for a fact under processing restriction —
-        source_uri/chunk_id/section must not leak through this surface."""
         return await asyncio.to_thread(evidence.public_evidence_for, fact_id)
-
-    # ─── curator review (WP2) ──────────────────────────────────────────────────
-    # Thin wrappers over core/review.py: the same gates, ESM transitions and
-    # audit events as the CLI — no new write path into L3.
 
     @app.get("/review/queue", dependencies=_guarded)
     async def review_queue(limit: Optional[int] = None,
                            claim_type: Optional[str] = None,
                            diagnose: bool = False) -> List[Dict[str, Any]]:
-        """Pending (Observed) facts; diagnose=true adds a gate verdict per item."""
         return await asyncio.to_thread(
             review.pending, limit=limit, claim_type=claim_type, diagnose=diagnose)
 
     @app.get("/review/report", dependencies=_guarded)
     async def review_report_endpoint() -> Dict[str, Any]:
-        """Queue health: pending count and a claim_type breakdown."""
         return await asyncio.to_thread(review.review_report)
 
     @app.get("/review/decisions", dependencies=_guarded)
     async def review_decisions(limit: int = 50,
                                include_claim: bool = True) -> List[Dict[str, Any]]:
-        """Curator decision history reconstructed from the audit chain.
-        include_claim=false keeps entries content-free (no L1 rehydration)."""
         return await asyncio.to_thread(review.decisions, limit=limit,
                                        include_claim=include_claim)
 
     @app.get("/review/item/{fact_id}", dependencies=_guarded)
     async def review_item_endpoint(fact_id: str) -> Dict[str, Any]:
-        """One queued fact with a fresh gate diagnosis (404 if unknown)."""
         item = await asyncio.to_thread(review.review_item, fact_id)
         if not item.get("found"):
             raise HTTPException(status_code=404, detail=f"unknown fact {fact_id}")
         return item
 
-    @app.post("/review/approve", dependencies=_guarded)
-    async def review_approve(req: ApproveRequest) -> Dict[str, Any]:
-        """Promote a pending fact. force=true overrides a blocking diagnosis and
-        requires a non-empty reason AND an explicit actor (422 otherwise) —
-        audited as review_force_approve."""
+    @app.post("/review/approve")
+    async def review_approve(
+        req: ApproveRequest,
+        principal: CuratorPrincipal = Depends(_require_curator_principal),
+    ) -> Dict[str, Any]:
         if req.force and not (req.reason and req.reason.strip()):
             raise HTTPException(
                 status_code=422,
                 detail="force approval overrides a blocking diagnosis and "
                        "requires a non-empty 'reason'")
-        if req.force and not (req.actor and req.actor.strip()):
+        # In explicit unauthenticated local mode there is no external identity
+        # provider. Preserve the historical requirement that an override must
+        # consciously assert the exact synthetic local principal. Under bearer
+        # auth, identity already comes from the principal and actor is optional.
+        if (
+            req.force
+            and _explicit_unauth_local()
+            and not (req.actor and req.actor.strip() == "api-curator")
+        ):
             raise HTTPException(
                 status_code=422,
-                detail="force approval requires an explicit non-empty 'actor' "
-                       "(no default identity for an override)")
+                detail="local force approval requires an explicit actor assertion "
+                       "matching api-curator")
         res = await asyncio.to_thread(
-            review.approve, req.fact_id, actor=req.actor, note=req.note,
-            force=req.force, reason=req.reason)
+            approve_as_principal,
+            principal,
+            req.fact_id,
+            requested_actor=req.actor,
+            note=req.note,
+            force=req.force,
+            reason=req.reason,
+        )
+        if res.get("authorized") is False:
+            raise HTTPException(status_code=403, detail=res["reason"])
         if not res.get("found"):
             raise HTTPException(status_code=404,
                                 detail=f"unknown fact {req.fact_id}")
         return res
 
-    @app.post("/review/reject", dependencies=_guarded)
-    async def review_reject(req: RejectRequest) -> Dict[str, Any]:
-        """Reject a pending fact (Observed → Collapsed), audited."""
+    @app.post("/review/reject")
+    async def review_reject(
+        req: RejectRequest,
+        principal: CuratorPrincipal = Depends(_require_curator_principal),
+    ) -> Dict[str, Any]:
+        # A body actor is an exact-match assertion only in authenticated mode.
+        # In explicit unauthenticated local mode it cannot establish identity,
+        # so it is ignored and the synthetic principal is recorded.
+        requested_actor = None if _explicit_unauth_local() else req.actor
         res = await asyncio.to_thread(
-            review.reject, req.fact_id, actor=req.actor, reason=req.reason)
+            reject_as_principal,
+            principal,
+            req.fact_id,
+            requested_actor=requested_actor,
+            reason=req.reason,
+        )
+        if res.get("authorized") is False:
+            raise HTTPException(status_code=403, detail=res["reason"])
         if not res.get("found"):
             raise HTTPException(status_code=404,
                                 detail=f"unknown fact {req.fact_id}")
         return res
+
+    register_conflict_routes(app, principal_dependency=_require_curator_principal)
 
     @app.get("/review/ui", response_class=HTMLResponse)
     async def review_ui() -> str:
-        """The static Kanban review shell (core/_webui/review.html).
-
-        Deliberately UNguarded: the HTML embeds no claims, fact ids or any
-        local memory content (tested) — all data is fetched client-side from
-        the token-guarded /review/* JSON endpoints above.
-        """
         return resources.files("core").joinpath(
             "_webui/review.html").read_text(encoding="utf-8")
 
@@ -295,7 +288,6 @@ def create_app():
 
 
 def main() -> None:  # pragma: no cover - thin uvicorn launcher
-    """Console-script entry point (`velantrim-api`). Runs the service via uvicorn."""
     if not _HAS_FASTAPI:
         raise SystemExit(_INSTALL_HINT)
     try:

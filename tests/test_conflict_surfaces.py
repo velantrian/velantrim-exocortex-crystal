@@ -3,29 +3,37 @@ import json
 import pytest
 
 from core import conflict_surfaces
+from core.curator_auth import CuratorPrincipal, CuratorRole
 
 
-def test_payload_validates_and_delegates(monkeypatch):
+def _principal(actor="alice", role=CuratorRole.CURATOR, scopes=frozenset({"fact:*"})):
+    return CuratorPrincipal(actor, frozenset({role}), scopes)
+
+
+def test_payload_validates_and_delegates_through_principal(monkeypatch):
     seen = {}
 
-    def fake_resolve(fact_id, **kwargs):
-        seen.update({"fact_id": fact_id, **kwargs})
-        return {"approved": True, "fact_id": fact_id}
+    def fake_resolve(principal, fact_id, **kwargs):
+        seen.update({"principal": principal, "fact_id": fact_id, **kwargs})
+        return {"authorized": True, "approved": True, "fact_id": fact_id}
 
-    monkeypatch.setattr(conflict_surfaces.review, "resolve_conflict", fake_resolve)
+    monkeypatch.setattr(conflict_surfaces, "resolve_conflict_as_principal", fake_resolve)
+    principal = _principal()
     result = conflict_surfaces.resolve_conflict_payload(
+        principal,
         " fact-1 ",
         disposition="COEXIST",
         actor=" alice ",
         reason=" distinct contexts ",
-        target_fact_ids=["target-1"],
-        expected_report_id="report-1",
+        target_fact_ids=[" target-1 "],
+        expected_report_id=" report-1 ",
     )
     assert result["approved"] is True
     assert seen == {
+        "principal": principal,
         "fact_id": "fact-1",
         "disposition": "COEXIST",
-        "actor": "alice",
+        "requested_actor": "alice",
         "reason": "distinct contexts",
         "target_fact_ids": ("target-1",),
         "expected_report_id": "report-1",
@@ -37,6 +45,7 @@ def test_payload_validates_and_delegates(monkeypatch):
     [
         ({"fact_id": ""}, "fact_id"),
         ({"disposition": "WINNER"}, "disposition"),
+        ({"disposition": "REVIEW_REQUIRED"}, "disposition"),
         ({"actor": " "}, "actor"),
         ({"reason": ""}, "reason"),
         ({"target_fact_ids": [""]}, "target_fact_ids"),
@@ -45,6 +54,7 @@ def test_payload_validates_and_delegates(monkeypatch):
 )
 def test_payload_rejects_malformed_public_inputs(kwargs, message):
     base = {
+        "principal": _principal(),
         "fact_id": "fact-1",
         "disposition": "COEXIST",
         "actor": "alice",
@@ -55,11 +65,27 @@ def test_payload_rejects_malformed_public_inputs(kwargs, message):
         conflict_surfaces.resolve_conflict_payload(**base)
 
 
-def test_cli_success_and_fail_closed_exit_codes(monkeypatch, capsys):
+def test_payload_requires_real_principal():
+    with pytest.raises(ValueError, match="principal"):
+        conflict_surfaces.resolve_conflict_payload(
+            None,  # type: ignore[arg-type]
+            "fact-1",
+            disposition="COEXIST",
+            reason="reviewed",
+        )
+
+
+def test_cli_uses_configured_principal(monkeypatch, capsys):
+    principal = _principal()
+    monkeypatch.setattr(
+        conflict_surfaces,
+        "principal_from_environment",
+        lambda: principal,
+    )
     monkeypatch.setattr(
         conflict_surfaces,
         "resolve_conflict_payload",
-        lambda *args, **kwargs: {"approved": True, "fact_id": "fact-1"},
+        lambda *args, **kwargs: {"authorized": True, "approved": True},
     )
     assert conflict_surfaces.main([
         "fact-1", "--disposition", "COEXIST", "--actor", "alice",
@@ -67,68 +93,99 @@ def test_cli_success_and_fail_closed_exit_codes(monkeypatch, capsys):
     ]) == 0
     assert json.loads(capsys.readouterr().out)["approved"] is True
 
+
+def test_cli_configuration_and_authorization_exit_codes(monkeypatch, capsys):
+    monkeypatch.setattr(
+        conflict_surfaces,
+        "principal_from_environment",
+        lambda: (_ for _ in ()).throw(ValueError("principal missing")),
+    )
+    assert conflict_surfaces.main([
+        "fact-1", "--disposition", "COEXIST", "--reason", "reviewed",
+    ]) == 2
+    assert json.loads(capsys.readouterr().out) == {"error": "principal missing"}
+
+    monkeypatch.setattr(conflict_surfaces, "principal_from_environment", lambda: _principal())
     monkeypatch.setattr(
         conflict_surfaces,
         "resolve_conflict_payload",
-        lambda *args, **kwargs: {"approved": False, "reason": "STALE"},
+        lambda *args, **kwargs: {"authorized": False, "reason": "scope"},
     )
     assert conflict_surfaces.main([
-        "fact-1", "--disposition", "SUPERSEDE", "--actor", "alice",
-        "--reason", "reviewed", "--target", "old-1",
-    ]) == 1
+        "fact-1", "--disposition", "COEXIST", "--reason", "reviewed",
+    ]) == 3
 
 
-def test_cli_validation_error_is_json(monkeypatch, capsys):
-    def fail(*args, **kwargs):
-        raise ValueError("bad payload")
-
-    monkeypatch.setattr(conflict_surfaces, "resolve_conflict_payload", fail)
-    assert conflict_surfaces.main([
-        "fact-1", "--disposition", "COEXIST", "--actor", "alice",
-        "--reason", "reviewed",
-    ]) == 2
-    assert json.loads(capsys.readouterr().out) == {"error": "bad payload"}
-
-
-def test_route_registration_requires_guard():
+def test_route_registration_requires_principal_dependency():
     class App:
         pass
 
-    with pytest.raises(ValueError, match="authentication"):
+    with pytest.raises(ValueError, match="principal"):
         conflict_surfaces.register_conflict_routes(App())
 
 
-def test_http_route_success_and_validation(monkeypatch):
+def test_http_route_derives_principal_and_rejects_spoof(monkeypatch):
     fastapi = pytest.importorskip("fastapi")
     testclient = pytest.importorskip("fastapi.testclient")
     app = fastapi.FastAPI()
-    conflict_surfaces.register_conflict_routes(app, allow_unguarded_local=True)
+    principal = _principal()
 
-    monkeypatch.setattr(
-        conflict_surfaces,
-        "resolve_conflict_payload",
-        lambda *args, **kwargs: {"approved": True, "fact_id": kwargs.get("fact_id", args[0])},
+    def principal_dependency():
+        return principal
+
+    conflict_surfaces.register_conflict_routes(
+        app, principal_dependency=principal_dependency
     )
+    seen = {}
+
+    def fake(principal_arg, fact_id, **kwargs):
+        seen.update({"principal": principal_arg, "fact_id": fact_id, **kwargs})
+        if kwargs.get("actor") == "mallory":
+            return {"authorized": False, "reason": "actor does not match authenticated principal"}
+        return {"authorized": True, "approved": True, "fact_id": fact_id}
+
+    monkeypatch.setattr(conflict_surfaces, "resolve_conflict_payload", fake)
     client = testclient.TestClient(app)
     response = client.post("/review/resolve-conflict", json={
         "fact_id": "fact-1",
         "disposition": "COEXIST",
-        "actor": "alice",
         "reason": "reviewed",
     })
     assert response.status_code == 200
-    assert response.json()["approved"] is True
+    assert seen["principal"] is principal
 
-    monkeypatch.setattr(
-        conflict_surfaces,
-        "resolve_conflict_payload",
-        lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("bad decision")),
-    )
+    denied = client.post("/review/resolve-conflict", json={
+        "fact_id": "fact-1",
+        "disposition": "COEXIST",
+        "actor": "mallory",
+        "reason": "reviewed",
+    })
+    assert denied.status_code == 403
+
+
+def test_explicit_local_route_ignores_configured_actor(monkeypatch):
+    fastapi = pytest.importorskip("fastapi")
+    testclient = pytest.importorskip("fastapi.testclient")
+    monkeypatch.setenv("VELANTRIM_CURATOR_ACTOR", "mallory")
+    monkeypatch.setenv("VELANTRIM_CURATOR_ROLES", "REVIEWER")
+    monkeypatch.setenv("VELANTRIM_CURATOR_SCOPES", "fact:other")
+
+    app = fastapi.FastAPI()
+    conflict_surfaces.register_conflict_routes(app, allow_unguarded_local=True)
+    seen = {}
+
+    def fake(principal, fact_id, **kwargs):
+        seen["principal"] = principal
+        return {"authorized": True, "approved": True, "fact_id": fact_id}
+
+    monkeypatch.setattr(conflict_surfaces, "resolve_conflict_payload", fake)
+    client = testclient.TestClient(app)
     response = client.post("/review/resolve-conflict", json={
         "fact_id": "fact-1",
         "disposition": "COEXIST",
-        "actor": "alice",
         "reason": "reviewed",
     })
-    assert response.status_code == 422
-    assert response.json()["detail"] == "bad decision"
+    assert response.status_code == 200
+    assert seen["principal"].actor_id == "api-curator"
+    assert seen["principal"].roles == frozenset({CuratorRole.ADMIN})
+    assert seen["principal"].scopes == frozenset({"fact:*"})

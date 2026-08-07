@@ -25,6 +25,12 @@ from core.compliance import (
     restrict_processing, unrestrict_processing, record_of_processing,
 )
 from core.audit import audit_log, verify_audit_log
+from core.curator_runtime import (
+    PrincipalConfigurationError,
+    approve_as_principal,
+    principal_from_environment,
+    reject_as_principal,
+)
 from core import (pii, provenance, immune, fractal, neurogenesis, concept,
                   volition, velum, analogy, neurocore, eval as _eval,
                   evidence, imports, review, retrieval_config, mosc, kb_ingest,
@@ -221,12 +227,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         "review-approve", help="promote a pending fact into the canon (curator decision)")
     p_ra.add_argument("fact_id")
     p_ra.add_argument("--actor", default=None,
-                      help="who approved (for the audit log; defaults to "
-                           "'curator' — required explicitly with --force)")
+                      help="optional exact-match assertion for the configured principal")
     p_ra.add_argument("--note", default=None, help="optional note (for the audit log)")
     p_ra.add_argument("--force", action="store_true",
                       help="override a still-blocked fact (explicit, audited; "
-                           "requires --reason and an explicit --actor)")
+                           "requires --reason and ADMIN capability)")
     p_ra.add_argument("--reason", default=None,
                       help="why the blocking diagnosis is overridden "
                            "(required with --force)")
@@ -237,7 +242,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_rj = sub.add_parser(
         "review-reject", help="reject a pending fact (Observed → Collapsed)")
     p_rj.add_argument("fact_id")
-    p_rj.add_argument("--actor", default="curator", help="who rejected (for the audit log)")
+    p_rj.add_argument("--actor", default=None,
+                      help="optional exact-match assertion for the configured principal")
     p_rj.add_argument("--reason", default="curator_rejected", help="reason (for the audit log)")
     # ─── NeuroCore Phase 0 passive tracker (RFC0068) ───────────────────────────
     sub.add_parser(
@@ -451,16 +457,41 @@ def main(argv: Optional[List[str]] = None) -> int:
     elif args.cmd == "review-item":
         print(json.dumps(review.review_item(args.fact_id), ensure_ascii=False))
     elif args.cmd == "review-approve":
-        print(json.dumps(
-            review.approve(args.fact_id, actor=args.actor, note=args.note,
-                           force=args.force, reason=args.reason),
-            ensure_ascii=False))
+        try:
+            principal = principal_from_environment()
+        except PrincipalConfigurationError as exc:
+            print(json.dumps({"authorized": False, "reason": str(exc)},
+                             ensure_ascii=False))
+            return 2
+        result = approve_as_principal(
+            principal,
+            args.fact_id,
+            requested_actor=args.actor,
+            note=args.note,
+            force=args.force,
+            reason=args.reason,
+        )
+        print(json.dumps(result, ensure_ascii=False))
+        if result.get("authorized") is False:
+            return 3
     elif args.cmd == "review-decisions":
         print(json.dumps(review.decisions(limit=args.limit), ensure_ascii=False))
     elif args.cmd == "review-reject":
-        print(json.dumps(
-            review.reject(args.fact_id, actor=args.actor, reason=args.reason),
-            ensure_ascii=False))
+        try:
+            principal = principal_from_environment()
+        except PrincipalConfigurationError as exc:
+            print(json.dumps({"authorized": False, "reason": str(exc)},
+                             ensure_ascii=False))
+            return 2
+        result = reject_as_principal(
+            principal,
+            args.fact_id,
+            requested_actor=args.actor,
+            reason=args.reason,
+        )
+        print(json.dumps(result, ensure_ascii=False))
+        if result.get("authorized") is False:
+            return 3
     elif args.cmd == "neurocore-report":
         print(json.dumps(neurocore.report(), ensure_ascii=False))
     elif args.cmd == "eval":
