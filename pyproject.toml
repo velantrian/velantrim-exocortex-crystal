@@ -23,6 +23,7 @@ velantrim = "core.cli:main"
 velantrim-mcp = "core.mcp_server:main"
 velantrim-api = "core.api:main"
 velantrim-doctor = "core.doctor:main"
+velantrim-storage = "core.storage_ops:main"
 
 [project.optional-dependencies]
 # Development/test environment. MUST stay aligned with requirements-dev.txt
@@ -84,7 +85,7 @@ api = [
     "fastapi>=0.110.0",
     "uvicorn>=0.27.0",
 ]
-# ── WP4 knowledge adapters ─────────────────────────────────────────────────────
+# ── WP4 knowledge adapters ────────────────────────────────────────────────
 # Each adapter extends `velantrim learn` to a new file type while keeping the
 # stdlib-only runtime untouched. Adapters are auto-loaded on demand; an
 # ImportError with an install hint is raised if the dep is missing.
