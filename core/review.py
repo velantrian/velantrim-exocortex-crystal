@@ -28,7 +28,11 @@ from core.memory import (
 )
 from core.pipeline import _truth_status_for, guardian, truth_gate
 from core.reconcile import find_conflicts
-from core.review_decision_store import make_decision_id, stage_review_decision
+from core.review_decision_store import (
+    get_review_decision,
+    make_decision_id,
+    stage_review_decision,
+)
 from core.review_projection import (
     drain_review_projections,
     project_review_decision,
@@ -645,13 +649,25 @@ _DECISION_EVENTS = {
 def decisions(
     limit: int = 50, *, include_claim: bool = True
 ) -> List[Dict[str, Any]]:
-    """Curator history, newest first, reconstructed from the audit chain."""
+    """Curator history with current projection state, newest first.
+
+    Decision identity and curator proof are reconstructed from the immutable
+    audit chain. Projection state is operational state that can change after
+    commit, so the authoritative value is read from the SQLite decision journal
+    rather than frozen at the original audit event.
+    """
     out: List[Dict[str, Any]] = []
     for entry in reversed(audit.audit_log()):
         decision = _DECISION_EVENTS.get(entry["event"])
         if decision is None:
             continue
         detail = entry["detail"]
+        decision_id = detail.get("decision_id")
+        projection_status = detail.get("projection_status")
+        if isinstance(decision_id, str) and decision_id:
+            record = get_review_decision(decision_id)
+            if record is not None:
+                projection_status = record.get("projection_status")
         item = {
             "decision": decision,
             "fact_id": entry["fact_id"],
@@ -660,8 +676,8 @@ def decisions(
             "reason": detail.get("reason"),
             "note": detail.get("note"),
             "diagnosis": detail.get("diagnosis"),
-            "decision_id": detail.get("decision_id"),
-            "projection_status": detail.get("projection_status"),
+            "decision_id": decision_id,
+            "projection_status": projection_status,
         }
         if detail.get("report_id") is not None:
             item.update(
