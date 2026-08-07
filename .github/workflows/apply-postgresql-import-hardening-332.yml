@@ -1,0 +1,31 @@
+name: Apply PostgreSQL import hardening
+
+on:
+  push:
+    branches:
+      - agent/postgresql-inactive-import-332
+    paths:
+      - scripts/apply_postgresql_import_hardening_332.py
+      - .github/workflows/apply-postgresql-import-hardening-332.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/postgresql-inactive-import-332
+          fetch-depth: 0
+      - name: Apply hardening patch
+        run: python scripts/apply_postgresql_import_hardening_332.py
+      - name: Remove one-shot workflow and commit
+        run: |
+          rm .github/workflows/apply-postgresql-import-hardening-332.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(storage): preserve inactive PostgreSQL boundaries"
+          git push origin HEAD:agent/postgresql-inactive-import-332
