@@ -1,0 +1,39 @@
+name: Repair bounded migration status patcher
+
+on:
+  push:
+    branches:
+      - agent/bounded-migration-status-331
+    paths:
+      - .github/workflows/repair-status-patcher-marker-331.yml
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/bounded-migration-status-331
+          fetch-depth: 0
+      - name: Repair work-log anchor and remove this workflow
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/apply_bounded_migration_status_331.py')
+          text = path.read_text()
+          old = '''insert = work.index("Add new entries at the top")
+insert = work.index("\\n", insert) + 1'''
+          new = '''insert = work.index("\\n## ") + 1'''
+          if text.count(old) != 1:
+              raise SystemExit('expected one old work-log anchor')
+          path.write_text(text.replace(old, new, 1))
+          Path('.github/workflows/repair-status-patcher-marker-331.yml').unlink()
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(docs): anchor bounded migration work log entry"
+          git push origin HEAD:agent/bounded-migration-status-331
