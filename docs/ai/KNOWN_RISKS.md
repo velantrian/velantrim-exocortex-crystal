@@ -4,7 +4,7 @@
 **Verified runtime checkpoint:** `f03e24c85922d0bb46d6d9dfee98338972135908`  
 **Validated implementation head / CI:** `17ce10ffe12da93be50434c73d08f05a70a5922b` / `31224184351`
 
-This register is an orientation layer. GitHub `main`, executable tests, exact CI, current issues and accepted ADRs remain authoritative.
+This register is an orientation layer. GitHub `main`, executable tests, exact CI, current issues and accepted ADRs remain authoritative. PR #334 is retained as historical grant/status-baseline context; PR #335 is the current runtime checkpoint.
 
 ## P1 — PostgreSQL/pgvector runtime remains absent (#332)
 
@@ -52,7 +52,7 @@ Crystal does not yet implement a dedicated multi-pass Reader Core or Semantic Re
 - physical L3 is multi-status storage, not strict Canon;
 - migration bundles and receipts are operational evidence, not claim evidence;
 - retrieval or ANN quality cannot override exact-state mismatch;
-- GDPR language means **GDPR-oriented technical controls**, not legal compliance or certification;
+- GDPR-oriented controls are engineering controls, not legal compliance or certification;
 - no universal truth, zero hallucinations, AGI, consciousness or production certification is claimed;
 - the project is submitted and under review; no grant award or budget change is claimed.
 
