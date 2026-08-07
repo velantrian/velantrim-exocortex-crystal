@@ -1,191 +1,241 @@
 # ⚠️ Crystal Known Risks and Open Boundaries
 
-**Status date:** 2026-08-05
+**Status date:** 2026-08-07  
+**Verified runtime checkpoint:** `1748677a5c84e8a9b3af08fcaed0215efebcdd66`
 
-This register is an orientation layer. It does not replace issues, security documents,
-ADRs, tests or current code inspection.
+This register is an orientation layer. It does not replace issues, ADRs, security
+operations, tests, current code inspection or legal review.
 
 ## Severity model
 
-- **P0:** can invalidate core trust, safety or durable-state claims.
+- **P0:** can invalidate core trust, safety, privacy or durable-state claims.
 - **P1:** materially limits production, scale, interoperability or reviewer confidence.
 - **P2:** maintainability, governance, documentation or research debt.
 
-A risk closes only with merged implementation/doc changes and explicit evidence.
+A risk closes only with merged implementation and explicit evidence. Permanent regression
+targets remain listed even after the originating defect is closed.
 
-## P0 — trust-boundary regressions to prevent
+## Closed material findings — 2026-08-07
 
-No new confirmed P0 defect was introduced by this documentation work. These remain
-permanent audit targets because a regression would invalidate Crystal's core purpose.
+### #315 — curator decision crash consistency
+
+**Closed by:** PR #319, merge `62879cd2095450de57d11fcf97c13f5f9768ad0b`,
+CI `31162857843`.
+
+SQLite now commits the authority-bearing decision, state/metadata, tamper-evident audit
+proof and durable L3 projection intent together. Projection is idempotent, restartable and
+observable. Restricted/erased/immutable participants fail closed and authoritative L1
+restriction remains deny-dominant during L3 outages.
+
+**Remaining boundary:** this is transactional-outbox consistency, not cross-database ACID
+or distributed exactly-once delivery.
+
+### #316 — authenticated principal binding
+
+**Closed by:** PR #320, merge `1414862786aa0c0d4cf4ad152776dd4e55536bf0`,
+CI `31164585628`.
+
+Bundled HTTP and CLI curator writes now derive audit identity from a validated
+`CuratorPrincipal`, enforce capabilities and normalized scopes, pin the current report and
+use a process-local decision lease. Actor text is only an optional exact-match assertion;
+authorization denial has zero canonical mutation.
+
+**Remaining boundary:** no complete production IdP, token lifecycle, tenant isolation,
+policy administration or distributed fencing is included.
+
+### #317 — bounded legacy retrieval
+
+**Closed by:** PR #321, merge `1748677a5c84e8a9b3af08fcaed0215efebcdd66`,
+CI `31166027193`, benchmark `31165503179`.
+
+Reviewed Mock/SQLite no-fingerprint reads use a deterministic candidate cap; unsupported
+adapters return `legacy_store_requires_reindex` without a public full-corpus scan. Explicit
+reindex preserves fact/ESM/trust/restriction/edge/audit authority.
+
+**Remaining boundary:** a bounded window may miss a relevant record outside that window;
+reindex is the preferred recovery path.
+
+## P0 — permanent trust-boundary regression targets
 
 ### P0.1 TruthGate or Guardian bypass
 
 **Risk:** a new API, adapter, import path, review helper or background process writes
-trusted/canonical state without the established admission and safety boundaries.
+trusted/canonical state without established admission and safety boundaries.
 
-**Closure/protection evidence:**
-
-- explicit authority owner;
-- adversarial tests for all public/internal write paths;
-- fail-closed behavior when policy/evidence dependencies fail;
-- CI coverage and mutation proof for the changed boundary.
+**Required proof for every affected change:** explicit authority owner, adversarial tests,
+fail-closed dependency behavior, exact-head CI and mutation evidence for the changed
+boundary.
 
 ### P0.2 Query-to-write contamination
 
-**Risk:** read/query/retrieval paths reinforce, promote, create or mutate canonical
-claims.
+**Risk:** query, retrieval or read-only surfaces create, promote, reinforce, reindex or
+otherwise mutate canonical memory.
 
-**Required proof:** public HTTP, CLI and MCP query surfaces remain read-only, including
-error, retry and optional-provider paths.
+**Required proof:** HTTP, CLI and MCP queries remain read-only across normal, degraded,
+provider-failure and retry paths. Reindex remains a separate explicit operator action.
 
 ### P0.3 Strict Canon leakage
 
 **Risk:** restricted, erased, unverified or contested physical L3 records enter strict
-grounding because physical graph presence is mistaken for Canon membership.
+grounding because graph presence, similarity or rank is mistaken for proof.
 
-**Required proof:** deny-dominant immutable reconciliation tests and consumer-level
-integration tests.
+**Required proof:** deny-dominant immutable reconciliation and consumer-level integration
+tests.
 
-### P0.4 Proof/state split
+### P0.4 Proof/state split regression
 
-**Risk:** a canonical mutation commits without the required provenance/audit/receipt
-record, or a failed mutation leaves a success-looking proof artifact.
+**Risk:** a curator mutation commits without durable audit/projection intent, or a failed
+operation produces success-looking proof.
 
-**Required proof:** atomicity/idempotency analysis, crash-window tests and replay
-verification.
+**Required proof:** transactional decision journal, idempotent recovery, failure injection,
+audit-chain verification and no-resurrection tests remain green.
+
+### P0.5 Principal identity bypass
+
+**Risk:** a new public write path derives audit identity, capability or target scope from
+untrusted request/CLI text rather than a validated principal.
+
+**Required proof:** complete write-surface inventory, actor-spoof tests and zero mutation on
+configuration, capability, scope, report or lease denial.
 
 ## P1 — current engineering and operational limitations
 
 ### P1.1 Distributed curator coordination is absent
 
-The included decision lease registry is process-local. Multiple processes require an
-external lease adapter and a separately reviewed failure model.
+The included lease registry coordinates one process only.
 
-**Do not claim:** distributed locking or cross-process exactly-once conflict decisions.
+**Do not claim:** distributed locking, global exactly-once decisions or stale-writer
+fencing across processes/hosts.
 
-**Closure proof:** adapter contract, fencing/CAS semantics, expiry/recovery tests,
-operator metrics and multi-process integration evidence.
+**Closure proof:** external adapter contract, ownership/expiry/fencing semantics,
+multi-process failure tests, recovery metrics and deployment documentation.
 
 ### P1.2 Production identity provider and multi-tenancy are incomplete
 
-Crystal has scoped curator principals/capabilities and host-authenticated actor binding,
-but not a complete production IdP, tenant-isolation and policy-administration surface.
+Principal composition and scoped capabilities exist, but production identity issuance,
+rotation/revocation, tenant isolation and policy administration remain host responsibilities.
 
 **Closure proof:** tenant model, authenticated identity mapping, authorization matrix,
-isolation tests, revocation/audit behavior and deployment documentation.
+isolation tests, revocation/audit behavior and reviewed deployment integration.
 
-### P1.3 Broader provenance lifecycle wiring
+### P1.3 Bounded degraded retrieval trades recall for work limits
 
-Status documents list broader provenance lifecycle wiring as future work.
+A deterministic legacy candidate window can miss relevant records outside the window.
+The response exposes degraded mode and recommends reindex.
 
-**Risk:** proof may be strong on verified paths but inconsistent across less central
-lifecycle operations or future adapters.
+**Do not claim:** bounded compatibility retrieval has vector-equivalent recall or semantic
+completeness.
 
-**Closure proof:** inventory of all mutation/read surfaces, common receipt/provenance
-contract, replay tests and no orphaned state/proof windows.
+**Closure direction:** complete reindex, or separately review a bounded indexed lexical
+strategy with measured recall and migration behavior.
 
-### P1.4 Performance SLO policy is not a production guarantee
+### P1.4 Broader provenance lifecycle wiring
 
-Benchmark history exists, but controlled-runner SLO policy and operational capacity
-claims require a stable environment, thresholds and regression handling.
+Strong proof exists on central verified paths, but future adapters and less central
+lifecycle operations can introduce orphaned state/proof windows.
 
-**Closure proof:** versioned workload, controlled hardware/runtime metadata, p50/p95/p99
-budgets, storage growth limits and CI/operations policy.
+**Closure proof:** mutation/read surface inventory, common receipt/provenance contract,
+replay and recovery tests.
 
-### P1.5 Mutation testing scope is targeted, not repository-wide
+### P1.5 Performance evidence is not a production SLO
 
-The checkpoint proves 7/7 declared Ring Zero mutants killed. This does not mean all
-semantic mutations across the repository are covered.
+The 1k/10k/30k benchmark proves the configured candidate bound on one hosted-runner
+environment. It does not establish production p50/p95/p99, concurrency or capacity.
 
-**Closure proof:** expanded mutation inventory, bounded execution policy and documented
-scope/limitations.
+**Closure proof:** versioned workload, controlled environment, thresholds, storage-growth
+limits and regression/operations policy.
 
-### P1.6 Legacy normalized-ID migration gap (#165)
+### P1.6 Mutation testing remains targeted
 
-New normalized ingest IDs do not fully deduplicate case/whitespace variants against
-pre-normalization rows unless the re-ingested raw text matches the old ID path.
+The checkpoint proves 7/7 declared Ring Zero mutants killed, not repository-wide semantic
+mutation coverage.
 
-**Risk:** duplicate logical claims in upgraded stores.
+**Closure proof:** expanded mutation inventory and bounded execution policy.
+
+### P1.7 Reproducible supply-chain pinning remains incomplete
+
+Gitleaks, Bandit and pip-audit pass. However, development dependencies, security tools and
+GitHub Actions should be constrained/pinned more tightly for reproducibility and reviewable
+updates.
+
+**Closure proof:** versioned constraints/lock strategy, action SHA pinning, scheduled
+newest-compatible checks and automated update policy.
+
+### P1.8 Legacy normalized-ID migration gap (#165)
+
+Pre-normalization stores may retain case/whitespace variants that new ingest does not fully
+deduplicate.
 
 **Closure proof:** reviewed migration or persistent normalized-claim index, collision
 policy, occurrence preservation and backwards-compatibility tests.
 
-### P1.7 Dedicated long-document Reader Core is absent
+### P1.9 Dedicated long-document Reader Core is absent
 
 Crystal has evidence spans and strong admission/proof boundaries, but no verified
-multi-pass reading subsystem with structural maps, coverage tracking, bookmarks,
-exception/contradiction passes and selective re-reading.
+multi-pass reader with structural maps, coverage tracking, bookmarks, exception and
+contradiction passes or selective re-reading.
 
-**Risk:** downstream adapters may overcompress long documents or lose rare but important
-source details before claim review.
-
-**Safe direction:** source-linked candidate cards upstream of ordinary Guardian and
-TruthGate; no second Canon owner.
+**Safe direction:** source-linked candidate cards upstream of Guardian and TruthGate; no
+second Canon owner.
 
 ## P2 — governance, maintenance and research debt
 
-### P2.1 i18n governance and link validation (#285, #286)
+### P2.1 Research PR accumulation
 
-Ten localized top-level READMEs increase drift risk.
+Research/documentation PRs can become stale against `main`, overlap or be mistaken for
+runtime authority.
 
-**Closure proof:** authoritative-language policy, localization manifest, sync metadata,
-link/selector validation and conservative claim comparison.
+**Closure proof:** periodic reconciliation, current status headers and explicit
+merge/close decisions.
 
-### P2.2 Secret-scanning and fixture hygiene (#214)
+### P2.2 Stale issues and historical status text
 
-Current security CI exists, but lightweight secret scanning and systematic review of
-large fixtures/data remain additive hygiene work.
+Issue bodies and old Notion callouts can describe pre-merge reality after implementation
+has moved forward.
 
-**Closure proof:** deterministic scan policy, false-positive handling, fixture provenance
-and no weakening of existing security/coverage gates.
+**Control:** prefer current issue state, merged PRs, exact-head CI and the newest dated
+snapshot. Preserve old records as history, not current truth.
 
-### P2.3 Research PR accumulation
+### P2.3 Documentation/context drift
 
-Open research/documentation PRs #245, #249, #261 and #262 can become stale against
-`main`, overlap, or be mistaken for current runtime.
+AI context and Notion snapshots can become stale when mutable heads/checks are copied into
+multiple places.
 
-**Closure proof:** periodic rebase/review, explicit status headers, conflict-free
-reconciliation and closure/merge decisions.
+**Control:** duplicate immutable facts such as final merge SHA, accepted ADR and completed
+CI evidence; keep mutable branch/check status in GitHub and use a clearly dated current
+snapshot.
 
-### P2.4 Stale issues after implementation
+### P2.4 Compliance and grant overclaim
 
-Some older open issues describe capabilities later implemented through other PRs.
+GDPR-oriented features, public grant materials and roadmap pages can be misread as legal
+certification, funding award or production approval.
 
-**Risk:** agents may report a false gap by trusting issue state instead of code/status.
-
-**Closure proof:** issue triage linked to the implementing PR/checkpoint or a clear note
-explaining what remains.
-
-### P2.5 Documentation/context drift
-
-This AI pack can itself become stale.
-
-**Closure proof:** every material PR completes the documentation synchronization block
-and updates `CURRENT_STATE`, `KNOWN_RISKS`, `COMPONENT_MAP` or `WORK_LOG` when affected.
+**Control:** preserve explicit submission/award, implementation/research and
+mechanism/certification distinctions.
 
 ## Research-only boundaries
 
-The following must remain `PROPOSED`/research unless separately implemented and merged:
+The following remain proposed/research unless separately implemented and merged:
 
-- Essence Workdesk / dialogue-board experiments;
-- cognitive state, planning and user-intent hypotheses;
-- Native Kernel compatibility and event substrate concepts;
+- Essence Workdesk and dialogue-board experiments;
+- cognitive-state, planning and user-intent hypotheses;
+- Native Kernel compatibility/event substrate concepts;
 - Personal Exo-Cortex, Mentaury and Full Exo-Cortex modules;
 - ASR/Small Core active-state recovery;
-- any artificial-consciousness or digital-person claim.
+- artificial-consciousness or digital-person claims.
 
-## Risk closure template
+## Risk evidence template
 
-When closing a risk, record:
+When closing or materially changing a risk, record:
 
 ```text
 risk id
-exact PR and merge SHA
+exact PR, final head and merge SHA
 affected authority boundary
 implementation summary
-tests and CI run
+exact CI run and test/coverage evidence
 runtime wiring/default state
 migration/recovery behavior
 remaining limitations
-documentation and Notion updates
+GitHub and Notion synchronization
 ```

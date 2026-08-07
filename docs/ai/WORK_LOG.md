@@ -35,6 +35,76 @@ Documentation impact class and Notion record/checkpoint.
 
 ---
 
+## 2026-08-07 — Runtime hardening train #319–#321 verified and merged
+
+### Scope
+
+Completed the material reliability/security/scale findings from the 2026-08-06 deep
+audit: crash-consistent curator decisions, authenticated principal-bound writes and
+bounded legacy retrieval with explicit reindex.
+
+### Verified baseline
+
+- PR #319 merged as `62879cd2095450de57d11fcf97c13f5f9768ad0b`;
+- PR #320 merged as `1414862786aa0c0d4cf4ad152776dd4e55536bf0`;
+- PR #321 merged as `1748677a5c84e8a9b3af08fcaed0215efebcdd66`;
+- final verified runtime checkpoint: `1748677a5c84e8a9b3af08fcaed0215efebcdd66`;
+- final tree: `38c829b37bb61939792c64ee01ad925d6e8afd13`.
+
+### Findings / decisions
+
+- SQLite is the curator-decision transaction boundary; L3 projection is durable,
+  idempotent and recoverable rather than falsely described as cross-database ACID.
+- Processing restriction is authoritative in L1 and remains deny-dominant during a
+  secondary L3 outage.
+- Every bundled curator write derives audit identity and authorization from a validated
+  principal; actor text is only an exact-match assertion.
+- No-fingerprint compatibility retrieval must have a hard work bound or fail closed with
+  `legacy_store_requires_reindex`; query paths never initialize fingerprints.
+- Retrieval rank, physical L3 membership and bounded lexical score do not establish truth
+  or strict Canon membership.
+
+### Changes
+
+- added transactional decision journal/outbox, idempotent projector and recovery/status
+  surfaces;
+- added principal capability/scope/report/lease composition across bundled HTTP/CLI
+  writes and ADMIN-only force approval;
+- added bounded Mock/SQLite legacy retrieval, structured query/MCP degraded-mode metadata
+  and explicit reindex;
+- added ADR-017, ADR-018, ADR-019, operator/security documentation and defensive tests;
+- removed literal bearer-token assignment examples and rebuilt affected PR histories
+  cleanly on their current bases;
+- recorded 1k/10k/30k bounded retrieval benchmark evidence.
+
+### Validation
+
+- PR #319 exact-head CI `31162857843`: 9/9 jobs green, Python 3.11/3.12,
+  1881 passed / 12 skipped / 7578 statements / 100% coverage;
+- PR #320 exact-head CI `31164585628`: 9/9 jobs green, Python 3.11/3.12,
+  1918 passed / 12 skipped / 7754 statements / 100% coverage;
+- PR #321 exact-head CI `31166027193`: 9/9 jobs green, Python 3.11/3.12,
+  1943 passed / 12 skipped / 7948 statements / 100% coverage;
+- security, Ring Zero mutation, eval, JSONL, docs-status, Ruff and Docker gates green;
+- benchmark `31165503179`: candidate cap 256 held for 1k, 10k and 30k corpora.
+
+### Remaining
+
+- external distributed lease/fencing adapter;
+- production IdP, tenant isolation, token lifecycle and policy administration;
+- bounded degraded-retrieval recall tradeoff and operator reindex lifecycle;
+- controlled performance SLO policy and broader mutation testing;
+- reproducible dependency/tool/action pinning;
+- normalized legacy-ID migration and separately reviewed Reader Core RFC.
+
+### Synchronization
+
+- class: `GITHUB_AND_NOTION`;
+- GitHub documentation record: PR #318;
+- Notion targets: Crystal Project Hub and Crystal Deep Audit — 2026-08-06;
+- immutable merge/CI/benchmark evidence is synchronized; transient branch status is not
+  duplicated as long-lived project truth.
+
 ## 2026-08-05 — Connectorless GitHub → Notion hand-off
 
 ### Scope
@@ -131,7 +201,7 @@ automated auditors without changing Crystal runtime behavior.
 - added `docs/ai/README.md`;
 - added `docs/ai/CURRENT_STATE.md`;
 - added `docs/ai/COMPONENT_MAP.md`;
-- added `docs/ai/AUDIT_PLAYBOOK.md`;
+- added `docs/ai/AUDIT_PLAYBOOK.dd`;
 - added `docs/ai/KNOWN_RISKS.md`;
 - added this `docs/ai/WORK_LOG.md`;
 - expanded `AGENTS.md`, README navigation, Documentation Map and PR checklist.
