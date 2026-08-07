@@ -1,132 +1,159 @@
 # Security Policy
 
-Velantrim is verifiable memory infrastructure for AI systems. Because it stores
-facts that downstream systems treat as *true*, the integrity and provenance of
-that store is itself a security property. This document describes the threat
-model, the security properties the codebase enforces today, and how to report
-vulnerabilities.
+Velantrim Crystal is local-first verifiable memory infrastructure for AI systems. It may
+store sensitive claims, provenance and evidence metadata. Treat deployments as
+security-sensitive data systems.
 
-## Supported versions
+## Supported security baseline
 
-**Current Crystal line** (grant-facing open core):
+The current verified baseline is `main@c612c1f7de067b05ed7d01ad82d47a7bc39af23a`
+(PR #330, CI `31213056560`). Security evidence includes Bandit, dependency audit, secret
+scanning, Ruff, Python 3.11/3.12 tests, 100% line coverage, Docker checks and a Ring Zero
+mutation gate.
 
-| Version | Supported |
-|---------|-----------|
-| `0.3.x` | ✅ active — receives security updates |
-| `0.2.x` | ⚠️ previous line — superseded by `0.3.x` |
-
-**Legacy / historical lines** (separate research archives, not the grant-facing Crystal core):
-
-| Version | Supported |
-|---------|-----------|
-| `8.x`   | ⚠️ historical / separate research line — not the main grant-facing support target |
-| `< 8.0` | ❌ |
-
-Only the latest minor Crystal line (`0.3.x`) receives active security updates unless otherwise stated. Do not rely on `8.x` archive lines for production or grant-facing deployments.
+This is research-grade open infrastructure, not a security, legal or GDPR certification.
 
 ## Reporting a vulnerability
 
-Please report security issues **privately** rather than opening a public issue.
+Do not publish exploitable details, secrets or private user data in a public issue.
+Contact the maintainer privately through the repository security-reporting channel. Include:
 
-- Email: **qarythus@gmail.com** with subject `SECURITY: Velantrim`.
-- Include: affected version/commit, reproduction steps, and impact.
-- We aim to acknowledge within **5 working days** and to agree a disclosure
-  timeline (typically up to 90 days) with you.
+- affected version/commit;
+- component and deployment profile;
+- reproduction steps or proof of concept;
+- expected and observed impact;
+- suggested mitigation when known.
 
-Please do not run automated scanners against infrastructure you do not own, and
-do not include third parties' personal data in reports.
+## Authority model
 
-## Threat model
+Crystal separates storage from epistemic authority:
 
-Velantrim runs **locally by default** (see [PRIVACY.md](./PRIVACY.md)); the
-default deployment has no network listener and no outbound calls. The primary
-assets and threats:
+```text
+physical L3 storage != strict Canon
+retrieval score      != evidence
+migration bundle     != claim evidence
+successful import    != activation
+```
 
-| Asset | Threat | Mitigation in code |
-|-------|--------|--------------------|
-| Canonical graph (L3) | Unverified data written directly, bypassing review | **Single entry point**: writes go through the TruthGate (`core/pipeline.py`); `store_fact` writes L0/L1 only, never L3. |
-| Fact integrity | Subjective/LLM output laundered into world-facts | `claim_type` / `source_status` axis (`core/memory.py`); type-aware gate keeps `EMOTION`/`OPINION` from becoming `WORLD_FACT`. |
-| Immutable core | Tampering with foundational values (`VALUES_CORE`, `RING_ZERO`) | Invariant **I6**: `transition_esm` raises `ImmutableStateError` for Ring Zero IDs. |
-| Provenance | Loss of "where did this come from" | Every fact records `source` + `source_status`; trace chain in `core/trace.py`. |
-| State machine | Illegal epistemic transitions (e.g. Collapsed → Validated) | `ESM_TRANSITIONS` matrix validated in `transition_esm`. |
-| Consistency | L3 write fails after L1 commit → orphaned fact | Persistent **outbox** (`l3_outbox`) drains idempotently on next access. |
+TruthGate owns epistemic admission policy. Guardian owns structural/safety checks. Storage,
+retrieval, migration, topic metadata and model output must not bypass either boundary.
 
-> 📋 For the detailed STRIDE breakdown — trust boundaries, per-category analysis, mitigation map, and explicit residual risks / non-claims — see [docs/security/threat-model.md](./docs/security/threat-model.md).
+## Authentication and authorization
 
-### Optional HTTP service layer and the API token guard
+The repository now includes scoped curator roles/capabilities and authenticated actor
+binding on implemented mutation surfaces. This is a baseline authorization layer, not a
+complete production identity system.
 
-The optional FastAPI service (`pip install ".[api]"`, `velantrim-api`) binds to
-**127.0.0.1 by default** and is intended to stay there: it is not an
-internet-facing service. Do not change `VELANTRIM_API_HOST` to a routable
-address without putting real authentication and TLS in front.
+Current limitations:
 
-The service **fails closed**: memory-facing endpoints require authentication by
-default. There are exactly two ways to reach them:
+- no bundled production IdP;
+- no complete tenant-isolation model;
+- curator leases are process-local, not distributed fencing;
+- deployment TLS, token issuance, rotation and revocation remain operator responsibilities;
+- reverse-proxy/network policy remains external to the pure-stdlib core.
 
-- **`VELANTRIM_API_TOKEN`** set → every memory-facing endpoint requires
-  `Authorization: Bearer <token>` (compared with `hmac.compare_digest`,
-  constant-time). This covers `/ingest`, `/ask`, `/receipt`, `/verify-receipt`,
-  `/evidence/{fact_id}`, and all `/review/*` JSON endpoints (GET and POST alike).
-- **`VELANTRIM_API_ALLOW_UNAUTH_LOCAL=1`** (and no token) → an explicit opt-in
-  for an unauthenticated **local-development** instance only.
+## Storage security
 
-With neither set, guarded endpoints return `401` rather than exposing the canon.
-**Unguarded regardless:** `GET /health` (liveness) and `GET /review/ui` (static,
-data-free shell — enforced by test; all its data flows through the guarded
-`/review/*` endpoints). Set the token whenever anything beyond the local user can
-reach the port (including the default `docker compose` deployment, which requires
-`VELANTRIM_API_TOKEN` before startup).
+### SQLite local-first profile
 
-Public `/ingest` treats utterances as **`USER_REPORTED`** by default. Privileged
-`source_status` values (`EXTERNAL`, `DERIVED`, `OBSERVED`) require
-`VELANTRIM_API_PRIVILEGED_INGEST=1`, `import_mode=true`, and non-empty
-`evidence_refs` on the request. The policy requires declared refs and stores
-them in fact `metadata`; it does **not** resolve URIs or attach rows in the
-evidence span store (`core/evidence.py`).
+Crystal locks the durable backend and non-secret locator across restarts. SQLite lifecycle
+operations provide backup, independent verification, inactive restore and explicit guarded
+lock recovery.
 
-### Out of scope (current)
+The logical-export runtime additionally provides deterministic canonical JSONL export and
+independent verification under fixed local-first resource limits.
 
-- **Authentication / multi-tenant access control** — beyond the opt-in
-  review token guard above, Velantrim is a single-user, local library; there
-  is no user/role layer. Do not expose it as a network service without
-  adding one.
-- **Encryption at rest** — *available* as an opt-in: when
-  `VELANTRIM_ENCRYPTION_KEY` is set, the personal-data fields (claim, metadata)
-  of the L1 SQLite store are encrypted (`core/crypto.py`). On-disk L3 backends
-  (the `sqlite` L3 canon, LadybugDB) store claims in plaintext and are **not yet**
-  covered by field-level encryption — use full-disk/filesystem encryption on the
-  host for those, or erase via the Art. 17 path (`erase_fact` purges the L3 node).
-- **Untrusted optional backends** — enabling the optional Claude generator or a
-  remote Neo4j backend extends the trust boundary to those services (see
-  [PRIVACY.md](./PRIVACY.md)).
+Limits:
 
-## Security properties enforced today
+```text
+control JSON          <= 1 MiB
+source SQLite         <= 64 MiB
+record                <= 1 MiB
+records per dataset  <= 200,000
+dataset               <= 64 MiB
+aggregate JSONL       <= 384 MiB
+```
 
-- No outbound network calls in the default configuration.
-- No secrets, credentials, `.env`, databases, or logs are committed to the
-  repository (enforced by `.gitignore`; verified clean).
-- All untrusted input flows through validation (`store_fact` rejects unknown
-  ESM states, claim types, and source statuses).
-- **Tamper-evident audit log (GDPR Art. 5(2)/24/30)** — `core/audit.py` keeps an
-  append-only hash chain of compliance events (erase / restrict / unrestrict).
-  Replay catches edits, gaps and reordering; a transactionally advanced
-  checkpoint also catches deletion of the event-table tail (`audit-verify`).
-  Optional per-entry HMAC signing (`VELANTRIM_AUDIT_KEY`) prevents forging
-  signed entry content. Detecting replacement/rollback of the whole SQLite
-  database still requires an externally held checkpoint or backup.
-- **Encryption at rest (opt-in, GDPR Art. 32)** — `core/crypto.py` provides
-  authenticated, field-level encryption of the personal-data columns. With
-  `cryptography` installed it uses Fernet (AES-128-CBC + HMAC); otherwise a
-  dependency-free HMAC-SHA256 keystream (CTR) with encrypt-then-MAC. Tokens are
-  tamper-evident — a wrong key or modified ciphertext fails authentication.
-  Disabled by default (identity), so the default runtime stays stdlib-only.
-- The full test suite at 100% coverage guards the invariants above (current
-  audited baseline in [TEST_REPORT.md](./TEST_REPORT.md)).
+These limits reduce unbounded resource-exhaustion exposure but do not establish streaming
+or institution-scale migration security. Issue #331 tracks that work.
 
-## Dependencies
+### Encryption boundary
 
-The default runtime uses the Python standard library only. `requirements.txt` is
-kept as a compatibility marker and intentionally contains no mandatory runtime
-packages. Development and CI tooling lives in `requirements-dev.txt`; optional
-backends are installed through `pyproject.toml` extras. Keep optional backends
-pinned and reviewed before enabling them.
+L1 encryption is optional and profile-dependent. Physical L3 SQLite/Ladybug data and
+logical export bundles are not automatically encrypted by Crystal. Operators handling
+sensitive data should use reviewed full-disk/filesystem encryption, protected backup
+storage and access controls.
+
+The standard-library crypto fallback is a compatibility path, not an independently audited
+cryptographic product. Sensitive institutional deployments should require a reviewed
+third-party cryptography implementation and external security assessment.
+
+### PostgreSQL/pgvector
+
+PostgreSQL/pgvector is proposed, not current runtime. A future institutional profile must
+define and test:
+
+- TLS certificate verification;
+- least-privilege runtime/read/migration roles;
+- credential provider, rotation and revocation;
+- schema/extension ownership;
+- transaction isolation and retryable SQLSTATE policy;
+- connection timeout/pooling behavior;
+- backup encryption, restore drills and upgrade sequencing;
+- audit-log redaction and tenant assumptions.
+
+Credentials and credential-bearing DSNs must never be stored in durable profiles, migration
+bundles, receipts, logs, issues or Notion.
+
+## Migration security
+
+A backend transition is a governed migration:
+
+```text
+read-only export
+→ independent verification
+→ inactive target import
+→ exact state equivalence
+→ retrieval evaluation
+→ explicit cutover
+→ optional rollback
+```
+
+Backend reachability, installed packages, profile editing or successful SQL inserts must
+never trigger automatic switching.
+
+## Data handling
+
+- Do not commit real user data, tokens, credentials or private evidence corpora.
+- Prefer synthetic fixtures in tests and benchmarks.
+- Restriction and erasure state must propagate to trusted read paths and migrations.
+- Logs and receipts should contain identifiers/reason codes rather than unnecessary content.
+- Notion synchronization must not copy secrets or private datasets into public GitHub docs.
+
+## Dependency and supply-chain boundary
+
+The default runtime remains pure standard library. Optional dependencies must be isolated
+behind extras, lazy-loaded and version-bounded.
+
+Remaining work includes immutable GitHub Action pins, reviewed dependency constraints,
+checksums/SBOM for releases and scheduled update policy. An all-green dependency audit does
+not replace supply-chain hardening.
+
+## Deployment checklist
+
+Before exposing Crystal beyond localhost:
+
+- place it behind TLS and authenticated access control;
+- use least-privilege service accounts;
+- protect database, profile, backup and export paths;
+- establish encrypted backup retention and restore drills;
+- configure secret rotation/revocation;
+- monitor disk, memory, failures and stale locks;
+- review resource limits against the deployment profile;
+- do not claim production multi-tenancy or certification without independent evidence.
+
+## Non-claims
+
+Crystal does not claim zero vulnerabilities, zero hallucinations, universal truth,
+production certification, automatic GDPR compliance, institution-scale PostgreSQL runtime,
+distributed exactly-once behavior or safe automatic backend switching.
