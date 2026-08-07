@@ -29,3 +29,5 @@ jobs:
           git add -A
           git commit -m "docs(status): publish bounded migration checkpoint"
           git push origin HEAD:agent/bounded-migration-status-331
+
+# connector retrigger after guarded marker repair
