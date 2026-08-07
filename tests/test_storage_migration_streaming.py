@@ -260,3 +260,118 @@ def test_missing_examples_handles_scalar_and_tuple():
 
     assert m._missing_examples(Connection([("a",)]), "x") == ["a"]
     assert m._missing_examples(Connection([("a", "b")]), "x") == [("a", "b")]
+
+
+
+def test_dataset_hash_pass_resource_and_io_failures(tmp_path, monkeypatch):
+    profile, _ = _make_store(tmp_path)
+    bundle = tmp_path / "bundle"
+    m.export_sqlite_logical(bundle, profile_path=profile)
+    metadata = json.loads((bundle / m.MIGRATION_MANIFEST).read_text())["datasets"][
+        "nodes"
+    ]
+
+    real_read = m.os.read
+    calls = {"count": 0}
+
+    def oversized(fd, size):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            return b"x" * (m.MAX_DATASET_BYTES + 1)
+        return b""
+
+    monkeypatch.setattr(m.os, "read", oversized)
+    with pytest.raises(StorageOperationError, match="exceeds byte resource limits"):
+        m._read_dataset(bundle / "nodes.jsonl", "nodes", metadata)
+
+    monkeypatch.setattr(m.os, "read", lambda _fd, _size: b"")
+    with pytest.raises(StorageOperationError, match="byte-size mismatch"):
+        m._read_dataset(bundle / "nodes.jsonl", "nodes", metadata)
+
+    monkeypatch.setattr(
+        m.os,
+        "read",
+        lambda _fd, _size: (_ for _ in ()).throw(OSError("read failed")),
+    )
+    with pytest.raises(StorageOperationError, match="cannot read nodes"):
+        m._read_dataset(bundle / "nodes.jsonl", "nodes", metadata)
+
+    monkeypatch.setattr(m.os, "read", real_read)
+
+
+def test_dataset_final_descriptor_mutation_is_detected(tmp_path, monkeypatch):
+    profile, _ = _make_store(tmp_path)
+    bundle = tmp_path / "bundle"
+    m.export_sqlite_logical(bundle, profile_path=profile)
+    metadata = json.loads((bundle / m.MIGRATION_MANIFEST).read_text())["datasets"][
+        "nodes"
+    ]
+    real_fstat = m.os.fstat
+    calls = {"count": 0}
+
+    def changed(fd):
+        value = real_fstat(fd)
+        calls["count"] += 1
+        if calls["count"] == 3:
+            fields = list(value)
+            fields[8] += 1
+            return os.stat_result(fields)
+        return value
+
+    monkeypatch.setattr(m.os, "fstat", changed)
+    with pytest.raises(StorageOperationError, match="changed while it was read"):
+        m._read_dataset(bundle / "nodes.jsonl", "nodes", metadata)
+
+
+def test_verification_index_factory_cleans_up_before_connection(tmp_path, monkeypatch):
+    root = tmp_path / "temp-before"
+    root.mkdir()
+    cleaned = {"value": False}
+
+    class Temporary:
+        name = str(root)
+
+        def cleanup(self):
+            cleaned["value"] = True
+
+    monkeypatch.setattr(m.tempfile, "TemporaryDirectory", lambda **_kwargs: Temporary())
+    monkeypatch.setattr(
+        m.sqlite3,
+        "connect",
+        lambda _path: (_ for _ in ()).throw(sqlite3.OperationalError("connect failed")),
+    )
+    with pytest.raises(
+        StorageOperationError, match="cannot create migration verification index"
+    ):
+        m._verification_index(tmp_path)
+    assert cleaned["value"] is True
+
+
+def test_verification_index_factory_closes_connection_and_cleans_up(
+    tmp_path, monkeypatch
+):
+    root = tmp_path / "temp-after"
+    root.mkdir()
+    state = {"cleaned": False, "closed": False}
+
+    class Temporary:
+        name = str(root)
+
+        def cleanup(self):
+            state["cleaned"] = True
+
+    class Connection:
+        def executescript(self, _script):
+            raise sqlite3.OperationalError("schema failed")
+
+        def close(self):
+            state["closed"] = True
+
+    monkeypatch.setattr(m.tempfile, "TemporaryDirectory", lambda **_kwargs: Temporary())
+    monkeypatch.setattr(m.sqlite3, "connect", lambda _path: Connection())
+    monkeypatch.setattr(m.os, "chmod", lambda _path, _mode: None)
+    with pytest.raises(
+        StorageOperationError, match="cannot create migration verification index"
+    ):
+        m._verification_index(tmp_path)
+    assert state == {"cleaned": True, "closed": True}

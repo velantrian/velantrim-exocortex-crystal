@@ -909,26 +909,34 @@ def _verification_index(
         prefix=".velantrim-migration-verify-",
         dir=parent,
     )
-    os.chmod(temporary.name, 0o700)
-    database = Path(temporary.name) / "references.sqlite"
-    connection = sqlite3.connect(database)
-    os.chmod(database, 0o600)
-    connection.executescript(
-        """
-        PRAGMA journal_mode=OFF;
-        PRAGMA synchronous=OFF;
-        CREATE TABLE nodes(id TEXT PRIMARY KEY) WITHOUT ROWID;
-        CREATE TABLE entities(id TEXT PRIMARY KEY) WITHOUT ROWID;
-        CREATE TABLE vectors(
-            fact_id TEXT PRIMARY KEY,
-            dimension INTEGER NOT NULL
-        ) WITHOUT ROWID;
-        CREATE TABLE edges(src TEXT NOT NULL, dst TEXT NOT NULL);
-        CREATE TABLE mentions(fact_id TEXT NOT NULL, entity_id TEXT NOT NULL);
-        """
-    )
-    return temporary, connection
-
+    connection: Optional[sqlite3.Connection] = None
+    try:
+        os.chmod(temporary.name, 0o700)
+        database = Path(temporary.name) / "references.sqlite"
+        connection = sqlite3.connect(database)
+        os.chmod(database, 0o600)
+        connection.executescript(
+            """
+            PRAGMA journal_mode=OFF;
+            PRAGMA synchronous=OFF;
+            CREATE TABLE nodes(id TEXT PRIMARY KEY) WITHOUT ROWID;
+            CREATE TABLE entities(id TEXT PRIMARY KEY) WITHOUT ROWID;
+            CREATE TABLE vectors(
+                fact_id TEXT PRIMARY KEY,
+                dimension INTEGER NOT NULL
+            ) WITHOUT ROWID;
+            CREATE TABLE edges(src TEXT NOT NULL, dst TEXT NOT NULL);
+            CREATE TABLE mentions(fact_id TEXT NOT NULL, entity_id TEXT NOT NULL);
+            """
+        )
+        return temporary, connection
+    except (OSError, sqlite3.Error) as exc:
+        if connection is not None:
+            connection.close()
+        temporary.cleanup()
+        raise StorageOperationError(
+            f"cannot create migration verification index: {exc}"
+        ) from exc
 
 def _missing_examples(
     connection: sqlite3.Connection,
