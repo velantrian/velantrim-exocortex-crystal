@@ -1,14 +1,12 @@
 """Scoped curator authorization and local decision leases.
 
-This module is deliberately independent from identity-provider plumbing. A host
-maps an authenticated identity to ``CuratorPrincipal`` and then asks this module
-for a fail-closed authorization decision before calling Crystal's canonical
-review contract.
+A host authenticates an identity, maps it to :class:`CuratorPrincipal` and
+then composes the fail-closed authorization helpers in this module before
+calling Crystal's canonical review contract.
 
-The lease registry prevents two curator workers in one process from applying a
-decision for the same candidate/report concurrently. Distributed deployments
-must provide an external lease implementation with the same acquire/release
-contract.
+The bundled lease registry coordinates one Python process only. Distributed
+hosts must supply an external lease/fencing adapter and must not describe this
+registry as a distributed lock.
 """
 
 from __future__ import annotations
@@ -30,21 +28,44 @@ class CuratorRole(str, Enum):
 
 
 class CuratorCapability(str, Enum):
+    APPROVE = "APPROVE"
+    REJECT = "REJECT"
+    FORCE_APPROVE = "FORCE_APPROVE"
     RESOLVE_COEXIST = "RESOLVE_COEXIST"
     RESOLVE_CONTEXTUALIZE = "RESOLVE_CONTEXTUALIZE"
     RESOLVE_SUPERSEDE = "RESOLVE_SUPERSEDE"
 
 
+class CuratorAction(str, Enum):
+    APPROVE = "APPROVE"
+    REJECT = "REJECT"
+    FORCE_APPROVE = "FORCE_APPROVE"
+
+
 _ROLE_CAPABILITIES = {
-    CuratorRole.REVIEWER: frozenset({CuratorCapability.RESOLVE_COEXIST}),
+    CuratorRole.REVIEWER: frozenset(
+        {
+            CuratorCapability.APPROVE,
+            CuratorCapability.REJECT,
+            CuratorCapability.RESOLVE_COEXIST,
+        }
+    ),
     CuratorRole.CURATOR: frozenset(
         {
+            CuratorCapability.APPROVE,
+            CuratorCapability.REJECT,
             CuratorCapability.RESOLVE_COEXIST,
             CuratorCapability.RESOLVE_CONTEXTUALIZE,
             CuratorCapability.RESOLVE_SUPERSEDE,
         }
     ),
     CuratorRole.ADMIN: frozenset(CuratorCapability),
+}
+
+_ACTION_CAPABILITY = {
+    CuratorAction.APPROVE: CuratorCapability.APPROVE,
+    CuratorAction.REJECT: CuratorCapability.REJECT,
+    CuratorAction.FORCE_APPROVE: CuratorCapability.FORCE_APPROVE,
 }
 
 _DISPOSITION_CAPABILITY = {
@@ -67,9 +88,16 @@ class CuratorPrincipal:
             raise ValueError("at least one curator role is required")
         if any(not isinstance(role, CuratorRole) for role in self.roles):
             raise TypeError("roles must contain CuratorRole values")
+        if not self.scopes:
+            raise ValueError("at least one curator scope is required")
         if any(not isinstance(scope, str) or not scope.strip() for scope in self.scopes):
             raise ValueError("scopes must contain non-empty strings")
         object.__setattr__(self, "actor_id", self.actor_id.strip())
+        object.__setattr__(
+            self,
+            "scopes",
+            frozenset(scope.strip() for scope in self.scopes),
+        )
 
     @property
     def capabilities(self) -> frozenset[CuratorCapability]:
@@ -90,16 +118,52 @@ def _scope_allows(scopes: Iterable[str], fact_id: str) -> bool:
     return "fact:*" in scopes or f"fact:{fact_id}" in scopes
 
 
+def _actor_matches(principal: CuratorPrincipal, actor: Optional[str]) -> bool:
+    """A missing compatibility actor is acceptable; a supplied actor must match."""
+    return actor is None or (
+        isinstance(actor, str) and actor.strip() == principal.actor_id
+    )
+
+
+def authorize_review_action(
+    principal: CuratorPrincipal,
+    *,
+    action: CuratorAction | str,
+    candidate_fact_id: str,
+    actor: Optional[str] = None,
+) -> AuthorizationResult:
+    """Authorize approve/reject/force without inspecting claim content."""
+    if not isinstance(principal, CuratorPrincipal):
+        return AuthorizationResult(False, "authenticated curator principal is required")
+    if not _actor_matches(principal, actor):
+        return AuthorizationResult(False, "actor does not match authenticated principal")
+    try:
+        selected = CuratorAction(action)
+    except (TypeError, ValueError):
+        return AuthorizationResult(False, "unknown curator action")
+    capability = _ACTION_CAPABILITY[selected]
+    if capability not in principal.capabilities:
+        return AuthorizationResult(False, "principal lacks required capability", capability)
+    if not isinstance(candidate_fact_id, str) or not candidate_fact_id.strip():
+        return AuthorizationResult(False, "candidate fact id is invalid", capability)
+    normalized_candidate_id = candidate_fact_id.strip()
+    if not _scope_allows(principal.scopes, normalized_candidate_id):
+        return AuthorizationResult(False, "candidate fact is outside principal scope", capability)
+    return AuthorizationResult(True, "authorized", capability)
+
+
 def authorize_conflict_decision(
     principal: CuratorPrincipal,
     *,
-    actor: str,
+    actor: Optional[str],
     disposition: ConflictDisposition | str,
     candidate_fact_id: str,
     target_fact_ids: Iterable[str] = (),
 ) -> AuthorizationResult:
-    """Authorize one explicit decision without inspecting claim content."""
-    if not isinstance(actor, str) or actor.strip() != principal.actor_id:
+    """Authorize one explicit contradiction decision without claim content."""
+    if not isinstance(principal, CuratorPrincipal):
+        return AuthorizationResult(False, "authenticated curator principal is required")
+    if not _actor_matches(principal, actor):
         return AuthorizationResult(False, "actor does not match authenticated principal")
     try:
         selected = ConflictDisposition(disposition)
@@ -110,10 +174,16 @@ def authorize_conflict_decision(
     capability = _DISPOSITION_CAPABILITY[selected]
     if capability not in principal.capabilities:
         return AuthorizationResult(False, "principal lacks required capability", capability)
-    if not _scope_allows(principal.scopes, candidate_fact_id):
+    if not isinstance(candidate_fact_id, str) or not candidate_fact_id.strip():
+        return AuthorizationResult(False, "candidate fact id is invalid", capability)
+    normalized_candidate_id = candidate_fact_id.strip()
+    if not _scope_allows(principal.scopes, normalized_candidate_id):
         return AuthorizationResult(False, "candidate fact is outside principal scope", capability)
     for target_id in target_fact_ids:
-        if not _scope_allows(principal.scopes, target_id):
+        if not isinstance(target_id, str) or not target_id.strip():
+            return AuthorizationResult(False, "target fact id is invalid", capability)
+        normalized_target_id = target_id.strip()
+        if not _scope_allows(principal.scopes, normalized_target_id):
             return AuthorizationResult(False, "target fact is outside principal scope", capability)
     return AuthorizationResult(True, "authorized", capability)
 
@@ -136,9 +206,11 @@ class CuratorLeaseRegistry:
 
     @staticmethod
     def lease_key(candidate_fact_id: str, report_id: str) -> str:
-        if not candidate_fact_id or not report_id:
+        if not isinstance(candidate_fact_id, str) or not candidate_fact_id:
             raise ValueError("candidate_fact_id and report_id are required")
-        return f"{candidate_fact_id}:{report_id}"
+        if not isinstance(report_id, str) or not report_id:
+            raise ValueError("candidate_fact_id and report_id are required")
+        return f"{len(candidate_fact_id)}:{candidate_fact_id}|{len(report_id)}:{report_id}"
 
     def acquire(
         self,
@@ -185,10 +257,12 @@ class CuratorLeaseRegistry:
 
 __all__ = [
     "AuthorizationResult",
+    "CuratorAction",
     "CuratorCapability",
     "CuratorLeaseRegistry",
     "CuratorPrincipal",
     "CuratorRole",
     "DecisionLease",
     "authorize_conflict_decision",
+    "authorize_review_action",
 ]

@@ -8,6 +8,7 @@ from core.curator_auth import (
     CuratorRole,
     DecisionLease,
     authorize_conflict_decision,
+    authorize_review_action,
 )
 
 
@@ -97,6 +98,28 @@ def test_actor_and_fact_scopes_fail_closed():
     ).allowed
 
 
+def test_authorization_helpers_normalize_ids_before_scope_checks():
+    scoped = principal(
+        CuratorRole.CURATOR,
+        scopes=frozenset({"fact:new", "fact:old"}),
+    )
+    review_result = authorize_review_action(
+        scoped,
+        action="APPROVE",
+        candidate_fact_id=" new ",
+        actor="alice",
+    )
+    conflict_result = authorize_conflict_decision(
+        scoped,
+        actor="alice",
+        disposition="SUPERSEDE",
+        candidate_fact_id=" new ",
+        target_fact_ids=(" old ",),
+    )
+    assert review_result.allowed
+    assert conflict_result.allowed
+
+
 def test_unknown_and_review_required_dispositions_are_not_executable():
     admin = principal(CuratorRole.ADMIN)
     assert not authorize_conflict_decision(
@@ -125,6 +148,27 @@ def test_lease_key_and_acquire_validation():
         registry.acquire(
             candidate_fact_id="fact", report_id="report", owner="alice", ttl_seconds=0
         )
+
+
+def test_lease_key_is_unambiguous_when_ids_contain_colons():
+    first_key = CuratorLeaseRegistry.lease_key("ing:x", "ctr:y")
+    second_key = CuratorLeaseRegistry.lease_key("ing", "x:ctr:y")
+    assert first_key != second_key
+
+    registry = CuratorLeaseRegistry(clock=lambda: 10.0)
+    first = registry.acquire(
+        candidate_fact_id="ing:x",
+        report_id="ctr:y",
+        owner="alice",
+    )
+    second = registry.acquire(
+        candidate_fact_id="ing",
+        report_id="x:ctr:y",
+        owner="bob",
+    )
+    assert first is not None
+    assert second is not None
+    assert first.key != second.key
 
 
 def test_missing_lease_is_not_active():

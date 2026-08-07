@@ -435,6 +435,9 @@ def test_decisions_are_audited(monkeypatch):
 
 def test_cli_review_flow(monkeypatch, capsys):
     monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    monkeypatch.setenv("VELANTRIM_CURATOR_ACTOR", "cli")
+    monkeypatch.setenv("VELANTRIM_CURATOR_ROLES", "ADMIN")
+    monkeypatch.setenv("VELANTRIM_CURATOR_SCOPES", "fact:*")
     from core.cli import main
     fid = _blocked_world_fact("A CLI-reviewed pending claim")
 
@@ -456,20 +459,27 @@ def test_cli_review_flow(monkeypatch, capsys):
     assert get_fact(fid)["epistemic_state"] == "Validated"
 
 
-def test_cli_force_without_explicit_actor_is_refused(monkeypatch, capsys):
-    """--force without an explicit --actor must not promote: the CLI no longer
-    supplies a default identity that could sign an override."""
+def test_cli_force_without_actor_uses_authenticated_principal(monkeypatch, capsys):
+    """Authentication establishes the audit actor; ``--actor`` is optional and
+    can only assert an exact match with the configured principal."""
     monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    monkeypatch.setenv("VELANTRIM_CURATOR_ACTOR", "cli")
+    monkeypatch.setenv("VELANTRIM_CURATOR_ROLES", "ADMIN")
+    monkeypatch.setenv("VELANTRIM_CURATOR_SCOPES", "fact:*")
     from core.cli import main
-    fid = _blocked_world_fact("A CLI override missing its actor")
+    fid = _blocked_world_fact("A CLI override uses its authenticated actor")
     assert main(["review-approve", fid, "--force", "--reason", "vetted"]) == 0
     out = capsys.readouterr().out
-    assert '"approved": false' in out and "actor" in out
-    assert get_fact(fid)["epistemic_state"] == "Observed"
+    assert '"authorized": true' in out
+    assert '"approved": true' in out
+    assert get_fact(fid)["epistemic_state"] == "Validated"
 
 
 def test_cli_review_reject(monkeypatch, capsys):
     monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    monkeypatch.setenv("VELANTRIM_CURATOR_ACTOR", "cli")
+    monkeypatch.setenv("VELANTRIM_CURATOR_ROLES", "REVIEWER")
+    monkeypatch.setenv("VELANTRIM_CURATOR_SCOPES", "fact:*")
     from core.cli import main
     fid = _blocked_world_fact("A CLI-rejected pending claim")
     assert main(["review-reject", fid, "--reason", "spam"]) == 0
