@@ -2,25 +2,25 @@
   "schema_version": 1,
   "project": "Velantrim Exo-Cortex Crystal",
   "version": "0.3.0",
-  "status_date": "2026-08-07",
+  "status_date": "2026-08-08",
   "verified_runtime_checkpoint": {
-    "commit": "c612c1f7de067b05ed7d01ad82d47a7bc39af23a",
-    "short": "c612c1f",
-    "tree": "17d65f52ac1d985fca249e6c9a183168d6116ffb",
-    "validated_head": "e70c31bf517039f0dd3f77f7bc4b6d3f03936736",
-    "pull_request": 330,
-    "ci_run": 31213056560,
-    "description": "Deterministic SQLite logical export and independent verification under a bounded local-first resource contract"
+    "commit": "f03e24c85922d0bb46d6d9dfee98338972135908",
+    "short": "f03e24c",
+    "tree": "abf75283b382697b323ab69cfa7235b47171dace",
+    "validated_head": "17ce10ffe12da93be50434c73d08f05a70a5922b",
+    "pull_request": 335,
+    "ci_run": 31224184351,
+    "description": "Bounded-streaming SQLite logical export and independent verification with disk-backed ordering and reference checks"
   },
   "tests": {
     "python_versions": [
       "3.11",
       "3.12"
     ],
-    "passed": 2047,
+    "passed": 2059,
     "skipped": 12,
     "failed": 0,
-    "measured_statements": 9219,
+    "measured_statements": 9361,
     "coverage_percent": 100.0
   },
   "ci": {
@@ -53,13 +53,14 @@
     "durable_l3_profile_lock": true,
     "sqlite_storage_lifecycle": true,
     "sqlite_logical_export_verification": true,
-    "sqlite_logical_export_resource_contract": "bounded-local-first",
+    "sqlite_logical_export_resource_contract": "bounded-streaming-local-first",
     "cross_backend_migration_runtime": false,
     "postgresql_pgvector_runtime": false,
     "automatic_backend_switching": false,
     "distributed_curator_coordination": false,
     "production_idp_multitenancy": false,
-    "dedicated_reader_core": false
+    "dedicated_reader_core": false,
+    "bounded_streaming_logical_migration": true
   },
   "storage_resource_limits": {
     "control_file_bytes": 1048576,
@@ -69,8 +70,14 @@
     "dataset_bytes": 67108864,
     "aggregate_jsonl_bytes": 402653184,
     "institution_scale_claim": false,
-    "streaming_follow_up_issue": 331,
-    "postgresql_follow_up_issue": 332
+    "postgresql_follow_up_issue": 332,
+    "bounded_streaming_issue_completed": 331,
+    "resource_benchmark_ci": 31224005804,
+    "benchmark_primary_records": [
+      1025,
+      8193
+    ],
+    "benchmark_is_production_slo": false
   },
   "documentation": {
     "authoritative_language": "English",

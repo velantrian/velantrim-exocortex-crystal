@@ -4,6 +4,16 @@ This compact log records material decisions, exact evidence, limitations and han
 is not a replacement for Git history, issues, pull requests, `CHANGELOG.md` or Notion.
 Earlier detailed entries remain available through Git history.
 
+
+## 2026-08-08 — PR #335 bounded migration merged
+
+- Merge: `f03e24c85922d0bb46d6d9dfee98338972135908`; validated head `17ce10ffe12da93be50434c73d08f05a70a5922b`; exact-head CI `31224184351` 9/9.
+- Evidence: 2059 passed / 12 skipped, 9361 statements, 100.00% coverage; benchmark `31224005804` 2/2.
+- Implemented fixed cursor batches, disk-backed canonical edge sorting, same-descriptor incremental verification, disk-backed referential checks and failure cleanup.
+- First CI runs exposed SHA-diagnostic precedence and missing fail-closed branch coverage; both were fixed before merge.
+- Impact classification: `GITHUB_AND_NOTION`.
+- #331 becomes merged baseline after this status synchronization; #332 remains the next inactive PostgreSQL import/equivalence phase.
+
 ## 2026-08-07 — Grant/status baseline synchronization (#333 / PR #334)
 
 ### Scope

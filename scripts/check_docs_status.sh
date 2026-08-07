@@ -27,9 +27,9 @@ documentation = manifest.get("documentation", {})
 grant = manifest.get("grant", {})
 limits = manifest.get("storage_resource_limits", {})
 
-expected_commit = "c612c1f7de067b05ed7d01ad82d47a7bc39af23a"
-expected_head = "e70c31bf517039f0dd3f77f7bc4b6d3f03936736"
-expected_ci = 31213056560
+expected_commit = "f03e24c85922d0bb46d6d9dfee98338972135908"
+expected_head = "17ce10ffe12da93be50434c73d08f05a70a5922b"
+expected_ci = 31224184351
 expected_jobs = [
     "code-quality",
     "test (3.11)",
@@ -43,19 +43,19 @@ expected_jobs = [
 ]
 
 if checkpoint.get("commit") != expected_commit:
-    errors.append("manifest runtime checkpoint does not match merged PR #330")
+    errors.append("manifest runtime checkpoint does not match merged PR #335")
 if checkpoint.get("validated_head") != expected_head:
-    errors.append("manifest validated head does not match PR #330 evidence")
-if checkpoint.get("pull_request") != 330:
-    errors.append("manifest pull request must be 330")
+    errors.append("manifest validated head does not match PR #335 evidence")
+if checkpoint.get("pull_request") != 335:
+    errors.append("manifest pull request must be 335")
 if checkpoint.get("ci_run") != expected_ci:
     errors.append("manifest CI run does not match PR #330 exact-head evidence")
 
 expected_tests = {
-    "passed": 2047,
+    "passed": 2059,
     "skipped": 12,
     "failed": 0,
-    "measured_statements": 9219,
+    "measured_statements": 9361,
     "coverage_percent": 100.0,
 }
 for key, expected in expected_tests.items():
@@ -100,12 +100,18 @@ for key in required_true:
     if boundaries.get(key) is not True:
         errors.append(f"implemented_boundaries.{key} must be true")
 
-if boundaries.get("sqlite_logical_export_resource_contract") != "bounded-local-first":
-    errors.append("logical export must remain documented as bounded-local-first")
+if boundaries.get("sqlite_logical_export_resource_contract") != "bounded-streaming-local-first":
+    errors.append("logical export must remain documented as bounded-streaming-local-first")
 if limits.get("institution_scale_claim") is not False:
     errors.append("manifest must not claim institution-scale migration")
-if limits.get("streaming_follow_up_issue") != 331:
-    errors.append("streaming migration follow-up must remain issue #331")
+if limits.get("bounded_streaming_issue_completed") != 331:
+    errors.append("bounded streaming issue completion must be #331")
+if boundaries.get("bounded_streaming_logical_migration") is not True:
+    errors.append("bounded streaming logical migration must be implemented")
+if limits.get("resource_benchmark_ci") != 31224005804:
+    errors.append("resource benchmark CI must match exact evidence")
+if limits.get("benchmark_is_production_slo") is not False:
+    errors.append("resource benchmark must not be recorded as a production SLO")
 if limits.get("postgresql_follow_up_issue") != 332:
     errors.append("PostgreSQL follow-up must remain issue #332")
 
@@ -118,43 +124,46 @@ if grant.get("awarded") is not False or grant.get("budget_changed") is not False
 
 required: dict[str, list[str]] = {
     "README.md": [
-        "2047 passed / 12 skipped",
+        "2059 passed / 12 skipped",
         expected_commit,
         "9 CI jobs",
         "7/7 declared mutants killed",
         "English is the authoritative",
         "Issue #331",
         "Issue #332",
+        "bounded-streaming",
         "submitted and under review",
     ],
     "TEST_REPORT.md": [
         expected_commit,
-        "2047 passed / 12 skipped / 0 failed",
+        "2059 passed / 12 skipped / 0 failed",
         "100.00%",
         "9/9 successful",
-        "PR #330",
+        "PR #335",
         "#331",
         "#332",
     ],
     "docs/STATUS.md": [
         expected_commit,
-        "2047 passed / 12 skipped / 0 failed",
+        "2059 passed / 12 skipped / 0 failed",
         "9/9",
         "PostgreSQL/pgvector",
         "#331",
         "#332",
         "No award or budget change",
+        "2059 passed / 12 skipped / 0 failed",
     ],
     "docs/IMPLEMENTATION_STATUS.md": [
-        "c612c1f",
+        "f03e24c",
         "SQLite logical export/verify",
         "#331",
         "#332",
         "PostgreSQL/pgvector institutional profile",
+        "Bounded-streaming logical migration",
     ],
     "docs/ai/CURRENT_STATE.md": [
         expected_commit,
-        "2047 passed / 12 skipped / 0 failed",
+        "2059 passed / 12 skipped / 0 failed",
         "English is the sole authoritative",
         "#331",
         "#332",
@@ -201,6 +210,7 @@ required: dict[str, list[str]] = {
         "not a security, legal or GDPR certification",
         "#331",
         "PostgreSQL/pgvector is proposed, not current runtime",
+        "bounded local-first evidence",
         "automatic switching",
     ],
     "AGENTS.md": [
@@ -235,6 +245,10 @@ current_status_surfaces = [
 ]
 stale_markers = (
     "2019 passed / 12 skipped",
+    "2047 passed / 12 skipped",
+    "9219 statements",
+    "c612c1f7de067b05ed7d01ad82d47a7bc39af23a",
+    "31213056560",
     "b0df17a06d552ad2543b6d6e5efe8cd99877cfc0",
     "31182471502",
     "PR #334 merged",
@@ -341,7 +355,7 @@ if errors:
 
 print(
     "Documentation status is internally consistent: "
-    f"checkpoint={checkpoint.get('short')}, tests=2047/12, statements=9219, "
+    f"checkpoint={checkpoint.get('short')}, tests=2059/12, statements=9361, "
     "coverage=100.00%, jobs=9, mutants=7/7, grant=submitted-under-review, "
     f"frozen localized snapshots={len(localized)}"
 )

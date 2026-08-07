@@ -1,9 +1,9 @@
 # Grant Baseline → Funded Delta → Acceptance Matrix
 
 **Status:** grant-planning control · documentation only · no award/budget change  
-**Frozen baseline:** `main@c612c1f7de067b05ed7d01ad82d47a7bc39af23a`  
-**Validated head / CI:** `e70c31bf517039f0dd3f77f7bc4b6d3f03936736` / `31213056560`  
-**Baseline evidence:** 2047 passed / 12 skipped / 9219 statements / 100% coverage / 9 CI jobs
+**Frozen baseline:** `main@f03e24c85922d0bb46d6d9dfee98338972135908`  
+**Validated head / CI:** `17ce10ffe12da93be50434c73d08f05a70a5922b` / `31224184351`  
+**Baseline evidence:** 2059 passed / 12 skipped / 9361 statements / 100% coverage / 9 CI jobs
 
 ## Control rule
 
@@ -42,29 +42,28 @@ counted again as future paid work.
 - clean-environment smoke tests reproduce the named checkpoint;
 - no existing storage lifecycle work is billed again.
 
-## M2 — Institution-scale portable storage state
+## M2 — Bounded portable storage state
 
 **Baseline already present**
 
 - backend-neutral canonical JSONL bundle schema;
-- independent fail-closed verification;
-- fixed local-first resource limits;
-- accepted cross-backend migration architecture and PostgreSQL RFC.
+- PR #335 fixed cursor batches and incremental write/hash/count;
+- disk-backed canonical edge ordering and referential checks;
+- same-descriptor hash-first incremental verification;
+- disk preflight, cleanup and bounded diagnostics;
+- benchmark `31224005804` for 1,025 and 8,193-record synthetic corpora.
 
 **Funded delta**
 
-- issue #331 streaming/incremental export and verification;
-- cursor batching and incremental same-descriptor hashing/parsing;
-- disk-backed node/entity/reference checks;
-- disk-space preflight, interruption cleanup and large-corpus evidence.
+- no duplicate billing of #331 / PR #335;
+- independently reviewed maximum-envelope and interruption benchmarks if limits are raised;
+- optional operational tooling only when it produces new measurable artifacts.
 
 **Acceptance**
 
-- bounded peak-memory tests at declared corpus sizes;
-- deterministic bundle equality across repeated runs;
-- adversarial oversized/corrupt inputs fail closed;
-- benchmark report includes memory, disk, time and tested limits.
-
+- existing local-first limits and non-SLO wording remain explicit;
+- any larger envelope requires reproducible memory, disk, time and cleanup evidence;
+- no institution-scale or production-SLO claim is inferred from the current benchmark.
 ## M3 — Inactive PostgreSQL/pgvector import and exact equivalence
 
 **Baseline already present**

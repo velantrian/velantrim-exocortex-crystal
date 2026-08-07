@@ -1,73 +1,61 @@
 # Velantrim Crystal — Current Status
 
-**Status date:** 2026-08-07  
+**Status date:** 2026-08-08  
 **Version:** `0.3.0`  
-**Verified runtime checkpoint:** `c612c1f7de067b05ed7d01ad82d47a7bc39af23a`  
-**Verified tree:** `17d65f52ac1d985fca249e6c9a183168d6116ffb`  
-**Validated implementation head:** `e70c31bf517039f0dd3f77f7bc4b6d3f03936736`  
-**Runtime PR / CI:** #330 / `31213056560`
+**Verified runtime checkpoint:** `f03e24c85922d0bb46d6d9dfee98338972135908`  
+**Verified tree:** `abf75283b382697b323ab69cfa7235b47171dace`  
+**Validated implementation head:** `17ce10ffe12da93be50434c73d08f05a70a5922b`  
+**Runtime PR / CI:** #335 / `31224184351`  
+**Resource benchmark CI:** `31224005804`
 
 ## Verification
 
-- Python 3.11: **2047 passed / 12 skipped / 0 failed**;
-- Python 3.12: **2047 passed / 12 skipped / 0 failed**;
-- **9219 statements / 100.00% line coverage**;
+- Python 3.11: **2059 passed / 12 skipped / 0 failed**;
+- Python 3.12: **2059 passed / 12 skipped / 0 failed**;
+- **9361 statements / 100.00% line coverage**;
+- `core/storage_migration.py`: **626/626 statements**;
 - **7/7** declared Ring Zero mutants killed;
-- **9/9** permanent CI jobs successful.
+- **9/9** permanent CI jobs successful;
+- **2/2** resource benchmark jobs successful.
 
-Exact evidence: [`TEST_REPORT.md`](../TEST_REPORT.md) and the
-[machine-readable manifest](./status/implementation-manifest.json).
+Exact evidence: [`TEST_REPORT.md`](../TEST_REPORT.md), the
+[machine-readable manifest](./status/implementation-manifest.json), and the
+[resource report](./benchmarks/SQLITE_LOGICAL_MIGRATION_RESOURCE_EVIDENCE.md).
 
 ## Current verified capability boundary
 
-Crystal currently provides:
-
-- local-first L0/L1 memory and pluggable physical L3 storage;
-- explicit Guardian and TruthGate admission boundaries;
-- physical L3 multi-status storage separated from strict Canon;
-- immutable deny-dominant `TrustSnapshot` / `CanonicalView` reads;
-- read-only public HTTP, CLI and MCP query paths;
-- TRACE, receipts, provenance and replay controls;
-- explicit contradiction reports and authorized `COEXIST`, `CONTEXTUALIZE` and
-  `SUPERSEDE` decisions;
-- scoped curator roles/capabilities and process-local decision leases;
-- bounded legacy retrieval and explicit reindex refusal;
-- durable L3 profile locking;
-- SQLite backup, independent verification, inactive restore and guarded stale-lock
-  recovery;
-- deterministic SQLite logical export and independent bundle verification under a fixed
-  local-first resource contract.
-
-## Storage and migration status
+Crystal retains its prior trust, evidence, query, review, authorization and SQLite lifecycle
+capabilities. PR #335 additionally provides bounded-streaming logical export and independent
+verification inside the existing local-first envelope:
 
 ```text
-SQLite local-first profile
-→ backup / verify / inactive restore
-→ deterministic logical export
-→ independent bundle verification
+locked SQLite profile
+→ fixed cursor batches
+→ incremental canonical JSONL
+→ disk-backed canonical edge sort
+→ same-descriptor hash-first verification
+→ disk-backed referential checks
+→ exact completed bundle
 ```
 
-Current logical-export limits:
+Issue #331 is implemented. The production verifier no longer retains complete datasets or
+global identifier sets. Temporary storage is private, preflighted and cleaned on handled
+initialization failure.
 
-| Resource | Limit |
-|---|---:|
-| control JSON | 1 MiB |
-| source SQLite file | 64 MiB |
-| record | 1 MiB |
-| records per dataset | 200,000 |
-| dataset | 64 MiB |
-| aggregate JSONL | 384 MiB |
+## Resource boundary
 
-This is a finite local-first envelope, not an institution-scale streaming engine.
+The active limits remain 1 MiB control/record, 64 MiB source/dataset, 200,000 records per
+dataset and 384 MiB aggregate JSONL. Benchmark `31224005804` covers 1,025 and 8,193-record
+synthetic corpora; it is local-first evidence, not a production SLO or institution-scale
+certification.
 
-Still absent:
+## Still absent
 
-- cursor-batched/incremental cross-backend migration (#331);
 - PostgreSQL/pgvector runtime, inactive import and exact target equivalence (#332);
-- cutover, rollback, dual-write or automatic backend switching;
+- activation, cutover, rollback, dual-write or automatic backend switching;
 - distributed fencing and production IdP/multi-tenancy;
 - dedicated verified Reader Core;
-- production SLO or legal/security certification.
+- legal/security/GDPR certification.
 
 ## Authority boundary
 
@@ -80,18 +68,9 @@ migration/import        != TruthGate admission
 successful verification != backend activation
 ```
 
-No storage adapter, migration result, retrieval score, topic facet or model output may
-establish claim truth or bypass Guardian/TruthGate.
-
 ## Grant status
 
-The project is submitted and under review. No award or budget change is claimed.
-Merged baseline work must not be counted again as funded delta. Issue #333 governs the
-current baseline freeze and M1–M9 recalculation.
-
-## Documentation policy
-
-English is the authoritative actively maintained GitHub documentation language. Existing
-localized README files are frozen snapshots until a dedicated final reconciliation pass.
-GitHub main, tests and CI are implementation truth; Notion stores synchronized rationale,
-planning and history.
+The project is submitted and under review. **No award or budget change** is claimed. The
+bounded-streaming work in PR #335 is now merged baseline and cannot be counted again as
+future funded delta. Future storage funding begins with #332 and separately reviewed later
+cutover/rollback/server-lifecycle phases.

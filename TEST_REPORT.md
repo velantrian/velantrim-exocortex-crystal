@@ -1,53 +1,58 @@
 # Crystal Verification Report
 
-**Status date:** 2026-08-07  
-**Verified runtime checkpoint:** `c612c1f7de067b05ed7d01ad82d47a7bc39af23a`  
-**Verified tree:** `17d65f52ac1d985fca249e6c9a183168d6116ffb`  
-**Validated implementation head:** `e70c31bf517039f0dd3f77f7bc4b6d3f03936736`  
-**Pull request:** #330  
-**Exact-head CI:** `31213056560`
+**Status date:** 2026-08-08  
+**Verified runtime checkpoint:** `f03e24c85922d0bb46d6d9dfee98338972135908`  
+**Verified tree:** `abf75283b382697b323ab69cfa7235b47171dace`  
+**Validated implementation head:** `17ce10ffe12da93be50434c73d08f05a70a5922b`  
+**Pull request:** #335  
+**Exact-head CI:** `31224184351`  
+**Resource benchmark CI:** `31224005804`
 
-This file records the latest verified runtime checkpoint. It is evidence for the tested
-repository state, not a production, legal, security or institution-scale certification.
+This is evidence for the tested repository state. It is not a production, legal, security,
+PostgreSQL-readiness or institution-scale certification.
 
 ## Result
 
 | Gate | Result |
 |---|---:|
-| Python 3.11 | 2047 passed / 12 skipped / 0 failed |
-| Python 3.12 | 2047 passed / 12 skipped / 0 failed |
-| Measured statements | 9219 |
+| Python 3.11 | 2059 passed / 12 skipped / 0 failed |
+| Python 3.12 | 2059 passed / 12 skipped / 0 failed |
+| Measured statements | 9361 |
 | Line coverage | 100.00% |
+| `core/storage_migration.py` | 626 / 626 statements |
 | Ring Zero declared mutants | 7/7 killed |
 | Permanent CI jobs | 9/9 successful |
+| Resource benchmark jobs | 2/2 successful |
 
-Successful jobs:
+## Runtime delta verified in PR #335
 
-```text
-code-quality
-test (3.11)
-test (3.12)
-jsonl-integrity
-eval-gate
-security
-Docker
-Ring Zero mutation
-docs-status
-```
+- fixed-batch SQLite cursor iteration;
+- incremental canonical JSONL write, count and SHA-256;
+- private disk-backed canonical edge sorting;
+- same-descriptor hash-first and incremental parse verification;
+- private disk-backed node/entity/reference checks;
+- bounded dangling-reference diagnostics;
+- temporary-disk preflight and handled-failure cleanup;
+- preserved schema, vector, canonical-ordering, file-identity and TOCTOU checks.
 
-## Runtime delta verified in PR #330
+## Resource evidence
 
-The checkpoint adds:
+Benchmark run `31224005804` compared 1,025 and 8,193 primary-record corpora.
 
-- deterministic read-only logical export from a locked durable SQLite L3 profile;
-- canonical JSONL datasets for nodes, vectors, edges, entities, mentions and metadata;
-- completion-marker-last publication;
-- independent fail-closed bundle verification;
-- descriptor-bound hashing/parsing and path-swap/mutation rechecks;
-- strict schema, JSON, ordering, vector and referential-integrity validation;
-- an explicit bounded local-first resource contract.
+| Metric | 1,025 records | 8,193 records |
+|---|---:|---:|
+| Source SQLite | 450,560 B | 3,141,632 B |
+| Bundle | 360,629 B | 2,869,434 B |
+| Export including internal verify | 0.649478 s | 5.424900 s |
+| Second independent verify | 0.361907 s | 3.131820 s |
+| Python traced peak | 1,338,163 B | 1,339,001 B |
+| Linux process max RSS | 23,324 KiB | 25,600 KiB |
 
-Current fail-closed limits:
+See [the full resource report](./docs/benchmarks/SQLITE_LOGICAL_MIGRATION_RESOURCE_EVIDENCE.md).
+These measurements support bounded behavior for the tested synthetic local-first corpora;
+they are not a production SLO or proof for every payload shape or maximum accepted bundle.
+
+## Active fail-closed limits
 
 | Resource | Limit |
 |---|---:|
@@ -58,34 +63,25 @@ Current fail-closed limits:
 | one dataset | 64 MiB |
 | aggregate JSONL | 384 MiB |
 
-## Authority and scale boundary
+## Authority and future-work boundary
 
 ```text
 physical L3 state       != strict Canon
 logical bundle          != claim evidence
 successful verification != backend activation
-retrieval quality       != exact state equivalence
+bounded local migration != PostgreSQL runtime
+benchmark result        != production SLO
 ```
 
-The current implementation is bounded for a local-first deployment envelope. It is not a
-streaming or institution-scale migration engine. Issue #331 tracks cursor batching,
-incremental verification and disk-backed referential checks. PostgreSQL/pgvector runtime,
-inactive import, exact target equivalence, cutover and rollback remain absent and are
-tracked separately in #332.
+Issue #331 is implemented by PR #335. PostgreSQL/pgvector runtime, inactive target import,
+exact target equivalence, cutover, rollback, dual-write and distributed fencing remain
+absent. Issue #332 governs only the next inactive-import/equivalence phase.
 
 ## Reproduction
 
 ```bash
 pip install -e '.[dev]'
 pytest tests/ --cov=. --cov-fail-under=100
+bash scripts/storage_migration_resource_benchmark.sh 1025 result-1025.json
+bash scripts/storage_migration_resource_benchmark.sh 8193 result-8193.json
 ```
-
-The full repository workflow also runs Ruff, security checks, JSONL integrity, evaluation,
-Docker, Ring Zero mutation and documentation-status gates.
-
-## Evidence discipline
-
-- `main` code and executable tests are implementation truth.
-- The CI run above validates the exact implementation head merged by PR #330.
-- The squash merge commit records the public main checkpoint with the same reviewed diff.
-- Later changes require a fresh exact-head run before advancing these values.
