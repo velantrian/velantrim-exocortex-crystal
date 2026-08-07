@@ -30,12 +30,19 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _sync_restriction(fact_id: str) -> None:
-    """Propagate the restricted flag to the L3 node so recall sees it."""
+def _sync_restriction(fact_id: str) -> bool:
+    """Best-effort L3 sync; authoritative L1 restriction must survive outages."""
     fact = get_fact(fact_id)
     if fact is None or not l3_secondary_sync_admissible(fact):
-        return
-    get_l3_graph().merge_fact(fact)
+        return False
+    try:
+        get_l3_graph().merge_fact(fact)
+    except Exception:
+        # L1 is the authoritative processing-restriction boundary. A secondary
+        # graph outage must not roll back or hide that deny-dominant state; the
+        # graph can be reconciled by a later retry without resurrecting access.
+        return False
+    return True
 
 
 def restrict_processing(
