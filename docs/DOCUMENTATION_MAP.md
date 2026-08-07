@@ -161,3 +161,9 @@ retain an obsolete architecture description.
 
 English is the active documentation authority. Localized top-level READMEs are frozen
 snapshots pending a dedicated final translation pass.
+
+## Storage migration runtime
+
+- [SQLite logical export and independent verification](./architecture/SQLITE_LOGICAL_EXPORT.md)
+- [Cross-backend migration contract](./architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md)
+- [PostgreSQL/pgvector institutional profile RFC](./architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
