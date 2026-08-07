@@ -76,6 +76,7 @@ counted again as future paid work.
 
 **Funded delta**
 
+- issue #332 optional PostgreSQL/pgvector inactive-import implementation;
 - optional PostgreSQL driver extra with version policy;
 - secret-free institutional profile identity;
 - import into an inactive target only;
