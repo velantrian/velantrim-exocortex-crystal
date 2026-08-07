@@ -36,6 +36,16 @@ MIGRATION_BUNDLE_TYPE = "velantrim-l3-logical-export"
 MIGRATION_MANIFEST = "manifest.json"
 MIGRATION_COMPLETE = "complete.json"
 
+# The first runtime slice is intentionally bounded for local-first deployments.
+# Larger/institutional migration remains blocked on a separately reviewed
+# streaming/disk-backed implementation.
+MAX_CONTROL_FILE_BYTES = 1 * 1024 * 1024
+MAX_SOURCE_SQLITE_BYTES = 64 * 1024 * 1024
+MAX_DATASET_BYTES = 64 * 1024 * 1024
+MAX_BUNDLE_DATA_BYTES = 384 * 1024 * 1024
+MAX_RECORD_BYTES = 1 * 1024 * 1024
+MAX_RECORDS_PER_DATASET = 200_000
+
 DATASET_FILES = {
     "nodes": "nodes.jsonl",
     "vectors": "vectors.jsonl",
@@ -61,8 +71,6 @@ AUTHORITY_BOUNDARY = {
 }
 
 
-
-
 def _file_identity(value: os.stat_result) -> tuple[int, int, int, int, int]:
     return (
         value.st_dev,
@@ -73,8 +81,13 @@ def _file_identity(value: os.stat_result) -> tuple[int, int, int, int, int]:
     )
 
 
-def _read_regular_bytes(path: Path, label: str) -> tuple[bytes, os.stat_result]:
-    """Read one regular file from one descriptor and reject identity changes."""
+def _read_regular_bytes(
+    path: Path,
+    label: str,
+    *,
+    max_bytes: int = MAX_CONTROL_FILE_BYTES,
+) -> tuple[bytes, os.stat_result]:
+    """Read one bounded regular file from one descriptor and reject identity changes."""
 
     try:
         before = path.lstat()
@@ -84,6 +97,10 @@ def _read_regular_bytes(path: Path, label: str) -> tuple[bytes, os.stat_result]:
         raise StorageOperationError(f"cannot inspect {label}: {exc}") from exc
     if not stat.S_ISREG(before.st_mode):
         raise StorageOperationError(f"{label} must be a regular file: {path}")
+    if before.st_size > max_bytes:
+        raise StorageOperationError(
+            f"{label} exceeds the {max_bytes}-byte resource limit"
+        )
 
     flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
     try:
@@ -96,12 +113,22 @@ def _read_regular_bytes(path: Path, label: str) -> tuple[bytes, os.stat_result]:
             opened.st_dev != before.st_dev or opened.st_ino != before.st_ino
         ):
             raise StorageOperationError(f"{label} identity changed while opening")
+        if opened.st_size > max_bytes:
+            raise StorageOperationError(
+                f"{label} exceeds the {max_bytes}-byte resource limit"
+            )
         chunks: list[bytes] = []
+        total = 0
         while True:
-            chunk = os.read(fd, 1024 * 1024)
+            chunk = os.read(fd, min(1024 * 1024, max_bytes + 1 - total))
             if not chunk:
                 break
             chunks.append(chunk)
+            total += len(chunk)
+            if total > max_bytes:
+                raise StorageOperationError(
+                    f"{label} exceeds the {max_bytes}-byte resource limit"
+                )
         after = os.fstat(fd)
         if _file_identity(after) != _file_identity(opened):
             raise StorageOperationError(f"{label} changed while it was read")
@@ -218,7 +245,9 @@ def _table_columns(connection: sqlite3.Connection, table: str) -> tuple[str, ...
             str(row[1]) for row in connection.execute(f'PRAGMA table_info("{table}")')
         )
     except sqlite3.Error as exc:
-        raise StorageOperationError(f"cannot inspect SQLite table {table}: {exc}") from exc
+        raise StorageOperationError(
+            f"cannot inspect SQLite table {table}: {exc}"
+        ) from exc
 
 
 def _require_schema(connection: sqlite3.Connection) -> None:
@@ -311,6 +340,10 @@ QUERIES = {
     "meta": "SELECT key, value FROM meta ORDER BY key",
 }
 
+COUNT_QUERIES = {
+    dataset: f'SELECT COUNT(*) FROM "{dataset}"' for dataset in DATASET_FILES
+}
+
 
 def _record_key(dataset: str, record: Mapping[str, Any]) -> tuple[Any, ...]:
     if dataset in {"nodes", "vectors"}:
@@ -329,35 +362,75 @@ def _record_key(dataset: str, record: Mapping[str, Any]) -> tuple[Any, ...]:
     return (record["key"],)
 
 
-def _export_records(connection: sqlite3.Connection, dataset: str) -> list[dict[str, Any]]:
+def _dataset_count(connection: sqlite3.Connection, dataset: str) -> int:
+    try:
+        value = int(connection.execute(COUNT_QUERIES[dataset]).fetchone()[0])
+    except (sqlite3.Error, TypeError, ValueError) as exc:
+        raise StorageOperationError(
+            f"cannot count SQLite dataset {dataset}: {exc}"
+        ) from exc
+    if value > MAX_RECORDS_PER_DATASET:
+        raise StorageOperationError(
+            f"SQLite dataset {dataset} exceeds the {MAX_RECORDS_PER_DATASET}-record "
+            "local-first export limit"
+        )
+    return value
+
+
+def _export_records(
+    connection: sqlite3.Connection, dataset: str
+) -> list[dict[str, Any]]:
     try:
         records = [
             RECORD_BUILDERS[dataset](row)
             for row in connection.execute(QUERIES[dataset])
         ]
     except sqlite3.Error as exc:
-        raise StorageOperationError(f"cannot export SQLite dataset {dataset}: {exc}") from exc
+        raise StorageOperationError(
+            f"cannot export SQLite dataset {dataset}: {exc}"
+        ) from exc
     records.sort(key=lambda record: _record_key(dataset, record))
     return records
 
 
 def _write_dataset(path: Path, records: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
     count = 0
+    total = 0
+    digest = hashlib.sha256()
     try:
         with path.open("xb") as handle:
             os.chmod(path, 0o600)
             for record in records:
-                handle.write(_canonical_record_bytes(record))
+                line = _canonical_record_bytes(record)
+                if len(line) > MAX_RECORD_BYTES:
+                    raise StorageOperationError(
+                        f"migration record exceeds the {MAX_RECORD_BYTES}-byte limit"
+                    )
                 count += 1
+                if count > MAX_RECORDS_PER_DATASET:
+                    raise StorageOperationError(
+                        "migration dataset exceeds the record-count resource limit"
+                    )
+                total += len(line)
+                if total > MAX_DATASET_BYTES:
+                    raise StorageOperationError(
+                        f"migration dataset exceeds the {MAX_DATASET_BYTES}-byte limit"
+                    )
+                handle.write(line)
+                digest.update(line)
             handle.flush()
             os.fsync(handle.fileno())
+    except StorageOperationError:
+        raise
     except OSError as exc:
-        raise StorageOperationError(f"cannot write migration dataset {path.name}: {exc}") from exc
+        raise StorageOperationError(
+            f"cannot write migration dataset {path.name}: {exc}"
+        ) from exc
     return {
         "file": path.name,
         "records": count,
-        "bytes": path.stat().st_size,
-        "sha256": _sha256_file(path),
+        "bytes": total,
+        "sha256": digest.hexdigest(),
     }
 
 
@@ -366,7 +439,9 @@ def _profile_path(profile_path: Optional[Path | str]) -> Path:
         return _resolve_operator_path(profile_path, "storage profile")
     raw = Path(os.environ.get(PROFILE_PATH_ENV, DEFAULT_PROFILE_PATH)).expanduser()
     if raw.is_symlink():
-        raise StorageOperationError(f"storage profile must not be a symbolic link: {raw}")
+        raise StorageOperationError(
+            f"storage profile must not be a symbolic link: {raw}"
+        )
     return storage_profile_path()
 
 
@@ -375,7 +450,14 @@ def _read_source(
 ) -> tuple[Path, dict[str, Any], Path, str]:
     profile_file = _profile_path(profile_path)
     if profile_file.is_symlink() or not profile_file.is_file():
-        raise StorageOperationError(f"storage profile must be a regular file: {profile_file}")
+        raise StorageOperationError(
+            f"storage profile must be a regular file: {profile_file}"
+        )
+    profile_size = profile_file.stat().st_size
+    if profile_size > MAX_CONTROL_FILE_BYTES:
+        raise StorageOperationError(
+            "storage profile exceeds the control-file resource limit"
+        )
     profile_hash = _sha256_file(profile_file)
     profile = _load_profile(profile_file)
     raw_locator = Path(str(profile["configuration"]["path"])).expanduser()
@@ -385,7 +467,15 @@ def _read_source(
         )
     database = _sqlite_locator(profile)
     if database.is_symlink() or not database.is_file():
-        raise StorageOperationError(f"SQLite storage file must be a regular file: {database}")
+        raise StorageOperationError(
+            f"SQLite storage file must be a regular file: {database}"
+        )
+    database_size = database.stat().st_size
+    if database_size > MAX_SOURCE_SQLITE_BYTES:
+        raise StorageOperationError(
+            f"SQLite storage file exceeds the {MAX_SOURCE_SQLITE_BYTES}-byte "
+            "local-first export limit"
+        )
     return profile_file, profile, database, profile_hash
 
 
@@ -395,7 +485,9 @@ def _source_manifest(
     profile_hash: str,
 ) -> dict[str, Any]:
     try:
-        integrity = [str(row[0]) for row in connection.execute("PRAGMA integrity_check")]
+        integrity = [
+            str(row[0]) for row in connection.execute("PRAGMA integrity_check")
+        ]
         if integrity != ["ok"]:
             raise StorageOperationError(
                 "SQLite integrity_check failed: " + "; ".join(integrity)
@@ -419,7 +511,7 @@ def export_sqlite_logical(
     *,
     profile_path: Optional[Path | str] = None,
 ) -> dict[str, Any]:
-    """Export locked SQLite physical L3 into a deterministic logical bundle."""
+    """Export a bounded locked SQLite physical L3 logical bundle."""
 
     target = _resolve_operator_path(output, "migration bundle")
     if target.exists() or target.is_symlink():
@@ -440,17 +532,29 @@ def export_sqlite_logical(
             source = _source_manifest(connection, profile, profile_hash)
             datasets: dict[str, dict[str, Any]] = {}
             vector_dimension: Optional[int] = None
+            total_data_bytes = 0
             for dataset, filename in DATASET_FILES.items():
+                _dataset_count(connection, dataset)
                 records = _export_records(connection, dataset)
                 if dataset == "vectors" and records:
                     dimensions = {len(record["vector"]) for record in records}
                     if len(dimensions) != 1:
-                        raise StorageOperationError("vectors have inconsistent dimensions")
+                        raise StorageOperationError(
+                            "vectors have inconsistent dimensions"
+                        )
                     vector_dimension = dimensions.pop()
-                datasets[dataset] = _write_dataset(target / filename, records)
+                metadata = _write_dataset(target / filename, records)
+                total_data_bytes += int(metadata["bytes"])
+                if total_data_bytes > MAX_BUNDLE_DATA_BYTES:
+                    raise StorageOperationError(
+                        "migration bundle exceeds the aggregate data resource limit"
+                    )
+                datasets[dataset] = metadata
             connection.execute("COMMIT")
         except sqlite3.Error as exc:
-            raise StorageOperationError(f"SQLite export transaction failed: {exc}") from exc
+            raise StorageOperationError(
+                f"SQLite export transaction failed: {exc}"
+            ) from exc
         finally:
             connection.close()
 
@@ -492,7 +596,9 @@ def export_sqlite_logical(
             shutil.rmtree(target, ignore_errors=True)
 
 
-def _require_exact_keys(value: Mapping[str, Any], expected: set[str], label: str) -> None:
+def _require_exact_keys(
+    value: Mapping[str, Any], expected: set[str], label: str
+) -> None:
     actual = set(value)
     if actual != expected:
         raise StorageOperationError(
@@ -543,7 +649,9 @@ def _validate_record(dataset: str, record: Any) -> Mapping[str, Any]:
             record[key] is not None and not isinstance(record[key], str)
             for key in ("kind", "label")
         ):
-            raise StorageOperationError("entities record kind/label must be string or null")
+            raise StorageOperationError(
+                "entities record kind/label must be string or null"
+            )
     elif dataset == "mentions":
         _require_exact_keys(record, {"fact_id", "entity_id", "rel"}, "mentions record")
         if not all(
@@ -567,7 +675,11 @@ def _read_dataset(
 ) -> tuple[list[Mapping[str, Any]], os.stat_result]:
     if path.name != expected.get("file"):
         raise StorageOperationError(f"{dataset} dataset filename mismatch")
-    raw, snapshot = _read_regular_bytes(path, f"{dataset} migration dataset")
+    raw, snapshot = _read_regular_bytes(
+        path,
+        f"{dataset} migration dataset",
+        max_bytes=MAX_DATASET_BYTES,
+    )
     if len(raw) != expected.get("bytes"):
         raise StorageOperationError(f"{dataset} dataset byte-size mismatch")
     expected_sha = _require_sha256(expected.get("sha256"), f"{dataset} sha256")
@@ -579,11 +691,21 @@ def _read_dataset(
     records: list[Mapping[str, Any]] = []
     previous: Optional[tuple[Any, ...]] = None
     for index, line in enumerate(raw.splitlines(keepends=True), start=1):
+        if len(line) > MAX_RECORD_BYTES:
+            raise StorageOperationError(
+                f"{dataset} record {index} exceeds the record-size resource limit"
+            )
+        if index > MAX_RECORDS_PER_DATASET:
+            raise StorageOperationError(
+                f"{dataset} dataset exceeds the record-count resource limit"
+            )
         record = _validate_record(
             dataset, _strict_json(line, f"{dataset} record {index}")
         )
         if line != _canonical_record_bytes(record):
-            raise StorageOperationError(f"{dataset} record {index} is not canonical JSON")
+            raise StorageOperationError(
+                f"{dataset} record {index} is not canonical JSON"
+            )
         key = _record_key(dataset, record)
         if previous is not None and key <= previous:
             raise StorageOperationError(f"{dataset} records are not strictly ordered")
@@ -605,7 +727,7 @@ def _valid_completed_at(value: Any) -> bool:
 
 
 def verify_logical_export(bundle: Path | str) -> dict[str, Any]:
-    """Verify a logical export without opening or mutating its source deployment."""
+    """Verify a bounded logical export without opening its source deployment."""
 
     root = _resolve_operator_path(bundle, "migration bundle")
     root_snapshot = _directory_identity(root, "migration bundle")
@@ -685,6 +807,7 @@ def verify_logical_export(bundle: Path | str) -> dict[str, Any]:
     datasets = manifest["datasets"]
     if not isinstance(datasets, dict) or set(datasets) != set(DATASET_FILES):
         raise StorageOperationError("migration dataset set mismatch")
+    total_data_bytes = 0
     for name, metadata in datasets.items():
         if not isinstance(metadata, dict):
             raise StorageOperationError(f"{name} dataset metadata must be an object")
@@ -702,6 +825,17 @@ def verify_logical_export(bundle: Path | str) -> dict[str, Any]:
             raise StorageOperationError(
                 f"{name} dataset counts must be non-negative integers"
             )
+        if metadata["records"] > MAX_RECORDS_PER_DATASET:
+            raise StorageOperationError(
+                f"{name} dataset exceeds record resource limits"
+            )
+        if metadata["bytes"] > MAX_DATASET_BYTES:
+            raise StorageOperationError(f"{name} dataset exceeds byte resource limits")
+        total_data_bytes += metadata["bytes"]
+    if total_data_bytes > MAX_BUNDLE_DATA_BYTES:
+        raise StorageOperationError(
+            "migration bundle exceeds aggregate resource limits"
+        )
 
     allowed = {MIGRATION_MANIFEST, MIGRATION_COMPLETE, *DATASET_FILES.values()}
     actual = {path.name for path in root.iterdir()}
@@ -768,7 +902,9 @@ def verify_logical_export(bundle: Path | str) -> dict[str, Any]:
         )
     final_files = {path.name for path in root.iterdir()}
     if final_files != allowed:
-        raise StorageOperationError("migration bundle file set changed during verification")
+        raise StorageOperationError(
+            "migration bundle file set changed during verification"
+        )
     _require_unchanged_directory(root, root_snapshot, "migration bundle")
 
     return {
