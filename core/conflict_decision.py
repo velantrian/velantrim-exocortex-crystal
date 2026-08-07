@@ -40,6 +40,19 @@ def _clean_nonblank(value: Optional[str]) -> Optional[str]:
     return value.strip() if isinstance(value, str) and value.strip() else None
 
 
+def _persist_candidate_metadata(fact_id: str, patch: dict[str, Any]) -> bool:
+    """Persist a compatibility metadata patch with bounded CAS retries."""
+    for _ in range(3):
+        current = get_fact(fact_id)
+        if current is None:
+            return False
+        metadata = dict(current.get("metadata") or {})
+        metadata.update(patch)
+        if update_fact(fact_id, metadata=metadata):
+            return True
+    return False
+
+
 def _decision_metadata(
     *,
     report: ContradictionReport,
@@ -208,17 +221,9 @@ def apply_conflict_decision(
         target_ids=targets,
     )
     if update_fact is not _legacy_update_fact:
-        metadata_saved = False
-        for _ in range(3):
-            current = get_fact(str(fact_id))
-            if current is None:
-                break
-            compat_metadata = dict(current.get("metadata") or {})
-            compat_metadata.update(detail)
-            if update_fact(str(fact_id), metadata=compat_metadata):
-                metadata_saved = True
-                fact = get_fact(str(fact_id)) or fact
-                break
+        metadata_saved = _persist_candidate_metadata(str(fact_id), detail)
+        if metadata_saved:
+            fact = get_fact(str(fact_id)) or fact
         if not metadata_saved:
             return {
                 "applied": False,
