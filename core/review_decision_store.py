@@ -186,7 +186,11 @@ def stage_review_decision(
         raise ValueError("event must be a non-empty string")
     candidate_path = tuple(candidate_path)
     target_specs = [dict(item) for item in target_transitions]
-    changed_ids: list[str] = []
+    changed_ids: list[str] = [fact_id]
+    for spec in target_specs:
+        target_id = spec.get("fact_id")
+        if isinstance(target_id, str) and target_id:
+            changed_ids.append(target_id)
 
     def _write() -> dict[str, Any]:
         with memory._db() as conn:
