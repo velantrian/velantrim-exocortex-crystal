@@ -10,6 +10,12 @@ import os
 import threading
 from typing import Any, Callable, Optional
 
+from core.backend_profiles import (
+    finalize_backend_selection,
+    resolve_backend_selection,
+    temporary_environment,
+)
+
 
 class BackendRegistry:
     """
@@ -25,6 +31,10 @@ class BackendRegistry:
     cache race fixed in 4df0c2c for the same bug class on a different cache.
     The explicit-backend path never touches shared state, so it runs outside
     the lock.
+
+    Environment-selected L3 construction is additionally checked against the
+    persistent storage profile. Programmatic explicit instances remain isolated
+    and uncached for tests, migration tooling and deliberate one-off inspection.
     """
 
     def __init__(
@@ -45,8 +55,21 @@ class BackendRegistry:
         with self._lock:
             if self._instance is not None:
                 return self._instance
-            name = os.environ.get(self._env_var, self._default)
-            self._instance = self._factory(name)
+            requested = os.environ.get(self._env_var, self._default)
+            selection = resolve_backend_selection(self._env_var, requested)
+            with temporary_environment(selection.environment):
+                candidate = self._factory(selection.effective_name)
+                try:
+                    finalize_backend_selection(selection, candidate)
+                except Exception:
+                    close = getattr(candidate, "close", None)
+                    if callable(close):
+                        try:
+                            close()
+                        except Exception:  # pragma: no cover - defensive cleanup
+                            pass
+                    raise
+            self._instance = candidate
             return self._instance
 
     def reset(self) -> None:

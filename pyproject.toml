@@ -17,11 +17,12 @@ dependencies = []
 Homepage = "https://github.com/velantrian/velantrim-exocortex-crystal"
 Repository = "https://github.com/velantrian/velantrim-exocortex-crystal"
 
-# The CLI entry point: `velantrim <command>` after `pip install .`.
+# CLI entry points after `pip install .`.
 [project.scripts]
 velantrim = "core.cli:main"
 velantrim-mcp = "core.mcp_server:main"
 velantrim-api = "core.api:main"
+velantrim-doctor = "core.doctor:main"
 
 [project.optional-dependencies]
 # Development/test environment. MUST stay aligned with requirements-dev.txt
@@ -42,9 +43,10 @@ dev = [
     "ebooklib>=0.18",         # core/adapters epub adapter (WP4)
     "requests>=2.28",         # core/adapters wikidata adapter (WP4)
 ]
-# L3 canonical graph backend. Default mode 'auto' uses LadybugDB when installed
-# (recommended production engine, Kuzu successor) and falls back to the
-# dependency-free in-memory mock otherwise.
+# L3 graph backend. On first durable environment-selected startup, `auto`
+# prefers LadybugDB and then SQLite. The selected backend and non-secret
+# locator are persisted in a storage profile and reused across restarts.
+# Automatic fallback to the ephemeral Mock backend is rejected.
 ladybug = [
     "ladybug>=0.17.0",
 ]
