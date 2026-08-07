@@ -1,0 +1,193 @@
+name: Finalize bounded migration failure paths
+
+on:
+  push:
+    branches:
+      - agent/bounded-migration-331
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/bounded-migration-331
+          fetch-depth: 0
+      - name: Harden verification-index cleanup and add failure-path tests
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          production = Path("core/storage_migration.py")
+          text = production.read_text()
+          start = text.index("def _verification_index(\n")
+          end = text.index("\ndef _missing_examples", start)
+          replacement = '''def _verification_index(
+              parent: Path,
+          ) -> tuple[tempfile.TemporaryDirectory[str], sqlite3.Connection]:
+              temporary = tempfile.TemporaryDirectory(
+                  prefix=".velantrim-migration-verify-",
+                  dir=parent,
+              )
+              connection: Optional[sqlite3.Connection] = None
+              try:
+                  os.chmod(temporary.name, 0o700)
+                  database = Path(temporary.name) / "references.sqlite"
+                  connection = sqlite3.connect(database)
+                  os.chmod(database, 0o600)
+                  connection.executescript(
+                      """
+                      PRAGMA journal_mode=OFF;
+                      PRAGMA synchronous=OFF;
+                      CREATE TABLE nodes(id TEXT PRIMARY KEY) WITHOUT ROWID;
+                      CREATE TABLE entities(id TEXT PRIMARY KEY) WITHOUT ROWID;
+                      CREATE TABLE vectors(
+                          fact_id TEXT PRIMARY KEY,
+                          dimension INTEGER NOT NULL
+                      ) WITHOUT ROWID;
+                      CREATE TABLE edges(src TEXT NOT NULL, dst TEXT NOT NULL);
+                      CREATE TABLE mentions(fact_id TEXT NOT NULL, entity_id TEXT NOT NULL);
+                      """
+                  )
+                  return temporary, connection
+              except (OSError, sqlite3.Error) as exc:
+                  if connection is not None:
+                      connection.close()
+                  temporary.cleanup()
+                  raise StorageOperationError(
+                      f"cannot create migration verification index: {exc}"
+                  ) from exc
+          '''
+          text = text[:start] + replacement + text[end:]
+          production.write_text(text)
+
+          tests = Path("tests/test_storage_migration_streaming.py")
+          test_text = tests.read_text()
+          marker = "def test_dataset_hash_pass_resource_and_io_failures"
+          if marker not in test_text:
+              test_text += r'''
+
+
+def test_dataset_hash_pass_resource_and_io_failures(tmp_path, monkeypatch):
+    profile, _ = _make_store(tmp_path)
+    bundle = tmp_path / "bundle"
+    m.export_sqlite_logical(bundle, profile_path=profile)
+    metadata = json.loads((bundle / m.MIGRATION_MANIFEST).read_text())["datasets"][
+        "nodes"
+    ]
+
+    real_read = m.os.read
+    calls = {"count": 0}
+
+    def oversized(fd, size):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            return b"x" * (m.MAX_DATASET_BYTES + 1)
+        return b""
+
+    monkeypatch.setattr(m.os, "read", oversized)
+    with pytest.raises(StorageOperationError, match="exceeds byte resource limits"):
+        m._read_dataset(bundle / "nodes.jsonl", "nodes", metadata)
+
+    monkeypatch.setattr(m.os, "read", lambda _fd, _size: b"")
+    with pytest.raises(StorageOperationError, match="byte-size mismatch"):
+        m._read_dataset(bundle / "nodes.jsonl", "nodes", metadata)
+
+    monkeypatch.setattr(
+        m.os,
+        "read",
+        lambda _fd, _size: (_ for _ in ()).throw(OSError("read failed")),
+    )
+    with pytest.raises(StorageOperationError, match="cannot read nodes"):
+        m._read_dataset(bundle / "nodes.jsonl", "nodes", metadata)
+
+    monkeypatch.setattr(m.os, "read", real_read)
+
+
+def test_dataset_final_descriptor_mutation_is_detected(tmp_path, monkeypatch):
+    profile, _ = _make_store(tmp_path)
+    bundle = tmp_path / "bundle"
+    m.export_sqlite_logical(bundle, profile_path=profile)
+    metadata = json.loads((bundle / m.MIGRATION_MANIFEST).read_text())["datasets"][
+        "nodes"
+    ]
+    real_fstat = m.os.fstat
+    calls = {"count": 0}
+
+    def changed(fd):
+        value = real_fstat(fd)
+        calls["count"] += 1
+        if calls["count"] == 3:
+            fields = list(value)
+            fields[8] += 1
+            return os.stat_result(fields)
+        return value
+
+    monkeypatch.setattr(m.os, "fstat", changed)
+    with pytest.raises(StorageOperationError, match="changed while it was read"):
+        m._read_dataset(bundle / "nodes.jsonl", "nodes", metadata)
+
+
+def test_verification_index_factory_cleans_up_before_connection(tmp_path, monkeypatch):
+    root = tmp_path / "temp-before"
+    root.mkdir()
+    cleaned = {"value": False}
+
+    class Temporary:
+        name = str(root)
+
+        def cleanup(self):
+            cleaned["value"] = True
+
+    monkeypatch.setattr(m.tempfile, "TemporaryDirectory", lambda **_kwargs: Temporary())
+    monkeypatch.setattr(
+        m.sqlite3,
+        "connect",
+        lambda _path: (_ for _ in ()).throw(sqlite3.OperationalError("connect failed")),
+    )
+    with pytest.raises(StorageOperationError, match="cannot create migration verification index"):
+        m._verification_index(tmp_path)
+    assert cleaned["value"] is True
+
+
+def test_verification_index_factory_closes_connection_and_cleans_up(tmp_path, monkeypatch):
+    root = tmp_path / "temp-after"
+    root.mkdir()
+    state = {"cleaned": False, "closed": False}
+
+    class Temporary:
+        name = str(root)
+
+        def cleanup(self):
+            state["cleaned"] = True
+
+    class Connection:
+        def executescript(self, _script):
+            raise sqlite3.OperationalError("schema failed")
+
+        def close(self):
+            state["closed"] = True
+
+    monkeypatch.setattr(m.tempfile, "TemporaryDirectory", lambda **_kwargs: Temporary())
+    monkeypatch.setattr(m.sqlite3, "connect", lambda _path: Connection())
+    monkeypatch.setattr(m.os, "chmod", lambda _path, _mode: None)
+    with pytest.raises(StorageOperationError, match="cannot create migration verification index"):
+        m._verification_index(tmp_path)
+    assert state == {"cleaned": True, "closed": True}
+'''
+              tests.write_text(test_text)
+          PY
+      - name: Commit final hardening
+        run: |
+          if git diff --quiet; then
+            echo "Final hardening already applied"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add core/storage_migration.py tests/test_storage_migration_streaming.py
+          git commit -m "test(storage): cover bounded verifier failure paths"
+          git push origin HEAD:agent/bounded-migration-331
