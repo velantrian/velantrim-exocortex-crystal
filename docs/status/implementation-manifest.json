@@ -1,25 +1,26 @@
 {
   "schema_version": 1,
-  "status_date": "2026-08-07",
+  "project": "Velantrim Exo-Cortex Crystal",
   "version": "0.3.0",
+  "status_date": "2026-08-07",
   "verified_runtime_checkpoint": {
-    "commit": "b0df17a06d552ad2543b6d6e5efe8cd99877cfc0",
-    "short": "b0df17a",
-    "pull_request": 325,
-    "validated_head": "aa822c49c095039de90b92fbe4fe451c7b8f13b7",
-    "validated_tree": "6143d7237222935182db86a166541d0ad07887be",
-    "ci_run": 31182471502,
-    "description": "Durable SQLite profile lifecycle with online backup, independent verification, inactive no-clobber restore, and guarded stale-lock recovery"
+    "commit": "c612c1f7de067b05ed7d01ad82d47a7bc39af23a",
+    "short": "c612c1f",
+    "tree": "17d65f52ac1d985fca249e6c9a183168d6116ffb",
+    "validated_head": "e70c31bf517039f0dd3f77f7bc4b6d3f03936736",
+    "pull_request": 330,
+    "ci_run": 31213056560,
+    "description": "Deterministic SQLite logical export and independent verification under a bounded local-first resource contract"
   },
   "tests": {
     "python_versions": [
       "3.11",
       "3.12"
     ],
-    "passed": 2019,
+    "passed": 2047,
     "skipped": 12,
     "failed": 0,
-    "measured_statements": 8726,
+    "measured_statements": 9219,
     "coverage_percent": 100.0
   },
   "ci": {
@@ -34,7 +35,8 @@
       "docker-build",
       "Ring Zero mutation gate",
       "docs-status"
-    ]
+    ],
+    "all_successful": true
   },
   "mutation_gate": {
     "declared_mutants": 7,
@@ -42,31 +44,37 @@
     "scope": "targeted Ring Zero semantic mutations"
   },
   "implemented_boundaries": {
-    "public_query_surfaces_read_only": true,
     "truth_policy_runtime_bypass_present": false,
-    "immutable_trust_snapshot": true,
-    "typed_contradiction_report": true,
-    "explicit_conflict_decisions": true,
-    "public_conflict_resolution_cli": true,
-    "public_conflict_resolution_http": true,
-    "advisory_topic_facets": true,
-    "topic_facets_authoritative": false,
+    "physical_l3_equals_strict_canon": false,
+    "public_query_surfaces_read_only": true,
+    "explicit_contradiction_dispositions": true,
     "scoped_curator_authorization": true,
-    "process_local_decision_leases": true,
-    "distributed_decision_lease_adapter": false,
-    "machine_readable_esm_spec": true,
-    "scheduled_performance_history": true,
-    "resumable_review_sessions": true,
-    "durable_l3_profile": true,
+    "bounded_legacy_retrieval": true,
+    "durable_l3_profile_lock": true,
     "sqlite_storage_lifecycle": true,
+    "sqlite_logical_export_verification": true,
+    "sqlite_logical_export_resource_contract": "bounded-local-first",
     "cross_backend_migration_runtime": false,
     "postgresql_pgvector_runtime": false,
     "automatic_backend_switching": false,
-    "physical_l3_equals_strict_canon": false
+    "distributed_curator_coordination": false,
+    "production_idp_multitenancy": false,
+    "dedicated_reader_core": false
+  },
+  "storage_resource_limits": {
+    "control_file_bytes": 1048576,
+    "source_sqlite_bytes": 67108864,
+    "record_bytes": 1048576,
+    "records_per_dataset": 200000,
+    "dataset_bytes": 67108864,
+    "aggregate_jsonl_bytes": 402653184,
+    "institution_scale_claim": false,
+    "streaming_follow_up_issue": 331,
+    "postgresql_follow_up_issue": 332
   },
   "documentation": {
     "authoritative_language": "English",
-    "localized_readmes": "frozen_snapshots_pending_dedicated_translation_pass",
+    "localized_readmes": "frozen_snapshots_pending_dedicated_reconciliation_pass",
     "frozen_localized_readme_git_blobs": {
       "README.ar.md": "d63cc0d0771c11ca306d2cc79b728c3eb6301b66",
       "README.de.md": "2e046a587208d65bc91bc2eab3909d0cadc1f9b9",
@@ -81,12 +89,16 @@
   },
   "grant": {
     "program": "NLnet NGI0 Commons Fund",
-    "status": "submitted_under_review",
-    "awarded": false
+    "submitted": true,
+    "under_review": true,
+    "awarded": false,
+    "budget_changed": false,
+    "baseline_issue": 333,
+    "rule": "Merged baseline work cannot be counted again as funded delta"
   },
   "authority": {
     "runtime": "GitHub main",
-    "strategy": "Notion Crystal pages",
-    "research_track": "Titan / Full Exo-Cortex"
+    "verification": "TEST_REPORT.md and this manifest",
+    "strategy_and_history": "Notion Crystal pages"
   }
 }

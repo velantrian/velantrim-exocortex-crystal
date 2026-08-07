@@ -1,440 +1,98 @@
 # 🧾 Crystal AI Work Log
 
-This is the compact engineering hand-off log for material work. It is not a changelog of
-every commit and not a replacement for `CHANGELOG.md`, issues, PRs or Notion history.
+This compact log records material decisions, exact evidence, limitations and hand-offs. It
+is not a replacement for Git history, issues, pull requests, `CHANGELOG.md` or Notion.
+Earlier detailed entries remain available through Git history.
 
-Add new entries at the top. Record only verified facts and distinguish completed work from
-remaining work.
-
-## Entry template
-
-```markdown
-## YYYY-MM-DD — Title
+## 2026-08-07 — Grant/status baseline synchronization (#333 / PR #334)
 
 ### Scope
-What repository area, issue or PR was inspected or changed?
+
+Reconcile public README, verification/status files, grant scope, M1–M9 funded deltas,
+roadmap, security policy and AI context with the runtime merged by PR #330.
 
 ### Verified baseline
-Exact main SHA, PR base/head and relevant runtime checkpoint.
 
-### Findings / decisions
-What was learned or decided, and why?
+- runtime merge: `c612c1f7de067b05ed7d01ad82d47a7bc39af23a`;
+- validated runtime head: `e70c31bf517039f0dd3f77f7bc4b6d3f03936736`;
+- verified tree: `17d65f52ac1d985fca249e6c9a183168d6116ffb`;
+- exact-head runtime CI: `31213056560`, 9/9 successful;
+- Python 3.11 and 3.12: 2047 passed / 12 skipped / 0 failed;
+- 9219 statements / 100.00% coverage;
+- 7/7 declared Ring Zero mutants killed.
 
-### Changes
-Files, contracts and documentation changed.
+### Findings and corrections
 
-### Validation
-Tests, CI runs, review evidence and runtime observations.
+- the first PR #334 head updated only nine documentation files while its description also
+  claimed README, claim-gate and complete AI-context synchronization;
+- exact-head CI `31214414769` correctly failed `docs-status` while the other eight jobs
+  passed;
+- the failure exposed a stale README, a stale validation contract and incorrect frozen
+  localized README blob IDs;
+- live Notion verification found premature top callouts claiming PR #334 was merged and
+  issue #333 closed;
+- corrective `CURRENT TRUTH` callouts were prepended to the Project Hub, Current
+  Architectural Position and Grant-Safe Module Roadmap before continuing the repair.
 
-### Remaining
-Concrete follow-up and proof required.
+### Changes in the repaired branch
 
-### Synchronization
-Documentation impact class and Notion record/checkpoint.
-```
+- publish a concise reviewer-facing README tied to PR #330 evidence;
+- correct the machine-readable manifest and nine frozen localized README Git blob IDs;
+- refresh `KNOWN_RISKS.md` with #331, #332 and claim boundaries;
+- replace this compact work log with an exact current hand-off;
+- update `scripts/check_docs_status.sh` to validate the current baseline, grant/security
+  non-claims, required issue references, local links and frozen translation bytes;
+- preserve localized README files unchanged.
+
+### Completion gate
+
+PR #334 is authoritative only after its latest exact head passes all nine jobs and is merged.
+After merge, record the immutable merge SHA, exact-head CI and remaining #331/#332 work in
+all three Crystal Notion pages. The mutable PR record remains the authority for branch and
+merge status.
+
+### Synchronization class
+
+`GITHUB_AND_NOTION`
 
 ---
 
-## 2026-08-07 — English status repair and cross-backend migration contract
+## 2026-08-07 — Deterministic SQLite logical export merged (#329 / PR #330)
 
 ### Scope
 
-Corrected the failed PR #326 status synchronization, established an English-only active
-documentation policy and defined issue #327's migration/PostgreSQL architecture without
-claiming runtime support.
+Implement the first runtime phase governed by ADR-021: read-only logical export from a
+locked durable SQLite profile and independent fail-closed bundle verification.
 
-### Verified baseline
+### Result
 
-- GitHub main inspected at `5cd0754614327c2ffc14902d5d411e347edf9ae9`;
-- verified runtime remains PR #325 / merge `b0df17a06d552ad2543b6d6e5efe8cd99877cfc0`;
-- validated runtime head/tree: `aa822c49c095039de90b92fbe4fe451c7b8f13b7` / `6143d7237222935182db86a166541d0ad07887be`;
-- exact-head runtime CI: `31182471502`, 9/9 jobs;
-- Python 3.11 evidence: 2019 passed / 12 skipped / 8726 statements /
-  100.00% coverage.
+PR #330 merged as `c612c1f7de067b05ed7d01ad82d47a7bc39af23a`.
 
-### Findings / decisions
+Implemented:
 
-- PR #326's temporary workflow failed on a nonexistent `README.pt-BR.md`, so its merge
-  message overstated synchronization while README/status/manifest remained stale.
-- GitHub executable evidence overrides stale Notion/history claims.
-- English is now the active authority language; localized READMEs are frozen until a
-  dedicated final localization pass.
-- Cross-backend migration is a phased operation, not profile editing or capability-based
-  auto-selection.
-- PostgreSQL/pgvector remains `PROPOSED / NOT RUNTIME`.
-- The first runtime slice is SQLite read-only logical export plus independent verification.
-
-### Changes
-
-- repaired English README/status/manifest/TEST_REPORT and AI context;
-- added the migration contract, PostgreSQL/pgvector RFC and ADR-021;
-- corrected remaining physical-L3 authority wording;
-- changed docs-status to validate English authority surfaces rather than mutable translated
-  metrics;
-- synchronized corrective and planning facts into the two Crystal Notion pages.
+- canonical JSONL datasets for nodes, vectors, edges, entities, mentions and metadata;
+- completion-marker-last no-clobber publication;
+- independent descriptor-bound verification;
+- schema, strict JSON, ordering, vector and referential-integrity checks;
+- source/profile mutation and path-swap defenses;
+- explicit fail-closed local-first resource limits.
 
 ### Validation
 
-This branch must pass all nine CI jobs. Architecture documents do not change runtime
-dependencies or enable PostgreSQL.
-
-### Remaining
-
-- implement deterministic SQLite logical export and independent verification;
-- then separately design inactive import and exact-state comparison;
-- keep cutover, rollback and PostgreSQL adapter work in later PRs;
-- translate localized READMEs only after a frozen final English checkpoint.
-
-### Synchronization
-
-- class: `GITHUB_AND_NOTION`;
-- Notion targets: Crystal Project Hub and Current Architectural Position;
-- corrective callouts were added before review; final merge SHA/CI must be added after
-  merge.
-
----
-
-## 2026-08-07 — Durable L3 storage profile and doctor merged
-
-### Scope
-
-Closed the risk that environment-selected `VELANTRIM_L3_BACKEND=auto` could re-probe
-available backends in every new process and silently select a different physical L3 or
-fall through to ephemeral Mock.
-
-### Verified baseline
-
-- runtime base: `main@9283850e5b28fe0f8c5a632d3a3d107d780145ff`;
-- PR #322 validated head: `156e974393586ada30feaac2500eae7003cb2885`;
-- PR #322 merged as `0ca66cc6e194edd06b5de2a6eb5126a30613957e`;
-- merged tree: `721049b198045e1c8504d57f64a0ab44b72ae403`, identical to the
-  validated PR head tree;
-- exact-head CI: `31174042124`.
-
-### Findings / decisions
-
-- `auto` is acceptable only for the first durable bootstrap; the selected backend and
-  non-secret locator must then be persisted and reused across restarts.
-- The storage profile is deployment identity, not epistemic authority. It cannot establish
-  truth, strict Canon membership, evidence or admission permission.
-- Automatic fallback to ephemeral Mock must fail closed. Explicit Mock remains available
-  for tests and deliberate development use.
-- The default profile location must not depend on process working directory. Independent
-  diff inspection found the first draft's cwd-relative profile path; it was corrected
-  before merge to `~/.velantrim/velantrim-storage-profile.json` and pinned by a regression
-  test across working directories.
-- Backend/locator changes require an explicit verified migration. Editing or deleting the
-  profile is not a migration.
-- PostgreSQL/pgvector and a dedicated VectorDB were not added. They remain possible future
-  institutional profiles only after invariant-equivalence and migration proof are defined.
-- The automatic Codex code review was unavailable because the connected account had
-  exhausted its code-review quota. That service limitation is preserved in the PR
-  timeline and is not counted as approval or independent review evidence.
-
-### Changes
-
-- added `core/backend_profiles.py` with versioned profile validation, locator checksum,
-  atomic first-write behavior and conflict detection;
-- integrated profile resolution/finalization into the shared `BackendRegistry` for the
-  environment-selected L3 singleton while preserving fresh programmatic explicit
-  instances;
-- added pure-standard-library `core/doctor.py` and the `velantrim-doctor` entry point;
-- rejected automatic Mock fallback and ephemeral `auto` locators;
-- anchored the default profile in the user's home directory and documented explicit
-  service/container overrides;
-- added defensive tests for restart locking, backend/locator drift, malformed profiles,
-  concurrent initializers, cleanup, cwd changes and read-only diagnostics;
-- added `docs/architecture/DURABLE_STORAGE_PROFILE.md`.
-
-### Validation
-
-- Python 3.11: **1987 passed / 12 skipped / 0 failed**;
-- Python 3.12: successful with the same strict coverage gate;
-- **8231 measured statements / 100.00% line coverage**;
-- **9/9 CI jobs successful** in run `31174042124`;
-- Ruff, Gitleaks, Bandit, pip-audit, Ring Zero mutation, eval, JSONL integrity,
-  docs-status and Docker successful;
-- initial isolated profile/registry/doctor validation: **43 passed / 100% line coverage**;
-- manual diff review found and corrected the cwd-relative profile-path defect before the
-  final exact-head run and merge.
-
-### Remaining
-
-- implement an explicit storage migration workflow with dry-run, counts/hashes,
-  evidence/restriction/audit verification, rollback proof and a migration receipt;
-- document and test backup/restore and upgrade behavior for locked profiles;
-- define operator-assisted stale-lock recovery without unsafe automatic deletion;
-- require explicit `VELANTRIM_STORAGE_PROFILE_PATH` for services, containers and multiple
-  deployments sharing one user account;
-- evaluate PostgreSQL/pgvector only as a separate institutional RFC with preserved
-  authority and migration invariants;
-- correct any remaining historical wording that equates physical L3 with truth or strict
-  Canon.
-
-### Synchronization
-
-- class: `GITHUB_AND_NOTION`;
-- runtime record: PR #322 and merge `0ca66cc6e194edd06b5de2a6eb5126a30613957e`;
-- GitHub AI context follow-up updates Current State, Component Map, Known Risks and this
-  Work Log;
-- Notion targets: Crystal Project Hub and Crystal Current Architectural Position;
-- only immutable merge, tree, CI and test evidence is promoted as verified runtime truth.
-
----
-
-## 2026-08-07 — Runtime hardening train #319–#321 verified and merged
-
-### Scope
-
-Completed the material reliability/security/scale findings from the 2026-08-06 deep
-audit: crash-consistent curator decisions, authenticated principal-bound writes and
-bounded legacy retrieval with explicit reindex.
-
-### Verified baseline
-
-- PR #319 merged as `62879cd2095450de57d11fcf97c13f5f9768ad0b`;
-- PR #320 merged as `1414862786aa0c0d4cf4ad152776dd4e55536bf0`;
-- PR #321 merged as `1748677a5c84e8a9b3af08fcaed0215efebcdd66`;
-- final verified runtime checkpoint: `1748677a5c84e8a9b3af08fcaed0215efebcdd66`;
-- final tree: `38c829b37bb61939792c64ee01ad925d6e8afd13`.
-
-### Findings / decisions
-
-- SQLite is the curator-decision transaction boundary; L3 projection is durable,
-  idempotent and recoverable rather than falsely described as cross-database ACID.
-- Processing restriction is authoritative in L1 and remains deny-dominant during a
-  secondary L3 outage.
-- Every bundled curator write derives audit identity and authorization from a validated
-  principal; actor text is only an exact-match assertion.
-- No-fingerprint compatibility retrieval must have a hard work bound or fail closed with
-  `legacy_store_requires_reindex`; query paths never initialize fingerprints.
-- Retrieval rank, physical L3 membership and bounded lexical score do not establish truth
-  or strict Canon membership.
-
-### Changes
-
-- added transactional decision journal/outbox, idempotent projector and recovery/status
-  surfaces;
-- added principal capability/scope/report/lease composition across bundled HTTP/CLI
-  writes and ADMIN-only force approval;
-- added bounded Mock/SQLite legacy retrieval, structured query/MCP degraded-mode metadata
-  and explicit reindex;
-- added ADR-017, ADR-018, ADR-019, operator/security documentation and defensive tests;
-- removed literal bearer-token assignment examples and rebuilt affected PR histories
-  cleanly on their current bases;
-- recorded 1k/10k/30k bounded retrieval benchmark evidence.
-
-### Validation
-
-- PR #319 exact-head CI `31162857843`: 9/9 jobs green, Python 3.11/3.12,
-  1881 passed / 12 skipped / 7578 statements / 100% coverage;
-- PR #320 exact-head CI `31164585628`: 9/9 jobs green, Python 3.11/3.12,
-  1918 passed / 12 skipped / 7754 statements / 100% coverage;
-- PR #321 exact-head CI `31166027193`: 9/9 jobs green, Python 3.11/3.12,
-  1943 passed / 12 skipped / 7948 statements / 100% coverage;
-- security, Ring Zero mutation, eval, JSONL, docs-status, Ruff and Docker gates green;
-- benchmark `31165503179`: candidate cap 256 held for 1k, 10k and 30k corpora.
-
-### Remaining
-
-- external distributed lease/fencing adapter;
-- production IdP, tenant isolation, token lifecycle and policy administration;
-- bounded degraded-retrieval recall tradeoff and operator reindex lifecycle;
-- controlled performance SLO policy and broader mutation testing;
-- reproducible dependency/tool/action pinning;
-- normalized legacy-ID migration and separately reviewed Reader Core RFC.
-
-### Synchronization
-
-- class: `GITHUB_AND_NOTION`;
-- GitHub documentation record: PR #318;
-- Notion targets: Crystal Project Hub and Crystal Deep Audit — 2026-08-06;
-- immutable merge/CI/benchmark evidence is synchronized; transient branch status is not
-  duplicated as long-lived project truth.
-
-## 2026-08-05 — Connectorless GitHub → Notion hand-off
-
-### Scope
-
-PR #312 clarifies how material Crystal analysis and implementation work is preserved when
-the originating AI agent does not have direct Notion connector access.
-
-### Verified baseline
-
-- base: `main@027c7359c883c458e99bbea77ea3e84b1619c780`;
-- branch: `agent/notion-connectorless-handoff`;
-- verified runtime checkpoint remains
-  `f91299c44a1a1850fa516f3abb96c916326f7a8c` (PR #302);
-- this change is documentation/governance only.
-
-### Findings / decisions
-
-- The existing protocol correctly required GitHub to be independently auditable, but
-  treated unavailable Notion access mainly as `BLOCKED`.
-- Not every AI agent has a Notion connector; losing or postponing the analysis itself is
-  therefore unacceptable.
-- GitHub must contain complete public technical/audit continuity: implemented contracts,
-  material findings, known risks, exact evidence and next actions.
-- Notion remains the deeper rationale, alternatives, grant context and synchronized
-  project-history layer.
-- The systems do not need sentence-for-sentence duplication. They must preserve the same
-  decision-bearing facts and evidence.
-- Missing connector status is `HANDOFF_REQUIRED`, not a generic information dead end.
-- `BLOCKED_PRIVACY_OR_PERMISSION` is reserved for a real permission, privacy or
-  unresolved-target problem.
-
-### Changes
-
-- added `docs/ai/NOTION_HANDOFF.md` with access states, connectorless procedure,
-  connected-actor completion procedure and a structured queue template;
-- updated `AGENTS.md` with the GitHub completeness invariant;
-- expanded `docs/DOCUMENTATION_SYNC_PROTOCOL.md` to cover material audits as well as
-  implementation work;
-- updated `docs/ai/README.md` with separate connected and connectorless paths;
-- expanded the PR template with Notion access, synchronization status and hand-off path;
-- linked the route from `docs/DOCUMENTATION_MAP.md`.
-
-### Validation
-
-PR #312 is the mutable record for final head, CI and merge state. The branch changes only
-Markdown documentation and the PR template. Full Crystal CI is required before merge.
-
-### Remaining
-
-- synchronize the same connectorless rule into the Crystal Notion protocol/history pages;
-- run all nine Crystal CI jobs;
-- merge only after CI succeeds and Notion synchronization is recorded;
-- use the hand-off queue for future agents without a connector.
-
-### Synchronization
-
-- class: `GITHUB_AND_NOTION`;
-- GitHub record: PR #312 and `docs/ai/NOTION_HANDOFF.md`;
-- target Notion records: `🔄 Crystal — Code ↔ Documentation Sync Protocol` and
-  `🤖 Crystal — AI Agent Context & Audit Hand-off`;
-- originating actor Notion access: `AVAILABLE`;
-- pre-merge status: `PLANNED` until those records are updated.
-
----
-
-## 2026-08-05 — AI context navigation and audit hand-off
-
-### Scope
-
-PR #311 creates a compact, mandatory orientation layer for AI coding agents and
-automated auditors without changing Crystal runtime behavior.
-
-### Verified baseline
-
-- `main` before this work: `8d576e1342f40d9a823885f9dcce4b1ff16d113a`.
-- Verified runtime checkpoint remains
-  `f91299c44a1a1850fa516f3abb96c916326f7a8c` (PR #302).
-- Runtime evidence at that checkpoint: 1853 passed / 12 skipped on Python 3.11 and
-  3.12, 100% measured line coverage, 7/7 declared targeted Ring Zero mutants killed,
-  nine CI jobs.
-
-### Findings / decisions
-
-- Existing `AGENTS.md`, `docs/REVIEWER_GUIDE.md`, `docs/DOCUMENTATION_MAP.md`, status
-  files and manifest already provide strong reviewer material, but there was no compact
-  current-state/risk/component/work-log pack optimized for agent context budgets.
-- The new pack is an orientation map, not a competing implementation canon.
-- Historical issues and open research PRs must not be treated as current runtime.
-- Long-document multi-pass semantic reading is not a verified Crystal runtime component;
-  future work must remain source-linked and upstream of normal admission.
-
-### Changes
-
-- added `docs/ai/README.md`;
-- added `docs/ai/CURRENT_STATE.md`;
-- added `docs/ai/COMPONENT_MAP.md`;
-- added `docs/ai/AUDIT_PLAYBOOK.dd`;
-- added `docs/ai/KNOWN_RISKS.md`;
-- added this `docs/ai/WORK_LOG.md`;
-- expanded `AGENTS.md`, README navigation, Documentation Map and PR checklist.
-
-### Validation
-
-PR #311 is the authoritative mutable record for the final branch head, CI jobs and merge
-state. The synchronized Notion record stores the final checkpoint after merge. This file
-intentionally does not duplicate transient queued/running CI status.
-
-Runtime and historical test-count claims remain tied to the existing verified checkpoint
-rather than being re-measured or silently advanced by a documentation-only change.
-
-### Remaining
-
-- keep this pack synchronized through future PRs;
-- periodically reconcile stale issues with implemented status;
-- review a separate long-document Reader Core RFC before implementation;
-- do not merge research PRs solely because they are documentation-only.
-
-### Synchronization
-
-- class: `GITHUB_AND_NOTION`;
-- GitHub record: PR #311;
-- Notion record: `🤖 Crystal — AI Agent Context & Audit Hand-off`;
-- after merge, the Notion record receives final merge SHA, CI evidence and remaining
-  limitations.
-
----
-
-## 2026-08-05 — GitHub ↔ Notion documentation sync contract
-
-### Scope
-
-PR #310 formalized documentation synchronization as part of Crystal's definition of
-done.
-
-### Verified baseline
-
-- PR head: `11e6f4b5fbb3423ef9428fc27078728a45922cda`;
-- CI workflow run: `30993905461`, conclusion `success`;
-- merged commit: `8d576e1342f40d9a823885f9dcce4b1ff16d113a`.
-
-### Changes
-
-- added `docs/DOCUMENTATION_SYNC_PROTOCOL.md`;
-- expanded `AGENTS.md`;
-- expanded `.github/pull_request_template.md`;
-- linked governance from `docs/DOCUMENTATION_MAP.md`.
-
-### Decision
-
-Every material PR now declares `NONE`, `GITHUB_ONLY` or `GITHUB_AND_NOTION` impact.
-Notion stores deeper rationale/history but never overrides GitHub implementation truth.
-
-### Validation
-
-CI completed successfully. No runtime code, dependency, coverage threshold, grant
-budget or verified runtime checkpoint changed.
-
-### Synchronization
-
-Notion page `🔄 Crystal — Code ↔ Documentation Sync Protocol` was updated after merge
-with the final SHA and CI evidence.
-
----
-
-## 2026-08-01 — Verified runtime checkpoint PR #302
-
-### Scope
-
-Advisory topic facets, scoped curator roles/capabilities and process-local decision
-leases on top of the conflict-resolution runtime.
-
-### Verified checkpoint
-
-`f91299c44a1a1850fa516f3abb96c916326f7a8c`.
-
-### Important boundaries
-
-- Topic facets are advisory only.
-- Curator authorization is scoped and fail-closed.
-- Included decision leases coordinate one process only.
-- Physical L3 remains different from strict Canon.
-
-### Evidence
-
-See `TEST_REPORT.md`, `docs/STATUS.md` and
-`docs/status/implementation-manifest.json`.
+- exact head: `e70c31bf517039f0dd3f77f7bc4b6d3f03936736`;
+- CI `31213056560`: 9/9 successful;
+- Python 3.11 and 3.12: 2047 passed / 12 skipped / 0 failed;
+- 9219 statements / 100.00% coverage;
+- Ring Zero mutation, security, Ruff, eval, JSONL integrity, docs-status and Docker green.
+
+### Boundary and remaining work
+
+The merged slice is bounded local-first operation, not institution-scale streaming.
+
+- #331: cursor batching, incremental verification, disk-backed referential checks and
+  large-corpus resource evidence;
+- #332: future optional inactive PostgreSQL/pgvector import and exact-state equivalence;
+- later separate phases: retrieval evaluation, explicit cutover, rollback and fencing.
+
+No migration bundle, backend profile or successful verification grants epistemic authority
+or activates another backend.

@@ -1,236 +1,170 @@
 # Velantrim Crystal — NLnet Grant Scope
 
+**Baseline date:** 2026-08-07  
+**Baseline checkpoint:** `main@c612c1f7de067b05ed7d01ad82d47a7bc39af23a`  
+**Validated head / CI:** `e70c31bf517039f0dd3f77f7bc4b6d3f03936736` / `31213056560`  
+**Grant status:** submitted / under review / not awarded
+
 ## Summary
 
-Velantrim Crystal is an AGPL-licensed, local-first, verifiable AI memory core. It
-is designed for systems that need long-term memory without silently turning user
-statements, model guesses or unverified claims into persistent truth.
+Velantrim Crystal is open-source, local-first verifiable memory infrastructure for AI
+systems. It separates physical storage, evidence, epistemic admission and strict grounding
+so that retrieved or generated text cannot silently become trusted memory.
 
-The core stores memory as source-tracked facts with epistemic state,
-`claim_type`, `source_status`, provenance traces and replayable receipts. It runs
-locally by default, uses no mandatory cloud service and has a standard-library
-runtime path.
+The submitted application title is retained as historical application metadata. References
+to GDPR mean **GDPR-oriented technical controls**—such as restriction, erasure, provenance,
+audit and local processing—not automatic legal compliance or certification.
 
-## Problem
+## Current verified baseline
 
-Modern AI systems often treat memory as an opaque vector store or a long prompt.
-That creates several public-interest problems:
+The current public baseline already includes:
 
-- users cannot reliably inspect where a remembered fact came from;
-- subjective statements, model output and world facts can be mixed together;
-- deletion and restriction are difficult to verify;
-- external providers may become unavoidable data processors;
-- local/offline operation is often not a first-class design goal;
-- regulators and institutions cannot replay how an answer was grounded.
+- typed claims, source metadata and evidence spans;
+- explicit epistemic lifecycle and CAS-style state guards;
+- Guardian structural/safety checks and TruthGate admission policy;
+- physical L3 multi-status storage separated from strict Canon;
+- deny-dominant `TrustSnapshot` / `CanonicalView` reads;
+- read-only HTTP, CLI and MCP query paths;
+- TRACE, receipts, replay and tamper-evident audit artifacts;
+- restriction, erasure and import-session controls;
+- review queues, resumable sessions and explicit contradiction dispositions;
+- scoped curator roles/capabilities and process-local leases;
+- bounded legacy retrieval and reindex refusal;
+- durable backend/locator profile locking;
+- SQLite backup, independent verification, inactive restore and guarded stale-lock recovery;
+- deterministic SQLite logical export and independent bundle verification under fixed
+  local-first resource limits;
+- deterministic evaluation, 100% line coverage and a Ring Zero mutation gate.
 
-## Proposed solution
-
-Velantrim Crystal provides a verifiable memory layer underneath AI systems:
-
-```text
-input / file / agent event
-  → claim extraction and classification
-  → Guardian + TruthGate
-  → local L0/L1 working memory
-  → local L3 canonical graph
-  → retrieval / FactsPack
-  → traceable answer / receipt
-```
-
-The LLM is optional. It may phrase the final answer, but correctness should come
-from local retrieved facts, not from model confidence.
-
-## Implemented today
-
-The current open core already includes:
-
-- L0/L1 memory and an epistemic state machine;
-- local L3 graph backends (`auto` → LadybugDB → SQLite → mock);
-- type-aware TruthGate and Guardian path;
-- source and source-status tracking;
-- replayable provenance receipts (Receipt v2 with sealed source-span evidence);
-- a baseline source-span evidence store (`core/evidence.py`) — imported facts
-  auto-attach their source, with content-light source/claim hashes;
-- a baseline evaluation harness (`core/eval.py`) reporting retrieval/trace/receipt
-  metrics;
-- external knowledge ingestion for `.txt`, `.md`, `.json`, `.jsonl`, `.ndjson`,
-  and `.csv`, with optional adapters for `.yaml`, `.pdf` and RDF/Linked Data
-  (`.ttl`/`.n3`/`.nt`/`.rdf`) that keep the runtime stdlib-only;
-- a curator review queue (`core/review.py`) for `Observed`/quarantined items;
-- GDPR-relevant erasure, restriction, record-of-processing and audit logging;
-- opt-in encryption at rest for L1 personal-data fields;
-- dependency-free read-only MCP server;
-- a fully passing test suite at 100% coverage, enforced by a 100% CI gate
-  (current audited baseline in `TEST_REPORT.md`).
-
-## Baseline and funded-delta control
-
-Existing baseline work is not counted again as a funded deliverable. The exact
-reviewer-facing contract for each milestone is maintained in
-[`docs/grants/baseline-funded-delta-matrix.md`](./grants/baseline-funded-delta-matrix.md):
+Verification at the baseline:
 
 ```text
-BASELINE TODAY
-    +
-MEASURABLE FUNDED DELTA
-    =
-INDEPENDENTLY VERIFIABLE DELIVERABLE
+Python 3.11: 2047 passed / 12 skipped / 0 failed
+Python 3.12: 2047 passed / 12 skipped / 0 failed
+9219 statements / 100.00% coverage
+7/7 declared Ring Zero mutants killed
+9/9 CI jobs successful
 ```
 
-When a grant agreement starts, the repository must record the baseline commit or
-release. If current `main` advances before then, the matrix is updated so that the
-funded delta remains real and independently testable.
+## Core architecture
 
-## Why this fits public-interest infrastructure
+```text
+source material / explicit claim
+        ↓
+typed candidate + evidence span + provenance
+        ↓
+Guardian structural/safety checks
+        ↓
+TruthGate admission policy
+        ↓
+L1 lifecycle + physical L3 multi-status storage
+        ↓
+TrustSnapshot deny-dominant reconciliation
+        ↓
+CanonicalView strict trusted projection
+        ↓
+read-only grounding + TRACE + Receipt
+```
 
-Crystal is relevant to European public-interest technology because it is:
+Critical distinctions:
 
-- **local-first**: no mandatory cloud and no outbound network calls by default;
-- **auditable**: facts carry source, state, trace and receipts;
-- **privacy-preserving by design**: data remains under operator control;
-- **open-source**: AGPL-licensed core;
-- **institution-friendly**: suited to schools, universities, libraries, archives,
-  public-sector bodies, research groups and regulated organisations;
-- **LLM-independent**: useful even where an external AI provider is unavailable,
-  expensive or inappropriate.
+```text
+physical L3          != strict Canon
+retrieval score      != evidence
+model output         != independent source
+migration bundle     != claim evidence
+successful import    != activation
+GDPR-oriented design != legal certification
+```
 
-## Proposed funded work packages
+## Storage portability baseline
 
-### WP1 — Evidence Span Store and Receipt v2
+The merged runtime can export a locked SQLite physical-L3 profile into deterministic
+canonical JSONL and verify the completed bundle independently.
 
-A **baseline is already implemented** (`core/evidence.py` + Receipt v2): facts
-carry `source_uri`/kind, chunk id, span offsets and content-light source/claim
-hashes; imported facts auto-attach their source; receipts seal and replay that
-evidence. The funded work extends this to production strength:
+Current fail-closed envelope:
 
-- automatic line/section/character span extraction during PDF/Markdown ingestion;
-- original-snippet retrieval and side-by-side source display;
-- multi-source corroboration and per-span conflict surfacing;
-- receipt replay against exact stored source spans at scale.
+| Resource | Limit |
+|---|---:|
+| profile/control JSON | 1 MiB |
+| source SQLite | 64 MiB |
+| canonical record | 1 MiB |
+| records per dataset | 200,000 |
+| dataset | 64 MiB |
+| aggregate JSONL | 384 MiB |
 
-**Outcome:** stronger claim-to-source auditability for research, education and
-public-sector use.
+This proves a bounded local-first portability path. It does not prove streaming or
+institution-scale migration.
 
-### WP2 — Import Sessions and Dry-run Review
+## Proposed funded delta
 
-A **baseline is already implemented** (`core/imports.py` + `core/review.py`): a
-dry-run preview (`learn --dry-run`) predicts accept/reinforce/block/conflict
-through the same validators with zero writes; real imports carry a session id and
-can be restricted or erased as a batch (`import-session` / `session-restrict` /
-`session-erase`). A **curator review queue** (`review-queue` / `review-item` /
-`review-approve` / `review-reject`) now surfaces every `Observed`/quarantined
-item that did not reach the canon, re-runs the gates to explain *why* it is
-pending, and lets a librarian approve (promote to canon — with an explicit,
-audited override for still-blocked items) or reject it; every decision is sealed
-in the tamper-evident audit chain. A **baseline web review UI is also already
-delivered**: a static, dependency-free Kanban board (`core/_webui/review.html`)
-served by the optional HTTP API over the same audited queue operations, with a
-token guard on every review endpoint. The funded work extends this to
-institutional scale:
+The funded delta must extend—not re-label—the merged baseline. Preferred independently
+verifiable packages are:
 
-- resumable / chunked import summaries for large corpora;
-- intra-batch duplicate and conflict consolidation in the preview;
-- institutional hardening of the review UI: role-based curator permissions,
-  multi-curator workflows, operator guidance, accessibility and
-  deployment/security hardening;
-- per-source licence and provenance metadata capture.
+1. **Streaming migration proof** (#331)
+   - cursor-batched export;
+   - incremental same-descriptor hashing/parsing;
+   - disk-backed referential checks;
+   - disk-space/resource preflight and interruption cleanup;
+   - large-corpus resource evidence.
 
-The institutional security delta is made concrete in
-[`docs/security/eu-service-security-readiness.md`](./security/eu-service-security-readiness.md).
-That document is a non-certification engineering checklist: it does not claim that
-Crystal is a managed security service or certified under an EU scheme.
+2. **Inactive PostgreSQL/pgvector import and exact equivalence** (#332)
+   - optional driver extra and reviewed version policy;
+   - secret-free durable profile identity;
+   - inactive import only;
+   - exact identifiers, payloads, vectors, edges, metadata and restrictions comparison;
+   - no activation on import success.
 
-**Outcome:** safer corpus ingestion for institutions.
+3. **Explicit cutover and rollback proof**
+   - source/target fencing;
+   - immutable cutover receipt;
+   - rollback window and expiry policy;
+   - crash/retry/idempotency tests.
 
-### WP3 — Evaluation Harness
+4. **Server lifecycle and security hardening**
+   - least-privilege roles, TLS and credential rotation boundaries;
+   - PostgreSQL/pgvector backup, restore drill and upgrade sequencing;
+   - audit redaction and operational observability;
+   - no production certification claim without independent assessment.
 
-A **baseline is already implemented** (`core/eval.py`, `velantrim eval`): a
-deterministic report covering retrieval (hit@k / MRR), trace completeness,
-metadata completeness, **source-span coverage**, **contradiction
-precision/recall**, and receipt-replay survival. It now runs over a **curated,
-multi-domain fixture corpus** (16 retrieval cases with ranking distractors, 12
-labelled contradiction pairs including hard negatives), emits per-case
-`metrics.jsonl` + `eval_report.md`, and is enforced by a **CI quality gate**
-(`scripts/eval_gate.py`, `velantrim eval --gate`) so retrieval/grounding/
-contradiction quality cannot silently regress. The harness also ships a
-**report-only Russian corpus** (typo/morphology probes) and an **opt-in
-character-trigram embedder** for morphology-tolerant retrieval — the English
-gate remains the only CI-enforced threshold. The funded work scales this to a
-credible quality signal:
+5. **Reproducible retrieval evaluation**
+   - exact search reference;
+   - versioned HNSW/IVFFlat corpus;
+   - recall@k, filtered recall, latency, rebuild cost and stale-index behavior;
+   - ANN indexes remain rebuildable projections without truth authority.
 
-- larger curated corpora across many more domains and European languages,
-  promoted from report-only to gated once thresholds are calibrated;
-- grounding score for generated answers;
-- broader contradiction and retrieval fixtures, with adversarial cases;
-- per-release tracking and published quality trend reports.
+6. **Grant/release evidence automation**
+   - claim-lint and status gates for grant, roadmap and security documents;
+   - release artifacts, checksums and SBOM;
+   - exact SHA/CI/version evidence and documented limits.
 
-**Outcome:** measurable quality instead of narrative-only claims.
+A dedicated Reader Core may be proposed only as a later source-linked candidate-extraction
+layer upstream of Guardian/TruthGate. It must not become a second Canon owner.
 
-### WP4 — Stronger Knowledge Adapters
+## Explicit exclusions
 
-A **baseline is already implemented** (`core/adapters/`): self-registering,
-optional adapters extend `velantrim learn` to PDF (`pypdf`), YAML (`PyYAML`) and
-RDF/Linked Data (`rdflib`: `.ttl`/`.n3`/`.nt`/`.rdf`) while the default runtime
-stays stdlib-only — a missing adapter dependency raises a clear install hint
-rather than failing the core. Every adapted claim still flows through the same
-Guardian → TruthGate path. The funded work hardens this for real collections:
+The grant scope does not claim:
 
-- automatic source-span offsets during PDF/Markdown extraction (feeds WP1);
-- a full RDF/Wikidata import path with Q-/P-code label resolution;
-- license/source metadata capture per adapted source;
-- adapters for further institutional formats (e.g. EPUB, BibTeX, OAI-PMH).
+- universal truth or zero hallucinations;
+- AGI, consciousness or a living digital mind;
+- automatic GDPR/legal/security certification;
+- current PostgreSQL/pgvector runtime;
+- automatic SQLite/PostgreSQL fallback;
+- production multi-tenant SaaS or bundled IdP;
+- distributed exactly-once behavior;
+- live dual-write or zero-downtime cutover;
+- Titan, Native Kernel or Mentaury as hidden Crystal runtime dependencies.
 
-**Outcome:** better fit for libraries, archives, research datasets and public
-knowledge sources.
+## Baseline/funding rule
 
-### WP5 — Documentation, Governance and Demonstrators
+```text
+verified baseline at exact SHA
++
+measurable new implementation delta
+=
+independently verifiable deliverable
+```
 
-A **baseline is already implemented**: an architecture diagram set
-(`docs/ARCHITECTURE.md`), a vector-only comparison (`docs/COMPARISON.md`) and a
-hands-on, reproducible CLI demo walkthrough with real captured output
-(`docs/DEMO.md`). The funded work extends public onboarding:
-
-- richer architecture diagrams (sequence + deployment views);
-- expanded grant-facing demo walkthrough and screencast;
-- issue and pull-request templates;
-- deeper comparison with vector-only memory systems;
-- optional browser/PWA companion demo documentation.
-
-**Outcome:** easier adoption by public-interest contributors and reviewers.
-
-## Out of scope for this grant phase
-
-- closed-source SaaS productisation;
-- autonomous personality rewriting;
-- claims of consciousness or artificial personhood;
-- “zero hallucination” claims;
-- mandatory dependence on a specific LLM provider;
-- production multi-tenant hosting without a dedicated auth/security layer;
-- the broader bio-inspired research agenda / full personal exocortex. The
-  bio-inspired modules already present in `core/` are tested baseline mechanisms
-  and engineering metaphors — **not** biological-cognition claims and **not** the
-  full Personal Research Mode, which is tracked separately (Notion / local
-  research builds) and is not a deliverable of this grant phase;
-- intrinsic-noise or neuromorphic consolidation research. The external preprint is
-  recorded only in
-  [`docs/research/INTRINSIC_NOISE_CONSOLIDATION_BOUNDARY.md`](./research/INTRINSIC_NOISE_CONSOLIDATION_BOUNDARY.md),
-  with no runtime, Canon, budget or milestone impact.
-
-## Success criteria
-
-A successful grant phase should produce:
-
-- release-tagged open-source code;
-- reproducible tests and evaluation reports;
-- source-span receipts for imported knowledge;
-- safe dry-run ingestion workflow;
-- clear documentation for local/offline operation;
-- governance and contributor pathway for public-interest maintenance;
-- acceptance evidence for every retained milestone as defined in the baseline/delta
-  matrix.
-
-## GenAI disclosure note
-
-Project documentation and planning may use AI assistance for drafting, review and
-comparison. Final repository changes are reviewed by the maintainer and should be
-traceable through commits, tests and source files.
+Already merged capabilities cannot be counted again as paid work. The milestone matrix in
+[`docs/grants/baseline-funded-delta-matrix.md`](./grants/baseline-funded-delta-matrix.md)
+implements this rule for M1–M9.

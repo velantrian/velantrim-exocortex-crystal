@@ -1,90 +1,91 @@
-# Velantrim Crystal — Test Report
+# Crystal Verification Report
 
-**Status:** current verified runtime baseline
-**Runtime checkpoint:** `b0df17a06d552ad2543b6d6e5efe8cd99877cfc0`
-**Validated PR head:** `aa822c49c095039de90b92fbe4fe451c7b8f13b7`
-**Validated and merged tree:** `6143d7237222935182db86a166541d0ad07887be`
-**Merged change:** PR #325 — verified SQLite storage lifecycle
-**Verification date:** 2026-08-07
-**GitHub Actions run:** `31182471502`
-**Status manifest:** [docs/status/implementation-manifest.json](./docs/status/implementation-manifest.json)
+**Status date:** 2026-08-07  
+**Verified runtime checkpoint:** `c612c1f7de067b05ed7d01ad82d47a7bc39af23a`  
+**Verified tree:** `17d65f52ac1d985fca249e6c9a183168d6116ffb`  
+**Validated implementation head:** `e70c31bf517039f0dd3f77f7bc4b6d3f03936736`  
+**Pull request:** #330  
+**Exact-head CI:** `31213056560`
 
-## Exact baseline
+This file records the latest verified runtime checkpoint. It is evidence for the tested
+repository state, not a production, legal, security or institution-scale certification.
 
-```text
-Python 3.11:          2019 passed / 12 skipped
-Python 3.12:          successful under the same strict coverage gate
-Failed:               0
-Measured statements:  8726
-Coverage:              100.00% coverage
-Ring Zero mutation:   7/7 declared mutants killed
-CI topology:          9 permanent CI jobs
-```
+## Result
 
-## Permanent CI jobs
+| Gate | Result |
+|---|---:|
+| Python 3.11 | 2047 passed / 12 skipped / 0 failed |
+| Python 3.12 | 2047 passed / 12 skipped / 0 failed |
+| Measured statements | 9219 |
+| Line coverage | 100.00% |
+| Ring Zero declared mutants | 7/7 killed |
+| Permanent CI jobs | 9/9 successful |
 
-| Job | Boundary checked |
-|---|---|
-| `test (3.11)` | full pytest suite and 100% coverage gate |
-| `test (3.12)` | supported-version compatibility and the same gate |
-| `code-quality` | Ruff over production and tooling code |
-| `security` | secret, Python-security and dependency checks |
-| `docker-build` | hardened runtime image build |
-| `eval-gate` | retrieval, grounding, contradiction and refusal metrics |
-| `jsonl-integrity` | corpus parsing and duplicate identifiers |
-| `Ring Zero mutation gate` | seven declared semantic mutations must be killed |
-| `docs-status` | English authoritative status, evidence, links and claim boundaries |
-
-## Verified PR #325 behavior
-
-PR #325 added a pure-standard-library operator surface for a locked SQLite profile:
+Successful jobs:
 
 ```text
-status
-backup
-verify
-restore to a new inactive database/profile
-inspect-lock
-explicit guarded recover-lock
+code-quality
+test (3.11)
+test (3.12)
+jsonl-integrity
+eval-gate
+security
+Docker
+Ring Zero mutation
+docs-status
 ```
 
-The bundle uses SQLite's online backup API, publishes completion last, verifies hashes,
-integrity, table counts and profile identity, and never overwrites or activates the current
-profile. Stale-lock recovery uses quarantine and a recovery-owned placeholder so it cannot
-unlink a lock won by a new initializer.
+## Runtime delta verified in PR #330
 
-## Authority boundary
+The checkpoint adds:
+
+- deterministic read-only logical export from a locked durable SQLite L3 profile;
+- canonical JSONL datasets for nodes, vectors, edges, entities, mentions and metadata;
+- completion-marker-last publication;
+- independent fail-closed bundle verification;
+- descriptor-bound hashing/parsing and path-swap/mutation rechecks;
+- strict schema, JSON, ordering, vector and referential-integrity validation;
+- an explicit bounded local-first resource contract.
+
+Current fail-closed limits:
+
+| Resource | Limit |
+|---|---:|
+| profile/control JSON | 1 MiB |
+| source SQLite file | 64 MiB |
+| one canonical record | 1 MiB |
+| records per dataset | 200,000 |
+| one dataset | 64 MiB |
+| aggregate JSONL | 384 MiB |
+
+## Authority and scale boundary
 
 ```text
-storage lifecycle = deployment continuity
-physical L3      != strict Canon
-backup receipt   != evidence for a claim
-restore          != TruthGate admission
+physical L3 state       != strict Canon
+logical bundle          != claim evidence
+successful verification != backend activation
+retrieval quality       != exact state equivalence
 ```
 
-## Architecture-only next step
-
-Issue #327 defines an English backend-neutral migration contract and a proposed
-PostgreSQL/pgvector institutional profile. Those documents do not add cross-backend
-runtime support.
+The current implementation is bounded for a local-first deployment envelope. It is not a
+streaming or institution-scale migration engine. Issue #331 tracks cursor batching,
+incremental verification and disk-backed referential checks. PostgreSQL/pgvector runtime,
+inactive import, exact target equivalence, cutover and rollback remain absent and are
+tracked separately in #332.
 
 ## Reproduction
 
 ```bash
-git checkout aa822c49c095039de90b92fbe4fe451c7b8f13b7
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
 pip install -e '.[dev]'
 pytest tests/ --cov=. --cov-fail-under=100
-python scripts/eval_gate.py --out-dir eval-artifacts
-bash scripts/ring_zero_mutation_gate.sh
-bash scripts/check_docs_status.sh
 ```
 
-## Evidence boundary
+The full repository workflow also runs Ruff, security checks, JSONL integrity, evaluation,
+Docker, Ring Zero mutation and documentation-status gates.
 
-This evidence demonstrates tested behavior at the recorded checkpoint. It does not claim
-universal truth detection, absence of every defect, zero hallucinations, legal or security
-certification, production multi-tenant readiness, distributed locking, cross-backend
-migration, PostgreSQL/pgvector runtime support, or Titan/Full ExoCortex functionality.
+## Evidence discipline
+
+- `main` code and executable tests are implementation truth.
+- The CI run above validates the exact implementation head merged by PR #330.
+- The squash merge commit records the public main checkpoint with the same reviewed diff.
+- Later changes require a fresh exact-head run before advancing these values.
