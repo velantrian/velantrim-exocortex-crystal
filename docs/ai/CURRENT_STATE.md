@@ -1,8 +1,8 @@
 # 📍 Crystal Current State
 
 **Status date:** 2026-08-07  
-**Current `main` head:** `1748677a5c84e8a9b3af08fcaed0215efebcdd66`  
-**Verified runtime checkpoint:** `1748677a5c84e8a9b3af08fcaed0215efebcdd66`  
+**Current `main` head:** `0ca66cc6e194edd06b5de2a6eb5126a30613957e`  
+**Verified runtime checkpoint:** `0ca66cc6e194edd06b5de2a6eb5126a30613957e`  
 **Version:** `0.3.0`
 
 This file is a compact orientation snapshot. GitHub `main`, current code, tests and
@@ -11,25 +11,32 @@ strategy and project history; it does not override repository evidence.
 
 ## 1. Verified hardening checkpoint
 
-The 2026-08-07 hardening train was merged sequentially and validated on exact PR heads:
+The 2026-08-07 hardening sequence was merged and validated on exact PR heads:
 
 | Capability | PR | Merge SHA | Exact-head CI |
 |---|---:|---|---:|
 | Crash-consistent curator decisions | #319 | `62879cd2095450de57d11fcf97c13f5f9768ad0b` | `31162857843` |
 | Principal-bound curator writes | #320 | `1414862786aa0c0d4cf4ad152776dd4e55536bf0` | `31164585628` |
 | Bounded legacy retrieval and explicit reindex | #321 | `1748677a5c84e8a9b3af08fcaed0215efebcdd66` | `31166027193` |
+| Durable L3 profile lock and read-only doctor | #322 | `0ca66cc6e194edd06b5de2a6eb5126a30613957e` | `31174042124` |
 
-The final merge commit has tree `38c829b37bb61939792c64ee01ad925d6e8afd13`,
-identical to the validated PR #321 head tree.
+The final runtime merge commit has tree `721049b198045e1c8504d57f64a0ab44b72ae403`,
+identical to the validated PR #322 head tree.
 
 Latest runtime evidence:
 
-- Python 3.11: **1943 passed, 12 skipped, 0 failed**;
+- Python 3.11: **1987 passed, 12 skipped, 0 failed**;
 - Python 3.12: successful with the same strict gate;
-- **7948 measured statements, 100.00% line coverage**;
+- **8231 measured statements, 100.00% line coverage**;
 - **7/7 declared Ring Zero mutants killed**;
 - **9/9 permanent CI jobs successful**;
 - Gitleaks, Bandit, pip-audit, eval, JSONL integrity, Ruff, docs-status and Docker green.
+
+The automatic Codex review attempt on PR #322 was unavailable because the connected
+account had exhausted its code-review quota. That service limitation is recorded in the
+PR timeline and is not represented as independent review evidence. Exact-head CI and the
+manual diff inspection that found and corrected the initial working-directory-relative
+profile path remain the recorded verification evidence.
 
 ## 2. Current implemented boundaries
 
@@ -55,8 +62,16 @@ Crystal now includes:
 - stable `legacy_store_requires_reindex` fail-closed behavior for unsupported legacy
   backends;
 - explicit operator reindex that changes vectors/fingerprint only;
+- durable environment-selected L3 backend and non-secret locator locking across process
+  restarts;
+- fail-closed rejection of malformed profiles, backend/locator drift and automatic
+  fallback to ephemeral Mock;
+- a pure-standard-library, read-only `velantrim-doctor` JSON diagnostic command;
 - advisory topic facets with no truth, evidence or Canon authority;
 - machine-readable ESM specification and recorded retrieval benchmark evidence.
+
+The storage profile is deployment identity only. It does not establish truth, change
+strict Canon membership, bypass Guardian/TruthGate or turn retrieval rank into evidence.
 
 ## 3. Retrieval benchmark evidence
 
@@ -73,10 +88,40 @@ The timing values are contextual hosted-runner evidence, not a latency SLO. The
 load-bearing result is that candidate work remained at or below the configured cap for
 all recorded corpus sizes.
 
-## 4. Important remaining limitations
+## 4. Durable storage-profile contract
+
+Environment-selected L3 startup now follows:
+
+```text
+read requested backend
+→ read and validate durable profile
+→ reject backend or locator conflict
+→ construct the locked backend
+→ verify constructed backend and locator
+→ cache the process-local singleton
+```
+
+On a first durable startup, `auto` may select LadybugDB and then SQLite. The durable winner
+and its non-secret locator are persisted. Automatic fallthrough to in-memory Mock is
+rejected; explicit Mock remains available for tests and deliberate development use.
+
+Default profile location:
+
+```text
+~/.velantrim/velantrim-storage-profile.json
+```
+
+Service, container and multiple-instance deployments should set
+`VELANTRIM_STORAGE_PROFILE_PATH` explicitly. Editing or deleting a profile is not a
+migration. PostgreSQL/pgvector remains a future institutional profile, not current runtime.
+
+## 5. Important remaining limitations
 
 | Area | Current reality |
 |---|---|
+| Storage migration | backend or locator changes have no verified migration command yet; no silent copy, dual-write or auto-switch is allowed |
+| Multiple deployments | the user-level default profile assumes one default deployment; services, containers and multiple instances should configure an explicit profile path |
+| Profile-lock recovery | a hard crash can leave the bounded lock file and fail closed; no automatic stale-lock deletion is claimed |
 | Distributed coordination | bundled curator lease is process-local; no cross-process fencing or global exactly-once claim |
 | Identity and tenancy | principal composition exists, but production IdP, token lifecycle, tenant isolation and policy administration remain host work |
 | Legacy degraded retrieval | deterministic bounded windows can miss relevant records outside the window; degraded mode explicitly recommends reindex |
@@ -88,7 +133,7 @@ all recorded corpus sizes.
 | Compliance | GDPR-oriented mechanisms and documentation are not legal certification |
 | Production posture | Crystal is not a certified turnkey multi-tenant production service |
 
-## 5. Closed audit findings
+## 6. Closed audit findings
 
 - **#315 / PR #319:** crash consistency closed with a durable decision/outbox model,
   idempotent projection, failure injection and recovery evidence.
@@ -98,11 +143,16 @@ all recorded corpus sizes.
 - **#317 / PR #321:** public legacy retrieval no longer performs reviewed unbounded
   Mock/SQLite corpus scans; unsupported adapters fail closed and explicit reindex is
   available.
+- **PR #322:** per-process L3 `auto` probing can no longer silently drift between durable
+  physical stores after a profile exists, and first-run automatic fallback to ephemeral
+  Mock fails closed. The initial draft's cwd-relative profile location was found during
+  diff review and corrected before exact-head CI and merge.
 
-These closures do not remove the remaining distributed-coordination, production-identity,
-recall-quality or operational-capacity boundaries listed above.
+These closures do not remove the remaining migration, multiple-deployment,
+distributed-coordination, production-identity, recall-quality or operational-capacity
+boundaries listed above.
 
-## 6. Long-document semantic reading
+## 7. Long-document semantic reading
 
 No dedicated multi-pass `Reader Core` / `Semantic Reading Layer` with structural maps,
 coverage tracking, bookmarks, exception/contradiction passes and selective re-reading is
@@ -112,13 +162,18 @@ A future reading layer should produce source-linked candidate cards and coverage
 upstream of ordinary Guardian and TruthGate admission. It must not become a second Canon
 owner or silently promote summaries, rankings or inferred importance.
 
-## 7. Open work and research interpretation
+## 8. Open work and research interpretation
 
 Open issues and PRs are hypotheses, proposals or mutable work records until merged. Agents
 must inspect their current base, head, diff, checks and review state before citing them.
 
 Material remaining engineering directions include:
 
+- explicit storage migration with dry-run, counts/hashes, evidence/restriction/audit
+  verification, rollback proof and a migration receipt;
+- backup/restore and upgrade guidance for locked storage profiles;
+- an optional PostgreSQL/pgvector institutional RFC only after invariant-equivalence and
+  migration evidence are defined;
 - external lease/fencing adapter for multi-process curator coordination;
 - production identity-provider and tenant-policy integration;
 - broader provenance lifecycle inventory and recovery proof;
@@ -131,12 +186,13 @@ Material remaining engineering directions include:
 Research PRs and ecosystem pages must not be represented as Crystal runtime merely because
 they are public or documentation-only.
 
-## 8. Authority and grant boundary
+## 9. Authority and grant boundary
 
 ```text
 GitHub main code + tests = implementation truth
-verified runtime checkpoint = 1748677
+verified runtime checkpoint = 0ca66cc
 Notion = rationale, strategy, grant context and synchronized history
+Storage profile = deployment identity, not epistemic authority
 Physical L3 != strict Canon
 Retrieval rank != evidence or truth
 Model output != independent factual source
@@ -145,10 +201,10 @@ Titan / Full Exo-Cortex / Personal Exo-Cortex = separate research tracks
 
 No new award, budget, legal certification, distributed-locking, production-readiness,
 zero-hallucination or artificial-consciousness claim is introduced by this checkpoint.
+PostgreSQL, pgvector and dedicated VectorDB support are not claimed by the runtime.
 
-## 9. Documentation synchronization
+## 10. Documentation synchronization
 
-PR #318 is the documentation-only synchronization record for the completed hardening
-train. It updates this AI context, the known-risk register and the engineering work log,
-then synchronizes the same decision-bearing facts into the Crystal Project Hub and Deep
-Audit Notion pages.
+The documentation-only follow-up to PR #322 updates this AI context, the component map,
+the known-risk register and the engineering work log, then synchronizes the same immutable
+merge/CI facts into the Crystal Project Hub and Current Architectural Position Notion pages.

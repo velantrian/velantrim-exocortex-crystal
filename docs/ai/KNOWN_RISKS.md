@@ -1,7 +1,7 @@
 # ⚠️ Crystal Known Risks and Open Boundaries
 
 **Status date:** 2026-08-07  
-**Verified runtime checkpoint:** `1748677a5c84e8a9b3af08fcaed0215efebcdd66`
+**Verified runtime checkpoint:** `0ca66cc6e194edd06b5de2a6eb5126a30613957e`
 
 This register is an orientation layer. It does not replace issues, ADRs, security
 operations, tests, current code inspection or legal review.
@@ -55,6 +55,25 @@ reindex preserves fact/ESM/trust/restriction/edge/audit authority.
 **Remaining boundary:** a bounded window may miss a relevant record outside that window;
 reindex is the preferred recovery path.
 
+### Environment-selected L3 backend drift
+
+**Closed by:** PR #322, merge `0ca66cc6e194edd06b5de2a6eb5126a30613957e`,
+validated head `156e974393586ada30feaac2500eae7003cb2885`, CI `31174042124`.
+
+The first durable environment-selected L3 backend and non-secret locator are now persisted
+in a versioned profile. Later `auto` startups resolve to that lock. Malformed profiles,
+backend/locator conflicts, constructor mismatches and automatic fallback to ephemeral Mock
+fail closed. The pure-stdlib `velantrim-doctor` command reports profile/dependency/locator
+health without opening L3 or mutating Canon.
+
+Independent diff inspection found that the first draft stored the profile itself relative
+to process `cwd`. The default was corrected before merge to
+`~/.velantrim/velantrim-storage-profile.json`, with a regression test across working
+directories.
+
+**Remaining boundary:** backend/locator migration, stale-lock recovery, backup/restore and
+multi-instance deployment policy are not solved by the profile lock.
+
 ## P0 — permanent trust-boundary regression targets
 
 ### P0.1 TruthGate or Guardian bypass
@@ -98,9 +117,39 @@ untrusted request/CLI text rather than a validated principal.
 **Required proof:** complete write-surface inventory, actor-spoof tests and zero mutation on
 configuration, capability, scope, report or lease denial.
 
+### P0.6 Storage-profile authority confusion
+
+**Risk:** a deployment profile, database connection, graph presence or vector index is
+misrepresented as epistemic authority or used to bypass normal Canon reconciliation.
+
+**Required proof:** profile selection remains deployment-only; Guardian, TruthGate,
+restrictions and `TrustSnapshot` remain the owners of admission and strict reads.
+
 ## P1 — current engineering and operational limitations
 
-### P1.1 Distributed curator coordination is absent
+### P1.1 Explicit storage migration is absent
+
+The locked backend and locator cannot be safely changed by editing or deleting the profile.
+No verified SQLite/LadybugDB/Neo4j/PostgreSQL migration command exists.
+
+**Do not claim:** automatic database switching, verified dual-write, lossless cross-backend
+migration or rollback.
+
+**Closure proof:** dry-run plan, source/target identity, fact/edge/evidence/restriction/audit
+counts and hashes, deterministic transformation rules, rollback proof and a structured
+migration receipt.
+
+### P1.2 Default profile and stale-lock operations need deployment policy
+
+The user-level default profile is appropriate for one default local deployment. Services,
+containers and multiple instances should configure `VELANTRIM_STORAGE_PROFILE_PATH`
+explicitly. A hard crash can leave the bounded `.lock` file and cause fail-closed startup;
+no automatic stale-lock deletion is claimed.
+
+**Closure proof:** documented instance identity, safe lock ownership/age semantics,
+operator-assisted recovery and adversarial multi-process tests.
+
+### P1.3 Distributed curator coordination is absent
 
 The included lease registry coordinates one process only.
 
@@ -110,7 +159,7 @@ fencing across processes/hosts.
 **Closure proof:** external adapter contract, ownership/expiry/fencing semantics,
 multi-process failure tests, recovery metrics and deployment documentation.
 
-### P1.2 Production identity provider and multi-tenancy are incomplete
+### P1.4 Production identity provider and multi-tenancy are incomplete
 
 Principal composition and scoped capabilities exist, but production identity issuance,
 rotation/revocation, tenant isolation and policy administration remain host responsibilities.
@@ -118,7 +167,7 @@ rotation/revocation, tenant isolation and policy administration remain host resp
 **Closure proof:** tenant model, authenticated identity mapping, authorization matrix,
 isolation tests, revocation/audit behavior and reviewed deployment integration.
 
-### P1.3 Bounded degraded retrieval trades recall for work limits
+### P1.5 Bounded degraded retrieval trades recall for work limits
 
 A deterministic legacy candidate window can miss relevant records outside the window.
 The response exposes degraded mode and recommends reindex.
@@ -129,7 +178,7 @@ completeness.
 **Closure direction:** complete reindex, or separately review a bounded indexed lexical
 strategy with measured recall and migration behavior.
 
-### P1.4 Broader provenance lifecycle wiring
+### P1.6 Broader provenance lifecycle wiring
 
 Strong proof exists on central verified paths, but future adapters and less central
 lifecycle operations can introduce orphaned state/proof windows.
@@ -137,7 +186,7 @@ lifecycle operations can introduce orphaned state/proof windows.
 **Closure proof:** mutation/read surface inventory, common receipt/provenance contract,
 replay and recovery tests.
 
-### P1.5 Performance evidence is not a production SLO
+### P1.7 Performance evidence is not a production SLO
 
 The 1k/10k/30k benchmark proves the configured candidate bound on one hosted-runner
 environment. It does not establish production p50/p95/p99, concurrency or capacity.
@@ -145,14 +194,14 @@ environment. It does not establish production p50/p95/p99, concurrency or capaci
 **Closure proof:** versioned workload, controlled environment, thresholds, storage-growth
 limits and regression/operations policy.
 
-### P1.6 Mutation testing remains targeted
+### P1.8 Mutation testing remains targeted
 
 The checkpoint proves 7/7 declared Ring Zero mutants killed, not repository-wide semantic
 mutation coverage.
 
 **Closure proof:** expanded mutation inventory and bounded execution policy.
 
-### P1.7 Reproducible supply-chain pinning remains incomplete
+### P1.9 Reproducible supply-chain pinning remains incomplete
 
 Gitleaks, Bandit and pip-audit pass. However, development dependencies, security tools and
 GitHub Actions should be constrained/pinned more tightly for reproducibility and reviewable
@@ -161,7 +210,7 @@ updates.
 **Closure proof:** versioned constraints/lock strategy, action SHA pinning, scheduled
 newest-compatible checks and automated update policy.
 
-### P1.8 Legacy normalized-ID migration gap (#165)
+### P1.10 Legacy normalized-ID migration gap (#165)
 
 Pre-normalization stores may retain case/whitespace variants that new ingest does not fully
 deduplicate.
@@ -169,7 +218,7 @@ deduplicate.
 **Closure proof:** reviewed migration or persistent normalized-claim index, collision
 policy, occurrence preservation and backwards-compatibility tests.
 
-### P1.9 Dedicated long-document Reader Core is absent
+### P1.11 Dedicated long-document Reader Core is absent
 
 Crystal has evidence spans and strong admission/proof boundaries, but no verified
 multi-pass reader with structural maps, coverage tracking, bookmarks, exception and
@@ -213,10 +262,21 @@ certification, funding award or production approval.
 **Control:** preserve explicit submission/award, implementation/research and
 mechanism/certification distinctions.
 
+### P2.5 Automated review availability
+
+Codex/Copilot review may be unavailable because of quota, account or integration limits.
+This must not be represented as successful independent review.
+
+**Control:** preserve the service limitation in the PR timeline, require exact-head CI,
+record manual diff findings and do not fabricate approval evidence.
+
 ## Research-only boundaries
 
 The following remain proposed/research unless separately implemented and merged:
 
+- PostgreSQL/pgvector institutional deployment profile;
+- dedicated VectorDB integration;
+- automatic cross-backend migration or switching;
 - Essence Workdesk and dialogue-board experiments;
 - cognitive-state, planning and user-intent hypotheses;
 - Native Kernel compatibility/event substrate concepts;
