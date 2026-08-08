@@ -1,240 +1,130 @@
 # Grant Baseline → Funded Delta → Acceptance Matrix
 
 **Status:** grant-planning control · documentation only · no award/budget change  
-**Frozen baseline:** `main@f03e24c85922d0bb46d6d9dfee98338972135908`  
-**Validated head / CI:** `17ce10ffe12da93be50434c73d08f05a70a5922b` / `31224184351`  
-**Baseline evidence:** 2059 passed / 12 skipped / 9361 statements / 100% coverage / 9 CI jobs
+**Frozen baseline:** `main@bbd816c09dd39a02e6de6c1014438490572f40f6`  
+**Validated head / CI:** `d7af7c80722274f9217bc5545d150f92e9363f37` / `31256316536`  
+**Baseline evidence:** 2078 passed / 13 skipped / 9756 statements / 100% coverage / 9 CI jobs / 1 PostgreSQL integration job
 
 ## Control rule
 
 ```text
-verified baseline
-+
-new measurable funded delta
-=
-independently verifiable public deliverable
+verified baseline + new measurable funded delta
+= independently verifiable public deliverable
 ```
 
 Anything merged at or before the frozen baseline is existing capability and cannot be
-counted again as future paid work.
+counted again as future paid work. This includes #331 / PR #335 and #332 / PR #337.
 
-## M1 — Reproducible local-first runtime and release evidence
+## M1 — Reproducible runtime and release evidence
 
-**Baseline already present**
+**Baseline:** pure-standard-library default runtime, deterministic tests, 100% coverage,
+nine-job CI, Ring Zero, SQLite lifecycle and bounded logical migration.
 
-- pure-standard-library default runtime;
-- deterministic tests/evaluation and 100% line coverage;
-- nine-job CI and Ring Zero mutation gate;
-- durable SQLite profile, backup/verify/inactive restore;
-- deterministic bounded SQLite logical export/verify.
+**Funded delta:** reproducible wheel/sdist/container artifacts, checksums, SBOM, supported
+version manifest and clean-machine reproduction.
 
-**Funded delta**
-
-- reproducible wheel/sdist and container artifacts;
-- checksums, SBOM and supported-version manifest;
-- clean-machine installation/reproduction scripts;
-- release-linked exact SHA/CI evidence and documented operational limits.
-
-**Acceptance**
-
-- public release artifacts install on supported Python versions;
-- checksums/SBOM are generated reproducibly;
-- clean-environment smoke tests reproduce the named checkpoint;
-- no existing storage lifecycle work is billed again.
+**Acceptance:** public artifacts reproduce a named SHA/CI checkpoint and do not rebill
+existing storage lifecycle work.
 
 ## M2 — Bounded portable storage state
 
-**Baseline already present**
+**Baseline:** canonical bundle, fixed batches, disk-backed ordering/reference checks,
+same-descriptor verification and benchmark `31224005804`.
 
-- backend-neutral canonical JSONL bundle schema;
-- PR #335 fixed cursor batches and incremental write/hash/count;
-- disk-backed canonical edge ordering and referential checks;
-- same-descriptor hash-first incremental verification;
-- disk preflight, cleanup and bounded diagnostics;
-- benchmark `31224005804` for 1,025 and 8,193-record synthetic corpora.
+**Funded delta:** only new maximum-envelope/interruption evidence or new measurable tooling;
+no duplicate billing of PR #335.
 
-**Funded delta**
+**Acceptance:** memory, disk, time, cleanup and non-SLO limits remain reproducible and
+explicit.
 
-- no duplicate billing of #331 / PR #335;
-- independently reviewed maximum-envelope and interruption benchmarks if limits are raised;
-- optional operational tooling only when it produces new measurable artifacts.
-
-**Acceptance**
-
-- existing local-first limits and non-SLO wording remain explicit;
-- any larger envelope requires reproducible memory, disk, time and cleanup evidence;
-- no institution-scale or production-SLO claim is inferred from the current benchmark.
 ## M3 — Inactive PostgreSQL/pgvector import and exact equivalence
 
-**Baseline already present**
+**Baseline:** PR #337 provides optional lazy Psycopg loading, supported-version preflight,
+new inactive schema, serializable import, independent exact canonical re-hash, endpoint-bound
+non-secret receipts and a real PostgreSQL 16 / pgvector 0.8.2 integration test.
 
-- SQLite local-first source profile;
-- deterministic verified bundle;
-- no-automatic-switching contract;
-- PostgreSQL/pgvector architecture only.
+**Funded delta:** no duplicate billing of #332 / PR #337. Additional work qualifies only if
+it adds separately reviewed state domains or new independently measurable operational
+evidence beyond the approved bundle datasets.
 
-**Funded delta**
+**Acceptance:** target remains `active=false`, cannot serve normal reads/writes, preserves
+approved identifiers/payloads/vectors/edges/entities/mentions/metadata exactly and never
+changes TruthGate or strict Canon membership.
 
-- issue #332 optional PostgreSQL/pgvector inactive-import implementation;
-- optional PostgreSQL driver extra with version policy;
-- secret-free institutional profile identity;
-- import into an inactive target only;
-- deterministic exact-state equivalence receipts;
-- failure cleanup and retry/idempotency behavior.
+## M4 — Reproducible exact-vs-ANN evaluation
 
-**Acceptance**
+**Baseline:** exact vector values in the portable bundle; no ANN index is enabled.
 
-- identifiers, payloads, vectors, edges, entities, mentions and metadata compare exactly;
-- approved restrictions/erasure/provenance state is not dropped;
-- target cannot serve normal reads/writes before explicit cutover;
-- successful import never changes TruthGate or strict Canon membership.
+**Funded delta:** exact pgvector reference search, versioned HNSW/IVFFlat corpus, recall@k,
+filtered recall, latency, index-size, rebuild-cost and stale-index reports.
 
-## M4 — Reproducible retrieval-quality evaluation
-
-**Baseline already present**
-
-- deterministic evaluation infrastructure;
-- bounded retrieval and explicit degraded/reindex behavior;
-- exact vector values in the portable bundle.
-
-**Funded delta**
-
-- exact pgvector search reference implementation;
-- versioned HNSW/IVFFlat corpus and manifests;
-- recall@k, filtered recall, latency, index size, rebuild cost and stale-index tests;
-- machine-readable regression reports.
-
-**Acceptance**
-
-- exact search is the reference baseline;
-- ANN enablement requires accepted recall thresholds;
-- exact-state mismatch cannot be overridden by latency/recall results;
-- indexes remain rebuildable non-authoritative projections.
+**Acceptance:** exact search remains the reference; ANN requires accepted thresholds and
+cannot override exact-state mismatch.
 
 ## M5 — Explicit cutover and rollback proof
 
-**Baseline already present**
+**Baseline:** durable profile identity, inactive restore/import and a contract requiring
+separate activation.
 
-- durable profile identity;
-- inactive SQLite restore;
-- migration contract requiring separate activation.
+**Funded delta:** source/target fencing, immutable cutover receipt, explicit rollback receipt,
+expiry policy and crash-window tests.
 
-**Funded delta**
-
-- source/target fencing and preflight;
-- immutable cutover receipt;
-- explicit rollback receipt and expiry/window policy;
-- crash-window, retry and partial-failure tests.
-
-**Acceptance**
-
-- source remains authoritative until a valid cutover receipt;
-- no capability-based or reachability-based switching;
-- rollback behavior is deterministic and audited;
-- profile edit/delete is rejected as migration.
+**Acceptance:** source remains authoritative until valid cutover; no capability-based or
+reachability-based switching; rollback is deterministic and audited.
 
 ## M6 — Server lifecycle and operational security
 
-**Baseline already present**
+**Baseline:** optional migration dependency, TLS-by-default preflight, redacted failures and
+non-secret receipts. No active server runtime lifecycle is claimed.
 
-- scoped curator roles/capabilities;
-- authenticated actor binding on implemented write surfaces;
-- process-local leases and audit receipts;
-- SQLite lifecycle proof.
+**Funded delta:** least-privilege roles, certificate/credential rotation, PostgreSQL backup
+and independent restore drill, retention/upgrade sequencing, pooling, retry and observability.
 
-**Funded delta**
-
-- PostgreSQL least-privilege read/runtime/migration roles;
-- TLS verification and credential rotation/revocation contract;
-- PostgreSQL/pgvector backup, restore drill and upgrade sequencing;
-- audit redaction, timeout/pooling policy and operator diagnostics.
-
-**Acceptance**
-
-- independently tested restore drill;
-- credentials never enter profiles, bundles, receipts, logs or Notion;
-- multi-process tests document transaction/retry semantics;
-- no production IdP, certification or distributed exactly-once overclaim.
+**Acceptance:** credentials never enter profiles, bundles, receipts, application logs or
+Notion; multi-process semantics are tested; no certification or distributed exactly-once
+overclaim.
 
 ## M7 — Evidence and TRACE inspection UX
 
-**Baseline already present**
+**Baseline:** provenance, TRACE, receipts, contradiction reports and read-only query boundary.
 
-- source/evidence metadata, provenance, TRACE and receipts;
-- review sessions and contradiction reports;
-- read-only query boundary.
+**Funded delta:** reviewer-facing visualization, source-span navigation, uncertainty/refusal
+views and content-light audit export.
 
-**Funded delta**
-
-- reviewer-facing TRACE/receipt visualization;
-- source-span and policy/evidence navigation;
-- explicit uncertainty, refusal and contradiction views;
-- content-light export for independent audit.
-
-**Acceptance**
-
-- every displayed statement links to immutable evidence/provenance identifiers;
-- UI does not mutate Canon or promote claims;
-- restricted/erased content is denied consistently;
-- automated accessibility and security tests pass.
+**Acceptance:** displayed statements link to immutable evidence; UI cannot promote or mutate
+Canon; restriction/erasure denial is preserved.
 
 ## M8 — Source-linked semantic reading prototype
 
-**Baseline already present**
+**Baseline:** ordinary admission path and source/evidence spans; no dedicated Reader Core.
 
-- ordinary ingest/admission path;
-- source/evidence spans and review queues;
-- explicit statement that no dedicated Reader Core exists.
+**Funded delta:** bounded structure map, safe segmentation, exact source spans, candidate
+cards and coverage/exception/contradiction reports.
 
-**Funded delta**
-
-- bounded multi-pass document structure map;
-- safe segmentation and exact source-span preservation;
-- source-linked candidate cards;
-- coverage, exception, contradiction and re-read reports.
-
-**Acceptance**
-
-- output remains candidate material upstream of Guardian/TruthGate;
-- extraction confidence, importance and truth confidence stay separate;
-- no second Canon owner or automatic promotion;
-- coverage and source-span reproducibility tests pass.
+**Acceptance:** output stays upstream of Guardian/TruthGate; importance and truth remain
+separate; no second Canon owner.
 
 ## M9 — Claim discipline, maintenance and independent audit
 
-**Baseline already present**
+**Baseline:** docs-status, security/mutation/evaluation gates, English-authoritative policy,
+machine-readable manifest and public risks.
 
-- docs-status, security, mutation and evaluation gates;
-- English-authoritative documentation policy;
-- machine-readable implementation manifest;
-- public known-risks and audit workflow.
+**Funded delta:** stronger claim lint, action/dependency pinning, scheduled maintenance,
+independent review artifacts and release-linked remediation.
 
-**Funded delta**
-
-- grant/roadmap/security claim-lint gate;
-- dependency/action pinning and scheduled maintenance reports;
-- independent architecture/security review artifacts;
-- release-linked risk closure and remediation evidence.
-
-**Acceptance**
-
-- CI rejects stale SHA/test counts and false PostgreSQL/award/certification claims;
-- actions/dependencies follow a reviewed pin/update policy;
-- independent findings and resolutions are public;
-- grant pages and runtime status remain synchronized.
+**Acceptance:** CI rejects stale SHA/test counts and false activation/award/certification
+claims; GitHub and Notion remain synchronized.
 
 ## Explicit non-scope across M1–M9
 
-- universal truth, zero hallucinations or AGI;
-- consciousness, living digital mind or human-brain simulation;
+- universal truth, zero hallucinations, AGI or consciousness;
 - automatic GDPR/legal/security certification;
-- autonomous self-canonization;
-- hidden chain-of-thought storage;
-- automatic backend switching or live dual-write unless separately reviewed;
+- autonomous self-canonization or hidden chain-of-thought storage;
+- automatic backend switching or live dual-write without separate review;
 - Titan, Native Kernel, Mentaury or Research Mode as current Crystal runtime.
 
 ## Change control
 
-Any milestone change must update this matrix, the current status/manifest and synchronized
-Notion grant pages in the same work cycle. Budget or award status may change only from
-verified external grant communication.
+Any milestone change must update this matrix, current status/manifest and synchronized Notion
+grant pages in the same work cycle. Budget or award status may change only from verified
+external grant communication.

@@ -1,87 +1,77 @@
 # Crystal Verification Report
 
 **Status date:** 2026-08-08  
-**Verified runtime checkpoint:** `f03e24c85922d0bb46d6d9dfee98338972135908`  
-**Verified tree:** `abf75283b382697b323ab69cfa7235b47171dace`  
-**Validated implementation head:** `17ce10ffe12da93be50434c73d08f05a70a5922b`  
-**Pull request:** #335  
-**Exact-head CI:** `31224184351`  
-**Resource benchmark CI:** `31224005804`
+**Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
+**Verified tree:** `f57e58a6f4d1954b649ba324996fcde42ac287b8`  
+**Validated implementation head:** `d7af7c80722274f9217bc5545d150f92e9363f37`  
+**Pull request:** #337  
+**Exact-head CI:** `31256316536`  
+**PostgreSQL integration CI:** `31256316532`
 
 This is evidence for the tested repository state. It is not a production, legal, security,
-PostgreSQL-readiness or institution-scale certification.
+grant-award or institution-scale certification.
 
 ## Result
 
 | Gate | Result |
 |---|---:|
-| Python 3.11 | 2059 passed / 12 skipped / 0 failed |
-| Python 3.12 | 2059 passed / 12 skipped / 0 failed |
-| Measured statements | 9361 |
+| Python 3.11 | 2078 passed / 13 skipped / 0 failed |
+| Python 3.12 | 2078 passed / 13 skipped / 0 failed |
+| Measured statements | 9756 |
 | Line coverage | 100.00% |
-| `core/storage_migration.py` | 626 / 626 statements |
+| `core/postgresql_migration.py` | 44 / 44 statements |
+| `core/postgresql_migration_impl.py` | 336 / 336 statements |
 | Ring Zero declared mutants | 7/7 killed |
 | Permanent CI jobs | 9/9 successful |
-| Resource benchmark jobs | 2/2 successful |
+| Real PostgreSQL/pgvector integration | 1/1 successful |
 
-## Runtime delta verified in PR #335
+## Runtime delta verified in PR #337
 
-- fixed-batch SQLite cursor iteration;
-- incremental canonical JSONL write, count and SHA-256;
-- private disk-backed canonical edge sorting;
-- same-descriptor hash-first and incremental parse verification;
-- private disk-backed node/entity/reference checks;
-- bounded dangling-reference diagnostics;
-- temporary-disk preflight and handled-failure cleanup;
-- preserved schema, vector, canonical-ordering, file-identity and TOCTOU checks.
+- explicit `[postgresql]` optional extra and lazy Psycopg loading;
+- PostgreSQL 16, pgvector 0.8.2 and Psycopg 3.3.x preflight;
+- TLS-required production path with an explicit local-test-only plaintext override;
+- new allowlisted `velantrim_inactive_*` target schema;
+- serializable transactional import from a verified completed logical bundle;
+- target control state constrained to `active=false`;
+- independent read-only canonical target re-hash;
+- exact record-count, canonical-byte-count and SHA-256 equivalence per dataset;
+- endpoint-bound, non-secret receipts and redacted database failures;
+- no ANN indexes, runtime registration, activation, cutover, rollback or dual-write.
 
-## Resource evidence
+## Real integration evidence
 
-Benchmark run `31224005804` compared 1,025 and 8,193 primary-record corpora.
+Run `31256316532` used the ephemeral `pgvector/pgvector:0.8.2-pg16` service and verified:
 
-| Metric | 1,025 records | 8,193 records |
-|---|---:|---:|
-| Source SQLite | 450,560 B | 3,141,632 B |
-| Bundle | 360,629 B | 2,869,434 B |
-| Export including internal verify | 0.649478 s | 5.424900 s |
-| Second independent verify | 0.361907 s | 3.131820 s |
-| Python traced peak | 1,338,163 B | 1,339,001 B |
-| Linux process max RSS | 23,324 KiB | 25,600 KiB |
+- real import and a separate verification pass;
+- PostgreSQL 16.14, pgvector 0.8.2 and Psycopg 3.3.4;
+- `state=VERIFIED` and `active=false`;
+- exact canonical equality for nodes, vectors, edges, entities, mentions and metadata;
+- absence of HNSW/IVFFlat indexes;
+- absence of credential-bearing material in receipts.
 
-See [the full resource report](./docs/benchmarks/SQLITE_LOGICAL_MIGRATION_RESOURCE_EVIDENCE.md).
-These measurements support bounded behavior for the tested synthetic local-first corpora;
-they are not a production SLO or proof for every payload shape or maximum accepted bundle.
+The workflow uses a passwordless localhost test service. This is test-only configuration,
+not deployment guidance.
 
-## Active fail-closed limits
-
-| Resource | Limit |
-|---|---:|
-| profile/control JSON | 1 MiB |
-| source SQLite file | 64 MiB |
-| one canonical record | 1 MiB |
-| records per dataset | 200,000 |
-| one dataset | 64 MiB |
-| aggregate JSONL | 384 MiB |
-
-## Authority and future-work boundary
+## Authority boundary
 
 ```text
 physical L3 state       != strict Canon
 logical bundle          != claim evidence
-successful verification != backend activation
-bounded local migration != PostgreSQL runtime
-benchmark result        != production SLO
+successful import       != backend activation
+exact state equivalence != ordinary runtime availability
+integration success     != production certification
 ```
 
-Issue #331 is implemented by PR #335. PostgreSQL/pgvector runtime, inactive target import,
-exact target equivalence, cutover, rollback, dual-write and distributed fencing remain
-absent. Issue #332 governs only the next inactive-import/equivalence phase.
+Issue #332 is implemented by PR #337 only for inactive import and exact equivalence of the
+approved bundle datasets. Exact-vs-ANN evaluation, cutover/fencing, rollback, server
+backup/restore/upgrade lifecycle and active PostgreSQL runtime selection remain absent.
 
 ## Reproduction
 
 ```bash
-pip install -e '.[dev]'
+pip install -e '.[dev,postgresql]'
 pytest tests/ --cov=. --cov-fail-under=100
-bash scripts/storage_migration_resource_benchmark.sh 1025 result-1025.json
-bash scripts/storage_migration_resource_benchmark.sh 8193 result-8193.json
 ```
+
+A real PostgreSQL 16 server with pgvector 0.8.2 is required for the dedicated integration
+test.

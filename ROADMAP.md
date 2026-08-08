@@ -2,59 +2,67 @@
 
 > Only merged `main`, executable tests and exact CI are implementation truth.
 
-**Current verified baseline:** `main@f03e24c85922d0bb46d6d9dfee98338972135908`  
-**Validated head / CI:** `17ce10ffe12da93be50434c73d08f05a70a5922b` / `31224184351`
+**Current verified baseline:** `main@bbd816c09dd39a02e6de6c1014438490572f40f6`  
+**Validated head / CI:** `d7af7c80722274f9217bc5545d150f92e9363f37` / `31256316536`  
+**PostgreSQL integration:** `31256316532`
 
 ## ✅ Delivered baseline
 
 Crystal includes the trust/evidence/query/storage lifecycle baseline plus:
 
-- deterministic bounded-streaming SQLite logical export;
-- disk-backed canonical edge ordering and referential checks;
-- same-descriptor independent verification;
-- cleanup and resource preflight;
-- 2059 tests, 9361 statements, 100% coverage and 9/9 CI;
-- benchmark `31224005804` 2/2 with explicit non-SLO limits.
+- deterministic bounded-streaming SQLite logical export and verification;
+- optional lazy PostgreSQL driver path;
+- PostgreSQL 16 / pgvector 0.8.2 preflight;
+- serializable import into a new inactive schema;
+- independent exact-state equivalence and non-secret receipts;
+- 2078 tests, 9756 statements, 100% coverage and 9/9 permanent CI;
+- 1/1 real PostgreSQL/pgvector integration job.
 
-## ✅ Completed — issue #331 / PR #335
+## ✅ Completed — issues #331 and #332
 
-The production path no longer retains complete datasets or global identifier sets. Existing
-64 MiB source/dataset, 200,000-record and 384 MiB aggregate limits remain active. Raising
-them requires a separate evidence-backed change.
-
-## P1 — Inactive PostgreSQL/pgvector import (#332)
-
-Next phase only:
+PR #335 completed bounded logical migration. PR #337 completed only the first PostgreSQL
+phase:
 
 ```text
 verified bundle
 → PostgreSQL preflight
 → inactive target import
-→ exact state equivalence
-→ import/equivalence receipts
+→ independent exact-state equivalence
+→ receipts
 ```
 
-No activation, cutover, rollback, dual-write or automatic switching.
+The target remains `active=false`, cannot serve normal reads/writes and is not registered in
+ordinary runtime composition. No activation, cutover, rollback, dual-write or automatic
+switching was added.
 
-## P2 — Exact/ANN evaluation, cutover and rollback
+## P1 — Exact-vs-ANN retrieval evaluation
 
-- exact pgvector search reference;
-- versioned HNSW/IVFFlat evaluation;
-- source/target fencing and explicit cutover receipt;
-- rollback proof and expiry policy.
+- exact pgvector search as the reference;
+- versioned HNSW/IVFFlat evaluation corpus;
+- recall@k, filtered recall, latency, index size and rebuild evidence;
+- ANN indexes remain rebuildable, non-authoritative projections.
 
-## P2 — Server lifecycle and security
+## P1 — Explicit cutover and rollback proof
 
-- least-privilege roles, TLS and credential rotation;
-- backup/restore/upgrade drills;
-- transaction/retry policy and observability;
+- source/target fencing;
+- immutable cutover receipt;
+- crash-window and partial-failure tests;
+- explicit rollback receipt and expiry policy;
+- no reachability-based backend selection.
+
+## P1 — PostgreSQL server lifecycle and security
+
+- least-privilege migration/read/runtime roles;
+- TLS certificate and credential rotation;
+- backup/restore/upgrade drills and retention;
+- pooling, timeout/retry, observability and operator cleanup policy;
 - no certification or distributed exactly-once overclaim.
 
 ## P2/P3 — Release evidence and Reader Core research
 
-- reproducible artifacts, checksums, SBOM and dependency pinning;
+- reproducible artifacts, checksums, SBOM and dependency/action pinning;
 - source-linked Reader Core prototype only upstream of Guardian/TruthGate.
 
-**No grant award** or budget change is claimed. PostgreSQL runtime, automatic switching,
-production multi-tenancy, universal truth, zero hallucinations and legal certification
-remain out of scope.
+**No grant award** or budget change is claimed. Active PostgreSQL runtime selection,
+automatic switching, production multi-tenancy, universal truth, zero hallucinations and
+legal certification remain out of scope.

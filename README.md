@@ -4,101 +4,84 @@
 
 ### Verifiable, local-first memory infrastructure for trustworthy AI systems
 
-`v0.3.0` · 🧪 **2059 passed / 12 skipped** · 🎯 **100.00% coverage** · 🧬 **7/7 declared mutants killed** · ✅ **9 CI jobs** · 🐍 **pure-standard-library default runtime** · ⚖️ **AGPL-3.0**
+`v0.3.0` · 🧪 **2078 passed / 13 skipped** · 🎯 **100.00% coverage** · 🧬 **7/7 declared mutants killed** · ✅ **9 permanent CI jobs** · 🐘 **real PostgreSQL/pgvector integration** · 🐍 **pure-standard-library default runtime** · ⚖️ **AGPL-3.0**
 
-**Verified runtime checkpoint:** `f03e24c85922d0bb46d6d9dfee98338972135908` — merged PR #335.  
-**Validated implementation head / CI:** `17ce10ffe12da93be50434c73d08f05a70a5922b` / `31224184351` — 9/9 successful.
+**Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` — merged PR #337.  
+**Validated head / CI:** `d7af7c80722274f9217bc5545d150f92e9363f37` / `31256316536` — 9/9 successful.  
+**PostgreSQL integration:** `31256316532` — successful against PostgreSQL 16 and pgvector 0.8.2.
 
-Crystal is a memory, evidence and decision boundary. It records what a claim is, where it
-came from, what epistemic state it is in, whether it may ground an answer, and how a
-contradiction was explicitly resolved.
+Crystal separates physical memory, evidence, epistemic admission and trusted reads. Storage
+presence, retrieval score or migration success cannot bypass Guardian, TruthGate or strict
+Canon reconciliation.
 
 > **Documentation language policy:** English is the authoritative actively maintained
-> GitHub documentation language during engineering. Existing localized READMEs are frozen
-> snapshots and may lag until a dedicated final reconciliation pass.
+> GitHub documentation language. Localized READMEs remain frozen snapshots until a dedicated
+> reconciliation pass.
 
 ## 🎯 Current verified baseline
 
-Crystal currently provides:
-
-- typed claims, provenance, evidence spans and an explicit epistemic lifecycle;
+- typed claims, provenance, evidence spans and explicit epistemic states;
 - Guardian and TruthGate admission boundaries;
-- physical L3 multi-status storage separated from strict Canon;
-- immutable deny-dominant `TrustSnapshot` and `CanonicalView` reads;
+- physical L3 separated from immutable `TrustSnapshot` / `CanonicalView` reads;
 - read-only public HTTP, CLI and MCP query paths;
-- TRACE, replayable receipts, restriction, erasure and audit controls;
-- explicit contradiction reports and authorized `COEXIST`, `CONTEXTUALIZE` and
-  `SUPERSEDE` decisions;
-- scoped curator roles/capabilities with process-local decision leases;
-- a durable storage-profile lock;
-- verified SQLite backup, independent verification, inactive restore and guarded
-  stale-lock recovery;
-- deterministic SQLite logical export and independent bundle verification.
+- TRACE, receipts, restrictions, erasure and contradiction decisions;
+- durable storage-profile identity;
+- SQLite backup, independent verification, inactive restore and lock recovery;
+- bounded-streaming SQLite logical export and independent bundle verification;
+- optional, lazy-loaded PostgreSQL/pgvector inactive import and independent exact-state
+  equivalence for the approved bundle datasets.
 
-```text
-explicit ingest
-→ Guardian
-→ TruthGate
-→ physical L3 multi-status storage
-→ immutable TrustSnapshot
-→ strict CanonicalView
-→ grounded answer or bounded refusal
-→ replayable Receipt
-```
-
-## 🗃️ Storage profiles and migration boundary
+## 🗃️ Storage and migration boundary
 
 ```text
 SQLite
   = verified local-first/lightweight default
+  = ordinary current storage profile
 
 PostgreSQL + pgvector
-  = proposed optional institutional profile
-  = not current runtime
+  = optional institutional migration target
+  = inactive import/equivalence tooling implemented
+  = not selected by ordinary runtime composition
+  = not an active read/write backend
 ```
 
-PR #335 advances the canonical backend-neutral JSONL path to a bounded-streaming
-implementation. Source rows are consumed in fixed cursor batches; canonical edge ordering
-and referential checks use private disk-backed SQLite state; verification hashes and parses
-from the same descriptor without retaining complete datasets or global identifier sets in
-the production path.
+```text
+verified SQLite logical bundle
+→ PostgreSQL preflight
+→ new inactive target schema
+→ serializable import
+→ independent read-only canonical re-hash
+→ exact count / byte / SHA-256 equivalence
+→ non-secret receipts
+```
 
-The bundle remains operation evidence only: it is not claim evidence, TruthGate admission
-or backend activation.
+The driver is installed only through `[postgresql]` and loaded only by explicit operator
+commands. The default installation remains pure standard library. Production credentials
+and credential-bearing connection strings must not enter profiles, bundles, receipts,
+application logs, issues or Notion.
 
-The merged implementation retains the explicit local-first resource envelope:
+Successful import is operational evidence only. It is not activation, ordinary runtime
+availability, claim evidence, TruthGate admission or strict Canon membership. The target
+remains `active=false` and cannot serve normal reads or writes.
 
-| Resource | Limit |
-|---|---:|
-| profile/control JSON | 1 MiB |
-| source SQLite file | 64 MiB |
-| one canonical record | 1 MiB |
-| records per dataset | 200,000 |
-| one dataset | 64 MiB |
-| aggregate JSONL | 384 MiB |
+Issue #331 was implemented by PR #335. Issue #332 was implemented by PR #337 and is now
+merged baseline. Still separate: exact-vs-ANN evaluation, cutover/fencing, rollback,
+PostgreSQL backup/restore/upgrade lifecycle, production pooling/IdP/multi-tenancy and
+distributed coordination.
 
-Issue #331 is implemented by PR #335. Reproducible local-first resource evidence is recorded
-in [SQLite Logical Migration — Bounded Resource Evidence](./docs/benchmarks/SQLITE_LOGICAL_MIGRATION_RESOURCE_EVIDENCE.md):
-an approximately 8x synthetic corpus increase changed Python-traced peak from 1,338,163 to
-1,339,001 bytes. This is not a production SLO or institution-scale certification.
-
-Issue #332 tracks the separate future phase: optional inactive PostgreSQL/pgvector import
-and exact-state equivalence. Cutover, rollback, dual-write and automatic backend switching
-remain absent.
 ## 🛡️ Central non-claims
 
 ```text
-physical L3           != strict Canon
-retrieval score       != evidence
-model output          != independent source
-migration receipt     != claim evidence
-successful verify     != activation
-backend availability  != backend selection
+physical L3          != strict Canon
+retrieval score      != evidence
+migration receipt    != claim evidence
+successful import    != activation
+backend availability != backend selection
 ```
 
-Crystal does not claim universal truth detection, zero hallucinations, production
-multi-tenancy, distributed exactly-once behavior, legal/GDPR/security certification,
-PostgreSQL runtime, Titan integration or artificial consciousness.
+Crystal does not claim universal truth, zero hallucinations, an active PostgreSQL runtime
+backend, production multi-tenancy, distributed exactly-once behavior, legal/GDPR/security
+certification, Titan integration or artificial consciousness.
 
 ## 🚀 Quick start
 
@@ -111,15 +94,20 @@ pip install -e '.[dev]'
 pytest tests/ --cov=. --cov-fail-under=100
 ```
 
+Optional inactive PostgreSQL migration tooling:
+
+```bash
+pip install -e '.[postgresql]'
+```
+
 ## 📚 Evidence and navigation
 
 - [Verification report](./TEST_REPORT.md)
 - [Current status](./docs/STATUS.md)
 - [Implementation matrix](./docs/IMPLEMENTATION_STATUS.md)
 - [Machine-readable manifest](./docs/status/implementation-manifest.json)
-- [Architecture](./docs/ARCHITECTURE.md)
-- [Reviewer guide](./docs/REVIEWER_GUIDE.md)
-- [AI-agent entry point](./docs/ai/README.md)
+- [Inactive PostgreSQL import contract](./docs/architecture/POSTGRESQL_INACTIVE_IMPORT.md)
+- [PostgreSQL/pgvector RFC](./docs/architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
 - [Current AI context](./docs/ai/CURRENT_STATE.md)
 - [Known risks](./docs/ai/KNOWN_RISKS.md)
 - [NLnet scope](./docs/GRANT_NLNET_SCOPE.md)
@@ -130,4 +118,4 @@ pytest tests/ --cov=. --cov-fail-under=100
 ## 🎓 Grant status
 
 The NLnet application is submitted and under review. No award or budget change is claimed.
-Already merged baseline functionality must not be counted again as future funded delivery.
+Merged PR #337 cannot be counted again as future funded delivery.
