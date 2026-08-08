@@ -82,7 +82,7 @@ boundaries, size limits and local links.
 - [Cross-backend migration contract](./architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md)
 - [Inactive PostgreSQL import contract](./architecture/POSTGRESQL_INACTIVE_IMPORT.md)
 - [PostgreSQL + pgvector profile RFC](./architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
-- [ADR-021](./adr/ADR-021-cross-backend-storage-migration.md)
+- [ADR-021](./adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md)
 
 SQLite remains the ordinary local-first profile. PostgreSQL/pgvector is currently an optional,
 lazy-loaded inactive import and exact-equivalence target; it is not an active read/write backend.
