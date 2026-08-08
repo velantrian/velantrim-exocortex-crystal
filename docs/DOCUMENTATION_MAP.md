@@ -28,7 +28,7 @@ English architecture / ADR / security / grant contracts
         ↓
 English README primary public source
         ↓
-CURRENT full-parity localized READMEs and checkpointed D1 translations
+CURRENT full-parity localized READMEs and checkpointed D1/D2 translations
         ↓
 REFRESH_NEEDED translated document packs
         ↓
@@ -36,10 +36,8 @@ AI context pack, roadmap, RFC and research documents
 ```
 
 English is the primary source and conflict resolver, but Crystal is not English-only. Root
-README and D1 entry/use surfaces are current for all nine supported locales. The wider
-corpus is translated in phases.
-
-Notion stores synchronized strategy, rationale and history. It is not runtime proof.
+README, D1 entry/use and D2 reviewer/safety surfaces are current for all nine supported
+locales. Notion stores synchronized strategy and history, not runtime proof.
 
 ## Core architecture and trust
 
@@ -62,11 +60,16 @@ Notion stores synchronized strategy, rationale and history. It is not runtime pr
 - [GDPR mapping](../GDPR.md)
 - [Failure modes](./FAILURE_MODES.md)
 
+D2 uses the stable English Reviewer Guide and Safety/Privacy/Failure summary as source
+contracts; current translations exist for all nine supported locales and link back to the
+detailed English Security, Privacy, GDPR and Failure Modes contracts.
+
 ## Evidence and performance
 
 - [Test report](../TEST_REPORT.md)
 - [Current status](./STATUS.md)
 - [Implementation manifest](./status/implementation-manifest.json)
+- [D2 translation manifest](./status/d2-translation-manifest.json)
 - [Evaluation](./EVAL.md)
 - [L3 retrieval benchmark](./benchmarks/L3_RETRIEVAL_SCALE.md)
 
@@ -85,9 +88,8 @@ budgeted again as future delivery.
 - [Translation status ledger](./TRANSLATION_STATUS.md)
 - locale indexes: [ar](./ar/README.md), [de](./de/README.md), [es](./es/README.md), [fr](./fr/README.md), [hi](./hi/README.md), [it](./it/README.md), [ja](./ja/README.md), [ru](./ru/README.md), [zh-CN](./zh-CN/README.md)
 
-Root READMEs and D1 entry/use surfaces are current. D2 uses the stable English Reviewer Guide
-and Safety/Privacy/Failure summary before translation. Architecture, grant/project and
-extended references remain D3–D5.
+Root READMEs, D1 and D2 are current. Architecture, grant/project and extended references
+remain D3–D5.
 
 ## Active storage and migration documents
 

@@ -1,42 +1,36 @@
 <!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
 <!-- d1-source: main@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
 <!-- d1-status: CURRENT -->
-<!-- d2-status: REFRESH_NEEDED -->
+<!-- d2-source: main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f -->
+<!-- d2-status: CURRENT -->
+<!-- d3-status: REFRESH_NEEDED -->
 # 简体中文文档
 
-英语仍是主要工作语言、源语言以及发生冲突时的最终依据。本翻译是持续维护的
-公开产品界面，但不会建立独立的实现、安全、资助、TruthGate 或 Canon 权威。
+英语仍是主要 working/source language 与 conflict resolver。翻译是持续维护的 public
+surface，但不会创建独立的 implementation、security、grant、TruthGate 或 Canon authority。
 
-## D1 — 入门与使用
-
-**状态：** `CURRENT`  
-**英语源 checkpoint：** `main@a497b7d3cfbe59ca75b11d7449d5a728455b3130`
+## D1 — 入门与使用 — `CURRENT`
 
 - [快速开始](./QUICKSTART.md)
 - [当前状态](./STATUS.md)
 - [实现状态](./IMPLEMENTATION_STATUS.md)
 
-## 其他翻译文档
+## D2 — 审查、安全、隐私与失败 — `CURRENT`
 
-这些文档仍有参考价值，但在与精确英语 checkpoint 重新核对前保持
-`REFRESH_NEEDED`：
+- [Reviewer Guide](./REVIEWER_GUIDE.md)
+- [安全、隐私与失败边界](./SAFETY_PRIVACY_AND_FAILURES.md)
 
-- [Reviewer Guide](./REVIEWER_GUIDE.md) — D2；
-- [Grant Overview](./GRANT_OVERVIEW.md) — D4；
-- [Glossary](./GLOSSARY.md) — D4。
+**English source:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
+英语详情：[Security](../../SECURITY.md)、[Privacy](../../PRIVACY.md)、
+[GDPR](../../GDPR.md)、[Failure Modes](../FAILURE_MODES.md)。
 
-## 权威英语证据
+## 后续 phases — `REFRESH_NEEDED`
 
-- [README](../../README.md)
-- [Documentation map](../DOCUMENTATION_MAP.md)
-- [Architecture](../ARCHITECTURE.md)
-- [Implementation status](../IMPLEMENTATION_STATUS.md)
-- [Test report](../../TEST_REPORT.md)
-- [Security policy](../../SECURITY.md)
-
-不声称经过母语编辑认证。
+Architecture/ADR = D3；grant/roadmap/glossary = D4；extended references = D5。
 
 ## Governance
 
 - [Localization policy](../LOCALIZATION_POLICY.md)
 - [Translation status](../TRANSLATION_STATUS.md)
+
+不声称 native-speaker editorial certification。

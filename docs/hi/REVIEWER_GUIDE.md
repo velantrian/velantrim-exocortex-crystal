@@ -1,158 +1,102 @@
-# Reviewer Guide — Velantrim ExoCortex (Crystal)
+<!-- translation-source: docs/REVIEWER_GUIDE.md@b7e6574dd7aefa2f32783ab79054fac6b3b4109f -->
+<!-- translation-status: CURRENT -->
+<!-- d2-locale: hi -->
+<!-- d2-boundary: public-ask-read-only -->
+<!-- d2-boundary: postgresql-active=false -->
+<!-- d2-boundary: erasure-not-global -->
+<!-- d2-nonclaim: security-legal-gdpr-not-certified -->
+<!-- d2-nonclaim: nlnet-not-awarded -->
+# Reviewer Guide — Velantrim Exo-Cortex Crystal
 
-> 🌐 🇬🇧 [English](../REVIEWER_GUIDE.md) · 🇩🇪 [Deutsch](../de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](../fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](../es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](../it/REVIEWER_GUIDE.md) · 🇷🇺 [Русский](../ru/REVIEWER_GUIDE.md) · 🇨🇳 [简体中文](../zh-CN/REVIEWER_GUIDE.md) · 🇸🇦 [العربية](../ar/REVIEWER_GUIDE.md) · 🇯🇵 [日本語](../ja/REVIEWER_GUIDE.md) · 🇮🇳 **हिन्दी**
+**English source checkpoint:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`  
+यह maintained orientation है। Implementation evidence अभी भी `main` का code, executable
+tests, exact CI, [TEST_REPORT.md](../../TEST_REPORT.md) और
+[manifest](../status/implementation-manifest.json) है।
 
-यह document reviewer को Crystal का scope, execution path, मुख्य epistemic guarantees और
-स्पष्ट limitations कम समय में जाँचने देता है। यह कोई नया runtime claim नहीं जोड़ता।
+## 1. क्या review करना है
 
-## 1. Crystal क्या है
+Crystal AI systems के लिए public, local-first, source-grounded और auditable memory
+infrastructure है। Verified baseline में typed claims, Guardian/TruthGate, multi-status L3
+पर strict Canon read projection, read-only public queries, अलग explicit ingest path,
+Receipts और auditable provenance शामिल हैं।
 
-Crystal, Velantrim का **public, minimal और verifiable memory core** है।
+Crystal AGI, consciousness, universal truth, zero hallucinations, active PostgreSQL runtime,
+automatic switching, production multi-tenancy, security/GDPR certification या awarded NLnet
+grant का दावा नहीं करता।
 
-- local-first storage;
-- typed claims और TruthGate admission;
-- sealed / replayable TRACE और Receipt;
-- per-fact provenance / audit mechanisms;
-- GDPR-oriented erasure / restriction controls;
-- dependency-free default runtime;
-- optional API / MCP interfaces।
-
-## 2. Crystal क्या नहीं है
-
-Crystal यह दावा नहीं करता:
-
-- AGI, consciousness, autonomous mind या biological brain implementation;
-- zero-hallucination guarantee;
-- production-ready Titan console / Research PWA;
-- NoeticCore / AttentionRouter / BICA को current runtime बताना;
-- Graphiti, Neo4j, OpenAI या cloud LLM को mandatory dependency बताना;
-- graph में मौजूद हर entry को verified Canon मानना;
-- Full Personal Exo-Cortex को current Crystal runtime या grant deliverable बताना।
-
-Research और cognitive concepts research / RFC-level पर हैं; वे current runtime truth नहीं हैं।
-
-## 3. Authoritative status
-
-- [अंग्रेज़ी Current Status](../STATUS.md)
-- [Implementation Status](../IMPLEMENTATION_STATUS.md)
-- [Implementation Reality Matrix](../IMPLEMENTATION_REALITY_MATRIX.md)
-- [Test Report](../../TEST_REPORT.md)
-
-यदि कोई capability authoritative source में `IMPLEMENTED` नहीं है, तो उसे unimplemented मानें।
-
-## 4. Tests चलाना
+## 2. Baseline reproduce करें
 
 ```bash
 python -m pip install --upgrade pip
 pip install -e '.[dev]'
-python -m pytest
+pytest tests/ --cov=. --cov-fail-under=100
+python scripts/eval_gate.py --out-dir eval-artifacts
+bash scripts/ring_zero_mutation_gate.sh
+bash scripts/check_docs_status.sh
 ```
 
-CI 100% line coverage gate enforce करता है। सटीक count के लिए `TEST_REPORT.md` authoritative है।
+बदलने वाली metrics केवल English test report से लें।
 
-## 5. Docker सुरक्षित रूप से चलाना
-
-```bash
-export VELANTRIM_API_TOKEN=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
-docker compose up --build
-curl http://127.0.0.1:8000/health
-```
-
-जाँचें:
-
-- token न हो तो fail-closed;
-- host loopback publish;
-- non-root runtime user;
-- named-volume data default;
-- image में secrets, local DB, tests या dev extras शामिल न हों।
-
-## 6. Epistemic behavior की जाँच
-
-### TruthGate
-
-`LLM_OUTPUT` अकेले `WORLD_FACT` के रूप में admitted नहीं हो सकता। यह Ring Zero
-rule non-configurable है। पुराने `ENABLE_TRUTH_POLICY` values — `off` सहित — अब
-inert हैं; process environment इसे disable नहीं कर सकता। Tests, demos और
-migrations को gate कमजोर करने के बजाय honest independent provenance देना होगा
-या उपयुक्त non-world-fact type चुनना होगा।
-
-Authoritative behavior proof `tests/test_truth_gate.py` है और decision record
-[`ADR-011`](../adr/ADR-011-NON_CONFIGURABLE_TRUTH_POLICY.md) है।
-
-```bash
-velantrim invariant-check
-```
-
-`invariant-check` existing L3 state का read-only scan है। यह TruthGate admission
-स्वयं execute नहीं करता, इसलिए केवल यह command LLM-origin block का proof नहीं है।
-
-### Receipt
-
-```bash
-velantrim receipt "your question" > receipt.json
-velantrim verify-receipt receipt.json
-velantrim verify-receipt receipt.json --strict-provenance
-```
-
-### Audit / history
-
-```bash
-velantrim history <fact_id>
-velantrim audit
-velantrim audit-verify
-```
-
-`history` truth-maintenance graph edges पढ़ता है। यह per-fact `ProvenanceChain` के समान view नहीं है।
-
-### Accountable override
-
-Blocked fact का curator force-override `review_force_approve`, actor, reason और
-concrete `gate_reason` के साथ record होता है। Override TruthGate decision को
-बदलता नहीं; वह अलग explicit governance action है।
-
-## 7. Read-only query boundary
+## 3. Read/write boundary
 
 ```text
-HTTP /ask, /receipt
-CLI ask, receipt
-MCP search
-→ core.query_pipeline
-→ existing L3 facts only
-→ confident answer के लिए CanonicalView
-→ answer / bounded refusal / inspection rows
+ask / receipt / MCP inspection → read-only
+explicit ingest                → admission-capable write path
+curator override               → explicit, attributed, audited
 ```
 
-इन query/search surfaces पर L0/L1 facts create नहीं होते, ESM transition नहीं
-होता, L3 mutate नहीं होता, outbox touch नहीं होता, episode record नहीं होता और
-unset embedding fingerprint initialize नहीं होता। MCP search inspection surface
-है; यह दावा नहीं करता कि हर physical L3 node strict Canon का हिस्सा है।
+Public `ask` `core.query_pipeline.query()` उपयोग करता है और facts, ESM, L3, outbox,
+episode links, embedding identity या unknown candidates को mutate नहीं कर सकता। Strict
+grounding कम होने पर bounded refusal सुरक्षित expected behaviour है।
 
-## 8. मुख्य limitations
+`ingest` लिखता है, पर admission evidence, claim type, policy और TruthGate पर निर्भर है।
+Model output स्वयं को verified world fact प्रमाणित नहीं कर सकता।
 
-- `ProvenanceChain` lifecycle wiring में erase path के बाहर follow-up बाकी है;
-- knowledge graph data verifier future work है;
-- physical L3 और strict CanonicalView समान नहीं हैं;
-- adaptive confidence threshold अभी context-dependent है;
-- Research Mode / Noetic / Titan console / PWA / BICA runtime नहीं हैं।
+## 4. Storage और migration
 
-## 9. Reviewer checklist
+SQLite ordinary active local-first profile है। पहला durable `auto` optional LadybugDB
+चुन सकता है यदि installed हो, अन्यथा SQLite; choice और non-secret locator lock होते हैं।
+Ephemeral Mock में silent fallback निषिद्ध है।
 
-- [ ] technical identifiers बदले नहीं गए;
-- [ ] relative links सही हैं;
-- [ ] हिन्दी claim अंग्रेज़ी authoritative source से अधिक मजबूत नहीं है;
-- [ ] funding award, certification या production readiness का नया दावा नहीं है;
-- [ ] runtime checkpoint और localization sync marker अलग रखे गए हैं;
-- [ ] full CI green है।
+PostgreSQL/pgvector अलग operator path है: verified bundle → version/TLS preflight → नया
+inactive schema → serializable import → independent read-only re-hash → exact equivalence;
+target `active=false` रहता है।
 
-## 10. सुझाया reading order
+Import/equivalence activation, selection, TruthGate admission, strict Canon, cutover,
+rollback, dual-write या production readiness नहीं है।
 
-1. [QUICKSTART.md](./QUICKSTART.md)
-2. [STATUS.md](./STATUS.md)
-3. [GLOSSARY.md](./GLOSSARY.md)
-4. [अंग्रेज़ी Reviewer Demo](../REVIEWER_DEMO.md)
-5. [Test Report](../../TEST_REPORT.md)
-6. [अंग्रेज़ी Architecture](../ARCHITECTURE.md)
+## 5. Security और privacy
 
----
+Default operation को cloud, LLM, telemetry या analytics आवश्यक नहीं। Remote Neo4j,
+Anthropic, Wikidata, Redis, PostgreSQL migration, wider API या copied backup/export केवल
+explicit operator choice से boundary बढ़ाते हैं।
 
-> 🌐 🇬🇧 [English](../REVIEWER_GUIDE.md) · 🇩🇪 [Deutsch](../de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](../fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](../es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](../it/REVIEWER_GUIDE.md) · 🇷🇺 [Русский](../ru/REVIEWER_GUIDE.md) · 🇨🇳 [简体中文](../zh-CN/REVIEWER_GUIDE.md) · 🇸🇦 [العربية](../ar/REVIEWER_GUIDE.md) · 🇯🇵 [日本語](../ja/REVIEWER_GUIDE.md) · 🇮🇳 **हिन्दी**
+`VELANTRIM_ENCRYPTION_KEY` selected L1 fields की रक्षा करता है, हर L3, backup, bundle,
+Receipt, log या temporary file की नहीं। Credentials और secret DSNs profiles, bundles,
+receipts, logs, issues या Notion में नहीं जाने चाहिए।
+
+Active local store से erasure backups, exports, operator copies, remote systems या third-party
+data को स्वतः नहीं मिटाता।
+
+## 6. Fail-closed checks
+
+- Unsupported claims block, label या bounded refusal हों।
+- Profile/locator conflict backend cache से पहले fail हो।
+- Import failure rollback करे और `active=false` बनाए रखे।
+- Evidence mismatch और Receipt/audit tampering detect हों।
+- Oversized input limits पर fail हो।
+- Missing optional dependency hidden durable switch न करे।
+- External exposure के लिए TLS, authentication, least privilege और monitoring हों।
+
+## 7. Checklist
+
+- [ ] Current `main` और exact CI पहचाने गए।
+- [ ] Read-only query और explicit ingest अलग हैं।
+- [ ] Physical L3 और strict Canon अलग हैं।
+- [ ] Inactive PostgreSQL import और activation अलग हैं।
+- [ ] Network, secrets, encryption और erasure limits review हुए।
+- [ ] Certification, production readiness या grant award infer नहीं किया गया।
+
+English sources: [Reviewer Guide](../REVIEWER_GUIDE.md), [Security](../../SECURITY.md),
+[Privacy](../../PRIVACY.md), [Failure Modes](../FAILURE_MODES.md) और
+[Safety Summary](../SAFETY_PRIVACY_AND_FAILURES.md)।

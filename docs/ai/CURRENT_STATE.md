@@ -7,7 +7,7 @@
 **Version:** `0.3.0`
 
 GitHub `main`, executable tests and completed CI are implementation truth. Notion stores
-synchronized rationale and audit history; it does not override repository evidence.
+synchronized rationale and history; it does not override repository evidence.
 
 ## 1. Verified evidence
 
@@ -32,19 +32,17 @@ locked durable SQLite profile
 → non-secret receipts
 ```
 
-Issue #332 is implemented by PR #337 for inactive import and exact equivalence only.
-The target remains `active=false`, is absent from ordinary runtime composition and cannot
-serve normal reads or writes. Import or equivalence does not establish activation,
-automatic selection, cutover, rollback, dual-write, ANN acceptance, TruthGate admission
-or strict Canon membership.
+Issue #332 is implemented by PR #337 for inactive import and exact equivalence only. The
+target remains `active=false`, is absent from ordinary runtime composition and cannot serve
+normal reads or writes. Import/equivalence does not establish activation, automatic selection,
+cutover, rollback, dual-write, ANN acceptance, TruthGate admission or strict Canon membership.
 
 ## 3. Grant and remaining limitations
 
-The project is submitted and under review; no award or budget change is claimed. PR #337
-is merged baseline and cannot be counted again as funded delta. Remaining independent work
-includes exact-vs-ANN evaluation, explicit cutover/fencing, rollback proof, PostgreSQL
-server lifecycle, production IdP/multi-tenancy, supply-chain hardening and a dedicated
-Reader Core.
+The project is submitted and under review; no award or budget change is claimed. PR #337 is
+merged baseline and cannot be counted again as funded delta. Remaining independent work
+includes exact-vs-ANN evaluation, cutover/fencing, rollback proof, PostgreSQL server lifecycle,
+production IdP/multi-tenancy, supply-chain hardening and a dedicated Reader Core.
 
 ## 4. Documentation language and translation state
 
@@ -53,18 +51,22 @@ maintained public product surfaces but create no independent implementation, sec
 grant, TruthGate or Canon authority.
 
 Issue #341 D1 is complete for Arabic, German, Spanish, French, Hindi, Italian, Japanese,
-Russian and Simplified Chinese. Every locale now has a current index, Quick Start, Status
-and Implementation Status. Russian D1 is tied to
+Russian and Simplified Chinese. Russian D1 is tied to
 `main@16d71e731ee658b1faa65c9ea45c0d8cca290f7c`; the other eight locales are tied to
 `main@a497b7d3cfbe59ca75b11d7449d5a728455b3130`.
 
-The universal D1 `docs-status` validator checks manifest membership, exact checkpoints,
-local links, mutable runtime evidence, read-only query boundaries, PostgreSQL
-`active=false`, import-not-activation and NLnet-not-awarded non-claims.
+D1 is current across all nine supported locale packs. D2 reviewer/safety translations are
+also current across all nine supported locale packs against
+`main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
 
-D1 is current across all nine supported locale packs. Reviewer/safety documents remain D2;
-architecture D3; grant/project context D4; extended references D5. Those later families
+The D1 validator checks 36 entry/use documents. The D2 validator checks 18 reviewer/safety
+documents plus nine indexes, exact checkpoint, local links, read-only query, PostgreSQL
+`active=false`, non-global erasure, security/legal/GDPR non-certification and NLnet-not-awarded
+boundaries.
+
+Architecture remains D3; grant/project context D4; extended references D5. Those families
 remain `REFRESH_NEEDED` until independently reconciled.
 
-See [`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md) and
-[`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md).
+See [`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md),
+[`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md) and
+[`../status/d2-translation-manifest.json`](../status/d2-translation-manifest.json).

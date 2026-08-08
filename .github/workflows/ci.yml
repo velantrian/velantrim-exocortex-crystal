@@ -46,6 +46,8 @@ jobs:
         run: python scripts/check_d1_translation_status.py
       - name: Validate English D2 source contract
         run: python scripts/check_d2_source_contract.py
+      - name: Validate D2 translation status
+        run: python scripts/check_d2_translation_status.py
 
   test:
     runs-on: ubuntu-latest

@@ -4,12 +4,12 @@
 
 This ledger is the authoritative freshness map for multilingual Crystal documentation.
 English remains the primary source and conflict resolver; translated public documentation
-is a maintained product surface and cannot strengthen implementation, security, authority
-or grant claims.
+cannot strengthen implementation, security, authority or grant claims.
 
 **Root README source checkpoint:** `main@e521440e9bb188d88475f17dd5bcdd161b314605`.  
 **Russian D1 source checkpoint:** `main@16d71e731ee658b1faa65c9ea45c0d8cca290f7c`.  
-**Remaining-locale D1 source checkpoint:** `main@a497b7d3cfbe59ca75b11d7449d5a728455b3130`.
+**Remaining-locale D1 source checkpoint:** `main@a497b7d3cfbe59ca75b11d7449d5a728455b3130`.  
+**D2 source checkpoint:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
 
 **Policy:** [`LOCALIZATION_POLICY.md`](LOCALIZATION_POLICY.md).  
 **Tracking issue:** [#341](https://github.com/velantrian/velantrim-exocortex-crystal/issues/341).
@@ -31,8 +31,8 @@ or grant claims.
 
 ## D1 — entry and use documents
 
-D1 is complete for all nine supported locales. Each locale has a current documentation
-index, Quick Start, Status and Implementation Status tied to an exact English checkpoint.
+D1 is complete for all nine supported locales. Every locale has a current index, Quick Start,
+Status and Implementation Status tied to an exact source checkpoint.
 
 | Language | Locale index | Quick Start | Status | Implementation boundary | Source checkpoint |
 |---|---:|---:|---:|---:|---|
@@ -46,44 +46,53 @@ index, Quick Start, Status and Implementation Status tied to an exact English ch
 | Russian | `CURRENT` | `CURRENT` | `CURRENT` | `CURRENT` | `main@16d71e731ee658b1faa65c9ea45c0d8cca290f7c` |
 | Simplified Chinese | `CURRENT` | `CURRENT` | `CURRENT` | `CURRENT` | `main@a497b7d3cfbe59ca75b11d7449d5a728455b3130` |
 
-D1 current files for every locale:
+## D2 — reviewer and safety documents
+
+D2 is complete for all nine supported locales. Each locale has a current Reviewer Guide and
+a current Safety/Privacy/Failure summary derived from the stable English source contract.
+Detailed Security, Privacy, GDPR and Failure Modes contracts remain authoritative English
+references linked from every localized summary.
+
+| Language | Reviewer Guide | Safety / privacy / failures | Source checkpoint |
+|---|---:|---:|---|
+| Arabic | `CURRENT` | `CURRENT` | `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f` |
+| German | `CURRENT` | `CURRENT` | `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f` |
+| Spanish | `CURRENT` | `CURRENT` | `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f` |
+| French | `CURRENT` | `CURRENT` | `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f` |
+| Hindi | `CURRENT` | `CURRENT` | `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f` |
+| Italian | `CURRENT` | `CURRENT` | `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f` |
+| Japanese | `CURRENT` | `CURRENT` | `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f` |
+| Russian | `CURRENT` | `CURRENT` | `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f` |
+| Simplified Chinese | `CURRENT` | `CURRENT` | `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f` |
+
+D2 current files:
 
 ```text
-docs/<locale>/README.md
-docs/<locale>/QUICKSTART.md
-docs/<locale>/STATUS.md
-docs/<locale>/IMPLEMENTATION_STATUS.md
+docs/<locale>/REVIEWER_GUIDE.md
+docs/<locale>/SAFETY_PRIVACY_AND_FAILURES.md
 ```
 
-The `docs-status` gate validates exact checkpoints, manifest membership, local links,
-mutable evidence markers and capability/grant non-claims across all current D1 files.
+The D2 validator checks all 18 documents, nine indexes, exact source checkpoint, local links,
+read-only query, PostgreSQL `active=false`, non-global erasure, non-certification and
+NLnet-not-awarded boundaries.
 
 ## Remaining document families
-
-Presence does not prove freshness. Until a file is checked against a recorded English
-checkpoint, it remains `REFRESH_NEEDED`.
 
 | Document family | Current multilingual state | Next phase |
 |---|---|---|
 | Root README | all nine supported locales `CURRENT` | maintain |
-| Quick Start / Status / implementation boundary | all nine supported locales `CURRENT` | maintain |
-| Reviewer Guide | `REFRESH_NEEDED` | D2 |
-| Security / privacy / failure modes | mostly English or stale partial translations | D2 |
+| D1 entry/use | all nine supported locales `CURRENT` | maintain |
+| D2 reviewer/safety | all nine supported locales `CURRENT` | maintain |
 | Architecture and stable ADRs | mostly English | D3 |
 | Grant overview / roadmap / glossary | partial and `REFRESH_NEEDED` | D4 |
 | Extended reference corpus | mixed / English | D5 |
 
 ## Planned sequence
 
-### D2 — reviewer and safety documents
-
-Translate or refresh Reviewer Guide, security, privacy and failure-mode explanations while
-preserving all certification and production-readiness non-claims.
-
 ### D3 — architecture documents
 
-Translate stable architecture overviews and selected mature ADR/profile documents. Preserve
-Guardian, TruthGate, strict Canon, evidence and migration boundaries.
+Translate stable architecture overviews and selected mature ADR/profile documents while
+preserving Guardian, TruthGate, strict Canon, evidence and migration boundaries.
 
 ### D4 — project and grant documents
 
@@ -97,7 +106,6 @@ AI-agent logs and low-level CI records may remain English with exact evidence li
 
 ## Completion rule
 
-A document becomes `CURRENT` only when it has equivalent semantic coverage, an exact source
-checkpoint, current mutable facts, valid local links, claims no stronger than English, green
-relevant CI and a merged PR. Native-speaker editorial certification is not implied unless it
-actually occurred.
+A document becomes `CURRENT` only with equivalent semantic coverage, an exact source
+checkpoint, valid links, claims no stronger than English, green relevant CI and a merged PR.
+Native-speaker editorial certification is not implied unless it actually occurred.

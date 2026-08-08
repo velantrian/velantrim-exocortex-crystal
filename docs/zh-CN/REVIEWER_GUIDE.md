@@ -1,190 +1,101 @@
-# 🔍 Reviewer 指南 — Velantrim Crystal
+<!-- translation-source: docs/REVIEWER_GUIDE.md@b7e6574dd7aefa2f32783ab79054fac6b3b4109f -->
+<!-- translation-status: CURRENT -->
+<!-- d2-locale: zh-CN -->
+<!-- d2-boundary: public-ask-read-only -->
+<!-- d2-boundary: postgresql-active=false -->
+<!-- d2-boundary: erasure-not-global -->
+<!-- d2-nonclaim: security-legal-gdpr-not-certified -->
+<!-- d2-nonclaim: nlnet-not-awarded -->
+# Reviewer Guide — Velantrim Exo-Cortex Crystal
 
-> 🌐 🇬🇧 [English](../REVIEWER_GUIDE.md) · 🇩🇪 [Deutsch](../de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](../fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](../es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](../it/REVIEWER_GUIDE.md) · 🇷🇺 [Русский](../ru/REVIEWER_GUIDE.md) · 🇨🇳 **简体中文** · 🇸🇦 [العربية](../ar/REVIEWER_GUIDE.md) · 🇯🇵 [日本語](../ja/REVIEWER_GUIDE.md) · 🇮🇳 [हिन्दी](../hi/REVIEWER_GUIDE.md)
->
-> 本页提供简体中文验证路线，不引入新的 runtime、grant、compliance 或
-> security claim。如有差异，以 GitHub `main`、[docs/STATUS.md](../STATUS.md)
-> 和 [TEST_REPORT.md](../../TEST_REPORT.md) 为准。
+**英语源 checkpoint：** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`  
+本指南是持续维护的审查入口。实现证据仍是 `main` 中的代码、可执行测试、精确 CI、
+[TEST_REPORT.md](../../TEST_REPORT.md) 和
+[manifest](../status/implementation-manifest.json)。
 
-## 1. Crystal 是什么
+## 1. 审查对象
 
-Crystal 是 Velantrim 公开、最小且可验证的 memory core：
+Crystal 是面向 AI 系统的公开、local-first、source-grounded、可审计 memory
+infrastructure。已验证基线包括 typed claims、Guardian/TruthGate、multi-status L3 上的
+strict Canon read projection、read-only public query、分离的 explicit ingest path、
+Receipts 与可审计 provenance。
 
-- 本地优先，默认无强制 cloud dependency；
-- claim 保留 source 与显式 epistemic state；
-- Guardian + TruthGate 构成自动进入 L3 的 admission boundary；
-- `CanonicalView` 提供严格 grounded 的 read view；
-- TRACE 与 Receipt 构成可检查的 proof layer；
-- 提供本地 SQLite/WAL 与 embedded graph backend；
-- 具有技术性 erasure、restriction、audit 与 provenance mechanism；
-- 提供可复现测试与确定性 evaluation gate。
+不声称 AGI、意识、普遍真理、零幻觉、active PostgreSQL runtime、automatic switching、
+production multi-tenancy、security/GDPR certification 或已获 NLnet grant。
 
-## 2. Crystal 不是什么
-
-Crystal 不声称自己是：
-
-- AGI、意识、人格或生物学意义上的大脑；
-- “零 hallucination”保证；
-- 完整 Titan 或 Personal ExoCortex stack；
-- 自我修改或自动 self-canonicalization 系统；
-- 必须依赖外部 LLM、graph provider 或 cloud service 的产品；
-- 法律 GDPR 认证；
-- security certification 或 production-ready multi-tenant hosting；
-- 所有研究概念或开放 PR 的 runtime 实现。
-
-## 3. 权威来源
-
-按以下顺序验证：
-
-1. GitHub `main` — 实际已合并代码；
-2. [TEST_REPORT.md](../../TEST_REPORT.md) — test 与 coverage baseline；
-3. [docs/STATUS.md](../STATUS.md) — 当前 claim 与实现状态；
-4. [docs/IMPLEMENTATION_STATUS.md](../IMPLEMENTATION_STATUS.md) — 详细组件地图；
-5. [docs/ARCHITECTURE.md](../ARCHITECTURE.md) — 架构边界；
-6. 英文 grant 文档 — scope 与 acceptance criteria。
-
-Notion note、roadmap、RFC、prototype 或开放 PR 都不是已实现 capability。
-
-## 4. Clean reproduction
+## 2. 复现基线
 
 ```bash
-git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
-cd velantrim-exocortex-crystal
-python -m venv .venv
-source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -e '.[dev]'
 pytest tests/ --cov=. --cov-fail-under=100
 python scripts/eval_gate.py --out-dir eval-artifacts
-git status --short
+bash scripts/ring_zero_mutation_gate.sh
+bash scripts/check_docs_status.sh
 ```
 
-预期：
+可变 metrics 只从英语测试报告获取。
 
-- test 与 coverage gate 通过；
-- `eval_gate.py` 不报告 regression；
-- generated artifact 不污染 Git working tree；
-- 精确数字与 [TEST_REPORT.md](../../TEST_REPORT.md) 对照。
-
-## 5. 验证核心合同
-
-### 🛡️ Admission
+## 3. Read/write boundary
 
 ```text
-新 claim
-→ classification + evidence
-→ Guardian
-→ TruthGate
-→ operational memory / admitted Canon
+ask / receipt / MCP inspection → read-only
+explicit ingest                → admission-capable write path
+curator override               → explicit, attributed, audited
 ```
 
-检查问题：弱证据、无来源或错误类型的 claim 能否绕过既有 gate？
+公开 `ask` 使用 `core.query_pipeline.query()`，不得修改 facts、ESM、L3、outbox、
+episode links、embedding identity 或 unknown candidates。严格 grounding 不足时的
+bounded refusal 是预期安全行为。
 
-### 🔎 HTTP query
+`ingest` 会写入，但 admission 仍取决于 evidence、claim type、policy 与 TruthGate。
+模型输出不能自行认证为 verified world fact。
 
-```text
-POST /ask 或 GET /receipt
-→ core.query_pipeline.query()
-→ 既有 Canon
-→ CanonicalView
-→ 回答或有界拒绝
-```
+## 4. Storage 与 migration
 
-检查问题：在已迁移 HTTP query 中，L0/L1、L3、ESM、outbox、episode link、
-embedding fingerprint 与 adaptive verification 是否保持不变？
+SQLite 是普通 active local-first profile。首次 durable `auto` 可在已安装时选择
+optional LadybugDB，否则选择 SQLite，并锁定 choice 与 non-secret locator。禁止静默
+fallback 到 ephemeral Mock。
 
-保证故意保持精确：
+PostgreSQL/pgvector 是独立 operator path：verified bundle → version/TLS preflight →
+new inactive schema → serializable import → independent read-only re-hash → exact
+equivalence；target 保持 `active=false`。
 
-- CLI `ask` 与 `receipt` 尚未迁移；
-- MCP 可能初始化缺失的 embedding fingerprint。
+Import/equivalence 不等于 activation、selection、TruthGate admission、strict Canon、
+cutover、rollback、dual-write 或 production readiness。
 
-### 🔗 TRACE 与 Receipt
+## 5. Security 与 privacy
 
-```bash
-velantrim receipt "your question" > receipt.json
-velantrim verify-receipt receipt.json
-velantrim verify-receipt receipt.json --strict-provenance
-```
+默认运行不要求 cloud、LLM、telemetry 或 analytics。Remote Neo4j、Anthropic、
+Wikidata、Redis、PostgreSQL migration、wider API 或 copied backup/export 仅通过明确
+operator choice 扩展边界。
 
-检查问题：能否看见支撑回答的 fact 与 evidence reference？状态变化后能否检测 drift？
+`VELANTRIM_ENCRYPTION_KEY` 保护 selected L1 fields，不自动覆盖全部 L3、backup、
+bundle、Receipt、log 或 temporary file。Credentials 与 secret DSN 不得进入 profiles、
+bundles、receipts、logs、issues 或 Notion。
 
-### 🧾 Audit 与 provenance
+从 active local store erasure 不会自动删除 backups、exports、operator copies、remote
+systems 或 third-party data。
 
-```bash
-velantrim audit
-velantrim audit-verify
-velantrim history <fact_id>
-```
+## 6. Fail-closed checks
 
-`history` 与每个 fact 的 `ProvenanceChain` 是不同 view，文档和测试不应混淆。
+- Unsupported claims 被 block、label 或 bounded refusal。
+- Profile/locator conflict 在 backend cache 前失败。
+- Import failure rollback 并保持 `active=false`。
+- Evidence mismatch 与 Receipt/audit tampering 被检测。
+- Oversized input 在 limits 处失败。
+- Missing optional dependency 不触发 hidden durable switch。
+- External exposure 需要 TLS、authentication、least privilege 与 monitoring。
 
-## 6. 安全启动可选 HTTP service
+## 7. Checklist
 
-```bash
-pip install '.[api]'
-export VELANTRIM_API_TOKEN=$(python -c "import secrets;print(secrets.token_urlsafe(32))")
-docker compose up --build
-curl http://127.0.0.1:8000/health
-```
+- [ ] 已识别 current `main` 与 exact CI。
+- [ ] Read-only query 与 explicit ingest 分离。
+- [ ] Physical L3 与 strict Canon 分离。
+- [ ] Inactive PostgreSQL import 与 activation 分离。
+- [ ] 已审查 network、secrets、encryption 与 erasure limits。
+- [ ] 未推断 certification、production readiness 或 grant award。
 
-检查：
-
-- 没有 fallback token；
-- loopback publish 为安全默认值；
-- container user 非 root；
-- API dependency 是可选 extra；
-- `/ingest` 与 `/ask` 合同不同。
-
-## 7. 验证 evaluation
-
-Crystal 测量的内容包括：
-
-- retrieval `hit@k` 与 MRR；
-- TRACE 与 metadata 完整性；
-- Evidence Span 覆盖率；
-- Receipt replay；
-- contradiction precision 与 recall；
-- trust boundary 上的正确拒绝。
-
-Titan replay 是已记录的 prior art，不是当前 Crystal capability，也不是
-self-optimizing runtime。
-
-## 8. 验证 grant 边界
-
-Reviewer 应明确区分现有 baseline 与申请的 delta：
-
-```text
-现有且已测试的 baseline
-+
-具体、可测量的 funded work
-=
-可独立验证的 deliverable
-```
-
-已合并功能不得再次计为付费工作。Proposal 仍在评审中，不声称资金已获批。
-
-中文摘要：[GRANT_OVERVIEW.md](./GRANT_OVERVIEW.md)  
-权威来源：[GRANT_NLNET_SCOPE.md](../GRANT_NLNET_SCOPE.md)
-
-## 9. Review red flags
-
-🚩 文档描述超出 `main` 或 `STATUS.md`。  
-🚩 研究 module 被描述为当前 Crystal runtime。  
-🚩 翻译扩大 scope、budget 或 compliance claim。  
-🚩 Query 意外改变 memory state。  
-🚩 平均指标掩盖 safety 或单例 regression。  
-🚩 外部 provider 被静默变为强制依赖。
-
-## 10. 最终检查
-
-完成 review 后应能回答：
-
-1. 哪些 claim 可以自动进入 Canon？
-2. 哪些 query path 真正只读？
-3. 回答如何连接至 fact 与 evidence？
-4. 哪些 boundary 已实现，哪些仍是计划？
-5. 扣除现有 baseline 后，真实 grant delta 是什么？
-
----
-
-> 🌐 🇬🇧 [English](../REVIEWER_GUIDE.md) · 🇩🇪 [Deutsch](../de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](../fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](../es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](../it/REVIEWER_GUIDE.md) · 🇷🇺 [Русский](../ru/REVIEWER_GUIDE.md) · 🇨🇳 **简体中文** · 🇸🇦 [العربية](../ar/REVIEWER_GUIDE.md) · 🇯🇵 [日本語](../ja/REVIEWER_GUIDE.md) · 🇮🇳 [हिन्दी](../hi/REVIEWER_GUIDE.md)
+英语来源：[Reviewer Guide](../REVIEWER_GUIDE.md)、[Security](../../SECURITY.md)、
+[Privacy](../../PRIVACY.md)、[Failure Modes](../FAILURE_MODES.md) 与
+[Safety Summary](../SAFETY_PRIVACY_AND_FAILURES.md)。
