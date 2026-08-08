@@ -89,7 +89,7 @@ until reviewed against a recorded checkpoint.
 - [Cross-backend migration contract](./architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md)
 - [Inactive PostgreSQL import](./architecture/POSTGRESQL_INACTIVE_IMPORT.md)
 - [PostgreSQL/pgvector profile RFC](./architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
-- [ADR-021](./adr/ADR-021-cross-backend-storage-migration.md)
+- [ADR-021](./adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md)
 
 SQLite remains the ordinary local-first read/write profile. PostgreSQL/pgvector remains an
 optional inactive exact-equivalence target with `active=false`, not an ordinary runtime
