@@ -41,9 +41,9 @@ installation remains pure standard library.
 ## 3. Authority boundary
 
 ```text
-physical L3      != strict Canon
-migration bundle != claim evidence
-import success   != backend activation
+physical L3       != strict Canon
+migration bundle  != claim evidence
+import success    != backend activation
 exact equivalence != ordinary runtime availability
 ```
 
@@ -69,5 +69,21 @@ measurable work includes exact-vs-ANN evaluation, explicit cutover/fencing, roll
 server lifecycle, production IdP/multi-tenancy, supply-chain hardening and a dedicated
 Reader Core.
 
-English is the sole authoritative actively maintained GitHub documentation language during
-engineering. Localized READMEs remain frozen snapshots.
+## 6. Documentation language and translation state
+
+English is the primary working, source and conflict-resolving documentation language, but
+Crystal is not an English-only documentation project.
+
+- `README.md` is the primary full public presentation.
+- `README.ru.md` is the first full visual and semantic translation phase.
+- The other eight supported root README files remain temporary `ORIENTATION_ONLY` surfaces
+  until their dedicated full-parity translation PRs.
+- Existing translated Quick Start, Status, Reviewer Guide, Glossary and Grant Overview files
+  are `REFRESH_NEEDED` until checked against a recorded English source checkpoint.
+- Other stable documents are translated progressively by language or document family, not
+  through one all-at-once final pass.
+
+See [`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md) and
+[`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md). Runtime or architecture PRs update
+English first and record localization impact; substantial translation remains a separate
+reviewable documentation change.
