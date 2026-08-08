@@ -1,44 +1,29 @@
-# 📚 Velantrim Crystal — हिन्दी दस्तावेज़
+# 🇮🇳 हिन्दी दस्तावेज़ मार्ग
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 [العربية](../ar/README.md) · 🇯🇵 [日本語](../ja/README.md) · 🇮🇳 **हिन्दी**
+<!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
 
-इस directory में हिन्दी-भाषी reviewer और contributor के लिए अनुरक्षित दस्तावेज़ हैं।
+अंग्रेज़ी मुख्य कार्य-स्रोत और मतभेदों को सुलझाने वाला स्रोत बनी रहती है, लेकिन Crystal केवल अंग्रेज़ी दस्तावेज़ों की परियोजना नहीं है। वर्तमान [हिन्दी README](../../README.hi.md) अस्थायी रूप से `ORIENTATION_ONLY` है; लक्ष्य अंग्रेज़ी README के अर्थ, दृश्य संरचना, mind map, ASCII architecture, तालिकाओं, सीमाओं और navigation का पूर्ण अनुवाद है।
 
-## Authoritative source और synchronization rule
+अन्य दस्तावेज़ चरणों में अनुवादित होंगे। इस फ़ोल्डर की मौजूदा फ़ाइलें दर्ज अंग्रेज़ी checkpoint के विरुद्ध समीक्षा होने तक `REFRESH_NEEDED` मानी जाएँगी।
 
-- implementation का authoritative source: GitHub `main`;
-- authoritative अंग्रेज़ी documentation: `README.md` और `docs/` के अंग्रेज़ी दस्तावेज़;
-- इस translation का synchronization marker: `main@c5a34a64`;
-- audited runtime checkpoint: `cd6fd44`;
-- किसी अंतर की स्थिति में अंग्रेज़ी संस्करण और `TEST_REPORT.md` प्राथमिक हैं।
+## हिन्दी सामग्री
 
-यह हिन्दी संस्करण किसी नई capability, grant milestone, funding award, certification या
-production readiness का अतिरिक्त दावा नहीं करता।
+- [README](../../README.hi.md) — `ORIENTATION_ONLY`
+- [त्वरित शुरुआत](./QUICKSTART.md) — `REFRESH_NEEDED`
+- [स्थिति](./STATUS.md) — `REFRESH_NEEDED`
+- [समीक्षक मार्गदर्शिका](./REVIEWER_GUIDE.md) — `REFRESH_NEEDED`
+- [शब्दावली](./GLOSSARY.md) — `REFRESH_NEEDED`
+- [अनुदान अवलोकन](./GRANT_OVERVIEW.md) — `REFRESH_NEEDED`
 
-## सुझाया गया reading order
+## मुख्य अंग्रेज़ी स्रोत
 
-1. [REVIEWER_GUIDE.md](./REVIEWER_GUIDE.md) — reviewer के लिए संक्षिप्त verification path
-2. [QUICKSTART.md](./QUICKSTART.md) — install, test, CLI और optional API
-3. [STATUS.md](./STATUS.md) — वर्तमान implementation boundary और residual scope
-4. [GRANT_OVERVIEW.md](./GRANT_OVERVIEW.md) — grant baseline / funded delta boundary
-5. [GLOSSARY.md](./GLOSSARY.md) — terminology और untranslated identifiers
+- [English README](../../README.md)
+- [TEST_REPORT](../../TEST_REPORT.md)
+- [Current status](../STATUS.md)
+- [Implementation status](../IMPLEMENTATION_STATUS.md)
+- [Security](../../SECURITY.md)
+- [NLnet scope](../GRANT_NLNET_SCOPE.md)
+- [Localization policy](../LOCALIZATION_POLICY.md)
+- [Translation status](../TRANSLATION_STATUS.md)
 
-## Authoritative अंग्रेज़ी दस्तावेज़
-
-- [Project README](../../README.md)
-- [Reviewer Guide](../REVIEWER_GUIDE.md)
-- [Current Status](../STATUS.md)
-- [Architecture](../ARCHITECTURE.md)
-- [Evaluation](../EVAL.md)
-- [Grant Scope](../GRANT_NLNET_SCOPE.md)
-- [Test Report](../../TEST_REPORT.md)
-
-## Translation policy
-
-`TruthGate`, `Guardian`, `CanonicalView`, `TRACE`, `Receipt`, `Canon`,
-`L0/L1/L2/L3` जैसे contract identifiers का अनुवाद नहीं किया जाता। केवल explanatory text हिन्दी में है;
-code, CLI commands, environment variables, paths और API endpoints अंग्रेज़ी में रहते हैं।
-
----
-
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 [العربية](../ar/README.md) · 🇯🇵 [日本語](../ja/README.md) · 🇮🇳 **हिन्दी**
+क्रम: अंग्रेज़ी implementation और documentation → verified merge → भाषा या document-family का अलग translation PR → source checkpoint और freshness status दर्ज करना।

@@ -1,71 +1,29 @@
-# 🇸🇦 التوثيق العربي — Velantrim Crystal
+# 🇸🇦 مسار التوثيق العربي
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/README.md) · 🇮🇳 [हिन्दी](../hi/README.md)
+<!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
 
-## 🔒 قاعدة الترجمة والمرجعية
+تبقى الإنجليزية مصدر العمل الأساسي والمرجع عند وجود تعارض، لكن Crystal ليست مشروع توثيق باللغة الإنجليزية فقط. ملف [README العربي](../../README.ar.md) الحالي في حالة مؤقتة `ORIENTATION_ONLY`؛ والهدف هو ترجمة كاملة تحافظ على المعنى والبنية البصرية والخرائط الذهنية ومخططات ASCII والجداول والقيود والتنقل في النسخة الإنجليزية.
 
-هذه الصفحات مسار عربي مصان للمراجعين والمؤسسات والمساهمين. لا تغيّر runtime أو
-نطاق المنحة.
+تُترجم المستندات الأخرى على مراحل. تُعد الملفات الموجودة في هذا المجلد `REFRESH_NEEDED` إلى أن تُراجع مقابل checkpoint إنجليزي مسجل.
 
-```text
-GitHub main + الوثائق الإنجليزية المعيارية = المصدر الحاكم
-الوثائق الألمانية والفرنسية والإسبانية والإيطالية والروسية والصينية والعربية = ترجمات وأدلة قراءة
-```
+## المواد العربية
 
-عند الاختلاف يُطبّق الترتيب التالي:
+- [README](../../README.ar.md) — `ORIENTATION_ONLY`
+- [البدء السريع](./QUICKSTART.md) — `REFRESH_NEEDED`
+- [الحالة](./STATUS.md) — `REFRESH_NEEDED`
+- [دليل المراجع](./REVIEWER_GUIDE.md) — `REFRESH_NEEDED`
+- [المسرد](./GLOSSARY.md) — `REFRESH_NEEDED`
+- [نظرة عامة على المنحة](./GRANT_OVERVIEW.md) — `REFRESH_NEEDED`
 
-1. الكود المدمج فعلياً في GitHub `main`؛
-2. [TEST_REPORT.md](../../TEST_REPORT.md) لأرقام الاختبارات والتغطية؛
-3. [docs/STATUS.md](../STATUS.md) لحالة التنفيذ الحالية؛
-4. وثائق المنحة الإنجليزية للنطاق والميزانية والمخرجات.
+## المصادر الإنجليزية الأساسية
 
-لا يجوز للترجمة أن تقوّي أي capability مقارنة بالمصدر الإنجليزي. عبارات مثل
-«مرتبط بـ GDPR» و«hardened» و«قابل للتحقق» و«محلي» أوصاف تقنية وليست شهادات
-قانونية أو أمنية.
+- [English README](../../README.md)
+- [TEST_REPORT](../../TEST_REPORT.md)
+- [Current status](../STATUS.md)
+- [Implementation status](../IMPLEMENTATION_STATUS.md)
+- [Security](../../SECURITY.md)
+- [NLnet scope](../GRANT_NLNET_SCOPE.md)
+- [Localization policy](../LOCALIZATION_POLICY.md)
+- [Translation status](../TRANSLATION_STATUS.md)
 
----
-
-## 🧭 مسار القراءة المقترح
-
-| الترتيب | المستند | الغرض |
-|---:|---|---|
-| 1 | [README العربي](../../README.ar.md) | ملخص المشروع والحدود والمعمارية |
-| 2 | [دليل المراجع](./REVIEWER_GUIDE.md) | ما ينبغي أن يتحقق منه المراجع الخارجي |
-| 3 | [البدء السريع](./QUICKSTART.md) | التثبيت والاختبارات وCLI وAPI الاختياري |
-| 4 | [الحالة الحالية](./STATUS.md) | حدود التنفيذ والclaims العامة |
-| 5 | [نظرة عامة على المنحة](./GRANT_OVERVIEW.md) | ملخص عربي grant-safe |
-| 6 | [المسرد](./GLOSSARY.md) | مصطلحات تقنية متسقة |
-
----
-
-## 📚 المصادر الإنجليزية المعيارية
-
-| المستند | المحتوى الحاكم |
-|---|---|
-| [README.md](../../README.md) | نقطة الدخول العامة والclaims الحالية |
-| [TEST_REPORT.md](../../TEST_REPORT.md) | baseline قابلة للتكرار للاختبارات والتغطية |
-| [docs/STATUS.md](../STATUS.md) | حالة التنفيذ الحالية |
-| [docs/REVIEWER_GUIDE.md](../REVIEWER_GUIDE.md) | مسار المراجع الإنجليزي |
-| [docs/ARCHITECTURE.md](../ARCHITECTURE.md) | حدود المعمارية والتخزين |
-| [docs/EVAL.md](../EVAL.md) | منهجية التقييم |
-| [docs/GRANT_NLNET_SCOPE.md](../GRANT_NLNET_SCOPE.md) | نطاق المنحة المقدّم |
-| [مصفوفة baseline/delta](../grants/baseline-funded-delta-matrix.md) | milestones وأدلة القبول |
-| [Funding Use Plan](../grants/funding-use-plan.md) | الميزانية والأولويات |
-
----
-
-## 🛠️ قاعدة الصيانة
-
-```text
-1. تحديث المصدر الإنجليزي ودمجه أولاً
-2. التحقق من main الحالي
-3. مزامنة الترجمات في PR منفصل خاص بالوثائق
-4. عدم إدخال رقم أو claim جديد في ترجمة فقط
-```
-
-أُعدّت الحزمة العربية على أساس Crystal `main@c5a34a64`. ويظل آخر checkpoint غيّر
-runtime هو PR #265 / `cd6fd44`.
-
----
-
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/README.md) · 🇮🇳 [हिन्दी](../hi/README.md)
+التسلسل: التنفيذ والتوثيق بالإنجليزية → دمج موثّق → طلب ترجمة مستقل للغة أو لعائلة مستندات → تسجيل source checkpoint وحالة الحداثة.

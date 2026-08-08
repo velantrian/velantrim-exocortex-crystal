@@ -1,45 +1,29 @@
-# 📚 Velantrim Crystal — 日本語ドキュメント
+# 🇯🇵 日本語ドキュメント経路
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 [العربية](../ar/README.md) · 🇯🇵 **日本語** · 🇮🇳 [हिन्दी](../hi/README.md)
+<!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
 
-このディレクトリには、日本語話者の reviewer と contributor のための保守された
-ドキュメントが含まれます。
+英語は引き続き主要な作業ソースであり、差異を解決する基準ですが、Crystal は英語だけのドキュメントプロジェクトではありません。現在の[日本語 README](../../README.ja.md)は一時的に `ORIENTATION_ONLY` です。目標は、英語 README の意味、視覚構造、マインドマップ、ASCII アーキテクチャ、表、制約、ナビゲーションを完全に反映することです。
 
-## 正本と同期ルール
+その他の文書は段階的に翻訳します。このフォルダー内の既存文書は、記録された英語 checkpoint と照合されるまで `REFRESH_NEEDED` と扱います。
 
-- 実装の正本: GitHub `main`;
-- 英語の正本ドキュメント: `README.md` と `docs/` 配下の英語文書;
-- この翻訳の同期基準: `main@c5a34a64`;
-- audited runtime checkpoint: `cd6fd44`;
-- 相違がある場合は英語版と `TEST_REPORT.md` が優先されます。
+## 日本語資料
 
-この日本語版は、新しい capability、grant milestone、funding award、certification、
-production readiness を追加で主張しません。
+- [README](../../README.ja.md) — `ORIENTATION_ONLY`
+- [クイックスタート](./QUICKSTART.md) — `REFRESH_NEEDED`
+- [ステータス](./STATUS.md) — `REFRESH_NEEDED`
+- [レビュアーガイド](./REVIEWER_GUIDE.md) — `REFRESH_NEEDED`
+- [用語集](./GLOSSARY.md) — `REFRESH_NEEDED`
+- [助成金概要](./GRANT_OVERVIEW.md) — `REFRESH_NEEDED`
 
-## 推奨読書順
+## 主要な英語ソース
 
-1. [REVIEWER_GUIDE.md](./REVIEWER_GUIDE.md) — reviewer 向けの短い確認経路
-2. [QUICKSTART.md](./QUICKSTART.md) — install、test、CLI、optional API
-3. [STATUS.md](./STATUS.md) — 現在の実装境界と残余スコープ
-4. [GRANT_OVERVIEW.md](./GRANT_OVERVIEW.md) — grant baseline / funded delta 境界
-5. [GLOSSARY.md](./GLOSSARY.md) — 用語と非翻訳 identifier
+- [English README](../../README.md)
+- [TEST_REPORT](../../TEST_REPORT.md)
+- [Current status](../STATUS.md)
+- [Implementation status](../IMPLEMENTATION_STATUS.md)
+- [Security](../../SECURITY.md)
+- [NLnet scope](../GRANT_NLNET_SCOPE.md)
+- [Localization policy](../LOCALIZATION_POLICY.md)
+- [Translation status](../TRANSLATION_STATUS.md)
 
-## 英語の正本
-
-- [Project README](../../README.md)
-- [Reviewer Guide](../REVIEWER_GUIDE.md)
-- [Current Status](../STATUS.md)
-- [Architecture](../ARCHITECTURE.md)
-- [Evaluation](../EVAL.md)
-- [Grant Scope](../GRANT_NLNET_SCOPE.md)
-- [Test Report](../../TEST_REPORT.md)
-
-## 翻訳方針
-
-`TruthGate`、`Guardian`、`CanonicalView`、`TRACE`、`Receipt`、`Canon`、
-`L0/L1/L2/L3` などの contract identifier は翻訳しません。説明文だけを日本語化し、
-code、CLI command、environment variable、path、API endpoint は英語表記を維持します。
-
----
-
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 [العربية](../ar/README.md) · 🇯🇵 **日本語** · 🇮🇳 [हिन्दी](../hi/README.md)
+手順：英語の実装と文書 → 検証済み merge → 言語または文書ファミリー単位の独立翻訳 PR → source checkpoint と更新状態を記録。

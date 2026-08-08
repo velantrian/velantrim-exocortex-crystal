@@ -1,73 +1,29 @@
-# 🇮🇹 Documentazione italiana — Velantrim Crystal
+# 🇮🇹 Percorso della documentazione italiana
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 **Italiano** · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 [العربية](../ar/README.md) · 🇯🇵 [日本語](../ja/README.md) · 🇮🇳 [हिन्दी](../hi/README.md)
+<!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
 
-## 🔒 Regola di traduzione e autorità
+L’inglese resta la fonte di lavoro primaria e risolve le divergenze, ma Crystal non è un progetto documentale esclusivamente inglese. L’attuale [README italiano](../../README.it.md) è temporaneamente `ORIENTATION_ONLY`; l’obiettivo è una traduzione visuale e semantica completa del README inglese.
 
-Queste pagine costituiscono un orientamento italiano mantenuto per reviewer,
-istituzioni e contributor. Non modificano né il runtime né il perimetro della
-sovvenzione.
+Gli altri documenti vengono tradotti per fasi. Finché un file presente in questa cartella non viene verificato rispetto a un checkpoint inglese registrato, deve essere considerato `REFRESH_NEEDED`.
 
-```text
-GitHub main + documenti inglesi normativi = fonte autorevole
-Documenti tedeschi, francesi, spagnoli, italiani, russi e cinesi = traduzioni e supporti di lettura
-```
+## Materiali italiani
 
-In caso di divergenza, applicare nell’ordine:
+- [README](../../README.it.md) — `ORIENTATION_ONLY`
+- [Avvio rapido](./QUICKSTART.md) — `REFRESH_NEEDED`
+- [Stato](./STATUS.md) — `REFRESH_NEEDED`
+- [Guida per i revisori](./REVIEWER_GUIDE.md) — `REFRESH_NEEDED`
+- [Glossario](./GLOSSARY.md) — `REFRESH_NEEDED`
+- [Panoramica del grant](./GRANT_OVERVIEW.md) — `REFRESH_NEEDED`
 
-1. il codice effettivamente fuso su GitHub `main`;
-2. [TEST_REPORT.md](../../TEST_REPORT.md) per test e copertura;
-3. [docs/STATUS.md](../STATUS.md) per lo stato dell’implementazione;
-4. i documenti inglesi della sovvenzione per scope, budget e deliverable.
+## Fonti inglesi primarie
 
-Una traduzione non deve mai rafforzare una capacità rispetto alla fonte inglese.
-Espressioni come «orientato al GDPR», «hardened», «verificabile» o «locale» sono
-descrizioni tecniche, non certificazioni legali o di sicurezza.
+- [English README](../../README.md)
+- [TEST_REPORT](../../TEST_REPORT.md)
+- [Current status](../STATUS.md)
+- [Implementation status](../IMPLEMENTATION_STATUS.md)
+- [Security](../../SECURITY.md)
+- [NLnet scope](../GRANT_NLNET_SCOPE.md)
+- [Localization policy](../LOCALIZATION_POLICY.md)
+- [Translation status](../TRANSLATION_STATUS.md)
 
----
-
-## 🧭 Percorso di lettura consigliato
-
-| Ordine | Documento | Scopo |
-|---:|---|---|
-| 1 | [README in italiano](../../README.it.md) | progetto, confini e architettura in sintesi |
-| 2 | [Guida per reviewer](./REVIEWER_GUIDE.md) | controlli attesi da un reviewer esterno |
-| 3 | [Avvio rapido](./QUICKSTART.md) | installazione, test, CLI e API opzionale |
-| 4 | [Stato attuale](./STATUS.md) | limiti dell’implementazione e dei claim |
-| 5 | [Panoramica della sovvenzione](./GRANT_OVERVIEW.md) | sintesi grant-safe in italiano |
-| 6 | [Glossario](./GLOSSARY.md) | terminologia tecnica coerente |
-
----
-
-## 📚 Fonti inglesi normative
-
-| Documento | Contenuto autorevole |
-|---|---|
-| [README.md](../../README.md) | ingresso pubblico e claim correnti |
-| [TEST_REPORT.md](../../TEST_REPORT.md) | baseline riproducibile di test e copertura |
-| [docs/STATUS.md](../STATUS.md) | stato attuale dell’implementazione |
-| [docs/REVIEWER_GUIDE.md](../REVIEWER_GUIDE.md) | percorso reviewer inglese |
-| [docs/ARCHITECTURE.md](../ARCHITECTURE.md) | confini di architettura e memoria |
-| [docs/EVAL.md](../EVAL.md) | metodologia di valutazione |
-| [docs/GRANT_NLNET_SCOPE.md](../GRANT_NLNET_SCOPE.md) | perimetro della sovvenzione presentato |
-| [Matrice baseline/delta](../grants/baseline-funded-delta-matrix.md) | milestone e prove di accettazione |
-| [Funding Use Plan](../grants/funding-use-plan.md) | budget e priorità |
-
----
-
-## 🛠️ Convenzione di manutenzione
-
-```text
-1. aggiornare e fondere la fonte inglese
-2. verificare il nuovo main
-3. sincronizzare le traduzioni in un PR docs-only separato
-4. non introdurre solo in una traduzione numeri o claim nuovi
-```
-
-Questo pacchetto italiano è stato preparato sulla base di Crystal
-`main@c5a34a64`. L’ultimo checkpoint che modifica il runtime resta PR #265 /
-`cd6fd44`.
-
----
-
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 **Italiano** · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 [العربية](../ar/README.md) · 🇯🇵 [日本語](../ja/README.md) · 🇮🇳 [हिन्दी](../hi/README.md)
+Sequenza: implementazione e documentazione inglese → merge verificato → PR separata per lingua o famiglia di documenti → registrazione del checkpoint sorgente e dello stato di aggiornamento.
