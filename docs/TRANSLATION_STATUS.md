@@ -9,7 +9,10 @@ a maintained product surface.
 **English source checkpoint for the root README reconciliation:**
 `main@e521440e9bb188d88475f17dd5bcdd161b314605`.
 
-**Policy:** [`LOCALIZATION_POLICY.md`](LOCALIZATION_POLICY.md).
+**D1 Russian source checkpoint:** `main@16d71e731ee658b1faa65c9ea45c0d8cca290f7c`.
+
+**Policy:** [`LOCALIZATION_POLICY.md`](LOCALIZATION_POLICY.md).  
+**Tracking issue:** [#341](https://github.com/velantrian/velantrim-exocortex-crystal/issues/341).
 
 ## Root README status
 
@@ -17,7 +20,7 @@ PR #340 restores full visual and semantic README coverage for every supported la
 The files include purpose, evidence boundaries, mind maps, ASCII architecture, module trees,
 tables, quick start, navigation and non-claims.
 
-| Language | File | Status after PR #340 | Source checkpoint |
+| Language | File | Status | Source checkpoint |
 |---|---|---:|---|
 | English | `README.md` | `CURRENT` | primary source |
 | Arabic | `README.ar.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
@@ -33,17 +36,39 @@ tables, quick start, navigation and non-claims.
 The inline `localization-status` comments record branch-time workflow state. This ledger is
 the final freshness authority after merge.
 
-## Existing locale document packs
+## D1 — entry and use documents
 
-The repository contains `QUICKSTART.md`, `STATUS.md`, `REVIEWER_GUIDE.md`, `GLOSSARY.md` and
-`GRANT_OVERVIEW.md` under `docs/<locale>/`. Presence does not prove freshness. Until a file is
-checked against a recorded English checkpoint, it remains `REFRESH_NEEDED`.
+The first language tranche is Russian. It establishes the repeatable D1 contract before the
+same document family is reconciled for the remaining locales.
+
+| Language | Locale index | Quick Start | Status | Implementation boundary | Source checkpoint |
+|---|---:|---:|---:|---:|---|
+| Russian | `CURRENT` | `CURRENT` | `CURRENT` | `CURRENT` | `main@16d71e731ee658b1faa65c9ea45c0d8cca290f7c` |
+| Arabic | routing current | `REFRESH_NEEDED` | `REFRESH_NEEDED` | `REFRESH_NEEDED` | — |
+| German | routing current | `REFRESH_NEEDED` | `REFRESH_NEEDED` | `REFRESH_NEEDED` | — |
+| Spanish | routing current | `REFRESH_NEEDED` | `REFRESH_NEEDED` | `REFRESH_NEEDED` | — |
+| French | routing current | `REFRESH_NEEDED` | `REFRESH_NEEDED` | `REFRESH_NEEDED` | — |
+| Hindi | routing current | `REFRESH_NEEDED` | `REFRESH_NEEDED` | `REFRESH_NEEDED` | — |
+| Italian | routing current | `REFRESH_NEEDED` | `REFRESH_NEEDED` | `REFRESH_NEEDED` | — |
+| Japanese | routing current | `REFRESH_NEEDED` | `REFRESH_NEEDED` | `REFRESH_NEEDED` | — |
+| Simplified Chinese | routing current | `REFRESH_NEEDED` | `REFRESH_NEEDED` | `REFRESH_NEEDED` | — |
+
+Russian D1 current files:
+
+- `docs/ru/README.md`;
+- `docs/ru/QUICKSTART.md`;
+- `docs/ru/STATUS.md`;
+- `docs/ru/IMPLEMENTATION_STATUS.md`.
+
+## Remaining document families
+
+Presence does not prove freshness. Until a file is checked against a recorded English
+checkpoint, it remains `REFRESH_NEEDED`.
 
 | Document family | Current multilingual state | Next phase |
 |---|---|---|
-| Locale index | `CURRENT` routing, document freshness labelled | maintain with every phase |
-| Quick Start | `REFRESH_NEEDED` | D1 |
-| Status / implementation boundary | `REFRESH_NEEDED` | D1 |
+| Root README | all nine supported locales `CURRENT` | maintain |
+| Quick Start / Status / implementation boundary | Russian `CURRENT`; eight locales pending | D1 |
 | Reviewer Guide | `REFRESH_NEEDED` | D2 |
 | Security / privacy / failure modes | mostly English or stale partial translations | D2 |
 | Architecture and stable ADRs | mostly English | D3 |
@@ -54,8 +79,9 @@ checked against a recorded English checkpoint, it remains `REFRESH_NEEDED`.
 
 ### D1 — entry and use documents
 
-Refresh locale indexes, Quick Start and status/implementation-boundary explanations. A PR may
-complete one language or a related language group.
+Continue Quick Start, Status and implementation-boundary reconciliation for the remaining
+eight locales. Each completed translation records the exact English source checkpoint and is
+protected by `docs-status`.
 
 ### D2 — reviewer and safety documents
 
@@ -80,7 +106,11 @@ Translate the remaining stable corpus according to reader value and maintenance 
 A document becomes `CURRENT` only when:
 
 - it has equivalent semantic coverage for its intended reader;
+- its exact English source checkpoint is recorded;
 - mutable facts are reconciled or linked to exact English evidence;
 - local links pass;
 - capability, security, authority and grant claims are no stronger than English;
-- the translation PR is merged and the source checkpoint is recorded here.
+- relevant CI, including `docs-status`, is green;
+- the translation PR is merged and any durable governance change is synchronized with Notion.
+
+Native-speaker editorial certification is not implied unless it actually occurred.
