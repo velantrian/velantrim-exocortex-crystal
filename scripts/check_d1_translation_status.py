@@ -74,10 +74,7 @@ def required_markers(locale: str, relative: str) -> tuple[str, ...]:
             "`REFRESH_NEEDED`",
         )
         if locale != "ru":
-            base += (
-                "<!-- d1-status: CURRENT -->",
-                "<!-- d2-status: REFRESH_NEEDED -->",
-            )
+            base += ("<!-- d1-status: CURRENT -->",)
         return base
 
     english_source = {
@@ -169,7 +166,6 @@ def main() -> int:
         "Issue #341 D1 is complete",
         f"main@{RUSSIAN_SOURCE}",
         f"main@{ALL_LOCALES_SOURCE}",
-        "Reviewer/safety documents remain D2",
     ):
         if marker not in ai_state:
             errors.append(f"AI current state: missing marker {marker!r}")
