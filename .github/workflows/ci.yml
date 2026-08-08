@@ -44,6 +44,8 @@ jobs:
         run: bash scripts/check_docs_status.sh
       - name: Validate phased D1 translation status
         run: python scripts/check_d1_translation_status.py
+      - name: Validate English D2 source contract
+        run: python scripts/check_d2_source_contract.py
 
   test:
     runs-on: ubuntu-latest
@@ -89,8 +91,6 @@ jobs:
           python -c "
           import json, sys
 
-          # Fields every chunk must carry. 'layer' is intentionally excluded:
-          # the document header chunk (idx 0) belongs to no memory layer.
           REQUIRED_FIELDS = ['chunk_id', 'title', 'content']
           path = 'docs/archive/Velantrim_V8_Crystal_Sprint1.jsonl'
           errors = []
@@ -151,9 +151,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Gitleaks compares the PR head with its parent commit; a shallow
-          # checkout contains only the synthetic merge ref and makes that
-          # revision range unavailable.
           fetch-depth: 0
       - name: Scan repository for committed secrets
         uses: gitleaks/gitleaks-action@v2

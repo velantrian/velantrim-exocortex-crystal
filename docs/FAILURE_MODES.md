@@ -1,35 +1,61 @@
+<!-- d2-source-contract: CURRENT -->
+<!-- d2-source-scope: reviewer-security-privacy-failure -->
 # Failure Modes and Mitigations
 
-An honest risk matrix for Velantrim Exo-Cortex Crystal. Status reflects the
-mitigation as it exists in this repository today (see
-[IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) for the canonical
-status map). These mitigations do not prove perfect truth; they enforce
-evidence, traceability, and boundary behaviour.
+**Status date:** 2026-08-08  
+**Authority:** this matrix summarizes current boundaries. Use
+[`IMPLEMENTATION_STATUS.md`](./IMPLEMENTATION_STATUS.md), executable tests and exact CI for
+implementation proof.
 
-| Failure Mode | Risk | Mitigation | Status |
+Mitigations do not prove perfect truth or production safety. They make unsupported state
+blocked, labelled, refused, bounded or auditable.
+
+| Failure mode | Risk | Safe behaviour / mitigation | Status |
 |---|---|---|---|
-| TruthGate bypass | Unverified material enters L3 canon silently | TruthGate is the only automatic write path into L3 (`core/truth_gate.py`); the sole exception is the explicit, attributed, audited curator override; behaviour pinned by tests | implemented |
-| LLM writes directly to canon | Model output becomes "truth" without evidence | The LLM sits outside the truth boundary; no write path from generation into L3; `LLM_OUTPUT` claims map to `UNVERIFIED` and are blocked from VERIFIED WORLD_FACT by the gate | implemented |
-| TRACE incomplete | Confident answer cannot be audited | Answers are grounded through trace chains; receipts seal citations with content hashes; strict-provenance replay fails a VERIFIED citation without source-span evidence (CI eval gate) | implemented |
-| FactsPack empty or weak | Answer generated without sufficient grounding | Insufficient-grounding block: the pipeline abstains (answer = null) instead of guessing | implemented |
-| LLM_OUTPUT promoted as VERIFIED | Model self-confirmation loop | `_truth_status_for` maps LLM_OUTPUT to UNVERIFIED; TruthGate blocks LLM_OUTPUT-as-WORLD_FACT; pinned by dedicated tests | implemented |
-| OPINION / EMOTION promoted as WORLD_FACT | Subjective claims masquerade as facts | Type-aware gate: subjective claim types always map to SUBJECTIVE truth status, never to VERIFIED world facts | implemented |
-| Mode mixing (imagination/research output treated as verified) | Creative or exploratory output contaminates canon | Mode Layer / Imagination Mode are RFC-level; the fixed boundary rule (imagination output stays sandboxed, cannot become VERIFIED/WORLD_FACT without review) is documented in advance | RFC |
-| Overfitting to replay benchmark | Optimization "wins" do not generalize | Held-out trajectory splits, per-case floors, versioned benchmark sets — defined in the Harness Replay RFC | RFC |
-| Stale or contradictory knowledge | Outdated facts answer confidently | Contradiction detection links conflicts non-destructively (`core/contradiction.py`, `core/reconcile.py`); ESM states (Contradicted/Deprecated) track lifecycle; an explicit answer-layer conflict policy is a future RFC | partial |
-| Source / provenance missing | Claims cannot be attributed | `source_status` is mandatory vocabulary; missing-source WORLD_FACT claims are blocked by the gate; evidence spans link claims to exact source offsets | implemented |
-| Graph contains hypotheses mistaken for canon | Multi-status memory read as all-true | Canon is defined as the VERIFIED + trace-valid subgraph; statuses are explicit fields; the "Graph = Truth" precision note documents this distinction | implemented (docs + fields) |
-| Guardian policy weakened by future optimizer | Optimization erodes safety boundaries | ContractGuard (RFC): candidate configurations cannot disable TruthGate/Guardian/TRACE; immutable, non-searchable rules; human approval loop | RFC |
-| Personal data lingers in memory | GDPR-oriented erasure obligations unmet | Erasure with cascade and tombstones, processing restriction, tamper-evident audit, PII redaction — design targets, not certification | partial |
-| Research inspiration mistaken for implemented feature | Reviewers or users read inspiration/roadmap material as runtime capability | ADR-006 (research inspirations are non-normative); `IMPLEMENTATION_STATUS.md` is the only source of implementation claims; status labels (historical / analogue / future research) mandatory | implemented (docs boundary) |
-| Biological metaphor mistaken for consciousness claim | Bio-inspired language reads as a brain-like / conscious-system claim | Explicit non-goals in reviewer docs; fixed wording: analogies are architectural inspiration patterns only, never claims of consciousness or biological accuracy | implemented (docs boundary) |
+| TruthGate bypass | unverified material silently becomes trusted | Guardian/TruthGate remain admission authority; explicit curator override is attributed and audited | implemented |
+| LLM self-certification | model output promotes itself to verified world fact | LLM output remains unverified and cannot independently satisfy world-fact admission | implemented |
+| Public query writes | `ask`, receipt or inspection mutates memory | `core.query_pipeline.query()` and public inspection surfaces are read-only; behaviour pinned by tests | implemented |
+| Weak grounding | answer is produced without sufficient evidence | bounded refusal/abstention instead of invented grounding | implemented |
+| Physical graph read as all true | multi-status L3 is confused with strict Canon | strict Canon is a deny-dominant trusted read projection, not the whole graph | implemented |
+| Contradiction hidden or destructive | conflicting knowledge is lost or answered confidently | explicit contradiction links and dispositions preserve history; answer policy remains evidence-aware | partial/implemented baseline |
+| Missing provenance | claim cannot be attributed | source/evidence vocabulary, spans, receipts and strict replay checks; unsupported world facts are blocked | implemented |
+| Silent curator override | governance action changes state without accountability | override is explicit, scoped, attributed and audit-recorded; it does not rewrite TruthGate policy | implemented |
+| Receipt or audit tampering | trace appears valid after modification | digest/hash-chain verification fails closed | implemented |
+| Durable backend drift | process silently opens a different graph | locked storage profile, locator digest and conflict checks fail before caching | implemented |
+| Automatic ephemeral fallback | durable deployment appears empty in Mock | first durable `auto` must select LadybugDB or SQLite; implicit Mock fallback is rejected | implemented |
+| SQLite backup corruption | restore introduces unverified state | independent verification and inactive restore; restored data is not automatically admitted | implemented |
+| Unbounded migration memory/disk | export/import exhausts resources | fixed limits, batches, disk-backed ordering/reference checks and cleanup | implemented within documented envelope |
+| PostgreSQL import failure | partial target or exposed error activates runtime | serializable transaction, rollback, redacted errors and `active=false` target | implemented inactive path |
+| Import mistaken for activation | successful equivalence selects PostgreSQL | target absent from normal runtime composition; no automatic switch/cutover | implemented boundary |
+| ANN retrieval treated as exact evidence | approximate result gains authority | ANN acceptance/evaluation remains separate and unimplemented | not implemented / blocked from claim |
+| Secret leakage | credentials enter receipts, logs or public records | DSN supplied by named environment variable; non-secret locator digest; bounded redaction | implemented baseline |
+| API exposed broadly | local claims become network-accessible | loopback documented default, token baseline, TLS/auth required before wider exposure | partial; operator responsibility |
+| Personal data survives erasure | copies remain in backups/exports/providers | active-store erasure plus explicit copy inventory and external deletion policy | partial; operator responsibility |
+| Encryption assumed universal | unencrypted L3/backups/logs are overlooked | field-level L1 encryption limits documented; host/storage controls required | partial |
+| Optional dependency unavailable | runtime silently changes semantics | explicit bounded failure or locked alternative; no hidden durable switch | implemented baseline |
+| Research concept read as runtime | roadmap/RFC is presented as implemented | status map and authority hierarchy distinguish research, RFC and merged runtime | implemented docs boundary |
+| Biological metaphor read as consciousness | architecture language overstates system nature | explicit non-goals; metaphors are engineering inspiration only | implemented docs boundary |
+| Grant baseline re-budgeted | merged work is counted again as future funding | baseline/funded-delta matrix and no-award/no-budget-change controls | implemented docs boundary |
 
-Notes:
+## Status vocabulary
 
-- "implemented" = code + tests in this repository enforce the mitigation today;
-- "partial" = baseline exists, hardening or a formal policy document is pending;
-- "RFC" = the mitigation is designed in documentation only, with the boundary
-  rule fixed in advance;
-- nothing in this table claims the elimination of model error — the measurable
-  goal is that unsupported claims are blocked, labelled, or auditable rather
-  than silently promoted.
+- **implemented** — merged code plus executable evidence enforces the stated boundary;
+- **partial** — a useful mechanism exists, but operator policy or additional hardening remains;
+- **not implemented / blocked from claim** — the capability is absent and documentation must
+  not imply it exists;
+- **operator responsibility** — the repository provides a baseline, but deployment choices
+  determine the final exposure.
+
+## Explicit non-claims
+
+Nothing in this matrix claims:
+
+- elimination of model error or hallucination;
+- security, legal or GDPR certification;
+- arbitrary-scale or production-readiness proof;
+- active PostgreSQL runtime, automatic switching, cutover, rollback or dual-write;
+- globally complete erasure across external copies;
+- awarded NLnet funding.
+
+For a compact translation-oriented overview, read
+[`SAFETY_PRIVACY_AND_FAILURES.md`](./SAFETY_PRIVACY_AND_FAILURES.md).

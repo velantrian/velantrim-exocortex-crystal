@@ -11,7 +11,7 @@ implementation claims.
 | Grant reviewer | [Reviewer guide](./REVIEWER_GUIDE.md) | [Test report](../TEST_REPORT.md), [Grant scope](./GRANT_NLNET_SCOPE.md) |
 | Engineer | [Implementation status](./IMPLEMENTATION_STATUS.md) | [ADR index](./ADR.md), [Failure modes](./FAILURE_MODES.md) |
 | Operator | [Quick start](./QUICKSTART.md) | [Conflict resolution](./CONFLICT_RESOLUTION_SURFACES.md), [Topic facets and curator IAM](./TOPIC_FACETS_AND_CURATOR_IAM.md) |
-| Security reviewer | [Security policy](../SECURITY.md) | [Threat model](./security/threat-model.md), [Privacy](../PRIVACY.md) |
+| Security reviewer | [Safety/privacy/failure summary](./SAFETY_PRIVACY_AND_FAILURES.md) | [Security policy](../SECURITY.md), [Threat model](./security/threat-model.md), [Privacy](../PRIVACY.md) |
 | Contributor | [Contributing](../CONTRIBUTING.md) | [Sync protocol](./DOCUMENTATION_SYNC_PROTOCOL.md), [Localization policy](./LOCALIZATION_POLICY.md), [Translation status](./TRANSLATION_STATUS.md) |
 | AI agent | [AI entry point](./ai/README.md) | [Agent contract](../AGENTS.md), [Current state](./ai/CURRENT_STATE.md), [Audit playbook](./ai/AUDIT_PLAYBOOK.md) |
 
@@ -28,16 +28,16 @@ English architecture / ADR / security / grant contracts
         ↓
 English README primary public source
         ↓
-CURRENT full-parity localized READMEs
+CURRENT checkpointed translations
         ↓
 REFRESH_NEEDED translated document packs
         ↓
 AI context pack, roadmap, RFC and research documents
 ```
 
-English is the primary source and conflict resolver, but Crystal is not English-only. PR #340
-restores full root README presentations in Arabic, German, Spanish, French, Hindi, Italian,
-Japanese, Russian and Simplified Chinese. The wider document corpus is translated in phases.
+English is the primary source and conflict resolver, but Crystal is not English-only. Root
+README and D1 entry/use surfaces are current for all nine supported locales. The wider
+corpus is translated in phases.
 
 Notion stores synchronized strategy, rationale and history. It is not runtime proof.
 
@@ -52,13 +52,22 @@ Notion stores synchronized strategy, rationale and history. It is not runtime pr
 - [CanonicalView RFC](./CANONICAL_VIEW_RFC.md)
 - [ADR index](./ADR.md)
 
+## Safety, privacy and failure behaviour
+
+- [Reviewer guide](./REVIEWER_GUIDE.md)
+- [Safety/privacy/failure summary](./SAFETY_PRIVACY_AND_FAILURES.md)
+- [Security policy](../SECURITY.md)
+- [Threat model](./security/threat-model.md)
+- [Privacy](../PRIVACY.md)
+- [GDPR mapping](../GDPR.md)
+- [Failure modes](./FAILURE_MODES.md)
+
 ## Evidence and performance
 
 - [Test report](../TEST_REPORT.md)
 - [Current status](./STATUS.md)
 - [Implementation manifest](./status/implementation-manifest.json)
 - [Evaluation](./EVAL.md)
-- [Failure modes](./FAILURE_MODES.md)
 - [L3 retrieval benchmark](./benchmarks/L3_RETRIEVAL_SCALE.md)
 
 ## Grant boundary
@@ -76,10 +85,9 @@ budgeted again as future delivery.
 - [Translation status ledger](./TRANSLATION_STATUS.md)
 - locale indexes: [ar](./ar/README.md), [de](./de/README.md), [es](./es/README.md), [fr](./fr/README.md), [hi](./hi/README.md), [it](./it/README.md), [ja](./ja/README.md), [ru](./ru/README.md), [zh-CN](./zh-CN/README.md)
 
-Root READMEs are full visual and semantic presentations. Quick Start, Status, Reviewer Guide,
-Security/Privacy, Architecture, Grant/Roadmap and reference documents are translated
-progressively by language or document family. Existing translated files are `REFRESH_NEEDED`
-until reviewed against a recorded checkpoint.
+Root READMEs and D1 entry/use surfaces are current. D2 uses the stable English Reviewer Guide
+and Safety/Privacy/Failure summary before translation. Architecture, grant/project and
+extended references remain D3–D5.
 
 ## Active storage and migration documents
 
