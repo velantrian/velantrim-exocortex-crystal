@@ -13,6 +13,12 @@ root = Path.cwd()
 manifest = json.loads((root / "docs/status/implementation-manifest.json").read_text())
 errors: list[str] = []
 
+
+def expect(actual: object, expected: object, label: str) -> None:
+    if actual != expected:
+        errors.append(f"{label} must equal {expected!r}, got {actual!r}")
+
+
 checkpoint = manifest.get("verified_runtime_checkpoint", {})
 tests = manifest.get("tests", {})
 ci = manifest.get("ci", {})
@@ -28,49 +34,38 @@ expected_head = "d7af7c80722274f9217bc5545d150f92e9363f37"
 expected_ci = 31256316536
 expected_integration_ci = 31256316532
 expected_jobs = [
-    "code-quality", "test (3.11)", "test (3.12)", "jsonl-integrity",
-    "eval-gate", "security", "docker-build", "Ring Zero mutation gate",
+    "code-quality",
+    "test (3.11)",
+    "test (3.12)",
+    "jsonl-integrity",
+    "eval-gate",
+    "security",
+    "docker-build",
+    "Ring Zero mutation gate",
     "docs-status",
 ]
 
-if manifest.get("schema_version") != 1:
-    errors.append("manifest schema_version must be 1")
-if checkpoint.get("commit") != expected_commit:
-    errors.append("manifest runtime checkpoint must match merged PR #337")
-if checkpoint.get("validated_head") != expected_head:
-    errors.append("manifest validated head must match PR #337 exact-head evidence")
-if checkpoint.get("pull_request") != 337:
-    errors.append("manifest pull request must be 337")
-if checkpoint.get("ci_run") != expected_ci:
-    errors.append("manifest CI run must match PR #337 exact-head evidence")
-
-expected_tests = {
-    "passed": 2078,
-    "skipped": 13,
-    "failed": 0,
-    "measured_statements": 9756,
-    "coverage_percent": 100.0,
-}
-for key, expected in expected_tests.items():
-    if tests.get(key) != expected:
-        errors.append(f"tests.{key} must equal {expected!r}")
-if tests.get("python_versions") != ["3.11", "3.12"]:
-    errors.append("tests.python_versions must be Python 3.11 and 3.12")
-
-if ci.get("job_count") != 9 or ci.get("jobs") != expected_jobs:
-    errors.append("permanent CI manifest must list the nine jobs in order")
-if ci.get("all_successful") is not True:
-    errors.append("permanent exact-head CI must be successful")
-if integration.get("ci_run") != expected_integration_ci:
-    errors.append("PostgreSQL integration CI must match exact evidence")
-if integration.get("job_count") != 1 or integration.get("all_successful") is not True:
-    errors.append("PostgreSQL integration must record one successful job")
-if integration.get("target_active") is not False:
-    errors.append("PostgreSQL integration target must remain inactive")
-if integration.get("ann_indexes_present") is not False:
-    errors.append("inactive import must not record ANN indexes")
-if mutation.get("declared_mutants") != 7 or mutation.get("killed_mutants") != 7:
-    errors.append("Ring Zero evidence must remain 7/7")
+expect(manifest.get("schema_version"), 1, "manifest schema_version")
+expect(checkpoint.get("commit"), expected_commit, "runtime checkpoint")
+expect(checkpoint.get("validated_head"), expected_head, "validated runtime head")
+expect(checkpoint.get("pull_request"), 337, "runtime checkpoint PR")
+expect(checkpoint.get("ci_run"), expected_ci, "runtime exact-head CI")
+expect(tests.get("python_versions"), ["3.11", "3.12"], "tested Python versions")
+expect(tests.get("passed"), 2078, "tests.passed")
+expect(tests.get("skipped"), 13, "tests.skipped")
+expect(tests.get("failed"), 0, "tests.failed")
+expect(tests.get("measured_statements"), 9756, "tests.measured_statements")
+expect(tests.get("coverage_percent"), 100.0, "tests.coverage_percent")
+expect(ci.get("job_count"), 9, "CI job count")
+expect(ci.get("jobs"), expected_jobs, "CI job list")
+expect(ci.get("all_successful"), True, "CI all_successful")
+expect(integration.get("ci_run"), expected_integration_ci, "PostgreSQL integration CI")
+expect(integration.get("job_count"), 1, "PostgreSQL integration job count")
+expect(integration.get("all_successful"), True, "PostgreSQL integration result")
+expect(integration.get("target_active"), False, "PostgreSQL target active state")
+expect(integration.get("ann_indexes_present"), False, "PostgreSQL ANN index state")
+expect(mutation.get("declared_mutants"), 7, "declared Ring Zero mutants")
+expect(mutation.get("killed_mutants"), 7, "killed Ring Zero mutants")
 
 required_true = (
     "public_query_surfaces_read_only",
@@ -98,29 +93,61 @@ required_false = (
     "dedicated_reader_core",
 )
 for key in required_true:
-    if boundaries.get(key) is not True:
-        errors.append(f"implemented_boundaries.{key} must be true")
+    expect(boundaries.get(key), True, f"implemented_boundaries.{key}")
 for key in required_false:
-    if boundaries.get(key) is not False:
-        errors.append(f"implemented_boundaries.{key} must be false")
+    expect(boundaries.get(key), False, f"implemented_boundaries.{key}")
 
-if boundaries.get("sqlite_logical_export_resource_contract") != "bounded-streaming-local-first":
-    errors.append("SQLite migration must remain bounded-streaming-local-first")
-if limits.get("bounded_streaming_issue_completed") != 331:
-    errors.append("bounded streaming completion must remain issue #331")
-if limits.get("postgresql_inactive_import_issue_completed") != 332:
-    errors.append("inactive PostgreSQL completion must be issue #332")
-if limits.get("institution_scale_claim") is not False:
-    errors.append("manifest must not claim institution-scale operation")
-if limits.get("benchmark_is_production_slo") is not False:
-    errors.append("resource benchmark must not be a production SLO")
+expect(
+    boundaries.get("sqlite_logical_export_resource_contract"),
+    "bounded-streaming-local-first",
+    "SQLite migration resource contract",
+)
+expect(limits.get("bounded_streaming_issue_completed"), 331, "bounded migration issue")
+expect(limits.get("postgresql_inactive_import_issue_completed"), 332, "inactive import issue")
+expect(limits.get("institution_scale_claim"), False, "institution-scale claim")
+expect(limits.get("benchmark_is_production_slo"), False, "benchmark production-SLO claim")
 
-if documentation.get("authoritative_language") != "English":
-    errors.append("English must remain the primary conflict-resolving source language")
-if grant.get("submitted") is not True or grant.get("under_review") is not True:
-    errors.append("grant must remain submitted and under review")
-if grant.get("awarded") is not False or grant.get("budget_changed") is not False:
-    errors.append("grant must not claim award or budget change")
+# English remains the conflict-resolving source; multilingual presentation is a maintained
+# phased product surface rather than a frozen summary layer.
+expect(documentation.get("authoritative_language"), "English", "documentation authority")
+expect(documentation.get("working_language"), "English", "documentation working language")
+expect(
+    documentation.get("language_model"),
+    "english_primary_source_multilingual_product_surface",
+    "documentation language model",
+)
+expect(
+    documentation.get("localized_readmes"),
+    "phased_full_visual_and_semantic_parity",
+    "localized README model",
+)
+expect(
+    documentation.get("translation_status_ledger"),
+    "docs/TRANSLATION_STATUS.md",
+    "translation status ledger",
+)
+expect(
+    documentation.get("localization_policy"),
+    "docs/LOCALIZATION_POLICY.md",
+    "localization policy path",
+)
+expect(documentation.get("supported_localized_readme_count"), 9, "localized README count")
+expect(documentation.get("full_parity_current_locales"), ["ru"], "current full-parity locales")
+expect(
+    documentation.get("orientation_only_locales"),
+    ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"],
+    "temporary orientation locales",
+)
+expect(
+    documentation.get("full_corpus_translation_required_in_single_pr"),
+    False,
+    "all-at-once translation requirement",
+)
+
+expect(grant.get("submitted"), True, "grant submitted")
+expect(grant.get("under_review"), True, "grant under review")
+expect(grant.get("awarded"), False, "grant awarded")
+expect(grant.get("budget_changed"), False, "grant budget changed")
 
 required: dict[str, list[str]] = {
     "README.md": [
@@ -147,36 +174,104 @@ required: dict[str, list[str]] = {
         "Успешный импорт",
         "submitted / under review / not awarded",
     ],
-    "TEST_REPORT.md": [expected_commit, "2078 passed / 13 skipped / 0 failed",
-                       "9756", "9/9 successful", "31256316532", "PR #337"],
-    "docs/STATUS.md": [expected_commit, "2078 passed / 13 skipped / 0 failed",
-                       "PostgreSQL 16", "active=false", "No award or budget change"],
-    "docs/IMPLEMENTATION_STATUS.md": ["bbd816c", "Inactive PostgreSQL/pgvector import",
-                                      "Exact target-state equivalence", "#332"],
-    "docs/ai/CURRENT_STATE.md": [expected_commit, "2078 passed / 13 skipped / 0 failed",
-                                 "Issue #332", "English is the sole authoritative"],
-    "docs/ai/KNOWN_RISKS.md": [expected_commit, "PR #334", "PR #337",
-                               "GDPR-oriented controls", "test-only"],
-    "docs/ai/WORK_LOG.md": [expected_commit, "31256316532", "PR #334",
-                            "31214414769", "GITHUB_AND_NOTION"],
-    "docs/ai/COMPONENT_MAP.md": ["core/postgresql_migration.py", "active=false",
-                                 "Automatic SQLite/PostgreSQL switching remains forbidden"],
-    "docs/GRANT_NLNET_SCOPE.md": [expected_commit, "submitted / under review / not awarded",
-                                  "#332", "cannot be budgeted again"],
-    "docs/grants/baseline-funded-delta-matrix.md": [expected_commit, "M1", "M9",
-                                                     "PR #337", "no award/budget change"],
+    "TEST_REPORT.md": [
+        expected_commit,
+        "2078 passed / 13 skipped / 0 failed",
+        "9756",
+        "9/9 successful",
+        "31256316532",
+        "PR #337",
+    ],
+    "docs/STATUS.md": [
+        expected_commit,
+        "2078 passed / 13 skipped / 0 failed",
+        "PostgreSQL 16",
+        "active=false",
+        "No award or budget change",
+    ],
+    "docs/IMPLEMENTATION_STATUS.md": [
+        "bbd816c",
+        "Inactive PostgreSQL/pgvector import",
+        "Exact target-state equivalence",
+        "#332",
+    ],
+    "docs/ai/CURRENT_STATE.md": [
+        expected_commit,
+        "2078 passed / 13 skipped / 0 failed",
+        "Issue #332",
+        "English is the primary working",
+        "ORIENTATION_ONLY",
+        "REFRESH_NEEDED",
+    ],
+    "docs/ai/README.md": [
+        "English-first means source-first, not",
+        "full visual and semantic coverage",
+        "ORIENTATION_ONLY",
+        "docs-only PR",
+    ],
+    "docs/ai/KNOWN_RISKS.md": [
+        expected_commit,
+        "PR #334",
+        "PR #337",
+        "GDPR-oriented controls",
+        "test-only",
+    ],
+    "docs/ai/WORK_LOG.md": [
+        expected_commit,
+        "31256316532",
+        "PR #334",
+        "31214414769",
+        "GITHUB_AND_NOTION",
+    ],
+    "docs/ai/COMPONENT_MAP.md": [
+        "core/postgresql_migration.py",
+        "active=false",
+        "Automatic SQLite/PostgreSQL switching remains forbidden",
+    ],
+    "docs/GRANT_NLNET_SCOPE.md": [
+        expected_commit,
+        "submitted / under review / not awarded",
+        "#332",
+        "cannot be budgeted again",
+    ],
+    "docs/grants/baseline-funded-delta-matrix.md": [
+        expected_commit,
+        "M1",
+        "M9",
+        "PR #337",
+        "no award/budget change",
+    ],
     "docs/architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md": [
-        "PARTIALLY IMPLEMENTED", expected_commit, "active=false", "not an active Crystal runtime backend"
+        "PARTIALLY IMPLEMENTED",
+        expected_commit,
+        "active=false",
+        "not an active Crystal runtime backend",
     ],
     "ROADMAP.md": [expected_commit, "issues #331 and #332", "No grant award"],
-    "SECURITY.md": [expected_commit, "not a security, legal or GDPR certification",
-                    "test-only", "No automatic switching"],
+    "SECURITY.md": [
+        expected_commit,
+        "not a security, legal or GDPR certification",
+        "test-only",
+        "No automatic switching",
+    ],
     "AGENTS.md": [
         "English-first means",
         "full visual and semantic parity",
         "ORIENTATION_ONLY",
         "docs/TRANSLATION_STATUS.md",
         "GitHub completeness invariant",
+    ],
+    "docs/DOCUMENTATION_MAP.md": [
+        "English-first means source-first, not English-only",
+        "CURRENT full-parity localized READMEs",
+        "ORIENTATION_ONLY / REFRESH_NEEDED",
+        "Inactive PostgreSQL import",
+    ],
+    "docs/DOCUMENTATION_SYNC_PROTOCOL.md": [
+        "English-first means source-first, not English-only",
+        "Root README target",
+        "Progressive document translation",
+        "A permanent short-summary model is not acceptable",
     ],
     "docs/LOCALIZATION_POLICY.md": [
         "English-first means **source-first**, not English-only.",
@@ -193,6 +288,7 @@ required: dict[str, list[str]] = {
         "T6 — reviewer, architecture, safety and grant documents",
     ],
 }
+
 for relative, needles in required.items():
     path = root / relative
     if not path.is_file():
@@ -203,7 +299,7 @@ for relative, needles in required.items():
         if needle not in text:
             errors.append(f"{relative}: missing current marker {needle!r}")
 
-# Full public presentation is checked by a minimum floor, never by a maximum size.
+# Full public presentation uses a minimum floor, never a maximum-size restriction.
 for relative, minimum in (("README.md", 12000), ("README.ru.md", 12000)):
     size = (root / relative).stat().st_size
     if size < minimum:
@@ -228,15 +324,14 @@ status_text = (root / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
 for locale, relative in supported_locales.items():
     if not (root / relative).is_file():
         errors.append(f"supported localized README missing: {relative}")
-    if not (root / "docs" / locale / "README.md").is_file():
+    index_path = root / "docs" / locale / "README.md"
+    if not index_path.is_file():
         errors.append(f"locale documentation index missing: docs/{locale}/README.md")
     if f"`{relative}`" not in status_text:
         errors.append(f"translation ledger does not list {relative}")
 
-# T1 is the first complete localized README. Other locales remain safe temporary
-# orientation files and must carry the recorded English source checkpoint until their phase.
-orientation_locales = sorted(set(supported_locales.values()) - {"README.ru.md"})
-for relative in orientation_locales:
+orientation_readmes = sorted(set(supported_locales.values()) - {"README.ru.md"})
+for relative in orientation_readmes:
     text = (root / relative).read_text(encoding="utf-8")
     for needle in (
         "<!-- localization-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->",
@@ -246,18 +341,47 @@ for relative in orientation_locales:
         if needle not in text:
             errors.append(f"{relative}: temporary orientation file missing {needle!r}")
 
+for locale, relative in supported_locales.items():
+    index = (root / "docs" / locale / "README.md").read_text(encoding="utf-8")
+    expected_state = "CURRENT" if locale == "ru" else "ORIENTATION_ONLY"
+    for needle in (
+        "localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605",
+        expected_state,
+        "REFRESH_NEEDED",
+        "Translation status",
+    ):
+        if needle not in index:
+            errors.append(f"docs/{locale}/README.md: missing phased status marker {needle!r}")
+
 current_surfaces = [
-    "README.md", "README.ru.md", "TEST_REPORT.md", "docs/STATUS.md",
-    "docs/IMPLEMENTATION_STATUS.md", "docs/status/implementation-manifest.json",
-    "docs/ai/CURRENT_STATE.md", "docs/ai/KNOWN_RISKS.md",
-    "docs/GRANT_NLNET_SCOPE.md", "docs/grants/baseline-funded-delta-matrix.md",
-    "docs/architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md", "ROADMAP.md", "SECURITY.md",
+    "README.md",
+    "README.ru.md",
+    "TEST_REPORT.md",
+    "docs/STATUS.md",
+    "docs/IMPLEMENTATION_STATUS.md",
+    "docs/status/implementation-manifest.json",
+    "docs/ai/CURRENT_STATE.md",
+    "docs/ai/README.md",
+    "docs/ai/KNOWN_RISKS.md",
+    "docs/DOCUMENTATION_MAP.md",
+    "docs/DOCUMENTATION_SYNC_PROTOCOL.md",
+    "docs/LOCALIZATION_POLICY.md",
+    "docs/TRANSLATION_STATUS.md",
+    "docs/GRANT_NLNET_SCOPE.md",
+    "docs/grants/baseline-funded-delta-matrix.md",
+    "docs/architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md",
+    "ROADMAP.md",
+    "SECURITY.md",
 ]
 stale_markers = (
-    "2059 passed / 12 skipped", "9361 statements",
-    "f03e24c85922d0bb46d6d9dfee98338972135908", "31224184351",
+    "2059 passed / 12 skipped",
+    "9361 statements",
+    "f03e24c85922d0bb46d6d9dfee98338972135908",
+    "31224184351",
     "PostgreSQL/pgvector is proposed, not current runtime",
     "inactive import and exact target equivalence (#332)",
+    "localized README files are frozen snapshots",
+    "Existing translated top-level README files are retained as frozen snapshots",
 )
 for relative in current_surfaces:
     text = (root / relative).read_text(encoding="utf-8")
@@ -266,8 +390,11 @@ for relative in current_surfaces:
             errors.append(f"{relative}: stale current-status marker {stale!r}")
 
 unsupported_claims = (
-    "Grant status: awarded", "Crystal is GDPR compliant", "Crystal is GDPR certified",
-    "PostgreSQL/pgvector is current runtime", "automatic backend switching is enabled",
+    "Grant status: awarded",
+    "Crystal is GDPR compliant",
+    "Crystal is GDPR certified",
+    "PostgreSQL/pgvector is current runtime",
+    "automatic backend switching is enabled",
     "zero hallucinations guaranteed",
 )
 for relative in current_surfaces:
@@ -276,8 +403,11 @@ for relative in current_surfaces:
         if claim in text:
             errors.append(f"{relative}: unsupported positive claim {claim!r}")
 
-link_surfaces = sorted(set(required) | set(supported_locales.values()) |
-                       {f"docs/{locale}/README.md" for locale in supported_locales})
+link_surfaces = sorted(
+    set(required)
+    | set(supported_locales.values())
+    | {f"docs/{locale}/README.md" for locale in supported_locales}
+)
 link_pattern = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 for relative in link_surfaces:
     source = root / relative
@@ -311,6 +441,6 @@ print(
     "checkpoint=bbd816c, tests=2078/13, statements=9756, coverage=100.00%, "
     "permanent-jobs=9, postgresql-integration=1, mutants=7/7, "
     "grant=submitted-under-review, readme-parity=en+ru, "
-    f"phased-orientation={len(orientation_locales)}"
+    f"phased-orientation={len(orientation_readmes)}"
 )
 PY
