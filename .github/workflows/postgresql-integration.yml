@@ -35,8 +35,8 @@ jobs:
         image: pgvector/pgvector:0.8.2-pg16
         env:
           POSTGRES_USER: crystal
-          POSTGRES_PASSWORD: crystal-password
           POSTGRES_DB: crystal
+          POSTGRES_HOST_AUTH_METHOD: trust
         ports:
           - 5432:5432
         options: >-
@@ -45,7 +45,7 @@ jobs:
           --health-timeout 5s
           --health-retries 20
     env:
-      VELANTRIM_POSTGRES_TEST_DSN: postgresql://crystal:crystal-password@127.0.0.1:5432/crystal
+      VELANTRIM_POSTGRES_TEST_DSN: postgresql://crystal@127.0.0.1:5432/crystal
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
