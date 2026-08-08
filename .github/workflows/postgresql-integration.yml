@@ -4,8 +4,10 @@ on:
   pull_request:
     paths:
       - "core/postgresql_migration.py"
+      - "core/postgresql_migration_impl.py"
       - "core/storage_ops.py"
-      - "tests/test_postgresql_migration_integration.py"
+      - "tests/postgresql_migration_support.py"
+      - "tests/test_postgresql_migration_*.py"
       - "pyproject.toml"
       - "requirements-dev.txt"
       - ".github/workflows/postgresql-integration.yml"
@@ -13,8 +15,10 @@ on:
     branches: [main]
     paths:
       - "core/postgresql_migration.py"
+      - "core/postgresql_migration_impl.py"
       - "core/storage_ops.py"
-      - "tests/test_postgresql_migration_integration.py"
+      - "tests/postgresql_migration_support.py"
+      - "tests/test_postgresql_migration_*.py"
       - "pyproject.toml"
       - "requirements-dev.txt"
       - ".github/workflows/postgresql-integration.yml"

@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 from core import postgresql_migration as pg
@@ -31,6 +32,11 @@ class PreflightConnection:
         schema_exists=False,
         postgres=160012,
         pgvector="0.8.2",
+        host="db.example",
+        port=5432,
+        database="crystal",
+        user="migration_role",
+        password="test-password",
     ):
         self.tls = tls
         self.recovery = recovery
@@ -39,6 +45,13 @@ class PreflightConnection:
         self.schema_exists = schema_exists
         self.postgres = postgres
         self.pgvector = pgvector
+        self.info = SimpleNamespace(
+            host=host,
+            port=port,
+            dbname=database,
+            user=user,
+            password=password,
+        )
         self.queries = []
 
     def execute(self, query, params=()):
