@@ -28,7 +28,7 @@ English architecture / ADR / security / grant contracts
         ↓
 English README primary public source
         ↓
-CURRENT checkpointed translations
+CURRENT full-parity localized READMEs and checkpointed D1 translations
         ↓
 REFRESH_NEEDED translated document packs
         ↓
