@@ -48,8 +48,8 @@ Production credentials and credential-bearing connection strings must never ente
 bundles, receipts, application logs, issues or Notion.
 
 The integration workflow uses a passwordless localhost service with PostgreSQL `trust`
-authentication only inside an ephemeral test job. That configuration must not be copied to
-an externally reachable or persistent deployment.
+authentication as **test-only** configuration inside an ephemeral job. That configuration
+must not be copied to an externally reachable or persistent deployment.
 
 ## Remaining PostgreSQL boundaries
 

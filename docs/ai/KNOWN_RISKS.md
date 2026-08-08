@@ -26,8 +26,9 @@ PR #337 is the current runtime checkpoint.
 - PostgreSQL backup, restore drill, retention and upgrade sequencing are not implemented;
 - production pooling, timeout/retry policy, least-privilege role provisioning and distributed
   fencing remain deployment/future-work boundaries;
-- the integration workflow uses a passwordless localhost `trust` service only inside an
-  ephemeral test job and must not be copied into an externally reachable deployment;
+- the integration workflow uses a passwordless localhost `trust` service as **test-only**
+  configuration inside an ephemeral job and it must not be copied into an externally
+  reachable deployment;
 - TLS is required by default, but production certificate, secret-provider and rotation
   operations remain outside the repository;
 - production credentials and credential-bearing connection strings must not enter profiles,
