@@ -1,11 +1,11 @@
 # 🤖 Crystal AI Agent Entry Point
 
 This directory is the compact orientation and hand-off layer for AI coding agents,
-automated auditors, and human reviewers working on Velantrim Exo-Cortex Crystal.
+automated auditors and human reviewers working on Velantrim Exo-Cortex Crystal.
 
 It exists to prevent a common failure mode: reading hundreds of files without first
-understanding Crystal's authority boundaries, current verified checkpoint, open work,
-and document hierarchy.
+understanding Crystal's authority boundaries, current verified checkpoint, open work and
+document hierarchy.
 
 ## Required reading order
 
@@ -17,15 +17,18 @@ Before auditing or changing Crystal, read:
 3. [`../STATUS.md`](../STATUS.md) and
    [`../status/implementation-manifest.json`](../status/implementation-manifest.json) —
    verified runtime checkpoint and machine-readable evidence.
-4. [`COMPONENT_MAP.md`](./COMPONENT_MAP.md) — decision owners, first files, first tests,
+4. [`COMPONENT_MAP.md`](./COMPONENT_MAP.md) — decision owners, first files, first tests
    and authority boundaries.
 5. [`KNOWN_RISKS.md`](./KNOWN_RISKS.md) — unresolved engineering, operational,
-   governance, and research risks.
+   governance and research risks.
 6. [`WORK_LOG.md`](./WORK_LOG.md) — compact history of material work and hand-offs.
 7. [`NOTION_HANDOFF.md`](./NOTION_HANDOFF.md) — connectorless synchronization queue and
    procedure.
 8. [`AUDIT_PLAYBOOK.md`](./AUDIT_PLAYBOOK.md) — context-efficient audit procedure.
-9. The relevant architecture, ADR, code, tests, CI and runtime configuration.
+9. [`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md) and
+   [`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md) when README, public meaning or
+   translations are affected.
+10. The relevant architecture, ADR, code, tests, CI and runtime configuration.
 
 Do not load the whole repository before completing this orientation pass.
 
@@ -40,19 +43,21 @@ For implemented behavior, prefer evidence in this order:
 4. TEST_REPORT.md + implementation manifest
 5. docs/STATUS.md + docs/IMPLEMENTATION_STATUS.md
 6. architecture documents and accepted ADRs
-7. README and reviewer-facing summaries
-8. this AI context pack
-9. PR descriptions, issues, roadmaps and research documents
-10. Notion strategy/history records
+7. English README primary public source
+8. CURRENT full-parity translations
+9. this AI context pack
+10. PR descriptions, issues, roadmaps and research documents
+11. Notion strategy/history records
 ```
 
-The lower levels provide orientation and rationale. They do not override executable
-reality.
+`ORIENTATION_ONLY` and `REFRESH_NEEDED` translations help navigation but do not override
+current implementation or English evidence. Lower levels provide orientation and rationale;
+they do not override executable reality.
 
 ## GitHub-first continuity
 
-Not every AI agent has a Notion connector. The repository must therefore remain
-sufficient for a connectorless agent to:
+Not every AI agent has a Notion connector. The repository must therefore remain sufficient
+for a connectorless agent to:
 
 - understand current implementation and authority boundaries;
 - perform a material audit;
@@ -111,7 +116,7 @@ Never collapse these into one claim.
 - Physical L3 is not automatically strict Canon.
 - TruthGate and Guardian boundaries must not be bypassed.
 - Public query surfaces remain read-only with respect to canonical truth state.
-- Retrieval score, topic relevance, confidence, or model fluency do not grant truth.
+- Retrieval score, topic relevance, confidence or model fluency do not grant truth.
 - Contradiction detection does not choose a winner without an explicit audited decision.
 - TRACE and Receipt are proof surfaces, not decoration.
 - Research Mode, Titan, Native Kernel, Mentaury, Personal Exo-Cortex and future cognitive
@@ -125,8 +130,8 @@ Never collapse these into one claim.
 Every material change follows
 [`../DOCUMENTATION_SYNC_PROTOCOL.md`](../DOCUMENTATION_SYNC_PROTOCOL.md).
 
-For `GITHUB_AND_NOTION` work, update the relevant Notion record directly when access
-exists. Without access, create a complete GitHub-native package and a visible hand-off in
+For `GITHUB_AND_NOTION` work, update the relevant Notion record directly when access exists.
+Without access, create a complete GitHub-native package and a visible hand-off in
 `NOTION_HANDOFF.md`; a connected actor then synchronizes the deeper record. Never copy
 private workspace content into this public repository.
 
@@ -146,9 +151,24 @@ orientation map
   → direct Notion sync or connectorless hand-off
 ```
 
-## Active documentation language
+## Active documentation language and translation policy
 
-English is the sole authoritative actively maintained GitHub documentation language during
-the current engineering phase. Existing localized README files are frozen snapshots and
-are updated only in a dedicated final localization pass. Agents must not spend an
-implementation PR rewriting translations or treat their stale metrics as current evidence.
+English is the primary working and source language. English-first means source-first, not
+English-only.
+
+- Completed root localized READMEs must preserve full visual and semantic coverage of the
+  English README, including meaningful diagrams, tables, quick start, limitations and
+  navigation.
+- The Russian README is the first full-parity translation phase.
+- Other supported root READMEs remain temporary `ORIENTATION_ONLY` surfaces until their
+  dedicated translation PRs.
+- Existing translated document packs are `REFRESH_NEEDED` unless their locale index and
+  translation ledger record a reviewed source checkpoint.
+- Other documents are translated progressively by language or document family; there is no
+  single mandatory final pass for the whole corpus.
+- Implementation PRs update English first and record whether translated public meaning
+  changed. Substantial translation work belongs in a separate docs-only PR.
+- A translation may not strengthen capability, security, grant or authority claims.
+
+Agents must read [`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md) and update
+[`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md) when a language phase changes.
