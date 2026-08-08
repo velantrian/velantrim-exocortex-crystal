@@ -1,140 +1,74 @@
-# 📌 Velantrim Crystal — 当前状态
+<!-- translation-source: docs/STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- translation-status: CURRENT -->
+<!-- d1-locale: zh-CN -->
+<!-- d1-boundary: public-ask-read-only -->
+<!-- d1-boundary: postgresql-active=false -->
+<!-- d1-nonclaim: import-is-not-activation -->
+<!-- d1-nonclaim: nlnet-not-awarded -->
+# Velantrim Crystal — 当前状态
 
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 **简体中文** · 🇸🇦 [العربية](../ar/STATUS.md) · 🇯🇵 [日本語](../ja/STATUS.md) · 🇮🇳 [हिन्दी](../hi/STATUS.md)
+**日期：** 2026-08-08  
+**已验证 runtime checkpoint：** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
+**已验证 tree：** `f57e58a6f4d1954b649ba324996fcde42ac287b8`  
+**已验证 implementation head：** `d7af7c80722274f9217bc5545d150f92e9363f37`  
+**Runtime PR / CI：** #337 / `31256316536`  
+**PostgreSQL integration CI：** `31256316532`
 
-**状态日期：** 2026-07-31  
-**本翻译对应的 repository 状态：** `main@c5a34a64`  
-**最后一个改变 runtime 的 checkpoint：** PR #265 / `cd6fd44`  
-**权威测试 baseline：** [TEST_REPORT.md](../../TEST_REPORT.md)
+## 验证
 
-> 本页是状态翻译。如有差异，以 GitHub `main`、英文
-> [STATUS](../STATUS.md) 和 [TEST_REPORT.md](../../TEST_REPORT.md) 为准。
+- Python 3.11：**2078 passed / 13 skipped / 0 failed**；
+- Python 3.12：**2078 passed / 13 skipped / 0 failed**；
+- **9756 statements / 100.00% line coverage**；
+- `core/postgresql_migration.py`：**44/44 statements**；
+- `core/postgresql_migration_impl.py`：**336/336 statements**；
+- Ring Zero mutants **7/7** killed；
+- permanent CI jobs **9/9** successful；
+- real PostgreSQL/pgvector integration **1/1** successful。
 
----
+精确证据：[TEST_REPORT.md](../../TEST_REPORT.md) 与
+[machine-readable manifest](../status/implementation-manifest.json)。
 
-## 🧭 阅读规则
+## 当前已验证 capability boundary
 
-```text
-GitHub Crystal main = 公开实现事实
-Notion Crystal       = 同步的 grant 与战略地图
-Titan / Full         = 独立研究实验室
-```
-
-文档、Notion note、prototype branch 或 Titan module 只有在 Crystal 中实现、
-测试并合并至 `main` 后，才算当前 Crystal capability。
-
-## ✅ 已验证 checkpoint
-
-PR #265 引入了严格只读的 HTTP query boundary：
-
-```text
-POST /ingest   → 经 Guardian + TruthGate admission
-POST /ask      → 严格只读 canonical query
-GET  /receipt  → 严格只读 query 加 Receipt
-```
-
-HTTP `/ask` 与 `/receipt` 不写入 L0/L1 或 L3，不改变 ESM，不处理 outbox，
-不记录 episode link，不初始化 embedding fingerprint，也不改变 adaptive
-verification state。
-
-### 明确的剩余范围
-
-- CLI `ask` 与 `receipt` 仍使用 `core.pipeline.run()`；
-- `core.pipeline.run()` 仍是可执行 admission 的兼容路径；
-- MCP 没有显式 canonical write tool，但搜索可能初始化尚未设置的
-  embedding fingerprint。
-
-这些是已知 follow-up，不是隐藏 capability。
-
-## 🧪 验证 baseline
+Crystal 保留 local-first SQLite baseline，并实现 issue #332 phase 1：
 
 ```text
-1713 passed
-12 skipped
-0 failed
-6389 measured statements
-100.00% coverage
+verified completed logical bundle
+→ PostgreSQL 16 / pgvector 0.8.2 preflight
+→ new inactive target schema
+→ serializable import
+→ independent read-only canonical target re-hash
+→ exact count / byte / SHA-256 equivalence
+→ non-secret receipts
 ```
 
-改变 runtime 的 checkpoint 合并前，CI 的永久 job 包括 Python 3.11/3.12、
-Ruff、security、Docker build、evaluation gate 与 JSONL integrity。精确证据以
-英文 [TEST_REPORT.md](../../TEST_REPORT.md) 和 GitHub Actions 为准。
+PostgreSQL driver 是可选 extra，只在显式 operator command 中 lazy-load。
+默认安装仍是 pure standard library。导入目标不注册到普通 runtime composition，
+保持 `active=false`，不能提供普通 reads/writes。
 
-## 🛡️ Public claim 边界
-
-Crystal 可以描述为：
-
-- 本地优先的可验证 AI memory infrastructure；
-- 面向 source 与 provenance 的 memory core；
-- 在已接线路径上具有 Guardian 与 TruthGate admission control；
-- 在已接线路径上具有 CanonicalView、TRACE 与可 replay 的 Receipt；
-- 默认仅依赖标准库，adapter 与 interface 可选；
-- 具有与 GDPR 相关的技术性删除与 restriction mechanism；
-- 可独立测试的开源 research-grade baseline。
-
-Crystal 不应描述为：
-
-- Titan 或完整 Personal ExoCortex；
-- 自主认知操作系统；
-- 有意识、生命或生物学等价的大脑；
-- 普遍真实或无 hallucination；
-- 获得法律 GDPR 认证；
-- 获得安全认证或可直接用于 production multi-tenant hosting；
-- 必须依赖外部 LLM 或 cloud provider。
-
-## 💶 Grant 状态
-
-NLnet NGI0 Commons Fund proposal 已提交并处于评审中。Repository 不声称
-资金已经获批。
+## Authority boundary
 
 ```text
-当前 BASELINE
-    +
-可测量的 FUNDED DELTA
-    =
-可独立验证的 DELIVERABLE
+storage profile         = deployment identity
+migration bundle        = operation evidence
+physical L3             = multi-status storage
+strict Canon            = trusted read projection
+migration/import        != TruthGate admission
+successful equivalence  != backend activation
 ```
 
-已合并工作保持为 baseline，不会再次计入付费 milestone。权威控制文档：
+Guardian、TruthGate、restrictions、TrustSnapshot 与 CanonicalView 不变。
 
-- [GRANT_NLNET_SCOPE.md](../GRANT_NLNET_SCOPE.md)
-- [baseline-funded-delta-matrix.md](../grants/baseline-funded-delta-matrix.md)
-- [funding-use-plan.md](../grants/funding-use-plan.md)
+## 仍未实现
 
-中文说明见 [GRANT_OVERVIEW.md](./GRANT_OVERVIEW.md)。
+- active PostgreSQL read/write runtime selection；
+- exact-vs-ANN evaluation 与已接受 ANN thresholds；
+- activation、cutover、fencing、rollback 或 dual-write；
+- PostgreSQL backup/restore/upgrade lifecycle、production pooling 与 distributed fencing；
+- production IdP/multi-tenancy 或 legal/security/GDPR certification；
+- 专用 verified Reader Core。
 
-## 🧪 Evaluation replay 决策
+## 资助状态
 
-Titan 的确定性 replay 实现已作为 prior art 接受审查，但未复制到 Crystal
-runtime。
-
-```text
-REVIEWED_PRIOR_ART
-DOCUMENTED_ONLY
-M4_CANDIDATE
-NO_RUNTIME_CHANGE
-NO_CANON_WRITE
-NO_BUDGET_CHANGE
-BASELINE_NOT_MOVED
-```
-
-未来实现必须扩展现有 Crystal evaluation stack，通过独立 RFC/issue/PR，
-保持 offline 与 non-authoritative，并维持 TruthGate 与 query boundary。
-
-## 🔬 Research 与 draft PR 规则
-
-开放的研究或 branding PR 不是实现事实。合并前必须基于当前 `main` 重新检查，
-审计 grant wording，并验证其不与权威状态文档冲突。
-
-## 📚 Reviewer 路径
-
-1. [REVIEWER_GUIDE.md](./REVIEWER_GUIDE.md)
-2. [QUICKSTART.md](./QUICKSTART.md)
-3. [GRANT_OVERVIEW.md](./GRANT_OVERVIEW.md)
-4. [GLOSSARY.md](./GLOSSARY.md)
-5. [英文权威状态](../STATUS.md)
-6. [TEST_REPORT.md](../../TEST_REPORT.md)
-
----
-
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 **简体中文** · 🇸🇦 [العربية](../ar/STATUS.md) · 🇯🇵 [日本語](../ja/STATUS.md) · 🇮🇳 [हिन्दी](../hi/STATUS.md)
+项目已提交并正在审查。**不声称已获资助或预算发生变化。** PR #337 与
+issue #332 已是 merged baseline，不能再次计入未来资助工作。

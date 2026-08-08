@@ -1,146 +1,76 @@
-# 📌 Velantrim Crystal — État actuel
+<!-- translation-source: docs/STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- translation-status: CURRENT -->
+<!-- d1-locale: fr -->
+<!-- d1-boundary: public-ask-read-only -->
+<!-- d1-boundary: postgresql-active=false -->
+<!-- d1-nonclaim: import-is-not-activation -->
+<!-- d1-nonclaim: nlnet-not-awarded -->
+# Velantrim Crystal — état actuel
 
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 **Français** · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 [简体中文](../zh-CN/STATUS.md) · 🇸🇦 [العربية](../ar/STATUS.md) · 🇯🇵 [日本語](../ja/STATUS.md) · 🇮🇳 [हिन्दी](../hi/STATUS.md)
+**Date :** 2026-08-08  
+**Checkpoint runtime vérifié :** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
+**Arbre vérifié :** `f57e58a6f4d1954b649ba324996fcde42ac287b8`  
+**Head validé :** `d7af7c80722274f9217bc5545d150f92e9363f37`  
+**PR / CI :** #337 / `31256316536`  
+**CI PostgreSQL :** `31256316532`
 
-**Date de statut :** 31 juillet 2026  
-**État du dépôt utilisé pour cette traduction :** `main@c5a34a64`  
-**Dernier checkpoint modifiant le runtime :** PR #265 / `cd6fd44`  
-**Baseline de tests normative :** [TEST_REPORT.md](../../TEST_REPORT.md)
+## Vérification
 
-> Cette page est une traduction de statut. En cas d’écart, GitHub `main`, le
-> [STATUS anglais](../STATUS.md) et [TEST_REPORT.md](../../TEST_REPORT.md) font
-> autorité.
+- Python 3.11 : **2078 passed / 13 skipped / 0 failed** ;
+- Python 3.12 : **2078 passed / 13 skipped / 0 failed** ;
+- **9756 statements / 100.00% line coverage** ;
+- `core/postgresql_migration.py` : **44/44 statements** ;
+- `core/postgresql_migration_impl.py` : **336/336 statements** ;
+- **7/7** mutants Ring Zero éliminés ;
+- **9/9** jobs CI permanents réussis ;
+- **1/1** intégration réelle PostgreSQL/pgvector réussie.
 
----
+Preuves : [TEST_REPORT.md](../../TEST_REPORT.md) et
+[manifest](../status/implementation-manifest.json).
 
-## 🧭 Règle de lecture
+## Frontière de capacité vérifiée
 
-```text
-GitHub Crystal main = vérité d’implémentation publique
-Notion Crystal       = carte grant et stratégie synchronisée
-Titan / Full         = laboratoire de recherche séparé
-```
-
-Un document, une note Notion, une branche prototype ou un module Titan n’est pas
-une capacité Crystal actuelle tant qu’il n’est pas implémenté, testé et fusionné
-dans Crystal `main`.
-
-## ✅ Checkpoint vérifié
-
-Le PR #265 a introduit la frontière de requête HTTP strictement en lecture :
-
-```text
-POST /ingest   → admission via Guardian + TruthGate
-POST /ask      → requête canonique strictement en lecture
-GET  /receipt  → lecture stricte avec Receipt
-```
-
-Les endpoints HTTP `/ask` et `/receipt` n’écrivent ni L0/L1 ni L3, ne font pas
-évoluer ESM, n’opèrent pas l’outbox, n’enregistrent pas de lien épisodique,
-n’initialisent pas d’empreinte d’embedding et ne modifient pas la vérification
-adaptative.
-
-### Limites résiduelles explicites
-
-- CLI `ask` et `receipt` restent sur `core.pipeline.run()` ;
-- `core.pipeline.run()` reste un chemin de compatibilité capable d’admission ;
-- MCP ne possède aucun outil d’écriture canonique explicite, mais une recherche
-  peut initialiser une empreinte d’embedding absente.
-
-Ces éléments sont des follow-ups connus, pas des capacités dissimulées.
-
-## 🧪 Baseline de vérification
+Crystal conserve la base SQLite local-first et implémente la phase 1 de l’issue #332 :
 
 ```text
-1713 passed
-12 skipped
-0 failed
-6389 measured statements
-100.00% coverage
+verified completed logical bundle
+→ PostgreSQL 16 / pgvector 0.8.2 preflight
+→ new inactive target schema
+→ serializable import
+→ independent read-only canonical target re-hash
+→ exact count / byte / SHA-256 equivalence
+→ non-secret receipts
 ```
 
-Le run CI `30284938992` a terminé avec succès les sept jobs permanents avant
-fusion : Python 3.11/3.12, Ruff, sécurité, Docker build, evaluation gate et
-intégrité JSONL.
+Le pilote PostgreSQL est optionnel et chargé paresseusement uniquement par commande
+opérateur explicite. L’installation par défaut reste en bibliothèque standard pure.
+La cible importée n’est pas enregistrée dans le runtime ordinaire, reste
+`active=false` et ne sert aucune lecture ou écriture normale.
 
-## 🛡️ Frontière des claims publics
-
-Crystal peut être décrit comme :
-
-- une infrastructure de mémoire IA locale et vérifiable ;
-- un noyau orienté sources et provenance ;
-- un système avec contrôles d’admission Guardian et TruthGate là où ils sont câblés ;
-- un système avec CanonicalView, TRACE et Receipts rejouables là où ils sont câblés ;
-- un runtime par défaut fondé sur la bibliothèque standard avec adaptateurs optionnels ;
-- un projet avec mécanismes techniques d’effacement et de restriction liés au RGPD ;
-- une baseline open source de niveau recherche, testable indépendamment.
-
-Crystal ne doit pas être décrit comme :
-
-- Titan ou le Personal ExoCortex complet ;
-- un système d’exploitation cognitif autonome ;
-- conscient, vivant ou biologiquement équivalent à un cerveau ;
-- universellement vrai ou sans hallucinations ;
-- juridiquement certifié RGPD ;
-- certifié sécurité ou prêt pour un hébergement multi-tenant de production ;
-- dépendant d’un LLM externe ou d’un fournisseur cloud obligatoire.
-
-## 💶 Statut de la subvention
-
-La proposition au **NLnet NGI0 Commons Fund** a été soumise et se trouve en cours
-d’évaluation. Le dépôt n’affirme pas que le financement a été accordé.
+## Frontière d’autorité
 
 ```text
-BASELINE ACTUELLE
-    +
-DELTA FINANCÉ MESURABLE
-    =
-LIVRABLE VÉRIFIABLE INDÉPENDAMMENT
+storage profile         = deployment identity
+migration bundle        = operation evidence
+physical L3             = multi-status storage
+strict Canon            = trusted read projection
+migration/import        != TruthGate admission
+successful equivalence  != backend activation
 ```
 
-Le travail déjà fusionné reste la baseline et n’est pas recompté comme milestone
-payé. Les règles normatives sont maintenues dans :
+Guardian, TruthGate, restrictions, TrustSnapshot et CanonicalView restent inchangés.
 
-- [GRANT_NLNET_SCOPE.md](../GRANT_NLNET_SCOPE.md)
-- [baseline-funded-delta-matrix.md](../grants/baseline-funded-delta-matrix.md)
-- [funding-use-plan.md](../grants/funding-use-plan.md)
+## Toujours absent
 
-Une synthèse française se trouve dans [GRANT_OVERVIEW.md](./GRANT_OVERVIEW.md).
+- runtime PostgreSQL actif en lecture/écriture ;
+- évaluation exact-vs-ANN et seuils ANN acceptés ;
+- activation, cutover, fencing, rollback ou dual-write ;
+- cycle backup/restore/upgrade, pooling de production et fencing distribué ;
+- IdP/multi-tenancy de production ou certification juridique, sécurité ou RGPD ;
+- Reader Core vérifié dédié.
 
-## 🧪 Décision sur l’evaluation replay
+## Statut de la subvention
 
-L’implémentation de replay déterministe de Titan a été examinée comme antériorité.
-Elle n’a pas été copiée dans le runtime Crystal.
-
-```text
-REVIEWED_PRIOR_ART
-DOCUMENTED_ONLY
-M4_CANDIDATE
-NO_RUNTIME_CHANGE
-NO_CANON_WRITE
-NO_BUDGET_CHANGE
-BASELINE_NOT_MOVED
-```
-
-Une future implémentation doit étendre le stack d’évaluation Crystal existant,
-passer par un RFC/issue/PR séparé, rester hors ligne et non autoritative, et
-préserver TruthGate ainsi que les frontières de requête.
-
-## 🔬 Règle pour la recherche et les PR draft
-
-Les PR de recherche ou de branding ouverts ne sont pas la vérité
-d’implémentation. Avant fusion, ils doivent être rebasés sur le `main` actuel,
-réaudités pour le langage grant et vérifiés contre ce statut normatif.
-
-## 📚 Parcours reviewer
-
-1. [REVIEWER_GUIDE.md](./REVIEWER_GUIDE.md)
-2. [QUICKSTART.md](./QUICKSTART.md)
-3. [GRANT_OVERVIEW.md](./GRANT_OVERVIEW.md)
-4. [GLOSSARY.md](./GLOSSARY.md)
-5. [Statut anglais normatif](../STATUS.md)
-6. [TEST_REPORT.md](../../TEST_REPORT.md)
-
----
-
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 **Français** · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 [简体中文](../zh-CN/STATUS.md) · 🇸🇦 [العربية](../ar/STATUS.md) · 🇯🇵 [日本語](../ja/STATUS.md) · 🇮🇳 [हिन्दी](../hi/STATUS.md)
+Le projet est soumis et en cours d’examen. **Aucune attribution ni modification du budget
+n’est revendiquée.** La PR #337 et l’issue #332 sont déjà la base fusionnée et ne peuvent
+pas être comptées à nouveau comme travail futur financé.

@@ -1,16 +1,35 @@
-# 🇸🇦 مسار التوثيق العربي
+<!-- d1-source: main@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- d1-status: CURRENT -->
+<!-- d2-status: REFRESH_NEEDED -->
+# التوثيق العربي
 
-<!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
+تبقى الإنجليزية لغة العمل والمصدر الأساسية والمرجع عند التعارض. هذه الترجمة واجهة
+عامة تتم صيانتها، لكنها لا تنشئ سلطة مستقلة للتنفيذ أو الأمن أو التمويل أو TruthGate أو Canon.
 
-[README العربي الكامل](../../README.ar.md) هو `CURRENT` بعد PR #340. يحافظ على الهدف والبنية البصرية والخريطة الذهنية ومخطط ASCII والجداول والحدود وQuick Start والتنقل.
+## D1 — البدء والاستخدام
 
-المستندات الأخرى تُترجم على مراحل. الملفات الموجودة هنا تبقى `REFRESH_NEEDED` حتى تُراجع مقابل checkpoint إنجليزي مسجل.
+**الحالة:** `CURRENT`  
+**نقطة المصدر الإنجليزية:** `main@a497b7d3cfbe59ca75b11d7449d5a728455b3130`
 
-- [README](../../README.ar.md) — `CURRENT`
-- [Quick Start](./QUICKSTART.md) — `REFRESH_NEEDED`
-- [Status](./STATUS.md) — `REFRESH_NEEDED`
-- [Reviewer Guide](./REVIEWER_GUIDE.md) — `REFRESH_NEEDED`
-- [Glossary](./GLOSSARY.md) — `REFRESH_NEEDED`
-- [Grant Overview](./GRANT_OVERVIEW.md) — `REFRESH_NEEDED`
+- [البدء السريع](./QUICKSTART.md)
+- [الحالة الحالية](./STATUS.md)
+- [حالة التنفيذ](./IMPLEMENTATION_STATUS.md)
 
-المصادر الأساسية: [English README](../../README.md)، [TEST_REPORT](../../TEST_REPORT.md)، [Current status](../STATUS.md)، [Localization policy](../LOCALIZATION_POLICY.md)، [Translation status](../TRANSLATION_STATUS.md).
+## وثائق مترجمة أخرى
+
+تظل مفيدة، لكنها تبقى `REFRESH_NEEDED` إلى أن تُراجع مقابل نقطة مصدر إنجليزية دقيقة:
+
+- [دليل المراجع](./REVIEWER_GUIDE.md) — D2؛
+- [نظرة عامة على المنحة](./GRANT_OVERVIEW.md) — D4؛
+- [المسرد](./GLOSSARY.md) — D4.
+
+## الأدلة الإنجليزية المرجعية
+
+- [README](../../README.md)
+- [خريطة التوثيق](../DOCUMENTATION_MAP.md)
+- [المعمارية](../ARCHITECTURE.md)
+- [حالة التنفيذ](../IMPLEMENTATION_STATUS.md)
+- [تقرير الاختبارات](../../TEST_REPORT.md)
+- [سياسة الأمن](../../SECURITY.md)
+
+لا يُدّعى إجراء اعتماد تحريري بواسطة متحدث أصلي.

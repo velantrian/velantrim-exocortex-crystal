@@ -1,16 +1,37 @@
-# 🇩🇪 Deutscher Dokumentationspfad
+<!-- d1-source: main@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- d1-status: CURRENT -->
+<!-- d2-status: REFRESH_NEEDED -->
+# Deutsche Dokumentation
 
-<!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
+Englisch bleibt die primäre Arbeits- und Quellsprache sowie der Konfliktlöser.
+Diese Übersetzung ist eine gepflegte öffentliche Produktschnittstelle, erzeugt aber
+keine eigene Implementierungs-, Sicherheits-, Förder-, TruthGate- oder Canon-Autorität.
 
-Die [vollständige deutsche README](../../README.de.md) ist nach PR #340 `CURRENT`. Sie bewahrt Zweck, visuelle Struktur, Mindmap, ASCII-Fluss, Tabellen, Grenzen, Quick Start und Navigation.
+## D1 — Einstieg und Nutzung
 
-Weitere Dokumente werden schrittweise übersetzt. Vorhandene Dateien bleiben `REFRESH_NEEDED`, bis sie gegen einen aufgezeichneten englischen Checkpoint geprüft wurden.
+**Status:** `CURRENT`  
+**Englischer Quell-Checkpoint:** `main@a497b7d3cfbe59ca75b11d7449d5a728455b3130`
 
-- [README](../../README.de.md) — `CURRENT`
-- [Quick Start](./QUICKSTART.md) — `REFRESH_NEEDED`
-- [Status](./STATUS.md) — `REFRESH_NEEDED`
-- [Reviewer Guide](./REVIEWER_GUIDE.md) — `REFRESH_NEEDED`
-- [Glossar](./GLOSSARY.md) — `REFRESH_NEEDED`
-- [Grant-Übersicht](./GRANT_OVERVIEW.md) — `REFRESH_NEEDED`
+- [Schnellstart](./QUICKSTART.md)
+- [Aktueller Status](./STATUS.md)
+- [Implementierungsstatus](./IMPLEMENTATION_STATUS.md)
 
-Primäre Quellen: [English README](../../README.md), [TEST_REPORT](../../TEST_REPORT.md), [Current status](../STATUS.md), [Localization policy](../LOCALIZATION_POLICY.md), [Translation status](../TRANSLATION_STATUS.md).
+## Weitere übersetzte Dokumente
+
+Die folgenden Dateien enthalten weiterhin nützliche Inhalte, bleiben aber bis zu einer
+erneuten Prüfung gegen einen exakten englischen Checkpoint `REFRESH_NEEDED`:
+
+- [Leitfaden für Reviewer](./REVIEWER_GUIDE.md) — D2;
+- [Förderübersicht](./GRANT_OVERVIEW.md) — D4;
+- [Glossar](./GLOSSARY.md) — D4.
+
+## Verbindliche englische Nachweise
+
+- [README](../../README.md)
+- [Dokumentationskarte](../DOCUMENTATION_MAP.md)
+- [Architektur](../ARCHITECTURE.md)
+- [Implementierungsstatus](../IMPLEMENTATION_STATUS.md)
+- [Testbericht](../../TEST_REPORT.md)
+- [Sicherheitsrichtlinie](../../SECURITY.md)
+
+Eine muttersprachliche redaktionelle Zertifizierung wird nicht behauptet.

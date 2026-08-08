@@ -1,132 +1,75 @@
-# 📌 Velantrim Crystal — الحالة الحالية
+<!-- translation-source: docs/STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- translation-status: CURRENT -->
+<!-- d1-locale: ar -->
+<!-- d1-boundary: public-ask-read-only -->
+<!-- d1-boundary: postgresql-active=false -->
+<!-- d1-nonclaim: import-is-not-activation -->
+<!-- d1-nonclaim: nlnet-not-awarded -->
+# Velantrim Crystal — الحالة الحالية
 
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 [简体中文](../zh-CN/STATUS.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/STATUS.md) · 🇮🇳 [हिन्दी](../hi/STATUS.md)
+**التاريخ:** 2026-08-08  
+**نقطة التشغيل المتحقق منها:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
+**الشجرة المتحقق منها:** `f57e58a6f4d1954b649ba324996fcde42ac287b8`  
+**رأس التنفيذ المتحقق:** `d7af7c80722274f9217bc5545d150f92e9363f37`  
+**PR / CI:** #337 / `31256316536`  
+**CI لتكامل PostgreSQL:** `31256316532`
 
-**تاريخ الحالة:** 31 يوليو 2026  
-**حالة المستودع المستخدمة لهذه الترجمة:** `main@c5a34a64`  
-**آخر checkpoint غيّر runtime:** PR #265 / `cd6fd44`  
-**baseline الاختبارات المعيارية:** [TEST_REPORT.md](../../TEST_REPORT.md)
+## التحقق
 
-> هذه الصفحة ترجمة للحالة. عند الاختلاف تكون GitHub `main` و[STATUS الإنجليزي](../STATUS.md)
-> و[TEST_REPORT.md](../../TEST_REPORT.md) هي المرجع.
+- Python 3.11: **2078 passed / 13 skipped / 0 failed**؛
+- Python 3.12: **2078 passed / 13 skipped / 0 failed**؛
+- **9756 statements / 100.00% line coverage**؛
+- `core/postgresql_migration.py`: **44/44 statements**؛
+- `core/postgresql_migration_impl.py`: **336/336 statements**؛
+- إنهاء **7/7** من طفرات Ring Zero؛
+- نجاح **9/9** من وظائف CI الدائمة؛
+- نجاح **1/1** من تكامل PostgreSQL/pgvector الحقيقي.
 
----
+الأدلة الدقيقة: [TEST_REPORT.md](../../TEST_REPORT.md) و
+[البيان القابل للقراءة آلياً](../status/implementation-manifest.json).
 
-## 🧭 قاعدة القراءة
+## حد القدرات المتحقق منه
 
-```text
-GitHub Crystal main = حقيقة التنفيذ العامة
-Notion Crystal       = خريطة منحة واستراتيجية متزامنة
-Titan / Full         = مختبر بحث منفصل
-```
-
-لا يُعد أي مستند أو ملاحظة Notion أو prototype branch أو module من Titan capability
-حالية في Crystal حتى يُنفذ ويُختبر ويُدمج في `main`.
-
-## ✅ checkpoint المتحقق
-
-أدخل PR #265 حد HTTP صارماً للقراءة فقط:
-
-```text
-POST /ingest   → admission عبر Guardian + TruthGate
-POST /ask      → استعلام قانوني للقراءة فقط
-GET  /receipt  → قراءة صارمة مع Receipt
-```
-
-لا تكتب HTTP endpoints `/ask` و`/receipt` في L0/L1 أو L3، ولا تغيّر ESM، ولا تشغّل
-outbox، ولا تسجل روابط حلقية، ولا تهيّئ `embedding fingerprint`، ولا تعدّل adaptive verification.
-
-### الحدود المتبقية الصريحة
-
-- CLI `ask` و`receipt` ما زالت على `core.pipeline.run()`؛
-- `core.pipeline.run()` مسار توافق قادر على admission؛
-- MCP لا يملك أداة كتابة قانونية صريحة، لكن البحث قد يهيّئ fingerprint مفقوداً.
-
-هذه follow-ups معروفة وليست claims تنفيذ مخفية.
-
-## 🧪 baseline التحقق
+يحافظ Crystal على أساس SQLite المحلي وينفذ المرحلة الأولى من issue #332:
 
 ```text
-1713 passed
-12 skipped
-0 failed
-6389 measured statements
-100.00% coverage
+verified completed logical bundle
+→ PostgreSQL 16 / pgvector 0.8.2 preflight
+→ new inactive target schema
+→ serializable import
+→ independent read-only canonical target re-hash
+→ exact count / byte / SHA-256 equivalence
+→ non-secret receipts
 ```
 
-أكمل CI run `30284938992` الوظائف السبع الدائمة قبل الدمج: Python 3.11/3.12،
-Ruff، security، Docker build، evaluation gate وJSONL integrity.
+برنامج تشغيل PostgreSQL إضافة اختيارية تُحمّل كسولاً فقط عبر أوامر مشغل صريحة.
+يبقى التثبيت الافتراضي معتمداً على المكتبة القياسية. لا تسجل الوجهة المستوردة في
+التكوين التشغيلي العادي، وتبقى `active=false` ولا تخدم قراءات أو كتابات عادية.
 
-## 🛡️ حدود claims العامة
-
-يمكن وصف Crystal بأنه:
-
-- بنية ذاكرة AI محلية أولاً وقابلة للتحقق؛
-- نواة ذاكرة تركز على المصادر وprovenance؛
-- نظام بحدود admission عبر Guardian وTruthGate حيث تكون موصولة؛
-- نظام يستخدم CanonicalView وTRACE وReceipt قابلة لإعادة التحقق حيث تكون موصولة؛
-- runtime افتراضي بمكتبة Python القياسية مع محولات اختيارية؛
-- مشروع بآليات محو وتقييد تقنية ذات صلة بـ GDPR؛
-- baseline مفتوحة المصدر قابلة للاختبار المستقل.
-
-لا يجوز وصف Crystal بأنه:
-
-- Titan أو Personal ExoCortex الكامل؛
-- نظام تشغيل معرفي مستقل؛
-- واعٍ أو حي أو مماثل بيولوجياً للدماغ؛
-- صحيح عالمياً أو خالٍ تماماً من hallucinations؛
-- معتمد قانونياً وفق GDPR؛
-- معتمد أمنياً أو جاهزاً لـ multi-tenant production؛
-- معتمداً إلزامياً على LLM خارجي أو cloud provider.
-
-## 💶 حالة المنحة
-
-قُدم الطلب إلى **NLnet NGI0 Commons Fund** وهو قيد التقييم. لا يدّعي المستودع أن
-التمويل قد مُنح.
+## حد السلطة
 
 ```text
-BASELINE الحالية
-    +
-DELTA ممولة وقابلة للقياس
-    =
-DELIVERABLE قابلة للتحقق المستقل
+storage profile         = deployment identity
+migration bundle        = operation evidence
+physical L3             = multi-status storage
+strict Canon            = trusted read projection
+migration/import        != TruthGate admission
+successful equivalence  != backend activation
 ```
 
-يبقى العمل المدمج ضمن baseline ولا يُحتسب مرة أخرى كـ milestone مدفوعة. تُحفظ
-القواعد المعيارية في:
+لا تتغير Guardian وTruthGate وrestrictions وTrustSnapshot وCanonicalView.
 
-- [GRANT_NLNET_SCOPE.md](../GRANT_NLNET_SCOPE.md)
-- [baseline-funded-delta-matrix.md](../grants/baseline-funded-delta-matrix.md)
-- [funding-use-plan.md](../grants/funding-use-plan.md)
+## غير موجود بعد
 
-الملخص العربي في [GRANT_OVERVIEW.md](./GRANT_OVERVIEW.md).
+- تشغيل PostgreSQL نشط للقراءة والكتابة؛
+- تقييم exact-vs-ANN وحدود ANN المقبولة؛
+- activation أو cutover أو fencing أو rollback أو dual-write؛
+- دورة backup/restore/upgrade وpooling إنتاجي وfencing موزع؛
+- IdP/multi-tenancy إنتاجي أو اعتماد قانوني أو أمني أو GDPR؛
+- Reader Core متحقق ومخصص.
 
-## 🧪 قرار evaluation replay
+## حالة المنحة
 
-رُوجع replay الحتمي في Titan بوصفه prior art، ولم يُنسخ إلى runtime Crystal.
-
-```text
-REVIEWED_PRIOR_ART
-DOCUMENTED_ONLY
-M4_CANDIDATE
-NO_RUNTIME_CHANGE
-NO_CANON_WRITE
-NO_BUDGET_CHANGE
-BASELINE_NOT_MOVED
-```
-
-أي تنفيذ مستقبلي يجب أن يمدد stack التقييم الحالي، ويمر عبر RFC/issue/PR منفصل،
-ويبقى offline وغير سلطوي، ويحافظ على TruthGate وحدود الاستعلام.
-
-## 📚 مسار المراجع
-
-1. [REVIEWER_GUIDE.md](./REVIEWER_GUIDE.md)
-2. [QUICKSTART.md](./QUICKSTART.md)
-3. [GRANT_OVERVIEW.md](./GRANT_OVERVIEW.md)
-4. [GLOSSARY.md](./GLOSSARY.md)
-5. [الحالة الإنجليزية المعيارية](../STATUS.md)
-6. [TEST_REPORT.md](../../TEST_REPORT.md)
-
----
-
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 [简体中文](../zh-CN/STATUS.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/STATUS.md) · 🇮🇳 [हिन्दी](../hi/STATUS.md)
+المشروع مقدم وقيد المراجعة. **لا يُدّعى الحصول على المنحة أو تغيير الميزانية.**
+أصبح PR #337 وissue #332 جزءاً من الأساس المدمج ولا يجوز احتسابهما مرة أخرى كعمل
+مستقبلي ممول.

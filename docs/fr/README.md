@@ -1,16 +1,37 @@
-# 🇫🇷 Parcours de documentation en français
+<!-- d1-source: main@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- d1-status: CURRENT -->
+<!-- d2-status: REFRESH_NEEDED -->
+# Documentation française
 
-<!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
+L’anglais reste la langue principale de travail et la source de référence en cas de
+conflit. Cette traduction est une surface publique maintenue, mais elle ne crée aucune
+autorité indépendante sur l’implémentation, la sécurité, le financement, TruthGate ou Canon.
 
-Le [README français complet](../../README.fr.md) est `CURRENT` après PR #340. Il conserve le but, la structure visuelle, la carte mentale, le flux ASCII, les tableaux, les limites, le démarrage rapide et la navigation.
+## D1 — prise en main et utilisation
 
-Les autres documents sont traduits par étapes. Les fichiers existants restent `REFRESH_NEEDED` jusqu’à leur revue contre un checkpoint anglais enregistré.
+**État :** `CURRENT`  
+**Checkpoint source anglais :** `main@a497b7d3cfbe59ca75b11d7449d5a728455b3130`
 
-- [README](../../README.fr.md) — `CURRENT`
-- [Démarrage rapide](./QUICKSTART.md) — `REFRESH_NEEDED`
-- [Statut](./STATUS.md) — `REFRESH_NEEDED`
-- [Guide de revue](./REVIEWER_GUIDE.md) — `REFRESH_NEEDED`
-- [Glossaire](./GLOSSARY.md) — `REFRESH_NEEDED`
-- [Aperçu de la subvention](./GRANT_OVERVIEW.md) — `REFRESH_NEEDED`
+- [Démarrage rapide](./QUICKSTART.md)
+- [État actuel](./STATUS.md)
+- [État de l’implémentation](./IMPLEMENTATION_STATUS.md)
 
-Sources principales : [English README](../../README.md), [TEST_REPORT](../../TEST_REPORT.md), [Current status](../STATUS.md), [Localization policy](../LOCALIZATION_POLICY.md), [Translation status](../TRANSLATION_STATUS.md).
+## Autres documents traduits
+
+Ils restent utiles, mais demeurent `REFRESH_NEEDED` jusqu’à leur vérification contre un
+checkpoint anglais exact :
+
+- [Guide du relecteur](./REVIEWER_GUIDE.md) — D2 ;
+- [Présentation de la subvention](./GRANT_OVERVIEW.md) — D4 ;
+- [Glossaire](./GLOSSARY.md) — D4.
+
+## Preuves anglaises faisant autorité
+
+- [README](../../README.md)
+- [Carte de la documentation](../DOCUMENTATION_MAP.md)
+- [Architecture](../ARCHITECTURE.md)
+- [État de l’implémentation](../IMPLEMENTATION_STATUS.md)
+- [Rapport de tests](../../TEST_REPORT.md)
+- [Politique de sécurité](../../SECURITY.md)
+
+Aucune certification éditoriale par un locuteur natif n’est revendiquée.

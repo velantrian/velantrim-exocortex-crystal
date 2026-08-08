@@ -32,39 +32,38 @@ locked durable SQLite profile
 → non-secret receipts
 ```
 
-Issue #332 is implemented by PR #337 for inactive import and exact equivalence only. Psycopg
-is optional and loaded only by explicit operator commands. The default installation remains
-pure standard library.
-
+Issue #332 is implemented by PR #337 for inactive import and exact equivalence only.
 The target remains `active=false`, is absent from ordinary runtime composition and cannot
-serve normal reads or writes. Import or equivalence does not establish activation, automatic
-selection, cutover, rollback, dual-write, ANN acceptance, TruthGate admission or strict Canon
-membership.
+serve normal reads or writes. Import or equivalence does not establish activation,
+automatic selection, cutover, rollback, dual-write, ANN acceptance, TruthGate admission
+or strict Canon membership.
 
 ## 3. Grant and remaining limitations
 
-The project is submitted and under review; no award or budget change is claimed. PR #337 is
-merged baseline and cannot be counted again as funded delta. Remaining independent work
-includes exact-vs-ANN evaluation, explicit cutover/fencing, rollback proof, PostgreSQL server
-lifecycle, production IdP/multi-tenancy, supply-chain hardening and a dedicated Reader Core.
+The project is submitted and under review; no award or budget change is claimed. PR #337
+is merged baseline and cannot be counted again as funded delta. Remaining independent work
+includes exact-vs-ANN evaluation, explicit cutover/fencing, rollback proof, PostgreSQL
+server lifecycle, production IdP/multi-tenancy, supply-chain hardening and a dedicated
+Reader Core.
 
 ## 4. Documentation language and translation state
 
-English is the primary working, source and conflict-resolving language, not the only intended
-documentation language.
+English is the primary working, source and conflict-resolving language. Translations are
+maintained public product surfaces but create no independent implementation, security,
+grant, TruthGate or Canon authority.
 
-PR #340 restores full visual and semantic root README coverage for all nine supported
-locales: Arabic, German, Spanish, French, Hindi, Italian, Japanese, Russian and Simplified
-Chinese.
+Issue #341 D1 is complete for Arabic, German, Spanish, French, Hindi, Italian, Japanese,
+Russian and Simplified Chinese. Every locale now has a current index, Quick Start, Status
+and Implementation Status. Russian D1 is tied to
+`main@16d71e731ee658b1faa65c9ea45c0d8cca290f7c`; the other eight locales are tied to
+`main@a497b7d3cfbe59ca75b11d7449d5a728455b3130`.
 
-Issue #341 tracks progressive translation of the broader corpus. The first D1 tranche now
-reconciles the Russian locale index, Quick Start, Status and Implementation Status against
-exact English source checkpoint `main@16d71e731ee658b1faa65c9ea45c0d8cca290f7c`. These Russian D1 documents are
-`CURRENT` after merge and protected by `docs-status`.
+The universal D1 `docs-status` validator checks manifest membership, exact checkpoints,
+local links, mutable runtime evidence, read-only query boundaries, PostgreSQL
+`active=false`, import-not-activation and NLnet-not-awarded non-claims.
 
-The corresponding D1 files for Arabic, German, Spanish, French, Hindi, Italian, Japanese and
-Simplified Chinese remain `REFRESH_NEEDED`. Reviewer/safety documents remain D2;
-architecture D3; grant/project context D4; extended references D5.
+Reviewer/safety documents remain D2; architecture D3; grant/project context D4; extended
+references D5.
 
 See [`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md) and
 [`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md).
