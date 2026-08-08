@@ -92,18 +92,16 @@
   },
   "documentation": {
     "authoritative_language": "English",
-    "localized_readmes": "frozen_snapshots_pending_dedicated_reconciliation_pass",
-    "frozen_localized_readme_git_blobs": {
-      "README.ar.md": "d63cc0d0771c11ca306d2cc79b728c3eb6301b66",
-      "README.de.md": "2e046a587208d65bc91bc2eab3909d0cadc1f9b9",
-      "README.es.md": "291c0169fa5a3372dabf1a3d1a53807faecc1620",
-      "README.fr.md": "8beaf05c1b70d24efcf38b16e3789c27f9280d67",
-      "README.hi.md": "b1719aec665f51ae47014372b39153551f298653",
-      "README.it.md": "95d5a70194c3c6880b0328262e0bbf923bb31076",
-      "README.ja.md": "1342099544ab718804646b5350ad71e7d404bc65",
-      "README.ru.md": "18e3f4fb566c7217dc65f91022e01d83fefba1df",
-      "README.zh-CN.md": "d2daa042ef0df4e9e343a60e59a1f9c1c664c51d"
-    }
+    "working_language": "English",
+    "localized_readmes": "concise_non_authoritative_summaries",
+    "localized_scope": [
+      "top-level README orientation summaries",
+      "locale documentation indexes",
+      "selected best-effort onboarding snapshots"
+    ],
+    "localized_readme_source_checkpoint": "e521440e9bb188d88475f17dd5bcdd161b314605",
+    "localized_readme_count": 9,
+    "full_corpus_translation_required": false
   },
   "grant": {
     "program": "NLnet NGI0 Commons Fund",

@@ -1,7 +1,7 @@
 # 🧭 Crystal Documentation Map
 
-This page routes each reader to the smallest authoritative document and prevents
-duplicate implementation claims.
+This page routes each reader to the smallest authoritative document and prevents duplicate or
+translated implementation claims.
 
 ## Start here by audience
 
@@ -10,90 +10,48 @@ duplicate implementation claims.
 | New user | [README](../README.md) | [Quick start](./QUICKSTART.md), [Architecture](./ARCHITECTURE.md) |
 | Grant reviewer | [Reviewer guide](./REVIEWER_GUIDE.md) | [Test report](../TEST_REPORT.md), [Grant scope](./GRANT_NLNET_SCOPE.md) |
 | Engineer | [Implementation status](./IMPLEMENTATION_STATUS.md) | [ADR index](./ADR.md), [Failure modes](./FAILURE_MODES.md) |
-| Operator | [Quick start](./QUICKSTART.md) | [Conflict-resolution surfaces](./CONFLICT_RESOLUTION_SURFACES.md), [Topic facets and curator IAM](./TOPIC_FACETS_AND_CURATOR_IAM.md) |
+| Operator | [Quick start](./QUICKSTART.md) | [Conflict-resolution surfaces](./CONFLICT_RESOLUTION_SURFACES.md) |
 | Security reviewer | [Security policy](../SECURITY.md) | [Threat model](./security/threat-model.md), [Privacy](../PRIVACY.md) |
-| Researcher | [Implementation status](./IMPLEMENTATION_STATUS.md) | [Roadmap](../ROADMAP.md), RFCs, [Metaphor vs mechanism](./METAPHOR_VS_MECHANISM.md) |
-| Ecosystem reviewer or cross-project contributor | [Velantrim ecosystem map](./VELANTRIM_ECOSYSTEM.md) | [Grant scope](./GRANT_NLNET_SCOPE.md), [Architecture](./ARCHITECTURE.md) |
-| Contributor | [Contributing](../CONTRIBUTING.md) | [Documentation sync protocol](./DOCUMENTATION_SYNC_PROTOCOL.md), [Test report](../TEST_REPORT.md), [Governance](../GOVERNANCE.md) |
-| AI coding agent or automated auditor | [AI agent entry point](./ai/README.md) | [Mandatory agent contract](../AGENTS.md), [Current state](./ai/CURRENT_STATE.md), [Audit playbook](./ai/AUDIT_PLAYBOOK.md) |
-| AI without Notion connector | [Connectorless Notion hand-off](./ai/NOTION_HANDOFF.md) | [Work log](./ai/WORK_LOG.md), [Sync protocol](./DOCUMENTATION_SYNC_PROTOCOL.md) |
+| Researcher | [Implementation status](./IMPLEMENTATION_STATUS.md) | [Roadmap](../ROADMAP.md), RFCs |
+| Contributor | [Contributing](../CONTRIBUTING.md) | [Sync protocol](./DOCUMENTATION_SYNC_PROTOCOL.md), [Localization policy](./LOCALIZATION_POLICY.md) |
+| AI agent | [AI entry point](./ai/README.md) | [Agent contract](../AGENTS.md), [Current state](./ai/CURRENT_STATE.md) |
 
 ## Authority hierarchy
 
 ```text
-GitHub main code and tests
+merged GitHub main code and tests
         ↓
 TEST_REPORT.md + implementation-manifest.json
         ↓
 docs/STATUS.md + docs/IMPLEMENTATION_STATUS.md
         ↓
-English README capability contract
+English architecture / ADR / security / grant contracts
         ↓
-semantically aligned localized READMEs
+English README public capability summary
         ↓
-AI context pack (orientation and hand-off)
+localized README orientation summaries
         ↓
-RFC, roadmap and research documents
+locale indexes and optional best-effort snapshots
 ```
 
-Notion is the synchronized strategy/grant map; it does not replace merged code
-as implementation truth.
+Localized text is never implementation truth. Notion is synchronized strategy, rationale,
+grant context and history; it does not replace merged GitHub evidence.
 
-## Velantrim ecosystem and cross-project boundaries
+## English-first documentation governance
 
-- [Bilingual Velantrim ecosystem map](./VELANTRIM_ECOSYSTEM.md)
-- [Architecture and authority boundaries](./ARCHITECTURE.md)
-- [NLnet grant scope](./GRANT_NLNET_SCOPE.md)
-
-Crystal is the independent grant-facing verifiable-memory track. Titan, Native
-Kernel and Mentaury Soul are related Velantrim research projects, but they do not
-receive automatic write authority over Crystal, do not share one Canon by default,
-and are not current runtime dependencies unless a separately reviewed integration
-is implemented, tested and merged.
-
-The bilingual ecosystem map is the current cross-project navigation and boundary
-reference; it does not authorize runtime integration.
-
-The ecosystem map is bilingual in English and Russian. English remains primary
-for Crystal's public and grant-facing contract. Additional README and documentation
-localizations may be synchronized after the English/Russian boundary text is stable.
-
-## AI agent context and hand-off
-
-- [AI agent entry point](./ai/README.md)
-- [Current state](./ai/CURRENT_STATE.md)
-- [Component map](./ai/COMPONENT_MAP.md)
-- [Known risks](./ai/KNOWN_RISKS.md)
-- [Audit playbook](./ai/AUDIT_PLAYBOOK.md)
-- [Compact work log](./ai/WORK_LOG.md)
-- [Connectorless Notion hand-off queue](./ai/NOTION_HANDOFF.md)
-
-The AI pack reduces context pressure and points agents to the right authority owner,
-files, consumers, tests and risks. It is an orientation map, not a competing source of
-implementation truth.
-
-Not all AI agents have direct Notion access. GitHub therefore contains the complete
-public technical/audit context required to continue the work. A connectorless agent
-records `HANDOFF_REQUIRED` in the hand-off queue; a connected human or AI later updates
-Notion and marks the item `SYNCED`.
-
-## Change and documentation governance
-
+- [Localization policy](./LOCALIZATION_POLICY.md)
 - [Code ↔ Documentation ↔ Notion synchronization protocol](./DOCUMENTATION_SYNC_PROTOCOL.md)
 - [Connectorless Notion hand-off](./ai/NOTION_HANDOFF.md)
-- [Contributing guide](../CONTRIBUTING.md)
-- [Governance](../GOVERNANCE.md)
-- [ADR index](./ADR.md)
+- [Mandatory agent contract](../AGENTS.md)
 
-Every PR classifies its documentation impact as `NONE`, `GITHUB_ONLY`, or
-`GITHUB_AND_NOTION`. New technologies, functions, durable decisions, major boundaries,
-grant/roadmap changes, and cross-project decisions require a synchronized Notion record
-in addition to the public GitHub technical contract.
+English is the sole authoritative working language. Architecture, ADRs, status, tests,
+security, grant documents, roadmaps and `docs/ai/*` are maintained in English. The project
+does not translate the entire corpus.
 
-When the originating agent lacks a Notion connector, it must still complete the GitHub
-record and create a structured hand-off. A missing connector is `HANDOFF_REQUIRED`, not a
-reason to lose the analysis. Essential implementation, risk and audit information must
-never exist only in Notion.
+The nine `README.<locale>.md` files are concise non-authoritative summaries. Their associated
+`docs/<locale>/README.md` files explain the locale route and identify older translated files as
+best-effort snapshots that may lag. `docs-status` verifies source checkpoints, capability
+boundaries, size limits and local links.
 
 ## Core architecture and trust
 
@@ -106,18 +64,28 @@ never exist only in Notion.
 - [CanonicalView RFC](./CANONICAL_VIEW_RFC.md)
 - [ADR index](./ADR.md)
 
-## Evidence, state and performance
+## Evidence and current state
 
 - [Test report](../TEST_REPORT.md)
 - [Current status](./STATUS.md)
 - [Implementation manifest](./status/implementation-manifest.json)
 - [Evaluation](./EVAL.md)
 - [Failure modes](./FAILURE_MODES.md)
-- [L3 retrieval benchmark](./benchmarks/L3_RETRIEVAL_SCALE.md)
+- [Current AI context](./ai/CURRENT_STATE.md)
+- [Known risks](./ai/KNOWN_RISKS.md)
 
-The ESM runtime has one machine-readable specification derived from the shared
-transition matrix. Performance history uses versioned scheduled/manual artifacts
-and comparable-run reporting; shared PR-runner latency is not a hard SLO.
+## Storage and migration
+
+- [Durable storage profile](./architecture/DURABLE_STORAGE_PROFILE.md)
+- [SQLite storage lifecycle](./architecture/SQLITE_STORAGE_LIFECYCLE.md)
+- [SQLite logical export](./architecture/SQLITE_LOGICAL_EXPORT.md)
+- [Cross-backend migration contract](./architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md)
+- [Inactive PostgreSQL import contract](./architecture/POSTGRESQL_INACTIVE_IMPORT.md)
+- [PostgreSQL + pgvector profile RFC](./architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
+- [ADR-021](./adr/ADR-021-cross-backend-storage-migration.md)
+
+SQLite remains the ordinary local-first profile. PostgreSQL/pgvector is currently an optional,
+lazy-loaded inactive import and exact-equivalence target; it is not an active read/write backend.
 
 ## Grant boundary
 
@@ -125,45 +93,4 @@ and comparable-run reporting; shared PR-runner latency is not a hard SLO.
 - [Baseline versus funded delta](./grants/baseline-funded-delta-matrix.md)
 - [Funding use plan](./grants/funding-use-plan.md)
 
-The proposal remains submitted and under review; funding is not claimed as
-awarded.
-
-## Completed hardening workstream
-
-The documentation/read-only/trust hardening sequence through PR #302 is complete:
-read-only queries, non-configurable TruthGate policy, immutable snapshots,
-mutation testing, contradiction decisions, ESM specification, performance
-history, public conflict surfaces, advisory topic facets, scoped curator
-authorization, process-local decision leases and synchronized multilingual
-README surfaces.
-
-## Independent future roadmap
-
-Future packages include an external distributed lease adapter, production
-identity-provider and multi-tenant policy integration, broader provenance
-lifecycle wiring, controlled performance SLOs, wider mutation coverage, a separately
-reviewed long-document semantic reading layer, and separate Titan research.
-
-## Translation policy
-
-English code-facing documents remain normative. The ten top-level README files
-share one capability and safety contract. `docs-status` checks their checkpoint,
-metrics, core safety markers and local links so translations cannot silently
-retain an obsolete architecture description.
-
-## Active storage and migration documents
-
-- [Durable storage profile](./architecture/DURABLE_STORAGE_PROFILE.md)
-- [SQLite storage lifecycle](./architecture/SQLITE_STORAGE_LIFECYCLE.md)
-- [Cross-backend migration contract](./architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md)
-- [PostgreSQL + pgvector institutional profile RFC](./architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
-- [ADR-021](./adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md)
-
-English is the active documentation authority. Localized top-level READMEs are frozen
-snapshots pending a dedicated final translation pass.
-
-## Storage migration runtime
-
-- [SQLite logical export and independent verification](./architecture/SQLITE_LOGICAL_EXPORT.md)
-- [Cross-backend migration contract](./architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md)
-- [PostgreSQL/pgvector institutional profile RFC](./architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
+The proposal remains submitted and under review. No award or budget change is claimed.

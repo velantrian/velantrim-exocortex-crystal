@@ -14,9 +14,11 @@ Crystal separates physical memory, evidence, epistemic admission and trusted rea
 presence, retrieval score or migration success cannot bypass Guardian, TruthGate or strict
 Canon reconciliation.
 
-> **Documentation language policy:** English is the authoritative actively maintained
-> GitHub documentation language. Localized READMEs remain frozen snapshots until a dedicated
-> reconciliation pass.
+> **Documentation language policy:** English is the sole authoritative working language for
+> engineering, architecture, status, security, grant and AI-agent documentation. Localized
+> READMEs are concise, non-authoritative orientation summaries derived from a recorded English
+> checkpoint; they are not full mirrors of the documentation corpus. See the
+> [localization policy](./docs/LOCALIZATION_POLICY.md).
 
 ## 🎯 Current verified baseline
 
@@ -106,6 +108,8 @@ pip install -e '.[postgresql]'
 - [Current status](./docs/STATUS.md)
 - [Implementation matrix](./docs/IMPLEMENTATION_STATUS.md)
 - [Machine-readable manifest](./docs/status/implementation-manifest.json)
+- [Documentation map](./docs/DOCUMENTATION_MAP.md)
+- [Localization policy](./docs/LOCALIZATION_POLICY.md)
 - [Inactive PostgreSQL import contract](./docs/architecture/POSTGRESQL_INACTIVE_IMPORT.md)
 - [PostgreSQL/pgvector RFC](./docs/architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
 - [Current AI context](./docs/ai/CURRENT_STATE.md)
