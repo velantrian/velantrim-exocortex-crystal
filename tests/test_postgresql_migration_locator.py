@@ -73,3 +73,21 @@ def test_locator_metadata_fail_closed_without_exposing_raw_values():
         match="connection metadata is invalid",
     ):
         pg._connection_locator_sha256(invalid_port)
+
+
+def test_target_identity_fails_closed_without_valid_locator_context():
+    result = preflight(PreflightConnection())
+    result_without_locator = dict(result)
+    result_without_locator.pop("target_locator_sha256")
+    with pytest.raises(
+        StorageOperationError,
+        match="target locator context is unavailable",
+    ):
+        pg._target_identity(result_without_locator)
+
+    result["target_locator_sha256"] = "short"
+    with pytest.raises(
+        StorageOperationError,
+        match="target locator identity is invalid",
+    ):
+        pg._target_identity(result)
