@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import hashlib
 import importlib
-import json
 import os
 import re
 from pathlib import Path
@@ -77,6 +76,8 @@ def _target_schema(value: str) -> str:
 
 
 def _quoted_schema(value: str) -> str:
+    # PostgreSQL identifiers cannot be value-bound. The strict allowlist above and
+    # explicit quoting make schema interpolation safe; all record values stay bound.
     return f'"{_target_schema(value)}"'
 
 
@@ -107,6 +108,13 @@ def _connect(driver: Any, dsn: str, *, autocommit: bool) -> Any:
         )
     except Exception as exc:
         raise _database_failure("connection", exc) from exc
+
+
+def _close_preflight_connection(connection: Any) -> None:
+    try:
+        connection.close()
+    except Exception as exc:
+        raise _database_failure("preflight connection close", exc) from exc
 
 
 def _fetch_one(connection: Any, query: str, params: Iterable[Any] = ()) -> tuple[Any, ...]:
@@ -332,24 +340,24 @@ def _dataset_sql(target_schema: str, dataset: str) -> str:
     schema = _quoted_schema(target_schema)
     statements = {
         "nodes": (
-            f"INSERT INTO {schema}.nodes(fact_id,payload_json,payload) "
+            f"INSERT INTO {schema}.nodes(fact_id,payload_json,payload) "  # nosec B608
             "VALUES (%s,%s,%s::jsonb)"
         ),
         "vectors": (
-            f"INSERT INTO {schema}.vectors(fact_id,embedding,embedding_json) "
+            f"INSERT INTO {schema}.vectors(fact_id,embedding,embedding_json) "  # nosec B608
             "VALUES (%s,%s::vector,%s)"
         ),
         "edges": (
-            f"INSERT INTO {schema}.edges(src,rel_type,dst,props_json,props) "
+            f"INSERT INTO {schema}.edges(src,rel_type,dst,props_json,props) "  # nosec B608
             "VALUES (%s,%s,%s,%s,%s::jsonb)"
         ),
         "entities": (
-            f"INSERT INTO {schema}.entities(entity_id,kind,label) VALUES (%s,%s,%s)"
+            f"INSERT INTO {schema}.entities(entity_id,kind,label) VALUES (%s,%s,%s)"  # nosec B608
         ),
         "mentions": (
-            f"INSERT INTO {schema}.mentions(fact_id,entity_id,rel) VALUES (%s,%s,%s)"
+            f"INSERT INTO {schema}.mentions(fact_id,entity_id,rel) VALUES (%s,%s,%s)"  # nosec B608
         ),
-        "meta": f"INSERT INTO {schema}.metadata(key,value) VALUES (%s,%s)",
+        "meta": f"INSERT INTO {schema}.metadata(key,value) VALUES (%s,%s)",  # nosec B608
     }
     return statements[dataset]
 
@@ -415,22 +423,22 @@ def _import_dataset(
 def _target_query(target_schema: str, dataset: str) -> str:
     schema = _quoted_schema(target_schema)
     queries = {
-        "nodes": f"SELECT fact_id,payload_json FROM {schema}.nodes ORDER BY fact_id",
+        "nodes": f"SELECT fact_id,payload_json FROM {schema}.nodes ORDER BY fact_id",  # nosec B608
         "vectors": (
-            f"SELECT fact_id,embedding_json FROM {schema}.vectors ORDER BY fact_id"
+            f"SELECT fact_id,embedding_json FROM {schema}.vectors ORDER BY fact_id"  # nosec B608
         ),
         "edges": (
-            f"SELECT src,rel_type,dst,props_json FROM {schema}.edges "
+            f"SELECT src,rel_type,dst,props_json FROM {schema}.edges "  # nosec B608
             "ORDER BY src,rel_type,dst,props_json"
         ),
         "entities": (
-            f"SELECT entity_id,kind,label FROM {schema}.entities ORDER BY entity_id"
+            f"SELECT entity_id,kind,label FROM {schema}.entities ORDER BY entity_id"  # nosec B608
         ),
         "mentions": (
-            f"SELECT fact_id,entity_id,rel FROM {schema}.mentions "
+            f"SELECT fact_id,entity_id,rel FROM {schema}.mentions "  # nosec B608
             "ORDER BY fact_id,entity_id,rel"
         ),
-        "meta": f"SELECT key,value FROM {schema}.metadata ORDER BY key",
+        "meta": f"SELECT key,value FROM {schema}.metadata ORDER BY key",  # nosec B608
     }
     return queries[dataset]
 
@@ -503,7 +511,7 @@ def _exact_equivalence(
         if write_evidence:
             try:
                 cursor.execute(
-                    f"UPDATE {schema}.dataset_evidence SET "
+                    f"UPDATE {schema}.dataset_evidence SET "  # nosec B608
                     "actual_records=%s,actual_bytes=%s,actual_sha256=%s,exact_match=%s "
                     "WHERE dataset=%s",
                     (
@@ -528,7 +536,7 @@ def _control_row(connection: Any, target_schema: str) -> tuple[Any, ...]:
     schema = _quoted_schema(target_schema)
     return _fetch_one(
         connection,
-        f"SELECT operation_id,state,active,bundle_manifest_sha256,"
+        f"SELECT operation_id,state,active,bundle_manifest_sha256,"  # nosec B608
         f"target_identity_sha256,vector_dimension FROM {schema}.import_control "
         "WHERE singleton=1",
     )
@@ -603,7 +611,7 @@ def import_logical_export_to_postgresql(
             "checked_at": _utc_now(),
         }
         _write_new_json(root / "preflight.json", preflight_receipt)
-        connection.close()
+        _close_preflight_connection(connection)
         connection = _connect(driver, dsn, autocommit=False)
 
         stage = "inactive-import"
@@ -619,7 +627,7 @@ def import_logical_export_to_postgresql(
             for statement in _ddl(schema, vector_dimension):
                 cursor.execute(statement)
             cursor.execute(
-                f"INSERT INTO {quoted}.import_control("
+                f"INSERT INTO {quoted}.import_control("  # nosec B608
                 "singleton,operation_id,state,active,bundle_manifest_sha256,"
                 "source_profile_sha256,source_locator_sha256,target_identity_sha256,"
                 "vector_dimension) VALUES (1,%s,'IMPORTING',false,%s,%s,%s,%s,%s)",
@@ -634,7 +642,7 @@ def import_logical_export_to_postgresql(
             )
             for dataset, metadata in datasets.items():
                 cursor.execute(
-                    f"INSERT INTO {quoted}.dataset_evidence("
+                    f"INSERT INTO {quoted}.dataset_evidence("  # nosec B608
                     "dataset,expected_records,expected_bytes,expected_sha256) "
                     "VALUES (%s,%s,%s,%s)",
                     (
@@ -659,7 +667,7 @@ def import_logical_export_to_postgresql(
                 write_evidence=True,
             )
             cursor.execute(
-                f"UPDATE {quoted}.import_control SET state='VERIFIED',"
+                f"UPDATE {quoted}.import_control SET state='VERIFIED',"  # nosec B608
                 "verified_at=clock_timestamp() WHERE singleton=1 AND active=false"
             )
             if getattr(cursor, "rowcount", 1) != 1:
