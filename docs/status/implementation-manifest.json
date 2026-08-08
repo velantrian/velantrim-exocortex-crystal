@@ -4,23 +4,20 @@
   "version": "0.3.0",
   "status_date": "2026-08-08",
   "verified_runtime_checkpoint": {
-    "commit": "f03e24c85922d0bb46d6d9dfee98338972135908",
-    "short": "f03e24c",
-    "tree": "abf75283b382697b323ab69cfa7235b47171dace",
-    "validated_head": "17ce10ffe12da93be50434c73d08f05a70a5922b",
-    "pull_request": 335,
-    "ci_run": 31224184351,
-    "description": "Bounded-streaming SQLite logical export and independent verification with disk-backed ordering and reference checks"
+    "commit": "bbd816c09dd39a02e6de6c1014438490572f40f6",
+    "short": "bbd816c",
+    "tree": "f57e58a6f4d1954b649ba324996fcde42ac287b8",
+    "validated_head": "d7af7c80722274f9217bc5545d150f92e9363f37",
+    "pull_request": 337,
+    "ci_run": 31256316536,
+    "description": "Optional inactive PostgreSQL/pgvector import and independent exact-state equivalence for verified logical bundles"
   },
   "tests": {
-    "python_versions": [
-      "3.11",
-      "3.12"
-    ],
-    "passed": 2059,
-    "skipped": 12,
+    "python_versions": ["3.11", "3.12"],
+    "passed": 2078,
+    "skipped": 13,
     "failed": 0,
-    "measured_statements": 9361,
+    "measured_statements": 9756,
     "coverage_percent": 100.0
   },
   "ci": {
@@ -38,6 +35,18 @@
     ],
     "all_successful": true
   },
+  "postgresql_integration": {
+    "ci_run": 31256316532,
+    "job_count": 1,
+    "all_successful": true,
+    "postgresql_major": 16,
+    "postgresql_version_observed": "16.14",
+    "pgvector_version": "0.8.2",
+    "psycopg_version": "3.3.4",
+    "target_active": false,
+    "ann_indexes_present": false,
+    "test_service_only": true
+  },
   "mutation_gate": {
     "declared_mutants": 7,
     "killed_mutants": 7,
@@ -54,13 +63,18 @@
     "sqlite_storage_lifecycle": true,
     "sqlite_logical_export_verification": true,
     "sqlite_logical_export_resource_contract": "bounded-streaming-local-first",
+    "bounded_streaming_logical_migration": true,
+    "postgresql_optional_driver_lazy_loaded": true,
+    "postgresql_inactive_import": true,
+    "postgresql_exact_state_equivalence": true,
+    "postgresql_target_active": false,
+    "postgresql_normal_runtime_adapter": false,
     "cross_backend_migration_runtime": false,
     "postgresql_pgvector_runtime": false,
     "automatic_backend_switching": false,
     "distributed_curator_coordination": false,
     "production_idp_multitenancy": false,
-    "dedicated_reader_core": false,
-    "bounded_streaming_logical_migration": true
+    "dedicated_reader_core": false
   },
   "storage_resource_limits": {
     "control_file_bytes": 1048576,
@@ -70,13 +84,10 @@
     "dataset_bytes": 67108864,
     "aggregate_jsonl_bytes": 402653184,
     "institution_scale_claim": false,
-    "postgresql_follow_up_issue": 332,
     "bounded_streaming_issue_completed": 331,
+    "postgresql_inactive_import_issue_completed": 332,
     "resource_benchmark_ci": 31224005804,
-    "benchmark_primary_records": [
-      1025,
-      8193
-    ],
+    "benchmark_primary_records": [1025, 8193],
     "benchmark_is_production_slo": false
   },
   "documentation": {
@@ -101,7 +112,7 @@
     "awarded": false,
     "budget_changed": false,
     "baseline_issue": 333,
-    "rule": "Merged baseline work cannot be counted again as funded delta"
+    "rule": "Merged baseline work, including issues 331 and 332, cannot be counted again as funded delta"
   },
   "authority": {
     "runtime": "GitHub main",

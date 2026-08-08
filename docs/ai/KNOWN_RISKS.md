@@ -1,51 +1,70 @@
 # ⚠️ Crystal Known Risks and Open Boundaries
 
 **Status date:** 2026-08-08  
-**Verified runtime checkpoint:** `f03e24c85922d0bb46d6d9dfee98338972135908`  
-**Validated implementation head / CI:** `17ce10ffe12da93be50434c73d08f05a70a5922b` / `31224184351`
+**Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
+**Validated implementation head / CI:** `d7af7c80722274f9217bc5545d150f92e9363f37` / `31256316536`
 
-This register is an orientation layer. GitHub `main`, executable tests, exact CI, current issues and accepted ADRs remain authoritative. PR #334 is retained as historical grant/status-baseline context; PR #335 is the current runtime checkpoint.
+This register is an orientation layer. GitHub `main`, executable tests, exact CI, current
+issues and accepted ADRs remain authoritative. PR #334 is historical grant/status context;
+PR #337 is the current runtime checkpoint.
 
-## P1 — PostgreSQL/pgvector runtime remains absent (#332)
+## P1 — PostgreSQL is an inactive migration target, not active runtime
 
-- SQLite is the verified local-first runtime profile.
-- PostgreSQL/pgvector is a proposed optional institutional profile only.
-- No driver, target schema, inactive importer, exact target-equivalence implementation, activation, cutover, rollback or dual-write exists.
-- Backend reachability, package availability, profile editing or successful import must never cause automatic switching.
-- Credentials, credential-bearing DSNs and secrets must not enter profiles, bundles, receipts, logs, issues or Notion.
+- Issue #332 is implemented for preflight, inactive import and exact equivalence only.
+- The target remains `active=false`, is absent from normal runtime composition and cannot
+  serve ordinary reads or writes.
+- No cutover, rollback, dual-write, automatic switching or distributed exactly-once behavior
+  exists.
+- Exact equivalence covers the approved logical bundle datasets. Any future state domain
+  added to Crystal requires an explicit schema and migration-contract update before a
+  full-system cutover claim.
+- Import success, endpoint reachability, package availability and profile edits must never
+  cause backend selection.
 
-## P1 — Current migration evidence is bounded local-first evidence
+## P1 — Server lifecycle and operational security remain incomplete
 
-Issue #331 is implemented by PR #335. The production path now uses fixed cursor batches, disk-backed canonical edge ordering, same-descriptor hash-first parsing and disk-backed referential checks instead of complete datasets or global identifier sets in memory.
+- PostgreSQL backup, restore drill, retention and upgrade sequencing are not implemented;
+- production pooling, timeout/retry policy, least-privilege role provisioning and distributed
+  fencing remain deployment/future-work boundaries;
+- the integration workflow uses a passwordless localhost `trust` service as **test-only**
+  configuration inside an ephemeral job and it must not be copied into an externally
+  reachable deployment;
+- TLS is required by default, but production certificate, secret-provider and rotation
+  operations remain outside the repository;
+- production credentials and credential-bearing connection strings must not enter profiles,
+  bundles, receipts, application logs, issues or Notion;
+- hashed endpoint identity binds receipts operationally but is not authentication or secret
+  storage.
 
-Remaining limits and risks:
+## P1 — Current migration evidence remains bounded
 
-- source and dataset files remain limited to 64 MiB;
-- aggregate JSONL remains limited to 384 MiB;
-- temporary-disk capacity is required and must be monitored;
-- hard process or host interruption can still leave operating-system-managed temporary remnants for investigation;
-- benchmark `31224005804` covers 1,025 and 8,193-record synthetic corpora only;
-- benchmark evidence is not a production SLO, arbitrary-scale proof or institution-scale certification;
-- increasing limits requires separate reproducible memory, disk, time, cleanup and adversarial evidence.
+The SQLite export/verifier retains explicit local-first limits: 64 MiB source/dataset,
+200,000 records per dataset and 384 MiB aggregate JSONL. PostgreSQL import uses fixed
+batches, but current evidence does not establish institution-scale throughput, a production
+SLO or arbitrary payload support.
 
 ## P1 — Production identity, tenancy and distributed coordination remain external
 
 - curator leases are process-local;
 - there is no bundled production IdP;
 - there is no complete multi-tenant isolation proof;
-- TLS termination, network policy, credential rotation and distributed fencing remain deployment responsibilities;
+- network policy, credential rotation and distributed fencing remain deployment
+  responsibilities;
 - no distributed exactly-once behavior is claimed.
 
 ## P1 — Supply-chain hardening is incomplete
 
 - the default runtime remains pure standard library;
-- optional dependencies require explicit extras and version bounds;
-- immutable action pinning, reviewed dependency constraints, checksums, SBOM and scheduled update policy remain future work;
+- Psycopg is an explicit optional extra with a narrow supported version range;
+- immutable action pinning, reviewed constraints, checksums, SBOM and scheduled update
+  policy remain future work;
 - a green dependency audit does not establish full supply-chain assurance.
 
 ## P2 — Reader Core remains research, not runtime
 
-Crystal does not yet implement a dedicated multi-pass Reader Core or Semantic Reading Layer. Any future implementation must preserve source spans, coverage and contradictions, remain upstream of Guardian/TruthGate and never become a second Canon owner.
+Crystal does not yet implement a dedicated multi-pass Reader Core or Semantic Reading Layer.
+Any future implementation must preserve source spans, coverage and contradictions, remain
+upstream of Guardian/TruthGate and never become a second Canon owner.
 
 ## Claim and legal boundaries
 
@@ -53,13 +72,15 @@ Crystal does not yet implement a dedicated multi-pass Reader Core or Semantic Re
 - migration bundles and receipts are operational evidence, not claim evidence;
 - retrieval or ANN quality cannot override exact-state mismatch;
 - GDPR-oriented controls are engineering controls, not legal compliance or certification;
-- no universal truth, zero hallucinations, AGI, consciousness or production certification is claimed;
+- no universal truth, zero hallucinations, AGI, consciousness or production certification
+  is claimed;
 - the project is submitted and under review; no grant award or budget change is claimed.
 
 ## Next actions
 
-1. Implement #332 only as inactive PostgreSQL/pgvector import plus exact-state equivalence.
-2. Review exact-vs-ANN evaluation separately.
-3. Require explicit source/target fencing before any cutover phase.
-4. Add rollback proof and server backup/restore/upgrade lifecycle in later reviewed phases.
-5. Preserve GitHub/Notion synchronization and exact-head CI for every material boundary change.
+1. Build exact-vs-ANN retrieval evaluation as a separate reviewed phase.
+2. Require explicit source/target fencing before any cutover.
+3. Add rollback proof and expiry policy separately.
+4. Implement PostgreSQL backup/restore/upgrade lifecycle and operational role policy.
+5. Preserve GitHub/Notion synchronization and exact-head CI for every material boundary
+   change.

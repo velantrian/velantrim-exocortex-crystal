@@ -1,176 +1,186 @@
 # PostgreSQL + pgvector Institutional Profile RFC
 
-**Status:** PROPOSED / NOT RUNTIME
-**Issue:** #327
-**Dependency status:** no PostgreSQL driver or pgvector dependency is included
+**Status:** PARTIALLY IMPLEMENTED / INACTIVE MIGRATION ONLY / NOT ACTIVE RUNTIME  
+**Architecture issue:** #327  
+**Implemented phase:** #332 / PR #337 / `bbd816c09dd39a02e6de6c1014438490572f40f6`  
 **Default profile:** SQLite remains the verified local-first baseline
 
 ## Intent
 
-A future PostgreSQL/pgvector profile may support institutional, multi-process deployments
-that need a managed server, stronger operational tooling and indexed vector retrieval.
+A PostgreSQL/pgvector profile may support future institutional, multi-process deployments
+that need a managed server and indexed vector retrieval. The merged implementation covers
+only governed import into an inactive target and independent exact-state equivalence.
 
-This RFC is not an implementation claim and does not authorize automatic migration from
-SQLite.
+It does not authorize automatic migration, ordinary PostgreSQL reads/writes or cutover.
 
-## Non-goals
+## Implemented phase
 
-The RFC does not claim:
+```text
+verified completed logical bundle
+→ PostgreSQL 16 / pgvector 0.8.2 / Psycopg 3.3.x preflight
+→ new velantrim_inactive_* schema
+→ serializable transactional import
+→ independent read-only canonical target re-hash
+→ exact record / byte / SHA-256 equivalence
+→ non-secret receipts
+```
 
-- current PostgreSQL or pgvector runtime support;
+The detailed operator contract is documented in
+[POSTGRESQL_INACTIVE_IMPORT.md](./POSTGRESQL_INACTIVE_IMPORT.md).
+
+The target control record is constrained to `active=false`. The schema is not registered in
+ordinary runtime composition and cannot serve normal reads or writes.
+
+## Non-goals and remaining boundaries
+
+The implemented phase does not claim:
+
+- active PostgreSQL or pgvector runtime support;
 - automatic SQLite-to-PostgreSQL selection or switching;
+- exact or approximate retrieval acceptance;
 - a dedicated VectorDB dependency;
 - production multi-tenancy or a bundled identity provider;
 - distributed exactly-once delivery;
-- live dual-write cutover;
+- live dual-write, cutover or rollback;
+- PostgreSQL backup/restore/upgrade lifecycle;
 - security, legal or GDPR certification;
-- funded grant delivery.
+- funded grant delivery or grant award.
 
 ## Packaging
 
-The default Crystal runtime remains pure standard library.
+The default Crystal runtime remains pure standard library. Psycopg is available only through
+the explicit `[postgresql]` extra and is imported lazily by explicit operator commands.
+Missing or unsupported dependencies fail closed.
 
-A future implementation must place the PostgreSQL driver behind an explicit optional extra,
-load it lazily and fail clearly when the profile is selected without the dependency. The
-implementation must declare supported driver, PostgreSQL and pgvector version ranges and a
-reviewed upgrade policy.
+The implemented version policy is:
+
+- Psycopg 3.3.x;
+- PostgreSQL major version 16;
+- pgvector 0.8.2.
+
+Any version-range change requires separate compatibility evidence and review.
 
 ## Profile identity and secrets
 
-A durable profile may contain only non-secret identity and configuration, such as:
+The inactive-import phase does not store a PostgreSQL profile. The operator provides only the
+name of an environment variable containing connection configuration. Receipts bind to a
+non-secret digest derived from endpoint metadata.
 
-- backend name;
-- host/service identity;
-- port;
-- database name;
-- schema name;
-- TLS mode/policy identifier;
-- non-secret role identifier;
-- pgvector extension/version expectation;
-- locator digest.
-
-Passwords, access tokens, private keys and credential-bearing DSNs must remain in an
+Passwords, tokens, private keys and credential-bearing connection strings must remain in an
 external secret provider or deployment environment and must never be serialized into
-profiles, migration bundles, receipts, logs or Notion.
+profiles, migration bundles, receipts, application logs, issues or Notion.
 
-## Server lifecycle and security boundary
+A digest of host, port, database and role metadata is operational identity evidence. It is
+not authentication, authorization or secret storage.
 
-A production-oriented profile requires a separately reviewed deployment contract covering:
+## Security boundary
 
-- TLS verification and certificate rotation;
-- least-privilege roles for read, migration and runtime writes;
-- schema ownership and extension-install privileges;
+The implemented preflight checks supported versions, TLS state, recovery mode, writability,
+schema absence and non-secret locator metadata. TLS is required by default. Plaintext is
+available only through an explicit local-test flag.
+
+The real integration workflow uses a passwordless localhost PostgreSQL `trust` service only
+inside an ephemeral job. It must not be treated as deployment guidance.
+
+Production deployment still requires separately reviewed contracts for:
+
+- certificate validation and rotation;
+- least-privilege migration/read/runtime roles;
 - network exposure and firewall policy;
 - credential issuance, rotation and revocation;
-- connection pooling and timeout policy;
+- connection pooling, timeout and retry policy;
 - audit logging and sensitive-field redaction;
 - tenant isolation assumptions;
-- backup encryption and retention.
-
-Crystal must not claim that a database connection itself provides tenant or identity
-security.
+- backup encryption, retention and restore drills.
 
 ## Transaction and concurrency model
 
-A future adapter must define:
+The inactive import uses one SERIALIZABLE transaction and rolls back handled pre-commit
+failures. The source bundle is verified again before commit. Independent equivalence runs in
+a read-only transaction.
 
-- transaction isolation for reads and writes;
-- retryable SQLSTATE classes;
-- idempotency keys and conflict behavior;
-- schema-migration locking;
-- advisory-lock or fencing semantics, if any;
-- outbox/projection transaction boundaries;
-- connection-loss and partial-commit recovery;
-- multi-process tests.
+This phase does not establish:
+
+- online zero-downtime migration;
+- distributed fencing;
+- general retry/idempotency across operator restarts;
+- active multi-process runtime semantics;
+- outbox/projection transaction boundaries.
 
 The existing process-local curator lease must not be described as distributed coordination.
 
 ## Logical schema mapping
 
-The implementation must publish a reviewed mapping for:
+The implemented mapping covers the approved portable bundle datasets:
 
-- fact payload and stable identifiers;
-- vectors and dimension constraints;
-- edges, entities and mentions;
-- metadata and embedder fingerprint;
-- restrictions/erasure and evidence/provenance state when full-system migration is added;
-- audit and projection queues.
+- fact identifiers and canonical payloads;
+- vectors and vector dimension;
+- edges;
+- entities and mentions;
+- metadata, including embedder-related metadata carried by the bundle.
 
-Database normalization is allowed only when deterministic export can reconstruct the same
-logical state. An ORM or SQL schema is not the authority contract by itself.
+Each target row retains canonical JSON used for independent byte-for-byte evidence. pgvector
+storage does not replace canonical vector evidence.
+
+Restrictions, erasure, provenance, contradiction dispositions, audit checkpoints or pending
+projection work require explicit inclusion in the portable schema whenever they exist as
+separate state domains. No full-system cutover claim is allowed until every required domain
+is covered and independently equivalent.
 
 ## pgvector retrieval
 
-pgvector may provide:
+No HNSW or IVFFlat index is created by the inactive-import phase. Exact and approximate
+retrieval remain future work.
 
-- exact nearest-neighbour search as the reference baseline;
-- optional HNSW;
-- optional IVFFlat.
-
-Approximate indexes are rebuildable derived projections. They cannot establish evidence,
-truth, ESM state or strict Canon membership.
-
-Before enabling an approximate index, compare it with exact search using a versioned
-evaluation corpus:
+Before any ANN enablement, compare it with exact search using a versioned evaluation corpus:
 
 ```text
 exact state equivalence gate
-        +
++
 exact retrieval baseline
-        +
++
 recall@k / filtered recall
-        +
++
 latency / index size / rebuild cost
-        +
++
 stale-index degraded behavior
 ```
 
-Low latency cannot compensate for low recall or state mismatch.
+Approximate indexes remain rebuildable derived projections. They cannot establish evidence,
+truth, ESM state or strict Canon membership.
 
 ## Backup, restore and upgrades
 
-The server profile requires its own verified lifecycle. SQLite backup/restore receipts
-cannot be relabelled as PostgreSQL proof.
-
-A future server lifecycle must cover:
-
-- consistent logical/physical backup strategy;
-- independent restore drill;
-- point-in-time recovery policy when enabled;
-- pgvector extension backup/restore behavior;
-- schema and extension upgrade sequencing;
-- rollback compatibility;
-- backup age and restore observability;
-- disaster-recovery ownership.
+SQLite lifecycle receipts cannot be relabelled as PostgreSQL proof. A future active server
+profile requires its own backup strategy, independent restore drill, retention, extension
+upgrade sequencing, rollback compatibility and disaster-recovery ownership.
 
 ## Migration and activation
 
-PostgreSQL availability must never trigger automatic backend selection after a durable
-profile exists.
-
-Migration must follow the Cross-Backend Storage Migration Contract:
+PostgreSQL availability and successful import must never trigger backend selection.
 
 ```text
 read-only export
-→ independent verification
-→ inactive import
-→ exact state equivalence
-→ retrieval evaluation
-→ explicit cutover
+→ independent bundle verification
+→ inactive import                 [implemented]
+→ exact state equivalence         [implemented]
+→ retrieval evaluation            [not implemented]
+→ explicit cutover and fencing    [not implemented]
+→ rollback proof                  [not implemented]
 ```
 
-The source remains authoritative until an explicit cutover receipt exists.
+The source remains authoritative until a separately reviewed explicit cutover receipt
+exists.
 
-## Acceptance gates before runtime implementation
+## Remaining acceptance gates before active runtime
 
-1. Backend-neutral bundle schema is implemented and verified for SQLite export.
-2. PostgreSQL logical schema mapping is reviewed.
-3. Optional dependency and version policy is accepted.
-4. Security/credential boundary is documented and tested.
-5. Exact-state fixtures exist.
-6. Exact-vs-ANN evaluation corpus and thresholds are accepted.
-7. Backup/restore/upgrade lifecycle is designed.
-8. Cutover and rollback proof is defined.
-9. Full nine-job CI and Notion synchronization pass.
+1. Exact-vs-ANN retrieval evaluation and accepted thresholds.
+2. Source/target fencing and immutable cutover receipt.
+3. Rollback proof, expiry policy and crash-window tests.
+4. PostgreSQL backup/restore/upgrade lifecycle.
+5. Production role, secret, certificate, pooling and retry policy.
+6. Multi-process concurrency and observability evidence.
+7. Exact-head CI, independent review and GitHub/Notion synchronization for each phase.
 
-Until then the profile remains `PROPOSED / NOT RUNTIME`.
+Until those gates are separately implemented, PostgreSQL/pgvector remains an inactive
+migration target and **not an active Crystal runtime backend**.
