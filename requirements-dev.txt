@@ -16,6 +16,11 @@ pytest-cov>=4.1.0
 fastapi>=0.110.0
 httpx>=0.27.0
 
+# Optional PostgreSQL institutional-profile dependency. The default runtime
+# remains dependency-free; CI installs this only to cover the lazy import,
+# receipts, failure paths and the separate real PostgreSQL integration job.
+psycopg[binary]>=3.3,<3.4
+
 # Optional layers exercised by the test suite so coverage reflects the whole
 # codebase (NOT runtime deps — the default install stays standard-library only):
 #   cryptography → core/crypto.py Fernet backend (GDPR Art. 32)
