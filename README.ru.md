@@ -2,71 +2,73 @@
 
 > 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 **Русский** · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
 
-### Проверяемая local-first инфраструктура памяти для надёжных ИИ-систем
+<!-- localization-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
+<!-- localization-status: CURRENT -->
 
-`v0.3.0` · 🧪 **1853 тестов пройдено / 12 пропущено** · 🎯 **100% покрытия** · 🧬 **7/7 мутаций уничтожены** · ✅ **9 CI jobs** · 🐍 **runtime по умолчанию — только стандартная библиотека Python** · ⚖️ **AGPL-3.0**
+### Проверяемая local-first инфраструктура памяти, доказательств и решений для надёжных ИИ-систем
 
-> Crystal — не очередной чат-бот. Это граница памяти, доказательств и решений,
-> которая фиксирует, что представляет собой утверждение, откуда оно получено,
-> в каком эпистемическом состоянии находится, может ли служить основанием ответа
-> и каким явным решением было урегулировано противоречие.
+`v0.3.0` · 🧪 **2078 passed / 13 skipped / 0 failed** · 🎯 **9756 statements / 100.00% line coverage** · 🧬 **7/7 заявленных Ring Zero mutants уничтожены** · ✅ **9 CI jobs** · 🐍 **runtime по умолчанию использует только стандартную библиотеку Python** · ⚖️ **AGPL-3.0**
 
-**Проверенный runtime-checkpoint:** `f91299c44a1a1850fa516f3abb96c916326f7a8c` — смерженный PR #302.  
-**Истина реализации:** код и тесты в ветке GitHub `main`.  
-**Точные доказательства:** [TEST_REPORT.md](./TEST_REPORT.md) и
+> Crystal — не очередной чат-бот и не самостоятельный «оракул истины». Это граница
+> памяти, доказательств и решений, которая фиксирует, что представляет собой
+> утверждение, откуда оно получено, в каком эпистемическом состоянии находится,
+> может ли служить основанием ответа и каким явным решением было урегулировано
+> противоречие.
+
+**Проверенный runtime-checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` — смерженный PR #337.  
+**Текущая публичная документационная база:** `main@e521440e9bb188d88475f17dd5bcdd161b314605`.  
+**Точные доказательства:** [TEST_REPORT.md](./TEST_REPORT.md),
+[STATUS.md](./docs/STATUS.md) и
 [машиночитаемый manifest реализации](./docs/status/implementation-manifest.json).
 
-> **Контракт локализации:** все переведённые README сохраняют одинаковые границы
-> возможностей, безопасности и статуса. Стабильные имена API оставлены в
-> исходной форме, а пояснения переведены естественным русским языком.
+> **Контракт перевода:** этот README является полноформатным русским представлением
+> проекта, а не сокращённой сводкой. Английская версия остаётся первичным рабочим
+> источником и разрешает расхождения. Прогресс остальных переводов отслеживается в
+> [TRANSLATION_STATUS.md](./docs/TRANSLATION_STATUS.md).
 
 ---
 
 ## 🎯 Зачем нужен Crystal
 
-Многие ИИ-системы смешивают исходные документы, утверждения пользователя,
-результаты модели, гипотезы, найденные фрагменты и долговременную память в одном
-контексте или векторном хранилище. В такой системе убедительно сформулированный
-текст может незаметно получить авторитет, которого его доказательства не
-подтверждают.
+Многие ИИ-системы смешивают исходные документы, слова пользователя, выводы модели,
+гипотезы, найденные фрагменты и долговременную память в одном контексте или
+векторном хранилище. Тогда убедительно сформулированный текст может незаметно
+получить авторитет, которого его доказательства не подтверждают.
 
 Crystal делает границы явными:
 
 ```text
 Убедительное утверждение не становится автоматически надёжным.
-Узел графа не становится автоматически строгим Canon.
-Оценка релевантности не является доказательством.
-Вывод модели не является независимым источником.
+Узел физического графа не становится автоматически строгим Canon.
+Оценка retrieval-релевантности не является доказательством.
+Вывод модели не является независимым фактическим источником.
 Противоречие не выбирает победителя самостоятельно.
 Тематическая метка не является вердиктом об истинности.
+Успешный импорт данных не означает активацию backend.
 ```
 
 ## 🧠 Что предоставляет Crystal
 
 - типизированные утверждения и явный эпистемический жизненный цикл;
-- метаданные источника, фрагментов доказательств и происхождения;
+- сведения об источнике, evidence spans и provenance;
 - границы допуска Guardian и TruthGate;
 - физический многостатусный граф L3, отделённый от строгого Canon;
 - неизменяемый deny-dominant `TrustSnapshot` для согласования чтения;
 - публичные read-only поверхности запросов HTTP, CLI и MCP;
-- TRACE и воспроизводимые, защищённые от незаметного изменения Receipts;
-- ограничения обработки, удаление, аудит и управление импорт-сессиями;
-- очереди проверки и возобновляемые review-сессии;
+- TRACE и воспроизводимые tamper-evident Receipts;
+- ограничения обработки, удаление, аудит и import sessions;
+- очереди проверки и возобновляемые review sessions;
 - типизированные неизменяемые отчёты о противоречиях;
 - явные решения `COEXIST`, `CONTEXTUALIZE` и `SUPERSEDE`;
-- CLI и аутентифицируемая HTTP-поверхность разрешения конфликтов;
-- ограниченные областью роли/полномочия кураторов и локальные decision leases;
-- рекомендательные многометочные тематические facets без авторитетной силы;
-- машиночитаемая ESM-спецификация, производная от runtime-переходов;
-- детерминированная оценка, 100% покрытия строк и Ring Zero mutation gate;
-- плановая и ручная история L3-бенчмарков с версионированными артефактами.
+- scoped curator roles/capabilities и process-local decision leases;
+- рекомендательные многометочные TopicFacet без власти над истиной;
+- детерминированную оценку, 100% покрытия строк и Ring Zero mutation gate;
+- проверенные SQLite backup/restore и bounded logical migration;
+- опциональный PostgreSQL/pgvector inactive import с независимой exact-state equivalence.
 
-## 🏛️ Архитектура в общих чертах
+## 🏛️ Архитектура в трёх представлениях
 
-Три схемы ниже показывают одну систему с разных сторон: **назначение**,
-**движение информации** и **связи между модулями**.
-
-### 🧠 Mindmap — назначение и границы возможностей
+### 🧠 Mindmap — назначение и границы
 
 ```text
 🧠 Velantrim ExoCortex — Crystal
@@ -74,78 +76,79 @@ Crystal делает границы явными:
 ├── 🎯 Назначение
 │   ├── Проверяемая память для ИИ
 │   ├── Local-first инфраструктура доверия
-│   └── Ответы и решения, подкреплённые доказательствами
+│   └── Ответы и решения, связанные с доказательствами
 │
 ├── 🏛️ Модель памяти
-│   ├── L0 — рабочий кэш внутри процесса
-│   ├── L1 — операционная память жизненного цикла
+│   ├── L0 — быстрый рабочий cache
+│   ├── L1 — операционная память и lifecycle
 │   ├── L2 — граница ожидания и проверки
-│   └── L3 — графовая многостатусная память
+│   └── L3 — физический многостатусный graph
 │
 ├── 🛡️ Граница доверия
-│   ├── Guardian — структурные и policy-проверки
-│   ├── TruthGate — граница политики допуска
-│   ├── TrustSnapshot — неизменяемое согласование чтения
+│   ├── Guardian — структура и safety constraints
+│   ├── TruthGate — политика допуска
+│   ├── TrustSnapshot — deny-dominant reconciliation
 │   └── CanonicalView — строгая доверенная проекция
 │
 ├── 📜 Доказательства и аудит
-│   ├── Provenance и evidence spans
-│   ├── TRACE — цепочка обоснования
-│   └── Receipt — воспроизведение и признаки подмены
+│   ├── Source identity и evidence spans
+│   ├── Provenance
+│   ├── TRACE
+│   └── Receipt
 │
 ├── ⚖️ Проверка и противоречия
-│   ├── Очереди и возобновляемые review-сессии
-│   ├── Неизменяемый ContradictionReport
-│   ├── COEXIST
-│   ├── CONTEXTUALIZE
-│   └── SUPERSEDE
+│   ├── Review queue
+│   ├── Resumable review session
+│   ├── ContradictionReport
+│   └── COEXIST / CONTEXTUALIZE / SUPERSEDE
 │
-├── 🏷️ Рекомендательная навигация
-│   └── TopicFacet — многометочные неавторитетные метаданные
+├── 🗄️ Профили хранения
+│   ├── SQLite — обычный local-first профиль
+│   └── PostgreSQL/pgvector — inactive migration target
 │
-├── 🔐 Управление и координация
-│   ├── Ограниченные областью роли и полномочия кураторов
-│   ├── Привязка аутентифицированного actor
-│   └── Decision leases в пределах процесса
+├── 🔐 Управление
+│   ├── Scoped curator capability
+│   ├── Authenticated actor binding
+│   └── Process-local decision lease
 │
 └── 📊 Верификация
-    ├── Детерминированные тесты и оценка
-    ├── 100% покрытия строк
+    ├── Python 3.11 / 3.12
+    ├── 100% line coverage
     ├── Ring Zero mutation gate
-    └── Версионированная история бенчмарков
+    ├── Security и Docker gates
+    └── Exact-head CI evidence
 ```
 
-### 🏗️ ASCII-архитектура — как движется информация
+### 🏗️ ASCII-архитектура — движение информации
 
 ```text
-┌─────────────────────────────────────────────────────────────────────┐
-│              🔱 Velantrim ExoCortex — Crystal                      │
-│        Проверяемая local-first инфраструктура памяти для ИИ        │
-└─────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│               🔱 Velantrim ExoCortex — Crystal                      │
+│        Память → доказательства → проверка → доверенное чтение        │
+└──────────────────────────────────────────────────────────────────────┘
 
                          📥 Явный ingest
                                 │
                                 ▼
-           🧾 Тип утверждения + источник + evidence span
+           🧾 Claim type + source + exact evidence span
                                 │
                                 ▼
-                    🧠 Состояние Observed в L0 / L1
+                    🧠 Observed state в L0 / L1
                                 │
                                 ▼
-        🛡️ Guardian ──► ⚖️ TruthGate ──► 🚧 ограничения обработки
+        🛡️ Guardian ──► ⚖️ TruthGate ──► 🚧 restrictions
                                 │
                   ┌─────────────┴─────────────┐
                   │                           │
                   ▼                           ▼
-       ⏳ L2: ожидание / review       🏛️ Физический граф L3
+       ⏳ L2: ожидание / review       🏛️ Физический L3 graph
                   │                           │
                   │                           ▼
                   │                 📜 provenance / TRACE
-                  │                           │
                   └─────────────┬─────────────┘
                                 │
                                 ▼
-                    📐 Неизменяемый TrustSnapshot
+                    📐 Immutable TrustSnapshot
                                 │
                                 ▼
                   🛡️ Guardian + CanonicalView STRICT
@@ -161,7 +164,7 @@ Crystal делает границы явными:
 ⚖️ Неразрешённое противоречие
         │
         ▼
-📋 Неизменяемый ContradictionReport
+📋 Immutable ContradictionReport
         │
         ▼
 🔐 scoped principal + capability + decision lease
@@ -170,117 +173,135 @@ Crystal делает границы явными:
 🧑‍⚖️ явное COEXIST / CONTEXTUALIZE / SUPERSEDE
         │
         ▼
-📜 аудируемый канонический путь записи
-
-🏷️ Метаданные TopicFacet ──► только навигация / фильтрация / группировка
-                            └─► никогда не управляют истиной, ESM, доказательствами или Canon
+📜 аудируемый canonical write path
 ```
 
-### 🌳 Дерево связей — как соединены модули
+### 🌳 Дерево модулей — кто за что отвечает
 
 ```text
-🌳 Связи системы Crystal
+🌳 Crystal
 │
-├── 🧠 Слой памяти
-│   ├── L0 ──► быстрый восстанавливаемый рабочий кэш
-│   ├── L1 ──► жизненный цикл, ограничения и ожидающая работа
-│   ├── L2 ──► логическая граница проверки
-│   └── L3 ──► графовое многостатусное хранилище
+├── 🧠 Memory surfaces
+│   ├── L0 — rebuildable working cache
+│   ├── L1 — SQLite/WAL operational state
+│   ├── L2 — logical review boundary
+│   └── L3 — multi-status physical graph
 │
-├── 🛡️ Слой доверия
-│   ├── Guardian ──► структурная и policy-валидация
-│   ├── TruthGate ──► решение о допуске
-│   ├── TrustSnapshot ──► deny-dominant согласование L1/L3
-│   └── CanonicalView ──► строгая проекция обоснования
+├── 🛡️ Trust surfaces
+│   ├── Guardian
+│   ├── TruthGate
+│   ├── TrustSnapshot
+│   └── CanonicalView
 │
-├── 📜 Слой доказательств
-│   ├── Метаданные источника
+├── 📜 Evidence surfaces
+│   ├── Source metadata
 │   ├── Evidence spans
 │   ├── Provenance
 │   ├── TRACE
 │   └── Receipt
 │
-├── ⚖️ Слой проверки
-│   ├── Review queue
-│   ├── Возобновляемая review-сессия
+├── ⚖️ Review and contradiction
+│   ├── Review queue/session
 │   ├── ContradictionReport
-│   └── Явное решение
-│       ├── COEXIST
-│       ├── CONTEXTUALIZE
-│       └── SUPERSEDE
+│   └── Explicit audited disposition
 │
-├── 🔐 Слой авторизации
-│   ├── CuratorPrincipal
-│   ├── Роль и scoped capability
-│   ├── Совпадение аутентифицированного actor
-│   └── Decision lease в пределах процесса
-│
-├── 🏷️ Рекомендательный слой
-│   └── TopicFacet
-│       ├── Несколько меток
-│       ├── Score только тематической релевантности
-│       └── Нет власти над истиной или допуском
-│
-├── 🔎 Публичный слой запросов
-│   ├── HTTP /ask и /receipt
-│   ├── CLI ask и receipt
+├── 🔎 Public query
+│   ├── HTTP /ask and /receipt
+│   ├── CLI ask and receipt
 │   └── MCP search
-│       └── Общий read-only query pipeline
 │
-└── 📊 Слой верификации
-    ├── Тесты Python 3.11 / 3.12
-    ├── Coverage gate
-    ├── Ring Zero mutation gate
-    ├── Security- и container-проверки
-    └── История бенчмарков
+├── 🗄️ Storage portability
+│   ├── SQLite backup/restore
+│   ├── Canonical logical bundle
+│   ├── Bounded verification
+│   └── PostgreSQL inactive exact-equivalence import
+│
+└── 📊 Verification
+    ├── Tests and coverage
+    ├── Mutation gate
+    ├── Security scans
+    ├── Docker build
+    └── Documentation/status gate
 ```
 
-### Ключевые различия
+## 🧭 Ключевые различия
 
 ```text
-Физический граф L3 ≠ строгий Canon
+Физический graph L3 ≠ строгий Canon
 query ≠ ingest
 confidence ≠ независимое доказательство
-вывод LLM ≠ независимый фактический источник
-противоречие ≠ автоматический победитель
-тематическая релевантность ≠ истинность или качество доказательств
-локальный lease ≠ гарантия распределённой координации
+LLM output ≠ независимый фактический источник
+contradiction detection ≠ автоматический победитель
+TopicFacet relevance ≠ истинность
+migration receipt ≠ claim evidence
+successful import ≠ backend activation
+process-local lease ≠ distributed coordination
 ```
 
-TruthGate — это шлюз политики допуска, а не оракул, самостоятельно знающий
+TruthGate — шлюз политики допуска, а не оракул, самостоятельно знающий
 объективную истину. Строгий Canon — разрешённая политикой проекция чтения,
-учитывающая доказательства, статус, состояние ESM, форму confidence и
-ограничения обработки.
+учитывающая доказательства, статус, ESM state, форму confidence и ограничения
+обработки.
 
 ## 🧱 Поверхности памяти и доказательств
 
-| Поверхность | Назначение | Граница |
+| Поверхность | Назначение | Критическая граница |
 |---|---|---|
-| L0 | рабочий кэш внутри процесса | быстрый и восстанавливаемый |
-| L1 | операционная память SQLite/WAL | жизненный цикл, ограничения и ожидающая работа |
-| L2 | логическая граница проверки | не становится строгим Canon автоматически |
-| L3 | графовая многостатусная память | допуск только через policy gates |
-| TrustSnapshot | неизменяемое согласование чтения | deny-dominant разрешение L1/L3 |
-| CanonicalView | строгая проекция grounding | наличие в графе не означает доверие |
-| TRACE / Receipt | доказательство и воспроизведение | grounding, drift и признаки подмены |
-| ContradictionReport | неизменяемый объект конфликта | confidence не выбирает победителя |
-| TopicFacet | навигационные метаданные | не меняет истину, ESM или Canon |
-| CuratorPrincipal / lease | авторизация и координация | для масштаба нужны host identity и внешний lease |
+| L0 | рабочий cache внутри процесса | быстрый и восстанавливаемый |
+| L1 | SQLite/WAL operational memory | lifecycle, restrictions и pending work |
+| L2 | логическая граница review | не становится строгим Canon автоматически |
+| L3 | физическая многостатусная память | наличие записи не означает доверие |
+| TrustSnapshot | immutable reconciliation | deny-dominant разрешение L1/L3 |
+| CanonicalView | строгая grounding projection | только policy-allowed чтение |
+| TRACE / Receipt | доказательство и replay | grounding, drift и tamper evidence |
+| ContradictionReport | immutable conflict object | confidence не выбирает победителя |
+| TopicFacet | навигационные metadata | не меняет truth, ESM или Canon |
+| CuratorPrincipal / lease | authorization/coordination | для масштаба нужен внешний lease adapter |
+
+## 🗄️ SQLite и PostgreSQL/pgvector
+
+```text
+SQLite
+└── текущий обычный local-first storage profile
+    ├── runtime reads/writes
+    ├── backup/restore
+    ├── lock recovery
+    └── bounded canonical logical export
+
+PostgreSQL 16 + pgvector
+└── optional migration/equivalence profile
+    ├── optional dependency [postgresql]
+    ├── lazy driver loading
+    ├── new target schema
+    ├── active=false
+    ├── SERIALIZABLE import
+    └── independent count / byte / SHA-256 equivalence
+```
+
+PostgreSQL target отсутствует в обычной runtime composition и не может обслуживать
+обычные reads/writes. Успешный импорт является операционным migration evidence,
+но не означает:
+
+- activation или automatic backend selection;
+- cutover, rollback или dual-write;
+- admission в TruthGate или строгий Canon;
+- ANN quality acceptance;
+- production multi-tenancy или distributed exactly-once guarantees.
 
 ## 🔎 Crystal и классический RAG
 
 | Вопрос | Классический RAG | Crystal |
 |---|---|---|
-| Найти релевантный материал | основная сильная сторона | поддерживается retrieval-адаптерами |
-| Отличить слова пользователя от проверенного факта | зависит от приложения | явная типизированная граница |
-| Отслеживать жизненный цикл и противоречия | обычно внешняя логика | состояния и отчёты первого класса |
-| Не позволить сгенерированному тексту стать собственным источником | не гарантируется | инвариант допуска Ring Zero |
-| Воспроизвести доказательства ответа | необязательно | архитектура TRACE и Receipt |
-| Ответственно разрешать противоречия | зависит от приложения | явные авторизованные и аудируемые решения |
-| Группировать по темам без изменения доверия | зависит от приложения | рекомендательные topic facets |
-| Работать без обязательного cloud/model provider | по-разному | local-first база на стандартной библиотеке |
+| Найти релевантный материал | основная сильная сторона | поддерживается retrieval adapters |
+| Отличить слова пользователя от проверенного факта | зависит от приложения | явная typed boundary |
+| Отслеживать lifecycle и противоречия | обычно внешняя логика | first-class states и reports |
+| Не позволить generated text стать собственным источником | не гарантируется | Ring Zero admission invariant |
+| Воспроизвести доказательства ответа | необязательно | TRACE и Receipt architecture |
+| Ответственно разрешать противоречия | зависит от приложения | explicit authorized dispositions |
+| Группировать по темам без изменения доверия | зависит от приложения | advisory TopicFacet |
+| Работать без обязательного cloud/model provider | по-разному | pure-stdlib local-first baseline |
 
-## 🛡️ Публичная read-only граница запросов
+## 🛡️ Публичная read-only граница
 
 Эти поверхности используют общий `core.query_pipeline`:
 
@@ -290,9 +311,9 @@ CLI ask и receipt
 MCP search
 ```
 
-Они не создают факты, не переводят ESM, не записывают L3, не обслуживают outbox,
-не фиксируют episodes, не инициализируют embedding fingerprint, не сохраняют
-неизвестных кандидатов и не изменяют адаптивное состояние верификации.
+Они не создают факты, не переводят ESM state, не записывают L3, не обслуживают
+outbox, не фиксируют episodes, не инициализируют embedding fingerprint, не
+сохраняют unknown candidates и не изменяют adaptive verification state.
 
 Подробнее: [Read-Only Query Boundary](./docs/architecture/read-only-query-boundary.md).
 
@@ -309,21 +330,10 @@ python -m core.conflict_surfaces FACT_ID \
   --expected-report-id REPORT_ID
 ```
 
-В размещённом FastAPI-приложении `POST /review/resolve-conflict` регистрируется с
-authentication dependency хоста. `core.curator_auth` связывает
-аутентифицированного principal с ограниченными полномочиями, а
-`CuratorLeaseRegistry` предотвращает параллельные решения только внутри одного
-процесса. Для распределённого развёртывания необходим внешний lease-adapter.
-
-Подробнее: [поверхности разрешения конфликтов](./docs/CONFLICT_RESOLUTION_SURFACES.md)
-и [topic facets и curator IAM](./docs/TOPIC_FACETS_AND_CURATOR_IAM.md).
-
-## 🏷️ Рекомендательные тематические facets
-
-`core.topic_facets` добавляет нормализованные многометочные метаданные для
-навигации, фильтрации и группировки. Facet score означает только тематическую
-релевантность. Он не меняет truth status, доказательства, состояние ESM,
-результат разрешения противоречия или принадлежность строгому Canon.
+Для hosted FastAPI-приложения `POST /review/resolve-conflict` регистрируется с
+authentication dependency хоста. Текущий `CuratorLeaseRegistry` предотвращает
+параллельные решения только в пределах одного процесса; distributed deployment
+требует внешнего lease adapter.
 
 ## 🚀 Быстрый запуск
 
@@ -336,42 +346,73 @@ pip install -e '.[dev]'
 pytest tests/ --cov=. --cov-fail-under=100
 ```
 
-Продолжение: [QUICKSTART.md](./docs/QUICKSTART.md).
+Продолжение: [русский Quick Start](./docs/ru/QUICKSTART.md) и
+[английский QUICKSTART.md](./docs/QUICKSTART.md).
 
 ## 📚 Куда читать дальше
 
-- [Карта документации](./docs/DOCUMENTATION_MAP.md)
-- [Текущий статус](./docs/STATUS.md)
-- [Статус реализации](./docs/IMPLEMENTATION_STATUS.md)
-- [Архитектура](./docs/ARCHITECTURE.md)
-- [Read-only граница запросов](./docs/architecture/read-only-query-boundary.md)
-- [Разрешение конфликтов](./docs/CONFLICT_RESOLUTION_SURFACES.md)
-- [Topic facets и curator IAM](./docs/TOPIC_FACETS_AND_CURATOR_IAM.md)
-- [Отчёт тестирования](./TEST_REPORT.md)
-- [Оценка качества](./docs/EVAL.md)
-- [Режимы отказа](./docs/FAILURE_MODES.md)
-- [Область гранта NLnet](./docs/GRANT_NLNET_SCOPE.md)
+### На русском
+
+- [Русский индекс документации](./docs/ru/README.md)
+- [Quick Start](./docs/ru/QUICKSTART.md)
+- [Статус](./docs/ru/STATUS.md)
+- [Руководство для reviewer](./docs/ru/REVIEWER_GUIDE.md)
+- [Глоссарий](./docs/ru/GLOSSARY.md)
+- [Обзор гранта](./docs/ru/GRANT_OVERVIEW.md)
+
+### Авторитетные английские источники
+
+- [Documentation map](./docs/DOCUMENTATION_MAP.md)
+- [Current status](./docs/STATUS.md)
+- [Implementation status](./docs/IMPLEMENTATION_STATUS.md)
+- [Architecture](./docs/ARCHITECTURE.md)
+- [Test report](./TEST_REPORT.md)
+- [Evaluation](./docs/EVAL.md)
+- [Failure modes](./docs/FAILURE_MODES.md)
+- [NLnet grant scope](./docs/GRANT_NLNET_SCOPE.md)
+- [Localization policy](./docs/LOCALIZATION_POLICY.md)
+- [Translation status](./docs/TRANSLATION_STATUS.md)
 
 ## ✅ Проверенная базовая линия
 
 ```text
-Python 3.11: 1853 passed / 12 skipped
-Python 3.12: 1853 passed / 12 skipped
-Statements:  7236
+Runtime merge: bbd816c09dd39a02e6de6c1014438490572f40f6 (PR #337)
+Python 3.11: 2078 passed / 13 skipped / 0 failed
+Python 3.12: 2078 passed / 13 skipped / 0 failed
+Statements:  9756
 Coverage:    100.00%
 Mutation:    7/7 declared Ring Zero mutants killed
-CI jobs:     9
+CI jobs:     9/9
+PostgreSQL integration: successful against PostgreSQL 16 + pgvector 0.8.2
 ```
 
 ## 🚧 Граница заявлений
 
-Crystal не заявляет универсальное распознавание истины, полное отсутствие
-галлюцинаций, юридическую GDPR-сертификацию, security-сертификацию, готовность к
-production multi-tenant эксплуатации, искусственное сознание или возможности
-Titan/Full ExoCortex. Текущие curator leases работают в пределах одного
-процесса; распределённая координация, интеграция внешнего identity provider,
-более широкая provenance-проводка и интеграция Titan остаются независимыми
-направлениями roadmap.
+Crystal не заявляет:
+
+- универсальное распознавание объективной истины;
+- полное отсутствие hallucinations;
+- юридическую GDPR- или security-сертификацию;
+- production-ready multi-tenant deployment;
+- distributed locking или exactly-once orchestration;
+- artificial consciousness, AGI или «живую цифровую личность»;
+- active PostgreSQL runtime, automatic switching, cutover или rollback;
+- готовый dedicated multi-pass Reader Core;
+- возможности Titan, Full Exo-Cortex, Mentaury или Native Kernel как текущий runtime.
+
+NLnet proposal остаётся **submitted / under review / not awarded**. Смерженная
+функциональность является существующей baseline и не должна повторно выдаваться
+за будущую funded delivery.
+
+## 🌍 Переводы
+
+Переводы выполняются поэтапно. Цель каждого поддерживаемого языка — полноценный
+README с эквивалентным смысловым и визуальным покрытием, а затем постепенный
+перевод Quick Start, Status, Reviewer Guide, architecture, safety и grant-документов.
+Временная краткая версия не считается конечным состоянием.
+
+См. [политику локализации](./docs/LOCALIZATION_POLICY.md) и
+[реестр прогресса](./docs/TRANSLATION_STATUS.md).
 
 ## 🤝 Участие и лицензия
 
