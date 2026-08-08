@@ -1,118 +1,75 @@
-# 📌 Velantrim Crystal — वर्तमान स्थिति
+<!-- translation-source: docs/STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- translation-status: CURRENT -->
+<!-- d1-locale: hi -->
+<!-- d1-boundary: public-ask-read-only -->
+<!-- d1-boundary: postgresql-active=false -->
+<!-- d1-nonclaim: import-is-not-activation -->
+<!-- d1-nonclaim: nlnet-not-awarded -->
+# Velantrim Crystal — वर्तमान स्थिति
 
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 [简体中文](../zh-CN/STATUS.md) · 🇸🇦 [العربية](../ar/STATUS.md) · 🇯🇵 [日本語](../ja/STATUS.md) · 🇮🇳 **हिन्दी**
+**तारीख:** 2026-08-08  
+**Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
+**Verified tree:** `f57e58a6f4d1954b649ba324996fcde42ac287b8`  
+**Validated head:** `d7af7c80722274f9217bc5545d150f92e9363f37`  
+**Runtime PR / CI:** #337 / `31256316536`  
+**PostgreSQL integration CI:** `31256316532`
 
-**Translation synchronization marker:** `main@c5a34a64`  
-**Audited runtime checkpoint:** `cd6fd44`  
-**Authoritative evidence:** [TEST_REPORT.md](../../TEST_REPORT.md)
+## Verification
 
-## Reading rule
+- Python 3.11: **2078 passed / 13 skipped / 0 failed**;
+- Python 3.12: **2078 passed / 13 skipped / 0 failed**;
+- **9756 statements / 100.00% line coverage**;
+- `core/postgresql_migration.py`: **44/44 statements**;
+- `core/postgresql_migration_impl.py`: **336/336 statements**;
+- declared Ring Zero mutants **7/7** killed;
+- permanent CI jobs **9/9** successful;
+- real PostgreSQL/pgvector integration **1/1** successful.
 
-```text
-GitHub Crystal main = सार्वजनिक implementation का authoritative source
-Notion Crystal      = synchronized grant / strategy map
-Titan / Full        = अलग research track
-```
+सटीक प्रमाण: [TEST_REPORT.md](../../TEST_REPORT.md) और
+[machine-readable manifest](../status/implementation-manifest.json).
 
-कोई document, Notion note, prototype branch या Titan component वर्तमान Crystal capability नहीं है,
-जब तक वह Crystal `main` में implemented, tested और merged न हो।
+## वर्तमान verified capability boundary
 
-## वर्तमान verified checkpoint
-
-PR #265 ने strict read-only HTTP query boundary जोड़ा।
-
-```text
-POST /ingest  → Guardian + TruthGate से गुजरने वाला admission
-POST /ask     → strict read-only canonical query
-GET /receipt  → strict read-only canonical query + Receipt
-```
-
-HTTP `/ask` और `/receipt` L0/L1 या L3 write, ESM transition, outbox operation,
-episode link recording, embedding fingerprint initialization या adaptive verification state mutation नहीं करते।
-
-## स्पष्ट residual scope
-
-- CLI `ask` और `receipt`, `core.pipeline.run()` compatibility path का उपयोग करते हैं;
-- `core.pipeline.run()` admission-capable path के रूप में उपलब्ध है;
-- MCP में explicit canonical write tool नहीं है, लेकिन search unset embedding fingerprint initialize कर सकता है।
-
-ये follow-up scope हैं, छिपे capability claims नहीं।
-
-## Verification baseline
-
-सटीक test count, skips, coverage और CI evidence के लिए [TEST_REPORT.md](../../TEST_REPORT.md) authoritative है।
-Permanent CI gates में शामिल हैं:
-
-- Python 3.11 / 3.12 tests;
-- Ruff code quality;
-- secret / security scans;
-- Docker build;
-- evaluation gate;
-- JSONL integrity।
-
-## वर्तमान अनुमत public claim
-
-Crystal को इस प्रकार वर्णित किया जा सकता है:
-
-- local-first, सत्यापनीय AI memory infrastructure;
-- source / provenance-oriented memory core;
-- wired paths में Guardian / TruthGate admission control;
-- wired paths में CanonicalView, TRACE और replayable Receipt;
-- optional adapters वाला standard-library default runtime;
-- GDPR-संबंधित erasure / restriction mechanisms;
-- independently testable open-source research-grade baseline।
-
-Crystal को इस प्रकार वर्णित नहीं किया जा सकता:
-
-- Titan या पूर्ण Personal Exo-Cortex;
-- autonomous cognitive OS;
-- conscious, alive या biological brain equivalent;
-- universally truthful या hallucination-free;
-- legally GDPR-certified;
-- security-certified या production multi-tenant ready;
-- mandatory external LLM / cloud provider dependent।
-
-## Grant status
-
-NLnet NGI0 Commons Fund proposal submit हो चुका है और review में है। Repository funding award का दावा नहीं करती।
+Crystal local-first SQLite baseline बनाए रखता है और issue #332 phase 1 लागू करता है:
 
 ```text
-BASELINE TODAY
-    +
-MEASURABLE FUNDED DELTA
-    =
-INDEPENDENTLY VERIFIABLE DELIVERABLE
+verified completed logical bundle
+→ PostgreSQL 16 / pgvector 0.8.2 preflight
+→ new inactive target schema
+→ serializable import
+→ independent read-only canonical target re-hash
+→ exact count / byte / SHA-256 equivalence
+→ non-secret receipts
 ```
 
-पहले से merged कार्य baseline है; उसे paid milestone के रूप में फिर से नहीं गिना जाता।
+PostgreSQL driver optional extra है और केवल explicit operator commands से lazy-load होता है।
+Default installation pure standard library रहती है। Imported target normal runtime
+composition में register नहीं होता, `active=false` रहता है और सामान्य reads/writes नहीं करता।
 
-## Replay decision
-
-Titan deterministic replay implementation को prior art के रूप में review किया गया है,
-लेकिन इस synchronization में उसे Crystal runtime में copy नहीं किया गया।
+## Authority boundary
 
 ```text
-REVIEWED_PRIOR_ART
-DOCUMENTED_ONLY
-M4_CANDIDATE
-NO_RUNTIME_CHANGE
-NO_CANON_WRITE
-NO_BUDGET_CHANGE
-BASELINE_NOT_MOVED
+storage profile         = deployment identity
+migration bundle        = operation evidence
+physical L3             = multi-status storage
+strict Canon            = trusted read projection
+migration/import        != TruthGate admission
+successful equivalence  != backend activation
 ```
 
-भविष्य implementation को मौजूदा `core/eval.py` और `scripts/eval_gate.py` extend करना होगा,
-अलग RFC/PR, offline, non-authoritative और grant baseline fixed जैसी शर्तें बनाए रखनी होंगी।
+Guardian, TruthGate, restrictions, TrustSnapshot और CanonicalView अपरिवर्तित हैं।
 
-## Canonical reviewer path
+## अभी अनुपस्थित
 
-1. [REVIEWER_GUIDE.md](./REVIEWER_GUIDE.md)
-2. [QUICKSTART.md](./QUICKSTART.md)
-3. [../../TEST_REPORT.md](../../TEST_REPORT.md)
-4. [../ARCHITECTURE.md](../ARCHITECTURE.md)
-5. [../EVAL.md](../EVAL.md)
-6. [../GRANT_NLNET_SCOPE.md](../GRANT_NLNET_SCOPE.md)
+- active PostgreSQL read/write runtime selection;
+- exact-vs-ANN evaluation और accepted ANN thresholds;
+- activation, cutover, fencing, rollback या dual-write;
+- PostgreSQL backup/restore/upgrade lifecycle, production pooling और distributed fencing;
+- production IdP/multi-tenancy या legal/security/GDPR certification;
+- dedicated verified Reader Core.
 
----
+## Grant स्थिति
 
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 [简体中文](../zh-CN/STATUS.md) · 🇸🇦 [العربية](../ar/STATUS.md) · 🇯🇵 [日本語](../ja/STATUS.md) · 🇮🇳 **हिन्दी**
+Project submitted है और review में है। **Award या budget change का दावा नहीं है।**
+PR #337 और issue #332 merged baseline हैं और उन्हें भविष्य के funded work के रूप में
+फिर से नहीं गिना जा सकता।

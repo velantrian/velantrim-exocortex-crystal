@@ -1,17 +1,33 @@
-# 🚀 クイックスタート — Velantrim Crystal
+<!-- translation-source: docs/QUICKSTART.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- translation-status: CURRENT -->
+<!-- d1-locale: ja -->
+<!-- d1-boundary: public-ask-read-only -->
+<!-- d1-boundary: postgresql-active=false -->
+<!-- d1-nonclaim: import-is-not-activation -->
+<!-- d1-nonclaim: nlnet-not-awarded -->
+# 🚀 Crystal クイックスタート
 
-> 🌐 🇬🇧 [English](../QUICKSTART.md) · 🇩🇪 [Deutsch](../de/QUICKSTART.md) · 🇫🇷 [Français](../fr/QUICKSTART.md) · 🇪🇸 [Español](../es/QUICKSTART.md) · 🇮🇹 [Italiano](../it/QUICKSTART.md) · 🇷🇺 [Русский](../ru/QUICKSTART.md) · 🇨🇳 [简体中文](../zh-CN/QUICKSTART.md) · 🇸🇦 [العربية](../ar/QUICKSTART.md) · 🇯🇵 **日本語** · 🇮🇳 [हिन्दी](../hi/QUICKSTART.md)
+このガイドでは、必須外部依存のないローカル基盤を起動し、明示的な claim を
+ingest し、read-only 境界から問い合わせ、Receipt を検証します。
 
-この手順は、clean clone から Crystal を install、test、実行するための短い経路です。
-正確な依存関係と test baseline は英語の正本と `TEST_REPORT.md` を参照してください。
+## 要件
 
-## 1. Clone と仮想環境
+- Python 3.11 または 3.12
+- Git
+- repository と SQLite data を置くローカル領域
+
+標準 runtime に LLM、embedding provider、cloud は必須ではありません。
+development/full-test extras は完全な test suite 用の任意 package を導入します。
+
+## 1. インストール
 
 ```bash
 git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
 python -m venv .venv
 source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -e '.[dev]'
 ```
 
 Windows PowerShell:
@@ -20,127 +36,113 @@ Windows PowerShell:
 .venv\Scripts\Activate.ps1
 ```
 
-## 2. Development install
-
-```bash
-python -m pip install --upgrade pip
-pip install -e '.[dev]'
-```
-
-default runtime は Python standard library を中心に構成され、optional interface は extra として分離されています。
-
-## 3. Full test suite
+## 2. Repository の検証
 
 ```bash
 pytest tests/ --cov=. --cov-fail-under=100
-```
-
-CI は 100% line coverage gate を要求します。正確な passing/skipped count は
-[TEST_REPORT.md](../../TEST_REPORT.md) を確認してください。
-
-## 4. Evaluation gate
-
-```bash
 python scripts/eval_gate.py --out-dir eval-artifacts
+bash scripts/ring_zero_mutation_gate.sh
+bash scripts/check_docs_status.sh
 ```
 
-この gate は retrieval、grounding、TRACE completeness、contradiction detection、
-Receipt replay などの regression threshold を確認します。
+正確な checkpoint と期待値は [TEST_REPORT.md](../../TEST_REPORT.md) に保持され、
+この文書では変動する要件として重複させません。
 
-## 5. 基本 CLI
-
-```bash
-velantrim ingest "Water boils at 100C at sea level"
-velantrim ask "how does water behave"
-velantrim receipt "how does water behave" > receipt.json
-velantrim verify-receipt receipt.json
-```
-
-`ingest` は admission-capable path です。`ask` と `receipt` の CLI compatibility path は、
-HTTP の strict read-only query contract と同一ではありません。
-
-## 6. 永続 SQLite L3 backend
+## 3. 永続ローカル storage の選択
 
 ```bash
 export VELANTRIM_L3_BACKEND=sqlite
 export VELANTRIM_L3_PATH=./data/canon.db
-velantrim ask "..."
 ```
 
 PowerShell:
 
 ```powershell
-$env:VELANTRIM_L3_BACKEND="sqlite"
-$env:VELANTRIM_L3_PATH="./data/canon.db"
-velantrim ask "..."
+$env:VELANTRIM_L3_BACKEND = "sqlite"
+$env:VELANTRIM_L3_PATH = ".\data\canon.db"
 ```
 
-## 7. Optional FastAPI
+SQLite は通常の active local-first profile です。PostgreSQL/pgvector は任意の
+inactive import/equivalence path に限られ、target は `active=false` のままです。
+
+## 4. Claim を明示的に ingest
 
 ```bash
-pip install -e '.[api]'
-export VELANTRIM_API_TOKEN=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
+velantrim ingest "Water boils at 100C at sea level"
+```
+
+`ingest` は write operation です。claim は operational state に入り、設定された
+Guardian/TruthGate admission path で評価されます。Crystal が客観的真実を単独で
+証明する意味ではなく、admission は evidence と policy に依存します。
+
+## 5. Read-only 境界から query
+
+```bash
+velantrim ask "how does water behave"
+```
+
+公開 `ask` は `core.query_pipeline.query()` を使い、L0/L1 fact の作成・更新、
+ESM transition、L3 write、outbox operation、episode link 記録、未設定 embedding
+fingerprint の初期化、unknown candidate の永続化を行ってはなりません。
+
+strict canonical grounding が不足する場合、bounded refusal は正常です。これは
+trust boundary の有効な結果であり、必ずしも runtime error ではありません。
+
+## 6. Receipt の作成と検証
+
+```bash
+velantrim receipt "how does water behave" > receipt.json
+velantrim verify-receipt receipt.json
+```
+
+Receipt は query、answer、引用 fact ID を digest で封印し、現在の memory state
+に対して citation を再検証できます。tamper-evident であり、任意 HMAC 署名には
+ローカル provenance key が必要です。
+
+## 7. 任意 API の実行
+
+```bash
+pip install '.[api]'
 velantrim-api
 ```
 
-別 terminal で:
-
-```bash
-curl http://127.0.0.1:8000/health
-```
-
-主な endpoint:
-
-| Method | Path | 意味 |
+| Method | Route | 境界 |
 |---|---|---|
-| `GET` | `/health` | liveness / readiness |
-| `POST` | `/ingest` | Guardian + TruthGate を通る admission |
-| `POST` | `/ask` | strict read-only canonical query |
-| `GET` | `/receipt?q=...` | read-only query + Receipt |
+| `GET` | `/health` | liveness/readiness |
+| `POST` | `/ingest` | 明示的 admission/write |
+| `POST` | `/ask` | strict read-only query |
+| `GET` | `/receipt?q=...` | query と Receipt |
 | `POST` | `/verify-receipt` | Receipt replay |
 | `GET` | `/evidence/{fact_id}` | policy-aware evidence view |
 
-HTTP `/ask` と `/receipt` は、L0/L1 または L3 への write、ESM transition、outbox drain、
-episode link、embedding fingerprint 初期化、adaptive verification state mutation を行わない
-strict read-only surface として実装されています。
+API は bearer-token baseline を使います。完全な production multi-tenant
+authorization model ではありません。
 
-## 8. Docker
-
-```bash
-export VELANTRIM_API_TOKEN=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
-docker compose up --build
-```
-
-compose は token がない場合 fail-closed で停止します。default publish は host loopback です。
-
-## 9. MCP
+## 8. MCP inspection surface の実行
 
 ```bash
 python -m core.mcp_server
 ```
 
-MCP は inspection-oriented tool を提供します。明示的な canonical write tool はありませんが、
-search が未設定の embedding fingerprint を初期化する可能性があるため、zero-mutation path とは表現しません。
+MCP は read-only search、memory report、fact history、conflict lookup、Receipt
+verification を提供します。canonical write tool は公開しません。
 
-## 10. Reviewer verification
+## よくある境界の誤り
 
-```bash
-velantrim invariant-check
-velantrim verify-receipt receipt.json --strict-provenance
-velantrim audit-verify
+```text
+ask / receipt / MCP search → read-only
+explicit ingest            → admission-capable write path
 ```
 
-`invariant-check` は既存 L3 state の read-only scan であり、TruthGate admission behavior 自体を
-実行する command ではありません。TruthGate の on/off/unset behavior は test suite が正本です。
+- physical L3 は strict Canon ではありません。
+- confidence、duplicate frequency、retrieval similarity だけでは独立 evidence になりません。
+- import/equivalence 成功は activation、cutover、backend selection ではありません。
 
-## 次に読む文書
+## 次の文書
 
-- [REVIEWER_GUIDE.md](./REVIEWER_GUIDE.md)
-- [STATUS.md](./STATUS.md)
-- [GLOSSARY.md](./GLOSSARY.md)
-- [英語 Architecture](../ARCHITECTURE.md)
-- [英語 Test Report](../../TEST_REPORT.md)
-
----
-
-> 🌐 🇬🇧 [English](../QUICKSTART.md) · 🇩🇪 [Deutsch](../de/QUICKSTART.md) · 🇫🇷 [Français](../fr/QUICKSTART.md) · 🇪🇸 [Español](../es/QUICKSTART.md) · 🇮🇹 [Italiano](../it/QUICKSTART.md) · 🇷🇺 [Русский](../ru/QUICKSTART.md) · 🇨🇳 [简体中文](../zh-CN/QUICKSTART.md) · 🇸🇦 [العربية](../ar/QUICKSTART.md) · 🇯🇵 **日本語** · 🇮🇳 [हिन्दी](../hi/QUICKSTART.md)
+- [README](../../README.md)
+- [Documentation map](../DOCUMENTATION_MAP.md)
+- [Architecture](../ARCHITECTURE.md)
+- [Implementation status](../IMPLEMENTATION_STATUS.md)
+- [Test report](../../TEST_REPORT.md)
+- [Security policy](../../SECURITY.md)

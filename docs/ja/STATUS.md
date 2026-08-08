@@ -1,118 +1,74 @@
-# 📌 Velantrim Crystal — 現在の状態
+<!-- translation-source: docs/STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- translation-status: CURRENT -->
+<!-- d1-locale: ja -->
+<!-- d1-boundary: public-ask-read-only -->
+<!-- d1-boundary: postgresql-active=false -->
+<!-- d1-nonclaim: import-is-not-activation -->
+<!-- d1-nonclaim: nlnet-not-awarded -->
+# Velantrim Crystal — 現在の状態
 
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 [简体中文](../zh-CN/STATUS.md) · 🇸🇦 [العربية](../ar/STATUS.md) · 🇯🇵 **日本語** · 🇮🇳 [हिन्दी](../hi/STATUS.md)
+**日付:** 2026-08-08  
+**検証済み runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
+**検証済み tree:** `f57e58a6f4d1954b649ba324996fcde42ac287b8`  
+**検証済み implementation head:** `d7af7c80722274f9217bc5545d150f92e9363f37`  
+**Runtime PR / CI:** #337 / `31256316536`  
+**PostgreSQL integration CI:** `31256316532`
 
-**翻訳同期基準:** `main@c5a34a64`  
-**audited runtime checkpoint:** `cd6fd44`  
-**正本となる evidence:** [TEST_REPORT.md](../../TEST_REPORT.md)
+## 検証
 
-## Reading rule
+- Python 3.11: **2078 passed / 13 skipped / 0 failed**
+- Python 3.12: **2078 passed / 13 skipped / 0 failed**
+- **9756 statements / 100.00% line coverage**
+- `core/postgresql_migration.py`: **44/44 statements**
+- `core/postgresql_migration_impl.py`: **336/336 statements**
+- Ring Zero mutant **7/7** killed
+- permanent CI **9/9** successful
+- real PostgreSQL/pgvector integration **1/1** successful
 
-```text
-GitHub Crystal main = 公開実装の正本
-Notion Crystal      = 同期された grant / strategy map
-Titan / Full        = 別の研究トラック
-```
+正確な証拠: [TEST_REPORT.md](../../TEST_REPORT.md) と
+[machine-readable manifest](../status/implementation-manifest.json)。
 
-文書、Notion note、prototype branch、Titan component は、Crystal `main` に実装・test・merge されていない限り、
-現在の Crystal capability ではありません。
+## 現在の検証済み capability boundary
 
-## 現在の verified checkpoint
-
-PR #265 は strict read-only HTTP query boundary を導入しました。
-
-```text
-POST /ingest  → Guardian + TruthGate を通る admission
-POST /ask     → strict read-only canonical query
-GET /receipt  → strict read-only canonical query + Receipt
-```
-
-HTTP `/ask` と `/receipt` は、L0/L1 または L3 への write、ESM transition、outbox operation、
-episode link 記録、embedding fingerprint 初期化、adaptive verification state mutation を行いません。
-
-## 明示された残余スコープ
-
-- CLI `ask` と `receipt` は `core.pipeline.run()` compatibility path を使用します;
-- `core.pipeline.run()` は admission-capable path として残っています;
-- MCP には明示的な canonical write tool はありませんが、search が未設定の embedding fingerprint を初期化する可能性があります。
-
-これらは follow-up scope であり、隠された capability claim ではありません。
-
-## Verification baseline
-
-正確な test count、skip、coverage、CI evidence は [TEST_REPORT.md](../../TEST_REPORT.md) が正本です。
-CI の permanent gate は以下を含みます。
-
-- Python 3.11 / 3.12 test;
-- Ruff code quality;
-- secret / security scan;
-- Docker build;
-- evaluation gate;
-- JSONL integrity。
-
-## 現在許可される public claim
-
-Crystal は次のように説明できます。
-
-- local-first で検証可能な AI memory infrastructure;
-- source / provenance oriented memory core;
-- wiring 済み path における Guardian / TruthGate admission control;
-- wiring 済み path における CanonicalView、TRACE、replayable Receipt;
-- optional adapter を持つ standard-library default runtime;
-- GDPR 関連の erasure / restriction mechanism;
-- independently testable open-source research-grade baseline。
-
-Crystal は次のようには説明できません。
-
-- Titan または完全な Personal Exo-Cortex;
-- autonomous cognitive OS;
-- conscious、alive、biological brain equivalent;
-- universally truthful または hallucination-free;
-- legally GDPR-certified;
-- security-certified または production multi-tenant ready;
-- mandatory external LLM / cloud provider dependent。
-
-## Grant status
-
-NLnet NGI0 Commons Fund proposal は提出済みで review 中です。repository は funding award を主張しません。
+Crystal は local-first SQLite baseline を維持し、issue #332 phase 1 を実装しています。
 
 ```text
-BASELINE TODAY
-    +
-MEASURABLE FUNDED DELTA
-    =
-INDEPENDENTLY VERIFIABLE DELIVERABLE
+verified completed logical bundle
+→ PostgreSQL 16 / pgvector 0.8.2 preflight
+→ new inactive target schema
+→ serializable import
+→ independent read-only canonical target re-hash
+→ exact count / byte / SHA-256 equivalence
+→ non-secret receipts
 ```
 
-すでに merge 済みの作業は baseline であり、paid milestone として再計上されません。
+PostgreSQL driver は任意 extra で、明示的 operator command のときだけ lazy-load
+されます。標準 install は pure standard library のままです。import target は通常の
+runtime composition に登録されず、`active=false` のままで通常 read/write を行いません。
 
-## Replay decision
-
-Titan の deterministic replay implementation は prior art として review されていますが、
-この同期で Crystal runtime にコピーされてはいません。
+## Authority boundary
 
 ```text
-REVIEWED_PRIOR_ART
-DOCUMENTED_ONLY
-M4_CANDIDATE
-NO_RUNTIME_CHANGE
-NO_CANON_WRITE
-NO_BUDGET_CHANGE
-BASELINE_NOT_MOVED
+storage profile         = deployment identity
+migration bundle        = operation evidence
+physical L3             = multi-status storage
+strict Canon            = trusted read projection
+migration/import        != TruthGate admission
+successful equivalence  != backend activation
 ```
 
-将来の実装は既存の `core/eval.py` と `scripts/eval_gate.py` を拡張し、別 RFC/PR、offline、
-non-authoritative、grant baseline 固定後という条件を守る必要があります。
+Guardian、TruthGate、restrictions、TrustSnapshot、CanonicalView は変更されません。
 
-## Canonical reviewer path
+## 未実装
 
-1. [REVIEWER_GUIDE.md](./REVIEWER_GUIDE.md)
-2. [QUICKSTART.md](./QUICKSTART.md)
-3. [../../TEST_REPORT.md](../../TEST_REPORT.md)
-4. [../ARCHITECTURE.md](../ARCHITECTURE.md)
-5. [../EVAL.md](../EVAL.md)
-6. [../GRANT_NLNET_SCOPE.md](../GRANT_NLNET_SCOPE.md)
+- active PostgreSQL read/write runtime selection
+- exact-vs-ANN evaluation と accepted ANN threshold
+- activation、cutover、fencing、rollback、dual-write
+- PostgreSQL backup/restore/upgrade lifecycle、production pooling、distributed fencing
+- production IdP/multi-tenancy、法務・security・GDPR certification
+- 専用 verified Reader Core
 
----
+## 助成状態
 
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 [简体中文](../zh-CN/STATUS.md) · 🇸🇦 [العربية](../ar/STATUS.md) · 🇯🇵 **日本語** · 🇮🇳 [हिन्दी](../hi/STATUS.md)
+プロジェクトは提出済みで審査中です。**採択や budget change は主張しません。**
+PR #337 と issue #332 は既に merged baseline で、将来の funded work として再計上できません。

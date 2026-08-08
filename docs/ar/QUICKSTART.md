@@ -1,148 +1,147 @@
-# 🚀 البدء السريع — Velantrim Crystal
+<!-- translation-source: docs/QUICKSTART.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- translation-status: CURRENT -->
+<!-- d1-locale: ar -->
+<!-- d1-boundary: public-ask-read-only -->
+<!-- d1-boundary: postgresql-active=false -->
+<!-- d1-nonclaim: import-is-not-activation -->
+<!-- d1-nonclaim: nlnet-not-awarded -->
+# 🚀 البدء السريع مع Crystal
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/QUICKSTART.md) · 🇫🇷 [Français](../fr/QUICKSTART.md) · 🇪🇸 [Español](../es/QUICKSTART.md) · 🇮🇹 [Italiano](../it/QUICKSTART.md) · 🇷🇺 [Русский](../ru/QUICKSTART.md) · 🇨🇳 [简体中文](../zh-CN/QUICKSTART.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/QUICKSTART.md) · 🇮🇳 [हिन्दी](../hi/QUICKSTART.md)
->
-> **ملاحظة:** لا تُترجم الأوامر وأسماء الحزم ومتغيرات البيئة ومسارات API. عند
-> الاختلاف تكون GitHub `main` والوثائق الإنجليزية هي المرجع.
+يشغّل هذا الدليل الأساس المحلي بلا تبعيات إلزامية، ويُدخل ادعاءً صريحاً، ثم يستعلم
+عنه عبر حد القراءة فقط ويتحقق من Receipt.
 
-## 1. استنساخ المستودع
+## المتطلبات
+
+- Python 3.11 أو 3.12؛
+- Git؛
+- موقع محلي للمستودع وبيانات SQLite.
+
+لا يحتاج التشغيل الافتراضي إلى LLM أو مزود embeddings أو خدمة سحابية. تثبّت إضافات
+التطوير والاختبار الحزم الاختيارية اللازمة لمجموعة الاختبارات الكاملة.
+
+## 1. التثبيت
 
 ```bash
 git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
-```
-
-## 2. إنشاء بيئة افتراضية
-
-Linux/macOS:
-
-```bash
 python -m venv .venv
 source .venv/bin/activate
-```
-
-Windows PowerShell:
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-```
-
-## 3. تثبيت بيئة التطوير
-
-```bash
 python -m pip install --upgrade pip
 pip install -e '.[dev]'
 ```
 
-يعتمد runtime الافتراضي لـ Crystal على مكتبة Python القياسية. وتبقى اعتماديات
-التطوير وAPI والمحولات extras اختيارية.
+في Windows PowerShell:
 
-## 4. تشغيل التحقق الكامل
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+## 2. التحقق من المستودع
 
 ```bash
 pytest tests/ --cov=. --cov-fail-under=100
 python scripts/eval_gate.py --out-dir eval-artifacts
+bash scripts/ring_zero_mutation_gate.sh
+bash scripts/check_docs_status.sh
 ```
 
-الـ baseline المعيارية موجودة في [TEST_REPORT.md](../../TEST_REPORT.md):
+توجد نقطة التحقق الدقيقة والمقاييس المتوقعة في
+[TEST_REPORT.md](../../TEST_REPORT.md)، ولا تُكرر هنا كمتطلبات قابلة للتغير.
 
-```text
-1713 passed
-12 skipped
-0 failed
-6389 measured statements
-100.00% coverage
+## 3. اختيار التخزين المحلي الدائم
+
+```bash
+export VELANTRIM_L3_BACKEND=sqlite
+export VELANTRIM_L3_PATH=./data/canon.db
 ```
 
-هذه الأرقام لا تستبدل تشغيلاً مستقلاً على clone نظيف.
+PowerShell:
 
-## 5. استخدام CLI
+```powershell
+$env:VELANTRIM_L3_BACKEND = "sqlite"
+$env:VELANTRIM_L3_PATH = ".\data\canon.db"
+```
 
-### إدخال claim
+يبقى SQLite ملف التشغيل المحلي العادي والنشط. أما PostgreSQL/pgvector فهو مسار
+اختياري لاستيراد غير نشط والتحقق من التكافؤ، وتظل الوجهة `active=false`.
+
+## 4. إدخال ادعاء صريح
 
 ```bash
 velantrim ingest "Water boils at 100C at sea level"
 ```
 
-الإدخال عملية admission. تمر claims الجديدة عبر classification وGuardian وTruthGate.
+`ingest` عملية كتابة. يدخل الادعاء الحالة التشغيلية ويمر عبر مسار القبول
+Guardian/TruthGate المهيأ. لا يعني ذلك أن Crystal يثبت الحقيقة الموضوعية بشكل مستقل؛
+فالقبول يعتمد على الأدلة والسياسة.
 
-### طرح سؤال
+## 5. الاستعلام عبر حد القراءة فقط
 
 ```bash
 velantrim ask "how does water behave"
 ```
 
-⚠️ أوامر CLI `ask` و`receipt` ما زالت تستخدم `core.pipeline.run()` القادر على
-admission. ضمان عدم الكتابة الصارم ينطبق على HTTP endpoints المنقولة `/ask`
-و`/receipt`، لا على كل callers.
+يستخدم `ask` العام الدالة `core.query_pipeline.query()` ولا يجوز أن ينشئ أو يعدّل
+حقائق L0/L1، أو يغيّر ESM، أو يكتب إلى L3، أو يشغّل outbox، أو يحفظ روابط الحلقات،
+أو يهيئ fingerprint للـ embeddings لم يكن مضبوطاً، أو يخزن مرشحين مجهولين.
 
-### إنشاء Receipt والتحقق منه
+عندما لا يتوفر grounding قانوني صارم، يُتوقع رفض محدود. الرفض نتيجة صحيحة لحد الثقة
+وليس بالضرورة خطأ تشغيل.
+
+## 6. إنشاء Receipt والتحقق منه
 
 ```bash
 velantrim receipt "how does water behave" > receipt.json
 velantrim verify-receipt receipt.json
-velantrim verify-receipt receipt.json --strict-provenance
 ```
 
-Receipt دليل مختوم للحقائق ومراجع provenance المستخدمة. يقارن replay الدليل
-بالحالة الحالية ويمكنه كشف drift أو العبث.
+يختم Receipt الاستعلام والإجابة ومعرّفات الحقائق المستشهد بها داخل digest، ويمكنه
+إعادة فحص الاستشهادات مقابل حالة الذاكرة الحالية. وهو يكشف العبث؛ أما توقيع HMAC
+الاختياري فيحتاج مفتاح provenance محلياً.
 
-## 6. تفعيل تخزين L3 محلي دائم
-
-```bash
-VELANTRIM_L3_BACKEND=sqlite \
-VELANTRIM_L3_PATH=./data/canon.db \
-velantrim ask "..."
-```
-
-يبقى مسار SQLite محلياً. لا يرسل Crystal البيانات تلقائياً إلى cloud أو model provider.
-
-## 7. تشغيل FastAPI الاختياري
+## 7. تشغيل API الاختياري
 
 ```bash
 pip install '.[api]'
-export VELANTRIM_API_TOKEN=$(python -c "import secrets;print(secrets.token_urlsafe(32))")
 velantrim-api
 ```
 
-العنوان الافتراضي:
-
-```text
-http://127.0.0.1:8000
-```
-
-مثال:
-
-```bash
-curl http://127.0.0.1:8000/health
-```
-
-| الطريقة | المسار | السلوك |
+| الطريقة | المسار | الحد |
 |---|---|---|
-| `POST` | `/ingest` | admission عبر Guardian + TruthGate |
-| `POST` | `/ask` | قراءة صارمة من Canon الموجود |
-| `GET` | `/receipt?q=...` | قراءة مع Receipt |
-| `POST` | `/verify-receipt` | replay لـ Receipt |
+| `GET` | `/health` | liveness/readiness |
+| `POST` | `/ingest` | مسار قبول/كتابة صريح |
+| `POST` | `/ask` | استعلام صارم للقراءة فقط |
+| `GET` | `/receipt?q=...` | استعلام مع Receipt |
+| `POST` | `/verify-receipt` | إعادة تحقق Receipt |
+| `GET` | `/evidence/{fact_id}` | عرض أدلة خاضع للسياسة |
 
-## 8. تشغيل خادم MCP الاختياري
+يستخدم API أساس bearer-token، وليس نموذج تفويض multi-tenant إنتاجياً كاملاً.
+
+## 8. تشغيل سطح فحص MCP
 
 ```bash
 python -m core.mcp_server
 ```
 
-لا يقدم MCP أدوات كتابة قانونية صريحة. لكن البحث قد يهيّئ `embedding fingerprint`
-مفقوداً؛ لذلك لا يوصف بأنه مسار خالٍ تماماً من mutation.
+يوفر MCP بحثاً للقراءة فقط، وتقارير ذاكرة، وتاريخ الحقائق، والبحث عن التعارضات،
+والتحقق من Receipts. لا يوفّر أداة كتابة قانونية.
 
-## 9. المستندات التالية
+## أخطاء الحدود الشائعة
 
-- [دليل المراجع](./REVIEWER_GUIDE.md)
-- [الحالة الحالية](./STATUS.md)
-- [نظرة عامة على المنحة](./GRANT_OVERVIEW.md)
-- [المسرد](./GLOSSARY.md)
-- [المعمارية المعيارية](../ARCHITECTURE.md)
-- [التقييم المعياري](../EVAL.md)
+```text
+ask / receipt / MCP search → read-only
+explicit ingest            → admission-capable write path
+```
 
----
+- L3 الفيزيائي ليس Canon الصارم.
+- confidence أو تكرار النسخ أو تشابه retrieval ليست أدلة مستقلة وحدها.
+- نجاح الاستيراد أو التكافؤ ليس activation أو cutover أو اختيار backend.
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/QUICKSTART.md) · 🇫🇷 [Français](../fr/QUICKSTART.md) · 🇪🇸 [Español](../es/QUICKSTART.md) · 🇮🇹 [Italiano](../it/QUICKSTART.md) · 🇷🇺 [Русский](../ru/QUICKSTART.md) · 🇨🇳 [简体中文](../zh-CN/QUICKSTART.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/QUICKSTART.md) · 🇮🇳 [हिन्दी](../hi/QUICKSTART.md)
+## الوثائق التالية
+
+- [README](../../README.md)
+- [خريطة التوثيق](../DOCUMENTATION_MAP.md)
+- [المعمارية](../ARCHITECTURE.md)
+- [حالة التنفيذ](../IMPLEMENTATION_STATUS.md)
+- [تقرير الاختبارات](../../TEST_REPORT.md)
+- [سياسة الأمن](../../SECURITY.md)

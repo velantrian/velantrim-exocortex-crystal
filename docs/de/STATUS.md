@@ -1,150 +1,76 @@
-# 📌 Velantrim Crystal — Aktueller Status
+<!-- translation-source: docs/STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- translation-status: CURRENT -->
+<!-- d1-locale: de -->
+<!-- d1-boundary: public-ask-read-only -->
+<!-- d1-boundary: postgresql-active=false -->
+<!-- d1-nonclaim: import-is-not-activation -->
+<!-- d1-nonclaim: nlnet-not-awarded -->
+# Velantrim Crystal — aktueller Status
 
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 [简体中文](../zh-CN/STATUS.md) · 🇸🇦 [العربية](../ar/STATUS.md) · 🇯🇵 [日本語](../ja/STATUS.md) · 🇮🇳 [हिन्दी](../hi/STATUS.md)
+**Statusdatum:** 2026-08-08  
+**Verifizierter Runtime-Checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
+**Verifizierter Tree:** `f57e58a6f4d1954b649ba324996fcde42ac287b8`  
+**Validierter Implementierungs-Head:** `d7af7c80722274f9217bc5545d150f92e9363f37`  
+**Runtime-PR / CI:** #337 / `31256316536`  
+**PostgreSQL-Integrations-CI:** `31256316532`
 
-**Statusdatum:** 31. Juli 2026  
-**Aktueller Repository-Stand für diese Übersetzung:** `main@c5a34a64`  
-**Letzter Runtime-verändernder Checkpoint:** PR #265 / `cd6fd44`  
-**Verbindliche Testbasis:** [TEST_REPORT.md](../../TEST_REPORT.md)
+## Verifikation
 
-> Diese Seite ist eine deutsche Statusübersetzung. Bei Abweichungen gelten
-> GitHub `main`, der englische [STATUS](../STATUS.md) und
-> [TEST_REPORT.md](../../TEST_REPORT.md).
+- Python 3.11: **2078 passed / 13 skipped / 0 failed**;
+- Python 3.12: **2078 passed / 13 skipped / 0 failed**;
+- **9756 statements / 100.00% line coverage**;
+- `core/postgresql_migration.py`: **44/44 statements**;
+- `core/postgresql_migration_impl.py`: **336/336 statements**;
+- **7/7** deklarierte Ring-Zero-Mutanten beendet;
+- **9/9** permanente CI-Jobs erfolgreich;
+- **1/1** reale PostgreSQL/pgvector-Integration erfolgreich.
 
----
+Exakte Nachweise: [TEST_REPORT.md](../../TEST_REPORT.md) und das
+[maschinenlesbare Manifest](../status/implementation-manifest.json).
 
-## 🧭 Leseregel
+## Aktuelle verifizierte Fähigkeitsgrenze
 
-```text
-GitHub Crystal main = öffentliche Implementierungswahrheit
-Notion Crystal       = synchronisierte Grant- und Strategiekarte
-Titan / Full         = getrenntes Forschungslabor
-```
-
-Ein Dokument, eine Notion-Notiz, ein Prototyp-Branch oder ein Titan-Modul ist
-keine aktuelle Crystal-Fähigkeit, solange es nicht in Crystal implementiert,
-getestet und nach `main` gemergt wurde.
-
-## ✅ Verifizierter Checkpoint
-
-PR #265 führte die strikt lesende HTTP-Abfragegrenze ein:
-
-```text
-POST /ingest   → Zulassung über Guardian + TruthGate
-POST /ask      → strikt lesende kanonische Abfrage
-GET  /receipt  → strikt lesende Abfrage plus Receipt
-```
-
-Die HTTP-Endpunkte `/ask` und `/receipt` schreiben weder L0/L1 noch L3,
-führen keine ESM-Transition aus, bedienen nicht die Outbox, speichern keine
-Episodenverknüpfung, initialisieren keinen Embedding-Fingerprint und ändern
-keinen adaptiven Verifikationszustand.
-
-### Explizite Restgrenzen
-
-- CLI `ask` und `receipt` verbleiben auf `core.pipeline.run()`;
-- `core.pipeline.run()` bleibt ein zulassungsfähiger Kompatibilitätspfad;
-- MCP besitzt keine expliziten kanonischen Schreibwerkzeuge, aber die Suche kann
-  einen noch nicht gesetzten Embedding-Fingerprint initialisieren.
-
-Diese Punkte sind bekannte Follow-ups und keine versteckten
-Implementierungsbehauptungen.
-
-## 🧪 Verifikationsbasis
+Crystal behält die Local-first-SQLite-Basis und implementiert Phase 1 von Issue #332:
 
 ```text
-1713 bestanden
-12 übersprungen
-0 fehlgeschlagen
-6389 gemessene Statements
-100,00 % Abdeckung
+verified completed logical bundle
+→ PostgreSQL 16 / pgvector 0.8.2 preflight
+→ new inactive target schema
+→ serializable import
+→ independent read-only canonical target re-hash
+→ exact count / byte / SHA-256 equivalence
+→ non-secret receipts
 ```
 
-Der vor dem Merge ausgeführte CI-Lauf `30284938992` schloss alle sieben
-permanenten Jobs erfolgreich ab: Python 3.11/3.12, Ruff, Security, Docker Build,
-Evaluation Gate und JSONL-Integrität.
+Der PostgreSQL-Treiber ist ein optionales Extra und wird nur durch explizite
+Operatorbefehle lazy geladen. Die Standardinstallation bleibt reine Standardbibliothek.
+Das importierte Ziel wird nicht in die gewöhnliche Runtime-Komposition aufgenommen,
+bleibt `active=false` und kann keine normalen Lese- oder Schreibvorgänge bedienen.
 
-## 🛡️ Zulässige öffentliche Beschreibung
-
-Crystal darf beschrieben werden als:
-
-- lokale, nachweisbare KI-Speicherinfrastruktur;
-- quell- und provenienzorientierter Speicherkern;
-- System mit Guardian- und TruthGate-Zulassungskontrollen, wo verdrahtet;
-- System mit CanonicalView, TRACE und reproduzierbaren Receipts, wo verdrahtet;
-- Standardbibliothek-basierte Default-Runtime mit optionalen Adaptern und
-  Schnittstellen;
-- Projekt mit technisch implementierten Lösch- und
-  Verarbeitungseinschränkungsmechanismen mit GDPR-Bezug;
-- unabhängig prüfbare Open-Source-Baseline auf Forschungsniveau.
-
-Crystal darf **nicht** beschrieben werden als:
-
-- Titan oder vollständiger persönlicher ExoCortex;
-- autonomes kognitives Betriebssystem;
-- bewusst, lebendig oder biologisch einem Gehirn gleichwertig;
-- universell wahr oder halluzinationsfrei;
-- rechtlich GDPR-zertifiziert;
-- sicherheitszertifiziert oder produktionsreif für Multi-Tenant-Hosting;
-- von einem verpflichtenden externen LLM oder Cloud-Anbieter abhängig.
-
-## 💶 Grant-Status
-
-Der Antrag beim NLnet NGI0 Commons Fund wurde eingereicht und befindet sich in
-Prüfung. Das Repository behauptet nicht, dass die Förderung bewilligt wurde.
+## Autoritätsgrenze
 
 ```text
-HEUTIGE BASELINE
-    +
-MESSBARER FINANZIERTER DELTA
-    =
-UNABHÄNGIG PRÜFBARES DELIVERABLE
+storage profile         = deployment identity
+migration bundle        = operation evidence
+physical L3             = multi-status storage
+strict Canon            = trusted read projection
+migration/import        != TruthGate admission
+successful equivalence  != backend activation
 ```
 
-Bereits gemergte Arbeit bleibt Baseline und wird nicht erneut als bezahlter
-Milestone gezählt. Die verbindlichen Regeln stehen in den englischen Dokumenten:
+Guardian, TruthGate, Restrictions, TrustSnapshot und CanonicalView bleiben unverändert.
 
-- [GRANT_NLNET_SCOPE.md](../GRANT_NLNET_SCOPE.md)
-- [baseline-funded-delta-matrix.md](../grants/baseline-funded-delta-matrix.md)
-- [funding-use-plan.md](../grants/funding-use-plan.md)
+## Noch nicht vorhanden
 
-Eine deutsche Einordnung steht in [GRANT_OVERVIEW.md](./GRANT_OVERVIEW.md).
+- aktive PostgreSQL-Lese-/Schreibauswahl;
+- Exact-vs-ANN-Evaluation und akzeptierte ANN-Schwellen;
+- Aktivierung, Cutover, Source/Target-Fencing, Rollback oder Dual-Write;
+- PostgreSQL-Backup/Restore/Upgrade-Lifecycle, produktives Pooling und verteiltes Fencing;
+- produktives IdP/Multi-Tenancy oder rechtliche, Sicherheits- bzw. DSGVO-Zertifizierung;
+- dedizierter verifizierter Reader Core.
 
-## 🧪 Evaluation-Replay
+## Förderstatus
 
-Die deterministische Replay-Implementierung aus Titan wurde als Vorarbeit
-geprüft. Sie wurde nicht in die Crystal-Runtime kopiert.
-
-```text
-REVIEWED_PRIOR_ART
-DOCUMENTED_ONLY
-M4_CANDIDATE
-NO_RUNTIME_CHANGE
-NO_CANON_WRITE
-NO_BUDGET_CHANGE
-BASELINE_NOT_MOVED
-```
-
-Eine spätere Umsetzung muss den bestehenden Crystal-Evaluationsstack erweitern,
-in einem separaten RFC/Issue/PR erfolgen, offline und nicht autoritativ bleiben
-und die TruthGate- sowie Query-Grenzen erhalten.
-
-## 🔬 Forschungs- und Draft-PR-Regel
-
-Offene Forschungs- oder Branding-PRs sind keine Implementierungswahrheit. Vor
-einem Merge müssen sie gegen den aktuellen `main` rebased, hinsichtlich
-Grant-Sprache neu auditiert und auf Konflikte mit dem verbindlichen Status geprüft
-werden.
-
-## 📚 Reviewer-Pfad
-
-1. [REVIEWER_GUIDE.md](./REVIEWER_GUIDE.md)
-2. [QUICKSTART.md](./QUICKSTART.md)
-3. [GRANT_OVERVIEW.md](./GRANT_OVERVIEW.md)
-4. [GLOSSARY.md](./GLOSSARY.md)
-5. [Verbindlicher englischer Status](../STATUS.md)
-6. [TEST_REPORT.md](../../TEST_REPORT.md)
-
----
-
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 [Русский](../ru/STATUS.md) · 🇨🇳 [简体中文](../zh-CN/STATUS.md) · 🇸🇦 [العربية](../ar/STATUS.md) · 🇯🇵 [日本語](../ja/STATUS.md) · 🇮🇳 [हिन्दी](../hi/STATUS.md)
+Das Projekt ist eingereicht und wird geprüft. **Es wird weder eine Bewilligung noch
+eine Budgetänderung behauptet.** PR #337 und Issue #332 sind bereits gemergte Basis
+und dürfen nicht erneut als zukünftiger Förderumfang gezählt werden.

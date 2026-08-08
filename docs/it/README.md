@@ -1,16 +1,43 @@
-# 🇮🇹 Percorso della documentazione italiana
-
 <!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
+<!-- d1-source: main@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- d1-status: CURRENT -->
+<!-- d2-status: REFRESH_NEEDED -->
+# Documentazione italiana
 
-Il [README italiano completo](../../README.it.md) è `CURRENT` dopo PR #340. Mantiene scopo, struttura visuale, mappa mentale, flusso ASCII, tabelle, limiti, avvio rapido e navigazione.
+L’inglese resta la lingua primaria di lavoro e la fonte risolutiva in caso di conflitto.
+Questa traduzione è una superficie pubblica mantenuta, ma non crea autorità indipendente
+su implementazione, sicurezza, finanziamento, TruthGate o Canon.
 
-Gli altri documenti vengono tradotti per fasi. I file esistenti restano `REFRESH_NEEDED` finché non vengono verificati rispetto a un checkpoint inglese registrato.
+## D1 — accesso e utilizzo
 
-- [README](../../README.it.md) — `CURRENT`
-- [Avvio rapido](./QUICKSTART.md) — `REFRESH_NEEDED`
-- [Stato](./STATUS.md) — `REFRESH_NEEDED`
-- [Guida revisori](./REVIEWER_GUIDE.md) — `REFRESH_NEEDED`
-- [Glossario](./GLOSSARY.md) — `REFRESH_NEEDED`
-- [Panoramica grant](./GRANT_OVERVIEW.md) — `REFRESH_NEEDED`
+**Stato:** `CURRENT`  
+**Checkpoint inglese:** `main@a497b7d3cfbe59ca75b11d7449d5a728455b3130`
 
-Fonti primarie: [English README](../../README.md), [TEST_REPORT](../../TEST_REPORT.md), [Current status](../STATUS.md), [Localization policy](../LOCALIZATION_POLICY.md), [Translation status](../TRANSLATION_STATUS.md).
+- [Avvio rapido](./QUICKSTART.md)
+- [Stato attuale](./STATUS.md)
+- [Stato dell’implementazione](./IMPLEMENTATION_STATUS.md)
+
+## Altri documenti tradotti
+
+Restano utili, ma sono `REFRESH_NEEDED` finché non vengono verificati contro un
+checkpoint inglese esatto:
+
+- [Guida per revisori](./REVIEWER_GUIDE.md) — D2;
+- [Panoramica del grant](./GRANT_OVERVIEW.md) — D4;
+- [Glossario](./GLOSSARY.md) — D4.
+
+## Evidenza inglese autorevole
+
+- [README](../../README.md)
+- [Mappa della documentazione](../DOCUMENTATION_MAP.md)
+- [Architettura](../ARCHITECTURE.md)
+- [Stato dell’implementazione](../IMPLEMENTATION_STATUS.md)
+- [Rapporto di test](../../TEST_REPORT.md)
+- [Politica di sicurezza](../../SECURITY.md)
+
+Non viene dichiarata alcuna certificazione editoriale da parte di madrelingua.
+
+## Governance
+
+- [Localization policy](../LOCALIZATION_POLICY.md)
+- [Translation status](../TRANSLATION_STATUS.md)

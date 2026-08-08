@@ -1,155 +1,158 @@
-# 🚀 Schnellstart — Velantrim Crystal
+<!-- translation-source: docs/QUICKSTART.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- translation-status: CURRENT -->
+<!-- d1-locale: de -->
+<!-- d1-boundary: public-ask-read-only -->
+<!-- d1-boundary: postgresql-active=false -->
+<!-- d1-nonclaim: import-is-not-activation -->
+<!-- d1-nonclaim: nlnet-not-awarded -->
+# 🚀 Crystal-Schnellstart
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/QUICKSTART.md) · 🇪🇸 [Español](../es/QUICKSTART.md) · 🇮🇹 [Italiano](../it/QUICKSTART.md) · 🇷🇺 [Русский](../ru/QUICKSTART.md) · 🇨🇳 [简体中文](../zh-CN/QUICKSTART.md) · 🇸🇦 [العربية](../ar/QUICKSTART.md) · 🇯🇵 [日本語](../ja/QUICKSTART.md) · 🇮🇳 [हिन्दी](../hi/QUICKSTART.md)
->
-> **Hinweis:** Befehle, Paketnamen, Umgebungsvariablen und API-Pfade werden nicht
-> übersetzt. Bei Abweichungen gelten die englischen Dokumente und GitHub `main`.
+Dieser Leitfaden startet die lokale, abhängigkeitfreie Basis, nimmt einen expliziten
+Claim auf, fragt ihn über die schreibgeschützte Grenze ab und prüft einen Receipt.
 
-## 1. Repository klonen
+## Voraussetzungen
+
+- Python 3.11 oder 3.12;
+- Git;
+- ein lokaler Speicherort für Repository und SQLite-Daten.
+
+Der Standardbetrieb benötigt weder LLM noch Embedding-Anbieter oder Cloud-Dienst.
+Entwicklungs- und Test-Extras installieren optionale Pakete für die vollständige Testsuite.
+
+## 1. Installation
 
 ```bash
 git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
-```
-
-## 2. Virtuelle Umgebung anlegen
-
-Linux/macOS:
-
-```bash
 python -m venv .venv
 source .venv/bin/activate
-```
-
-Windows PowerShell:
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-```
-
-## 3. Entwicklungsumgebung installieren
-
-```bash
 python -m pip install --upgrade pip
 pip install -e '.[dev]'
 ```
 
-Die Standard-Runtime von Crystal ist auf die Python-Standardbibliothek
-beschränkt. Entwicklungs-, API- und Adapter-Abhängigkeiten sind optionale Extras.
+Unter Windows PowerShell:
 
-## 4. Vollständige Prüfung ausführen
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+## 2. Repository prüfen
 
 ```bash
 pytest tests/ --cov=. --cov-fail-under=100
 python scripts/eval_gate.py --out-dir eval-artifacts
+bash scripts/ring_zero_mutation_gate.sh
+bash scripts/check_docs_status.sh
 ```
 
-Die verbindliche Baseline steht in
-[TEST_REPORT.md](../../TEST_REPORT.md). Der aktuelle dokumentierte Stand lautet:
+Exakte Checkpoints und erwartete Kennzahlen stehen in
+[TEST_REPORT.md](../../TEST_REPORT.md); sie werden hier nicht als veränderliche
+Anforderung dupliziert.
 
-```text
-1713 passed
-12 skipped
-0 failed
-6389 measured statements
-100.00% coverage
+## 3. Persistenten lokalen Speicher wählen
+
+```bash
+export VELANTRIM_L3_BACKEND=sqlite
+export VELANTRIM_L3_PATH=./data/canon.db
 ```
 
-Diese Zahlen sind kein Ersatz für einen eigenen Lauf auf einem sauberen Clone.
+PowerShell:
 
-## 5. Grundlegende CLI verwenden
+```powershell
+$env:VELANTRIM_L3_BACKEND = "sqlite"
+$env:VELANTRIM_L3_PATH = ".\data\canon.db"
+```
 
-### Claim aufnehmen
+SQLite ist das gewöhnliche aktive Local-first-Profil. PostgreSQL/pgvector ist nur
+ein optionaler inaktiver Import- und Äquivalenzpfad; der Zielzustand bleibt
+`active=false`.
+
+## 4. Einen Claim explizit aufnehmen
 
 ```bash
 velantrim ingest "Water boils at 100C at sea level"
 ```
 
-Die Aufnahme ist ein Zulassungsvorgang. Neue Claims müssen die bestehenden
-Klassifikations-, Guardian- und TruthGate-Grenzen durchlaufen.
+`ingest` ist ein Schreibvorgang. Der Claim gelangt in den operativen Zustand und
+durchläuft den konfigurierten Guardian/TruthGate-Zulassungspfad. Das bedeutet nicht,
+dass Crystal die objektive Wahrheit der Aussage selbstständig beweist; die Zulassung
+bleibt evidenz- und richtlinienabhängig.
 
-### Frage stellen
+## 5. Über die schreibgeschützte Grenze abfragen
 
 ```bash
 velantrim ask "how does water behave"
 ```
 
-⚠️ Die CLI-Befehle `ask` und `receipt` verwenden derzeit noch den historischen,
-zulassungsfähigen Kompatibilitätspfad `core.pipeline.run()`. Die strikte
-Null-Schreib-Garantie gilt aktuell für die migrierten HTTP-Endpunkte `/ask` und
-`/receipt`, nicht pauschal für jeden Caller.
+Das öffentliche `ask` verwendet `core.query_pipeline.query()` und darf keine
+L0/L1-Fakten anlegen oder ändern, ESM-Zustände wechseln, L3 schreiben, die Outbox
+betreiben, Episodenbeziehungen speichern, einen nicht gesetzten Embedding-Fingerprint
+initialisieren oder unbekannte Kandidaten persistieren.
 
-### Receipt erzeugen und prüfen
+Wenn strikte kanonische Fundierung fehlt, ist eine begrenzte Ablehnung erwartet.
+Eine Ablehnung ist ein gültiges Ergebnis der Vertrauensgrenze und nicht automatisch
+ein Laufzeitfehler.
+
+## 6. Receipt erstellen und prüfen
 
 ```bash
 velantrim receipt "how does water behave" > receipt.json
 velantrim verify-receipt receipt.json
-velantrim verify-receipt receipt.json --strict-provenance
 ```
 
-Ein Receipt ist ein versiegelter Nachweis der verwendeten Fakten und
-Provenienzbezüge. Replay prüft den Nachweis gegen den aktuellen Zustand und kann
-Drift oder Manipulation sichtbar machen.
+Ein Receipt versiegelt Anfrage, Antwort und zitierte Fakten-IDs unter einem Digest
+und kann Zitate gegen den aktuellen Speicherzustand erneut prüfen. Er macht
+Manipulationen erkennbar; optionale HMAC-Signatur benötigt einen lokal konfigurierten
+Provenienzschlüssel.
 
-## 6. Persistenten lokalen L3-Speicher aktivieren
-
-```bash
-VELANTRIM_L3_BACKEND=sqlite \
-VELANTRIM_L3_PATH=./data/canon.db \
-velantrim ask "..."
-```
-
-Der SQLite-Pfad bleibt lokal. Crystal sendet Daten nicht automatisch an einen
-Cloud- oder Modellanbieter.
-
-## 7. Optionale FastAPI-Schnittstelle starten
+## 7. Optionale API ausführen
 
 ```bash
 pip install '.[api]'
-export VELANTRIM_API_TOKEN=$(python -c "import secrets;print(secrets.token_urlsafe(32))")
 velantrim-api
 ```
 
-Standardadresse:
-
-```text
-http://127.0.0.1:8000
-```
-
-Beispiel:
-
-```bash
-curl http://127.0.0.1:8000/health
-```
-
-Wichtige Verträge:
-
-| Methode | Pfad | Verhalten |
+| Methode | Route | Grenze |
 |---|---|---|
-| `POST` | `/ingest` | Zulassung über Guardian + TruthGate |
-| `POST` | `/ask` | strikt lesende Abfrage des vorhandenen Kanons |
-| `GET` | `/receipt?q=...` | lesende Abfrage mit Receipt |
+| `GET` | `/health` | Liveness/Readiness |
+| `POST` | `/ingest` | expliziter Zulassungs-/Schreibpfad |
+| `POST` | `/ask` | strikt schreibgeschützte Abfrage |
+| `GET` | `/receipt?q=...` | Abfrage plus Receipt |
 | `POST` | `/verify-receipt` | Receipt-Replay |
+| `GET` | `/evidence/{fact_id}` | richtlinienbewusste Evidenzansicht |
 
-## 8. Optionalen MCP-Server starten
+Die API nutzt eine Bearer-Token-Basis. Sie ist kein vollständiges produktives
+Multi-Tenant-Autorisierungsmodell.
+
+## 8. MCP-Inspektionsoberfläche starten
 
 ```bash
 python -m core.mcp_server
 ```
 
-MCP besitzt keine expliziten kanonischen Schreibwerkzeuge. Die Suche kann jedoch
-einen noch nicht gesetzten Embedding-Fingerprint initialisieren; deshalb wird MCP
-nicht als vollständig mutationsfreier Pfad beschrieben.
+MCP bietet Inspektionswerkzeuge wie schreibgeschützte Suche, Speicherberichte,
+Faktenhistorie, Konfliktsuche und Receipt-Prüfung. Es stellt kein kanonisches
+Schreibwerkzeug bereit.
 
-## 9. Nächste Dokumente
+## Häufige Grenzfehler
 
-- [Reviewer-Leitfaden](./REVIEWER_GUIDE.md)
-- [Aktueller Status](./STATUS.md)
-- [Glossar](./GLOSSARY.md)
-- [Verbindliche Architektur](../ARCHITECTURE.md)
-- [Verbindliche Evaluation](../EVAL.md)
+```text
+ask / receipt / MCP search → read-only
+explicit ingest            → admission-capable write path
+```
 
----
+- Physisches L3 ist nicht gleich strikter Canon: ein Knoten kann einen nicht
+  verifizierten oder nicht aktiven Zustand tragen.
+- Hohe Confidence, Duplikathäufigkeit oder Retrieval-Ähnlichkeit sind für sich
+  allein keine unabhängige Evidenz.
+- Import oder erfolgreiche Äquivalenz ist keine Aktivierung, kein Cutover und
+  keine Backend-Auswahl.
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/QUICKSTART.md) · 🇪🇸 [Español](../es/QUICKSTART.md) · 🇮🇹 [Italiano](../it/QUICKSTART.md) · 🇷🇺 [Русский](../ru/QUICKSTART.md) · 🇨🇳 [简体中文](../zh-CN/QUICKSTART.md) · 🇸🇦 [العربية](../ar/QUICKSTART.md) · 🇯🇵 [日本語](../ja/QUICKSTART.md) · 🇮🇳 [हिन्दी](../hi/QUICKSTART.md)
+## Nächste Dokumente
+
+- [README](../../README.md)
+- [Dokumentationskarte](../DOCUMENTATION_MAP.md)
+- [Architektur](../ARCHITECTURE.md)
+- [Implementierungsstatus](../IMPLEMENTATION_STATUS.md)
+- [Testbericht](../../TEST_REPORT.md)
+- [Sicherheitsrichtlinie](../../SECURITY.md)

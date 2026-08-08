@@ -1,155 +1,150 @@
-# 🚀 Inicio rápido — Velantrim Crystal
+<!-- translation-source: docs/QUICKSTART.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- translation-status: CURRENT -->
+<!-- d1-locale: es -->
+<!-- d1-boundary: public-ask-read-only -->
+<!-- d1-boundary: postgresql-active=false -->
+<!-- d1-nonclaim: import-is-not-activation -->
+<!-- d1-nonclaim: nlnet-not-awarded -->
+# 🚀 Inicio rápido de Crystal
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/QUICKSTART.md) · 🇫🇷 [Français](../fr/QUICKSTART.md) · 🇪🇸 **Español** · 🇮🇹 [Italiano](../it/QUICKSTART.md) · 🇷🇺 [Русский](../ru/QUICKSTART.md) · 🇨🇳 [简体中文](../zh-CN/QUICKSTART.md) · 🇸🇦 [العربية](../ar/QUICKSTART.md) · 🇯🇵 [日本語](../ja/QUICKSTART.md) · 🇮🇳 [हिन्दी](../hi/QUICKSTART.md)
->
-> **Nota:** los comandos, nombres de paquetes, variables de entorno y rutas de API
-> no se traducen. En caso de discrepancia, GitHub `main` y los documentos en inglés
-> son autoritativos.
+Esta guía ejecuta la base local sin dependencias obligatorias, ingiere una afirmación
+explícita, la consulta mediante la frontera de solo lectura y verifica un Receipt.
 
-## 1. Clonar el repositorio
+## Requisitos
+
+- Python 3.11 o 3.12;
+- Git;
+- una ubicación local para el repositorio y los datos SQLite.
+
+El runtime predeterminado no exige LLM, proveedor de embeddings ni nube. Los extras de
+desarrollo y pruebas instalan paquetes opcionales para la suite completa.
+
+## 1. Instalación
 
 ```bash
 git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
-```
-
-## 2. Crear un entorno virtual
-
-Linux/macOS:
-
-```bash
 python -m venv .venv
 source .venv/bin/activate
-```
-
-Windows PowerShell:
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-```
-
-## 3. Instalar el entorno de desarrollo
-
-```bash
 python -m pip install --upgrade pip
 pip install -e '.[dev]'
 ```
 
-El runtime predeterminado de Crystal se basa en la biblioteca estándar de Python.
-Las dependencias de desarrollo, API y adaptadores son extras opcionales.
+En Windows PowerShell:
 
-## 4. Ejecutar la verificación completa
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+## 2. Verificar el repositorio
 
 ```bash
 pytest tests/ --cov=. --cov-fail-under=100
 python scripts/eval_gate.py --out-dir eval-artifacts
+bash scripts/ring_zero_mutation_gate.sh
+bash scripts/check_docs_status.sh
 ```
 
-La baseline normativa se encuentra en [TEST_REPORT.md](../../TEST_REPORT.md). El
-checkpoint documentado es:
+El checkpoint exacto y las métricas esperadas se mantienen en
+[TEST_REPORT.md](../../TEST_REPORT.md), no como requisitos mutables duplicados aquí.
 
-```text
-1713 passed
-12 skipped
-0 failed
-6389 measured statements
-100.00% coverage
+## 3. Elegir almacenamiento local persistente
+
+```bash
+export VELANTRIM_L3_BACKEND=sqlite
+export VELANTRIM_L3_PATH=./data/canon.db
 ```
 
-Estas cifras no sustituyen una ejecución independiente sobre un clon limpio.
+PowerShell:
 
-## 5. Utilizar la CLI
+```powershell
+$env:VELANTRIM_L3_BACKEND = "sqlite"
+$env:VELANTRIM_L3_PATH = ".\data\canon.db"
+```
 
-### Ingerir un claim
+SQLite sigue siendo el perfil local-first activo ordinario. PostgreSQL/pgvector es solo
+una ruta opcional de importación y equivalencia inactiva; el objetivo permanece
+`active=false`.
+
+## 4. Ingerir explícitamente una afirmación
 
 ```bash
 velantrim ingest "Water boils at 100C at sea level"
 ```
 
-La ingestión es una operación de admisión. Los claims nuevos atraviesan las
-fronteras previstas de clasificación, Guardian y TruthGate.
+`ingest` escribe. La afirmación entra en estado operativo y pasa por Guardian/TruthGate.
+El comando no significa que Crystal demuestre por sí mismo la verdad objetiva; la
+admisión depende de evidencia y política.
 
-### Formular una pregunta
+## 5. Consultar por la frontera de solo lectura
 
 ```bash
 velantrim ask "how does water behave"
 ```
 
-⚠️ Los comandos CLI `ask` y `receipt` todavía utilizan la ruta histórica
-`core.pipeline.run()`, capaz de admisión. La garantía estricta de cero escrituras
-se aplica actualmente a los endpoints HTTP migrados `/ask` y `/receipt`, no a
-todos los callers.
+El `ask` público usa `core.query_pipeline.query()` y no debe crear ni modificar hechos
+L0/L1, cambiar ESM, escribir L3, operar el outbox, guardar enlaces de episodios,
+inicializar un fingerprint de embeddings no configurado ni persistir candidatos
+desconocidos.
 
-### Generar y verificar un Receipt
+Si falta grounding canónico estricto, se espera una negativa acotada. Es un resultado
+válido de la frontera de confianza, no necesariamente un error.
+
+## 6. Crear y verificar un Receipt
 
 ```bash
 velantrim receipt "how does water behave" > receipt.json
 velantrim verify-receipt receipt.json
-velantrim verify-receipt receipt.json --strict-provenance
 ```
 
-Un Receipt es una prueba sellada de los hechos y referencias de procedencia
-utilizados. Su replay compara la prueba con el estado actual y puede revelar
-deriva o manipulación.
+Un Receipt sella consulta, respuesta e identificadores citados bajo un digest y permite
+reproducir las citas frente al estado actual. Detecta manipulación; la firma HMAC
+opcional requiere una clave local de procedencia.
 
-## 6. Activar almacenamiento L3 local persistente
-
-```bash
-VELANTRIM_L3_BACKEND=sqlite \
-VELANTRIM_L3_PATH=./data/canon.db \
-velantrim ask "..."
-```
-
-La ruta SQLite permanece local. Crystal no envía datos automáticamente a un
-proveedor cloud o de modelos.
-
-## 7. Iniciar la interfaz FastAPI opcional
+## 7. Ejecutar la API opcional
 
 ```bash
 pip install '.[api]'
-export VELANTRIM_API_TOKEN=$(python -c "import secrets;print(secrets.token_urlsafe(32))")
 velantrim-api
 ```
 
-Dirección predeterminada:
-
-```text
-http://127.0.0.1:8000
-```
-
-Ejemplo:
-
-```bash
-curl http://127.0.0.1:8000/health
-```
-
-| Método | Ruta | Comportamiento |
+| Método | Ruta | Frontera |
 |---|---|---|
-| `POST` | `/ingest` | admisión mediante Guardian + TruthGate |
-| `POST` | `/ask` | lectura estricta del Canon existente |
-| `GET` | `/receipt?q=...` | lectura con Receipt |
-| `POST` | `/verify-receipt` | replay del Receipt |
+| `GET` | `/health` | liveness/readiness |
+| `POST` | `/ingest` | admisión/escritura explícita |
+| `POST` | `/ask` | consulta estrictamente de solo lectura |
+| `GET` | `/receipt?q=...` | consulta más Receipt |
+| `POST` | `/verify-receipt` | reproducción del Receipt |
+| `GET` | `/evidence/{fact_id}` | vista de evidencia con política |
 
-## 8. Iniciar el servidor MCP opcional
+La API usa una base de bearer token. No es un modelo completo de autorización
+multi-tenant de producción.
+
+## 8. Ejecutar la superficie MCP de inspección
 
 ```bash
 python -m core.mcp_server
 ```
 
-MCP no ofrece herramientas explícitas de escritura canónica. Sin embargo, una
-búsqueda puede inicializar una huella de embedding ausente; por ello MCP no se
-describe como una ruta completamente libre de mutaciones.
+MCP ofrece búsqueda de solo lectura, informes de memoria, historial de hechos, conflictos
+y verificación de Receipts. No expone una herramienta de escritura canónica.
 
-## 9. Documentos siguientes
+## Errores comunes de frontera
 
-- [Guía para reviewers](./REVIEWER_GUIDE.md)
-- [Estado actual](./STATUS.md)
-- [Resumen de subvención](./GRANT_OVERVIEW.md)
-- [Glosario](./GLOSSARY.md)
-- [Arquitectura normativa](../ARCHITECTURE.md)
-- [Evaluación normativa](../EVAL.md)
+```text
+ask / receipt / MCP search → read-only
+explicit ingest            → admission-capable write path
+```
 
----
+- L3 físico no es Canon estricto.
+- Confidence, duplicación o similitud de retrieval no constituyen evidencia independiente.
+- Importación o equivalencia satisfactoria no es activación, cutover ni selección de backend.
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/QUICKSTART.md) · 🇫🇷 [Français](../fr/QUICKSTART.md) · 🇪🇸 **Español** · 🇮🇹 [Italiano](../it/QUICKSTART.md) · 🇷🇺 [Русский](../ru/QUICKSTART.md) · 🇨🇳 [简体中文](../zh-CN/QUICKSTART.md) · 🇸🇦 [العربية](../ar/QUICKSTART.md) · 🇯🇵 [日本語](../ja/QUICKSTART.md) · 🇮🇳 [हिन्दी](../hi/QUICKSTART.md)
+## Documentos siguientes
+
+- [README](../../README.md)
+- [Mapa de documentación](../DOCUMENTATION_MAP.md)
+- [Arquitectura](../ARCHITECTURE.md)
+- [Estado de implementación](../IMPLEMENTATION_STATUS.md)
+- [Informe de pruebas](../../TEST_REPORT.md)
+- [Política de seguridad](../../SECURITY.md)

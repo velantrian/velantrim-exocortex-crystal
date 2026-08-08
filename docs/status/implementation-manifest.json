@@ -121,20 +121,6 @@
     "full_corpus_translation_required_in_single_pr": false,
     "translation_tracking_issue": 341,
     "d1_current_locales": [
-      "ru"
-    ],
-    "d1_source_checkpoints": {
-      "ru": "16d71e731ee658b1faa65c9ea45c0d8cca290f7c"
-    },
-    "d1_current_documents": {
-      "ru": [
-        "docs/ru/README.md",
-        "docs/ru/QUICKSTART.md",
-        "docs/ru/STATUS.md",
-        "docs/ru/IMPLEMENTATION_STATUS.md"
-      ]
-    },
-    "d1_pending_locales": [
       "ar",
       "de",
       "es",
@@ -142,8 +128,77 @@
       "hi",
       "it",
       "ja",
+      "ru",
       "zh-CN"
-    ]
+    ],
+    "d1_source_checkpoints": {
+      "ar": "a497b7d3cfbe59ca75b11d7449d5a728455b3130",
+      "de": "a497b7d3cfbe59ca75b11d7449d5a728455b3130",
+      "es": "a497b7d3cfbe59ca75b11d7449d5a728455b3130",
+      "fr": "a497b7d3cfbe59ca75b11d7449d5a728455b3130",
+      "hi": "a497b7d3cfbe59ca75b11d7449d5a728455b3130",
+      "it": "a497b7d3cfbe59ca75b11d7449d5a728455b3130",
+      "ja": "a497b7d3cfbe59ca75b11d7449d5a728455b3130",
+      "ru": "16d71e731ee658b1faa65c9ea45c0d8cca290f7c",
+      "zh-CN": "a497b7d3cfbe59ca75b11d7449d5a728455b3130"
+    },
+    "d1_current_documents": {
+      "ar": [
+        "docs/ar/README.md",
+        "docs/ar/QUICKSTART.md",
+        "docs/ar/STATUS.md",
+        "docs/ar/IMPLEMENTATION_STATUS.md"
+      ],
+      "de": [
+        "docs/de/README.md",
+        "docs/de/QUICKSTART.md",
+        "docs/de/STATUS.md",
+        "docs/de/IMPLEMENTATION_STATUS.md"
+      ],
+      "es": [
+        "docs/es/README.md",
+        "docs/es/QUICKSTART.md",
+        "docs/es/STATUS.md",
+        "docs/es/IMPLEMENTATION_STATUS.md"
+      ],
+      "fr": [
+        "docs/fr/README.md",
+        "docs/fr/QUICKSTART.md",
+        "docs/fr/STATUS.md",
+        "docs/fr/IMPLEMENTATION_STATUS.md"
+      ],
+      "hi": [
+        "docs/hi/README.md",
+        "docs/hi/QUICKSTART.md",
+        "docs/hi/STATUS.md",
+        "docs/hi/IMPLEMENTATION_STATUS.md"
+      ],
+      "it": [
+        "docs/it/README.md",
+        "docs/it/QUICKSTART.md",
+        "docs/it/STATUS.md",
+        "docs/it/IMPLEMENTATION_STATUS.md"
+      ],
+      "ja": [
+        "docs/ja/README.md",
+        "docs/ja/QUICKSTART.md",
+        "docs/ja/STATUS.md",
+        "docs/ja/IMPLEMENTATION_STATUS.md"
+      ],
+      "ru": [
+        "docs/ru/README.md",
+        "docs/ru/QUICKSTART.md",
+        "docs/ru/STATUS.md",
+        "docs/ru/IMPLEMENTATION_STATUS.md"
+      ],
+      "zh-CN": [
+        "docs/zh-CN/README.md",
+        "docs/zh-CN/QUICKSTART.md",
+        "docs/zh-CN/STATUS.md",
+        "docs/zh-CN/IMPLEMENTATION_STATUS.md"
+      ]
+    },
+    "d1_pending_locales": []
   },
   "grant": {
     "program": "NLnet NGI0 Commons Fund",

@@ -1,16 +1,43 @@
-# 🇮🇳 हिन्दी दस्तावेज़ मार्ग
-
 <!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
+<!-- d1-source: main@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- d1-status: CURRENT -->
+<!-- d2-status: REFRESH_NEEDED -->
+# हिंदी दस्तावेज़
 
-[पूर्ण हिन्दी README](../../README.hi.md) PR #340 के बाद `CURRENT` है। इसमें उद्देश्य, दृश्य संरचना, mind map, ASCII flow, तालिकाएँ, सीमाएँ, Quick Start और navigation सुरक्षित हैं।
+अंग्रेज़ी मुख्य कार्य और स्रोत भाषा तथा विवाद की स्थिति में निर्णायक संदर्भ बनी रहती है।
+यह अनुवाद एक बनाए रखा गया सार्वजनिक उत्पाद-सतह है, लेकिन यह implementation, security,
+funding, TruthGate या Canon पर स्वतंत्र authority नहीं बनाता।
 
-अन्य दस्तावेज़ चरणों में अनुवादित होंगे। मौजूदा फ़ाइलें दर्ज अंग्रेज़ी checkpoint के विरुद्ध समीक्षा तक `REFRESH_NEEDED` रहेंगी।
+## D1 — प्रवेश और उपयोग
 
-- [README](../../README.hi.md) — `CURRENT`
-- [Quick Start](./QUICKSTART.md) — `REFRESH_NEEDED`
-- [Status](./STATUS.md) — `REFRESH_NEEDED`
-- [Reviewer Guide](./REVIEWER_GUIDE.md) — `REFRESH_NEEDED`
-- [Glossary](./GLOSSARY.md) — `REFRESH_NEEDED`
-- [Grant Overview](./GRANT_OVERVIEW.md) — `REFRESH_NEEDED`
+**स्थिति:** `CURRENT`  
+**अंग्रेज़ी स्रोत checkpoint:** `main@a497b7d3cfbe59ca75b11d7449d5a728455b3130`
 
-मुख्य स्रोत: [English README](../../README.md), [TEST_REPORT](../../TEST_REPORT.md), [Current status](../STATUS.md), [Localization policy](../LOCALIZATION_POLICY.md), [Translation status](../TRANSLATION_STATUS.md)।
+- [त्वरित प्रारम्भ](./QUICKSTART.md)
+- [वर्तमान स्थिति](./STATUS.md)
+- [Implementation स्थिति](./IMPLEMENTATION_STATUS.md)
+
+## अन्य अनूदित दस्तावेज़
+
+ये उपयोगी हैं, लेकिन सटीक अंग्रेज़ी checkpoint से पुनः मिलान होने तक
+`REFRESH_NEEDED` रहेंगे:
+
+- [Reviewer Guide](./REVIEWER_GUIDE.md) — D2;
+- [Grant Overview](./GRANT_OVERVIEW.md) — D4;
+- [Glossary](./GLOSSARY.md) — D4.
+
+## आधिकारिक अंग्रेज़ी प्रमाण
+
+- [README](../../README.md)
+- [Documentation map](../DOCUMENTATION_MAP.md)
+- [Architecture](../ARCHITECTURE.md)
+- [Implementation status](../IMPLEMENTATION_STATUS.md)
+- [Test report](../../TEST_REPORT.md)
+- [Security policy](../../SECURITY.md)
+
+किसी native-speaker editorial certification का दावा नहीं किया जाता।
+
+## Governance
+
+- [Localization policy](../LOCALIZATION_POLICY.md)
+- [Translation status](../TRANSLATION_STATUS.md)
