@@ -15,6 +15,7 @@ _CURRENT_PREFLIGHT_CONNECTION: ContextVar[Any | None] = ContextVar(
     default=None,
 )
 _ORIGINAL_PREFLIGHT = _impl._preflight
+_ORIGINAL_TARGET_IDENTITY = _impl._target_identity
 
 
 def _connection_locator_sha256(connection: Any) -> str:
@@ -70,17 +71,8 @@ def _target_identity(preflight: Mapping[str, Any]) -> str:
             "PostgreSQL target locator identity is invalid"
         )
     payload = {
-        key: preflight[key]
-        for key in (
-            "database",
-            "role",
-            "server_version_num",
-            "pgvector_version",
-            "target_schema",
-            "target_locator_sha256",
-            "tls",
-            "tls_policy",
-        )
+        "base_identity_sha256": _ORIGINAL_TARGET_IDENTITY(preflight),
+        "target_locator_sha256": locator,
     }
     return hashlib.sha256(
         _impl._canonical_json(payload).encode("utf-8")
