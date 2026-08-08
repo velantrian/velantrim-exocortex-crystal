@@ -1,112 +1,118 @@
+<!-- d2-source-contract: CURRENT -->
+<!-- d2-source-scope: reviewer-security-privacy-failure -->
 # Privacy
 
-Velantrim is **local-first and private by design**. This document states plainly
-what data is stored, where it lives, and what (if anything) leaves your device.
-For the legal mapping to EU data-protection law, see [GDPR.md](./GDPR.md).
+Velantrim Crystal is local-first and private by default, but privacy still depends on the
+operator's content, configuration, filesystem, backups and optional integrations. This page
+states the current technical boundary. For legal mapping, see [`GDPR.md`](./GDPR.md).
 
-## TL;DR
+This is research-grade infrastructure, **not a legal or GDPR certification**.
 
-- **Everything runs on your machine by default.** No accounts, no cloud, no
-  telemetry, no analytics, no phone-home.
-- **No outbound network calls** in the default configuration. The only ways
-  data can leave the device are *optional, opt-in* backends you enable yourself
-  (see "Optional backends" below).
-- **You own the store.** All data lives in a local SQLite file plus an embedded
-  graph; delete the files and the data is gone.
+## Default behaviour
 
-## What data is stored
+- No account, telemetry, analytics, crash reporting or phone-home behaviour is required.
+- The default installation has no mandatory cloud, LLM or external database dependency.
+- Public CLI and read-only MCP surfaces can operate locally with the standard library.
+- Data leaves the local trust boundary only when an operator explicitly enables a networked
+  adapter/backend, exposes the API, performs a remote migration or copies an export.
 
-Velantrim stores **facts** that an AI system writes to memory. Each fact record
-(`core/memory.py`) contains:
+## What can be stored
 
-| Field | Purpose |
-|-------|---------|
-| `fact_id`, `claim` | The statement itself |
-| `source`, `source_status` | Where it came from (user-reported / observed / derived / external / LLM-output / unknown) |
-| `claim_type` | What kind of claim it is (world-fact / experience / emotion / opinion / preference / goal / interpretation) |
-| `epistemic_state` | Verification status (Observed … Validated … Collapsed) |
-| `confidence`, `significance` | Weighting used for decay/consolidation |
-| `created_at`, `updated_at` | Timestamps |
-| `metadata` | Free-form JSON you control |
+A fact record can contain the claim, source and source status, claim type, epistemic state,
+confidence/significance, timestamps and operator-controlled metadata. Other enabled state can
+include graph edges, restrictions, erasure tombstones, review decisions, audit events,
+receipts, outbox records and migration evidence.
 
-If you store personal data inside `claim`/`metadata`, treat the store
-accordingly — see [GDPR.md](./GDPR.md). You can additionally **encrypt these
-fields at rest** by setting `VELANTRIM_ENCRYPTION_KEY` (see *Encryption at rest*
-below).
+Personal or confidential material placed in claims, metadata, sources or attachments must be
+handled as sensitive data by the operator.
 
 ## Where data lives
 
-- **L0** — in-memory LRU cache; exists only for the lifetime of the process.
-- **L1** — local SQLite database at `./data/velantrim_memory.db` (WAL mode;
-  redirect with `VELANTRIM_DB`).
-- **L3** — embedded canonical graph. The default `auto` mode tries LadybugDB if
-  installed, then falls back to the dependency-free **on-disk SQLite** backend
-  (path via `VELANTRIM_L3_PATH`, default `./data/velantrim_l3.db`), and uses
-  the in-memory `mock` only as a last-resort/dev fallback if no persistent
-  backend can open. In other words: by default the canonical graph **may be
-  persisted on disk**, locally.
+- **L0** — process-local memory; normally disappears when the process exits.
+- **L1** — local SQLite operational memory, with path controlled by configuration.
+- **L3** — multi-status graph storage selected through the durable storage profile.
 
-The `data/` directory and all `*.db` files are git-ignored and never leave the
-repository or your machine on their own.
+The ordinary documented active profile is SQLite. On a first durable `auto` startup,
+LadybugDB may be selected only when its optional dependency is installed; otherwise SQLite is
+selected. The durable winner and non-secret locator are persisted and reused. Automatic
+fallback to ephemeral Mock is rejected. Explicit Mock remains available for development and
+CI when no durable profile exists.
 
-## Encryption at rest (optional)
+A remote Neo4j backend is an explicit operator choice. PostgreSQL/pgvector is currently only
+an optional inactive import/equivalence target with `active=false`; it is not registered as
+the normal runtime read/write backend.
 
-Set `VELANTRIM_ENCRYPTION_KEY` (a passphrase or a Fernet key) to encrypt the
-personal-data fields (`claim`, `metadata`) of the L1 SQLite store. The database
-file then holds ciphertext for those fields; reads decrypt transparently. With
-the optional `cryptography` package this uses Fernet (AES); otherwise a
-dependency-free authenticated HMAC-SHA256 cipher. Off by default. See
-[SECURITY.md](./SECURITY.md) and [GDPR.md](./GDPR.md) (Art. 32). On-disk L3
-backends are not yet covered — use host disk encryption for those.
+Local database, profile and data files are git-ignored, but git-ignore is not access control,
+backup policy or encryption.
 
-## What is collected and sent externally
+## Encryption at rest
 
-**Nothing, by default.** Velantrim contains no telemetry, no usage analytics,
-no crash reporting, and makes no network requests in its default configuration.
+Setting `VELANTRIM_ENCRYPTION_KEY` protects selected L1 personal-data fields such as claim and
+metadata. With the optional `cryptography` package the implementation uses Fernet; otherwise a
+standard-library authenticated fallback is available. Encryption is off by default.
 
-### Optional backends that extend the trust boundary
+This field-level control does not cover every L3 backend, graph index, backup, logical bundle,
+receipt, audit record, application log or temporary file. Use host disk encryption, protected
+backups and reviewed key management where required.
 
-These are **off by default** and require explicit action to enable:
+## Optional integrations that expand the boundary
 
-| Backend | What it does | Privacy implication |
-|---------|--------------|---------------------|
-| Claude generator (`core/generation.py`) | Generates answers via the Anthropic API | Requires installing `anthropic` **and** setting `ANTHROPIC_API_KEY`. When enabled, retrieved facts are sent to Anthropic. The default generator is **extractive and fully local**. |
-| sentence-transformers embedder | Higher-quality local embeddings | Local model download on first use; no data sent at inference. The default embedder is a dependency-free local hash. |
-| Neo4j L3 backend | External graph database | If pointed at a remote server, facts are stored there. The default (`mock`) and `ladybug` backends are local. |
+| Integration | Operator action | Privacy consequence |
+|---|---|---|
+| Anthropic generator | install `llm` extra and configure credentials | selected retrieved context is sent to Anthropic |
+| Sentence-transformers | install `embeddings` extra | model weights may download; inference remains local |
+| Neo4j | select/configure remote server backend | facts and graph state are stored on that server |
+| PostgreSQL migration | install `postgresql` extra and select DSN environment variable | verified logical bundle is sent to the configured inactive target |
+| Redis queue | select/configure Redis | queue/outbox-related state uses the configured server |
+| Wikidata adapter | install/use network adapter | queries and responses cross the network |
+| HTTP API | install `api` extra and bind a service | reachable clients can access permitted memory surfaces |
+| Export/backup | operator copies files or bundles | each copy gains its own retention and deletion obligations |
 
-If you enable the Claude generator, the data you send is subject to Anthropic's
-privacy terms; Velantrim has no control over it. Choose local backends to keep
-all processing on-device.
+The default extractive generator and hashing embedder are local. Provider terms and external
+retention apply when a third-party service is enabled.
 
-### Optional HTTP API and review UI
+## API and review exposure
 
-The opt-in FastAPI service (`pip install ".[api]"`) exposes stored claims —
-including the pre-canonical review queue with sources, confidence and curator
-decisions — over HTTP to whoever can reach the port. It binds to
-`127.0.0.1` by default, and the `/review/*` endpoints support an opt-in Bearer
-token guard (`VELANTRIM_API_TOKEN`, see [SECURITY.md](./SECURITY.md)). If you
-bind it more widely, you are publishing local memory contents within whatever
-network can reach that address — set the token and front it with TLS/auth
-before doing so.
+The optional API documents loopback-only use and token-based access as a baseline. Binding to
+a wider interface or placing it behind a proxy expands the trust boundary. Before wider
+exposure, require TLS, strong authentication, least privilege, resource controls and
+independent review.
 
-## Data subject rights (operational)
+The repository does not claim a complete production IdP or multi-tenant authorization model.
 
-- **Access / portability** — `get_all_facts()` and the CLI `report` command
-  export the full store; it is plain SQLite/JSON you can read directly.
-- **Rectification** — `update_fact()` and the supersede flow in
-  `core/reconcile.py` correct or replace facts.
-- **Erasure** — `erase_fact()` (`core/erasure.py`, CLI `erase`) physically
-  removes a fact from every layer (L0/L1/L3 + outbox) and records a content-free
-  tombstone; `--cascade` also erases facts derived from it. Facts can also be
-  logically collapsed (ESM `Collapsed`) when you want to retain a non-active
-  record, and deleting the local `data/` files removes everything at once.
-- **Restriction** — `restrict_processing()` / `unrestrict_processing()`
-  (`core/compliance.py`, CLI `restrict` / `unrestrict`) reversibly excludes a
-  fact from recall and answers without deleting it.
-- **Record of processing** — `record_of_processing()` (CLI `ropa`) exports an
-  aggregate, content-free overview of what is stored and how.
+## Data-subject operations
 
-See [GDPR.md](./GDPR.md) for how these map to specific GDPR articles.
+Crystal provides engineering mechanisms for:
+
+- **access / portability** — reports, direct local database access and explicit export;
+- **rectification** — update and supersession flows;
+- **erasure** — removal across active memory layers plus content-free tombstone/audit evidence;
+- **restriction** — reversible exclusion from recall and answers;
+- **record of processing** — aggregate content-free processing overview.
+
+See [`GDPR.md`](./GDPR.md) for the intended legal mapping and exact command/function names.
+
+## Erasure and copy limits
+
+Erasing active local state does not automatically erase independent copies such as:
+
+- backups and snapshots;
+- logical migration bundles;
+- databases copied by an operator;
+- data already sent to an external provider;
+- remote backends outside the current process;
+- logs or receipts governed by a separate retention policy.
+
+Operators need a copy inventory, retention schedule and deletion procedure. Migration receipts
+and endpoint identity must remain non-secret, but that does not make every surrounding file
+non-sensitive.
+
+## Secrets
+
+Passwords, API tokens, encryption keys and credential-bearing connection strings must not be
+stored in profiles, migration bundles, receipts, application logs, GitHub issues or Notion.
+Production credentials should come from a protected secret mechanism and be rotated according
+to deployment policy.
 
 ## Contact
 

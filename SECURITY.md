@@ -1,14 +1,19 @@
+<!-- d2-source-contract: CURRENT -->
+<!-- d2-source-scope: reviewer-security-privacy-failure -->
 # Security Policy
 
 ## Supported security baseline
 
-The current verified baseline is `main@bbd816c09dd39a02e6de6c1014438490572f40f6`
+The current verified runtime baseline is `main@bbd816c09dd39a02e6de6c1014438490572f40f6`
 (PR #337, CI `31256316536`, PostgreSQL integration `31256316532`). Evidence includes Python
 3.11/3.12 tests, 100% coverage, Ruff, Bandit, dependency audit, secret scanning, Docker,
 evaluation, JSONL integrity, docs-status, Ring Zero mutation checks and a real inactive
 PostgreSQL/pgvector import/equivalence test.
 
 This is research-grade open infrastructure, **not a security, legal or GDPR certification**.
+
+A compact reviewer-facing summary is available in
+[`docs/SAFETY_PRIVACY_AND_FAILURES.md`](./docs/SAFETY_PRIVACY_AND_FAILURES.md).
 
 ## Reporting
 
@@ -27,6 +32,17 @@ exact equivalence    != production readiness
 
 TruthGate and Guardian remain the authority boundaries. Storage, retrieval, migration,
 topic metadata and model output cannot bypass them.
+
+## Default and optional trust boundaries
+
+The default installation has no mandatory cloud, LLM or external database dependency. The
+ordinary documented active profile is SQLite. A durable `auto` selection may choose optional
+LadybugDB when installed, otherwise SQLite, and then locks the chosen profile. It must not
+silently fall back to ephemeral Mock.
+
+Network/trust-boundary expansion is explicit: remote Neo4j, Anthropic generation, Wikidata,
+Redis, wider API exposure or a PostgreSQL migration target require operator configuration.
+Each requires independent credential, TLS, retention and access review.
 
 ## PostgreSQL inactive-import security
 
