@@ -42,6 +42,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate documentation status manifest and active surfaces
         run: bash scripts/check_docs_status.sh
+      - name: Validate phased D1 translation status
+        run: python scripts/check_d1_translation_status.py
 
   test:
     runs-on: ubuntu-latest
