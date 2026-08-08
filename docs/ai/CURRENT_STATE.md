@@ -62,8 +62,9 @@ The universal D1 `docs-status` validator checks manifest membership, exact check
 local links, mutable runtime evidence, read-only query boundaries, PostgreSQL
 `active=false`, import-not-activation and NLnet-not-awarded non-claims.
 
-Reviewer/safety documents remain D2; architecture D3; grant/project context D4; extended
-references D5.
+All nine supported D1 locale packs are current. Reviewer/safety documents remain D2;
+architecture D3; grant/project context D4; extended references D5. Those later families
+remain `REFRESH_NEEDED` until independently reconciled.
 
 See [`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md) and
 [`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md).

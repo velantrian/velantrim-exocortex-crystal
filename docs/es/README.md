@@ -1,3 +1,4 @@
+<!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
 <!-- d1-source: main@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
 <!-- d1-status: CURRENT -->
 <!-- d2-status: REFRESH_NEEDED -->
@@ -35,3 +36,8 @@ checkpoint inglés exacto:
 - [Política de seguridad](../../SECURITY.md)
 
 No se afirma una certificación editorial por hablantes nativos.
+
+## Governance
+
+- [Localization policy](../LOCALIZATION_POLICY.md)
+- [Translation status](../TRANSLATION_STATUS.md)
