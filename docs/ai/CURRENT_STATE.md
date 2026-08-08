@@ -55,11 +55,16 @@ documentation language.
 
 PR #340 restores full visual and semantic root README coverage for all nine supported
 locales: Arabic, German, Spanish, French, Hindi, Italian, Japanese, Russian and Simplified
-Chinese. Each root README preserves purpose, mind map, ASCII flow, module tree, evidence,
-storage boundaries, quick start, navigation and explicit non-claims.
+Chinese.
 
-The broader translated corpus is intentionally phased. Existing locale Quick Start, Status,
-Reviewer Guide, Glossary and Grant Overview files remain `REFRESH_NEEDED` until reviewed
-against a recorded English checkpoint. Next phases are tracked in
-[`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md) under the contract in
+Issue #341 tracks progressive translation of the broader corpus. The first D1 tranche now
+reconciles the Russian locale index, Quick Start, Status and Implementation Status against
+exact English source checkpoint `main@16d71e731ee658b1faa65c9ea45c0d8cca290f7c`. These Russian D1 documents are
+`CURRENT` after merge and protected by `docs-status`.
+
+The corresponding D1 files for Arabic, German, Spanish, French, Hindi, Italian, Japanese and
+Simplified Chinese remain `REFRESH_NEEDED`. Reviewer/safety documents remain D2;
+architecture D3; grant/project context D4; extended references D5.
+
+See [`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md) and
 [`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md).
