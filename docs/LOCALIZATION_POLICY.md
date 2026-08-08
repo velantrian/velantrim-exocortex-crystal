@@ -21,8 +21,7 @@ English-first means **source-first**, not English-only.
 
 ## 2. README parity target
 
-The root `README.md` and every supported `README.<locale>.md` are intended to be full public
-presentations of the same project.
+The root `README.md` and every supported `README.<locale>.md` are intended to be full public presentations of the same project.
 
 A completed README translation must preserve equivalent coverage of:
 
