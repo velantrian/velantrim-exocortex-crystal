@@ -4,7 +4,6 @@ set -euo pipefail
 python - <<'PY'
 from __future__ import annotations
 
-import hashlib
 import json
 import re
 from pathlib import Path
@@ -117,15 +116,37 @@ if limits.get("benchmark_is_production_slo") is not False:
     errors.append("resource benchmark must not be a production SLO")
 
 if documentation.get("authoritative_language") != "English":
-    errors.append("English must remain documentation authority")
+    errors.append("English must remain the primary conflict-resolving source language")
 if grant.get("submitted") is not True or grant.get("under_review") is not True:
     errors.append("grant must remain submitted and under review")
 if grant.get("awarded") is not False or grant.get("budget_changed") is not False:
     errors.append("grant must not claim award or budget change")
 
 required: dict[str, list[str]] = {
-    "README.md": [expected_commit, "2078 passed / 13 skipped", "PR #337",
-                  "Issue #332", "inactive", "submitted and under review"],
+    "README.md": [
+        expected_commit,
+        "2078 passed / 13 skipped / 0 failed",
+        "9756 statements / 100.00% line coverage",
+        "merged PR #337",
+        "active=false",
+        "submitted / under review / not awarded",
+        "Mind map",
+        "ASCII architecture",
+        "Module tree",
+        "docs/TRANSLATION_STATUS.md",
+    ],
+    "README.ru.md": [
+        "<!-- localization-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->",
+        "<!-- localization-status: CURRENT -->",
+        "2078 passed / 13 skipped / 0 failed",
+        "9756 statements / 100.00% line coverage",
+        "active=false",
+        "Mindmap",
+        "ASCII-архитектура",
+        "Дерево модулей",
+        "Успешный импорт",
+        "submitted / under review / not awarded",
+    ],
     "TEST_REPORT.md": [expected_commit, "2078 passed / 13 skipped / 0 failed",
                        "9756", "9/9 successful", "31256316532", "PR #337"],
     "docs/STATUS.md": [expected_commit, "2078 passed / 13 skipped / 0 failed",
@@ -150,9 +171,27 @@ required: dict[str, list[str]] = {
     "ROADMAP.md": [expected_commit, "issues #331 and #332", "No grant award"],
     "SECURITY.md": [expected_commit, "not a security, legal or GDPR certification",
                     "test-only", "No automatic switching"],
-    "AGENTS.md": ["English is the sole authoritative actively",
-                  "Do not automatically update localized top-level README files",
-                  "GitHub completeness invariant"],
+    "AGENTS.md": [
+        "English-first means",
+        "full visual and semantic parity",
+        "ORIENTATION_ONLY",
+        "docs/TRANSLATION_STATUS.md",
+        "GitHub completeness invariant",
+    ],
+    "docs/LOCALIZATION_POLICY.md": [
+        "English-first means **source-first**, not English-only.",
+        "full public presentations",
+        "Phased translation instead of an all-at-once gate",
+        "ORIENTATION_ONLY",
+        "Human or language-model review",
+    ],
+    "docs/TRANSLATION_STATUS.md": [
+        "README.ru.md",
+        "IN_PROGRESS",
+        "ORIENTATION_ONLY",
+        "T2 — German entry surface",
+        "T6 — reviewer, architecture, safety and grant documents",
+    ],
 }
 for relative, needles in required.items():
     path = root / relative
@@ -164,8 +203,51 @@ for relative, needles in required.items():
         if needle not in text:
             errors.append(f"{relative}: missing current marker {needle!r}")
 
+# Full public presentation is checked by a minimum floor, never by a maximum size.
+for relative, minimum in (("README.md", 12000), ("README.ru.md", 12000)):
+    size = (root / relative).stat().st_size
+    if size < minimum:
+        errors.append(f"{relative}: full README is unexpectedly small ({size} < {minimum} bytes)")
+
+supported_locales = {
+    "ar": "README.ar.md",
+    "de": "README.de.md",
+    "es": "README.es.md",
+    "fr": "README.fr.md",
+    "hi": "README.hi.md",
+    "it": "README.it.md",
+    "ja": "README.ja.md",
+    "ru": "README.ru.md",
+    "zh-CN": "README.zh-CN.md",
+}
+localized = sorted(path.name for path in root.glob("README.*.md") if path.name != "README.md")
+if set(localized) != set(supported_locales.values()):
+    errors.append("supported root README locale set differs from localization policy")
+
+status_text = (root / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
+for locale, relative in supported_locales.items():
+    if not (root / relative).is_file():
+        errors.append(f"supported localized README missing: {relative}")
+    if not (root / "docs" / locale / "README.md").is_file():
+        errors.append(f"locale documentation index missing: docs/{locale}/README.md")
+    if f"`{relative}`" not in status_text:
+        errors.append(f"translation ledger does not list {relative}")
+
+# T1 is the first complete localized README. Other locales remain safe temporary
+# orientation files and must carry the recorded English source checkpoint until their phase.
+orientation_locales = sorted(set(supported_locales.values()) - {"README.ru.md"})
+for relative in orientation_locales:
+    text = (root / relative).read_text(encoding="utf-8")
+    for needle in (
+        "<!-- localization-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->",
+        "active=false",
+        "README.md",
+    ):
+        if needle not in text:
+            errors.append(f"{relative}: temporary orientation file missing {needle!r}")
+
 current_surfaces = [
-    "README.md", "TEST_REPORT.md", "docs/STATUS.md",
+    "README.md", "README.ru.md", "TEST_REPORT.md", "docs/STATUS.md",
     "docs/IMPLEMENTATION_STATUS.md", "docs/status/implementation-manifest.json",
     "docs/ai/CURRENT_STATE.md", "docs/ai/KNOWN_RISKS.md",
     "docs/GRANT_NLNET_SCOPE.md", "docs/grants/baseline-funded-delta-matrix.md",
@@ -194,27 +276,13 @@ for relative in current_surfaces:
         if claim in text:
             errors.append(f"{relative}: unsupported positive claim {claim!r}")
 
-frozen = documentation.get("frozen_localized_readme_git_blobs")
-if not isinstance(frozen, dict) or not frozen:
-    errors.append("manifest must pin frozen localized README Git blob IDs")
-    frozen = {}
-localized = sorted(path.name for path in root.glob("README.*.md") if path.name != "README.md")
-if set(localized) != set(frozen):
-    errors.append("localized README set differs from manifest")
-for relative, expected_blob in sorted(frozen.items()):
-    path = root / relative
-    if not path.is_file():
-        errors.append(f"frozen localized README missing: {relative}")
-        continue
-    content = path.read_bytes()
-    actual = hashlib.sha1(f"blob {len(content)}\0".encode() + content, usedforsecurity=False).hexdigest()
-    if actual != expected_blob:
-        errors.append(f"{relative}: frozen snapshot changed")
-
-link_surfaces = list(required)
+link_surfaces = sorted(set(required) | set(supported_locales.values()) |
+                       {f"docs/{locale}/README.md" for locale in supported_locales})
 link_pattern = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 for relative in link_surfaces:
     source = root / relative
+    if not source.is_file():
+        continue
     text = source.read_text(encoding="utf-8")
     for raw_target in link_pattern.findall(text):
         target = raw_target.strip().strip("<>")
@@ -242,6 +310,7 @@ print(
     "Documentation status is internally consistent: "
     "checkpoint=bbd816c, tests=2078/13, statements=9756, coverage=100.00%, "
     "permanent-jobs=9, postgresql-integration=1, mutants=7/7, "
-    f"grant=submitted-under-review, frozen-localized={len(localized)}"
+    "grant=submitted-under-review, readme-parity=en+ru, "
+    f"phased-orientation={len(orientation_locales)}"
 )
 PY
