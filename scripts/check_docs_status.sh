@@ -4,6 +4,7 @@ set -euo pipefail
 python - <<'PY'
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -27,17 +28,11 @@ expected_commit = "bbd816c09dd39a02e6de6c1014438490572f40f6"
 expected_head = "d7af7c80722274f9217bc5545d150f92e9363f37"
 expected_ci = 31256316536
 expected_integration_ci = 31256316532
-localization_source = "e521440e9bb188d88475f17dd5bcdd161b314605"
 expected_jobs = [
     "code-quality", "test (3.11)", "test (3.12)", "jsonl-integrity",
     "eval-gate", "security", "docker-build", "Ring Zero mutation gate",
     "docs-status",
 ]
-locales = {
-    "ar": "README.ar.md", "de": "README.de.md", "es": "README.es.md",
-    "fr": "README.fr.md", "hi": "README.hi.md", "it": "README.it.md",
-    "ja": "README.ja.md", "ru": "README.ru.md", "zh-CN": "README.zh-CN.md",
-}
 
 if manifest.get("schema_version") != 1:
     errors.append("manifest schema_version must be 1")
@@ -51,8 +46,11 @@ if checkpoint.get("ci_run") != expected_ci:
     errors.append("manifest CI run must match PR #337 exact-head evidence")
 
 expected_tests = {
-    "passed": 2078, "skipped": 13, "failed": 0,
-    "measured_statements": 9756, "coverage_percent": 100.0,
+    "passed": 2078,
+    "skipped": 13,
+    "failed": 0,
+    "measured_statements": 9756,
+    "coverage_percent": 100.0,
 }
 for key, expected in expected_tests.items():
     if tests.get(key) != expected:
@@ -76,19 +74,29 @@ if mutation.get("declared_mutants") != 7 or mutation.get("killed_mutants") != 7:
     errors.append("Ring Zero evidence must remain 7/7")
 
 required_true = (
-    "public_query_surfaces_read_only", "explicit_contradiction_dispositions",
-    "scoped_curator_authorization", "bounded_legacy_retrieval",
-    "durable_l3_profile_lock", "sqlite_storage_lifecycle",
-    "sqlite_logical_export_verification", "bounded_streaming_logical_migration",
-    "postgresql_optional_driver_lazy_loaded", "postgresql_inactive_import",
+    "public_query_surfaces_read_only",
+    "explicit_contradiction_dispositions",
+    "scoped_curator_authorization",
+    "bounded_legacy_retrieval",
+    "durable_l3_profile_lock",
+    "sqlite_storage_lifecycle",
+    "sqlite_logical_export_verification",
+    "bounded_streaming_logical_migration",
+    "postgresql_optional_driver_lazy_loaded",
+    "postgresql_inactive_import",
     "postgresql_exact_state_equivalence",
 )
 required_false = (
-    "truth_policy_runtime_bypass_present", "physical_l3_equals_strict_canon",
-    "postgresql_target_active", "postgresql_normal_runtime_adapter",
-    "cross_backend_migration_runtime", "postgresql_pgvector_runtime",
-    "automatic_backend_switching", "distributed_curator_coordination",
-    "production_idp_multitenancy", "dedicated_reader_core",
+    "truth_policy_runtime_bypass_present",
+    "physical_l3_equals_strict_canon",
+    "postgresql_target_active",
+    "postgresql_normal_runtime_adapter",
+    "cross_backend_migration_runtime",
+    "postgresql_pgvector_runtime",
+    "automatic_backend_switching",
+    "distributed_curator_coordination",
+    "production_idp_multitenancy",
+    "dedicated_reader_core",
 )
 for key in required_true:
     if boundaries.get(key) is not True:
@@ -110,16 +118,6 @@ if limits.get("benchmark_is_production_slo") is not False:
 
 if documentation.get("authoritative_language") != "English":
     errors.append("English must remain documentation authority")
-if documentation.get("working_language") != "English":
-    errors.append("English must remain the documentation working language")
-if documentation.get("localized_readmes") != "concise_non_authoritative_summaries":
-    errors.append("localized README policy must be concise non-authoritative summaries")
-if documentation.get("localized_readme_source_checkpoint") != localization_source:
-    errors.append("localized README source checkpoint must match reconciliation source")
-if documentation.get("localized_readme_count") != len(locales):
-    errors.append("localized README count must equal the supported locale set")
-if documentation.get("full_corpus_translation_required") is not False:
-    errors.append("full documentation corpus translation must remain optional, not required")
 if grant.get("submitted") is not True or grant.get("under_review") is not True:
     errors.append("grant must remain submitted and under review")
 if grant.get("awarded") is not False or grant.get("budget_changed") is not False:
@@ -127,9 +125,7 @@ if grant.get("awarded") is not False or grant.get("budget_changed") is not False
 
 required: dict[str, list[str]] = {
     "README.md": [expected_commit, "2078 passed / 13 skipped", "PR #337",
-                  "Issue #332", "inactive", "submitted and under review",
-                  "English is the sole authoritative working language",
-                  "docs/LOCALIZATION_POLICY.md"],
+                  "Issue #332", "inactive", "submitted and under review"],
     "TEST_REPORT.md": [expected_commit, "2078 passed / 13 skipped / 0 failed",
                        "9756", "9/9 successful", "31256316532", "PR #337"],
     "docs/STATUS.md": [expected_commit, "2078 passed / 13 skipped / 0 failed",
@@ -154,14 +150,9 @@ required: dict[str, list[str]] = {
     "ROADMAP.md": [expected_commit, "issues #331 and #332", "No grant award"],
     "SECURITY.md": [expected_commit, "not a security, legal or GDPR certification",
                     "test-only", "No automatic switching"],
-    "AGENTS.md": ["English is the sole authoritative working language",
-                  "dedicated docs-only localization PR", "GitHub completeness invariant"],
-    "docs/LOCALIZATION_POLICY.md": [localization_source,
-                                    "does **not** require a full translation",
-                                    "concise non-authoritative orientation summary"],
-    "docs/DOCUMENTATION_MAP.md": ["English is the sole authoritative working language",
-                                  "localized README orientation summaries",
-                                  "LOCALIZATION_POLICY.md"],
+    "AGENTS.md": ["English is the sole authoritative actively",
+                  "Do not automatically update localized top-level README files",
+                  "GitHub completeness invariant"],
 }
 for relative, needles in required.items():
     path = root / relative
@@ -203,42 +194,24 @@ for relative in current_surfaces:
         if claim in text:
             errors.append(f"{relative}: unsupported positive claim {claim!r}")
 
+frozen = documentation.get("frozen_localized_readme_git_blobs")
+if not isinstance(frozen, dict) or not frozen:
+    errors.append("manifest must pin frozen localized README Git blob IDs")
+    frozen = {}
 localized = sorted(path.name for path in root.glob("README.*.md") if path.name != "README.md")
-if set(localized) != set(locales.values()):
-    errors.append("localized README set differs from supported locale set")
-
-summary_marker = f"<!-- localization-source: main@{localization_source} -->"
-index_marker = f"<!-- localization-index-source: main@{localization_source} -->"
-for locale, relative in sorted(locales.items()):
-    summary = root / relative
-    if not summary.is_file():
-        errors.append(f"localized README missing: {relative}")
+if set(localized) != set(frozen):
+    errors.append("localized README set differs from manifest")
+for relative, expected_blob in sorted(frozen.items()):
+    path = root / relative
+    if not path.is_file():
+        errors.append(f"frozen localized README missing: {relative}")
         continue
-    content = summary.read_text(encoding="utf-8")
-    if len(content.encode("utf-8")) > 9000:
-        errors.append(f"{relative}: localized summary exceeds 9000-byte limit")
-    for needle in (
-        summary_marker, expected_commit, "2078", "13", "100.00%", "active=false",
-        "README.md", "TEST_REPORT.md", "docs/STATUS.md", "SECURITY.md",
-        "physical L3", "strict Canon", "successful import", "activation",
-    ):
-        if needle not in content:
-            errors.append(f"{relative}: missing localization invariant {needle!r}")
+    content = path.read_bytes()
+    actual = hashlib.sha1(f"blob {len(content)}\0".encode() + content, usedforsecurity=False).hexdigest()
+    if actual != expected_blob:
+        errors.append(f"{relative}: frozen snapshot changed")
 
-    index_relative = f"docs/{locale}/README.md"
-    index = root / index_relative
-    if not index.is_file():
-        errors.append(f"locale index missing: {index_relative}")
-        continue
-    index_content = index.read_text(encoding="utf-8")
-    for needle in (
-        index_marker, f"../../{relative}", "../../README.md", "../../TEST_REPORT.md",
-        "../STATUS.md", "../../SECURITY.md", "../GRANT_NLNET_SCOPE.md",
-    ):
-        if needle not in index_content:
-            errors.append(f"{index_relative}: missing locale-index invariant {needle!r}")
-
-link_surfaces = list(required) + localized + [f"docs/{locale}/README.md" for locale in locales]
+link_surfaces = list(required)
 link_pattern = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 for relative in link_surfaces:
     source = root / relative
@@ -269,6 +242,6 @@ print(
     "Documentation status is internally consistent: "
     "checkpoint=bbd816c, tests=2078/13, statements=9756, coverage=100.00%, "
     "permanent-jobs=9, postgresql-integration=1, mutants=7/7, "
-    f"grant=submitted-under-review, localized-summaries={len(localized)}, authority=English"
+    f"grant=submitted-under-review, frozen-localized={len(localized)}"
 )
 PY

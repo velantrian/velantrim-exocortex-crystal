@@ -259,23 +259,17 @@ private datasets in this public repository.
 
 ### Active documentation language policy
 
-English is the sole authoritative working language for Crystal engineering and documentation.
+During the current engineering phase, English is the sole authoritative actively
+maintained GitHub documentation language.
 
-- Write and review implementation, architecture, ADR, status, test, security, grant,
-  roadmap and `docs/ai/*` material in English first.
-- Maintain `README.md` as the authoritative public capability contract.
-- Keep localized top-level READMEs as concise non-authoritative orientation summaries,
-  not complete mirrors of the documentation corpus.
-- Locale indexes may route readers to selected best-effort onboarding snapshots, but must
-  warn that current capability, security, grant and runtime truth remains in English.
-- Do not update all translations inside ordinary implementation PRs. Merge and verify the
-  English baseline first, then use a dedicated docs-only localization PR when public
-  summaries materially need reconciliation.
-- Record the exact English source checkpoint in each localized README and locale index.
-- Preserve stable API identifiers and exact non-claims; never introduce stronger claims in
-  translation.
-- Follow [`docs/LOCALIZATION_POLICY.md`](docs/LOCALIZATION_POLICY.md). CI must validate the
-  selective localization contract without requiring full-corpus translation.
+- Update `README.md`, English architecture/ADR/status/security/grant documents and
+  `docs/ai/*` in implementation PRs.
+- Do not automatically update localized top-level README files.
+- Existing translations are frozen snapshots and may lag.
+- Translate and reconcile them only in a dedicated final localization PR after the
+  engineering/status baseline is frozen.
+- CI must validate current English evidence without requiring every frozen translation to
+  carry mutable checkpoint numbers.
 
 ## 13. AI context-pack maintenance
 
@@ -308,7 +302,6 @@ limitations and next actions.
 - `docs/REVIEWER_GUIDE.md` — canonical external reviewer route.
 - `docs/DOCUMENTATION_MAP.md` — documentation hierarchy and reader routes.
 - `docs/DOCUMENTATION_SYNC_PROTOCOL.md` — GitHub/Notion completion contract.
-- `docs/LOCALIZATION_POLICY.md` — English-first selective localization contract.
 - `docs/ARCHITECTURE.md` — architecture and memory/backend/privacy boundaries.
 - `docs/EVAL.md` — evaluation metrics and gates.
 - `TEST_REPORT.md` — exact verification evidence.

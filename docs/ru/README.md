@@ -1,23 +1,71 @@
-# 🇷🇺 Русский маршрут документации
+# 🇷🇺 Документация на русском — Velantrim Crystal
 
-<!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 **Русский** · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 [العربية](../ar/README.md) · 🇯🇵 [日本語](../ja/README.md) · 🇮🇳 [हिन्दी](../hi/README.md)
 
-Английский — единственный нормативный рабочий язык Crystal. Полный корпус документации не
-переводится. Актуальный русский публичный обзор: [README.ru.md](../../README.ru.md).
+## 🔒 Правило перевода и авторитетности
 
-Файлы `REVIEWER_GUIDE.md`, `QUICKSTART.md`, `STATUS.md`, `GRANT_OVERVIEW.md` и `GLOSSARY.md` в
-этой папке являются best-effort snapshot-материалами и могут отставать. Их нельзя использовать
-как источник текущих capability, security, grant или runtime-утверждений.
+Эти страницы — поддерживаемый русскоязычный маршрут для reviewers, организаций
+и участников. Они не изменяют runtime или границы гранта.
 
-## Нормативные английские источники
+```text
+GitHub main + нормативные английские документы = авторитетный источник
+Немецкий, французский, испанский, итальянский, русский и китайский = переводы и вспомогательные материалы
+```
 
-- [README](../../README.md)
-- [TEST_REPORT](../../TEST_REPORT.md)
-- [Current status](../STATUS.md)
-- [Implementation status](../IMPLEMENTATION_STATUS.md)
-- [Security](../../SECURITY.md)
-- [NLnet scope](../GRANT_NLNET_SCOPE.md)
-- [Localization policy](../LOCALIZATION_POLICY.md)
+При расхождениях действует следующий порядок:
 
-Порядок обновления: английская реализация и документация → merge и проверка → отдельный
-localization PR → фиксация английского source checkpoint.
+1. код, фактически слитый в GitHub `main`;
+2. [TEST_REPORT.md](../../TEST_REPORT.md) для чисел тестов и покрытия;
+3. [docs/STATUS.md](../STATUS.md) для состояния реализации;
+4. английские грантовые документы для scope, бюджета и deliverables.
+
+Перевод не должен усиливать возможности по сравнению с английским источником.
+Формулировки «ориентировано на GDPR», «hardened», «проверяемо» и «локально» —
+технические описания, а не юридические или security-сертификаты.
+
+---
+
+## 🧭 Рекомендуемый маршрут чтения
+
+| Порядок | Документ | Назначение |
+|---:|---|---|
+| 1 | [README на русском](../../README.ru.md) | краткое описание проекта, границ и архитектуры |
+| 2 | [Руководство reviewer](./REVIEWER_GUIDE.md) | проверки для внешнего reviewer |
+| 3 | [Быстрый старт](./QUICKSTART.md) | установка, тесты, CLI и опциональный API |
+| 4 | [Текущий статус](./STATUS.md) | границы реализации и публичных claims |
+| 5 | [Обзор гранта](./GRANT_OVERVIEW.md) | grant-safe резюме на русском |
+| 6 | [Глоссарий](./GLOSSARY.md) | согласованная техническая терминология |
+
+---
+
+## 📚 Нормативные английские источники
+
+| Документ | Авторитетное содержание |
+|---|---|
+| [README.md](../../README.md) | публичная точка входа и текущие основные claims |
+| [TEST_REPORT.md](../../TEST_REPORT.md) | воспроизводимая baseline тестов и покрытия |
+| [docs/STATUS.md](../STATUS.md) | текущее состояние реализации |
+| [docs/REVIEWER_GUIDE.md](../REVIEWER_GUIDE.md) | английский reviewer-маршрут |
+| [docs/ARCHITECTURE.md](../ARCHITECTURE.md) | границы архитектуры и памяти |
+| [docs/EVAL.md](../EVAL.md) | методика оценки |
+| [docs/GRANT_NLNET_SCOPE.md](../GRANT_NLNET_SCOPE.md) | поданный грантовый scope |
+| [Матрица baseline/delta](../grants/baseline-funded-delta-matrix.md) | milestones и доказательства приёмки |
+| [Funding Use Plan](../grants/funding-use-plan.md) | бюджет и приоритеты |
+
+---
+
+## 🛠️ Правило сопровождения
+
+```text
+1. обновить и слить английский источник
+2. проверить актуальный main
+3. синхронизировать переводы отдельным docs-only PR
+4. не вводить новые числа или claims только в переводе
+```
+
+Русский пакет подготовлен на основе Crystal `main@c5a34a64`. Последним
+checkpoint, изменившим runtime, остаётся PR #265 / `cd6fd44`.
+
+---
+
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/README.md) · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 **Русский** · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 [العربية](../ar/README.md) · 🇯🇵 [日本語](../ja/README.md) · 🇮🇳 [हिन्दी](../hi/README.md)

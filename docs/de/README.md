@@ -1,24 +1,75 @@
-# 🇩🇪 Deutscher Dokumentationsweg
+# 🇩🇪 Deutsche Dokumentation — Velantrim Crystal
 
-<!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 [العربية](../ar/README.md) · 🇯🇵 [日本語](../ja/README.md) · 🇮🇳 [हिन्दी](../hi/README.md)
 
-Englisch ist die einzige maßgebliche Arbeitssprache von Crystal. Der vollständige
-Dokumentationsbestand wird nicht übersetzt. Die aktuelle deutsche Übersicht ist
-[README.de.md](../../README.de.md).
+## 🔒 Übersetzungs- und Autoritätsregel
 
-`REVIEWER_GUIDE.md`, `QUICKSTART.md`, `STATUS.md`, `GRANT_OVERVIEW.md` und `GLOSSARY.md` in
-diesem Ordner sind best-effort Snapshots und können veraltet sein. Sie sind keine Quelle für
-aktuelle Capability-, Security-, Grant- oder Runtime-Aussagen.
+Diese Seiten sind eine gepflegte deutschsprachige Orientierung für Reviewer,
+Institutionen und Mitwirkende. Sie ändern weder Runtime noch Grant-Scope.
 
-## Maßgebliche englische Quellen
+```text
+GitHub main + englische Kerndokumente                                        = verbindliche Quelle
+Deutsche, französische, spanische, italienische, russische und chinesische Seiten = Übersetzungen und Lesehilfen
+```
 
-- [README](../../README.md)
-- [TEST_REPORT](../../TEST_REPORT.md)
-- [Current status](../STATUS.md)
-- [Implementation status](../IMPLEMENTATION_STATUS.md)
-- [Security](../../SECURITY.md)
-- [NLnet scope](../GRANT_NLNET_SCOPE.md)
-- [Localization policy](../LOCALIZATION_POLICY.md)
+Bei einer Abweichung gelten:
 
-Ablauf: englische Implementierung und Dokumentation → Merge und Verifikation → separater
-Localization-PR → Aufzeichnung des englischen Source-Checkpoints.
+1. der tatsächlich gemergte Code auf GitHub `main`;
+2. [TEST_REPORT.md](../../TEST_REPORT.md) für Test- und Coverage-Zahlen;
+3. [docs/STATUS.md](../STATUS.md) für den aktuellen Implementierungsstatus;
+4. die englischen Grant-Dokumente für Umfang, Budget und Deliverables.
+
+Eine Übersetzung darf keine Fähigkeit stärker darstellen als das englische
+Original. Begriffe wie „GDPR-orientiert“, „gehärtet“, „nachweisbar“ oder
+„lokal“ sind technische Beschreibungen und keine Rechts- oder
+Sicherheitszertifikate.
+
+---
+
+## 🧭 Empfohlener Lesepfad
+
+| Reihenfolge | Dokument | Zweck |
+|---:|---|---|
+| 1 | [README auf Deutsch](../../README.de.md) | Projekt, Grenzen und Architektur in komprimierter Form |
+| 2 | [Reviewer-Leitfaden](./REVIEWER_GUIDE.md) | Was ein externer Reviewer prüfen sollte |
+| 3 | [Schnellstart](./QUICKSTART.md) | Installation, Tests, CLI und optionale API |
+| 4 | [Aktueller Status](./STATUS.md) | Implementierungs- und Behauptungsgrenzen |
+| 5 | [Grant-Übersicht](./GRANT_OVERVIEW.md) | Grant-sichere deutsche Zusammenfassung |
+| 6 | [Glossar](./GLOSSARY.md) | Konsistente technische Terminologie |
+
+---
+
+## 📚 Verbindliche englische Kerndokumente
+
+| Dokument | Verbindlicher Inhalt |
+|---|---|
+| [README.md](../../README.md) | öffentlicher Einstieg und aktuelle Kernbehauptungen |
+| [TEST_REPORT.md](../../TEST_REPORT.md) | reproduzierbare Test- und Coverage-Baseline |
+| [docs/STATUS.md](../STATUS.md) | aktueller Implementierungsstatus |
+| [docs/REVIEWER_GUIDE.md](../REVIEWER_GUIDE.md) | englischer Reviewer-Pfad |
+| [docs/ARCHITECTURE.md](../ARCHITECTURE.md) | Architektur- und Speichergrenzen |
+| [docs/EVAL.md](../EVAL.md) | Evaluationsmethodik |
+| [docs/GRANT_NLNET_SCOPE.md](../GRANT_NLNET_SCOPE.md) | eingereichter Grant-Scope |
+| [Baseline-/Delta-Matrix](../grants/baseline-funded-delta-matrix.md) | Milestones und Akzeptanznachweise |
+| [Funding Use Plan](../grants/funding-use-plan.md) | Budgetplanung und Priorisierung |
+
+---
+
+## 🛠️ Pflegekonvention
+
+Bei Änderungen an einem übersetzten Bereich gilt:
+
+```text
+1. englische Quelle aktualisieren und mergen
+2. aktuellen main-Stand prüfen
+3. Übersetzungen in einem separaten docs-only PR synchronisieren
+4. keine neuen Zahlen oder Claims nur in einer Übersetzung einführen
+```
+
+Der deutsche Paketstand wurde auf Basis von Crystal `main@c5a34a64` erneut
+synchronisiert. Der letzte Runtime-verändernde Checkpoint bleibt PR #265 /
+`cd6fd44`.
+
+---
+
+> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 **Deutsch** · 🇫🇷 [Français](../fr/README.md) · 🇪🇸 [Español](../es/README.md) · 🇮🇹 [Italiano](../it/README.md) · 🇷🇺 [Русский](../ru/README.md) · 🇨🇳 [简体中文](../zh-CN/README.md) · 🇸🇦 [العربية](../ar/README.md) · 🇯🇵 [日本語](../ja/README.md) · 🇮🇳 [हिन्दी](../hi/README.md)

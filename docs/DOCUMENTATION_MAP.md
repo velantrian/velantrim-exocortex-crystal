@@ -14,7 +14,7 @@ duplicate implementation claims.
 | Security reviewer | [Security policy](../SECURITY.md) | [Threat model](./security/threat-model.md), [Privacy](../PRIVACY.md) |
 | Researcher | [Implementation status](./IMPLEMENTATION_STATUS.md) | [Roadmap](../ROADMAP.md), RFCs, [Metaphor vs mechanism](./METAPHOR_VS_MECHANISM.md) |
 | Ecosystem reviewer or cross-project contributor | [Velantrim ecosystem map](./VELANTRIM_ECOSYSTEM.md) | [Grant scope](./GRANT_NLNET_SCOPE.md), [Architecture](./ARCHITECTURE.md) |
-| Contributor | [Contributing](../CONTRIBUTING.md) | [Documentation sync protocol](./DOCUMENTATION_SYNC_PROTOCOL.md), [Localization policy](./LOCALIZATION_POLICY.md), [Test report](../TEST_REPORT.md), [Governance](../GOVERNANCE.md) |
+| Contributor | [Contributing](../CONTRIBUTING.md) | [Documentation sync protocol](./DOCUMENTATION_SYNC_PROTOCOL.md), [Test report](../TEST_REPORT.md), [Governance](../GOVERNANCE.md) |
 | AI coding agent or automated auditor | [AI agent entry point](./ai/README.md) | [Mandatory agent contract](../AGENTS.md), [Current state](./ai/CURRENT_STATE.md), [Audit playbook](./ai/AUDIT_PLAYBOOK.md) |
 | AI without Notion connector | [Connectorless Notion hand-off](./ai/NOTION_HANDOFF.md) | [Work log](./ai/WORK_LOG.md), [Sync protocol](./DOCUMENTATION_SYNC_PROTOCOL.md) |
 
@@ -27,21 +27,17 @@ TEST_REPORT.md + implementation-manifest.json
         ↓
 docs/STATUS.md + docs/IMPLEMENTATION_STATUS.md
         ↓
-English architecture / ADR / security / grant contracts
+English README capability contract
         ↓
-English README public capability contract
-        ↓
-localized README orientation summaries
-        ↓
-locale indexes and optional best-effort snapshots
+semantically aligned localized READMEs
         ↓
 AI context pack (orientation and hand-off)
         ↓
 RFC, roadmap and research documents
 ```
 
-Localized text is never implementation truth. Notion is the synchronized strategy/grant
-map; it does not replace merged code as implementation truth.
+Notion is the synchronized strategy/grant map; it does not replace merged code
+as implementation truth.
 
 ## Velantrim ecosystem and cross-project boundaries
 
@@ -58,10 +54,9 @@ is implemented, tested and merged.
 The bilingual ecosystem map is the current cross-project navigation and boundary
 reference; it does not authorize runtime integration.
 
-The ecosystem map is bilingual in English and Russian. English is the sole authoritative
-working language for Crystal's public, engineering and grant-facing contract. Selected
-localized orientation surfaces may be reconciled after the English baseline is merged and
-verified; the project does not translate the entire documentation corpus.
+The ecosystem map is bilingual in English and Russian. English remains primary
+for Crystal's public and grant-facing contract. Additional README and documentation
+localizations may be synchronized after the English/Russian boundary text is stable.
 
 ## AI agent context and hand-off
 
@@ -85,7 +80,6 @@ Notion and marks the item `SYNCED`.
 ## Change and documentation governance
 
 - [Code ↔ Documentation ↔ Notion synchronization protocol](./DOCUMENTATION_SYNC_PROTOCOL.md)
-- [Localization policy](./LOCALIZATION_POLICY.md)
 - [Connectorless Notion hand-off](./ai/NOTION_HANDOFF.md)
 - [Contributing guide](../CONTRIBUTING.md)
 - [Governance](../GOVERNANCE.md)
@@ -152,20 +146,10 @@ reviewed long-document semantic reading layer, and separate Titan research.
 
 ## Translation policy
 
-English is the sole authoritative working language. Architecture, ADR, status, test,
-security, grant, roadmap and `docs/ai/*` documents remain normative English-only surfaces.
-
-The nine top-level `README.<locale>.md` files are concise non-authoritative localized README
-orientation summaries, not complete mirrors of the documentation corpus. Their associated
-`docs/<locale>/README.md` indexes identify selected older translations as best-effort
-snapshots that may lag.
-
-`docs-status` checks the localization source checkpoint, metrics, capability and safety
-markers, summary size and local links. The required workflow is English implementation and
-documentation first, verified merge second, then a separate docs-only localization PR when
-public summaries materially need reconciliation.
-
-See [Crystal Localization Policy](./LOCALIZATION_POLICY.md).
+English code-facing documents remain normative. The ten top-level README files
+share one capability and safety contract. `docs-status` checks their checkpoint,
+metrics, core safety markers and local links so translations cannot silently
+retain an obsolete architecture description.
 
 ## Active storage and migration documents
 
@@ -175,13 +159,11 @@ See [Crystal Localization Policy](./LOCALIZATION_POLICY.md).
 - [PostgreSQL + pgvector institutional profile RFC](./architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
 - [ADR-021](./adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md)
 
-SQLite remains the ordinary local-first profile. PostgreSQL/pgvector is currently an
-optional lazy-loaded inactive import and exact-equivalence target, not an active read/write
-runtime backend.
+English is the active documentation authority. Localized top-level READMEs are frozen
+snapshots pending a dedicated final translation pass.
 
 ## Storage migration runtime
 
 - [SQLite logical export and independent verification](./architecture/SQLITE_LOGICAL_EXPORT.md)
 - [Cross-backend migration contract](./architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md)
-- [Inactive PostgreSQL import](./architecture/POSTGRESQL_INACTIVE_IMPORT.md)
 - [PostgreSQL/pgvector institutional profile RFC](./architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
