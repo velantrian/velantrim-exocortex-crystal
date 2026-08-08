@@ -1,285 +1,64 @@
 # 🔱 Velantrim ExoCortex — Crystal
 
-> 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 **Italiano** · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
+> 🌐 [English — fonte normativa](./README.md) · 🇮🇹 **Panoramica italiana**
+
+<!-- localization-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
 
 ### Infrastruttura di memoria verificabile e local-first per sistemi di IA affidabili
 
-`v0.3.0` · 🧪 **1853 test superati / 12 ignorati** · 🎯 **copertura 100%** · 🧬 **7/7 mutanti dichiarati eliminati** · ✅ **9 job CI** · 🐍 **runtime predefinito basato solo sulla libreria standard Python** · ⚖️ **AGPL-3.0**
+Questo file è un **riepilogo orientativo non normativo**, non una traduzione completa. Decisioni
+tecniche, architettura, stato, sicurezza e dichiarazioni sul finanziamento sono mantenuti in
+inglese. In caso di differenze prevalgono [README.md](./README.md) e le prove inglesi.
 
-> Crystal non è un altro chatbot. È un confine per memoria, evidenze e decisioni
-> che registra che cosa rappresenta un’affermazione, da dove proviene, il suo
-> stato epistemico, se può fondare una risposta e come una contraddizione è stata
-> risolta esplicitamente.
+`v0.3.0` · 🧪 **2078 superati / 13 ignorati** · 🎯 **100.00% di copertura** · ✅ **9 job CI**
 
-**Checkpoint runtime verificato:** `f91299c44a1a1850fa516f3abb96c916326f7a8c` — PR #302 unita.  
-**Evidenze esatte:** [TEST_REPORT.md](./TEST_REPORT.md) e il
-[manifest di implementazione](./docs/status/implementation-manifest.json).
+**Checkpoint runtime verificato:** `bbd816c09dd39a02e6de6c1014438490572f40f6` — PR #337.
 
-> Questa traduzione conserva gli stessi confini funzionali, di sicurezza e di
-> stato del README inglese. Gli identificatori API stabili restano nella forma
-> usata dal codice.
+Crystal separa memoria fisica, evidenza, ammissione epistemica e letture affidabili. Presenza dei
+dati, ranking o migrazione non possono aggirare Guardian, TruthGate o la riconciliazione del Canon
+rigoroso.
 
----
+## Ambito verificato
 
-## 🎯 Perché esiste Crystal
-
-Molti sistemi di IA mescolano documenti sorgente, affermazioni dell’utente,
-output del modello, ipotesi, frammenti recuperati e memoria persistente nello
-stesso contesto o archivio vettoriale. Un testo fluido può così acquisire
-un’autorità non sostenuta dalle sue evidenze.
-
-```text
-Un’affermazione convincente non è automaticamente affidabile.
-Un nodo del grafo non appartiene automaticamente al Canon rigoroso.
-Un punteggio di retrieval non è un’evidenza.
-L’output di un modello non è una fonte indipendente.
-Una contraddizione non sceglie da sola un vincitore.
-Un’etichetta tematica non è un verdetto di verità.
-```
-
-## 🧠 Capacità principali
-
-- affermazioni tipizzate e ciclo di vita epistemico esplicito;
-- metadati di fonte, evidence span e provenienza;
+- affermazioni tipizzate, provenienza e intervalli precisi della fonte;
 - confini di ammissione Guardian e TruthGate;
-- grafo fisico L3 multi-stato separato dal Canon rigoroso;
-- riconciliazione di lettura `TrustSnapshot` immutabile e deny-dominant;
-- query pubbliche HTTP, CLI e MCP rigorosamente in sola lettura;
-- TRACE e Receipt riproducibili con rilevamento delle alterazioni;
-- restrizioni, cancellazione, audit e sessioni di importazione;
-- code di revisione e sessioni riprendibili;
-- report di contraddizione tipizzati e immutabili;
-- decisioni esplicite `COEXIST`, `CONTEXTUALIZE` e `SUPERSEDE`;
-- risoluzione dei conflitti tramite CLI e HTTP autenticato;
-- ruoli di curatore limitati per scope e lease locali di decisione;
-- facet tematiche consultive che non attribuiscono autorità;
-- specifica ESM leggibile dalla macchina;
-- valutazione deterministica, copertura 100% e mutation gate Ring Zero;
-- storico versionato dei benchmark L3.
+- letture immutabili `TrustSnapshot` e `CanonicalView`;
+- query pubbliche HTTP, CLI e MCP in sola lettura;
+- TRACE, ricevute, restrizioni, cancellazione e decisioni esplicite sulle contraddizioni;
+- SQLite come profilo locale ordinario;
+- backup/ripristino verificati ed esportazione logica a risorse limitate;
+- importazione PostgreSQL/pgvector opzionale in uno schema target inattivo con verifica
+  indipendente dello stato esatto.
 
-## 🏛️ Architettura in sintesi
-
-Le tre mappe mostrano lo stesso sistema da prospettive complementari:
-**scopo**, **flusso delle informazioni** e **relazioni tra i moduli**.
-
-### 🧠 Mindmap — scopo e confini delle capacità
+## Confine dello storage
 
 ```text
-🧠 Velantrim ExoCortex — Crystal
-│
-├── 🎯 Scopo
-│   ├── Memoria verificabile per l’IA
-│   ├── Infrastruttura di fiducia local-first
-│   └── Risposte e decisioni fondate su evidenze
-│
-├── 🏛️ Modello di memoria
-│   ├── L0 — cache di lavoro interna al processo
-│   ├── L1 — memoria operativa del ciclo di vita
-│   ├── L2 — confine di attesa e revisione
-│   └── L3 — memoria multi-stato basata su grafo
-│
-├── 🛡️ Confine di fiducia
-│   ├── Guardian — controlli strutturali e di policy
-│   ├── TruthGate — confine della policy di ammissione
-│   ├── TrustSnapshot — riconciliazione immutabile in lettura
-│   └── CanonicalView — proiezione rigorosa e fidata
-│
-├── 📜 Evidenze e auditabilità
-│   ├── Provenienza ed evidence span
-│   ├── TRACE — linea di fondazione
-│   └── Receipt — replay e prova di alterazione
-│
-├── ⚖️ Revisione e contraddizioni
-│   ├── Code e sessioni di revisione riprendibili
-│   ├── ContradictionReport immutabile
-│   ├── COEXIST
-│   ├── CONTEXTUALIZE
-│   └── SUPERSEDE
-│
-├── 🏷️ Navigazione consultiva
-│   └── TopicFacet — metadato multi-etichetta non autoritativo
-│
-├── 🔐 Governance e coordinamento
-│   ├── Ruoli e capacità del curatore limitati per scope
-│   ├── Associazione con actor autenticato
-│   └── Lease decisionali locali al processo
-│
-└── 📊 Verifica
-    ├── Test e valutazione deterministici
-    ├── Copertura delle linee al 100%
-    ├── Mutation gate Ring Zero
-    └── Storico versionato dei benchmark
+SQLite = profilo local-first ordinario attuale
+PostgreSQL + pgvector = target di migrazione opzionale
+active=false
+nessuna normale lettura/scrittura runtime
+nessun cambio automatico, cutover, rollback o dual-write
 ```
 
-### 🏗️ Architettura ASCII — come fluiscono le informazioni
+Il driver PostgreSQL viene installato solo tramite `[postgresql]` e caricato solo da un comando
+esplicito dell’operatore. Un’importazione riuscita è evidenza operativa, non attivazione né
+ammissione nel Canon rigoroso.
+
+## Limiti di significato invarianti
 
 ```text
-┌─────────────────────────────────────────────────────────────────────┐
-│              🔱 Velantrim ExoCortex — Crystal                      │
-│      Infrastruttura local-first di memoria verificabile per IA     │
-└─────────────────────────────────────────────────────────────────────┘
-
-                          📥 Ingest esplicito
-                                  │
-                                  ▼
-             🧾 Tipo di affermazione + fonte + evidence span
-                                  │
-                                  ▼
-                       🧠 Stato Observed L0 / L1
-                                  │
-                                  ▼
-            🛡️ Guardian ──► ⚖️ TruthGate ──► 🚧 restrizioni
-                                  │
-                    ┌─────────────┴─────────────┐
-                    │                           │
-                    ▼                           ▼
-          ⏳ L2 in attesa / revisione   🏛️ Grafo fisico L3
-                    │                           │
-                    │                           ▼
-                    │                 📜 provenienza / TRACE
-                    │                           │
-                    └─────────────┬─────────────┘
-                                  │
-                                  ▼
-                      📐 TrustSnapshot immutabile
-                                  │
-                                  ▼
-                    🛡️ Guardian + CanonicalView STRICT
-                                  │
-                     ┌────────────┴────────────┐
-                     │                         │
-                     ▼                         ▼
-           💬 Risposta fondata        🚫 Rifiuto circoscritto
-                     │
-                     ▼
-              🧾 Receipt riproducibile
-
-⚖️ Contraddizione irrisolta
-        │
-        ▼
-📋 ContradictionReport immutabile
-        │
-        ▼
-🔐 principal con scope + capacità + decision lease
-        │
-        ▼
-🧑‍⚖️ COEXIST / CONTEXTUALIZE / SUPERSEDE esplicito
-        │
-        ▼
-📜 percorso di scrittura canonico auditabile
-
-🏷️ Metadati TopicFacet ──► navigazione / filtro / raggruppamento
-                          └─► mai autorità su verità, ESM, evidenza o Canon
+physical L3          != strict Canon
+retrieval score      != evidence
+migration receipt    != claim evidence
+successful import    != activation
+backend availability != backend selection
 ```
 
-### 🌳 Albero delle relazioni — come si collegano i moduli
+Crystal non dichiara verità universale, zero allucinazioni, runtime PostgreSQL attivo,
+multi-tenancy di produzione, distributed exactly-once, certificazione legale/GDPR/sicurezza,
+integrazione Titan o coscienza artificiale.
 
-```text
-🌳 Relazioni del sistema Crystal
-│
-├── 🧠 Livello di memoria
-│   ├── L0 ──► cache di lavoro veloce e ricostruibile
-│   ├── L1 ──► ciclo di vita, restrizioni e lavoro in sospeso
-│   ├── L2 ──► confine logico di revisione
-│   └── L3 ──► archivio multi-stato basato su grafo
-│
-├── 🛡️ Livello di fiducia
-│   ├── Guardian ──► validazione strutturale e di policy
-│   ├── TruthGate ──► decisione di ammissione
-│   ├── TrustSnapshot ──► riconciliazione L1/L3 deny-dominant
-│   └── CanonicalView ──► proiezione rigorosa di fondazione
-│
-├── 📜 Livello delle evidenze
-│   ├── Metadati della fonte
-│   ├── Evidence span
-│   ├── Provenienza
-│   ├── TRACE
-│   └── Receipt
-│
-├── ⚖️ Livello di revisione
-│   ├── Coda di revisione
-│   ├── Sessione di revisione riprendibile
-│   ├── ContradictionReport
-│   └── Disposizione esplicita
-│       ├── COEXIST
-│       ├── CONTEXTUALIZE
-│       └── SUPERSEDE
-│
-├── 🔐 Livello di autorizzazione
-│   ├── CuratorPrincipal
-│   ├── Ruolo e capacità limitati per scope
-│   ├── Corrispondenza con actor autenticato
-│   └── Decision lease locale al processo
-│
-├── 🏷️ Livello consultivo
-│   └── TopicFacet
-│       ├── multi-etichetta
-│       ├── punteggio di sola rilevanza
-│       └── nessuna autorità su verità o ammissione
-│
-├── 🔎 Livello pubblico di query
-│   ├── HTTP /ask e /receipt
-│   ├── CLI ask e receipt
-│   └── MCP search
-│       └── pipeline condivisa in sola lettura
-│
-└── 📊 Livello di verifica
-    ├── Test Python 3.11 / 3.12
-    ├── Gate di copertura
-    ├── Mutation gate Ring Zero
-    ├── Controlli di sicurezza e container
-    └── Storico dei benchmark
-```
-
-### Distinzioni centrali
-
-```text
-Grafo fisico L3 ≠ Canon rigoroso
-query ≠ ingest
-confidence ≠ evidenza indipendente
-output LLM ≠ fonte fattuale indipendente
-contraddizione ≠ vincitore automatico
-rilevanza tematica ≠ verità o qualità dell’evidenza
-lease locale ≠ coordinamento distribuito garantito
-```
-
-TruthGate è una porta di policy per l’ammissione, non un oracolo della verità
-oggettiva. Il Canon rigoroso è una proiezione di lettura consentita dalla policy
-su evidenza, stato, ESM e restrizioni di trattamento.
-
-## 🛡️ Confine pubblico di sola lettura
-
-`HTTP /ask`, `HTTP /receipt`, `CLI ask`, `CLI receipt` e `MCP search` condividono
-`core.query_pipeline`. Non creano fatti, non cambiano ESM, non scrivono in L3,
-non elaborano l’outbox e non inizializzano un embedding fingerprint.
-
-Vedere [Read-Only Query Boundary](./docs/architecture/read-only-query-boundary.md).
-
-## ⚖️ Risoluzione esplicita delle contraddizioni
-
-```bash
-python -m core.conflict_surfaces FACT_ID \
-  --disposition COEXIST \
-  --actor alice \
-  --reason "le affermazioni descrivono contesti diversi" \
-  --expected-report-id REPORT_ID
-```
-
-In FastAPI, `POST /review/resolve-conflict` deve essere registrato con
-autenticazione dell’applicazione host. `core.curator_auth` verifica actor,
-capacità e scope. `CuratorLeaseRegistry` protegge un solo processo; un deployment
-distribuito richiede un adattatore di lease esterno.
-
-Vedere [le superfici di risoluzione](./docs/CONFLICT_RESOLUTION_SURFACES.md) e
-[topic facets e curator IAM](./docs/TOPIC_FACETS_AND_CURATOR_IAM.md).
-
-## 🏷️ Facet tematiche consultive
-
-`core.topic_facets` fornisce etichette normalizzate per navigazione, filtro e
-raggruppamento. Il punteggio esprime soltanto rilevanza tematica; non modifica
-truth status, evidenze, ESM o appartenenza al Canon rigoroso.
-
-## 🚀 Avvio rapido
+## Avvio rapido
 
 ```bash
 git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
@@ -290,35 +69,14 @@ pip install -e '.[dev]'
 pytest tests/ --cov=. --cov-fail-under=100
 ```
 
-## 📚 Documentazione
+## Prove inglesi correnti
 
-- [Mappa della documentazione](./docs/DOCUMENTATION_MAP.md)
-- [Stato attuale](./docs/STATUS.md)
-- [Architettura](./docs/ARCHITECTURE.md)
-- [Rapporto dei test](./TEST_REPORT.md)
-- [Valutazione](./docs/EVAL.md)
-- [Ambito NLnet](./docs/GRANT_NLNET_SCOPE.md)
+- [README normativo](./README.md)
+- [Rapporto di verifica](./TEST_REPORT.md)
+- [Stato corrente](./docs/STATUS.md)
+- [Matrice di implementazione](./docs/IMPLEMENTATION_STATUS.md)
+- [Politica di sicurezza](./SECURITY.md)
+- [Politica di localizzazione](./docs/LOCALIZATION_POLICY.md)
+- [Percorso italiano](./docs/it/README.md)
 
-## ✅ Baseline verificata
-
-```text
-Python 3.11: 1853 passed / 12 skipped
-Python 3.12: 1853 passed / 12 skipped
-Statements:  7236
-Coverage:    100.00%
-Mutation:    7/7 declared Ring Zero mutants killed
-CI jobs:     9
-```
-
-## 🚧 Limite delle affermazioni
-
-Crystal non dichiara rilevamento universale della verità, assenza totale di
-allucinazioni, certificazione GDPR o di sicurezza, prontezza multi-tenant di
-produzione, coscienza artificiale o funzionalità Titan/Full ExoCortex. I lease
-attuali sono locali al processo; coordinamento distribuito e integrazione con un
-identity provider restano lavori indipendenti.
-
-## 🤝 Contributi e licenza
-
-Vedere [CONTRIBUTING.md](./CONTRIBUTING.md), [SECURITY.md](./SECURITY.md),
-[GOVERNANCE.md](./GOVERNANCE.md) e [AGPL-3.0](./LICENSE).
+La domanda NLnet è stata presentata ed è in revisione; non si dichiara alcuna assegnazione o modifica di budget.
