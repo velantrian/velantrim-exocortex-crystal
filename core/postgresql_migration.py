@@ -3,11 +3,18 @@
 
 from __future__ import annotations
 
+from contextvars import ContextVar
 import hashlib
 import sys
 from typing import Any, Mapping
 
 from core import postgresql_migration_impl as _impl
+
+_CURRENT_PREFLIGHT_CONNECTION: ContextVar[Any | None] = ContextVar(
+    "postgresql_preflight_connection",
+    default=None,
+)
+_ORIGINAL_PREFLIGHT = _impl._preflight
 
 
 def _connection_locator_sha256(connection: Any) -> str:
@@ -48,6 +55,20 @@ def _connection_locator_sha256(connection: Any) -> str:
 
 
 def _target_identity(preflight: Mapping[str, Any]) -> str:
+    locator = preflight.get("target_locator_sha256")
+    if locator is None:
+        connection = _CURRENT_PREFLIGHT_CONNECTION.get()
+        if connection is None:
+            raise _impl.StorageOperationError(
+                "PostgreSQL target locator context is unavailable"
+            )
+        locator = _connection_locator_sha256(connection)
+        if isinstance(preflight, dict):
+            preflight["target_locator_sha256"] = locator
+    if not isinstance(locator, str) or len(locator) != 64:
+        raise _impl.StorageOperationError(
+            "PostgreSQL target locator identity is invalid"
+        )
     payload = {
         key: preflight[key]
         for key in (
@@ -66,97 +87,12 @@ def _target_identity(preflight: Mapping[str, Any]) -> str:
     ).hexdigest()
 
 
-def _preflight(
-    connection: Any,
-    *,
-    driver_version: str,
-    target_schema: str,
-    require_tls: bool,
-    allow_insecure_test_connection: bool,
-    require_absent_schema: bool,
-    require_writable: bool,
-) -> dict[str, Any]:
-    database, role, server_version_num, server_version = _impl._fetch_one(
-        connection,
-        "SELECT current_database(), current_user, "
-        "current_setting('server_version_num')::integer, "
-        "current_setting('server_version')",
-    )
-    server_version_num = int(server_version_num)
-    if server_version_num // 10000 != _impl.SUPPORTED_POSTGRESQL_MAJOR:
-        raise _impl.StorageOperationError(
-            "unsupported PostgreSQL server; this phase is tested only on PostgreSQL 16"
-        )
-    pgvector = _impl._fetch_one(
-        connection,
-        "SELECT extversion FROM pg_extension WHERE extname = 'vector'",
-    )[0]
-    if _impl._version_tuple(pgvector, "pgvector") != _impl.SUPPORTED_PGVECTOR_VERSION:
-        raise _impl.StorageOperationError(
-            "unsupported pgvector extension; this phase requires pgvector 0.8.2"
-        )
-    tls = bool(
-        _impl._fetch_one(
-            connection,
-            "SELECT COALESCE((SELECT ssl FROM pg_stat_ssl "
-            "WHERE pid = pg_backend_pid()), false)",
-        )[0]
-    )
-    if require_tls and not tls:
-        raise _impl.StorageOperationError(
-            "PostgreSQL TLS is required by the selected policy"
-        )
-    if not require_tls and not allow_insecure_test_connection:
-        raise _impl.StorageOperationError(
-            "plaintext PostgreSQL is allowed only with explicit test-only authorization"
-        )
-    in_recovery = bool(
-        _impl._fetch_one(connection, "SELECT pg_is_in_recovery()")[0]
-    )
-    if in_recovery:
-        raise _impl.StorageOperationError("PostgreSQL target is in recovery")
-    if require_writable:
-        create_allowed, read_only = _impl._fetch_one(
-            connection,
-            "SELECT has_database_privilege(current_user, current_database(), 'CREATE'), "
-            "current_setting('transaction_read_only')::boolean",
-        )
-        if not bool(create_allowed) or bool(read_only):
-            raise _impl.StorageOperationError(
-                "PostgreSQL target is not writable by the explicit migration role"
-            )
-    schema_exists = bool(
-        _impl._fetch_one(
-            connection,
-            "SELECT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = %s)",
-            (target_schema,),
-        )[0]
-    )
-    if require_absent_schema and schema_exists:
-        raise _impl.StorageOperationError(
-            f"inactive PostgreSQL target schema already exists: {target_schema}"
-        )
-    if not require_absent_schema and not schema_exists:
-        raise _impl.StorageOperationError(
-            f"inactive PostgreSQL target schema does not exist: {target_schema}"
-        )
-    result = {
-        "driver": "psycopg",
-        "driver_version": driver_version,
-        "database": str(database),
-        "role": str(role),
-        "server_version_num": server_version_num,
-        "server_version": str(server_version),
-        "pgvector_version": str(pgvector),
-        "target_schema": target_schema,
-        "target_schema_exists": schema_exists,
-        "target_locator_sha256": _connection_locator_sha256(connection),
-        "tls": tls,
-        "tls_policy": "required" if require_tls else "explicit-test-plaintext",
-        "active": False,
-    }
-    result["target_identity_sha256"] = _target_identity(result)
-    return result
+def _preflight(connection: Any, **kwargs: Any) -> dict[str, Any]:
+    token = _CURRENT_PREFLIGHT_CONNECTION.set(connection)
+    try:
+        return _ORIGINAL_PREFLIGHT(connection, **kwargs)
+    finally:
+        _CURRENT_PREFLIGHT_CONNECTION.reset(token)
 
 
 _impl._connection_locator_sha256 = _connection_locator_sha256
