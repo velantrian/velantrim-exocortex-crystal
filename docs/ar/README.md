@@ -1,23 +1,16 @@
-# 🇸🇦 مسار الوثائق العربية
+# 🇸🇦 مسار التوثيق العربي
 
 <!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
 
-الإنجليزية هي لغة العمل المعيارية الوحيدة في Crystal. لا تُترجم مجموعة الوثائق كاملة. الملخص
-العربي العام الحالي هو [README.ar.md](../../README.ar.md).
+[README العربي الكامل](../../README.ar.md) هو `CURRENT` بعد PR #340. يحافظ على الهدف والبنية البصرية والخريطة الذهنية ومخطط ASCII والجداول والحدود وQuick Start والتنقل.
 
-الملفات `REVIEWER_GUIDE.md` و`QUICKSTART.md` و`STATUS.md` و`GRANT_OVERVIEW.md` و`GLOSSARY.md`
-في هذا المجلد هي snapshots من نوع best-effort وقد تتأخر. ليست مصدراً لادعاءات القدرة أو الأمان
-أو المنحة أو runtime الحالية.
+المستندات الأخرى تُترجم على مراحل. الملفات الموجودة هنا تبقى `REFRESH_NEEDED` حتى تُراجع مقابل checkpoint إنجليزي مسجل.
 
-## المصادر الإنجليزية المعيارية
+- [README](../../README.ar.md) — `CURRENT`
+- [Quick Start](./QUICKSTART.md) — `REFRESH_NEEDED`
+- [Status](./STATUS.md) — `REFRESH_NEEDED`
+- [Reviewer Guide](./REVIEWER_GUIDE.md) — `REFRESH_NEEDED`
+- [Glossary](./GLOSSARY.md) — `REFRESH_NEEDED`
+- [Grant Overview](./GRANT_OVERVIEW.md) — `REFRESH_NEEDED`
 
-- [README](../../README.md)
-- [TEST_REPORT](../../TEST_REPORT.md)
-- [Current status](../STATUS.md)
-- [Implementation status](../IMPLEMENTATION_STATUS.md)
-- [Security](../../SECURITY.md)
-- [NLnet scope](../GRANT_NLNET_SCOPE.md)
-- [Localization policy](../LOCALIZATION_POLICY.md)
-
-التدفق: تنفيذ ووثائق بالإنجليزية → merge وتحقق → localization PR منفصل → تسجيل source checkpoint
-الإنجليزي.
+المصادر الأساسية: [English README](../../README.md)، [TEST_REPORT](../../TEST_REPORT.md)، [Current status](../STATUS.md)، [Localization policy](../LOCALIZATION_POLICY.md)، [Translation status](../TRANSLATION_STATUS.md).

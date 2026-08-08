@@ -1,92 +1,186 @@
-# 🌐 Crystal Localization Policy
+# Localization and translation policy
 
-## Decision
+## Status
 
-English is Crystal's sole authoritative working language.
+This is the active multilingual documentation contract. It supersedes the permanent
+summary-only model introduced by PR #339.
 
-All engineering decisions, code-facing contracts, architecture, ADRs, implementation status,
-test evidence, security statements, grant claims, roadmaps and AI-agent instructions are
-written and maintained in English first. When localized text differs from English, the English
-source and merged implementation evidence prevail.
+English remains the primary working, source and conflict-resolving language. Crystal is not
+an English-only documentation project. English-first means **source-first**, not English-only.
 
-## Selective localization scope
+## 1. Authority and translation
 
-Crystal does **not** require a full translation of the documentation corpus.
+- Merged implementation, executable tests, exact CI and current English technical evidence
+  resolve disagreements.
+- Translation does not create a separate architecture, security, grant or epistemic authority.
+- A translation must not strengthen capabilities, remove limitations or turn proposed work
+  into implemented work.
+- `docs/TRANSLATION_STATUS.md` is the authoritative freshness ledger. Inline source/status
+  comments are trace metadata and do not replace the ledger.
 
-| Surface | Language rule |
-|---|---|
-| `README.md` | authoritative English public contract |
-| `README.<locale>.md` | concise non-authoritative orientation summary |
-| `docs/<locale>/README.md` | locale index and staleness warning |
-| selected quick starts or glossaries | optional best-effort snapshots |
-| architecture, ADR, status, tests, security, grant, roadmap, `docs/ai/*` | English only and normative |
+## 2. Root README contract
 
-A localized README should contain only the stable public layer needed to understand the
-project: purpose, verified checkpoint, central capabilities, critical non-claims, storage
-boundary, quick start and links to current English evidence.
+`README.md` and every supported `README.<locale>.md` are full public presentations of the
+same project.
 
-## Required workflow
+Each completed README preserves equivalent coverage of:
 
-```text
-implement and document in English
-→ merge and verify the English baseline
-→ open a separate docs-only localization PR
-→ record the exact English source checkpoint
-→ preserve capability and non-claim boundaries
-→ run localization/status/link validation
-```
+- purpose and positioning;
+- meaningful emoji and visual hierarchy;
+- mind map;
+- ASCII information flow;
+- module tree;
+- memory/evidence tables;
+- SQLite and PostgreSQL/pgvector boundaries;
+- classic-RAG comparison;
+- public read-only query boundary;
+- explicit contradiction decisions;
+- quick start and navigation;
+- verified evidence and explicit non-claims;
+- contribution and license information.
 
-Ordinary implementation PRs must not fan out mutable checkpoint numbers across every
-translation. A localization PR is created only when the English public contract has materially
-changed and the localized summaries would otherwise mislead readers.
+Literal sentence order or byte-for-byte identity is not required. Semantic and visual
+coverage are required. A localized root README must not be permanently reduced to a short
+orientation summary.
 
-## Translation invariants
+PR #340 restores this full README layer for all nine supported locales:
+Arabic, German, Spanish, French, Hindi, Italian, Japanese, Russian and Simplified Chinese.
 
-A localization must not:
+## 3. Broader documents are translated progressively
 
-- introduce a capability absent from the English source;
-- strengthen a security, privacy, legal, GDPR, production-readiness or grant claim;
-- translate operational evidence into epistemic evidence;
-- imply that PostgreSQL import means activation or ordinary runtime selection;
-- rename stable API, CLI, enum, status or configuration identifiers;
-- conceal that it may lag behind current English documentation.
-
-The following meanings remain exact in every language:
+The full documentation corpus is not required in one PR. Runtime and architecture work must
+not wait until every translated document is current.
 
 ```text
-physical L3          != strict Canon
-retrieval score      != evidence
-migration receipt    != claim evidence
-successful import    != activation
-backend availability != backend selection
+English implementation and technical documentation
+        ↓
+exact-head review, tests and merge
+        ↓
+translation impact assessment
+        ↓
+one language or document-family PR
+        ↓
+source checkpoint + freshness ledger + link/claim review
+        ↓
+next translation phase
 ```
 
-## Checkpoint and staleness contract
+A translation PR may update one language, several related languages or one stable document
+family. Completed phases merge independently.
 
-Every maintained localized README contains a machine-readable source marker:
+## 4. Document translation phases
 
-```html
-<!-- localization-source: main@<english-source-sha> -->
+### D1 — entry and use
+
+- locale documentation indexes;
+- Quick Start;
+- current Status and implementation boundary.
+
+### D2 — reviewer and safety
+
+- Reviewer Guide;
+- Security and privacy explanations;
+- failure modes.
+
+### D3 — architecture
+
+- stable architecture overview;
+- trust, Canon, evidence and migration boundaries;
+- selected mature ADRs and profiles.
+
+### D4 — project and grant context
+
+- roadmap;
+- grant overview and funded-delta explanation;
+- glossary;
+- governance and contribution guidance.
+
+### D5 — extended reference corpus
+
+Translate remaining stable, high-value reference documents according to reader value,
+maturity and maintenance cost. Volatile AI-agent logs and exact low-level CI records may
+remain English when a translated explanation links to the authoritative evidence.
+
+## 5. Freshness states
+
+Every tracked translation uses one of:
+
+- `CURRENT` — reviewed against the recorded English source checkpoint;
+- `IN_PROGRESS` — active work exists but has not merged;
+- `REFRESH_NEEDED` — a translation exists but facts or structure lag;
+- `ORIENTATION_ONLY` — temporary safe navigation pending a full translation;
+- `NOT_STARTED` — no maintained translation yet;
+- `RETIRED` — intentionally no longer maintained, with rationale.
+
+All nine root README translations become `CURRENT` with the merge of PR #340. Existing
+translated document packs remain `REFRESH_NEEDED` until separately checked.
+
+## 6. Change discipline
+
+Implementation PRs:
+
+- update English technical and public sources first;
+- record whether translated public meaning changed;
+- avoid mixing broad translation work into runtime changes.
+
+Translation PRs:
+
+- identify the exact English source checkpoint;
+- preserve diagrams, tables and reader experience;
+- reconcile tests, coverage, runtime checkpoint and grant state;
+- check local links and code blocks;
+- retain stable API identifiers;
+- use natural target-language prose rather than mechanical word-for-word translation;
+- list documents deliberately deferred to later phases.
+
+## 7. Evidence and claim safety
+
+A translated document may carry current verified values, link to current English evidence or
+be visibly marked stale. It may never claim a newer or stronger checkpoint than the English
+source.
+
+The following distinctions must survive translation:
+
+```text
+physical L3 graph != strict Canon
+retrieval score   != evidence
+model output      != independent factual source
+migration receipt != claim evidence
+successful import != backend activation
+process-local lease != distributed coordination
 ```
 
-Every locale index contains:
+## 8. Supported root locales
 
-```html
-<!-- localization-index-source: main@<english-source-sha> -->
-```
+- Arabic — `README.ar.md`;
+- German — `README.de.md`;
+- Spanish — `README.es.md`;
+- French — `README.fr.md`;
+- Hindi — `README.hi.md`;
+- Italian — `README.it.md`;
+- Japanese — `README.ja.md`;
+- Russian — `README.ru.md`;
+- Simplified Chinese — `README.zh-CN.md`.
 
-The marker identifies the English contract used for reconciliation; it is not a claim that the
-localized file is a complete translation of that commit. Current implementation truth remains
-`main`, executable tests, CI, `TEST_REPORT.md` and the implementation manifest.
+Additional languages require a maintenance plan and an entry in the status ledger.
 
-## Current reconciliation
+## 9. CI expectations
 
-The nine localized README summaries and locale indexes were reconciled from:
+CI verifies objective invariants without pretending to replace language review:
 
-`main@e521440e9bb188d88475f17dd5bcdd161b314605`
+- all supported root files and locale indexes exist;
+- every root README has a full-presentation structural floor;
+- current checkpoint, capability and non-claim markers are present;
+- local links resolve;
+- the manifest and translation ledger agree;
+- no maximum-size rule rejects a full translation;
+- broader translated documents remain explicitly marked until reviewed.
 
-That source records runtime PR #337 at checkpoint
-`bbd816c09dd39a02e6de6c1014438490572f40f6` with 2078 passed / 13 skipped, 100.00% line
-coverage, 9/9 permanent CI jobs and a successful real PostgreSQL/pgvector integration job.
-The PostgreSQL target remains `active=false` and outside ordinary read/write runtime
-composition.
+Human or language-model review remains necessary for natural language, semantic fidelity,
+terminology and RTL/diagram quality.
+
+## 10. Notion synchronization
+
+Notion records the durable language decision, phase status, final merge evidence and next
+translation families. It does not duplicate the translated files. GitHub remains the public
+source for all translations and their maintenance ledger.

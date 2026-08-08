@@ -1,24 +1,16 @@
-# 🇩🇪 Deutscher Dokumentationsweg
+# 🇩🇪 Deutscher Dokumentationspfad
 
 <!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
 
-Englisch ist die einzige maßgebliche Arbeitssprache von Crystal. Der vollständige
-Dokumentationsbestand wird nicht übersetzt. Die aktuelle deutsche Übersicht ist
-[README.de.md](../../README.de.md).
+Die [vollständige deutsche README](../../README.de.md) ist nach PR #340 `CURRENT`. Sie bewahrt Zweck, visuelle Struktur, Mindmap, ASCII-Fluss, Tabellen, Grenzen, Quick Start und Navigation.
 
-`REVIEWER_GUIDE.md`, `QUICKSTART.md`, `STATUS.md`, `GRANT_OVERVIEW.md` und `GLOSSARY.md` in
-diesem Ordner sind best-effort Snapshots und können veraltet sein. Sie sind keine Quelle für
-aktuelle Capability-, Security-, Grant- oder Runtime-Aussagen.
+Weitere Dokumente werden schrittweise übersetzt. Vorhandene Dateien bleiben `REFRESH_NEEDED`, bis sie gegen einen aufgezeichneten englischen Checkpoint geprüft wurden.
 
-## Maßgebliche englische Quellen
+- [README](../../README.de.md) — `CURRENT`
+- [Quick Start](./QUICKSTART.md) — `REFRESH_NEEDED`
+- [Status](./STATUS.md) — `REFRESH_NEEDED`
+- [Reviewer Guide](./REVIEWER_GUIDE.md) — `REFRESH_NEEDED`
+- [Glossar](./GLOSSARY.md) — `REFRESH_NEEDED`
+- [Grant-Übersicht](./GRANT_OVERVIEW.md) — `REFRESH_NEEDED`
 
-- [README](../../README.md)
-- [TEST_REPORT](../../TEST_REPORT.md)
-- [Current status](../STATUS.md)
-- [Implementation status](../IMPLEMENTATION_STATUS.md)
-- [Security](../../SECURITY.md)
-- [NLnet scope](../GRANT_NLNET_SCOPE.md)
-- [Localization policy](../LOCALIZATION_POLICY.md)
-
-Ablauf: englische Implementierung und Dokumentation → Merge und Verifikation → separater
-Localization-PR → Aufzeichnung des englischen Source-Checkpoints.
+Primäre Quellen: [English README](../../README.md), [TEST_REPORT](../../TEST_REPORT.md), [Current status](../STATUS.md), [Localization policy](../LOCALIZATION_POLICY.md), [Translation status](../TRANSLATION_STATUS.md).

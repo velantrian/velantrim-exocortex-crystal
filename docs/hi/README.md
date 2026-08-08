@@ -2,22 +2,15 @@
 
 <!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
 
-अंग्रेज़ी Crystal की एकमात्र मानक कार्य भाषा है। पूरे दस्तावेज़ corpus का अनुवाद आवश्यक नहीं।
-वर्तमान हिन्दी सार्वजनिक सारांश [README.hi.md](../../README.hi.md) है।
+[पूर्ण हिन्दी README](../../README.hi.md) PR #340 के बाद `CURRENT` है। इसमें उद्देश्य, दृश्य संरचना, mind map, ASCII flow, तालिकाएँ, सीमाएँ, Quick Start और navigation सुरक्षित हैं।
 
-इस फ़ोल्डर के `REVIEWER_GUIDE.md`, `QUICKSTART.md`, `STATUS.md`, `GRANT_OVERVIEW.md` और
-`GLOSSARY.md` best-effort snapshots हैं और पुराने हो सकते हैं। ये वर्तमान capability, security,
-grant या runtime दावों के स्रोत नहीं हैं।
+अन्य दस्तावेज़ चरणों में अनुवादित होंगे। मौजूदा फ़ाइलें दर्ज अंग्रेज़ी checkpoint के विरुद्ध समीक्षा तक `REFRESH_NEEDED` रहेंगी।
 
-## मानक अंग्रेज़ी स्रोत
+- [README](../../README.hi.md) — `CURRENT`
+- [Quick Start](./QUICKSTART.md) — `REFRESH_NEEDED`
+- [Status](./STATUS.md) — `REFRESH_NEEDED`
+- [Reviewer Guide](./REVIEWER_GUIDE.md) — `REFRESH_NEEDED`
+- [Glossary](./GLOSSARY.md) — `REFRESH_NEEDED`
+- [Grant Overview](./GRANT_OVERVIEW.md) — `REFRESH_NEEDED`
 
-- [README](../../README.md)
-- [TEST_REPORT](../../TEST_REPORT.md)
-- [Current status](../STATUS.md)
-- [Implementation status](../IMPLEMENTATION_STATUS.md)
-- [Security](../../SECURITY.md)
-- [NLnet scope](../GRANT_NLNET_SCOPE.md)
-- [Localization policy](../LOCALIZATION_POLICY.md)
-
-प्रवाह: अंग्रेज़ी implementation और documentation → merge और verification → अलग localization PR
-→ अंग्रेज़ी source checkpoint दर्ज करना।
+मुख्य स्रोत: [English README](../../README.md), [TEST_REPORT](../../TEST_REPORT.md), [Current status](../STATUS.md), [Localization policy](../LOCALIZATION_POLICY.md), [Translation status](../TRANSLATION_STATUS.md)।

@@ -27,6 +27,9 @@ Read in this order:
    unavailable or a pending synchronization item exists.
 8. [`docs/ai/AUDIT_PLAYBOOK.md`](docs/ai/AUDIT_PLAYBOOK.md) when auditing or reviewing.
 9. Relevant architecture, ADR, code, tests, CI and runtime composition.
+10. [`docs/LOCALIZATION_POLICY.md`](docs/LOCALIZATION_POLICY.md) and
+    [`docs/TRANSLATION_STATUS.md`](docs/TRANSLATION_STATUS.md) when public documentation
+    meaning, README content or translations are affected.
 
 Use documentation as an orientation map. Verify material claims against current code,
 consumers, tests, workflows and configuration.
@@ -259,23 +262,30 @@ private datasets in this public repository.
 
 ### Active documentation language policy
 
-English is the sole authoritative working language for Crystal engineering and documentation.
+English is the primary working and source language. It is written, reviewed and verified
+first so implementation work has one stable conflict-resolving surface. English-first means
+source-first, not English-only.
 
-- Write and review implementation, architecture, ADR, status, test, security, grant,
-  roadmap and `docs/ai/*` material in English first.
-- Maintain `README.md` as the authoritative public capability contract.
-- Keep localized top-level READMEs as concise non-authoritative orientation summaries,
-  not complete mirrors of the documentation corpus.
-- Locale indexes may route readers to selected best-effort onboarding snapshots, but must
-  warn that current capability, security, grant and runtime truth remains in English.
-- Do not update all translations inside ordinary implementation PRs. Merge and verify the
-  English baseline first, then use a dedicated docs-only localization PR when public
-  summaries materially need reconciliation.
-- Record the exact English source checkpoint in each localized README and locale index.
-- Preserve stable API identifiers and exact non-claims; never introduce stronger claims in
-  translation.
-- Follow [`docs/LOCALIZATION_POLICY.md`](docs/LOCALIZATION_POLICY.md). CI must validate the
-  selective localization contract without requiring full-corpus translation.
+- Root localized READMEs target full visual and semantic parity with `README.md`; they must
+  not be permanently reduced to concise summaries.
+- Preserve meaningful diagrams, mind maps, tables, quick-start instructions, limitations
+  and navigation in completed README translations.
+- Translate other stable documents progressively by phase; do not wait for the whole corpus
+  before merging a completed language or document family.
+- Implementation PRs update English first and record whether public translated meaning
+  changed.
+- Perform substantial translation work in dedicated documentation-only PRs after the
+  English baseline is merged and stable.
+- Do not require every language in one localization PR. A PR may complete one language or
+  one document family.
+- Track each locale/document in `docs/TRANSLATION_STATUS.md` as `CURRENT`, `IN_PROGRESS`,
+  `REFRESH_NEEDED`, `ORIENTATION_ONLY`, `NOT_STARTED` or `RETIRED`.
+- `ORIENTATION_ONLY` is a temporary migration state, not the final README format.
+- A translation may never strengthen English capability, security, grant or authority
+  claims.
+- Mutable facts must be updated, linked to exact English evidence or visibly marked as
+  historical/stale.
+- Follow `docs/LOCALIZATION_POLICY.md` for the complete contract.
 
 ## 13. AI context-pack maintenance
 
@@ -308,7 +318,8 @@ limitations and next actions.
 - `docs/REVIEWER_GUIDE.md` — canonical external reviewer route.
 - `docs/DOCUMENTATION_MAP.md` — documentation hierarchy and reader routes.
 - `docs/DOCUMENTATION_SYNC_PROTOCOL.md` — GitHub/Notion completion contract.
-- `docs/LOCALIZATION_POLICY.md` — English-first selective localization contract.
+- `docs/LOCALIZATION_POLICY.md` — full-parity phased localization contract.
+- `docs/TRANSLATION_STATUS.md` — language/document freshness and rollout ledger.
 - `docs/ARCHITECTURE.md` — architecture and memory/backend/privacy boundaries.
 - `docs/EVAL.md` — evaluation metrics and gates.
 - `TEST_REPORT.md` — exact verification evidence.

@@ -2,22 +2,15 @@
 
 <!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
 
-El inglés es el único idioma de trabajo normativo de Crystal. No se traduce todo el corpus. El
-resumen público actual en español es [README.es.md](../../README.es.md).
+El [README completo en español](../../README.es.md) es `CURRENT` después de PR #340. Conserva propósito, estructura visual, mapa mental, flujo ASCII, tablas, límites, inicio rápido y navegación.
 
-Los archivos `REVIEWER_GUIDE.md`, `QUICKSTART.md`, `STATUS.md`, `GRANT_OVERVIEW.md` y
-`GLOSSARY.md` de esta carpeta son snapshots best-effort y pueden quedar desactualizados. No son
-fuente para afirmaciones actuales de capacidad, seguridad, subvención o runtime.
+Los demás documentos se traducen por etapas. Los archivos existentes siguen `REFRESH_NEEDED` hasta revisarse contra un checkpoint inglés registrado.
 
-## Fuentes inglesas normativas
+- [README](../../README.es.md) — `CURRENT`
+- [Inicio rápido](./QUICKSTART.md) — `REFRESH_NEEDED`
+- [Estado](./STATUS.md) — `REFRESH_NEEDED`
+- [Guía del revisor](./REVIEWER_GUIDE.md) — `REFRESH_NEEDED`
+- [Glosario](./GLOSSARY.md) — `REFRESH_NEEDED`
+- [Resumen de subvención](./GRANT_OVERVIEW.md) — `REFRESH_NEEDED`
 
-- [README](../../README.md)
-- [TEST_REPORT](../../TEST_REPORT.md)
-- [Current status](../STATUS.md)
-- [Implementation status](../IMPLEMENTATION_STATUS.md)
-- [Security](../../SECURITY.md)
-- [NLnet scope](../GRANT_NLNET_SCOPE.md)
-- [Localization policy](../LOCALIZATION_POLICY.md)
-
-Flujo: implementación y documentación en inglés → merge y verificación → PR de localización
-separado → registro del source checkpoint inglés.
+Fuentes primarias: [English README](../../README.md), [TEST_REPORT](../../TEST_REPORT.md), [Current status](../STATUS.md), [Localization policy](../LOCALIZATION_POLICY.md), [Translation status](../TRANSLATION_STATUS.md).

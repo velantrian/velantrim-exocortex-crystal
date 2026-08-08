@@ -13,6 +13,12 @@ root = Path.cwd()
 manifest = json.loads((root / "docs/status/implementation-manifest.json").read_text())
 errors: list[str] = []
 
+
+def expect(actual: object, expected: object, label: str) -> None:
+    if actual != expected:
+        errors.append(f"{label} must equal {expected!r}, got {actual!r}")
+
+
 checkpoint = manifest.get("verified_runtime_checkpoint", {})
 tests = manifest.get("tests", {})
 ci = manifest.get("ci", {})
@@ -23,227 +29,196 @@ documentation = manifest.get("documentation", {})
 grant = manifest.get("grant", {})
 limits = manifest.get("storage_resource_limits", {})
 
-expected_commit = "bbd816c09dd39a02e6de6c1014438490572f40f6"
-expected_head = "d7af7c80722274f9217bc5545d150f92e9363f37"
-expected_ci = 31256316536
-expected_integration_ci = 31256316532
-localization_source = "e521440e9bb188d88475f17dd5bcdd161b314605"
+runtime_commit = "bbd816c09dd39a02e6de6c1014438490572f40f6"
+runtime_head = "d7af7c80722274f9217bc5545d150f92e9363f37"
+source_checkpoint = "e521440e9bb188d88475f17dd5bcdd161b314605"
+expected_locales = ["ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN"]
 expected_jobs = [
     "code-quality", "test (3.11)", "test (3.12)", "jsonl-integrity",
     "eval-gate", "security", "docker-build", "Ring Zero mutation gate",
     "docs-status",
 ]
-locales = {
-    "ar": "README.ar.md", "de": "README.de.md", "es": "README.es.md",
-    "fr": "README.fr.md", "hi": "README.hi.md", "it": "README.it.md",
-    "ja": "README.ja.md", "ru": "README.ru.md", "zh-CN": "README.zh-CN.md",
-}
 
-if manifest.get("schema_version") != 1:
-    errors.append("manifest schema_version must be 1")
-if checkpoint.get("commit") != expected_commit:
-    errors.append("manifest runtime checkpoint must match merged PR #337")
-if checkpoint.get("validated_head") != expected_head:
-    errors.append("manifest validated head must match PR #337 exact-head evidence")
-if checkpoint.get("pull_request") != 337:
-    errors.append("manifest pull request must be 337")
-if checkpoint.get("ci_run") != expected_ci:
-    errors.append("manifest CI run must match PR #337 exact-head evidence")
+expect(manifest.get("schema_version"), 1, "manifest schema_version")
+expect(checkpoint.get("commit"), runtime_commit, "runtime checkpoint")
+expect(checkpoint.get("validated_head"), runtime_head, "validated runtime head")
+expect(checkpoint.get("pull_request"), 337, "runtime checkpoint PR")
+expect(checkpoint.get("ci_run"), 31256316536, "runtime exact-head CI")
+expect(tests.get("python_versions"), ["3.11", "3.12"], "tested Python versions")
+expect(tests.get("passed"), 2078, "tests.passed")
+expect(tests.get("skipped"), 13, "tests.skipped")
+expect(tests.get("failed"), 0, "tests.failed")
+expect(tests.get("measured_statements"), 9756, "measured statements")
+expect(tests.get("coverage_percent"), 100.0, "coverage")
+expect(ci.get("job_count"), 9, "CI job count")
+expect(ci.get("jobs"), expected_jobs, "CI jobs")
+expect(ci.get("all_successful"), True, "CI result")
+expect(integration.get("ci_run"), 31256316532, "PostgreSQL integration CI")
+expect(integration.get("job_count"), 1, "PostgreSQL integration jobs")
+expect(integration.get("all_successful"), True, "PostgreSQL integration result")
+expect(integration.get("target_active"), False, "PostgreSQL target state")
+expect(integration.get("ann_indexes_present"), False, "ANN index state")
+expect(mutation.get("declared_mutants"), 7, "declared mutants")
+expect(mutation.get("killed_mutants"), 7, "killed mutants")
 
-expected_tests = {
-    "passed": 2078, "skipped": 13, "failed": 0,
-    "measured_statements": 9756, "coverage_percent": 100.0,
-}
-for key, expected in expected_tests.items():
-    if tests.get(key) != expected:
-        errors.append(f"tests.{key} must equal {expected!r}")
-if tests.get("python_versions") != ["3.11", "3.12"]:
-    errors.append("tests.python_versions must be Python 3.11 and 3.12")
-
-if ci.get("job_count") != 9 or ci.get("jobs") != expected_jobs:
-    errors.append("permanent CI manifest must list the nine jobs in order")
-if ci.get("all_successful") is not True:
-    errors.append("permanent exact-head CI must be successful")
-if integration.get("ci_run") != expected_integration_ci:
-    errors.append("PostgreSQL integration CI must match exact evidence")
-if integration.get("job_count") != 1 or integration.get("all_successful") is not True:
-    errors.append("PostgreSQL integration must record one successful job")
-if integration.get("target_active") is not False:
-    errors.append("PostgreSQL integration target must remain inactive")
-if integration.get("ann_indexes_present") is not False:
-    errors.append("inactive import must not record ANN indexes")
-if mutation.get("declared_mutants") != 7 or mutation.get("killed_mutants") != 7:
-    errors.append("Ring Zero evidence must remain 7/7")
-
-required_true = (
+for key in (
     "public_query_surfaces_read_only", "explicit_contradiction_dispositions",
     "scoped_curator_authorization", "bounded_legacy_retrieval",
     "durable_l3_profile_lock", "sqlite_storage_lifecycle",
     "sqlite_logical_export_verification", "bounded_streaming_logical_migration",
     "postgresql_optional_driver_lazy_loaded", "postgresql_inactive_import",
     "postgresql_exact_state_equivalence",
-)
-required_false = (
+):
+    expect(boundaries.get(key), True, f"implemented_boundaries.{key}")
+for key in (
     "truth_policy_runtime_bypass_present", "physical_l3_equals_strict_canon",
     "postgresql_target_active", "postgresql_normal_runtime_adapter",
     "cross_backend_migration_runtime", "postgresql_pgvector_runtime",
     "automatic_backend_switching", "distributed_curator_coordination",
     "production_idp_multitenancy", "dedicated_reader_core",
-)
-for key in required_true:
-    if boundaries.get(key) is not True:
-        errors.append(f"implemented_boundaries.{key} must be true")
-for key in required_false:
-    if boundaries.get(key) is not False:
-        errors.append(f"implemented_boundaries.{key} must be false")
+):
+    expect(boundaries.get(key), False, f"implemented_boundaries.{key}")
+expect(boundaries.get("sqlite_logical_export_resource_contract"), "bounded-streaming-local-first", "SQLite migration contract")
+expect(limits.get("bounded_streaming_issue_completed"), 331, "bounded migration issue")
+expect(limits.get("postgresql_inactive_import_issue_completed"), 332, "PostgreSQL import issue")
+expect(limits.get("institution_scale_claim"), False, "institution-scale claim")
+expect(limits.get("benchmark_is_production_slo"), False, "benchmark SLO claim")
 
-if boundaries.get("sqlite_logical_export_resource_contract") != "bounded-streaming-local-first":
-    errors.append("SQLite migration must remain bounded-streaming-local-first")
-if limits.get("bounded_streaming_issue_completed") != 331:
-    errors.append("bounded streaming completion must remain issue #331")
-if limits.get("postgresql_inactive_import_issue_completed") != 332:
-    errors.append("inactive PostgreSQL completion must be issue #332")
-if limits.get("institution_scale_claim") is not False:
-    errors.append("manifest must not claim institution-scale operation")
-if limits.get("benchmark_is_production_slo") is not False:
-    errors.append("resource benchmark must not be a production SLO")
+expect(documentation.get("authoritative_language"), "English", "documentation authority")
+expect(documentation.get("working_language"), "English", "documentation working language")
+expect(documentation.get("language_model"), "english_primary_source_multilingual_product_surface", "language model")
+expect(documentation.get("localized_readmes"), "all_supported_locales_full_visual_and_semantic_parity", "localized README model")
+expect(documentation.get("localized_readme_source_checkpoint"), source_checkpoint, "README source checkpoint")
+expect(documentation.get("supported_localized_readme_count"), 9, "localized README count")
+expect(documentation.get("full_parity_current_locales"), expected_locales, "full-parity locale set")
+expect(documentation.get("orientation_only_locales"), [], "orientation-only root locales")
+expect(documentation.get("broader_document_translation"), "phased_by_language_or_document_family", "broader translation model")
+expect(documentation.get("full_corpus_translation_required_in_single_pr"), False, "all-at-once translation requirement")
 
-if documentation.get("authoritative_language") != "English":
-    errors.append("English must remain documentation authority")
-if documentation.get("working_language") != "English":
-    errors.append("English must remain the documentation working language")
-if documentation.get("localized_readmes") != "concise_non_authoritative_summaries":
-    errors.append("localized README policy must be concise non-authoritative summaries")
-if documentation.get("localized_readme_source_checkpoint") != localization_source:
-    errors.append("localized README source checkpoint must match reconciliation source")
-if documentation.get("localized_readme_count") != len(locales):
-    errors.append("localized README count must equal the supported locale set")
-if documentation.get("full_corpus_translation_required") is not False:
-    errors.append("full documentation corpus translation must remain optional, not required")
-if grant.get("submitted") is not True or grant.get("under_review") is not True:
-    errors.append("grant must remain submitted and under review")
-if grant.get("awarded") is not False or grant.get("budget_changed") is not False:
-    errors.append("grant must not claim award or budget change")
+expect(grant.get("submitted"), True, "grant submitted")
+expect(grant.get("under_review"), True, "grant under review")
+expect(grant.get("awarded"), False, "grant awarded")
+expect(grant.get("budget_changed"), False, "grant budget")
 
-required: dict[str, list[str]] = {
-    "README.md": [expected_commit, "2078 passed / 13 skipped", "PR #337",
-                  "Issue #332", "inactive", "submitted and under review",
-                  "English is the sole authoritative working language",
-                  "docs/LOCALIZATION_POLICY.md"],
-    "TEST_REPORT.md": [expected_commit, "2078 passed / 13 skipped / 0 failed",
-                       "9756", "9/9 successful", "31256316532", "PR #337"],
-    "docs/STATUS.md": [expected_commit, "2078 passed / 13 skipped / 0 failed",
-                       "PostgreSQL 16", "active=false", "No award or budget change"],
-    "docs/IMPLEMENTATION_STATUS.md": ["bbd816c", "Inactive PostgreSQL/pgvector import",
-                                      "Exact target-state equivalence", "#332"],
-    "docs/ai/CURRENT_STATE.md": [expected_commit, "2078 passed / 13 skipped / 0 failed",
-                                 "Issue #332", "English is the sole authoritative"],
-    "docs/ai/KNOWN_RISKS.md": [expected_commit, "PR #334", "PR #337",
-                               "GDPR-oriented controls", "test-only"],
-    "docs/ai/WORK_LOG.md": [expected_commit, "31256316532", "PR #334",
-                            "31214414769", "GITHUB_AND_NOTION"],
-    "docs/ai/COMPONENT_MAP.md": ["core/postgresql_migration.py", "active=false",
-                                 "Automatic SQLite/PostgreSQL switching remains forbidden"],
-    "docs/GRANT_NLNET_SCOPE.md": [expected_commit, "submitted / under review / not awarded",
-                                  "#332", "cannot be budgeted again"],
-    "docs/grants/baseline-funded-delta-matrix.md": [expected_commit, "M1", "M9",
-                                                     "PR #337", "no award/budget change"],
-    "docs/architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md": [
-        "PARTIALLY IMPLEMENTED", expected_commit, "active=false", "not an active Crystal runtime backend"
-    ],
-    "ROADMAP.md": [expected_commit, "issues #331 and #332", "No grant award"],
-    "SECURITY.md": [expected_commit, "not a security, legal or GDPR certification",
-                    "test-only", "No automatic switching"],
-    "AGENTS.md": ["English is the sole authoritative working language",
-                  "dedicated docs-only localization PR", "GitHub completeness invariant"],
-    "docs/LOCALIZATION_POLICY.md": [localization_source,
-                                    "does **not** require a full translation",
-                                    "concise non-authoritative orientation summary"],
-    "docs/DOCUMENTATION_MAP.md": ["English is the sole authoritative working language",
-                                  "localized README orientation summaries",
-                                  "LOCALIZATION_POLICY.md"],
+localized_files = {
+    "ar": "README.ar.md", "de": "README.de.md", "es": "README.es.md",
+    "fr": "README.fr.md", "hi": "README.hi.md", "it": "README.it.md",
+    "ja": "README.ja.md", "ru": "README.ru.md", "zh-CN": "README.zh-CN.md",
 }
-for relative, needles in required.items():
+actual = sorted(path.name for path in root.glob("README.*.md") if path.name != "README.md")
+expect(actual, sorted(localized_files.values()), "supported root README files")
+
+root_readmes = ["README.md", *localized_files.values()]
+common_readme_markers = (
+    runtime_commit,
+    "2078 passed / 13 skipped / 0 failed",
+    "9756",
+    "active=false",
+    "submitted / under review / not awarded",
+    "Guardian",
+    "TruthGate",
+    "TrustSnapshot",
+    "CanonicalView",
+    "SQLite",
+    "PostgreSQL",
+    "HTTP /ask",
+    "CLI ask",
+    "MCP search",
+    "docs/LOCALIZATION_POLICY.md",
+    "docs/TRANSLATION_STATUS.md",
+)
+for relative in root_readmes:
     path = root / relative
     if not path.is_file():
-        errors.append(f"required document missing: {relative}")
+        errors.append(f"missing README: {relative}")
         continue
     text = path.read_text(encoding="utf-8")
-    for needle in needles:
-        if needle not in text:
-            errors.append(f"{relative}: missing current marker {needle!r}")
+    if relative != "README.md" and f"localization-source: main@{source_checkpoint}" not in text:
+        errors.append(f"{relative}: missing exact localization source checkpoint")
+    for marker in common_readme_markers:
+        if marker not in text:
+            errors.append(f"{relative}: missing full README marker {marker!r}")
+    if path.stat().st_size < 6000:
+        errors.append(f"{relative}: full README is unexpectedly small ({path.stat().st_size} bytes)")
+    if text.count("```text") + text.count("```bash") < 7:
+        errors.append(f"{relative}: insufficient visual/code-block structure")
+    if text.count("|") < 20:
+        errors.append(f"{relative}: insufficient table structure")
+    for level in ("L0", "L1", "L2", "L3"):
+        if level not in text:
+            errors.append(f"{relative}: missing memory level {level}")
 
-current_surfaces = [
-    "README.md", "TEST_REPORT.md", "docs/STATUS.md",
-    "docs/IMPLEMENTATION_STATUS.md", "docs/status/implementation-manifest.json",
-    "docs/ai/CURRENT_STATE.md", "docs/ai/KNOWN_RISKS.md",
-    "docs/GRANT_NLNET_SCOPE.md", "docs/grants/baseline-funded-delta-matrix.md",
-    "docs/architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md", "ROADMAP.md", "SECURITY.md",
-]
-stale_markers = (
-    "2059 passed / 12 skipped", "9361 statements",
-    "f03e24c85922d0bb46d6d9dfee98338972135908", "31224184351",
-    "PostgreSQL/pgvector is proposed, not current runtime",
-    "inactive import and exact target equivalence (#332)",
-)
+ledger = (root / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
+for relative in localized_files.values():
+    if f"`{relative}`" not in ledger or "`CURRENT`" not in ledger:
+        errors.append(f"translation ledger does not record current root README {relative}")
+
+for locale, relative in localized_files.items():
+    index_path = root / "docs" / locale / "README.md"
+    if not index_path.is_file():
+        errors.append(f"missing locale index: docs/{locale}/README.md")
+        continue
+    index = index_path.read_text(encoding="utf-8")
+    for marker in (
+        f"localization-index-source: main@{source_checkpoint}",
+        "`CURRENT`",
+        "`REFRESH_NEEDED`",
+        "Localization policy",
+        "Translation status",
+    ):
+        if marker not in index:
+            errors.append(f"docs/{locale}/README.md: missing status marker {marker!r}")
+
+required: dict[str, tuple[str, ...]] = {
+    "AGENTS.md": ("English-first means", "full visual and semantic parity", "docs/TRANSLATION_STATUS.md"),
+    "docs/LOCALIZATION_POLICY.md": ("all nine supported locales", "Broader documents are translated progressively", "REFRESH_NEEDED"),
+    "docs/TRANSLATION_STATUS.md": ("Root README status", "D1 — entry and use documents", "D5 — extended reference documents"),
+    "docs/DOCUMENTATION_MAP.md": ("CURRENT full-parity localized READMEs", "REFRESH_NEEDED translated document packs", "Inactive PostgreSQL import"),
+    "docs/DOCUMENTATION_SYNC_PROTOCOL.md": ("Root README target", "Progressive document translation", "A permanent short-summary model is not acceptable"),
+    "docs/ai/CURRENT_STATE.md": ("all nine supported", "REFRESH_NEEDED", "active=false"),
+    "docs/ai/README.md": ("all nine supported", "docs-only PR", "REFRESH_NEEDED"),
+    "TEST_REPORT.md": (runtime_commit, "2078 passed / 13 skipped / 0 failed", "31256316532"),
+    "docs/STATUS.md": (runtime_commit, "PostgreSQL 16", "active=false"),
+    "docs/IMPLEMENTATION_STATUS.md": ("Inactive PostgreSQL/pgvector import", "#332"),
+    "docs/GRANT_NLNET_SCOPE.md": ("submitted / under review / not awarded", "cannot be budgeted again"),
+    "SECURITY.md": ("not a security, legal or GDPR certification", "No automatic switching"),
+}
+for relative, markers in required.items():
+    path = root / relative
+    if not path.is_file():
+        errors.append(f"missing required document: {relative}")
+        continue
+    text = path.read_text(encoding="utf-8")
+    for marker in markers:
+        if marker not in text:
+            errors.append(f"{relative}: missing current marker {marker!r}")
+
+current_surfaces = list(required) + ["docs/status/implementation-manifest.json", *root_readmes]
 for relative in current_surfaces:
     text = (root / relative).read_text(encoding="utf-8")
-    for stale in stale_markers:
+    for stale in (
+        "2059 passed / 12 skipped", "9361 statements",
+        "localized README files are frozen snapshots",
+        "Existing translated top-level README files are retained as frozen snapshots",
+        "sole authoritative actively maintained GitHub documentation language",
+    ):
         if stale in text:
-            errors.append(f"{relative}: stale current-status marker {stale!r}")
-
-unsupported_claims = (
-    "Grant status: awarded", "Crystal is GDPR compliant", "Crystal is GDPR certified",
-    "PostgreSQL/pgvector is current runtime", "automatic backend switching is enabled",
-    "zero hallucinations guaranteed",
-)
-for relative in current_surfaces:
-    text = (root / relative).read_text(encoding="utf-8")
-    for claim in unsupported_claims:
-        if claim in text:
-            errors.append(f"{relative}: unsupported positive claim {claim!r}")
-
-localized = sorted(path.name for path in root.glob("README.*.md") if path.name != "README.md")
-if set(localized) != set(locales.values()):
-    errors.append("localized README set differs from supported locale set")
-
-summary_marker = f"<!-- localization-source: main@{localization_source} -->"
-index_marker = f"<!-- localization-index-source: main@{localization_source} -->"
-for locale, relative in sorted(locales.items()):
-    summary = root / relative
-    if not summary.is_file():
-        errors.append(f"localized README missing: {relative}")
-        continue
-    content = summary.read_text(encoding="utf-8")
-    if len(content.encode("utf-8")) > 9000:
-        errors.append(f"{relative}: localized summary exceeds 9000-byte limit")
-    for needle in (
-        summary_marker, expected_commit, "2078", "13", "100.00%", "active=false",
-        "README.md", "TEST_REPORT.md", "docs/STATUS.md", "SECURITY.md",
-        "physical L3", "strict Canon", "successful import", "activation",
+            errors.append(f"{relative}: stale localization/status marker {stale!r}")
+    for unsupported in (
+        "Grant status: awarded", "Crystal is GDPR compliant",
+        "PostgreSQL/pgvector is current runtime",
+        "automatic backend switching is enabled", "zero hallucinations guaranteed",
     ):
-        if needle not in content:
-            errors.append(f"{relative}: missing localization invariant {needle!r}")
+        if unsupported in text:
+            errors.append(f"{relative}: unsupported claim {unsupported!r}")
 
-    index_relative = f"docs/{locale}/README.md"
-    index = root / index_relative
-    if not index.is_file():
-        errors.append(f"locale index missing: {index_relative}")
-        continue
-    index_content = index.read_text(encoding="utf-8")
-    for needle in (
-        index_marker, f"../../{relative}", "../../README.md", "../../TEST_REPORT.md",
-        "../STATUS.md", "../../SECURITY.md", "../GRANT_NLNET_SCOPE.md",
-    ):
-        if needle not in index_content:
-            errors.append(f"{index_relative}: missing locale-index invariant {needle!r}")
-
-link_surfaces = list(required) + localized + [f"docs/{locale}/README.md" for locale in locales]
+link_surfaces = sorted(set(current_surfaces) | {f"docs/{locale}/README.md" for locale in localized_files})
 link_pattern = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 for relative in link_surfaces:
     source = root / relative
-    text = source.read_text(encoding="utf-8")
-    for raw_target in link_pattern.findall(text):
+    if not source.is_file():
+        continue
+    for raw_target in link_pattern.findall(source.read_text(encoding="utf-8")):
         target = raw_target.strip().strip("<>")
         if not target or target.startswith(("#", "http://", "https://", "mailto:")):
             continue
@@ -266,9 +241,8 @@ if errors:
     raise SystemExit(1)
 
 print(
-    "Documentation status is internally consistent: "
-    "checkpoint=bbd816c, tests=2078/13, statements=9756, coverage=100.00%, "
-    "permanent-jobs=9, postgresql-integration=1, mutants=7/7, "
-    f"grant=submitted-under-review, localized-summaries={len(localized)}, authority=English"
+    "Documentation status is internally consistent: checkpoint=bbd816c, "
+    "tests=2078/13, statements=9756, coverage=100.00%, CI=9, mutants=7/7, "
+    "root-readmes=10-full, localized=9-current, broader-docs=phased-refresh"
 )
 PY

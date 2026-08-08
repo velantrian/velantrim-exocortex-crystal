@@ -22,17 +22,7 @@
   },
   "ci": {
     "job_count": 9,
-    "jobs": [
-      "code-quality",
-      "test (3.11)",
-      "test (3.12)",
-      "jsonl-integrity",
-      "eval-gate",
-      "security",
-      "docker-build",
-      "Ring Zero mutation gate",
-      "docs-status"
-    ],
+    "jobs": ["code-quality", "test (3.11)", "test (3.12)", "jsonl-integrity", "eval-gate", "security", "docker-build", "Ring Zero mutation gate", "docs-status"],
     "all_successful": true
   },
   "postgresql_integration": {
@@ -47,11 +37,7 @@
     "ann_indexes_present": false,
     "test_service_only": true
   },
-  "mutation_gate": {
-    "declared_mutants": 7,
-    "killed_mutants": 7,
-    "scope": "targeted Ring Zero semantic mutations"
-  },
+  "mutation_gate": {"declared_mutants": 7, "killed_mutants": 7, "scope": "targeted Ring Zero semantic mutations"},
   "implemented_boundaries": {
     "truth_policy_runtime_bypass_present": false,
     "physical_l3_equals_strict_canon": false,
@@ -93,15 +79,16 @@
   "documentation": {
     "authoritative_language": "English",
     "working_language": "English",
-    "localized_readmes": "concise_non_authoritative_summaries",
-    "localized_scope": [
-      "top-level README orientation summaries",
-      "locale documentation indexes",
-      "selected best-effort onboarding snapshots"
-    ],
+    "language_model": "english_primary_source_multilingual_product_surface",
+    "localized_readmes": "all_supported_locales_full_visual_and_semantic_parity",
+    "translation_status_ledger": "docs/TRANSLATION_STATUS.md",
+    "localization_policy": "docs/LOCALIZATION_POLICY.md",
     "localized_readme_source_checkpoint": "e521440e9bb188d88475f17dd5bcdd161b314605",
-    "localized_readme_count": 9,
-    "full_corpus_translation_required": false
+    "supported_localized_readme_count": 9,
+    "full_parity_current_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN"],
+    "orientation_only_locales": [],
+    "broader_document_translation": "phased_by_language_or_document_family",
+    "full_corpus_translation_required_in_single_pr": false
   },
   "grant": {
     "program": "NLnet NGI0 Commons Fund",

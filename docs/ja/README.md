@@ -2,22 +2,15 @@
 
 <!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
 
-英語は Crystal の唯一の規範的な作業言語です。文書全体の翻訳は必須ではありません。
-現在の日本語公開概要は [README.ja.md](../../README.ja.md) です。
+[完全な日本語 README](../../README.ja.md) は PR #340 後に `CURRENT` です。目的、視覚構造、マインドマップ、ASCII フロー、表、制約、Quick Start、ナビゲーションを保持します。
 
-このディレクトリの `REVIEWER_GUIDE.md`、`QUICKSTART.md`、`STATUS.md`、
-`GRANT_OVERVIEW.md`、`GLOSSARY.md` は best-effort snapshot であり、遅れている場合が
-あります。現在の capability、security、grant、runtime 主張の根拠にはなりません。
+その他の文書は段階的に翻訳します。既存ファイルは記録された英語 checkpoint と照合されるまで `REFRESH_NEEDED` です。
 
-## 規範的な英語ソース
+- [README](../../README.ja.md) — `CURRENT`
+- [Quick Start](./QUICKSTART.md) — `REFRESH_NEEDED`
+- [Status](./STATUS.md) — `REFRESH_NEEDED`
+- [Reviewer Guide](./REVIEWER_GUIDE.md) — `REFRESH_NEEDED`
+- [Glossary](./GLOSSARY.md) — `REFRESH_NEEDED`
+- [Grant Overview](./GRANT_OVERVIEW.md) — `REFRESH_NEEDED`
 
-- [README](../../README.md)
-- [TEST_REPORT](../../TEST_REPORT.md)
-- [Current status](../STATUS.md)
-- [Implementation status](../IMPLEMENTATION_STATUS.md)
-- [Security](../../SECURITY.md)
-- [NLnet scope](../GRANT_NLNET_SCOPE.md)
-- [Localization policy](../LOCALIZATION_POLICY.md)
-
-更新順序：英語の実装と文書 → merge と検証 → 独立した localization PR → 英語 source
-checkpoint の記録。
+一次ソース: [English README](../../README.md), [TEST_REPORT](../../TEST_REPORT.md), [Current status](../STATUS.md), [Localization policy](../LOCALIZATION_POLICY.md), [Translation status](../TRANSLATION_STATUS.md)。
