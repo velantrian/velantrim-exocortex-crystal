@@ -1,152 +1,183 @@
 # 🚀 Быстрый старт — Velantrim Crystal
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/QUICKSTART.md) · 🇫🇷 [Français](../fr/QUICKSTART.md) · 🇪🇸 [Español](../es/QUICKSTART.md) · 🇮🇹 [Italiano](../it/QUICKSTART.md) · 🇷🇺 **Русский** · 🇨🇳 [简体中文](../zh-CN/QUICKSTART.md) · 🇸🇦 [العربية](../ar/QUICKSTART.md) · 🇯🇵 [日本語](../ja/QUICKSTART.md) · 🇮🇳 [हिन्दी](../hi/QUICKSTART.md)
->
-> **Примечание:** команды, имена пакетов, переменные окружения и API paths не
-> переводятся. При расхождениях действуют GitHub `main` и английские документы.
+<!-- translation-source: docs/QUICKSTART.md@16d71e731ee658b1faa65c9ea45c0d8cca290f7c -->
+<!-- translation-status: CURRENT -->
 
-## 1. Клонировать репозиторий
+> 🌐 🇬🇧 [English](../QUICKSTART.md) · 🇩🇪 [Deutsch](../de/QUICKSTART.md) · 🇫🇷 [Français](../fr/QUICKSTART.md) · 🇪🇸 [Español](../es/QUICKSTART.md) · 🇮🇹 [Italiano](../it/QUICKSTART.md) · 🇷🇺 **Русский** · 🇨🇳 [简体中文](../zh-CN/QUICKSTART.md) · 🇸🇦 [العربية](../ar/QUICKSTART.md) · 🇯🇵 [日本語](../ja/QUICKSTART.md) · 🇮🇳 [हिन्दी](../hi/QUICKSTART.md)
+
+Это руководство запускает локальную baseline без обязательных внешних сервисов,
+явно добавляет один claim, выполняет запрос через read-only границу и проверяет Receipt.
+
+## Требования
+
+- Python 3.11 или 3.12;
+- Git;
+- локальная файловая система для репозитория и SQLite-данных.
+
+Обычный runtime не требует LLM, внешнего embedding provider или cloud-сервиса.
+Extras для разработки и полного набора тестов устанавливают дополнительные пакеты,
+используемые репозиторием.
+
+## 1. Установка
 
 ```bash
 git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
-```
-
-## 2. Создать виртуальное окружение
-
-Linux/macOS:
-
-```bash
 python -m venv .venv
 source .venv/bin/activate
-```
-
-Windows PowerShell:
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-```
-
-## 3. Установить окружение разработки
-
-```bash
 python -m pip install --upgrade pip
 pip install -e '.[dev]'
 ```
 
-Стандартный runtime Crystal основан на стандартной библиотеке Python.
-Зависимости разработки, API и адаптеров подключаются как опциональные extras.
+В Windows PowerShell:
 
-## 4. Выполнить полную проверку
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+## 2. Проверка репозитория
 
 ```bash
 pytest tests/ --cov=. --cov-fail-under=100
 python scripts/eval_gate.py --out-dir eval-artifacts
+bash scripts/ring_zero_mutation_gate.sh
+bash scripts/check_docs_status.sh
 ```
 
-Нормативная baseline находится в [TEST_REPORT.md](../../TEST_REPORT.md):
+Точный проверенный checkpoint и актуальные метрики находятся в
+[TEST_REPORT.md](../../TEST_REPORT.md). Они не дублируются здесь как неизменное
+требование, потому что меняются вместе с реализацией.
 
-```text
-1713 passed
-12 skipped
-0 failed
-6389 measured statements
-100.00% coverage
+## 3. Выбор постоянного локального хранилища
+
+Linux/macOS:
+
+```bash
+export VELANTRIM_L3_BACKEND=sqlite
+export VELANTRIM_L3_PATH=./data/canon.db
 ```
 
-Эти числа не заменяют независимый запуск на чистом clone.
+PowerShell:
 
-## 5. Использовать CLI
+```powershell
+$env:VELANTRIM_L3_BACKEND = "sqlite"
+$env:VELANTRIM_L3_PATH = ".\data\canon.db"
+```
 
-### Выполнить ingest claim
+SQLite является обычным активным local-first профилем. PostgreSQL/pgvector в
+текущей baseline доступен только как явная неактивная цель импорта и проверки
+эквивалентности с `active=false`; он не выбирается этим Quick Start.
+
+## 4. Явное добавление claim
 
 ```bash
 velantrim ingest "Water boils at 100C at sea level"
 ```
 
-Ingest является операцией допуска. Новые claims проходят предусмотренные
-границы classification, Guardian и TruthGate.
+`ingest` — операция записи. Claim входит в операционное состояние и проходит
+настроенный путь допуска Guardian/TruthGate. Команда не означает, что Crystal
+самостоятельно доказал объективную истинность утверждения: допуск зависит от
+evidence и политики.
 
-### Задать вопрос
+## 5. Запрос через read-only границу
 
 ```bash
 velantrim ask "how does water behave"
 ```
 
-⚠️ CLI-команды `ask` и `receipt` пока используют исторический путь
-`core.pipeline.run()`, способный выполнять допуск. Строгая гарантия отсутствия
-записи относится к мигрированным HTTP endpoints `/ask` и `/receipt`, а не ко
-всем callers.
+Публичный `ask` использует `core.query_pipeline.query()` и не должен:
 
-### Создать и проверить Receipt
+- создавать или обновлять L0/L1 facts;
+- переводить ESM;
+- писать в L3;
+- обрабатывать outbox;
+- сохранять episode links;
+- инициализировать отсутствующий embedding fingerprint;
+- сохранять неизвестных кандидатов.
+
+Если строгого canonical grounding недостаточно, ожидается ограниченный отказ.
+Такой отказ — корректный результат trust boundary, а не обязательно ошибка runtime.
+
+## 6. Создание и проверка Receipt
 
 ```bash
 velantrim receipt "how does water behave" > receipt.json
 velantrim verify-receipt receipt.json
-velantrim verify-receipt receipt.json --strict-provenance
 ```
 
-Receipt — запечатанное доказательство использованных фактов и provenance-ссылок.
-Replay сравнивает его с текущим состоянием и может обнаружить drift или подмену.
+Receipt связывает query, answer и идентификаторы использованных facts с digest
+и позволяет повторно проверить citations против текущего состояния памяти. Он
+обнаруживает изменение данных; опциональная HMAC-подпись требует локально
+настроенного provenance key.
 
-## 6. Включить постоянное локальное хранилище L3
-
-```bash
-VELANTRIM_L3_BACKEND=sqlite \
-VELANTRIM_L3_PATH=./data/canon.db \
-velantrim ask "..."
-```
-
-SQLite path остаётся локальным. Crystal не отправляет данные автоматически в
-cloud или model provider.
-
-## 7. Запустить опциональный FastAPI
+## 7. Опциональный API
 
 ```bash
 pip install '.[api]'
-export VELANTRIM_API_TOKEN=$(python -c "import secrets;print(secrets.token_urlsafe(32))")
 velantrim-api
 ```
 
-Адрес по умолчанию:
+Основные routes:
 
-```text
-http://127.0.0.1:8000
-```
-
-Пример:
-
-```bash
-curl http://127.0.0.1:8000/health
-```
-
-| Метод | Путь | Поведение |
+| Метод | Route | Граница |
 |---|---|---|
-| `POST` | `/ingest` | допуск через Guardian + TruthGate |
-| `POST` | `/ask` | строгое чтение существующего Canon |
-| `GET` | `/receipt?q=...` | чтение с Receipt |
+| `GET` | `/health` | liveness/readiness |
+| `POST` | `/ingest` | явный admission/write path |
+| `POST` | `/ask` | строгий read-only query |
+| `GET` | `/receipt?q=...` | read-only query + Receipt |
 | `POST` | `/verify-receipt` | replay Receipt |
+| `GET` | `/evidence/{fact_id}` | policy-aware evidence view |
 
-## 8. Запустить опциональный MCP server
+API использует baseline с bearer token. Это не полный production-ready
+multi-tenant authorization model.
+
+## 8. MCP-поверхность для инспекции
 
 ```bash
 python -m core.mcp_server
 ```
 
-MCP не предоставляет явных инструментов канонической записи. Поиск может
-инициализировать отсутствующий embedding fingerprint, поэтому MCP не описывается
-как полностью mutation-free путь.
+MCP предоставляет read-only search, memory reports, историю facts, поиск
+конфликтов и проверку Receipt. Канонического write tool в этой поверхности нет.
 
-## 9. Следующие документы
+## Частые ошибки понимания границ
 
-- [Руководство reviewer](./REVIEWER_GUIDE.md)
-- [Текущий статус](./STATUS.md)
-- [Обзор гранта](./GRANT_OVERVIEW.md)
-- [Глоссарий](./GLOSSARY.md)
-- [Нормативная архитектура](../ARCHITECTURE.md)
-- [Нормативная оценка](../EVAL.md)
+### Query — не ingestion
 
----
+```text
+ask / receipt / MCP search → read-only
+explicit ingest            → admission-capable write path
+```
 
-> 🌐 🇬🇧 [English](../../README.md) · 🇩🇪 [Deutsch](../de/QUICKSTART.md) · 🇫🇷 [Français](../fr/QUICKSTART.md) · 🇪🇸 [Español](../es/QUICKSTART.md) · 🇮🇹 [Italiano](../it/QUICKSTART.md) · 🇷🇺 **Русский** · 🇨🇳 [简体中文](../zh-CN/QUICKSTART.md) · 🇸🇦 [العربية](../ar/QUICKSTART.md) · 🇯🇵 [日本語](../ja/QUICKSTART.md) · 🇮🇳 [हिन्दी](../hi/QUICKSTART.md)
+### Physical L3 — не strict Canon
+
+Физический graph node может иметь неверифицированное или неактивное состояние.
+Уверенные factual answers должны опираться на строгую проекцию `CanonicalView`.
+
+### Confidence — не независимое evidence
+
+Высокая confidence, частое повторение или retrieval similarity сами по себе не
+повышают claim до verified truth.
+
+### Import — не activation
+
+```text
+SQLite logical bundle
+→ inactive PostgreSQL import
+→ exact equivalence receipt
+≠ runtime backend selection
+≠ ordinary PostgreSQL reads/writes
+```
+
+## Следующие документы
+
+- [Русский README](../../README.ru.md) — обзор проекта.
+- [Русский статус](./STATUS.md) — текущая проверенная baseline.
+- [Статус реализации](./IMPLEMENTATION_STATUS.md) — implemented / future boundaries.
+- [Карта документации](../DOCUMENTATION_MAP.md) — маршруты по аудитории.
+- [Архитектура](../ARCHITECTURE.md) — нормативные trust boundaries.
+- [Отчёт о тестах](../../TEST_REPORT.md) — точные evidence.
+- [Security policy](../../SECURITY.md) и [threat model](../security/threat-model.md).
+
+> При расхождении действует актуальный GitHub `main` и английский исходный
+> документ, указанный в `translation-source`.
