@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "phase": "D2",
+  "status_date": "2026-08-08",
+  "tracking_issue": 341,
+  "english_source_checkpoint": "b7e6574dd7aefa2f32783ab79054fac6b3b4109f",
+  "source_documents": [
+    "docs/REVIEWER_GUIDE.md",
+    "docs/SAFETY_PRIVACY_AND_FAILURES.md"
+  ],
+  "current_locales": [
+    "ar",
+    "de",
+    "es",
+    "fr",
+    "hi",
+    "it",
+    "ja",
+    "ru",
+    "zh-CN"
+  ],
+  "pending_locales": [],
+  "current_documents": {
+    "ar": ["docs/ar/REVIEWER_GUIDE.md", "docs/ar/SAFETY_PRIVACY_AND_FAILURES.md"],
+    "de": ["docs/de/REVIEWER_GUIDE.md", "docs/de/SAFETY_PRIVACY_AND_FAILURES.md"],
+    "es": ["docs/es/REVIEWER_GUIDE.md", "docs/es/SAFETY_PRIVACY_AND_FAILURES.md"],
+    "fr": ["docs/fr/REVIEWER_GUIDE.md", "docs/fr/SAFETY_PRIVACY_AND_FAILURES.md"],
+    "hi": ["docs/hi/REVIEWER_GUIDE.md", "docs/hi/SAFETY_PRIVACY_AND_FAILURES.md"],
+    "it": ["docs/it/REVIEWER_GUIDE.md", "docs/it/SAFETY_PRIVACY_AND_FAILURES.md"],
+    "ja": ["docs/ja/REVIEWER_GUIDE.md", "docs/ja/SAFETY_PRIVACY_AND_FAILURES.md"],
+    "ru": ["docs/ru/REVIEWER_GUIDE.md", "docs/ru/SAFETY_PRIVACY_AND_FAILURES.md"],
+    "zh-CN": ["docs/zh-CN/REVIEWER_GUIDE.md", "docs/zh-CN/SAFETY_PRIVACY_AND_FAILURES.md"]
+  },
+  "detailed_english_contracts": [
+    "SECURITY.md",
+    "PRIVACY.md",
+    "GDPR.md",
+    "docs/FAILURE_MODES.md"
+  ],
+  "native_speaker_editorial_certification": false,
+  "security_legal_gdpr_certification_claim": false,
+  "nlnet_awarded_claim": false
+}

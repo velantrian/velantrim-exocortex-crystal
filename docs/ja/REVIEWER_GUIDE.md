@@ -1,157 +1,102 @@
-# Reviewer Guide — Velantrim ExoCortex (Crystal)
+<!-- translation-source: docs/REVIEWER_GUIDE.md@b7e6574dd7aefa2f32783ab79054fac6b3b4109f -->
+<!-- translation-status: CURRENT -->
+<!-- d2-locale: ja -->
+<!-- d2-boundary: public-ask-read-only -->
+<!-- d2-boundary: postgresql-active=false -->
+<!-- d2-boundary: erasure-not-global -->
+<!-- d2-nonclaim: security-legal-gdpr-not-certified -->
+<!-- d2-nonclaim: nlnet-not-awarded -->
+# Reviewer Guide — Velantrim Exo-Cortex Crystal
 
-> 🌐 🇬🇧 [English](../REVIEWER_GUIDE.md) · 🇩🇪 [Deutsch](../de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](../fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](../es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](../it/REVIEWER_GUIDE.md) · 🇷🇺 [Русский](../ru/REVIEWER_GUIDE.md) · 🇨🇳 [简体中文](../zh-CN/REVIEWER_GUIDE.md) · 🇸🇦 [العربية](../ar/REVIEWER_GUIDE.md) · 🇯🇵 **日本語** · 🇮🇳 [हिन्दी](../hi/REVIEWER_GUIDE.md)
+**英語 source checkpoint:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`  
+このガイドは保守された案内です。実装 evidence は `main` の code、実行可能 test、
+exact CI、[TEST_REPORT.md](../../TEST_REPORT.md)、
+[manifest](../status/implementation-manifest.json) です。
 
-この文書は reviewer が Crystal の範囲、実行方法、主要な epistemic guarantee、
-明示された limitation を短時間で確認するための経路です。新しい runtime claim は追加しません。
+## 1. Review 対象
 
-## 1. Crystal とは何か
+Crystal は AI system 向けの public、local-first、source-grounded、auditable memory
+infrastructure です。verified baseline は typed claims、Guardian/TruthGate、multi-status
+L3 上の strict Canon read projection、read-only public query、分離された explicit
+ingest path、Receipts、auditable provenance を含みます。
 
-Crystal は Velantrim の **公開・最小・検証可能な memory core** です。
+AGI、consciousness、universal truth、zero hallucinations、active PostgreSQL runtime、
+automatic switching、production multi-tenancy、security/GDPR certification、awarded
+NLnet grant は主張しません。
 
-- local-first storage;
-- typed claim と TruthGate admission;
-- sealed / replayable TRACE と Receipt;
-- per-fact provenance / audit mechanism;
-- GDPR-oriented erasure / restriction control;
-- dependency-free default runtime;
-- optional API / MCP interface。
-
-## 2. Crystal ではないもの
-
-Crystal は次を主張しません。
-
-- AGI、意識、自律的な mind、biological brain implementation;
-- zero hallucination guarantee;
-- production-ready Titan console / Research PWA;
-- NoeticCore / AttentionRouter / BICA を現在の runtime とすること;
-- Graphiti、Neo4j、OpenAI、cloud LLM を mandatory dependency とすること;
-- graph に存在する全 entry が verified Canon であること;
-- Full Personal Exo-Cortex を現在の Crystal runtime または grant deliverable とすること。
-
-研究・cognitive concept は research / RFC-level であり、現在の runtime truth ではありません。
-
-## 3. 正本となる status
-
-- [英語 Current Status](../STATUS.md)
-- [Implementation Status](../IMPLEMENTATION_STATUS.md)
-- [Implementation Reality Matrix](../IMPLEMENTATION_REALITY_MATRIX.md)
-- [Test Report](../../TEST_REPORT.md)
-
-capability が正本で `IMPLEMENTED` とされていない場合、未実装として扱ってください。
-
-## 4. Test の実行
+## 2. Baseline 再現
 
 ```bash
 python -m pip install --upgrade pip
 pip install -e '.[dev]'
-python -m pytest
+pytest tests/ --cov=. --cov-fail-under=100
+python scripts/eval_gate.py --out-dir eval-artifacts
+bash scripts/ring_zero_mutation_gate.sh
+bash scripts/check_docs_status.sh
 ```
 
-CI は 100% line coverage gate を強制します。正確な count は `TEST_REPORT.md` が正本です。
+変動する metrics は英語 test report から確認します。
 
-## 5. Docker の安全な実行
-
-```bash
-export VELANTRIM_API_TOKEN=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
-docker compose up --build
-curl http://127.0.0.1:8000/health
-```
-
-確認点:
-
-- token がなければ fail-closed;
-- host loopback publish;
-- non-root runtime user;
-- named-volume data default;
-- secret、local DB、test、dev extra を image に含めない。
-
-## 6. Epistemic behavior の確認
-
-### TruthGate
-
-`LLM_OUTPUT` は、それ単独では `WORLD_FACT` として admission されません。
-この Ring Zero rule は non-configurable です。旧 `ENABLE_TRUTH_POLICY` の値
-（`off` を含む）は現在 inert で、process environment から無効化できません。
-Test、demo、migration は gate を弱めず、正直な independent provenance または
-適切な non-world-fact type を使用する必要があります。
-
-正本となる behavior proof は `tests/test_truth_gate.py`、decision record は
-[`ADR-011`](../adr/ADR-011-NON_CONFIGURABLE_TRUTH_POLICY.md) です。
-
-```bash
-velantrim invariant-check
-```
-
-`invariant-check` は既存 L3 state の read-only scan です。TruthGate admission 自体を
-実行しないため、この command だけでは LLM-origin block の proof になりません。
-
-### Receipt
-
-```bash
-velantrim receipt "your question" > receipt.json
-velantrim verify-receipt receipt.json
-velantrim verify-receipt receipt.json --strict-provenance
-```
-
-### Audit / history
-
-```bash
-velantrim history <fact_id>
-velantrim audit
-velantrim audit-verify
-```
-
-`history` は truth-maintenance graph edge を読みます。per-fact `ProvenanceChain` と同一の view ではありません。
-
-### Accountable override
-
-blocked fact の curator force-override は `review_force_approve`、actor、reason、
-具体的な `gate_reason` とともに記録されます。override は TruthGate decision を
-変更せず、別の明示的 governance action です。
-
-## 7. Read-only query boundary
+## 3. Read/write boundary
 
 ```text
-HTTP /ask, /receipt
-CLI ask, receipt
-MCP search
-→ core.query_pipeline
-→ existing L3 facts only
-→ CanonicalView for confident answers
-→ answer / bounded refusal / inspection rows
+ask / receipt / MCP inspection → read-only
+explicit ingest                → admission-capable write path
+curator override               → explicit, attributed, audited
 ```
 
-これらの query/search surface は L0/L1 fact を作成せず、ESM transition、L3 mutation、
-outbox operation、episode recording、unset embedding fingerprint initialization を行いません。
-MCP search は inspection surface であり、全 L3 node が strict Canon であるという claim ではありません。
+公開 `ask` は `core.query_pipeline.query()` を使い、facts、ESM、L3、outbox、episode
+links、embedding identity、unknown candidates を変更しません。strict grounding 不足時の
+bounded refusal は期待される安全動作です。
 
-## 8. 主要 limitation
+`ingest` は write ですが、admission は evidence、claim type、policy、TruthGate に依存。
+model output は自身を verified world fact と認定できません。
 
-- `ProvenanceChain` lifecycle wiring は erase path 以外に follow-up が残る;
-- knowledge graph data verifier は future work;
-- physical L3 と strict CanonicalView は同一ではない;
-- adaptive confidence threshold は context-dependent のまま;
-- Research Mode / Noetic / Titan console / PWA / BICA は runtime ではない。
+## 4. Storage と migration
 
-## 9. Reviewer checklist
+SQLite は通常の active local-first profile。最初の durable `auto` は optional
+LadybugDB があれば選択し、なければ SQLite を選択して choice と non-secret locator
+を lock します。ephemeral Mock への silent fallback は禁止です。
 
-- [ ] technical identifier が変更されていないか;
-- [ ] relative link が正しいか;
-- [ ] 日本語 claim が英語正本より強くなっていないか;
-- [ ] funding award、certification、production readiness を追加していないか;
-- [ ] runtime checkpoint と localization sync marker を混同していないか;
-- [ ] full CI が green か。
+PostgreSQL/pgvector は別の operator path: verified bundle → version/TLS preflight →
+new inactive schema → serializable import → independent read-only re-hash → exact
+equivalence。target は `active=false` のままです。
 
-## 10. 推奨読書順
+Import/equivalence は activation、selection、TruthGate admission、strict Canon、
+cutover、rollback、dual-write、production readiness ではありません。
 
-1. [QUICKSTART.md](./QUICKSTART.md)
-2. [STATUS.md](./STATUS.md)
-3. [GLOSSARY.md](./GLOSSARY.md)
-4. [英語 Reviewer Demo](../REVIEWER_DEMO.md)
-5. [Test Report](../../TEST_REPORT.md)
-6. [英語 Architecture](../ARCHITECTURE.md)
+## 5. Security と privacy
 
----
+Default operation は cloud、LLM、telemetry、analytics を必須としません。Remote
+Neo4j、Anthropic、Wikidata、Redis、PostgreSQL migration、wide API、backup/export copy
+は explicit operator choice で boundary を広げます。
 
-> 🌐 🇬🇧 [English](../REVIEWER_GUIDE.md) · 🇩🇪 [Deutsch](../de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](../fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](../es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](../it/REVIEWER_GUIDE.md) · 🇷🇺 [Русский](../ru/REVIEWER_GUIDE.md) · 🇨🇳 [简体中文](../zh-CN/REVIEWER_GUIDE.md) · 🇸🇦 [العربية](../ar/REVIEWER_GUIDE.md) · 🇯🇵 **日本語** · 🇮🇳 [हिन्दी](../hi/REVIEWER_GUIDE.md)
+`VELANTRIM_ENCRYPTION_KEY` は selected L1 fields を保護しますが、すべての L3、
+backup、bundle、Receipt、log、temporary file を自動保護しません。credentials と
+secret DSN を profiles、bundles、receipts、logs、issues、Notion に入れてはいけません。
+
+Active local store の erasure は backups、exports、operator copies、remote systems、
+third-party data を自動削除しません。
+
+## 6. Fail-closed checks
+
+- Unsupported claim は block、label、bounded refusal。
+- Profile/locator conflict は backend cache 前に failure。
+- Import failure は rollback し `active=false` を維持。
+- Evidence mismatch、Receipt/audit tampering を検出。
+- Oversized input は limits で failure。
+- Missing optional dependency は hidden durable switch を起こさない。
+- External exposure は TLS、authentication、least privilege、monitoring が必要。
+
+## 7. Checklist
+
+- [ ] Current `main` と exact CI を確認。
+- [ ] Read-only query と explicit ingest を分離。
+- [ ] Physical L3 と strict Canon を分離。
+- [ ] Inactive PostgreSQL import と activation を分離。
+- [ ] Network、secrets、encryption、erasure limits を確認。
+- [ ] Certification、production readiness、grant award を推論しない。
+
+English sources: [Reviewer Guide](../REVIEWER_GUIDE.md), [Security](../../SECURITY.md),
+[Privacy](../../PRIVACY.md), [Failure Modes](../FAILURE_MODES.md),
+[Safety Summary](../SAFETY_PRIVACY_AND_FAILURES.md).

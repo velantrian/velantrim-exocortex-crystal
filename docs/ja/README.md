@@ -1,43 +1,37 @@
 <!-- localization-index-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
 <!-- d1-source: main@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
 <!-- d1-status: CURRENT -->
-<!-- d2-status: REFRESH_NEEDED -->
+<!-- d2-source: main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f -->
+<!-- d2-status: CURRENT -->
+<!-- d3-status: REFRESH_NEEDED -->
 # 日本語ドキュメント
 
-英語は引き続き主要な作業言語・原典であり、矛盾時の最終基準です。この翻訳は
-保守される公開プロダクト面ですが、実装・セキュリティ・助成・TruthGate・Canon
-について独立した権限を作りません。
+English は主要 working/source language と conflict resolver です。翻訳は保守される
+public surface ですが、implementation、security、grant、TruthGate、Canon の独立
+authority を作りません。
 
-## D1 — 導入と利用
-
-**状態:** `CURRENT`  
-**英語ソース checkpoint:** `main@a497b7d3cfbe59ca75b11d7449d5a728455b3130`
+## D1 — entry/use — `CURRENT`
 
 - [クイックスタート](./QUICKSTART.md)
 - [現在の状態](./STATUS.md)
 - [実装状態](./IMPLEMENTATION_STATUS.md)
 
-## その他の翻訳文書
+## D2 — review/safety/privacy/failures — `CURRENT`
 
-有用な内容は残っていますが、正確な英語 checkpoint と照合されるまでは
-`REFRESH_NEEDED` です。
+- [Reviewer Guide](./REVIEWER_GUIDE.md)
+- [Safety・privacy・failure boundaries](./SAFETY_PRIVACY_AND_FAILURES.md)
 
-- [Reviewer Guide](./REVIEWER_GUIDE.md) — D2
-- [Grant Overview](./GRANT_OVERVIEW.md) — D4
-- [Glossary](./GLOSSARY.md) — D4
+**English source:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
+English details: [Security](../../SECURITY.md), [Privacy](../../PRIVACY.md),
+[GDPR](../../GDPR.md), [Failure Modes](../FAILURE_MODES.md).
 
-## 権威ある英語エビデンス
+## Later phases — `REFRESH_NEEDED`
 
-- [README](../../README.md)
-- [Documentation map](../DOCUMENTATION_MAP.md)
-- [Architecture](../ARCHITECTURE.md)
-- [Implementation status](../IMPLEMENTATION_STATUS.md)
-- [Test report](../../TEST_REPORT.md)
-- [Security policy](../../SECURITY.md)
-
-ネイティブ話者による編集認証は主張しません。
+Architecture/ADR = D3、grant/roadmap/glossary = D4、extended references = D5。
 
 ## Governance
 
 - [Localization policy](../LOCALIZATION_POLICY.md)
 - [Translation status](../TRANSLATION_STATUS.md)
+
+Native-speaker editorial certification は主張しません。

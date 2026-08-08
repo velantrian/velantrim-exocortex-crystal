@@ -1,190 +1,101 @@
-# 🔍 دليل المراجع — Velantrim Crystal
+<!-- translation-source: docs/REVIEWER_GUIDE.md@b7e6574dd7aefa2f32783ab79054fac6b3b4109f -->
+<!-- translation-status: CURRENT -->
+<!-- d2-locale: ar -->
+<!-- d2-boundary: public-ask-read-only -->
+<!-- d2-boundary: postgresql-active=false -->
+<!-- d2-boundary: erasure-not-global -->
+<!-- d2-nonclaim: security-legal-gdpr-not-certified -->
+<!-- d2-nonclaim: nlnet-not-awarded -->
+# دليل المراجع — Velantrim Exo-Cortex Crystal
 
-> 🌐 🇬🇧 [English](../REVIEWER_GUIDE.md) · 🇩🇪 [Deutsch](../de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](../fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](../es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](../it/REVIEWER_GUIDE.md) · 🇷🇺 [Русский](../ru/REVIEWER_GUIDE.md) · 🇨🇳 [简体中文](../zh-CN/REVIEWER_GUIDE.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/REVIEWER_GUIDE.md) · 🇮🇳 [हिन्दी](../hi/REVIEWER_GUIDE.md)
->
-> توفر هذه الصفحة مسار تحقق بالعربية. لا تقدم claim جديداً حول runtime أو المنحة
-> أو compliance أو security. عند الاختلاف تكون GitHub `main` و[docs/STATUS.md](../STATUS.md)
-> و[TEST_REPORT.md](../../TEST_REPORT.md) هي المرجع.
+**نقطة المصدر الإنجليزية:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`  
+هذا الدليل واجهة إرشادية تتم صيانتها. تبقى أدلة التنفيذ هي الكود في `main`، والاختبارات
+القابلة للتنفيذ، وCI الدقيق، و[TEST_REPORT.md](../../TEST_REPORT.md)، و
+[manifest](../status/implementation-manifest.json).
 
-## 1. ما هو Crystal؟
+## 1. ما الذي تتم مراجعته
 
-Crystal هو نواة الذاكرة العامة والمحدودة والقابلة للتحقق في Velantrim:
+Crystal بنية ذاكرة عامة ومحلية ومرتبطة بالمصادر وقابلة للتدقيق لأنظمة الذكاء الاصطناعي.
+تشمل القاعدة المتحقق منها claims مصنفة، وGuardian/TruthGate، وإسقاط strict Canon فوق L3
+متعدد الحالات، واستعلامات عامة للقراءة فقط، ومسار ingest صريحاً منفصلاً، وReceipts،
+وprovenance قابلة للتدقيق.
 
-- local-first ومن دون cloud dependency إلزامية؛
-- claims مرتبطة بالمصادر وحالة معرفية صريحة؛
-- Guardian + TruthGate كحد admission تلقائي إلى L3؛
-- CanonicalView لقراءة مبنية على أدلة معتمدة؛
-- TRACE وReceipt كطبقة إثبات قابلة للفحص؛
-- backends محلية SQLite/WAL ورسم بياني مضمّن؛
-- آليات تقنية للمحو والتقييد وaudit وprovenance؛
-- اختبارات قابلة للتكرار وبوابات تقييم حتمية.
+لا يدّعي Crystal وجود AGI أو وعي أو حقيقة شاملة أو انعدام الهلوسة أو runtime PostgreSQL
+نشط أو switching تلقائي أو multi-tenancy إنتاجي أو اعتماد أمني/GDPR أو منحة NLnet ممنوحة.
 
-## 2. ما الذي لا يدّعيه Crystal؟
-
-لا يدّعي Crystal أنه:
-
-- AGI أو وعياً أو شخصية أو مكافئاً بيولوجياً للدماغ؛
-- ضماناً لـ «صفر hallucinations»؛
-- stack Titan أو Personal ExoCortex الكامل؛
-- نظام self-modification أو self-canonicalization؛
-- منتجاً يعتمد إلزامياً على LLM أو graph أو cloud provider؛
-- شهادة قانونية للامتثال لـ GDPR؛
-- شهادة أمنية أو استضافة multi-tenant جاهزة للإنتاج؛
-- تنفيذ runtime لكل فكرة بحث أو PR مفتوح.
-
-## 3. المصادر الحاكمة
-
-تحقق بالترتيب التالي:
-
-1. GitHub `main` — الكود المدمج فعلياً؛
-2. [TEST_REPORT.md](../../TEST_REPORT.md) — baseline الاختبارات والتغطية؛
-3. [docs/STATUS.md](../STATUS.md) — حالة claims والمكونات؛
-4. [docs/IMPLEMENTATION_STATUS.md](../IMPLEMENTATION_STATUS.md) — الخريطة التفصيلية؛
-5. [docs/ARCHITECTURE.md](../ARCHITECTURE.md) — حدود المعمارية؛
-6. وثائق المنحة الإنجليزية — scope ومعايير القبول.
-
-لا تعد ملاحظة Notion أو roadmap أو RFC أو prototype أو PR مفتوح capability منفذة.
-
-## 4. إعادة إنتاج نظيفة
+## 2. إعادة إنتاج القاعدة
 
 ```bash
-git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
-cd velantrim-exocortex-crystal
-python -m venv .venv
-source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -e '.[dev]'
 pytest tests/ --cov=. --cov-fail-under=100
 python scripts/eval_gate.py --out-dir eval-artifacts
-git status --short
+bash scripts/ring_zero_mutation_gate.sh
+bash scripts/check_docs_status.sh
 ```
 
-المتوقع:
+تُقرأ المقاييس المتغيرة فقط من تقرير الاختبارات الإنجليزي.
 
-- نجاح الاختبارات وcoverage gate؛
-- عدم إبلاغ `eval_gate.py` عن regression؛
-- عدم تلويث generated artifacts لشجرة Git؛
-- مقارنة الأرقام الدقيقة مع [TEST_REPORT.md](../../TEST_REPORT.md).
-
-## 5. التحقق من العقود الأساسية
-
-### 🛡️ admission
+## 3. حد القراءة والكتابة
 
 ```text
-claim جديد
-→ classification + evidence
-→ Guardian
-→ TruthGate
-→ ذاكرة تشغيلية / Canon مقبول
+ask / receipt / MCP inspection → read-only
+explicit ingest                → admission-capable write path
+curator override               → صريح ومنسوب وقابل للتدقيق
 ```
 
-سؤال التحقق: هل يستطيع claim ضعيف أو بلا دليل أو سيئ النوع تجاوز البوابات؟
+يستخدم `ask` العام `core.query_pipeline.query()` ولا يجوز أن يغيّر facts أو ESM أو L3 أو
+outbox أو episode links أو embedding identity أو المرشحين المجهولين. الرفض المحدود عند
+نقص grounding الصارم سلوك آمن متوقع.
 
-### 🔎 استعلام HTTP
+`ingest` يكتب، لكن admission يعتمد على evidence ونوع claim وpolicy وTruthGate. لا يستطيع
+خرج النموذج أن يمنح نفسه صفة fact عالمي متحقق.
 
-```text
-POST /ask أو GET /receipt
-→ core.query_pipeline.query()
-→ Canon موجود مسبقاً
-→ CanonicalView
-→ إجابة أو رفض محدود
-```
+## 4. التخزين والترحيل
 
-سؤال التحقق: هل تبقى L0/L1 وL3 وESM وoutbox والروابط الحلقية وembedding fingerprint
-والتحقق التكيفي من دون تغيير أثناء استعلامات HTTP المنقولة؟
+SQLite هو الملف المحلي النشط العادي. يمكن لأول `auto` دائم اختيار LadybugDB الاختياري إذا
+كان مثبتاً، وإلا SQLite؛ ويُقفل الاختيار وlocator غير السري. يُمنع fallback الصامت إلى Mock
+المؤقت.
 
-الضمان محدود عمداً:
+PostgreSQL/pgvector مسار مشغل منفصل: bundle متحقق → preflight للإصدار/TLS → schema جديد
+غير نشط → import قابل للتسلسل → re-hash مستقل للقراءة فقط → equivalence دقيقة؛ وتظل الوجهة
+`active=false`.
 
-- CLI `ask` و`receipt` لم تُنقلا بعد؛
-- MCP قد يهيّئ embedding fingerprint مفقوداً.
+Import/equivalence ليس activation أو selection أو TruthGate admission أو strict Canon أو
+cutover أو rollback أو dual-write أو production readiness.
 
-### 🔗 TRACE وReceipt
+## 5. الأمن والخصوصية
 
-```bash
-velantrim receipt "your question" > receipt.json
-velantrim verify-receipt receipt.json
-velantrim verify-receipt receipt.json --strict-provenance
-```
+لا يتطلب الوضع الافتراضي cloud أو LLM أو telemetry أو analytics. توسّع Neo4j البعيد،
+Anthropic، Wikidata، Redis، ترحيل PostgreSQL، API الواسع أو نسخ backup/export حدود الثقة
+فقط بقرار مشغل صريح.
 
-سؤال التحقق: هل تظهر الحقائق ومراجع evidence التي دعمت الإجابة؟ وهل يُكتشف drift؟
+يحمي `VELANTRIM_ENCRYPTION_KEY` حقول L1 مختارة، وليس تلقائياً كل L3 أو backup أو bundle
+أو Receipt أو log أو ملف مؤقت. لا يجوز إدخال credentials أو DSN سرية في profiles أو bundles
+أو receipts أو logs أو issues أو Notion.
 
-### 🧾 audit وprovenance
+المسح من store المحلي النشط لا يمسح تلقائياً backups أو exports أو نسخ المشغل أو الأنظمة
+البعيدة أو بيانات الأطراف الثالثة.
 
-```bash
-velantrim audit
-velantrim audit-verify
-velantrim history <fact_id>
-```
+## 6. فشل fail-closed
 
-`history` و`ProvenanceChain` لكل fact عرضان مختلفان، ويجب ألا تخلطهما الوثائق أو الاختبارات.
+- تُحجب claims غير المدعومة أو تُعلّم أو تُرفض بشكل محدود.
+- يفشل تعارض profile/locator قبل cache للـ backend.
+- يؤدي فشل import إلى rollback ويبقي `active=false`.
+- يُكتشف evidence mismatch والعبث في Receipt/audit.
+- تُرفض المدخلات الزائدة بالحدود.
+- غياب dependency اختيارية لا يسبب switch دائم خفياً.
+- الوصول الخارجي يحتاج TLS وauthentication وleast privilege وmonitoring.
 
-## 6. تشغيل خدمة HTTP بحذر
+## 7. قائمة المراجعة
 
-```bash
-pip install '.[api]'
-export VELANTRIM_API_TOKEN=$(python -c "import secrets;print(secrets.token_urlsafe(32))")
-docker compose up --build
-curl http://127.0.0.1:8000/health
-```
+- [ ] تحديد `main` وCI الدقيق.
+- [ ] فصل query read-only عن ingest الصريح.
+- [ ] فصل L3 الفيزيائي عن strict Canon.
+- [ ] فصل import PostgreSQL غير النشط عن activation.
+- [ ] مراجعة الشبكة وsecrets وencryption وerasure.
+- [ ] عدم استنتاج certification أو production readiness أو grant award.
 
-تحقق من:
-
-- عدم وجود fallback token؛
-- loopback publish كإعداد آمن افتراضي؛
-- container user غير privileged؛
-- API dependencies اختيارية؛
-- اختلاف عقدي `/ingest` و`/ask`.
-
-## 7. التحقق من التقييم
-
-يقيس Crystal، من بين أمور أخرى:
-
-- retrieval `hit@k` وMRR؛
-- اكتمال TRACE والبيانات الوصفية؛
-- تغطية Evidence Span؛
-- Receipt replay؛
-- precision وrecall للتعارضات؛
-- الرفض الصحيح عند حدود الثقة.
-
-Replay في Titan prior art موثق، وليس capability حالية في Crystal أو runtime ذاتي التحسين.
-
-## 8. التحقق من حدود المنحة
-
-يجب فصل baseline الحالية عن delta المطلوبة بوضوح:
-
-```text
-baseline موجودة ومختبرة
-+
-عمل ممول محدد وقابل للقياس
-=
-deliverable قابلة للتحقق المستقل
-```
-
-لا يجوز احتساب الوظائف المدمجة سابقاً مرة أخرى كعمل مدفوع. الطلب قيد التقييم ولا
-يدّعي منح التمويل.
-
-الملخص العربي: [GRANT_OVERVIEW.md](./GRANT_OVERVIEW.md)  
-المصدر المعياري: [GRANT_NLNET_SCOPE.md](../GRANT_NLNET_SCOPE.md)
-
-## 9. إشارات الخطر
-
-🚩 مستند يدّعي أكثر من `main` أو `STATUS.md`.  
-🚩 module بحثي يوصف بأنه runtime Crystal.  
-🚩 ترجمة توسع scope أو الميزانية أو compliance claims.  
-🚩 query تغير حالة الذاكرة بصورة غير متوقعة.  
-🚩 metric متوسط يخفي safety regression أو فشلاً فردياً.  
-🚩 provider خارجي يصبح إلزامياً ضمنياً.
-
-## 10. الفحص النهائي
-
-بعد review ينبغي أن تكون قادراً على الإجابة:
-
-1. ما claims التي يمكن أن تدخل Canon تلقائياً؟
-2. ما query paths التي هي read-only فعلاً؟
-3. كيف ترتبط الإجابة بالحقائق وevidence؟
-4. ما الحدود المنفذة وما الذي ما زال مخططاً؟
-5. ما grant delta المتبقية بعد خصم baseline الحالية؟
-
----
-
-> 🌐 🇬🇧 [English](../REVIEWER_GUIDE.md) · 🇩🇪 [Deutsch](../de/REVIEWER_GUIDE.md) · 🇫🇷 [Français](../fr/REVIEWER_GUIDE.md) · 🇪🇸 [Español](../es/REVIEWER_GUIDE.md) · 🇮🇹 [Italiano](../it/REVIEWER_GUIDE.md) · 🇷🇺 [Русский](../ru/REVIEWER_GUIDE.md) · 🇨🇳 [简体中文](../zh-CN/REVIEWER_GUIDE.md) · 🇸🇦 **العربية** · 🇯🇵 [日本語](../ja/REVIEWER_GUIDE.md) · 🇮🇳 [हिन्दी](../hi/REVIEWER_GUIDE.md)
+المصادر الإنجليزية: [Reviewer Guide](../REVIEWER_GUIDE.md)، [Security](../../SECURITY.md)،
+[Privacy](../../PRIVACY.md)، [Failure Modes](../FAILURE_MODES.md)، و
+[Safety Summary](../SAFETY_PRIVACY_AND_FAILURES.md).
