@@ -2,83 +2,85 @@
 
 ## Purpose
 
-This ledger makes multilingual work explicit. It separates the target state from the current
-state so a temporary short README is not mistaken for the permanent localization model.
+This ledger is the authoritative freshness map for multilingual Crystal documentation.
+English remains the primary source and conflict resolver; translated public documentation is
+a maintained product surface.
 
-**Authoritative English baseline before this correction:**
-`main@25803c59a6f4a1299d57f7deeff402c5a371a1ce`.
+**English source checkpoint for the root README reconciliation:**
+`main@e521440e9bb188d88475f17dd5bcdd161b314605`.
 
 **Policy:** [`LOCALIZATION_POLICY.md`](LOCALIZATION_POLICY.md).
 
-## Root README rollout
+## Root README status
 
-| Language | File | Current state | Target | Next action |
-|---|---|---:|---|---|
-| English | `README.md` | `CURRENT` | Primary source and conflict resolver | Continue English-first maintenance |
-| Russian | `README.ru.md` | `IN_PROGRESS` | Full visual and semantic parity | Refresh restored full README against current evidence |
-| German | `README.de.md` | `ORIENTATION_ONLY` | Full visual and semantic parity | Rebuild from stable English visual baseline |
-| French | `README.fr.md` | `ORIENTATION_ONLY` | Full visual and semantic parity | Translate in Romance-language phase |
-| Spanish | `README.es.md` | `ORIENTATION_ONLY` | Full visual and semantic parity | Translate in Romance-language phase |
-| Italian | `README.it.md` | `ORIENTATION_ONLY` | Full visual and semantic parity | Translate in Romance-language phase |
-| Simplified Chinese | `README.zh-CN.md` | `ORIENTATION_ONLY` | Full visual and semantic parity | Rebuild and language-review diagrams |
-| Japanese | `README.ja.md` | `ORIENTATION_ONLY` | Full visual and semantic parity | Rebuild and language-review diagrams |
-| Hindi | `README.hi.md` | `ORIENTATION_ONLY` | Full visual and semantic parity | Rebuild in multilingual expansion phase |
-| Arabic | `README.ar.md` | `ORIENTATION_ONLY` | Full visual and semantic parity | Rebuild with RTL-aware visual review |
+PR #340 restores full visual and semantic README coverage for every supported language.
+The files include purpose, evidence boundaries, mind maps, ASCII architecture, module trees,
+tables, quick start, navigation and non-claims.
 
-`ORIENTATION_ONLY` is temporary. It does not satisfy the full README parity target.
+| Language | File | Status after PR #340 | Source checkpoint |
+|---|---|---:|---|
+| English | `README.md` | `CURRENT` | primary source |
+| Arabic | `README.ar.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
+| German | `README.de.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
+| Spanish | `README.es.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
+| French | `README.fr.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
+| Hindi | `README.hi.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
+| Italian | `README.it.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
+| Japanese | `README.ja.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
+| Russian | `README.ru.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
+| Simplified Chinese | `README.zh-CN.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
+
+The inline `localization-status` comments record branch-time workflow state. This ledger is
+the final freshness authority after merge.
 
 ## Existing locale document packs
 
-The repository already contains translated locale packs such as `QUICKSTART.md`, `STATUS.md`,
-`REVIEWER_GUIDE.md`, `GLOSSARY.md` and `GRANT_OVERVIEW.md` under `docs/<locale>/`.
-Their presence does not prove freshness. Until each pack is checked against a recorded English
-checkpoint, treat it as `REFRESH_NEEDED` unless its locale index states otherwise.
+The repository contains `QUICKSTART.md`, `STATUS.md`, `REVIEWER_GUIDE.md`, `GLOSSARY.md` and
+`GRANT_OVERVIEW.md` under `docs/<locale>/`. Presence does not prove freshness. Until a file is
+checked against a recorded English checkpoint, it remains `REFRESH_NEEDED`.
 
-## Planned phases
+| Document family | Current multilingual state | Next phase |
+|---|---|---|
+| Locale index | `CURRENT` routing, document freshness labelled | maintain with every phase |
+| Quick Start | `REFRESH_NEEDED` | D1 |
+| Status / implementation boundary | `REFRESH_NEEDED` | D1 |
+| Reviewer Guide | `REFRESH_NEEDED` | D2 |
+| Security / privacy / failure modes | mostly English or stale partial translations | D2 |
+| Architecture and stable ADRs | mostly English | D3 |
+| Grant overview / roadmap / glossary | partial and `REFRESH_NEEDED` | D4 |
+| Extended reference corpus | mixed / English | D5 |
 
-### T1 — policy correction and Russian README
+## Planned sequence
 
-- remove the permanent summary-only rule;
-- restore the full visual Russian README form;
-- reconcile current runtime, tests, storage and grant boundaries;
-- add this status ledger and CI-safe phased policy.
+### D1 — entry and use documents
 
-### T2 — German entry surface
+Refresh locale indexes, Quick Start and status/implementation-boundary explanations. A PR may
+complete one language or a related language group.
 
-- full German README;
-- German locale index and quick-start audit;
-- current status/non-claim reconciliation.
+### D2 — reviewer and safety documents
 
-### T3 — French, Spanish and Italian entry surfaces
+Translate or refresh Reviewer Guide, security, privacy and failure-mode explanations.
 
-- full visual README parity for all three;
-- shared structural review with independent language review;
-- locale index and quick-start refresh.
+### D3 — architecture documents
 
-### T4 — Simplified Chinese and Japanese entry surfaces
+Translate stable architecture overviews and selected mature ADR/profile documents. Preserve
+Guardian, TruthGate, strict Canon, evidence and migration boundaries.
 
-- full visual README parity;
-- verify code blocks, diagram width and terminology consistency;
-- locale index and quick-start refresh.
+### D4 — project and grant documents
 
-### T5 — Hindi and Arabic entry surfaces
+Refresh grant overview, roadmap, glossary, governance and contribution guidance without
+claiming an NLnet award or re-budgeting merged baseline work.
 
-- full visual README parity;
-- RTL-specific review for Arabic;
-- locale index and quick-start refresh.
+### D5 — extended reference documents
 
-### T6 — reviewer, architecture, safety and grant documents
-
-Translate stable documents progressively by document family. Do not wait for the entire corpus
-to be ready before merging a completed and reviewed language phase.
+Translate the remaining stable corpus according to reader value and maintenance cost.
 
 ## Completion rule
 
-A language reaches README `CURRENT` only when:
+A document becomes `CURRENT` only when:
 
-- it is a full presentation rather than a short summary;
-- purpose, diagrams, tables, quick start, limitations and navigation have equivalent coverage;
-- current mutable facts are reconciled or intentionally linked to English evidence;
+- it has equivalent semantic coverage for its intended reader;
+- mutable facts are reconciled or linked to exact English evidence;
 - local links pass;
-- capability and grant claims are no stronger than English;
-- the localization PR is merged and its exact source checkpoint is recorded here.
+- capability, security, authority and grant claims are no stronger than English;
+- the translation PR is merged and the source checkpoint is recorded here.
