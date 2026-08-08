@@ -1,144 +1,116 @@
-# 📌 Velantrim Crystal — Текущий статус
+# 📌 Velantrim Crystal — текущий статус
+
+<!-- translation-source: docs/STATUS.md@16d71e731ee658b1faa65c9ea45c0d8cca290f7c -->
+<!-- translation-status: CURRENT -->
 
 > 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 **Русский** · 🇨🇳 [简体中文](../zh-CN/STATUS.md) · 🇸🇦 [العربية](../ar/STATUS.md) · 🇯🇵 [日本語](../ja/STATUS.md) · 🇮🇳 [हिन्दी](../hi/STATUS.md)
 
-**Дата статуса:** 31 июля 2026 года  
-**Состояние репозитория, использованное для перевода:** `main@c5a34a64`  
-**Последний checkpoint с изменением runtime:** PR #265 / `cd6fd44`  
-**Нормативная baseline тестов:** [TEST_REPORT.md](../../TEST_REPORT.md)
+**Дата статуса:** 8 августа 2026 года  
+**Проверенный runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
+**Проверенное tree:** `f57e58a6f4d1954b649ba324996fcde42ac287b8`  
+**Валидированный implementation head:** `d7af7c80722274f9217bc5545d150f92e9363f37`  
+**Runtime PR / CI:** #337 / `31256316536`  
+**PostgreSQL integration CI:** `31256316532`
 
-> Эта страница является переводом статуса. При расхождениях действуют GitHub
-> `main`, английский [STATUS](../STATUS.md) и
-> [TEST_REPORT.md](../../TEST_REPORT.md).
+## Проверка
 
----
+- Python 3.11: **2078 passed / 13 skipped / 0 failed**;
+- Python 3.12: **2078 passed / 13 skipped / 0 failed**;
+- **9756 statements / 100.00% line coverage**;
+- `core/postgresql_migration.py`: **44/44 statements**;
+- `core/postgresql_migration_impl.py`: **336/336 statements**;
+- **7/7** заявленных Ring Zero mutants уничтожены;
+- **9/9** постоянных CI jobs завершились успешно;
+- **1/1** реальный PostgreSQL/pgvector integration job завершился успешно.
 
-## 🧭 Правило чтения
+Точные evidence: [TEST_REPORT.md](../../TEST_REPORT.md) и
+[machine-readable manifest](../status/implementation-manifest.json).
 
-```text
-GitHub Crystal main = публичная истина реализации
-Notion Crystal       = синхронизированная карта гранта и стратегии
-Titan / Full         = отдельная исследовательская лаборатория
-```
+## Текущая проверенная граница возможностей
 
-Документ, заметка Notion, prototype branch или модуль Titan не является текущей
-возможностью Crystal, пока он не реализован, протестирован и слит в Crystal
-`main`.
-
-## ✅ Проверенный checkpoint
-
-PR #265 ввёл строгую read-only границу HTTP-запросов:
+Crystal сохраняет local-first SQLite baseline и реализует фазу 1 issue #332:
 
 ```text
-POST /ingest   → допуск через Guardian + TruthGate
-POST /ask      → строго read-only канонический запрос
-GET  /receipt  → read-only запрос с Receipt
+проверенный завершённый logical bundle
+→ preflight PostgreSQL 16 / pgvector 0.8.2
+→ новая неактивная target schema
+→ serializable import
+→ независимый read-only canonical re-hash цели
+→ точная equivalence по count / byte / SHA-256
+→ receipts без секретов
 ```
 
-HTTP endpoints `/ask` и `/receipt` не записывают L0/L1 или L3, не переводят ESM,
-не обрабатывают outbox, не сохраняют эпизодические связи, не инициализируют
-embedding fingerprint и не изменяют адаптивную верификацию.
+PostgreSQL driver является optional extra и lazy-load выполняется только
+явными operator commands. Обычная установка остаётся на стандартной библиотеке
+Python. Импортированная цель:
 
-### Явные остаточные границы
+- не регистрируется в обычной runtime composition;
+- остаётся `active=false`;
+- не обслуживает normal reads или writes;
+- не становится выбранным backend из-за доступности, импорта или equivalence.
 
-- CLI `ask` и `receipt` остаются на `core.pipeline.run()`;
-- `core.pipeline.run()` остаётся совместимым путём, способным выполнять допуск;
-- MCP не имеет явных инструментов канонической записи, но поиск может
-  инициализировать отсутствующий embedding fingerprint.
-
-Это известные follow-ups, а не скрытые claims реализации.
-
-## 🧪 Baseline проверки
+## Граница authority
 
 ```text
-1713 passed
-12 skipped
-0 failed
-6389 measured statements
-100.00% coverage
+storage profile         = deployment identity
+migration bundle        = operation evidence
+physical L3             = multi-status storage
+strict Canon            = trusted read projection
+migration/import        != TruthGate admission
+successful equivalence  != backend activation
 ```
 
-CI run `30284938992` завершил все семь постоянных jobs до merge: тесты Python
-3.11/3.12, Ruff, security, Docker build, evaluation gate и JSONL integrity.
+Guardian, TruthGate, restrictions, TrustSnapshot и CanonicalView не изменены.
+Перевод документа также не создаёт отдельную authority над кодом или evidence.
 
-## 🛡️ Граница публичных claims
+## Что ещё отсутствует
+
+- active PostgreSQL read/write runtime selection;
+- exact-vs-ANN retrieval evaluation и принятые ANN thresholds;
+- activation, cutover, source/target fencing, rollback и dual-write;
+- PostgreSQL backup/restore/upgrade lifecycle, production pooling и distributed fencing;
+- production IdP/multi-tenancy;
+- legal, security или GDPR certification;
+- dedicated verified Reader Core / Semantic Reading Layer.
+
+## Граница публичных claims
 
 Crystal можно описывать как:
 
-- local-first проверяемую инфраструктуру памяти ИИ;
-- ядро памяти, ориентированное на источники и provenance;
-- систему с контролем допуска Guardian и TruthGate там, где он подключён;
-- систему с CanonicalView, TRACE и воспроизводимыми Receipt там, где они подключены;
-- runtime на стандартной библиотеке с опциональными адаптерами и интерфейсами;
-- проект с техническими механизмами удаления и ограничения, релевантными GDPR;
-- независимо тестируемую open-source baseline исследовательского уровня.
+- local-first инфраструктуру памяти ИИ с provenance и auditability;
+- систему с явными admission и read-only query boundaries;
+- SQLite-baseline с проверенной backup/restore и logical portability;
+- систему с неактивным PostgreSQL import/equivalence operator path;
+- open-source baseline, которую можно независимо тестировать.
 
 Crystal нельзя описывать как:
 
-- Titan или полный Personal ExoCortex;
-- автономную когнитивную операционную систему;
-- сознательную, живую или биологически эквивалентную мозгу систему;
-- универсально истинную или полностью свободную от hallucinations систему;
-- юридически GDPR-сертифицированный продукт;
-- security-сертифицированный или production-ready multi-tenant сервис;
-- систему, обязательно зависящую от внешнего LLM или cloud provider.
+- активный PostgreSQL runtime;
+- систему с automatic backend switching;
+- production-ready multi-tenant service;
+- юридически или security-сертифицированный продукт;
+- универсальный источник истины или гарантию zero hallucinations;
+- сознательную систему.
 
-## 💶 Статус гранта
+## Статус гранта
 
-Заявка в **NLnet NGI0 Commons Fund** подана и находится на рассмотрении.
-Репозиторий не утверждает, что финансирование предоставлено.
+Проект подан в NLnet и находится на рассмотрении. **Получение гранта или
+изменение бюджета не заявляется.**
 
-```text
-ТЕКУЩАЯ BASELINE
-    +
-ИЗМЕРИМЫЙ ФИНАНСИРУЕМЫЙ DELTA
-    =
-НЕЗАВИСИМО ПРОВЕРЯЕМЫЙ DELIVERABLE
-```
+PR #337 и issue #332 уже являются merged baseline и не могут повторно
+учитываться как будущий funded delta. Следующая storage-фаза должна быть
+отдельно специфицирована, проверена и находиться за пределами inactive import
+и exact equivalence.
 
-Уже слитая работа остаётся baseline и не учитывается повторно как оплачиваемый
-milestone. Нормативные правила поддерживаются в:
+## Навигация
 
-- [GRANT_NLNET_SCOPE.md](../GRANT_NLNET_SCOPE.md)
-- [baseline-funded-delta-matrix.md](../grants/baseline-funded-delta-matrix.md)
-- [funding-use-plan.md](../grants/funding-use-plan.md)
+- [Быстрый старт](./QUICKSTART.md)
+- [Статус реализации](./IMPLEMENTATION_STATUS.md)
+- [Русский README](../../README.ru.md)
+- [Английский нормативный статус](../STATUS.md)
+- [Отчёт о тестах](../../TEST_REPORT.md)
+- [Архитектура inactive PostgreSQL import](../architecture/POSTGRESQL_INACTIVE_IMPORT.md)
+- [Политика локализации](../LOCALIZATION_POLICY.md)
 
-Русское резюме находится в [GRANT_OVERVIEW.md](./GRANT_OVERVIEW.md).
-
-## 🧪 Решение по evaluation replay
-
-Детерминированная replay-реализация Titan рассмотрена как prior art. Она не была
-скопирована в runtime Crystal.
-
-```text
-REVIEWED_PRIOR_ART
-DOCUMENTED_ONLY
-M4_CANDIDATE
-NO_RUNTIME_CHANGE
-NO_CANON_WRITE
-NO_BUDGET_CHANGE
-BASELINE_NOT_MOVED
-```
-
-Будущая реализация должна расширять существующий evaluation stack Crystal,
-проходить отдельный RFC/issue/PR, оставаться offline и неавторитетной, сохраняя
-TruthGate и границы query-path.
-
-## 🔬 Правило для исследований и draft PR
-
-Открытые исследовательские или branding PR не являются истиной реализации. Перед
-merge их необходимо rebase на актуальный `main`, повторно проверить грантовые
-формулировки и сопоставить с нормативным статусом.
-
-## 📚 Маршрут reviewer
-
-1. [REVIEWER_GUIDE.md](./REVIEWER_GUIDE.md)
-2. [QUICKSTART.md](./QUICKSTART.md)
-3. [GRANT_OVERVIEW.md](./GRANT_OVERVIEW.md)
-4. [GLOSSARY.md](./GLOSSARY.md)
-5. [Нормативный английский статус](../STATUS.md)
-6. [TEST_REPORT.md](../../TEST_REPORT.md)
-
----
-
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 **Русский** · 🇨🇳 [简体中文](../zh-CN/STATUS.md) · 🇸🇦 [العربية](../ar/STATUS.md) · 🇯🇵 [日本語](../ja/STATUS.md) · 🇮🇳 [हिन्दी](../hi/STATUS.md)
+> При расхождении действует актуальный GitHub `main`, executable tests и
+> английский исходный документ, указанный в `translation-source`.
