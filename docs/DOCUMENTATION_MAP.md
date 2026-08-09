@@ -84,6 +84,19 @@ budgeted again as future delivery.
 D4 translations are current in all nine supported locale packs against
 `main@151b41c680190f7f3de729bf63e8e80a9d2285ce`.
 
+## D5 extended references and retirement
+
+- [Extended-reference policy](./EXTENDED_REFERENCE_POLICY.md)
+- [Machine-readable D5 inventory](./status/d5-inventory.json)
+- [Archive routing](./archive/README.md)
+
+The D5 source inventory classifies every documentation-like root, `docs/` and `.github/` surface
+as `CURRENT`, `REFRESH_NEEDED`, `RETIRED` or `ENGLISH_ONLY_BY_DESIGN`. Detailed ADR/profile,
+security/privacy/GDPR/legal mapping, tests/benchmarks/CI, machine-readable status, AI/audit,
+research/RFC and grant-evidence material remains English-only by design. Historical snapshots
+remain preserved and routed; they are not implementation or grant evidence. D5 localized guides
+remain a separate downstream PR.
+
 ## Evidence and multilingual governance
 
 - [Test report](../TEST_REPORT.md)
@@ -92,6 +105,7 @@ D4 translations are current in all nine supported locale packs against
 - [D2 translation manifest](./status/d2-translation-manifest.json)
 - [D3 translation manifest](./status/d3-translation-manifest.json)
 - [D4 translation manifest](./status/d4-translation-manifest.json)
+- [D5 source inventory](./status/d5-inventory.json)
 - [Localization policy](./LOCALIZATION_POLICY.md)
 - [Translation status](./TRANSLATION_STATUS.md)
 
@@ -99,9 +113,8 @@ Locale indexes: [ar](./ar/README.md), [de](./de/README.md), [es](./es/README.md)
 [fr](./fr/README.md), [hi](./hi/README.md), [it](./it/README.md),
 [ja](./ja/README.md), [ru](./ru/README.md), [zh-CN](./zh-CN/README.md).
 
-Root READMEs and D1–D4 are current. D5 remains a separate inventory phase; it must classify
-stable and historical files as `CURRENT`, `REFRESH_NEEDED`, `RETIRED` or
-`ENGLISH_ONLY_BY_DESIGN` before localized D5 work.
+Root READMEs and D1–D4 are current. D5 source inventory and policy are current in this PR;
+localized D5 guides remain pending until a separate exact-checkpoint translation PR.
 
 The legacy phrase `REFRESH_NEEDED translated document packs` remains part of the validation
-vocabulary. It now applies only when a pack actually needs refresh; D4 no longer does.
+vocabulary. It applies only when a pack actually needs refresh; D4 no longer does.
