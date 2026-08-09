@@ -166,7 +166,8 @@ def main() -> int:
             "does not imply that funding has been awarded",
             "approx. **€50,000**",
             "it does not represent an approved budget",
-            "the grant does not pay to recreate features that are already implemented",
+            "the grant does not pay to recreate",
+            "features that are already implemented",
         ),
         errors,
     )
