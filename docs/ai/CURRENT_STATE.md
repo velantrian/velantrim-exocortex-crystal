@@ -64,7 +64,7 @@ and all mandatory capability, authority, grant and certification non-claims.
 
 ## 6. D5 source inventory state
 
-D1–D4 are current multilingual public surfaces. The D5 source inventory is defined by
+D1–D4 are current multilingual public surfaces. D5 extended-reference inventory remains pending until this source-policy PR is merged with exact-head evidence. The proposed inventory is defined by
 [`../EXTENDED_REFERENCE_POLICY.md`](../EXTENDED_REFERENCE_POLICY.md) and
 [`../status/d5-inventory.json`](../status/d5-inventory.json), anchored to the signed D4 merge
 `main@3de746e74be844c6fda55849c10faac5c3f0631a`.
