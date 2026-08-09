@@ -85,9 +85,9 @@ inactive with `active=false`.
 Grant state remains `submitted / under review / not awarded` with no budget change. D1–D4
 work merged before a grant agreement is existing baseline and cannot be budgeted again.
 
-Localized D4 documents remain `REFRESH_NEEDED` until a separate translation PR uses the
-immutable merged D4 English source checkpoint. D5 extended references remain phased.
-Native-speaker editorial certification is not claimed.
+D4 project/grant context remains `REFRESH_NEEDED` for localized documents until a separate
+translation PR uses the immutable merged D4 English source checkpoint. D5 extended references
+remain phased. Native-speaker editorial certification is not claimed.
 
 See [`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md),
 [`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md),
