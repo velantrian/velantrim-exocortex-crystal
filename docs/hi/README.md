@@ -7,15 +7,13 @@
 <!-- d3-status: CURRENT -->
 <!-- d4-source: main@151b41c680190f7f3de729bf63e8e80a9d2285ce -->
 <!-- d4-status: CURRENT -->
-<!-- d5-status: INVENTORY_PENDING -->
+<!-- d5-source: main@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9 -->
+<!-- d5-status: CURRENT -->
 # हिंदी में Crystal दस्तावेज़ पैक
-
 अंग्रेज़ी प्राथमिक स्रोत और conflict resolver है। अनुवाद capability, security, legal या grant दावों को मजबूत नहीं करते।
-
 - D1 `CURRENT`: [Quick Start](QUICKSTART.md), [Status](STATUS.md), [Implementation Status](IMPLEMENTATION_STATUS.md)
 - D2 `CURRENT`: [Reviewer Guide](REVIEWER_GUIDE.md), [Safety/Privacy/Failures](SAFETY_PRIVACY_AND_FAILURES.md)
 - D3 `CURRENT`: [Architecture Overview](ARCHITECTURE_OVERVIEW.md), [Storage and Authority Boundaries](STORAGE_AND_AUTHORITY_BOUNDARIES.md)
 - D4 `CURRENT`: [Grant Overview](GRANT_OVERVIEW.md), [Glossary](GLOSSARY.md)
-- D5 `INVENTORY_PENDING`; पुराने दस्तावेज़ `REFRESH_NEEDED` हो सकते हैं।
-
+- D5 `CURRENT`: [Extended Reference Guide](EXTENDED_REFERENCE_GUIDE.md)
 [Documentation map](../DOCUMENTATION_MAP.md) · [Localization policy](../LOCALIZATION_POLICY.md) · [Translation status](../TRANSLATION_STATUS.md)
