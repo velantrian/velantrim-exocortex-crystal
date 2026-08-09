@@ -67,6 +67,10 @@ migration contracts and ADRs remain conflict-resolving English technical contrac
 - [GDPR mapping](../GDPR.md)
 - [Failure modes](./FAILURE_MODES.md)
 
+D2 uses the stable English Reviewer Guide and Safety/Privacy/Failure summary as its source
+contract. Current D2 translations exist for all nine supported locales and link to the
+detailed English Security, Privacy, GDPR and Failure Modes contracts.
+
 ## Evidence and performance
 
 - [Test report](../TEST_REPORT.md)
