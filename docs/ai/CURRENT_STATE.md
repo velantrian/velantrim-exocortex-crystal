@@ -65,8 +65,29 @@ D3 is current across all nine supported locale packs. The D3 validator covers
 links, physical-L3/strict-Canon separation, read-only query, PostgreSQL `active=false`,
 import-not-activation, Reader-Core-not-implemented and NLnet-not-awarded boundaries.
 
-D4 project/grant context remains `REFRESH_NEEDED`; D5 extended references remain phased.
-Native-speaker editorial certification is not claimed.
+## 5. D4 English source state
+
+The D4 English source family is reconciled before localized D4 refresh:
+
+- `docs/PROJECT_GRANT_AND_GOVERNANCE.md` — compact translation-oriented source;
+- `docs/GLOSSARY.md` — authoritative English terminology and claim discipline;
+- `docs/GRANT_NLNET_SCOPE.md` — grant scope and no-award boundary;
+- `ROADMAP.md` — delivered baseline and future packages;
+- `GOVERNANCE.md` — maintainer-led governance constrained by executable evidence;
+- `CONTRIBUTING.md` — contribution, backend and evidence rules;
+- detailed baseline/delta matrix and funding-use plan remain authoritative English evidence.
+
+D4 source correction removes the stale claims that every L3 graph record is truth and that
+Mock is the default backend. Physical L3 remains multi-status storage; strict Canon remains a
+deny-dominant trusted projection. SQLite is ordinary active local-first. PostgreSQL remains
+inactive with `active=false`.
+
+Grant state remains `submitted / under review / not awarded` with no budget change. D1–D4
+work merged before a grant agreement is existing baseline and cannot be budgeted again.
+
+D4 project/grant context remains `REFRESH_NEEDED` for localized documents until a separate
+translation PR uses the immutable merged D4 English source checkpoint. D5 extended references
+remain phased. Native-speaker editorial certification is not claimed.
 
 See [`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md),
 [`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md),
