@@ -101,6 +101,6 @@ The historical sequencing phrase `D5 remains a separate inventory phase` is reta
 
 Locale indexes: [ar](./ar/README.md), [de](./de/README.md), [es](./es/README.md), [fr](./fr/README.md), [hi](./hi/README.md), [it](./it/README.md), [ja](./ja/README.md), [ru](./ru/README.md), [zh-CN](./zh-CN/README.md).
 
-D1–D5 are current across all nine supported locales. The nine Extended Reference Guides route to current English sources without bulk-translating volatile evidence.
+Root READMEs and D1–D4 are current. D1–D5 are current across all nine supported locales. The nine Extended Reference Guides route to current English sources without bulk-translating volatile evidence.
 
 The legacy phrase `REFRESH_NEEDED translated document packs` remains validation vocabulary; the live D5 inventory resolves zero such documents.
