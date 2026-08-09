@@ -17,7 +17,18 @@ cannot strengthen implementation, security, authority or grant claims.
 
 ## Root README status
 
-All nine supported localized root READMEs are `CURRENT`; English remains the primary source.
+| Language | File | Status | Source checkpoint |
+|---|---|---:|---|
+| English | `README.md` | `CURRENT` | primary source |
+| Arabic | `README.ar.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
+| German | `README.de.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
+| Spanish | `README.es.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
+| French | `README.fr.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
+| Hindi | `README.hi.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
+| Italian | `README.it.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
+| Japanese | `README.ja.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
+| Russian | `README.ru.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
+| Simplified Chinese | `README.zh-CN.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
 
 ## D1 — entry and use documents
 
@@ -93,7 +104,7 @@ boundaries. Native-speaker editorial certification is not implied.
 Refresh grant overview, roadmap, glossary, governance and contribution guidance without
 claiming an NLnet award or re-budgeting merged baseline work.
 
-### D5 — extended references
+### D5 — extended reference documents
 
 Prioritize stable reader-value documents. Volatile AI-agent logs and low-level CI records may
 remain English with exact evidence links and an explicit rationale.
