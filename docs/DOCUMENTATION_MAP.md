@@ -15,7 +15,7 @@ English architecture / ADR / security / grant / governance contracts
         ↓
 English README primary public source
         ↓
-CURRENT localized root READMEs and D1–D4 translations
+CURRENT full-parity localized READMEs and D1–D4 translations
         ↓
 D5 inventory: CURRENT / REFRESH_NEEDED / RETIRED / ENGLISH_ONLY_BY_DESIGN
         ↓
@@ -100,3 +100,6 @@ Locale indexes: [ar](./ar/README.md), [de](./de/README.md), [es](./es/README.md)
 Root READMEs and D1–D4 are current. D5 remains a separate inventory phase; it must classify
 stable and historical files as `CURRENT`, `REFRESH_NEEDED`, `RETIRED` or
 `ENGLISH_ONLY_BY_DESIGN` before localized D5 work.
+
+The legacy phrase `REFRESH_NEEDED translated document packs` remains part of the validation
+vocabulary. It now applies only when a pack actually needs refresh; D4 no longer does.
