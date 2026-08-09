@@ -10,7 +10,8 @@ cannot strengthen implementation, security, authority or grant claims.
 **Russian D1 source checkpoint:** `main@16d71e731ee658b1faa65c9ea45c0d8cca290f7c`.  
 **Remaining-locale D1 source checkpoint:** `main@a497b7d3cfbe59ca75b11d7449d5a728455b3130`.  
 **D2 source checkpoint:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.  
-**D3 source checkpoint:** `main@208f1c772ee3a112cb803d2413c120bef23adb05`.
+**D3 source checkpoint:** `main@208f1c772ee3a112cb803d2413c120bef23adb05`.  
+**D4 English source:** reconciled in the current source-contract PR; localized D4 remains `REFRESH_NEEDED` until merge and separate translation.
 
 **Policy:** [`LOCALIZATION_POLICY.md`](LOCALIZATION_POLICY.md).  
 **Tracking issue:** [#341](https://github.com/velantrian/velantrim-exocortex-crystal/issues/341).
@@ -88,6 +89,38 @@ D3 preserves physical-L3/strict-Canon separation, read-only public queries, SQLi
 runtime, PostgreSQL `active=false`, import-not-activation and Reader-Core-not-implemented
 boundaries. Native-speaker editorial certification is not implied.
 
+## D4 — project, grant, governance and glossary
+
+The English D4 source family is reconciled first:
+
+```text
+docs/PROJECT_GRANT_AND_GOVERNANCE.md
+docs/GLOSSARY.md
+docs/GRANT_NLNET_SCOPE.md
+ROADMAP.md
+GOVERNANCE.md
+CONTRIBUTING.md
+```
+
+The detailed baseline/funded-delta matrix and funding-use plan remain authoritative English
+grant evidence.
+
+Localized `GRANT_OVERVIEW.md` and `GLOSSARY.md` files already exist in all nine locale packs,
+but presence does not prove freshness. They remain `REFRESH_NEEDED` until a separate D4
+translation PR records the immutable merged English source checkpoint, reconciles claims and
+passes D4 validation.
+
+D4 source constraints:
+
+- grant status: submitted / under review / not awarded;
+- budget change: none;
+- merged pre-agreement work cannot be rebudgeted;
+- physical L3 is not strict Canon;
+- SQLite is ordinary active local-first;
+- PostgreSQL remains inactive with `active=false`;
+- Reader Core remains not implemented;
+- no security/legal/GDPR or native-speaker editorial certification claim.
+
 ## Remaining document families
 
 | Document family | Current multilingual state | Next phase |
@@ -98,11 +131,6 @@ boundaries. Native-speaker editorial certification is not implied.
 | D3 architecture/storage authority | all nine supported locales `CURRENT` | maintain |
 | D4 project/grant context | `REFRESH_NEEDED` translated document packs | D4 |
 | D5 extended reference corpus | mixed / English | D5 |
-
-### D4 — project and grant documents
-
-Refresh grant overview, roadmap, glossary, governance and contribution guidance without
-claiming an NLnet award or re-budgeting merged baseline work.
 
 ### D5 — extended reference documents
 
