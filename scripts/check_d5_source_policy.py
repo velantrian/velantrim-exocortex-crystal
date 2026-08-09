@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections import Counter
 from pathlib import Path
 
@@ -11,6 +12,10 @@ MANIFEST_PATH = ROOT / "docs/status/d5-inventory.json"
 POLICY_PATH = ROOT / "docs/EXTENDED_REFERENCE_POLICY.md"
 LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
 ALLOWED = {"CURRENT", "REFRESH_NEEDED", "RETIRED", "ENGLISH_ONLY_BY_DESIGN"}
+
+
+def normalized(text: str) -> str:
+    return re.sub(r"\s+", " ", text).strip().lower()
 
 
 def eligible_paths(extensions: set[str]) -> list[str]:
@@ -110,24 +115,25 @@ def main() -> int:
         if not path.is_file():
             errors.append(f"retired exact file missing: {relative}")
             continue
-        searchable = path.read_text(encoding="utf-8", errors="replace").lower()
+        searchable = normalized(path.read_text(encoding="utf-8", errors="replace"))
         if not any(marker in searchable for marker in ("historical", "archived", "handoff only")):
             errors.append(f"{relative}: retired file lacks visible historical warning")
 
-    archive_readme = (ROOT / "docs/archive/README.md").read_text(encoding="utf-8")
-    for marker in ("historical", "Not canonical", "not reviewer claim material", "docs/ARCHITECTURE.md"):
-        if marker not in archive_readme:
+    archive_readme = normalized((ROOT / "docs/archive/README.md").read_text(encoding="utf-8"))
+    for marker in ("historical", "not canonical", "not reviewer claim material", "docs/architecture.md"):
+        if normalized(marker) not in archive_readme:
             errors.append(f"archive routing: missing marker {marker!r}")
 
+    policy_searchable = normalized(policy)
     for marker in (
-        "d5-source-policy: CURRENT",
-        "CURRENT", "REFRESH_NEEDED", "RETIRED", "ENGLISH_ONLY_BY_DESIGN",
-        "physical L3 != strict Canon", "retrieval score != evidence",
+        "d5-source-policy: current",
+        "current", "refresh_needed", "retired", "english_only_by_design",
+        "physical l3 != strict canon", "retrieval score != evidence",
         "model output != source truth", "migration proof != claim proof",
-        "import success != activation", "active=false", "Reader Core is not implemented",
+        "import success != activation", "active=false", "reader core is not implemented",
         "submitted / under review / not awarded", "budget change is none",
     ):
-        if marker not in policy:
+        if normalized(marker) not in policy_searchable:
             errors.append(f"D5 policy: missing marker {marker!r}")
 
     workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
