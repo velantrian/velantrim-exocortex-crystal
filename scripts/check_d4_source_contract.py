@@ -25,62 +25,68 @@ MARKERS = (
 )
 REQUIRED = {
     "docs/PROJECT_GRANT_AND_GOVERNANCE.md": (
-        "submitted / under review / not awarded",
+        "proposal: submitted",
+        "review: in progress",
+        "award: not awarded",
         "budget change: none",
-        "physical L3      != strict Canon",
-        "PostgreSQL/pgvector remains an optional inactive migration/equivalence target with `active=false`",
-        "A dedicated Reader Core remains not implemented",
-        "Anything merged before a grant agreement is existing baseline",
+        "physical l3 != strict canon",
+        "postgresql/pgvector remains an optional inactive migration/equivalence target with `active=false`",
+        "a dedicated reader core remains not implemented",
+        "anything merged before a grant agreement is existing baseline",
     ),
     "docs/GLOSSARY.md": (
-        "physical L3",
-        "strict Canon",
+        "physical l3",
+        "strict canon",
         "active=false",
         "funded delta",
         "submitted / under review / not awarded",
-        "Reader Core",
-        "Native-speaker editorial certification",
+        "reader core",
+        "native-speaker editorial certification",
     ),
     "docs/GRANT_NLNET_SCOPE.md": (
-        "Grant status:** submitted / under review / not awarded",
-        "Budget change:** none",
-        "D1–D4 documentation work",
-        "Reader Core is not implemented",
-        "submitted proposal   != awarded grant",
+        "grant status:** submitted / under review / not awarded",
+        "budget change:** none",
+        "d1–d4 documentation work",
+        "reader core is not implemented",
+        "submitted proposal != awarded grant",
     ),
     "ROADMAP.md": (
-        "Grant status:** submitted / under review / not awarded",
-        "Budget change:** none",
-        "SQLite is the ordinary active local-first profile",
-        "A dedicated Reader Core remains not implemented",
-        "D1–D4 documentation work merged before an agreement",
+        "grant status:** submitted / under review / not awarded",
+        "budget change:** none",
+        "sqlite ordinary active local-first profile",
+        "a dedicated reader core remains not implemented",
+        "d1–d4 documentation work merged before an agreement",
     ),
     "GOVERNANCE.md": (
-        "physical L3      != strict Canon",
+        "physical l3 != strict canon",
         "public query surfaces remain read-only",
-        "PostgreSQL/pgvector remains inactive with `active=false`",
-        "NLnet proposal: submitted / under review / not awarded",
-        "Anything merged before an agreement is existing baseline",
+        "postgresql/pgvector remains inactive with `active=false`",
+        "nlnet proposal: submitted / under review / not awarded",
+        "anything merged before an agreement is existing baseline",
     ),
     "CONTRIBUTING.md": (
-        "physical L3      != strict Canon",
-        "SQLite | ordinary active local-first profile",
-        "Mock | explicit ephemeral development and CI backend",
-        "PostgreSQL/pgvector | optional inactive import/equivalence target with `active=false`",
+        "physical l3 != strict canon",
+        "sqlite | ordinary active local-first profile",
+        "mock | explicit ephemeral development and ci backend",
+        "postgresql/pgvector | optional inactive import/equivalence target with `active=false`",
         "submitted / under review / not awarded",
-        "Anything merged before a funding agreement is existing baseline",
+        "anything merged before a funding agreement is existing baseline",
     ),
 }
 STALE = (
-    "the L3 canonical graph is the single source of truth",
-    "default backends are dependency-free (`mock` L3",
-    "Grant status: awarded",
-    "funding has been awarded",
-    "Crystal is GDPR compliant",
+    "the l3 canonical graph is the single source of truth",
+    "default backends are dependency-free (`mock` l3",
+    "grant status: awarded",
+    "crystal is gdpr compliant",
     "automatic backend switching is enabled",
-    "Reader Core is implemented",
+    "reader core is implemented",
 )
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
+
+
+def normalized(text: str) -> str:
+    """Collapse Markdown line wrapping while keeping machine identifiers visible."""
+    return re.sub(r"\s+", " ", text).strip().lower()
 
 
 def check_links(relative: str, text: str, errors: list[str]) -> None:
@@ -102,6 +108,13 @@ def check_links(relative: str, text: str, errors: list[str]) -> None:
             errors.append(f"{relative}: broken local link: {raw!r}")
 
 
+def require(relative: str, text: str, markers: tuple[str, ...], errors: list[str]) -> None:
+    searchable = normalized(text)
+    for marker in markers:
+        if normalized(marker) not in searchable:
+            errors.append(f"{relative}: missing current marker {marker!r}")
+
+
 def main() -> int:
     errors: list[str] = []
 
@@ -114,81 +127,100 @@ def main() -> int:
         for marker in MARKERS:
             if marker not in text:
                 errors.append(f"{relative}: missing marker {marker!r}")
-        for marker in REQUIRED[relative]:
-            if marker not in text:
-                errors.append(f"{relative}: missing current marker {marker!r}")
+        require(relative, text, REQUIRED[relative], errors)
+        searchable = normalized(text)
         for stale in STALE:
-            if stale in text:
+            if stale in searchable:
                 errors.append(f"{relative}: stale or unsupported claim {stale!r}")
         check_links(relative, text, errors)
 
+    supporting: dict[str, str] = {}
     for relative in SUPPORTING_FILES:
         path = ROOT / relative
         if not path.is_file():
             errors.append(f"missing D4 supporting file: {relative}")
             continue
         text = path.read_text(encoding="utf-8")
+        supporting[relative] = text
         check_links(relative, text, errors)
 
-    matrix = (ROOT / "docs/grants/baseline-funded-delta-matrix.md").read_text(encoding="utf-8")
-    for marker in (
-        "no award/budget change",
-        "cannot be counted again as future paid work",
-        "target remains `active=false`",
-        "no dedicated Reader Core",
-    ):
-        if marker not in matrix:
-            errors.append(f"baseline/delta matrix: missing marker {marker!r}")
+    matrix = supporting.get("docs/grants/baseline-funded-delta-matrix.md", "")
+    require(
+        "baseline/delta matrix",
+        matrix,
+        (
+            "no award/budget change",
+            "cannot be counted again as future paid work",
+            "target remains `active=false`",
+            "no dedicated reader core",
+        ),
+        errors,
+    )
 
-    plan = (ROOT / "docs/grants/funding-use-plan.md").read_text(encoding="utf-8")
-    for marker in (
-        "Submitted to NLnet for review",
-        "does not imply that funding has been awarded",
-        "approx. **€50,000**",
-        "does not represent an approved budget",
-        "The grant does not pay to recreate features that are already implemented",
-    ):
-        if marker not in plan:
-            errors.append(f"funding use plan: missing marker {marker!r}")
+    plan = supporting.get("docs/grants/funding-use-plan.md", "")
+    require(
+        "funding use plan",
+        plan,
+        (
+            "submitted to nlnet for review",
+            "does not imply that funding has been awarded",
+            "approx. **€50,000**",
+            "does not represent an approved budget",
+            "the grant does not pay to recreate features that are already implemented",
+        ),
+        errors,
+    )
 
     doc_map = (ROOT / "docs/DOCUMENTATION_MAP.md").read_text(encoding="utf-8")
-    for marker in (
-        "PROJECT_GRANT_AND_GOVERNANCE.md",
-        "GLOSSARY.md",
-        "D4 uses the compact Project/Grant/Governance overview",
-        "submitted and under review, not awarded",
-        "REFRESH_NEEDED translated document packs",
-    ):
-        if marker not in doc_map:
-            errors.append(f"documentation map: missing marker {marker!r}")
+    require(
+        "documentation map",
+        doc_map,
+        (
+            "PROJECT_GRANT_AND_GOVERNANCE.md",
+            "GLOSSARY.md",
+            "D4 uses the compact Project/Grant/Governance overview",
+            "submitted and under review, not awarded",
+            "REFRESH_NEEDED translated document packs",
+        ),
+        errors,
+    )
 
     state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
-    for marker in (
-        "D3 is current across all nine supported locale packs",
-        "The D4 English source family is reconciled",
-        "Localized D4 documents remain `REFRESH_NEEDED`",
-        "D1–D4",
-    ):
-        if marker not in state:
-            errors.append(f"AI current state: missing marker {marker!r}")
+    require(
+        "AI current state",
+        state,
+        (
+            "D3 is current across all nine supported locale packs",
+            "The D4 English source family is reconciled",
+            "D4 project/grant context remains `REFRESH_NEEDED`",
+            "D1–D4",
+        ),
+        errors,
+    )
 
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
-    for marker in (
-        "## D4 — project, grant, governance and glossary",
-        "Localized `GRANT_OVERVIEW.md` and `GLOSSARY.md` files",
-        "remain `REFRESH_NEEDED`",
-        "## D5 — extended reference documents",
-    ):
-        if marker not in ledger:
-            errors.append(f"translation ledger: missing marker {marker!r}")
+    require(
+        "translation ledger",
+        ledger,
+        (
+            "## D4 — project, grant, governance and glossary",
+            "Localized `GRANT_OVERVIEW.md` and `GLOSSARY.md` files",
+            "remain `REFRESH_NEEDED`",
+            "## D5 — extended reference documents",
+        ),
+        errors,
+    )
 
     workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
-    for marker in (
-        "Validate English D4 source contract",
-        "python scripts/check_d4_source_contract.py",
-    ):
-        if marker not in workflow:
-            errors.append(f"CI workflow: missing D4 source validator marker {marker!r}")
+    require(
+        "CI workflow",
+        workflow,
+        (
+            "Validate English D4 source contract",
+            "python scripts/check_d4_source_contract.py",
+        ),
+        errors,
+    )
 
     if errors:
         print("D4 source validation failed:")
