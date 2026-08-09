@@ -2,7 +2,7 @@
 <!-- d3-source-scope: architecture-storage-authority -->
 # Crystal Architecture Overview
 
-**Status date:** 2026-08-08  
+**Status date:** 2026-08-09  
 **Purpose:** stable, translation-oriented architecture entry point.  
 **Authority:** merged code, exact CI and the implementation manifest remain runtime truth.
 
@@ -17,25 +17,26 @@ Guardian policy checks
         ↓
 TruthGate admission decision
         ↓
-L1 operational state + multi-status L3 graph
+L1 operational state + multi-status physical L3
         ↓
-strict Canon read projection
+deny-dominant strict Canon read projection
         ↓
 read-only retrieval / answer / bounded refusal
 ```
 
-Crystal does not treat every stored node, retrieved result or model output as truth.
-Physical L3 stores multiple statuses. Strict Canon is the deny-dominant trusted read
-projection produced by policy and evidence constraints.
+Crystal does not treat every stored node, retrieved result or model output as truth. Physical
+L3 stores multiple statuses. Strict Canon is the trusted read projection produced by current
+policy and evidence constraints.
 
-## Memory layers
+## Memory and review layers
 
 | Layer | Role | Authority boundary |
 |---|---|---|
 | L0 | process-local working state | ephemeral, not durable truth |
-| L1 | SQLite operational memory | durable facts, state, audit, receipts and outbox |
-| L2 | semantic retrieval support | ranking aid, not evidence or admission |
+| L1 | SQLite operational memory | durable facts, ESM, evidence, audit, receipts, import/review and outbox state |
+| L2 | pending/review staging | candidate or quarantined claims before final admission |
 | L3 | graph-oriented multi-status storage | physical storage, not identical to strict Canon |
+| Strict read view | TrustSnapshot / CanonicalView | deny-dominant grounding surface |
 
 ## Read and write separation
 
@@ -50,9 +51,9 @@ unknown candidates. If strict grounding is insufficient, a bounded refusal is ex
 ## Storage profiles
 
 SQLite is the ordinary active local-first profile. A first durable `auto` selection may use
-optional LadybugDB when installed, otherwise SQLite, and then persists the selected backend,
-schema version and non-secret locator digest. Later conflicts fail closed. Silent fallback
-to ephemeral Mock is forbidden; explicit Mock remains development/test state.
+optional LadybugDB when installed, otherwise SQLite, and then persists the selected backend
+and non-secret locator identity. Later backend or locator conflicts fail closed. Silent
+fallback to ephemeral Mock is forbidden; explicit Mock remains development/test state.
 
 Remote Neo4j is an explicit operator choice and expands the trust boundary.
 
@@ -77,9 +78,10 @@ admission, strict Canon membership, cutover, rollback, dual-write or production 
 
 ## Source-grounded ingestion
 
-Source provenance, text spans, document records and import sessions are implemented baseline.
-A dedicated Reader Core for multi-pass document structure, coverage maps, contradiction-aware
-rereading and document-level synthesis is still future work upstream of admission.
+Source spans and import-session evidence are implemented baseline. Document records, dry-run
+and review flows preserve source identity before ordinary Guardian and TruthGate admission.
+A dedicated Reader Core for multi-pass document structure, coverage maps,
+contradiction-aware rereading and document-level synthesis is still future work.
 
 ## Safety and privacy
 

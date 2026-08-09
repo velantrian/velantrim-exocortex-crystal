@@ -1,6 +1,6 @@
 # Crystal Current State
 
-**Status date:** 2026-08-08  
+**Status date:** 2026-08-09  
 **Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
 **Validated runtime head / CI:** `d7af7c80722274f9217bc5545d150f92e9363f37` / `31256316536`  
 **PostgreSQL integration:** `31256316532`  
@@ -64,8 +64,13 @@ documents plus nine indexes, exact checkpoint, local links, read-only query, Pos
 `active=false`, non-global erasure, security/legal/GDPR non-certification and NLnet-not-awarded
 boundaries.
 
-Architecture remains D3; grant/project context D4; extended references D5. Those families
-remain `REFRESH_NEEDED` until independently reconciled.
+Architecture remains D3. PR #346 added compact English D3 summaries but changed only three
+files and did not wire its validator into CI. The corrective D3 source reconciliation must
+update the detailed architecture, durable profile, migration contracts and ADR-021, then run
+the D3 validator in `docs-status` before any localized D3 document is marked `CURRENT`.
+
+D3 translations remain `REFRESH_NEEDED` until that corrective English checkpoint is merged
+and used as their exact source. Grant/project context remains D4; extended references D5.
 
 See [`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md),
 [`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md) and
