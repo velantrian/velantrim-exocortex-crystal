@@ -9,6 +9,7 @@
 <!-- d4-status: CURRENT -->
 <!-- d5-source: main@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9 -->
 <!-- d5-status: CURRENT -->
+<!-- status-vocabulary: REFRESH_NEEDED -->
 # Crystal-Dokumentationspaket auf Deutsch
 Englisch bleibt Primärquelle und Konfliktlöser. Übersetzungen verstärken keine Capability-, Sicherheits-, Rechts- oder Förderbehauptung.
 - D1 `CURRENT`: [Quick Start](QUICKSTART.md), [Status](STATUS.md), [Implementation Status](IMPLEMENTATION_STATUS.md)

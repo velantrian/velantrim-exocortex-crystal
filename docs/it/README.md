@@ -9,6 +9,7 @@
 <!-- d4-status: CURRENT -->
 <!-- d5-source: main@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9 -->
 <!-- d5-status: CURRENT -->
+<!-- status-vocabulary: REFRESH_NEEDED -->
 # Pacchetto di documentazione Crystal in italiano
 L’inglese resta fonte primaria e arbitro. Le traduzioni non rafforzano affermazioni di capacità, sicurezza, diritto o finanziamento.
 - D1 `CURRENT`: [Quick Start](QUICKSTART.md), [Status](STATUS.md), [Implementation Status](IMPLEMENTATION_STATUS.md)

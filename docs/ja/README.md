@@ -9,6 +9,7 @@
 <!-- d4-status: CURRENT -->
 <!-- d5-source: main@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9 -->
 <!-- d5-status: CURRENT -->
+<!-- status-vocabulary: REFRESH_NEEDED -->
 # Crystal 日本語ドキュメントパック
 英語が一次ソースおよび矛盾解決基準です。翻訳は capability、security、legal、grant の主張を強化しません。
 - D1 `CURRENT`: [Quick Start](QUICKSTART.md), [Status](STATUS.md), [Implementation Status](IMPLEMENTATION_STATUS.md)

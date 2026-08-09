@@ -9,6 +9,7 @@
 <!-- d4-status: CURRENT -->
 <!-- d5-source: main@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9 -->
 <!-- d5-status: CURRENT -->
+<!-- status-vocabulary: REFRESH_NEEDED -->
 # Пакет документации Crystal на русском языке
 Английский остаётся первичным источником и языком разрешения противоречий. Переводы не усиливают capability, security, legal или grant claims.
 - D1 `CURRENT`: [Quick Start](QUICKSTART.md), [Status](STATUS.md), [Implementation Status](IMPLEMENTATION_STATUS.md)
