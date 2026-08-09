@@ -1,26 +1,28 @@
+<!-- d3-source-contract: CURRENT -->
+<!-- d3-source-scope: architecture-storage-authority -->
 # Cross-Backend Storage Migration Contract
 
-**Status:** Accepted architecture contract; SQLite export/verification phases implemented, later phases absent
-**Decision issue:** #327
-**Runtime baseline:** SQLite lifecycle from PR #325
-**Documentation language:** English is authoritative during active engineering
-**Implemented operator slice:** [SQLite logical export and verification](./SQLITE_LOGICAL_EXPORT.md)
+**Status:** accepted architecture contract; phases 1–6 implemented for the approved physical-L3 bundle, phases 7–9 not implemented  
+**Decision issue:** #327  
+**SQLite export phase:** issue #331 / PR #335  
+**Inactive PostgreSQL import and exact equivalence:** issue #332 / PR #337  
+**Ordinary active profile:** SQLite  
+**PostgreSQL target:** inactive with `active=false`
 
 ## Purpose
 
 Changing a physical storage backend is not a configuration edit. It is a controlled,
-auditable transfer of physical state between two independently identified deployments.
+auditable transfer of state between independently identified deployments.
 
-This contract applies to future SQLite, LadybugDB, Neo4j, PostgreSQL/pgvector, or other
-storage transitions. It does not grant any backend epistemic authority.
+This contract does not grant any backend epistemic authority.
 
 ```text
-backend availability != migration
-profile edit/delete   != migration
-import success        != activation
-migration receipt     != evidence for a claim
-retrieval quality     != exact state equivalence
-physical L3           != strict Canon
+backend availability     != migration
+profile edit/delete      != migration
+import success           != activation
+migration receipt        != evidence for a claim
+retrieval quality        != exact state equivalence
+physical L3              != strict Canon
 ```
 
 ## Authority boundary
@@ -29,229 +31,242 @@ Migration moves physical state only. It must not:
 
 - call or emulate TruthGate admission;
 - change Guardian decisions;
-- promote, demote, verify, invalidate, restrict, erase, or resolve a claim;
+- promote, demote, verify, invalidate, restrict, erase or resolve a claim;
 - select a contradiction winner;
 - convert vector similarity into evidence;
-- change strict Canon membership except as an identical consequence of preserved state.
+- change strict Canon membership except as the identical consequence of preserved state.
 
-The source deployment remains authoritative until a separate explicit cutover receipt is
-created after all required gates pass.
+The source deployment remains authoritative until a separately reviewed explicit cutover
+receipt exists. No cutover receipt exists in the current implementation.
 
-## Required phases
+## Phase model
 
 ```text
-1. preflight
-2. deterministic read-only logical export
-3. completed bundle publication
-4. independent bundle verification
-5. import into a new inactive target
-6. exact state-equivalence evaluation
-7. retrieval-quality evaluation
-8. explicit cutover
-9. optional explicit rollback
+1. preflight                                [implemented]
+2. deterministic read-only logical export   [implemented]
+3. completed bundle publication             [implemented]
+4. independent bundle verification           [implemented]
+5. import into a new inactive target         [implemented for PostgreSQL]
+6. exact state-equivalence evaluation        [implemented for approved bundle datasets]
+7. retrieval-quality evaluation              [not implemented]
+8. explicit cutover and fencing              [not implemented]
+9. optional explicit rollback                [not implemented]
 ```
 
-Each phase must be independently observable and fail closed. Completion of one phase does
-not imply permission to start or claim completion of another.
+Each phase is independently observable and fail closed. Completion of one phase does not
+grant permission to claim another.
 
 ## Phase 1 — Preflight
 
-Preflight must record without exposing secrets:
+Preflight records bounded non-secret deployment information:
 
 - source backend, schema version, profile identity and locator digest;
-- target backend/version/capabilities and inactive locator identity;
-- required optional dependencies and extension versions;
-- source integrity and read-only snapshot capability;
-- available disk space and output/target non-existence;
+- target backend, version, extension and inactive locator identity;
+- required optional dependencies;
+- source integrity and snapshot capability;
+- output or target non-existence;
 - migration bundle schema version;
-- expected authority-bearing and derived datasets;
+- expected datasets;
 - unsupported features or lossy mappings.
 
-Preflight must reject an active target, an existing output path, malformed profiles,
-unsupported schemas, missing capabilities, or a transformation that cannot preserve the
-required state.
+For the implemented PostgreSQL target, preflight requires supported PostgreSQL, pgvector and
+Psycopg versions, TLS by default, a writable primary, an explicit migration role, a fresh
+allowlisted schema and operator-installed pgvector.
+
+It rejects active or existing targets, malformed profiles, unsupported versions, missing
+capabilities, unsafe TLS configuration and transformations that cannot preserve required
+state.
 
 ## Phase 2 — Deterministic read-only logical export
 
-The first implementation slice is intentionally limited to SQLite logical export and
-independent verification.
+The implemented SQLite exporter:
 
-Export must:
+- opens the source read-only;
+- uses a stable snapshot;
+- serializes records in deterministic order;
+- uses canonical JSON/JSONL;
+- preserves identifiers and typed payloads;
+- records per-dataset counts, byte sizes and SHA-256 digests;
+- binds the source profile identity without credentials;
+- publishes completion last;
+- leaves the active source and profile unchanged;
+- removes handled incomplete output after failure;
+- enforces bounded streaming/resource limits.
 
-- open the source read-only;
-- use one stable database snapshot;
-- serialize records in deterministic order;
-- use canonical JSON/JSONL representations;
-- preserve exact identifiers and typed payloads;
-- include per-file counts, byte sizes and SHA-256 digests;
-- record source profile identity without credentials;
-- publish a completion marker last;
-- leave the source database and profile unchanged;
-- remove a handled incomplete bundle after failure.
+A database-file backup is not automatically a backend-neutral migration export.
 
-A backup copy is not automatically a backend-neutral migration export. A migration bundle
-contains logical records and explicit schema semantics rather than a source-engine database
-file.
+## Approved logical datasets
 
-## Required logical datasets
+The current physical-L3 bundle covers:
 
-For the current SQLite physical L3 baseline:
-
-| Dataset | Required logical content | Ordering |
+| Dataset | Required logical content | Deterministic ordering |
 |---|---|---|
-| `nodes` | `fact_id` plus parsed node payload | `fact_id` |
+| `nodes` | `fact_id` plus canonical node payload | `fact_id` |
 | `vectors` | `fact_id` plus finite numeric vector | `fact_id` |
-| `edges` | source, relation, target, parsed properties | source, relation, target, canonical properties |
-| `entities` | entity id, kind, label | entity id |
-| `mentions` | fact id, entity id, relation | fact id, entity id, relation |
-| `meta` | metadata key and value, including embedder fingerprint when present | key |
+| `edges` | source, relation, target and canonical properties | source, relation, target, properties |
+| `entities` | entity id, kind and label | entity id |
+| `mentions` | fact id, entity id and relation | fact id, entity id, relation |
+| `meta` | metadata keys and values, including embedder metadata when present | key |
 
-Future migrations that include L1 operational state must separately enumerate facts,
-restrictions, erasure markers, evidence spans, import/review sessions, decision journals,
-audit checkpoints and pending projection work. They must not imply that exporting physical
-L3 alone is a complete whole-system migration.
+This is bounded physical-L3 portability, not a complete whole-system migration. L1 facts,
+restrictions, review/import sessions, audit checkpoints, receipts, outbox state, encryption
+metadata, configuration and other operational domains require explicit inclusion before any
+whole-system cutover claim.
 
 ## Phase 3 — Completed bundle publication
 
-A valid bundle must contain:
+A valid bundle contains:
 
 - a versioned manifest;
 - exactly the declared logical data files;
-- canonical records in deterministic order;
+- canonical deterministic records;
 - source identity and non-secret schema metadata;
-- a completion marker written only after internal verification;
-- hashes that bind the manifest and every declared file.
+- per-file counts, bytes and SHA-256;
+- a completion marker written last.
 
-An incomplete directory, a directory with undeclared files, a symlinked file, a malformed
-record, a count mismatch, an ordering violation, or a hash mismatch is invalid.
+Incomplete directories, undeclared files, symlinks, malformed records, count mismatches,
+ordering violations and hash mismatches fail closed.
 
-## Phase 4 — Independent verification
+## Phase 4 — Independent bundle verification
 
-Verification must be possible without opening or mutating the source deployment.
+Verification operates without opening or mutating the source deployment and validates:
 
-It must validate:
-
-- completion marker and manifest schemas;
-- manifest hash;
+- completion marker and manifest schema;
+- manifest and file hashes;
 - exact allowed file set;
-- file sizes, SHA-256 digests and record counts;
-- canonical JSON encoding and deterministic ordering;
-- identifier/payload shape;
-- finite vector elements and consistent dimensions when vectors exist;
+- sizes, counts and canonical encoding;
+- deterministic ordering;
+- identifier and payload shape;
+- finite vector elements and consistent dimensions;
 - source profile identity and declared backend;
-- declared database schema/user version;
-- cross-record diagnostics such as missing node/vector references.
+- cross-record references.
 
-Verification proves bundle integrity and contract conformance. It does not prove claim
-truth, target compatibility, successful import, or safe cutover.
+This proves bundle integrity and contract conformance. It does not prove claim truth, target
+compatibility, successful import or safe cutover.
 
-## Phase 5 — Inactive target import
+## Phase 5 — Inactive PostgreSQL target import
 
-Not implemented by the first runtime slice.
+Implemented scope:
 
-A future importer must:
+```text
+verified completed bundle
+→ PostgreSQL 16 / pgvector 0.8.2 / Psycopg 3.3.x preflight
+→ fresh velantrim_inactive_* schema
+→ one SERIALIZABLE transaction
+→ canonical dataset import
+→ target control state VERIFIED / active=false
+→ non-secret receipts
+```
 
-- require a new inactive target and explicit target profile path;
-- never overwrite or activate the current profile;
-- be idempotent or use an explicit resumable journal;
-- document transaction boundaries and crash windows;
-- preserve restrictions, erasure and audit semantics;
-- produce an import receipt;
-- leave the source active after success.
+The importer:
+
+- requires a new allowlisted inactive schema;
+- re-verifies the bundle before commit;
+- rolls back handled pre-commit failures;
+- does not overwrite or activate the source profile;
+- does not register PostgreSQL in ordinary runtime composition;
+- never serializes credential-bearing DSNs into artifacts;
+- converts database errors to bounded stage and SQLSTATE information.
+
+Successful import is **not activation** and cannot serve public reads or writes.
 
 ## Phase 6 — Exact state equivalence
 
-Exact equivalence is a blocking gate. It must compare source export and target logical
-export after import.
+The implemented verifier runs a read-only PostgreSQL transaction and independently re-hashes
+target rows in the same canonical dataset order as the source bundle.
 
-At minimum, future full-system migration proof must cover:
+Exact equivalence requires matching:
 
-- facts and stable identifiers;
-- serialized payload semantics;
-- vectors, dimensions and embedder fingerprint;
-- edges, entities, mentions and metadata;
-- epistemic/ESM/trust state;
-- contradiction dispositions;
-- restrictions and erasure markers;
-- evidence/provenance references;
-- audit checkpoints and receipt continuity;
-- pending projection/outbox work.
+- record count;
+- canonical JSONL byte count;
+- SHA-256;
+- vector dimension;
+- bundle manifest identity;
+- non-secret target identity;
+- target `state=VERIFIED`;
+- target `active=false`.
 
-A single mismatch blocks cutover even when retrieval benchmarks look good.
+The verifier does not update target evidence. A single mismatch fails the operation.
 
-## Phase 7 — Retrieval-quality equivalence
+Exact equivalence proves the approved physical-L3 datasets match the verified bundle. It does
+not prove retrieval quality, whole-system continuity, production readiness or permission to
+cut over.
 
-Retrieval evaluation is separate from exact-state equivalence.
+## Phase 7 — Retrieval-quality evaluation
 
-For exact search and approximate indexes, record:
+Not implemented.
+
+Future acceptance must separately measure:
 
 - exact nearest-neighbour baseline;
 - recall@k and filtered recall;
-- ranking drift for a versioned query corpus;
-- latency and memory/index size;
-- index build/rebuild duration;
-- behavior when the index is stale or unavailable.
+- ranking drift for a versioned corpus;
+- latency, memory and index size;
+- build/rebuild duration;
+- stale or unavailable index behavior.
 
-Approximate HNSW/IVFFlat performance cannot waive an exact-state mismatch.
+No HNSW or IVFFlat index is created by the inactive-import phase. Approximate retrieval
+cannot waive an exact-state mismatch.
 
-## Phase 8 — Explicit cutover
+## Phase 8 — Explicit cutover and fencing
 
-Cutover is not implemented by the first runtime slice.
+Not implemented.
 
-A future cutover must require:
+A future cutover requires separately reviewed contracts for:
 
 - verified export, import, exact-equivalence and retrieval receipts;
 - explicit operator confirmation;
-- target health and backup proof;
+- source/target read and write fencing;
+- target health and backup evidence;
 - atomic or fail-closed profile activation;
-- a cutover receipt binding source and target identities;
-- documented read/write freeze or fencing semantics.
+- immutable cutover receipt binding both identities;
+- crash-window and concurrency behavior.
 
 Automatic backend switching after data exists is forbidden.
 
 ## Phase 9 — Rollback
 
-Rollback must be explicit and must not silently overwrite state written after cutover.
-A future design must define:
+Not implemented.
 
-- the rollback window;
-- write freeze/fencing behavior;
-- target changes after activation;
+A future rollback design must define:
+
+- rollback window and expiry;
+- write freeze/fencing;
+- post-cutover target changes;
 - source revalidation;
 - rollback receipt and audit continuity;
-- conditions under which rollback is no longer safe.
+- conditions where rollback is no longer safe.
+
+Rollback must never silently overwrite newer state.
 
 ## Security and privacy
 
-- Credentials, tokens, passwords, DSNs with secrets and private keys must never enter the
-  bundle or storage profile.
-- Bundle permissions should default to owner-only.
-- Export and verification must reject final symlinks and no-clobber violations.
+- Credentials, tokens, passwords, private keys and credential-bearing DSNs must never enter
+  profiles, bundles, receipts, logs, issues or Notion.
+- Bundle and receipt paths use fail-closed no-clobber handling.
 - Sensitive payloads remain sensitive; migration does not create a public artifact.
-- Encryption-at-rest or transport encryption is deployment policy, not proof of claim truth.
+- TLS is required by default for PostgreSQL; an insecure local-test flag is test-only.
+- Backup and migration create additional copies. Active-store erasure does not erase them
+  automatically.
+- Encryption and transport protection are deployment controls, not proof of claim truth.
 
-## First runtime implementation slice
-
-The approved first slice is:
+## Current boundary summary
 
 ```text
-locked SQLite profile
-→ deterministic read-only logical export
-→ completed backend-neutral bundle
-→ independent fail-closed verification
+SQLite backup / verify / inactive restore                         [implemented]
+bounded logical export / independent verification                 [implemented]
+inactive PostgreSQL import / exact approved-dataset equivalence    [implemented]
+active PostgreSQL runtime                                         [absent]
+ANN acceptance                                                     [absent]
+cutover / fencing / rollback / dual-write                         [absent]
 ```
 
-It explicitly excludes import, PostgreSQL, pgvector, activation, rollback, dual-write,
-live cutover and automatic switching.
+## Related documents
 
-## Acceptance evidence for each implementation PR
-
-- exact base/head/merge SHA;
-- focused adversarial tests;
-- 100% repository line-coverage gate;
-- all nine permanent CI jobs;
-- deterministic repeat-export evidence;
-- source immutability proof;
-- malformed/tampered/symlink/no-clobber tests;
-- explicit remaining limitations;
-- GitHub and Notion synchronization.
+- [Full architecture](../ARCHITECTURE.md)
+- [Storage and authority boundaries](../STORAGE_AND_AUTHORITY_BOUNDARIES.md)
+- [Durable storage profile](./DURABLE_STORAGE_PROFILE.md)
+- [SQLite logical export](./SQLITE_LOGICAL_EXPORT.md)
+- [Inactive PostgreSQL import](./POSTGRESQL_INACTIVE_IMPORT.md)
+- [PostgreSQL/pgvector profile RFC](./POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
+- [ADR-021](../adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md)
