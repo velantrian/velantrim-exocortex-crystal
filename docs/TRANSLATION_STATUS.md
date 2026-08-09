@@ -9,7 +9,8 @@ cannot strengthen implementation, security, authority or grant claims.
 **Root README source checkpoint:** `main@e521440e9bb188d88475f17dd5bcdd161b314605`.  
 **Russian D1 source checkpoint:** `main@16d71e731ee658b1faa65c9ea45c0d8cca290f7c`.  
 **Remaining-locale D1 source checkpoint:** `main@a497b7d3cfbe59ca75b11d7449d5a728455b3130`.  
-**D2 source checkpoint:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
+**D2 source checkpoint:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.  
+**D3 source reconciliation:** PR #346 is partial; a corrective merged checkpoint is required before D3 translations become `CURRENT`.
 
 **Policy:** [`LOCALIZATION_POLICY.md`](LOCALIZATION_POLICY.md).  
 **Tracking issue:** [#341](https://github.com/velantrian/velantrim-exocortex-crystal/issues/341).
@@ -65,16 +66,28 @@ references linked from every localized summary.
 | Russian | `CURRENT` | `CURRENT` | `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f` |
 | Simplified Chinese | `CURRENT` | `CURRENT` | `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f` |
 
-D2 current files:
+## D3 — architecture and storage authority
+
+The compact English Architecture Overview and Storage/Authority Boundaries exist, but the
+post-merge audit of PR #346 found that the detailed architecture/profile/migration/ADR files
+were not part of that PR and the D3 validator was not wired into CI. Therefore no localized
+D3 file is current yet.
+
+The corrective English source checkpoint must reconcile and validate:
 
 ```text
-docs/<locale>/REVIEWER_GUIDE.md
-docs/<locale>/SAFETY_PRIVACY_AND_FAILURES.md
+docs/ARCHITECTURE.md
+docs/ARCHITECTURE_OVERVIEW.md
+docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md
+docs/architecture/DURABLE_STORAGE_PROFILE.md
+docs/architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md
+docs/architecture/POSTGRESQL_INACTIVE_IMPORT.md
+docs/adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md
 ```
 
-The D2 validator checks all 18 documents, nine indexes, exact source checkpoint, local links,
-read-only query, PostgreSQL `active=false`, non-global erasure, non-certification and
-NLnet-not-awarded boundaries.
+After that merge, each locale will translate only the compact Architecture Overview and
+Storage/Authority Boundaries, while linking to the detailed English contracts. The exact
+corrective merge SHA—not PR #346—will be the D3 translation source checkpoint.
 
 ## Remaining document families
 
@@ -83,7 +96,7 @@ NLnet-not-awarded boundaries.
 | Root README | all nine supported locales `CURRENT` | maintain |
 | D1 entry/use | all nine supported locales `CURRENT` | maintain |
 | D2 reviewer/safety | all nine supported locales `CURRENT` | maintain |
-| Architecture and stable ADRs | mostly English | D3 |
+| D3 architecture/storage authority | English correction in progress; localized `REFRESH_NEEDED` | D3 |
 | Grant overview / roadmap / glossary | partial and `REFRESH_NEEDED` | D4 |
 | Extended reference corpus | mixed / English | D5 |
 
@@ -91,8 +104,9 @@ NLnet-not-awarded boundaries.
 
 ### D3 — architecture documents
 
-Translate stable architecture overviews and selected mature ADR/profile documents while
-preserving Guardian, TruthGate, strict Canon, evidence and migration boundaries.
+Reconcile the complete stable English source first, then translate the compact architecture
+and storage/authority summaries. Preserve Guardian, TruthGate, physical-L3/strict-Canon,
+evidence, SQLite ordinary-runtime and PostgreSQL `active=false` boundaries.
 
 ### D4 — project and grant documents
 
