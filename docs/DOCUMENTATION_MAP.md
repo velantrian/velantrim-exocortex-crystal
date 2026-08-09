@@ -47,8 +47,9 @@ history, not implementation evidence.
 - [Inactive PostgreSQL import](./architecture/POSTGRESQL_INACTIVE_IMPORT.md)
 - [ADR-021](./adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md)
 
-D3 compact architecture/storage documents are current across all nine locales. Detailed
-profiles and ADRs remain conflict-resolving English technical contracts.
+D3 uses the complete stable English architecture source family. Compact architecture/storage
+documents are current across all nine locales. Detailed profiles and ADRs remain
+conflict-resolving English technical contracts.
 
 ## Safety, privacy and failure behaviour
 

@@ -43,8 +43,9 @@ Issue #341 D1 is complete for all nine supported locales. Russian D1 is tied to
 D1 is current across all nine supported locale packs. D2 reviewer/safety translations are
 current against `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
 
-D3 is current across all nine supported locale packs against
-`main@208f1c772ee3a112cb803d2413c120bef23adb05`. The D3 validator covers
+**D3 English source checkpoint:** `main@208f1c772ee3a112cb803d2413c120bef23adb05`.
+The complete D3 source validator covers the stable architecture/storage authority family.
+D3 is current across all nine supported locale packs. The D3 translation validator covers
 **18 architecture/storage documents plus nine indexes**.
 
 ## 5. D4 English source and localized state
