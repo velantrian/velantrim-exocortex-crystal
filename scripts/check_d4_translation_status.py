@@ -106,7 +106,6 @@ def main() -> int:
         for marker in (
             f"d4-source: main@{SOURCE}",
             "d4-status: CURRENT",
-            "d5-status: INVENTORY_PENDING",
             "GRANT_OVERVIEW.md",
             "GLOSSARY.md",
             "Localization policy",
@@ -114,6 +113,14 @@ def main() -> int:
         ):
             if marker not in index:
                 errors.append(f"{index_relative}: missing marker {marker!r}")
+        if not any(
+            marker in index
+            for marker in ("d5-status: INVENTORY_PENDING", "d5-status: CURRENT")
+        ):
+            errors.append(
+                f"{index_relative}: missing valid D5 progression marker "
+                "('d5-status: INVENTORY_PENDING' or 'd5-status: CURRENT')"
+            )
         check_links(index_relative, index, errors)
 
         for relative in FILES[locale]:
@@ -154,10 +161,17 @@ def main() -> int:
         "D4 is current across all nine supported locale packs",
         f"main@{SOURCE}",
         "18 project/grant/glossary documents plus nine indexes",
-        "D5 extended-reference inventory remains pending",
     ):
         if marker not in current_state:
             errors.append(f"AI current state: missing marker {marker!r}")
+    if not any(
+        marker in current_state
+        for marker in (
+            "D5 extended-reference inventory remains pending",
+            "D5 source inventory/policy is anchored",
+        )
+    ):
+        errors.append("AI current state: missing valid D5 progression marker")
 
     doc_map = (ROOT / "docs/DOCUMENTATION_MAP.md").read_text(encoding="utf-8")
     for marker in (
