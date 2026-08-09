@@ -60,9 +60,9 @@ current against `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
 **D3 English source checkpoint:** `main@208f1c772ee3a112cb803d2413c120bef23adb05`
 after corrective PR #347. The complete D3 source validator runs in `docs-status`.
 
-D3 is current across all nine supported locale packs. The D3 validator covers **18
-architecture/storage documents plus nine indexes**, exact source checkpoint, local links,
-physical-L3/strict-Canon separation, read-only query, PostgreSQL `active=false`,
+D3 is current across all nine supported locale packs. The D3 validator covers
+**18 architecture/storage documents plus nine indexes**, exact source checkpoint, local
+links, physical-L3/strict-Canon separation, read-only query, PostgreSQL `active=false`,
 import-not-activation, Reader-Core-not-implemented and NLnet-not-awarded boundaries.
 
 D4 project/grant context remains `REFRESH_NEEDED`; D5 extended references remain phased.
