@@ -165,7 +165,7 @@ def main() -> int:
             "submitted to nlnet for review",
             "does not imply that funding has been awarded",
             "approx. **€50,000**",
-            "none of the tables below represent an approved budget",
+            "it does not represent an approved budget",
             "the grant does not pay to recreate features that are already implemented",
         ),
         errors,
