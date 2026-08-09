@@ -40,6 +40,8 @@ The D4 English source family is reconciled at `main@151b41c680190f7f3de729bf63e8
 
 D4 is current across all nine supported locale packs. The D4 validator covers **18 project/grant/glossary documents plus nine indexes**, exact source checkpoint, local links and all mandatory capability, authority, grant and certification non-claims.
 
+D1–D4 remain current multilingual public surfaces while D5 adds the extended-reference routing layer.
+
 ## 6. D5 completed state
 
 D5 source inventory/policy is anchored to signed `main@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9`. D5 is current across all nine supported locale packs through **nine Extended Reference Guides** and nine synchronized indexes.
