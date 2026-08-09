@@ -9,7 +9,7 @@
 <!-- d4-status: CURRENT -->
 <!-- d5-source: main@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9 -->
 <!-- d5-status: CURRENT -->
-<!-- status-vocabulary: REFRESH_NEEDED -->
+<!-- status-vocabulary: `CURRENT` / `REFRESH_NEEDED` / `RETIRED` / `ENGLISH_ONLY_BY_DESIGN` -->
 # हिंदी में Crystal दस्तावेज़ पैक
 अंग्रेज़ी प्राथमिक स्रोत और conflict resolver है। अनुवाद capability, security, legal या grant दावों को मजबूत नहीं करते।
 - D1 `CURRENT`: [Quick Start](QUICKSTART.md), [Status](STATUS.md), [Implementation Status](IMPLEMENTATION_STATUS.md)
