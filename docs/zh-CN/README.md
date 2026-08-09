@@ -9,7 +9,7 @@
 <!-- d4-status: CURRENT -->
 <!-- d5-source: main@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9 -->
 <!-- d5-status: CURRENT -->
-<!-- status-vocabulary: REFRESH_NEEDED -->
+<!-- status-vocabulary: `CURRENT` / `REFRESH_NEEDED` / `RETIRED` / `ENGLISH_ONLY_BY_DESIGN` -->
 # Crystal 简体中文文档包
 英语仍是主要来源和冲突解决依据。翻译不能强化 capability、security、legal 或 grant 声明。
 - D1 `CURRENT`: [Quick Start](QUICKSTART.md), [Status](STATUS.md), [Implementation Status](IMPLEMENTATION_STATUS.md)
