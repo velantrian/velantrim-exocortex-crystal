@@ -90,12 +90,12 @@ D4 translations are current in all nine supported locale packs against
 - [Machine-readable D5 inventory](./status/d5-inventory.json)
 - [Archive routing](./archive/README.md)
 
-The D5 source inventory classifies every documentation-like root, `docs/` and `.github/` surface
-as `CURRENT`, `REFRESH_NEEDED`, `RETIRED` or `ENGLISH_ONLY_BY_DESIGN`. Detailed ADR/profile,
-security/privacy/GDPR/legal mapping, tests/benchmarks/CI, machine-readable status, AI/audit,
-research/RFC and grant-evidence material remains English-only by design. Historical snapshots
-remain preserved and routed; they are not implementation or grant evidence. D5 localized guides
-remain a separate downstream PR.
+D5 remains a separate inventory phase. The D5 source inventory classifies every
+documentation-like root, `docs/` and `.github/` surface as `CURRENT`, `REFRESH_NEEDED`,
+`RETIRED` or `ENGLISH_ONLY_BY_DESIGN`. Detailed ADR/profile, security/privacy/GDPR/legal
+mapping, tests/benchmarks/CI, machine-readable status, AI/audit, research/RFC and grant-evidence
+material remains English-only by design. Historical snapshots remain preserved and routed; they
+are not implementation or grant evidence. D5 localized guides remain a separate downstream PR.
 
 ## Evidence and multilingual governance
 
