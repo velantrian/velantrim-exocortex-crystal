@@ -60,8 +60,9 @@ profiles and ADRs remain conflict-resolving English technical contracts.
 - [GDPR mapping](../GDPR.md)
 - [Failure modes](./FAILURE_MODES.md)
 
-D2 compact reviewer/safety documents are current across all nine locales. No legal, GDPR or
-security certification is implied.
+D2 uses the stable English Reviewer Guide and Safety/Privacy/Failure summary as its source
+contract. D2 compact reviewer/safety documents are current across all nine locales. No legal,
+GDPR or security certification is implied.
 
 ## Project, grant and governance
 
