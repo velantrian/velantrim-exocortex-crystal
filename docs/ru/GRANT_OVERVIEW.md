@@ -1,138 +1,31 @@
-# 💶 Обзор гранта — Velantrim Crystal
+<!-- translation-source: docs/PROJECT_GRANT_AND_GOVERNANCE.md@151b41c680190f7f3de729bf63e8e80a9d2285ce -->
+<!-- d4-locale: ru -->
+<!-- translation-status: CURRENT -->
+<!-- d4-boundary: physical-l3-not-strict-canon -->
+<!-- d4-boundary: retrieval-score-not-evidence -->
+<!-- d4-boundary: model-output-not-source-truth -->
+<!-- d4-boundary: migration-proof-not-claim-proof -->
+<!-- d4-nonclaim: import-is-not-activation -->
+<!-- d4-nonclaim: reader-core-not-implemented -->
+<!-- d4-nonclaim: nlnet-not-awarded -->
+<!-- d4-nonclaim: security-legal-gdpr-not-certified -->
+<!-- d4-nonclaim: native-speaker-editorial-not-certified -->
+# Обзор проекта, гранта и управления
 
-> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 [Deutsch](../de/GRANT_OVERVIEW.md) · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md) · 🇪🇸 [Español](../es/GRANT_OVERVIEW.md) · 🇮🇹 [Italiano](../it/GRANT_OVERVIEW.md) · 🇷🇺 **Русский** · 🇨🇳 [简体中文](../zh-CN/GRANT_OVERVIEW.md) · 🇸🇦 [العربية](../ar/GRANT_OVERVIEW.md) · 🇯🇵 [日本語](../ja/GRANT_OVERVIEW.md) · 🇮🇳 [हिन्दी](../hi/GRANT_OVERVIEW.md)
->
-> Эта страница является переводом и вспомогательным обзором. Она не заменяет
-> поданную заявку или английские документы по milestones, бюджету и acceptance
-> criteria. При расхождениях действует английская версия.
-
-## 📌 Статус заявки
-
-Velantrim Crystal подан на рассмотрение в **NLnet NGI0 Commons Fund**.
-Репозиторий не утверждает, что финансирование уже предоставлено.
-
-Публичное ядро описывается как локальная, проверяемая и open-source
-инфраструктура памяти ИИ. Приоритеты — проверяемая provenance, контролируемый
-допуск знаний, локальная работа и воспроизводимые доказательства качества.
-
-## 🧭 Правило baseline / delta
+Crystal — local-first инфраструктура памяти, доказательств и границ решений для аудируемых AI-систем.
 
 ```text
-ТЕКУЩАЯ BASELINE
-    +
-ИЗМЕРИМЫЙ ФИНАНСИРУЕМЫЙ DELTA
-    =
-НЕЗАВИСИМО ПРОВЕРЯЕМЫЙ DELIVERABLE
+physical L3 != strict Canon
+retrieval score != evidence
+model output != source truth
+migration proof != claim proof
+import success != activation
 ```
 
-Это правило не позволяет повторно учитывать уже слитую функцию как
-финансируемую поставку.
+SQLite — обычный активный local-first профиль. Mock — явный backend разработки/CI. PostgreSQL/pgvector остаётся необязательной неактивной целью с `active=false`; успешный импорт не означает активацию.
 
-Если `main` изменится до формального соглашения, матрицу baseline/delta нужно
-обновить. Финансируемый delta должен оставаться реальным, измеримым и проверяемым
-третьей стороной.
+Заявка NLnet подана, находится на рассмотрении и не одобрена. Примерно €50,000 — только плановая сумма заявки, а не утверждённый бюджет или обязательство выплаты. Изменение бюджета: отсутствует. Работа, смерженная до соглашения, является существующим baseline и не может повторно считаться funded delta.
 
-## ✅ Уже существующая baseline
+Reader Core не реализован. Нет юридической, GDPR- или security-сертификации и нет редакционной сертификации носителями языка.
 
-Текущее публичное ядро включает, среди прочего:
-
-- локальную память L0/L1 и graph backends L3;
-- границы допуска Guardian и TruthGate;
-- типы claims, source status и provenance metadata;
-- TRACE и воспроизводимые Receipt;
-- baseline Evidence Span;
-- сессии импорта, dry-run и curator review;
-- технические механизмы удаления, ограничения и audit;
-- детерминированную evaluation с CI gates;
-- опциональные интерфейсы FastAPI и MCP;
-- локальный и provider-independent runtime по умолчанию.
-
-Точная реализация определяется только GitHub `main`,
-[docs/STATUS.md](../STATUS.md) и [TEST_REPORT.md](../../TEST_REPORT.md).
-
-## 🧱 Планируемый финансируемый delta
-
-Английская milestone-матрица описывает девять проверяемых направлений:
-
-| Milestone | Краткая цель |
-|---|---|
-| **M1** | воспроизводимая и локально развёртываемая open-source baseline |
-| **M2** | hardened опциональный FastAPI со строгими ролями и безопасными defaults |
-| **M3** | усиленные Evidence Span и проверка Receipt |
-| **M4** | более широкие, versioned и multilingual evaluation gates |
-| **M5** | curated knowledge corpus со ссылками на источники и лицензии |
-| **M6** | hardened knowledge adapters и institutional formats |
-| **M7** | структурированная multilingual accessibility |
-| **M8** | evaluation независимости от model providers |
-| **M9** | документация, governance и onboarding reviewers |
-
-Точные суммы, приоритеты и acceptance evidence находятся в:
-
-- [baseline-funded-delta-matrix.md](../grants/baseline-funded-delta-matrix.md)
-- [funding-use-plan.md](../grants/funding-use-plan.md)
-
-## 🌍 Русская документация и M7
-
-Этот русский пакет — docs-only улучшение baseline до формальной фиксации гранта.
-Он не вводит новый milestone или бюджетную статью.
-
-Его нельзя ретроспективно описывать как полностью поставленный M7 delta. Будущий
-финансируемый M7 должен предоставить дополнительную измеримую работу, например:
-
-- поддерживаемую структуру локализации;
-- определённый процесс review переводов;
-- другие согласованные европейские языки;
-- language-specific evaluation cases и quality reports;
-- отслеживаемую синхронизацию с releases.
-
-## 🧪 Evaluation replay и M4
-
-Titan содержит детерминированную replay-реализацию, рассмотренную как prior art.
-Для Crystal действует:
-
-```text
-Документированный prior art ≠ реализованный runtime Crystal
-```
-
-Будущий M4 может использовать стабильные digests, baseline/candidate diffs,
-versioned fixtures и строгие safety gates. В scope не включаются автоматически:
-
-- live-запись траекторий персональных запросов;
-- автоматическая оптимизация или самoизменение;
-- прямые или косвенные пути записи в Canon;
-- обязательные вызовы внешних providers;
-- автоматическое продвижение кандидатов.
-
-## 🔒 Вне scope и границы claims
-
-Текущая фаза не заявляет:
-
-- закрытый SaaS;
-- сознание, личность или биологическую cognition;
-- «нулевые hallucinations»;
-- автономную самоканонизацию;
-- production-ready multi-tenant hosting без отдельной security architecture;
-- обязательную зависимость от конкретного LLM provider;
-- юридическую GDPR- или security-сертификацию;
-- полный Personal ExoCortex или Titan как deliverable.
-
-## 🛡️ Reviewer-safe формулировка
-
-> Crystal уже предоставляет протестированное локальное ядро доверия для
-> проверяемой памяти ИИ. Запрашиваемое финансирование предназначено для чётко
-> ограниченного и измеримого engineering delta, который сделает ядро более
-> воспроизводимым, развёртываемым, безопасно эксплуатируемым, multilingual и
-> независимо проверяемым.
-
-## 📚 Нормативные источники
-
-1. [GRANT_NLNET_SCOPE.md](../GRANT_NLNET_SCOPE.md)
-2. [baseline-funded-delta-matrix.md](../grants/baseline-funded-delta-matrix.md)
-3. [funding-use-plan.md](../grants/funding-use-plan.md)
-4. [reviewer-qa.md](../grants/reviewer-qa.md)
-5. [STATUS.md](../STATUS.md)
-6. [TEST_REPORT.md](../../TEST_REPORT.md)
-
----
-
-> 🌐 🇬🇧 [English](../GRANT_NLNET_SCOPE.md) · 🇩🇪 [Deutsch](../de/GRANT_OVERVIEW.md) · 🇫🇷 [Français](../fr/GRANT_OVERVIEW.md) · 🇪🇸 [Español](../es/GRANT_OVERVIEW.md) · 🇮🇹 [Italiano](../it/GRANT_OVERVIEW.md) · 🇷🇺 **Русский** · 🇨🇳 [简体中文](../zh-CN/GRANT_OVERVIEW.md) · 🇸🇦 [العربية](../ar/GRANT_OVERVIEW.md) · 🇯🇵 [日本語](../ja/GRANT_OVERVIEW.md) · 🇮🇳 [हिन्दी](../hi/GRANT_OVERVIEW.md)
+Основные английские источники: [обзор](../PROJECT_GRANT_AND_GOVERNANCE.md), [глоссарий](../GLOSSARY.md), [NLnet scope](../GRANT_NLNET_SCOPE.md), [funding plan](../grants/funding-use-plan.md).

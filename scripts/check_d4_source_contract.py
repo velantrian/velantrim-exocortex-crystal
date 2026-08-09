@@ -25,50 +25,37 @@ MARKERS = (
 )
 REQUIRED = {
     "docs/PROJECT_GRANT_AND_GOVERNANCE.md": (
-        "proposal: submitted",
-        "review: in progress",
-        "award: not awarded",
-        "budget change: none",
-        "approximate €50,000 request",
-        "not an approved budget or payment commitment",
-        "physical l3 != strict canon",
+        "proposal: submitted", "review: in progress", "award: not awarded",
+        "budget change: none", "approximate €50,000 request",
+        "not an approved budget or payment commitment", "physical l3 != strict canon",
         "postgresql/pgvector remains an optional inactive migration/equivalence target with `active=false`",
         "a dedicated reader core remains not implemented",
         "anything merged before a grant agreement is existing baseline",
     ),
     "docs/GLOSSARY.md": (
-        "physical l3",
-        "strict canon",
-        "active=false",
-        "funded delta",
-        "submitted / under review / not awarded",
-        "reader core",
+        "physical l3", "strict canon", "active=false", "funded delta",
+        "submitted / under review / not awarded", "reader core",
         "native-speaker editorial certification",
     ),
     "docs/GRANT_NLNET_SCOPE.md": (
-        "grant status:** submitted / under review / not awarded",
-        "budget change:** none",
-        "d1–d4 documentation work",
-        "reader core is not implemented",
+        "grant status:** submitted / under review / not awarded", "budget change:** none",
+        "d1–d4 documentation work", "reader core is not implemented",
         "submitted proposal != awarded grant",
     ),
     "ROADMAP.md": (
-        "grant status:** submitted / under review / not awarded",
-        "budget change:** none",
+        "grant status:** submitted / under review / not awarded", "budget change:** none",
         "sqlite ordinary active local-first profile",
         "a dedicated reader core remains not implemented",
         "d1–d4 documentation work merged before an agreement",
     ),
     "GOVERNANCE.md": (
-        "physical l3 != strict canon",
-        "public query surfaces remain read-only",
+        "physical l3 != strict canon", "public query surfaces remain read-only",
         "postgresql/pgvector remains inactive with `active=false`",
         "nlnet proposal: submitted / under review / not awarded",
         "anything merged before an agreement is existing baseline",
     ),
     "CONTRIBUTING.md": (
-        "physical l3 != strict canon",
-        "sqlite | ordinary active local-first profile",
+        "physical l3 != strict canon", "sqlite | ordinary active local-first profile",
         "mock | explicit ephemeral development and ci backend",
         "postgresql/pgvector | optional inactive import/equivalence target with `active=false`",
         "submitted / under review / not awarded",
@@ -77,17 +64,14 @@ REQUIRED = {
 }
 STALE = (
     "the l3 canonical graph is the single source of truth",
-    "default backends are dependency-free (`mock` l3",
-    "grant status: awarded",
-    "crystal is gdpr compliant",
-    "automatic backend switching is enabled",
+    "default backends are dependency-free (`mock` l3", "grant status: awarded",
+    "crystal is gdpr compliant", "automatic backend switching is enabled",
     "reader core is implemented",
 )
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 
 
 def normalized(text: str) -> str:
-    """Normalize Markdown wrapping and lightweight syntax for semantic markers."""
     text = re.sub(r"(?m)^\s*>\s?", " ", text)
     text = text.replace("**", "").replace("__", "").replace("`", "")
     return re.sub(r"\s+", " ", text).strip().lower()
@@ -121,7 +105,6 @@ def require(relative: str, text: str, markers: tuple[str, ...], errors: list[str
 
 def main() -> int:
     errors: list[str] = []
-
     for relative in SOURCE_FILES:
         path = ROOT / relative
         if not path.is_file():
@@ -138,7 +121,7 @@ def main() -> int:
                 errors.append(f"{relative}: stale or unsupported claim {stale!r}")
         check_links(relative, text, errors)
 
-    supporting: dict[str, str] = {}
+    supporting = {}
     for relative in SUPPORTING_FILES:
         path = ROOT / relative
         if not path.is_file():
@@ -148,93 +131,45 @@ def main() -> int:
         supporting[relative] = text
         check_links(relative, text, errors)
 
-    matrix = supporting.get("docs/grants/baseline-funded-delta-matrix.md", "")
-    require(
-        "baseline/delta matrix",
-        matrix,
-        (
-            "no award/budget change",
-            "cannot be counted again as future paid work",
-            "target remains `active=false`",
-            "no dedicated reader core",
-        ),
-        errors,
-    )
-
-    plan = supporting.get("docs/grants/funding-use-plan.md", "")
-    require(
-        "funding use plan",
-        plan,
-        (
-            "submitted to nlnet for review",
-            "proposal has been submitted and is under review",
-            "does not imply that funding has been awarded",
-            "approx. **€50,000**",
-            "does not represent an approved budget",
-            "grant agreement or memorandum of understanding",
-            "the grant does not pay to recreate",
-            "features that are already implemented",
-        ),
-        errors,
-    )
+    require("baseline/delta matrix", supporting.get("docs/grants/baseline-funded-delta-matrix.md", ""), (
+        "no award/budget change", "cannot be counted again as future paid work",
+        "target remains `active=false`", "no dedicated reader core",
+    ), errors)
+    require("funding use plan", supporting.get("docs/grants/funding-use-plan.md", ""), (
+        "submitted to nlnet for review", "proposal has been submitted and is under review",
+        "does not imply that funding has been awarded", "approx. **€50,000**",
+        "does not represent an approved budget", "grant agreement or memorandum of understanding",
+        "the grant does not pay to recreate", "features that are already implemented",
+    ), errors)
 
     doc_map = (ROOT / "docs/DOCUMENTATION_MAP.md").read_text(encoding="utf-8")
-    require(
-        "documentation map",
-        doc_map,
-        (
-            "PROJECT_GRANT_AND_GOVERNANCE.md",
-            "GLOSSARY.md",
-            "D4 uses the compact Project/Grant/Governance overview",
-            "submitted and under review, not awarded",
-            "REFRESH_NEEDED translated document packs",
-        ),
-        errors,
-    )
-
+    require("documentation map", doc_map, (
+        "PROJECT_GRANT_AND_GOVERNANCE.md", "GLOSSARY.md",
+        "D4 uses the compact Project/Grant/Governance overview",
+        "submitted and under review, not awarded", "D4 translations are current",
+    ), errors)
     state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
-    require(
-        "AI current state",
-        state,
-        (
-            "D3 is current across all nine supported locale packs",
-            "The D4 English source family is reconciled",
-            "D4 project/grant context remains `REFRESH_NEEDED`",
-            "D1–D4",
-        ),
-        errors,
-    )
-
+    require("AI current state", state, (
+        "D3 is current across all nine supported locale packs",
+        "The D4 English source family is reconciled",
+        "D4 is current across all nine supported locale packs", "D1–D4",
+    ), errors)
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
-    require(
-        "translation ledger",
-        ledger,
-        (
-            "## D4 — project, grant, governance and glossary",
-            "Localized `GRANT_OVERVIEW.md` and `GLOSSARY.md` files",
-            "remain `REFRESH_NEEDED`",
-            "## D5 — extended reference documents",
-        ),
-        errors,
-    )
-
+    require("translation ledger", ledger, (
+        "## D4 — project, grant, governance and glossary",
+        "D4 is complete for all nine supported locales", "remain `CURRENT`",
+        "## D5 — extended reference documents",
+    ), errors)
     workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
-    require(
-        "CI workflow",
-        workflow,
-        (
-            "Validate English D4 source contract",
-            "python scripts/check_d4_source_contract.py",
-        ),
-        errors,
-    )
+    require("CI workflow", workflow, (
+        "Validate English D4 source contract", "python scripts/check_d4_source_contract.py",
+    ), errors)
 
     if errors:
         print("D4 source validation failed:")
         for error in errors:
             print(f"  - {error}")
         return 1
-
     print("English D4 project/grant/governance/glossary source contract is consistent")
     return 0
 

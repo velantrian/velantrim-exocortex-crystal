@@ -1,75 +1,28 @@
-# 📖 शब्दावली — Velantrim Crystal
+<!-- translation-source: docs/GLOSSARY.md@151b41c680190f7f3de729bf63e8e80a9d2285ce -->
+<!-- d4-locale: hi -->
+<!-- translation-status: CURRENT -->
+<!-- d4-boundary: physical-l3-not-strict-canon -->
+<!-- d4-boundary: retrieval-score-not-evidence -->
+<!-- d4-boundary: model-output-not-source-truth -->
+<!-- d4-boundary: migration-proof-not-claim-proof -->
+<!-- d4-nonclaim: import-is-not-activation -->
+<!-- d4-nonclaim: reader-core-not-implemented -->
+<!-- d4-nonclaim: nlnet-not-awarded -->
+<!-- d4-nonclaim: security-legal-gdpr-not-certified -->
+<!-- d4-nonclaim: native-speaker-editorial-not-certified -->
+# Crystal शब्दावली और दावे की अनुशासन-सीमा
 
-> 🌐 🇬🇧 [English](../GLOSSARY.md) · 🇩🇪 [Deutsch](../de/GLOSSARY.md) · 🇫🇷 [Français](../fr/GLOSSARY.md) · 🇪🇸 [Español](../es/GLOSSARY.md) · 🇮🇹 [Italiano](../it/GLOSSARY.md) · 🇷🇺 [Русский](../ru/GLOSSARY.md) · 🇨🇳 [简体中文](../zh-CN/GLOSSARY.md) · 🇸🇦 [العربية](../ar/GLOSSARY.md) · 🇯🇵 [日本語](../ja/GLOSSARY.md) · 🇮🇳 **हिन्दी**
+- **physical L3**: बहु-स्थिति संग्रह; अपने-आप **strict Canon** नहीं।
+- **retrieval score**: ranking संकेत, evidence नहीं।
+- **model output**: generated सामग्री, source truth नहीं।
+- **migration proof**: migration/equivalence प्रमाण, claim proof नहीं।
+- **SQLite**: सामान्य सक्रिय local-first profile।
+- **Mock**: स्पष्ट development/CI backend।
+- **PostgreSQL/pgvector**: `active=false` वाला वैकल्पिक निष्क्रिय लक्ष्य; import success activation नहीं।
+- **Reader Core**: नियोजित और अभी not implemented।
+- **NLnet**: submitted / under review / not awarded।
+- **लगभग €50,000**: planning, approved budget या payment commitment नहीं; budget change: none।
+- **baseline**: agreement से पहले merge काम; funded delta में दोबारा नहीं।
+- legal, GDPR, security या native-speaker editorial certification का दावा नहीं।
 
-यह glossary हिन्दी documentation में explanatory terminology को consistent रखती है। Contract identifiers,
-code symbols, CLI commands, active environment variables और API paths का अनुवाद नहीं किया जाता।
-
-| Term | हिन्दी में अर्थ |
-|---|---|
-| **Canon** | verified, TRACE-valid और policy-allowed canonical projection; graph में मौजूद हर node नहीं। |
-| **CanonicalView** | query के समय policy और verification boundaries लागू करके Canon का projection। |
-| **TruthGate** | claim के automatic admission का side-effect-free decision gate; objective truth oracle नहीं। |
-| **Guardian** | admission path का structural / safety contract check। |
-| **TRACE** | answer grounding और provenance समझाने वाला proof-oriented trace। |
-| **Receipt** | answer और evidence state को seal करने वाला record, जिसे बाद में replay / verify किया जा सकता है। |
-| **Provenance** | fact, source, transition, review और erase की origin/history information। |
-| **ProvenanceChain** | per-fact append-only hash-chained lifecycle record; current wiring scope के लिए अंग्रेज़ी status देखें। |
-| **Evidence span** | source का specific range जो claim को support करता है। |
-| **Claim** | source, epistemic state और metadata वाला candidate information; यह स्वतः Canon नहीं होता। |
-| **WORLD_FACT** | external world से संबंधित claim type; इसे admission policy pass करनी होती है। |
-| **LLM_OUTPUT** | model output origin का source status; अकेले यह `WORLD_FACT` admission के लिए independent evidence नहीं है। |
-| **L0** | process-local working cache; तेज़ और rebuildable। |
-| **L1** | SQLite/WAL operational memory; state, restriction और update रखती है। |
-| **L2** | pending / curator review path; स्वतः Canon में नहीं जाता। |
-| **L3** | graph-backed multi-status memory; physical L3 strict Canon के समान नहीं। |
-| **Admission** | claim को operational / graph state में स्वीकार करने वाली write-capable process। |
-| **Read-only query** | HTTP `/ask`/`/receipt`, CLI `ask`/`receipt` और MCP search का zero-durable-mutation contract। |
-| **Bounded refusal** | evidence या policy boundary अपर्याप्त होने पर अनुमान से gap न भरते हुए सीमित refusal। |
-| **Outbox** | deferred write / delivery workflow का operational mechanism; read-only query इसे touch नहीं करती। |
-| **ESM** | epistemic state machine; claim state transitions दर्शाती है। |
-| **Embedding fingerprint** | embedding configuration/state consistency का fingerprint; read-only query unset fingerprint initialize नहीं करती। |
-| **Audit log** | erase, restriction और override जैसे accountable events का record। |
-| **Gate reason** | TruthGate द्वारा block किए जाने का concrete reason; force-approve audit में preserved रहता है। |
-| **Ring Zero policy** | load-bearing invariant जिसे runtime configuration कमजोर नहीं कर सकती। |
-| **Baseline** | grant proposal से पहले `main` में merged current implementation और evidence। |
-| **Funded delta** | baseline से अलग, measurable और independently verifiable future deliverable। |
-| **Runtime checkpoint** | audited implementation behavior वाला commit; localization sync marker से अलग। |
-| **Localization sync marker** | वह short `main` commit marker जिससे translation synchronized है; runtime behavior claim नहीं। |
-| **Titan** | Crystal से अलग research track; current Crystal runtime या automatic grant scope नहीं। |
-| **Full Personal Exo-Cortex** | long-term research vision; public Crystal baseline के समान नहीं। |
-
-## Untranslated identifiers
-
-```text
-TruthGate
-Guardian
-CanonicalView
-TRACE
-Receipt
-Canon
-ProvenanceChain
-L0 / L1 / L2 / L3
-WORLD_FACT
-LLM_OUTPUT
-VELANTRIM_L3_BACKEND
-VELANTRIM_L3_PATH
-VELANTRIM_API_TOKEN
-```
-
-`ENABLE_TRUTH_POLICY` historical identifier है। Current runtime इसे पढ़ता नहीं।
-`off` सहित पुराने values inert हैं और TruthGate policy नहीं बदलते।
-
-## Wording cautions
-
-- “Canon” को केवल “सारा graph data” न लिखें;
-- “verified” को “पूर्णतः और सदैव सत्य” तक मजबूत न करें;
-- “TruthGate” को objective truth detector न लिखें;
-- “GDPR-relevant mechanism” को “GDPR certified” न लिखें;
-- “security control” को “security certification” न लिखें;
-- “under review” को “funding awarded” न लिखें;
-- read-only guarantee HTTP, CLI query commands और MCP search पर लागू है, लेकिन write commands या legacy internal `pipeline.run()` पर नहीं।
-
----
-
-> 🌐 🇬🇧 [English](../GLOSSARY.md) · 🇩🇪 [Deutsch](../de/GLOSSARY.md) · 🇫🇷 [Français](../fr/GLOSSARY.md) · 🇪🇸 [Español](../es/GLOSSARY.md) · 🇮🇹 [Italiano](../it/GLOSSARY.md) · 🇷🇺 [Русский](../ru/GLOSSARY.md) · 🇨🇳 [简体中文](../zh-CN/GLOSSARY.md) · 🇸🇦 [العربية](../ar/GLOSSARY.md) · 🇯🇵 [日本語](../ja/GLOSSARY.md) · 🇮🇳 **हिन्दी**
+टकराव में [English glossary](../GLOSSARY.md), [Translation status](../TRANSLATION_STATUS.md), [Localization policy](../LOCALIZATION_POLICY.md) मान्य हैं।

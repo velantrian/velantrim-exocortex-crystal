@@ -1,115 +1,28 @@
-# 📖 Глоссарий — Velantrim Crystal на русском
+<!-- translation-source: docs/GLOSSARY.md@151b41c680190f7f3de729bf63e8e80a9d2285ce -->
+<!-- d4-locale: ru -->
+<!-- translation-status: CURRENT -->
+<!-- d4-boundary: physical-l3-not-strict-canon -->
+<!-- d4-boundary: retrieval-score-not-evidence -->
+<!-- d4-boundary: model-output-not-source-truth -->
+<!-- d4-boundary: migration-proof-not-claim-proof -->
+<!-- d4-nonclaim: import-is-not-activation -->
+<!-- d4-nonclaim: reader-core-not-implemented -->
+<!-- d4-nonclaim: nlnet-not-awarded -->
+<!-- d4-nonclaim: security-legal-gdpr-not-certified -->
+<!-- d4-nonclaim: native-speaker-editorial-not-certified -->
+# Глоссарий Crystal и дисциплина утверждений
 
-> 🌐 🇬🇧 [English](../ARCHITECTURE.md) · 🇩🇪 [Deutsch](../de/GLOSSARY.md) · 🇫🇷 [Français](../fr/GLOSSARY.md) · 🇪🇸 [Español](../es/GLOSSARY.md) · 🇮🇹 [Italiano](../it/GLOSSARY.md) · 🇷🇺 **Русский** · 🇨🇳 [简体中文](../zh-CN/GLOSSARY.md) · 🇸🇦 [العربية](../ar/GLOSSARY.md) · 🇯🇵 [日本語](../ja/GLOSSARY.md) · 🇮🇳 [हिन्दी](../hi/GLOSSARY.md)
->
-> Этот глоссарий согласует русскую терминологию, но не заменяет английские имена
-> API, schemas или code identifiers. Идентификаторы в code blocks и интерфейсах
-> остаются неизменными.
+- **physical L3** — физическое хранилище с разными статусами; не автоматически **strict Canon**.
+- **retrieval score** — сигнал ранжирования, а не evidence.
+- **model output** — сгенерированный материал, а не source truth.
+- **migration proof** — доказательство миграции/эквивалентности, а не claim proof.
+- **SQLite** — обычный активный local-first профиль.
+- **Mock** — явный backend разработки/CI.
+- **PostgreSQL/pgvector** — необязательная неактивная цель с `active=false`; import success не равен activation.
+- **Reader Core** — планируемый специализированный слой чтения; not implemented.
+- **NLnet** — submitted / under review / not awarded.
+- **примерно €50,000** — планирование, не утверждённый бюджет и не обязательство выплаты; budget change: none.
+- **baseline** — работа, смерженная до соглашения; не учитывается повторно как funded delta.
+- Не заявляются legal/GDPR/security или native-speaker editorial certification.
 
-## Основное правило
-
-Технические имена `TruthGate`, `Guardian`, `CanonicalView`, `TRACE` и `Receipt`
-сохраняются. При первом упоминании можно добавить русское пояснение, но имя
-контракта в коде не переводится.
-
-| Английский термин | Рекомендуемая русская форма | Значение / граница |
-|---|---|---|
-| **admission** | допуск / решение о приёме | решение, позволяющее claim перейти в более доверенное состояние памяти |
-| **claim** | claim / типизированное утверждение | структурированное утверждение, не обязательно проверенный факт |
-| **Canon** | Canon / канон | строго допущенная, TRACE-valid и разрешённая policy проекция |
-| **canonical graph** | канонический граф | граф L3 с допущенными объектами и явными статусами |
-| **Guardian** | Guardian / структурная и security-проверка | предварительная проверка, не заменяющая TruthGate |
-| **TruthGate** | TruthGate / эпистемическая граница допуска | контролирует автоматический допуск по типу, источнику, evidence и policy |
-| **CanonicalView** | CanonicalView / каноническое представление чтения | fail-closed проекция для строго обоснованных ответов |
-| **TRACE** | TRACE / путь обоснования | машиночитаемая цепочка, объясняющая grounding ответа |
-| **Receipt** | Receipt / запечатанное доказательство | воспроизводимое и чувствительное к подмене доказательство фактов и provenance |
-| **receipt replay** | replay Receipt | повторная проверка Receipt относительно текущего состояния памяти |
-| **trajectory replay** | replay траектории | повторение execution path для evaluation; не равно Receipt replay |
-| **provenance** | provenance / происхождение | источник, путь создания и жизненный цикл claim |
-| **evidence span** | Evidence Span / фрагмент доказательства | связанный фрагмент источника, поддерживающий claim |
-| **epistemic state** | эпистемический статус | классификация того, как следует оценивать claim; не просто confidence score |
-| **source status** | статус источника | категория происхождения: external, user, model output и т. п. |
-| **grounding** | grounding / привязка к evidence | связь ответа с допущенными claims и их источниками |
-| **FactsPack** | FactsPack / контролируемый пакет фактов | компактный и прослеживаемый контекст для формирования ответа |
-| **read-only query** | read-only запрос | контракт, исключающий явно перечисленные изменения памяти и состояния |
-| **fail-closed** | отказ при неопределённости | отсутствие скрытого допуска при неясной или противоречивой доверенности |
-| **baseline** | baseline / исходный уровень | уже реализованная и проверенная работа до финансируемого delta |
-| **funded delta** | финансируемый delta | измеримая дополнительная работа, поставляемая за счёт гранта |
-| **deliverable** | проверяемый deliverable | публичный artifact с определённым acceptance evidence |
-| **local-first** | local-first / локально по умолчанию | данные и выполнение локальны по умолчанию, внешние сервисы опциональны |
-| **stdlib-only runtime** | runtime на стандартной библиотеке | стандартный путь не требует обязательных сторонних runtime-зависимостей |
-| **restriction** | ограничение обработки | техническое ограничение использования сохранённого объекта |
-| **erasure** | удаление | удаление через предусмотренные слои с audit/tombstone правилами |
-| **review queue** | очередь review | claims, ожидающие или заблокированные до curator-решения |
-| **curator override** | явное curator-исключение | атрибутированное и audit-able человеческое решение, не скрытый bypass |
-| **provider independence** | независимость от provider | внешние модели взаимозаменяемы и опциональны, без статуса truth authority |
-
-## ⚠️ Термины, требующие осторожности
-
-### «Проверено»
-
-Не каждый узел графа является проверенным Canon. Термин допустим только тогда,
-когда это подтверждают статус, evidence, TRACE и policy.
-
-### «Соответствует GDPR»
-
-Предпочтительные формулировки:
-
-```text
-технические механизмы, релевантные GDPR
-архитектура, ориентированная на GDPR
-```
-
-Не использовать без юридического основания:
-
-```text
-сертифицировано по GDPR
-гарантировано полностью соответствует законодательству
-```
-
-### «Безопасно» или «hardened»
-
-`Hardened` описывает документированные технические меры и тесты. Это не
-security-сертификация и не доказательство отсутствия уязвимостей.
-
-### «Истина»
-
-`TruthGate` не является универсальным детектором истины. Это контролируемая
-эпистемическая граница допуска внутри определённой модели данных и policy.
-
-### «Replay»
-
-Всегда различать:
-
-```text
-Receipt replay    = повторно проверить существующее доказательство
-Trajectory replay = повторить execution path для evaluation
-```
-
-### «Когнитивный», «живой», «сознание»
-
-Эти слова не описывают текущие runtime-возможности Crystal. Bio-inspired имена
-модулей — инженерные метафоры, а не биологические или personhood claims.
-
-## Стиль русскоязычных документов
-
-Предпочтительно:
-
-- короткие проверяемые предложения;
-- code identifiers без перевода и в backticks;
-- явное разделение «реализовано», «опционально», «запланировано» и «исследование»;
-- отсутствие перевода, усиливающего английский claim;
-- числа со ссылкой на нормативный источник;
-- reviewer-oriented язык вместо расплывчатого marketing.
-
-Избегать:
-
-- абсолютных обещаний надёжности;
-- marketing-формулировок без test evidence;
-- смешения Titan и Crystal;
-- автоматического приравнивания содержимого графа к проверенной истине;
-- представления открытого PR или RFC как runtime.
-
----
-
-> 🌐 🇬🇧 [English](../ARCHITECTURE.md) · 🇩🇪 [Deutsch](../de/GLOSSARY.md) · 🇫🇷 [Français](../fr/GLOSSARY.md) · 🇪🇸 [Español](../es/GLOSSARY.md) · 🇮🇹 [Italiano](../it/GLOSSARY.md) · 🇷🇺 **Русский** · 🇨🇳 [简体中文](../zh-CN/GLOSSARY.md) · 🇸🇦 [العربية](../ar/GLOSSARY.md) · 🇯🇵 [日本語](../ja/GLOSSARY.md) · 🇮🇳 [हिन्दी](../hi/GLOSSARY.md)
+При конфликте действуют [английский глоссарий](../GLOSSARY.md), [Translation status](../TRANSLATION_STATUS.md), [Localization policy](../LOCALIZATION_POLICY.md).

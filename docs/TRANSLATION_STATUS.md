@@ -3,15 +3,15 @@
 ## Purpose
 
 This ledger is the authoritative freshness map for multilingual Crystal documentation.
-English remains the primary source and conflict resolver; translated public documentation
-cannot strengthen implementation, security, authority or grant claims.
+English remains the primary source and conflict resolver; translations cannot strengthen
+implementation, security, authority, legal or grant claims.
 
 **Root README source checkpoint:** `main@e521440e9bb188d88475f17dd5bcdd161b314605`.  
 **Russian D1 source checkpoint:** `main@16d71e731ee658b1faa65c9ea45c0d8cca290f7c`.  
 **Remaining-locale D1 source checkpoint:** `main@a497b7d3cfbe59ca75b11d7449d5a728455b3130`.  
 **D2 source checkpoint:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.  
 **D3 source checkpoint:** `main@208f1c772ee3a112cb803d2413c120bef23adb05`.  
-**D4 English source:** reconciled in the current source-contract PR; localized D4 remains `REFRESH_NEEDED` until merge and separate translation.
+**D4 source checkpoint:** `main@151b41c680190f7f3de729bf63e8e80a9d2285ce`.
 
 **Policy:** [`LOCALIZATION_POLICY.md`](LOCALIZATION_POLICY.md).  
 **Tracking issue:** [#341](https://github.com/velantrian/velantrim-exocortex-crystal/issues/341).
@@ -33,8 +33,7 @@ cannot strengthen implementation, security, authority or grant claims.
 
 ## D1 — entry and use documents
 
-D1 is complete for all nine supported locales. Every locale has a current index, Quick Start,
-Status and Implementation Status tied to an exact source checkpoint.
+D1 is complete for all nine supported locales.
 
 | Language | Locale index | Quick Start | Status | Implementation boundary | Source checkpoint |
 |---|---:|---:|---:|---:|---|
@@ -50,9 +49,7 @@ Status and Implementation Status tied to an exact source checkpoint.
 
 ## D2 — reviewer and safety documents
 
-D2 is complete for all nine supported locales. Each locale has a current Reviewer Guide and
-Safety/Privacy/Failure summary. Detailed Security, Privacy, GDPR and Failure Modes contracts
-remain authoritative English references.
+D2 is complete for all nine supported locales.
 
 | Language | Reviewer Guide | Safety / privacy / failures | Source checkpoint |
 |---|---:|---:|---|
@@ -68,10 +65,7 @@ remain authoritative English references.
 
 ## D3 — architecture and storage authority
 
-D3 is complete for all nine supported locales. Each locale has a current Architecture
-Overview and Storage/Authority Boundaries document derived from the corrected English source
-checkpoint merged by PR #347. Detailed profiles, migration contracts and ADR-021 remain
-conflict-resolving English technical contracts.
+D3 is complete for all nine supported locales.
 
 | Language | Architecture overview | Storage / authority boundaries | Source checkpoint |
 |---|---:|---:|---|
@@ -91,35 +85,26 @@ boundaries. Native-speaker editorial certification is not implied.
 
 ## D4 — project, grant, governance and glossary
 
-The English D4 source family is reconciled first:
+D4 is complete for all nine supported locales. The 18 localized `GRANT_OVERVIEW.md` and
+`GLOSSARY.md` documents and nine locale indexes remain `CURRENT` against the immutable English
+source checkpoint `main@151b41c680190f7f3de729bf63e8e80a9d2285ce`.
 
-```text
-docs/PROJECT_GRANT_AND_GOVERNANCE.md
-docs/GLOSSARY.md
-docs/GRANT_NLNET_SCOPE.md
-ROADMAP.md
-GOVERNANCE.md
-CONTRIBUTING.md
-```
+| Language | Grant Overview | Glossary | Source checkpoint |
+|---|---:|---:|---|
+| Arabic | `CURRENT` | `CURRENT` | `main@151b41c680190f7f3de729bf63e8e80a9d2285ce` |
+| German | `CURRENT` | `CURRENT` | `main@151b41c680190f7f3de729bf63e8e80a9d2285ce` |
+| Spanish | `CURRENT` | `CURRENT` | `main@151b41c680190f7f3de729bf63e8e80a9d2285ce` |
+| French | `CURRENT` | `CURRENT` | `main@151b41c680190f7f3de729bf63e8e80a9d2285ce` |
+| Hindi | `CURRENT` | `CURRENT` | `main@151b41c680190f7f3de729bf63e8e80a9d2285ce` |
+| Italian | `CURRENT` | `CURRENT` | `main@151b41c680190f7f3de729bf63e8e80a9d2285ce` |
+| Japanese | `CURRENT` | `CURRENT` | `main@151b41c680190f7f3de729bf63e8e80a9d2285ce` |
+| Russian | `CURRENT` | `CURRENT` | `main@151b41c680190f7f3de729bf63e8e80a9d2285ce` |
+| Simplified Chinese | `CURRENT` | `CURRENT` | `main@151b41c680190f7f3de729bf63e8e80a9d2285ce` |
 
-The detailed baseline/funded-delta matrix and funding-use plan remain authoritative English
-grant evidence.
-
-Localized `GRANT_OVERVIEW.md` and `GLOSSARY.md` files already exist in all nine locale packs,
-but presence does not prove freshness. They remain `REFRESH_NEEDED` until a separate D4
-translation PR records the immutable merged English source checkpoint, reconciles claims and
-passes D4 validation.
-
-D4 source constraints:
-
-- grant status: submitted / under review / not awarded;
-- budget change: none;
-- merged pre-agreement work cannot be rebudgeted;
-- physical L3 is not strict Canon;
-- SQLite is ordinary active local-first;
-- PostgreSQL remains inactive with `active=false`;
-- Reader Core remains not implemented;
-- no security/legal/GDPR or native-speaker editorial certification claim.
+D4 preserves submitted / under review / not awarded, approximate €50,000 planning-only,
+budget change none, pre-agreement baseline not funded delta, physical L3 != strict Canon,
+SQLite ordinary active local-first, PostgreSQL `active=false`, Reader Core not implemented,
+and no legal/GDPR/security/native-speaker certification claims.
 
 ## Remaining document families
 
@@ -129,13 +114,14 @@ D4 source constraints:
 | D1 entry/use | all nine supported locales `CURRENT` | maintain |
 | D2 reviewer/safety | all nine supported locales `CURRENT` | maintain |
 | D3 architecture/storage authority | all nine supported locales `CURRENT` | maintain |
-| D4 project/grant context | `REFRESH_NEEDED` translated document packs | D4 |
-| D5 extended reference corpus | mixed / English | D5 |
+| D4 project/grant context | all nine supported locales `CURRENT` | maintain |
+| D5 extended reference corpus | inventory pending | D5 |
 
-### D5 — extended reference documents
+## D5 — extended reference documents
 
-Prioritize stable reader-value documents. Volatile AI-agent logs and low-level CI records may
-remain English with exact evidence links and an explicit rationale.
+D5 requires an inventory before any translation claim. Stable reader-value references may be
+localized; volatile AI/audit logs, CI evidence and low-level technical contracts may remain
+`ENGLISH_ONLY_BY_DESIGN`. Stale snapshots must be retained with visible `RETIRED` routing.
 
 ## Completion rule
 

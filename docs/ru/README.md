@@ -5,30 +5,17 @@
 <!-- d2-status: CURRENT -->
 <!-- d3-source: main@208f1c772ee3a112cb803d2413c120bef23adb05 -->
 <!-- d3-status: CURRENT -->
-<!-- d4-status: REFRESH_NEEDED -->
-<!-- compatibility-labels: Localization policy | Translation status -->
-# Русская документация
+<!-- d4-source: main@151b41c680190f7f3de729bf63e8e80a9d2285ce -->
+<!-- d4-status: CURRENT -->
+<!-- d5-status: INVENTORY_PENDING -->
+# Пакет документации Crystal на русском языке
 
-Английский остаётся рабочим языком, первичным источником и арбитром при противоречиях. Русские документы — поддерживаемая публичная поверхность, но они не создают отдельную власть над реализацией, Guardian, TruthGate, strict Canon, безопасностью или грантом.
+Английский остаётся первичным источником и языком разрешения противоречий. Переводы не усиливают capability, security, legal или grant claims.
 
-## Состояние фаз
+- D1 `CURRENT`: [Quick Start](QUICKSTART.md), [Status](STATUS.md), [Implementation Status](IMPLEMENTATION_STATUS.md)
+- D2 `CURRENT`: [Reviewer Guide](REVIEWER_GUIDE.md), [Safety/Privacy/Failures](SAFETY_PRIVACY_AND_FAILURES.md)
+- D3 `CURRENT`: [Architecture Overview](ARCHITECTURE_OVERVIEW.md), [Storage and Authority Boundaries](STORAGE_AND_AUTHORITY_BOUNDARIES.md)
+- D4 `CURRENT`: [Grant Overview](GRANT_OVERVIEW.md), [Glossary](GLOSSARY.md)
+- D5 `INVENTORY_PENDING`; устаревшие файлы могут иметь статус `REFRESH_NEEDED`.
 
-| Фаза | Статус | Актуальные документы |
-|---|---:|---|
-| D1 — вход и использование | `CURRENT` | [Быстрый старт](QUICKSTART.md), [Статус](STATUS.md), [Границы реализации](IMPLEMENTATION_STATUS.md) |
-| D2 — ревью и безопасность | `CURRENT` | [Руководство для ревьюера](REVIEWER_GUIDE.md), [Безопасность, приватность и отказы](SAFETY_PRIVACY_AND_FAILURES.md) |
-| D3 — архитектура и власть хранения | `CURRENT` | [Обзор архитектуры](ARCHITECTURE_OVERVIEW.md), [Границы хранения и власти](STORAGE_AND_AUTHORITY_BOUNDARIES.md) |
-| D4–D5 | `REFRESH_NEEDED` | контекст проекта/гранта и расширенные справочные документы |
-
-Неизменяемый D3 source checkpoint: `main@208f1c772ee3a112cb803d2413c120bef23adb05`.
-
-## Авторитетные английские контракты
-
-- [Полная архитектура](../ARCHITECTURE.md)
-- [Статус реализации](../IMPLEMENTATION_STATUS.md)
-- [Контракт межбэкендовой миграции](../architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md)
-- [Неактивный импорт PostgreSQL](../architecture/POSTGRESQL_INACTIVE_IMPORT.md)
-- [Политика локализации](../LOCALIZATION_POLICY.md)
-- [Статус переводов](../TRANSLATION_STATUS.md)
-
-Сертификация редактором — носителем языка не заявляется, если это не указано отдельно.
+[Documentation map](../DOCUMENTATION_MAP.md) · [Localization policy](../LOCALIZATION_POLICY.md) · [Translation status](../TRANSLATION_STATUS.md)
