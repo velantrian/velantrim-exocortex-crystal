@@ -61,7 +61,7 @@ includes:
 - D4 English project/grant/governance/glossary source contracts before localized D4 refresh.
 
 Any localization or governance work merged before a grant agreement is existing baseline and
-cannot be counted again as funded delivery.
+cannot be budgeted again as funded delivery.
 
 ## Baseline and funded-delta control
 
