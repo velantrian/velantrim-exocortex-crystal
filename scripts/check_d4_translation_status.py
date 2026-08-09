@@ -1,4 +1,4 @@
-"""Validate all current D3 architecture/storage translations."""
+"""Validate all current D4 project/grant/governance/glossary translations."""
 
 from __future__ import annotations
 
@@ -8,34 +8,40 @@ from pathlib import Path
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = "208f1c772ee3a112cb803d2413c120bef23adb05"
-D4_SOURCE = "151b41c680190f7f3de729bf63e8e80a9d2285ce"
+SOURCE = "151b41c680190f7f3de729bf63e8e80a9d2285ce"
 LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
 FILES = {
     locale: (
-        f"docs/{locale}/ARCHITECTURE_OVERVIEW.md",
-        f"docs/{locale}/STORAGE_AND_AUTHORITY_BOUNDARIES.md",
+        f"docs/{locale}/GRANT_OVERVIEW.md",
+        f"docs/{locale}/GLOSSARY.md",
     )
     for locale in LOCALES
 }
 MARKERS = (
     "translation-status: CURRENT",
-    "d3-boundary: physical-l3-not-strict-canon",
-    "d3-boundary: public-query-read-only",
-    "d3-boundary: postgresql-active=false",
-    "d3-nonclaim: import-is-not-activation",
-    "d3-nonclaim: reader-core-not-implemented",
-    "d3-nonclaim: nlnet-not-awarded",
-    "core.query_pipeline.query()",
+    "d4-boundary: physical-l3-not-strict-canon",
+    "d4-boundary: retrieval-score-not-evidence",
+    "d4-boundary: model-output-not-source-truth",
+    "d4-boundary: migration-proof-not-claim-proof",
+    "d4-nonclaim: import-is-not-activation",
+    "d4-nonclaim: reader-core-not-implemented",
+    "d4-nonclaim: nlnet-not-awarded",
+    "d4-nonclaim: security-legal-gdpr-not-certified",
+    "d4-nonclaim: native-speaker-editorial-not-certified",
+    "physical L3",
+    "strict Canon",
     "active=false",
     "Reader Core",
+    "€50,000",
 )
 UNSUPPORTED = (
     "active PostgreSQL runtime is implemented",
     "automatic backend switching is enabled",
     "Reader Core is implemented",
     "NLnet grant was awarded",
+    "approved €50,000 budget",
     "security, legal or GDPR certified",
+    "native-speaker editorial certification: true",
 )
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 
@@ -62,62 +68,68 @@ def check_links(relative: str, text: str, errors: list[str]) -> None:
 def main() -> int:
     errors: list[str] = []
     manifest = json.loads(
-        (ROOT / "docs/status/d3-translation-manifest.json").read_text(encoding="utf-8")
+        (ROOT / "docs/status/d4-translation-manifest.json").read_text(encoding="utf-8")
     )
     expected_documents = {locale: list(FILES[locale]) for locale in LOCALES}
     checks = (
-        (manifest.get("phase") == "D3", "phase"),
+        (manifest.get("phase") == "D4", "phase"),
         (manifest.get("tracking_issue") == 341, "tracking issue"),
         (manifest.get("english_source_checkpoint") == SOURCE, "source checkpoint"),
         (
             manifest.get("source_documents")
-            == ["docs/ARCHITECTURE_OVERVIEW.md", "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md"],
+            == ["docs/PROJECT_GRANT_AND_GOVERNANCE.md", "docs/GLOSSARY.md"],
             "source documents",
         ),
         (manifest.get("current_locales") == list(LOCALES), "current locales"),
         (manifest.get("pending_locales") == [], "pending locales"),
         (manifest.get("current_documents") == expected_documents, "current documents"),
+        (
+            manifest.get("locale_indexes")
+            == [f"docs/{locale}/README.md" for locale in LOCALES],
+            "locale indexes",
+        ),
         (manifest.get("native_speaker_editorial_certification") is False, "native certification"),
-        (manifest.get("active_postgresql_runtime_claim") is False, "PostgreSQL runtime claim"),
-        (manifest.get("automatic_backend_switching_claim") is False, "switching claim"),
-        (manifest.get("reader_core_implemented_claim") is False, "Reader Core claim"),
         (manifest.get("security_legal_gdpr_certification_claim") is False, "certification claim"),
         (manifest.get("nlnet_awarded_claim") is False, "grant claim"),
+        (manifest.get("approved_budget_claim") is False, "approved budget claim"),
+        (manifest.get("budget_change_claim") is False, "budget change claim"),
+        (manifest.get("reader_core_implemented_claim") is False, "Reader Core claim"),
+        (manifest.get("active_postgresql_runtime_claim") is False, "PostgreSQL runtime claim"),
     )
     for ok, label in checks:
         if not ok:
-            errors.append(f"D3 manifest: invalid {label}")
+            errors.append(f"D4 manifest: invalid {label}")
 
     for locale in LOCALES:
         index_relative = f"docs/{locale}/README.md"
         index = (ROOT / index_relative).read_text(encoding="utf-8")
         for marker in (
-            f"d3-source: main@{SOURCE}",
-            "d3-status: CURRENT",
-            f"d4-source: main@{D4_SOURCE}",
+            f"d4-source: main@{SOURCE}",
             "d4-status: CURRENT",
-            "ARCHITECTURE_OVERVIEW.md",
-            "STORAGE_AND_AUTHORITY_BOUNDARIES.md",
+            "d5-status: INVENTORY_PENDING",
+            "GRANT_OVERVIEW.md",
+            "GLOSSARY.md",
             "Localization policy",
             "Translation status",
         ):
             if marker not in index:
                 errors.append(f"{index_relative}: missing marker {marker!r}")
         check_links(index_relative, index, errors)
+
         for relative in FILES[locale]:
             path = ROOT / relative
             if not path.is_file():
-                errors.append(f"missing D3 file: {relative}")
+                errors.append(f"missing D4 file: {relative}")
                 continue
             text = path.read_text(encoding="utf-8")
             expected_source = (
-                "docs/ARCHITECTURE_OVERVIEW.md"
-                if relative.endswith("ARCHITECTURE_OVERVIEW.md")
-                else "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md"
+                "docs/PROJECT_GRANT_AND_GOVERNANCE.md"
+                if relative.endswith("GRANT_OVERVIEW.md")
+                else "docs/GLOSSARY.md"
             )
             for marker in (
                 f"translation-source: {expected_source}@{SOURCE}",
-                f"d3-locale: {locale}",
+                f"d4-locale: {locale}",
                 *MARKERS,
             ):
                 if marker not in text:
@@ -129,20 +141,20 @@ def main() -> int:
 
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
     for marker in (
-        f"D3 source checkpoint:** `main@{SOURCE}`",
-        "D3 is complete for all nine supported locales",
+        f"D4 source checkpoint:** `main@{SOURCE}`",
+        "D4 is complete for all nine supported locales",
         "| Simplified Chinese | `CURRENT` | `CURRENT` |",
-        "D3 architecture/storage authority | all nine supported locales `CURRENT`",
+        "D4 project/grant context | all nine supported locales `CURRENT`",
     ):
         if marker not in ledger:
             errors.append(f"translation ledger: missing marker {marker!r}")
 
     current_state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
     for marker in (
-        "D3 is current across all nine supported locale packs",
-        f"main@{SOURCE}",
-        "18 architecture/storage documents plus nine indexes",
         "D4 is current across all nine supported locale packs",
+        f"main@{SOURCE}",
+        "18 project/grant/glossary documents plus nine indexes",
+        "D5 extended-reference inventory remains pending",
     ):
         if marker not in current_state:
             errors.append(f"AI current state: missing marker {marker!r}")
@@ -150,27 +162,27 @@ def main() -> int:
     doc_map = (ROOT / "docs/DOCUMENTATION_MAP.md").read_text(encoding="utf-8")
     for marker in (
         "Root READMEs and D1–D4 are current",
-        "D3 translation manifest",
-        "D5 remains a separate inventory phase",
         "D4 translation manifest",
+        "D5 remains a separate inventory phase",
+        "all nine supported locale packs",
     ):
         if marker not in doc_map:
             errors.append(f"documentation map: missing marker {marker!r}")
 
     workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     for marker in (
-        "Validate D3 translation status",
-        "python scripts/check_d3_translation_status.py",
+        "Validate D4 translation status",
+        "python scripts/check_d4_translation_status.py",
     ):
         if marker not in workflow:
-            errors.append(f"CI workflow: missing D3 translation validator marker {marker!r}")
+            errors.append(f"CI workflow: missing D4 translation validator marker {marker!r}")
 
     if errors:
-        print("D3 translation validation failed:")
+        print("D4 translation validation failed:")
         for error in errors:
             print(f"  - {error}")
         return 1
-    print(f"D3 translation status is consistent: locales={len(LOCALES)}, source={SOURCE}")
+    print(f"D4 translation status is consistent: locales={len(LOCALES)}, source={SOURCE}")
     return 0
 
 
