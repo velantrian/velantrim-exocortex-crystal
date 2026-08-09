@@ -1,85 +1,78 @@
+<!-- d3-source-contract: CURRENT -->
+<!-- d3-source-scope: architecture-storage-authority -->
 # 🔒 Durable L3 Storage Profile and Doctor
 
-**Status:** implemented by the accompanying change; `TESTED` and `VERIFIED_CHECKPOINT`
-remain contingent on exact-head CI and merge evidence.
+**Status:** IMPLEMENTED / TESTED / MERGED BASELINE  
+**Runtime checkpoint:** PR #325 and later status/runtime checkpoints through PR #337  
+**Current ordinary profile:** SQLite  
+**Authority boundary:** storage profile = deployment identity, not strict Canon authority
 
 ## Purpose
 
-Crystal's environment-selected L3 backend previously evaluated `auto` independently in
-each process:
+Crystal's environment-selected L3 backend must not drift silently between processes or
+restarts. A dependency, working directory, path, permission or filesystem change must not
+make a deployment select a different physical graph without an explicit migration.
 
 ```text
-LadybugDB if available
-  → otherwise SQLite
-  → otherwise in-memory Mock
-```
-
-That behavior was convenient for a prototype, but it could make one durable deployment
-appear empty after a dependency, working directory, path, permission or filesystem change.
-A new process could select a different physical graph without an explicit migration.
-
-This contract makes the deployment choice stable without making a graph node equivalent
-to strict Canon.
-
-```text
-Physical L3 = multi-status storage and retrieval projection
+Physical L3 = multi-status storage and retrieval state
 Strict Canon = deny-dominant trusted read projection
 Storage profile = deployment identity, not epistemic authority
 ```
 
 ## Runtime contract
 
-Environment-selected singleton construction now follows:
+Environment-selected singleton construction follows:
 
 ```text
 read VELANTRIM_L3_BACKEND
-  → read and validate the durable storage profile
-  → reject backend or locator conflicts
-  → construct the locked backend
-  → verify the constructed backend and non-secret locator
-  → cache the process-local singleton
+→ read and validate the durable storage profile
+→ reject backend or locator conflicts
+→ construct the locked backend
+→ verify the constructed backend and non-secret locator
+→ cache the process-local singleton
 ```
 
-On the first durable startup:
+First durable startup:
 
 ```text
 requested sqlite / ladybug / neo4j
-  → construct explicitly
-  → atomically persist backend + non-secret locator
+→ construct explicitly
+→ atomically persist backend + non-secret locator
 
 requested auto
-  → try LadybugDB
-  → otherwise SQLite
-  → persist the durable winner
-  → never silently accept Mock
+→ try optional LadybugDB
+→ otherwise durable SQLite
+→ persist the durable winner
+→ never silently accept ephemeral Mock
 ```
 
-The profile path is controlled by:
+A later `auto` request reuses the locked profile. Installed packages or server reachability
+must not trigger automatic switching after data exists.
+
+## Profile path and contents
 
 ```text
 VELANTRIM_STORAGE_PROFILE_PATH
 default: ~/.velantrim/velantrim-storage-profile.json
 ```
 
-The default is anchored in the user's home directory rather than the process working
-directory. The first durable startup stores the selected local backend path as an absolute
-locator, so a later process launched from another directory reuses the same profile and
-physical L3. Deployments that need a system, container or service-specific location should
-set `VELANTRIM_STORAGE_PROFILE_PATH` explicitly.
+The default profile path is anchored in the user's home directory. Local storage locators are
+persisted as absolute paths so a later process launched from another working directory reuses
+the same physical store.
 
 The profile records only:
 
-- schema version;
+- profile schema version;
 - backend name;
 - durable flag;
 - local path, or Neo4j URI and database name;
 - SHA-256 of the backend/locator identity.
 
-It never records passwords, tokens or `NEO4J_PASSWORD`.
+It never records passwords, tokens, private keys or `NEO4J_PASSWORD`.
 
 ## Fail-closed behavior
 
-Crystal raises `StorageProfileError` before caching the backend when:
+Crystal raises `StorageProfileError` before caching a backend when:
 
 - the profile is malformed;
 - its locator checksum is invalid;
@@ -88,33 +81,32 @@ Crystal raises `StorageProfileError` before caching the backend when:
 - the locked optional dependency is unavailable;
 - construction returns a different backend or locator;
 - first-run `auto` reaches the in-memory Mock backend;
+- first-run `auto` resolves to an ephemeral local locator;
 - concurrent initializers select different durable targets.
 
 No automatic migration, copying, dual-write or profile repair occurs.
 
 ## Explicit Mock and programmatic instances
 
-`VELANTRIM_L3_BACKEND=mock` remains available for development and CI when no durable
-profile exists. It is explicit, ephemeral and does not create a profile.
+`VELANTRIM_L3_BACKEND=mock` remains available for deliberate development and CI when no
+durable profile exists. It is explicit and ephemeral and does not create a durable profile.
 
-A programmatic explicit call such as `get_l3_graph(backend="mock")` still returns a fresh,
-uncached instance. This supports tests and deliberate migration/inspection tooling without
-changing the environment-selected runtime singleton.
+A programmatic call such as `get_l3_graph(backend="mock")` returns a fresh uncached instance.
+This supports tests and deliberate migration/inspection tooling without changing the
+environment-selected singleton.
 
 ## Read-only diagnostics
-
-After installation:
 
 ```bash
 velantrim-doctor
 ```
 
-The command emits JSON and exits with:
+The doctor validates profile consistency without opening Canon for writes or repairing state.
 
 | Exit | Status | Meaning |
 |---:|---|---|
 | `0` | `PASS` | locked configuration is internally consistent |
-| `1` | `WARN` | initialization is pending or a non-fatal condition exists |
+| `1` | `WARN` | initialization is pending or a bounded non-fatal condition exists |
 | `2` | `FAIL` | profile, dependency, backend or locator safety failed |
 
 The doctor:
@@ -123,39 +115,59 @@ The doctor:
 - compares the requested backend with the lock;
 - checks optional package availability;
 - checks local directory writability and instance presence;
-- reports server locator identity without probing the network;
-- never opens L3, writes Canon or repairs configuration.
+- reports server locator identity without exposing secrets;
+- never writes L3, changes strict Canon or repairs configuration.
 
 ## Migration boundary
 
-Changing SQLite, LadybugDB, Neo4j or any future PostgreSQL profile requires a separate,
-explicit migration workflow with dry-run, record/edge/evidence counts, hashes, restriction
-and audit verification, rollback evidence and a migration receipt.
+Changing SQLite, LadybugDB, Neo4j or any future active PostgreSQL profile after data exists
+requires a separate explicit migration workflow.
 
-Deleting or editing the profile is not a migration.
+```text
+profile edit/delete       != migration
+backend availability      != migration
+successful import         != activation
+exact equivalence receipt != cutover
+```
 
-## PostgreSQL and vector retrieval
+Deleting or editing the profile is not migration.
 
-This change deliberately adds no PostgreSQL, pgvector or dedicated VectorDB dependency.
-Those remain a future institutional deployment RFC. Any such profile must preserve the
-same authority, evidence, restriction, erasure, audit and replay invariants and must prove
-migration equivalence before adoption.
+## Current PostgreSQL boundary
 
-## Grant boundary
+PostgreSQL/pgvector is no longer only a future RFC. The merged baseline implements an
+optional, lazy-loaded **inactive import and exact-equivalence target**:
 
-This is deployment hardening of the existing local-first foundation:
+```text
+verified logical bundle
+→ PostgreSQL 16 / pgvector 0.8.2 preflight
+→ fresh inactive schema
+→ serializable import
+→ independent read-only canonical re-hash
+→ exact equivalence
+→ active=false
+```
 
-- no new cognitive architecture;
-- no mandatory third-party dependency;
-- no cloud requirement;
-- no automatic Canon switch;
-- no claim of production certification;
-- no change to TruthGate, Guardian or strict Canon membership.
+The target is absent from ordinary runtime composition and cannot serve normal reads or
+writes. This does not add:
 
-## Cross-backend changes
+- active PostgreSQL runtime selection;
+- automatic SQLite/PostgreSQL switching;
+- exact-vs-ANN retrieval acceptance;
+- cutover, rollback or dual-write;
+- PostgreSQL production backup/restore/upgrade lifecycle.
 
-Changing the locked backend or locator after data exists must follow the
-[Cross-Backend Storage Migration Contract](./CROSS_BACKEND_MIGRATION_CONTRACT.md).
-Editing or deleting the profile, installing an adapter, or observing server availability
-is not migration. The [PostgreSQL + pgvector RFC](./POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
-remains proposed and not runtime.
+## Grant and certification boundary
+
+This profile is deployment hardening of the local-first foundation. It adds no mandatory
+third-party dependency, cloud requirement, new truth owner or production certification.
+
+The NLnet proposal remains submitted / under review / not awarded.
+
+## Related documents
+
+- [Full architecture](../ARCHITECTURE.md)
+- [Storage and authority boundaries](../STORAGE_AND_AUTHORITY_BOUNDARIES.md)
+- [SQLite storage lifecycle](./SQLITE_STORAGE_LIFECYCLE.md)
+- [Cross-backend migration contract](./CROSS_BACKEND_MIGRATION_CONTRACT.md)
+- [Inactive PostgreSQL import](./POSTGRESQL_INACTIVE_IMPORT.md)
+- [PostgreSQL/pgvector profile RFC](./POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
