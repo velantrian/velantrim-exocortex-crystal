@@ -32,46 +32,43 @@ locked durable SQLite profile
 → non-secret receipts
 ```
 
-Issue #332 is implemented by PR #337 for inactive import and exact equivalence only. The
-target remains `active=false`, is absent from ordinary runtime composition and cannot serve
-normal reads or writes. Import/equivalence does not establish activation, automatic selection,
-cutover, rollback, dual-write, ANN acceptance, TruthGate admission or strict Canon membership.
+PostgreSQL remains `active=false`, absent from ordinary runtime composition and unable to
+serve normal reads or writes. Import/equivalence does not establish activation, automatic
+selection, cutover, rollback, dual-write, ANN acceptance, TruthGate admission or strict Canon
+membership.
 
 ## 3. Grant and remaining limitations
 
-The project is submitted and under review; no award or budget change is claimed. PR #337 is
-merged baseline and cannot be counted again as funded delta. Remaining independent work
-includes exact-vs-ANN evaluation, cutover/fencing, rollback proof, PostgreSQL server lifecycle,
+The project is submitted and under review; no award or budget change is claimed. Merged
+baseline work cannot be counted again as funded delta. Remaining independent work includes
+exact-vs-ANN evaluation, cutover/fencing, rollback proof, PostgreSQL server lifecycle,
 production IdP/multi-tenancy, supply-chain hardening and a dedicated Reader Core.
 
 ## 4. Documentation language and translation state
 
 English is the primary working, source and conflict-resolving language. Translations are
-maintained public product surfaces but create no independent implementation, security,
-grant, TruthGate or Canon authority.
+maintained public product surfaces but create no independent implementation, security, grant,
+TruthGate or Canon authority.
 
-Issue #341 D1 is complete for Arabic, German, Spanish, French, Hindi, Italian, Japanese,
-Russian and Simplified Chinese. Russian D1 is tied to
+Issue #341 D1 is complete for all nine supported locales. Russian D1 is tied to
 `main@16d71e731ee658b1faa65c9ea45c0d8cca290f7c`; the other eight locales are tied to
 `main@a497b7d3cfbe59ca75b11d7449d5a728455b3130`.
 
 D1 is current across all nine supported locale packs. D2 reviewer/safety translations are
-also current across all nine supported locale packs against
-`main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
+current against `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
 
-The D1 validator checks 36 entry/use documents. The D2 validator checks 18 reviewer/safety
-documents plus nine indexes, exact checkpoint, local links, read-only query, PostgreSQL
-`active=false`, non-global erasure, security/legal/GDPR non-certification and NLnet-not-awarded
-boundaries.
+**D3 English source checkpoint:** `main@208f1c772ee3a112cb803d2413c120bef23adb05`
+after corrective PR #347. The complete D3 source validator runs in `docs-status`.
 
-Architecture remains D3. PR #346 added compact English D3 summaries but changed only three
-files and did not wire its validator into CI. The corrective D3 source reconciliation must
-update the detailed architecture, durable profile, migration contracts and ADR-021, then run
-the D3 validator in `docs-status` before any localized D3 document is marked `CURRENT`.
+D3 is current across all nine supported locale packs. The D3 validator covers
+**18 architecture/storage documents plus nine indexes**, exact source checkpoint, local
+links, physical-L3/strict-Canon separation, read-only query, PostgreSQL `active=false`,
+import-not-activation, Reader-Core-not-implemented and NLnet-not-awarded boundaries.
 
-D3 translations remain `REFRESH_NEEDED` until that corrective English checkpoint is merged
-and used as their exact source. Grant/project context remains D4; extended references D5.
+D4 project/grant context remains `REFRESH_NEEDED`; D5 extended references remain phased.
+Native-speaker editorial certification is not claimed.
 
 See [`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md),
-[`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md) and
-[`../status/d2-translation-manifest.json`](../status/d2-translation-manifest.json).
+[`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md),
+[`../status/d2-translation-manifest.json`](../status/d2-translation-manifest.json) and
+[`../status/d3-translation-manifest.json`](../status/d3-translation-manifest.json).

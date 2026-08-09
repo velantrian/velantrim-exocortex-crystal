@@ -28,19 +28,17 @@ English architecture / ADR / security / grant contracts
         ↓
 English README primary public source
         ↓
-CURRENT full-parity localized READMEs and checkpointed D1/D2 translations
+CURRENT full-parity localized READMEs and checkpointed D1/D2/D3 translations
         ↓
-REFRESH_NEEDED translated document packs
+REFRESH_NEEDED translated document packs for D4–D5
         ↓
 AI context pack, roadmap, RFC and research documents
 ```
 
 English is the primary source and conflict resolver, but Crystal is not English-only. Root
-README, D1 entry/use and D2 reviewer/safety surfaces are current for all nine supported
-locales. Architecture remains D3: the English source family is reconciled first, then the
-compact D3 surfaces are translated from an immutable merge checkpoint.
-
-Notion stores synchronized strategy and history, not runtime proof.
+READMEs, D1 entry/use, D2 reviewer/safety and D3 architecture/storage-authority surfaces are
+current for all nine supported locales. Notion stores synchronized strategy and history, not
+runtime proof.
 
 ## Core architecture and trust
 
@@ -55,9 +53,9 @@ Notion stores synchronized strategy and history, not runtime proof.
 - [CanonicalView RFC](./CANONICAL_VIEW_RFC.md)
 - [ADR index](./ADR.md)
 
-D3 uses the complete stable English architecture source family: the architecture overview and storage/authority boundary are the
-translation-oriented source pair. Detailed English profiles and ADRs remain the
-conflict-resolving technical contracts.
+D3 uses the complete stable English architecture source family. The compact Architecture
+Overview and Storage/Authority Boundaries are current in all nine locales; detailed profiles,
+migration contracts and ADRs remain conflict-resolving English technical contracts.
 
 ## Safety, privacy and failure behaviour
 
@@ -69,8 +67,8 @@ conflict-resolving technical contracts.
 - [GDPR mapping](../GDPR.md)
 - [Failure modes](./FAILURE_MODES.md)
 
-D2 uses the stable English Reviewer Guide and Safety/Privacy/Failure summary as source
-contracts; current translations exist for all nine supported locales and link back to the
+D2 uses the stable English Reviewer Guide and Safety/Privacy/Failure summary as its source
+contract. Current D2 translations exist for all nine supported locales and link to the
 detailed English Security, Privacy, GDPR and Failure Modes contracts.
 
 ## Evidence and performance
@@ -79,6 +77,7 @@ detailed English Security, Privacy, GDPR and Failure Modes contracts.
 - [Current status](./STATUS.md)
 - [Implementation manifest](./status/implementation-manifest.json)
 - [D2 translation manifest](./status/d2-translation-manifest.json)
+- [D3 translation manifest](./status/d3-translation-manifest.json)
 - [Evaluation](./EVAL.md)
 - [L3 retrieval benchmark](./benchmarks/L3_RETRIEVAL_SCALE.md)
 
@@ -97,9 +96,8 @@ budgeted again as future delivery.
 - [Translation status ledger](./TRANSLATION_STATUS.md)
 - locale indexes: [ar](./ar/README.md), [de](./de/README.md), [es](./es/README.md), [fr](./fr/README.md), [hi](./hi/README.md), [it](./it/README.md), [ja](./ja/README.md), [ru](./ru/README.md), [zh-CN](./zh-CN/README.md)
 
-Root READMEs, D1 and D2 are current. D3 English source is reconciled; localized D3 documents
-remain `REFRESH_NEEDED` until the separate translation PR is merged. Grant/project and
-extended references remain D4–D5.
+Root READMEs, D1, D2 and D3 are current. D4–D5 remain separate phases with
+`REFRESH_NEEDED translated document packs` until independently reconciled.
 
 ## Active storage and migration documents
 
@@ -113,5 +111,4 @@ extended references remain D4–D5.
 
 SQLite remains the ordinary local-first read/write profile. PostgreSQL/pgvector remains an
 optional inactive exact-equivalence target with `active=false`, not an ordinary runtime
-backend. Successful import is not activation, Canon admission, cutover, rollback or
-dual-write.
+backend. Successful import is not activation, Canon admission, cutover, rollback or dual-write.
