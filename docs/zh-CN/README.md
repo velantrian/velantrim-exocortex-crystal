@@ -3,34 +3,32 @@
 <!-- d1-status: CURRENT -->
 <!-- d2-source: main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f -->
 <!-- d2-status: CURRENT -->
-<!-- d3-status: REFRESH_NEEDED -->
+<!-- d3-source: main@208f1c772ee3a112cb803d2413c120bef23adb05 -->
+<!-- d3-status: CURRENT -->
+<!-- d4-status: REFRESH_NEEDED -->
+<!-- compatibility-labels: Localization policy | Translation status -->
 # 简体中文文档
 
-英语仍是主要 working/source language 与 conflict resolver。翻译是持续维护的 public
-surface，但不会创建独立的 implementation、security、grant、TruthGate 或 Canon authority。
+英语仍是工作语言、主要来源和冲突裁决依据。中文文档是受维护的公共界面，但不会对实现、Guardian、TruthGate、strict Canon、安全或资助状态形成独立权威。
 
-## D1 — 入门与使用 — `CURRENT`
+## 分阶段状态
 
-- [快速开始](./QUICKSTART.md)
-- [当前状态](./STATUS.md)
-- [实现状态](./IMPLEMENTATION_STATUS.md)
+| 阶段 | 状态 | 当前文档 |
+|---|---:|---|
+| D1 — 入门与使用 | `CURRENT` | [快速开始](QUICKSTART.md)、[状态](STATUS.md)、[实现边界](IMPLEMENTATION_STATUS.md) |
+| D2 — 审阅与安全 | `CURRENT` | [审阅者指南](REVIEWER_GUIDE.md)、[安全、隐私与故障](SAFETY_PRIVACY_AND_FAILURES.md) |
+| D3 — 架构与存储权威 | `CURRENT` | [架构概览](ARCHITECTURE_OVERVIEW.md)、[存储与权威边界](STORAGE_AND_AUTHORITY_BOUNDARIES.md) |
+| D4–D5 | `REFRESH_NEEDED` | 项目/资助背景与扩展参考 |
 
-## D2 — 审查、安全、隐私与失败 — `CURRENT`
+D3不可变来源检查点：`main@208f1c772ee3a112cb803d2413c120bef23adb05`。
 
-- [Reviewer Guide](./REVIEWER_GUIDE.md)
-- [安全、隐私与失败边界](./SAFETY_PRIVACY_AND_FAILURES.md)
+## 权威英文合同
 
-**English source:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
-英语详情：[Security](../../SECURITY.md)、[Privacy](../../PRIVACY.md)、
-[GDPR](../../GDPR.md)、[Failure Modes](../FAILURE_MODES.md)。
+- [完整架构](../ARCHITECTURE.md)
+- [实现状态](../IMPLEMENTATION_STATUS.md)
+- [跨后端迁移合同](../architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md)
+- [非活动PostgreSQL导入](../architecture/POSTGRESQL_INACTIVE_IMPORT.md)
+- [本地化政策](../LOCALIZATION_POLICY.md)
+- [翻译状态](../TRANSLATION_STATUS.md)
 
-## 后续 phases — `REFRESH_NEEDED`
-
-Architecture/ADR = D3；grant/roadmap/glossary = D4；extended references = D5。
-
-## Governance
-
-- [Localization policy](../LOCALIZATION_POLICY.md)
-- [Translation status](../TRANSLATION_STATUS.md)
-
-不声称 native-speaker editorial certification。
+除非明确说明，不声称经过母语编辑认证。

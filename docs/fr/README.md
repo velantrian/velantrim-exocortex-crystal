@@ -3,35 +3,32 @@
 <!-- d1-status: CURRENT -->
 <!-- d2-source: main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f -->
 <!-- d2-status: CURRENT -->
-<!-- d3-status: REFRESH_NEEDED -->
+<!-- d3-source: main@208f1c772ee3a112cb803d2413c120bef23adb05 -->
+<!-- d3-status: CURRENT -->
+<!-- d4-status: REFRESH_NEEDED -->
+<!-- compatibility-labels: Localization policy | Translation status -->
 # Documentation française
 
-L’anglais reste la langue principale de travail et la source qui résout les conflits. Les
-traductions sont des surfaces publiques maintenues, sans autorité indépendante sur
-l’implémentation, la sécurité, le financement, TruthGate ou Canon.
+L’anglais demeure la langue de travail, la source et l’arbitre en cas de conflit. Les documents français sont des surfaces publiques maintenues, sans autorité indépendante sur l’implémentation, Guardian, TruthGate, strict Canon, la sécurité ou le financement.
 
-## D1 — prise en main et utilisation — `CURRENT`
+## État par phase
 
-- [Démarrage rapide](./QUICKSTART.md)
-- [État actuel](./STATUS.md)
-- [État de l’implémentation](./IMPLEMENTATION_STATUS.md)
+| Phase | État | Documents actuels |
+|---|---:|---|
+| D1 — prise en main | `CURRENT` | [Démarrage rapide](QUICKSTART.md), [État](STATUS.md), [Limites d’implémentation](IMPLEMENTATION_STATUS.md) |
+| D2 — revue et sécurité | `CURRENT` | [Guide du reviewer](REVIEWER_GUIDE.md), [Sécurité, confidentialité et pannes](SAFETY_PRIVACY_AND_FAILURES.md) |
+| D3 — architecture et autorité du stockage | `CURRENT` | [Vue d’ensemble](ARCHITECTURE_OVERVIEW.md), [Limites stockage/autorité](STORAGE_AND_AUTHORITY_BOUNDARIES.md) |
+| D4–D5 | `REFRESH_NEEDED` | contexte projet/subvention et références étendues |
 
-## D2 — revue, sécurité, confidentialité et défaillance — `CURRENT`
+Checkpoint D3 immuable : `main@208f1c772ee3a112cb803d2413c120bef23adb05`.
 
-- [Guide du relecteur](./REVIEWER_GUIDE.md)
-- [Frontières de sécurité, confidentialité et défaillance](./SAFETY_PRIVACY_AND_FAILURES.md)
+## Contrats anglais de référence
 
-**English source:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
-Détails anglais : [Security](../../SECURITY.md), [Privacy](../../PRIVACY.md),
-[GDPR](../../GDPR.md), [Failure Modes](../FAILURE_MODES.md).
+- [Architecture complète](../ARCHITECTURE.md)
+- [État d’implémentation](../IMPLEMENTATION_STATUS.md)
+- [Contrat de migration inter-backends](../architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md)
+- [Import PostgreSQL inactif](../architecture/POSTGRESQL_INACTIVE_IMPORT.md)
+- [Politique de localisation](../LOCALIZATION_POLICY.md)
+- [État des traductions](../TRANSLATION_STATUS.md)
 
-## Phases ultérieures — `REFRESH_NEEDED`
-
-Architecture/ADR = D3 ; grant/roadmap/glossary = D4 ; références étendues = D5.
-
-## Governance
-
-- [Localization policy](../LOCALIZATION_POLICY.md)
-- [Translation status](../TRANSLATION_STATUS.md)
-
-Aucune certification éditoriale par locuteur natif n’est revendiquée.
+Aucune certification éditoriale par des locuteurs natifs n’est revendiquée sauf mention explicite.

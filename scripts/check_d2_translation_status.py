@@ -50,10 +50,8 @@ def check_links(relative: str, text: str, errors: list[str]) -> None:
 
 def main() -> int:
     errors: list[str] = []
-    manifest_path = ROOT / "docs/status/d2-translation-manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = json.loads((ROOT / "docs/status/d2-translation-manifest.json").read_text(encoding="utf-8"))
     expected_documents = {locale: list(FILES[locale]) for locale in LOCALES}
-
     checks = (
         (manifest.get("phase") == "D2", "phase"),
         (manifest.get("tracking_issue") == 341, "tracking issue"),
@@ -72,52 +70,29 @@ def main() -> int:
     for locale in LOCALES:
         index_relative = f"docs/{locale}/README.md"
         index = (ROOT / index_relative).read_text(encoding="utf-8")
-        for marker in (
-            f"d2-source: main@{SOURCE}",
-            "d2-status: CURRENT",
-            "d3-status: REFRESH_NEEDED",
-            "SAFETY_PRIVACY_AND_FAILURES.md",
-        ):
+        for marker in (f"d2-source: main@{SOURCE}", "d2-status: CURRENT", "SAFETY_PRIVACY_AND_FAILURES.md"):
             if marker not in index:
                 errors.append(f"{index_relative}: missing marker {marker!r}")
         check_links(index_relative, index, errors)
-
         for relative in FILES[locale]:
             path = ROOT / relative
             if not path.is_file():
                 errors.append(f"missing D2 file: {relative}")
                 continue
             text = path.read_text(encoding="utf-8")
-            expected_source = (
-                "docs/REVIEWER_GUIDE.md" if relative.endswith("REVIEWER_GUIDE.md")
-                else "docs/SAFETY_PRIVACY_AND_FAILURES.md"
-            )
-            for marker in (
-                f"translation-source: {expected_source}@{SOURCE}",
-                f"d2-locale: {locale}",
-                *MARKERS,
-            ):
+            expected_source = "docs/REVIEWER_GUIDE.md" if relative.endswith("REVIEWER_GUIDE.md") else "docs/SAFETY_PRIVACY_AND_FAILURES.md"
+            for marker in (f"translation-source: {expected_source}@{SOURCE}", f"d2-locale: {locale}", *MARKERS):
                 if marker not in text:
                     errors.append(f"{relative}: missing marker {marker!r}")
             check_links(relative, text, errors)
 
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
-    for marker in (
-        f"D2 source checkpoint:** `main@{SOURCE}`",
-        "D2 is complete for all nine supported locales",
-        "| Simplified Chinese | `CURRENT` | `CURRENT` |",
-        "D2 reviewer/safety | all nine supported locales `CURRENT`",
-    ):
+    for marker in (f"D2 source checkpoint:** `main@{SOURCE}`", "D2 is complete for all nine supported locales", "| Simplified Chinese | `CURRENT` | `CURRENT` |", "D2 reviewer/safety | all nine supported locales `CURRENT`"):
         if marker not in ledger:
             errors.append(f"translation ledger: missing marker {marker!r}")
 
     current_state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
-    for marker in (
-        "D1 is current across all nine supported locale packs",
-        "D2 reviewer/safety translations are",
-        f"main@{SOURCE}",
-        "Architecture remains D3",
-    ):
+    for marker in ("D1 is current across all nine supported locale packs", "D2 reviewer/safety translations are", f"main@{SOURCE}"):
         if marker not in current_state:
             errors.append(f"AI current state: missing marker {marker!r}")
 
@@ -126,7 +101,6 @@ def main() -> int:
         for error in errors:
             print(f"  - {error}")
         return 1
-
     print(f"D2 translation status is consistent: locales={len(LOCALES)}, source={SOURCE}")
     return 0
 

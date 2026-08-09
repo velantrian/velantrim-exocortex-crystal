@@ -50,6 +50,8 @@ jobs:
         run: python scripts/check_d2_translation_status.py
       - name: Validate complete English D3 source contract
         run: python scripts/check_d3_source_contract.py
+      - name: Validate D3 translation status
+        run: python scripts/check_d3_translation_status.py
 
   test:
     runs-on: ubuntu-latest

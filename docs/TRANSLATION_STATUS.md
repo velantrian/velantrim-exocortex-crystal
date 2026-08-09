@@ -10,25 +10,14 @@ cannot strengthen implementation, security, authority or grant claims.
 **Russian D1 source checkpoint:** `main@16d71e731ee658b1faa65c9ea45c0d8cca290f7c`.  
 **Remaining-locale D1 source checkpoint:** `main@a497b7d3cfbe59ca75b11d7449d5a728455b3130`.  
 **D2 source checkpoint:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.  
-**D3 source reconciliation:** PR #346 is partial; a corrective merged checkpoint is required before D3 translations become `CURRENT`.
+**D3 source checkpoint:** `main@208f1c772ee3a112cb803d2413c120bef23adb05`.
 
 **Policy:** [`LOCALIZATION_POLICY.md`](LOCALIZATION_POLICY.md).  
 **Tracking issue:** [#341](https://github.com/velantrian/velantrim-exocortex-crystal/issues/341).
 
 ## Root README status
 
-| Language | File | Status | Source checkpoint |
-|---|---|---:|---|
-| English | `README.md` | `CURRENT` | primary source |
-| Arabic | `README.ar.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
-| German | `README.de.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
-| Spanish | `README.es.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
-| French | `README.fr.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
-| Hindi | `README.hi.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
-| Italian | `README.it.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
-| Japanese | `README.ja.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
-| Russian | `README.ru.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
-| Simplified Chinese | `README.zh-CN.md` | `CURRENT` | `main@e521440e9bb188d88475f17dd5bcdd161b314605` |
+All nine supported localized root READMEs are `CURRENT`; English remains the primary source.
 
 ## D1 — entry and use documents
 
@@ -50,9 +39,8 @@ Status and Implementation Status tied to an exact source checkpoint.
 ## D2 — reviewer and safety documents
 
 D2 is complete for all nine supported locales. Each locale has a current Reviewer Guide and
-a current Safety/Privacy/Failure summary derived from the stable English source contract.
-Detailed Security, Privacy, GDPR and Failure Modes contracts remain authoritative English
-references linked from every localized summary.
+Safety/Privacy/Failure summary. Detailed Security, Privacy, GDPR and Failure Modes contracts
+remain authoritative English references.
 
 | Language | Reviewer Guide | Safety / privacy / failures | Source checkpoint |
 |---|---:|---:|---|
@@ -68,26 +56,26 @@ references linked from every localized summary.
 
 ## D3 — architecture and storage authority
 
-The compact English Architecture Overview and Storage/Authority Boundaries exist, but the
-post-merge audit of PR #346 found that the detailed architecture/profile/migration/ADR files
-were not part of that PR and the D3 validator was not wired into CI. Therefore no localized
-D3 file is current yet.
+D3 is complete for all nine supported locales. Each locale has a current Architecture
+Overview and Storage/Authority Boundaries document derived from the corrected English source
+checkpoint merged by PR #347. Detailed profiles, migration contracts and ADR-021 remain
+conflict-resolving English technical contracts.
 
-The corrective English source checkpoint must reconcile and validate:
+| Language | Architecture overview | Storage / authority boundaries | Source checkpoint |
+|---|---:|---:|---|
+| Arabic | `CURRENT` | `CURRENT` | `main@208f1c772ee3a112cb803d2413c120bef23adb05` |
+| German | `CURRENT` | `CURRENT` | `main@208f1c772ee3a112cb803d2413c120bef23adb05` |
+| Spanish | `CURRENT` | `CURRENT` | `main@208f1c772ee3a112cb803d2413c120bef23adb05` |
+| French | `CURRENT` | `CURRENT` | `main@208f1c772ee3a112cb803d2413c120bef23adb05` |
+| Hindi | `CURRENT` | `CURRENT` | `main@208f1c772ee3a112cb803d2413c120bef23adb05` |
+| Italian | `CURRENT` | `CURRENT` | `main@208f1c772ee3a112cb803d2413c120bef23adb05` |
+| Japanese | `CURRENT` | `CURRENT` | `main@208f1c772ee3a112cb803d2413c120bef23adb05` |
+| Russian | `CURRENT` | `CURRENT` | `main@208f1c772ee3a112cb803d2413c120bef23adb05` |
+| Simplified Chinese | `CURRENT` | `CURRENT` | `main@208f1c772ee3a112cb803d2413c120bef23adb05` |
 
-```text
-docs/ARCHITECTURE.md
-docs/ARCHITECTURE_OVERVIEW.md
-docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md
-docs/architecture/DURABLE_STORAGE_PROFILE.md
-docs/architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md
-docs/architecture/POSTGRESQL_INACTIVE_IMPORT.md
-docs/adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md
-```
-
-After that merge, each locale will translate only the compact Architecture Overview and
-Storage/Authority Boundaries, while linking to the detailed English contracts. The exact
-corrective merge SHA—not PR #346—will be the D3 translation source checkpoint.
+D3 preserves physical-L3/strict-Canon separation, read-only public queries, SQLite ordinary
+runtime, PostgreSQL `active=false`, import-not-activation and Reader-Core-not-implemented
+boundaries. Native-speaker editorial certification is not implied.
 
 ## Remaining document families
 
@@ -96,27 +84,19 @@ corrective merge SHA—not PR #346—will be the D3 translation source checkpoin
 | Root README | all nine supported locales `CURRENT` | maintain |
 | D1 entry/use | all nine supported locales `CURRENT` | maintain |
 | D2 reviewer/safety | all nine supported locales `CURRENT` | maintain |
-| D3 architecture/storage authority | English correction in progress; localized `REFRESH_NEEDED` | D3 |
-| Grant overview / roadmap / glossary | partial and `REFRESH_NEEDED` | D4 |
-| Extended reference corpus | mixed / English | D5 |
-
-## Planned sequence
-
-### D3 — architecture documents
-
-Reconcile the complete stable English source first, then translate the compact architecture
-and storage/authority summaries. Preserve Guardian, TruthGate, physical-L3/strict-Canon,
-evidence, SQLite ordinary-runtime and PostgreSQL `active=false` boundaries.
+| D3 architecture/storage authority | all nine supported locales `CURRENT` | maintain |
+| D4 project/grant context | `REFRESH_NEEDED` translated document packs | D4 |
+| D5 extended reference corpus | mixed / English | D5 |
 
 ### D4 — project and grant documents
 
 Refresh grant overview, roadmap, glossary, governance and contribution guidance without
 claiming an NLnet award or re-budgeting merged baseline work.
 
-### D5 — extended reference documents
+### D5 — extended references
 
-Translate remaining stable documents according to reader value and maintenance cost. Volatile
-AI-agent logs and low-level CI records may remain English with exact evidence links.
+Prioritize stable reader-value documents. Volatile AI-agent logs and low-level CI records may
+remain English with exact evidence links and an explicit rationale.
 
 ## Completion rule
 
