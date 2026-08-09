@@ -62,8 +62,7 @@ D4 is current across all nine supported locale packs. The D4 validator covers
 **18 project/grant/glossary documents plus nine indexes**, exact source checkpoint, local links
 and all mandatory capability, authority, grant and certification non-claims.
 
-D1–D4 are now current multilingual public surfaces. D5 extended-reference inventory remains
-pending and must classify each remaining document as `CURRENT`, `REFRESH_NEEDED`, `RETIRED`
+D1–D4 are now current multilingual public surfaces. D5 extended-reference inventory remains pending and must classify each remaining document as `CURRENT`, `REFRESH_NEEDED`, `RETIRED`
 or `ENGLISH_ONLY_BY_DESIGN` before any D5 completion claim.
 
 See [`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md),
