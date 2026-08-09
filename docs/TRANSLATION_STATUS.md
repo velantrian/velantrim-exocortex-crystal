@@ -11,9 +11,11 @@ implementation, security, authority, legal or grant claims.
 **Remaining-locale D1 source checkpoint:** `main@a497b7d3cfbe59ca75b11d7449d5a728455b3130`.  
 **D2 source checkpoint:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.  
 **D3 source checkpoint:** `main@208f1c772ee3a112cb803d2413c120bef23adb05`.  
-**D4 source checkpoint:** `main@151b41c680190f7f3de729bf63e8e80a9d2285ce`.
+**D4 source checkpoint:** `main@151b41c680190f7f3de729bf63e8e80a9d2285ce`.  
+**D5 inventory baseline:** `main@3de746e74be844c6fda55849c10faac5c3f0631a`.
 
 **Policy:** [`LOCALIZATION_POLICY.md`](LOCALIZATION_POLICY.md).  
+**D5 policy:** [`EXTENDED_REFERENCE_POLICY.md`](EXTENDED_REFERENCE_POLICY.md).  
 **Tracking issue:** [#341](https://github.com/velantrian/velantrim-exocortex-crystal/issues/341).
 
 ## Root README status
@@ -76,7 +78,7 @@ D3 is complete for all nine supported locales.
 | Hindi | `CURRENT` | `CURRENT` | `main@208f1c772ee3a112cb803d2413c120bef23adb05` |
 | Italian | `CURRENT` | `CURRENT` | `main@208f1c772ee3a112cb803d2413c120bef23adb05` |
 | Japanese | `CURRENT` | `CURRENT` | `main@208f1c772ee3a112cb803d2413c120bef23adb05` |
-| Russian | `CURRENT` | `CURRENT` | `main@208f1c772ee3a112cb803d2413c120bef23adb05` |
+| Russian | `CURRENT` | `CURRENT` | `CURRENT` | `main@208f1c772ee3a112cb803d2413c120bef23adb05` |
 | Simplified Chinese | `CURRENT` | `CURRENT` | `main@208f1c772ee3a112cb803d2413c120bef23adb05` |
 
 D3 preserves physical-L3/strict-Canon separation, read-only public queries, SQLite ordinary
@@ -115,13 +117,20 @@ and no legal/GDPR/security/native-speaker certification claims.
 | D2 reviewer/safety | all nine supported locales `CURRENT` | maintain |
 | D3 architecture/storage authority | all nine supported locales `CURRENT` | maintain |
 | D4 project/grant context | all nine supported locales `CURRENT` | maintain |
-| D5 extended reference corpus | inventory pending | D5 |
+| D5 source inventory/policy | `CURRENT` in English source PR | merge and checkpoint |
+| D5 localized guides | pending | separate PR from D5 source merge SHA |
 
 ## D5 — extended reference documents
 
-D5 requires an inventory before any translation claim. Stable reader-value references may be
-localized; volatile AI/audit logs, CI evidence and low-level technical contracts may remain
-`ENGLISH_ONLY_BY_DESIGN`. Stale snapshots must be retained with visible `RETIRED` routing.
+The D5 source inventory is current in this PR and resolves the repository documentation corpus
+into `CURRENT`, `REFRESH_NEEDED`, `RETIRED` and `ENGLISH_ONLY_BY_DESIGN`. The validator must
+report zero unresolved `REFRESH_NEEDED` files before merge. Detailed ADR/profile contracts,
+security/privacy/GDPR/legal mapping, tests/benchmarks/CI, machine-readable status, AI/audit,
+research/RFC and grant evidence remain English-only by design. Historical snapshots remain
+preserved with visible retirement routing.
+
+D5 translations are not complete in this source PR. The supported outcome is one compact
+Extended Reference Guide per locale, pinned to the future immutable D5 source merge SHA.
 
 ## Completion rule
 

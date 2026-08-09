@@ -62,10 +62,24 @@ D4 is current across all nine supported locale packs. The D4 validator covers
 **18 project/grant/glossary documents plus nine indexes**, exact source checkpoint, local links
 and all mandatory capability, authority, grant and certification non-claims.
 
-D1–D4 are now current multilingual public surfaces. D5 extended-reference inventory remains pending and must classify each remaining document as `CURRENT`, `REFRESH_NEEDED`, `RETIRED`
-or `ENGLISH_ONLY_BY_DESIGN` before any D5 completion claim.
+## 6. D5 source inventory state
+
+D1–D4 are current multilingual public surfaces. D5 extended-reference inventory remains pending until this source-policy PR is merged with exact-head evidence. The proposed inventory is defined by
+[`../EXTENDED_REFERENCE_POLICY.md`](../EXTENDED_REFERENCE_POLICY.md) and
+[`../status/d5-inventory.json`](../status/d5-inventory.json), anchored to the signed D4 merge
+`main@3de746e74be844c6fda55849c10faac5c3f0631a`.
+
+The D5 validator resolves the live repository corpus into `CURRENT`, `REFRESH_NEEDED`, `RETIRED`
+and `ENGLISH_ONLY_BY_DESIGN`, rejects unclassified locale files and reports exact counts. The
+inventory audit found no additional localized snapshots outside the D1–D4 packs. D5 localized
+Extended Reference Guides remain pending and must use the future immutable D5 source merge SHA.
+
+Detailed ADR/profile contracts, security/privacy/GDPR/legal mapping, tests/benchmarks/CI,
+machine-readable status, AI/audit/archive context, research/RFC and grant evidence are not bulk
+translated. Historical snapshots remain preserved with retirement routing.
 
 See [`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md),
 [`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md),
-[`../status/d3-translation-manifest.json`](../status/d3-translation-manifest.json) and
-[`../status/d4-translation-manifest.json`](../status/d4-translation-manifest.json).
+[`../status/d3-translation-manifest.json`](../status/d3-translation-manifest.json),
+[`../status/d4-translation-manifest.json`](../status/d4-translation-manifest.json) and
+[`../status/d5-inventory.json`](../status/d5-inventory.json).
