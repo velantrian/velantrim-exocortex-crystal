@@ -29,6 +29,8 @@ REQUIRED = {
         "review: in progress",
         "award: not awarded",
         "budget change: none",
+        "approximate €50,000 request",
+        "not an approved budget or payment commitment",
         "physical l3 != strict canon",
         "postgresql/pgvector remains an optional inactive migration/equivalence target with `active=false`",
         "a dedicated reader core remains not implemented",
@@ -85,7 +87,9 @@ LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 
 
 def normalized(text: str) -> str:
-    """Collapse Markdown line wrapping while keeping machine identifiers visible."""
+    """Normalize Markdown wrapping and lightweight syntax for semantic markers."""
+    text = re.sub(r"(?m)^\s*>\s?", " ", text)
+    text = text.replace("**", "").replace("__", "").replace("`", "")
     return re.sub(r"\s+", " ", text).strip().lower()
 
 
@@ -130,7 +134,7 @@ def main() -> int:
         require(relative, text, REQUIRED[relative], errors)
         searchable = normalized(text)
         for stale in STALE:
-            if stale in searchable:
+            if normalized(stale) in searchable:
                 errors.append(f"{relative}: stale or unsupported claim {stale!r}")
         check_links(relative, text, errors)
 
@@ -163,9 +167,11 @@ def main() -> int:
         plan,
         (
             "submitted to nlnet for review",
+            "proposal has been submitted and is under review",
             "does not imply that funding has been awarded",
             "approx. **€50,000**",
-            "it does not represent an approved budget",
+            "does not represent an approved budget",
+            "grant agreement or memorandum of understanding",
             "the grant does not pay to recreate",
             "features that are already implemented",
         ),
