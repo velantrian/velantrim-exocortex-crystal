@@ -145,7 +145,8 @@ def main() -> int:
 
     current_state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
     for marker in (
-        "D3 is current across all nine supported locale packs",
+        "Russian D1/D3/D4/D5 detail pack is current",
+        "eight other locale detail packs require Reader refresh",
         f"main@{SOURCE}",
         "reader_core_rc1_skeleton = true",
         "reader_core_rc2_structural_map = true",
