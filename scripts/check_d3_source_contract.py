@@ -7,7 +7,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
+SOURCE = "0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5"
 FILES = (
     "docs/ARCHITECTURE.md",
     "docs/ARCHITECTURE_OVERVIEW.md",
@@ -40,7 +40,10 @@ REQUIRED = {
         "The PostgreSQL target is absent from ordinary runtime composition",
         "RC-1",
         "RC-2",
-        "dedicated multi-pass Reader",
+        "RC-3",
+        "explicit multi-pass mechanics",
+        "dedicated/full autonomous Reader",
+        "pass completion != comprehension proof",
         "active=false",
     ),
     "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md": (
@@ -48,6 +51,9 @@ REQUIRED = {
         "strict Canon",
         "Reader artifact",
         "Reader structure",
+        "Reader pass ledger",
+        "RC-3",
+        "pass completion",
         "active=false",
         "read-only",
     ),
@@ -123,8 +129,8 @@ def main() -> int:
     for marker in (
         "physical L3", "strict Canon", "active=false", "not activation", "read-only",
         "SQLite", "PostgreSQL", "fallback to ephemeral Mock is forbidden",
-        "active PostgreSQL read/write runtime adapter", "RC-1", "RC-2",
-        "dedicated multi-pass Reader",
+        "active PostgreSQL read/write runtime adapter", "RC-1", "RC-2", "RC-3",
+        "pass completion", "dedicated/full autonomous Reader",
     ):
         if marker not in all_text:
             errors.append(f"D3 source contract: missing boundary {marker!r}")
@@ -137,20 +143,20 @@ def main() -> int:
     doc_map = (ROOT / "docs/DOCUMENTATION_MAP.md").read_text(encoding="utf-8")
     for marker in (
         "ARCHITECTURE_OVERVIEW.md", "STORAGE_AND_AUTHORITY_BOUNDARIES.md",
-        "Reader Core architecture contract", "CURRENT full-parity localized READMEs",
-        "REFRESH_NEEDED translated document packs", "Inactive PostgreSQL import",
+        "Reader Core architecture contract", "Inactive PostgreSQL import",
     ):
         if marker not in doc_map:
             errors.append(f"documentation map: missing marker {marker!r}")
 
     current_state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
     for marker in (
-        "Russian D1/D3/D4/D5 detail pack is current",
-        "eight other locale detail packs require Reader refresh",
-        f"main@{SOURCE}",
-        "reader_core_rc1_skeleton = true",
-        "reader_core_rc2_structural_map = true",
-        "dedicated_reader_core = false",
+        "Russian Reader-dependent public/detail documentation is refreshed",
+        "eight other localized root README files and Reader-dependent detail packs",
+        f"{SOURCE}",
+        "reader_core_rc1_skeleton             = true",
+        "reader_core_rc2_structural_map       = true",
+        "reader_core_rc3_multi_pass_mechanics = true",
+        "dedicated_reader_core                = false",
     ):
         if marker not in current_state:
             errors.append(f"AI current state: missing source marker {marker!r}")
