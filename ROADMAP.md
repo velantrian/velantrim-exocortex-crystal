@@ -120,8 +120,9 @@ verified existing baseline + new measurable funded delta
 = independently verifiable public deliverable
 ```
 
-Issues #331/#332, PRs #335/#337 and D1–D5 documentation work merged before an agreement are
-existing baseline. They cannot be counted again as future paid delivery.
+Issues #331/#332, PRs #335/#337 and D1–D4 documentation work merged before an agreement are
+existing baseline. D5 documentation work also merged before any agreement and is existing
+baseline. None of that work can be counted again as future paid delivery.
 
 No grant award or approved budget is claimed. Approximate €50,000 remains planning only.
 Active PostgreSQL runtime selection, automatic switching, production multi-tenancy, universal
