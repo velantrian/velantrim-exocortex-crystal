@@ -34,7 +34,7 @@ The RC-3 English public/source surfaces advance the Reader semantic checkpoint. 
 
 D2 reviewer/safety translations remain current across all nine supported locales because RC-3 does not change their source semantics. Russian D1/D3/D4/D5 detail pack is current against the RC-3 checkpoint. The eight other locale detail packs require Reader refresh; their prior rich translations are preserved as explicit `REFRESH_NEEDED` debt rather than shortened replacements.
 
-The eight other localized root README files likewise require RC-3 semantic refresh. D2 reviewer/safety and Quick Start remain current across all nine locales.
+The eight other localized root README files and Reader-dependent detail packs require RC-3 semantic refresh. D2 reviewer/safety and Quick Start remain current across all nine locales.
 
 The translation ledger and machine documentation manifest are the freshness authority. Old `CURRENT` markers tied to an older explicit source SHA describe that historical checkpoint only; they do not override the newer ledger.
 
