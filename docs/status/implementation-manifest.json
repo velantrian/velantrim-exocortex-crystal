@@ -2,7 +2,7 @@
   "schema_version": 1,
   "project": "Velantrim Exo-Cortex Crystal",
   "version": "0.3.0",
-  "status_date": "2026-08-08",
+  "status_date": "2026-08-10",
   "verified_runtime_checkpoint": {
     "commit": "bbd816c09dd39a02e6de6c1014438490572f40f6",
     "short": "bbd816c",
@@ -77,7 +77,24 @@
     "automatic_backend_switching": false,
     "distributed_curator_coordination": false,
     "production_idp_multitenancy": false,
+    "reader_core_rc1_skeleton": true,
     "dedicated_reader_core": false
+  },
+  "reader_core_rc1": {
+    "tracking_issue": 357,
+    "architecture_contract": "docs/architecture/READER_CORE_ARCHITECTURE.md",
+    "runtime_module": "core/reader_core.py",
+    "test_module": "tests/test_reader_core.py",
+    "scope": "minimal_evidence_linked_domain_skeleton",
+    "source_body_storage": false,
+    "durable_storage_schema": false,
+    "public_api_or_cli": false,
+    "llm_or_provider_integration": false,
+    "embeddings_or_vector_database": false,
+    "multi_pass_orchestration": false,
+    "planner_or_belief_update_authority": false,
+    "truth_or_canon_authority": false,
+    "dedicated_full_reader_core": false
   },
   "storage_resource_limits": {
     "control_file_bytes": 1048576,

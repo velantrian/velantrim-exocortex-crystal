@@ -5,7 +5,7 @@ not substitutes for consumer and test discovery.
 
 ## 1. Claims, epistemic lifecycle and physical L3
 
-**Start:** `core/types.py`, `core/memory.py`, `core/storage.py`,
+**Start:** `core/memory.py`, `core/l3_graph.py`, `core/truth_gate.py`,
 `docs/CLAIM_METADATA_GLOSSARY.md`.
 
 **Boundary:** storage presence does not equal strict Canon membership. Writes must preserve
@@ -79,9 +79,9 @@ automatic switching or ANN acceptance is implemented.
 **Start:** Guardian functions in `core/pipeline.py`, `core/truth_gate.py`, `core/immune.py`,
 `core/api_ingest_policy.py`, `docs/IMMUNE_LAYER.md`, `docs/ARCHITECTURE.md`.
 
-A caller, model, retriever, storage profile or migration tool must not mutate strict Canon
-outside the audited admission path. Guardian is an architectural/runtime boundary implemented
-inside the current pipeline rather than a standalone `core/guardian.py` module.
+A caller, model, retriever, storage profile, migration tool or Reader artifact must not mutate
+strict Canon outside the audited admission path. Guardian is an architectural/runtime boundary
+implemented inside the current pipeline rather than a standalone `core/guardian.py` module.
 
 ## 6. Strict read grounding
 
@@ -93,8 +93,8 @@ must not be presented as strict Canon.
 
 ## 7. Retrieval, evidence and receipts
 
-**Start:** retrieval/evidence modules under `core/`, FactsPack, TRACE, Receipt,
-`docs/EVAL.md`, `TEST_REPORT.md`.
+**Start:** `core/evidence.py`, `core/span_extract.py`, retrieval modules under `core/`,
+FactsPack, TRACE, Receipt, `docs/EVAL.md`, `TEST_REPORT.md`.
 
 Retrieval rank, similarity and model output are not evidence or admission. Every grounded
 claim must retain source/provenance and refusal conditions.
@@ -120,7 +120,8 @@ strict answers, and restriction/erasure state must propagate.
 `pyproject.toml`, `.github/workflows/ci.yml`.
 
 Public query and doctor surfaces are read-only. PostgreSQL migration commands are explicit
-operator operations and do not add an ordinary runtime adapter.
+operator operations and do not add an ordinary runtime adapter. Reader RC-1 has no public API,
+CLI, background worker or ordinary runtime composition wiring.
 
 ## 11. Evaluation and status evidence
 
@@ -133,15 +134,39 @@ are not production SLOs or certification.
 
 ## 12. Long-document semantic reading
 
-**Start:** `docs/architecture/READER_CORE_ARCHITECTURE.md`, `core/evidence.py`,
+**Start:** `core/reader_core.py`, `tests/test_reader_core.py`,
+`docs/architecture/READER_CORE_ARCHITECTURE.md`, `core/evidence.py`, `core/span_extract.py`,
 `docs/core/INGEST_SCHEMA.md`, `docs/CONTRADICTION_POLICY.md`.
 
-Reader Core RC-0 is an architecture contract only. No verified dedicated Reader Core runtime
-exists and `dedicated_reader_core=false` remains authoritative machine status. The future
-reading layer is upstream of Guardian/TruthGate, preserves document/version identity and
-exact source spans, makes coverage and re-read state explicit, produces only source-linked
-reader artifacts/candidates and never becomes a second Canon owner. Importance, similarity,
-summary and interpretation do not create truth authority.
+RC-0 is the normative architecture contract. RC-1 adds a bounded, pure-standard-library
+**minimal evidence-linked domain skeleton** and nothing resembling a full autonomous reader.
+Machine status intentionally separates these facts:
+
+```text
+reader_core_rc1_skeleton = true
+dedicated_reader_core    = false
+```
+
+The RC-1 surface owns only:
+
+- immutable source identity/version binding (`document_id`, source URI, SHA-256);
+- replayable exact half-open spans or explicit structural locators;
+- `ReaderSession` lifecycle;
+- `SegmentCard` plus five mandatory source-fidelity classes;
+- `UNREAD` / `SEEN` / `PROCESSED` / `REVISITED` / `NEEDS_REVIEW` coverage semantics;
+- count/gap telemetry that never reports a comprehension percentage;
+- minimal source-linked bookmarks/open loops;
+- fail-visible interruption/degradation and conservative whole-session stale invalidation;
+- restriction/sensitivity inheritance without retaining source body text in `SourceVersion`.
+
+**Critical authority boundary:** `core/reader_core.py` has no ingest/TruthGate/Canon/ESM,
+contradiction-decision or planner write path. Producing a Reader artifact does not admit a
+claim, resolve a contradiction, change truth status or prove comprehension. A future dedicated
+Reader Core still requires separately reviewed structural/multi-pass/model/runtime work.
+
+**RC-1 non-features:** no parser/semantic chunker, LLM/provider integration, embeddings, ANN or
+vector DB, durable Reader schema/migration, public API/CLI, multi-pass orchestration,
+cross-document reasoning engine, planner or automatic belief update.
 
 ## 13. Documentation, grant and research governance
 
@@ -151,4 +176,5 @@ summary and interpretation do not create truth authority.
 GitHub `main` proves implementation. Notion preserves deeper rationale, grant framing and
 audit history. Issues #331 and #332 are merged baseline; exact-vs-ANN evaluation,
 cutover/fencing, rollback and PostgreSQL server lifecycle remain separate future phases.
-Automatic SQLite/PostgreSQL switching remains forbidden.
+Automatic SQLite/PostgreSQL switching remains forbidden. Reader RC-1 merged before a grant
+agreement is existing baseline and cannot be presented as awarded/funded delivery.
