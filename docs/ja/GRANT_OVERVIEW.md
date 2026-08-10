@@ -1,31 +1,27 @@
-<!-- translation-source: docs/PROJECT_GRANT_AND_GOVERNANCE.md@151b41c680190f7f3de729bf63e8e80a9d2285ce -->
-<!-- d4-locale: ja -->
+<!-- translation-source: docs/PROJECT_GRANT_AND_GOVERNANCE.md@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
 <!-- translation-status: CURRENT -->
+<!-- d4-locale: ja -->
 <!-- d4-boundary: physical-l3-not-strict-canon -->
 <!-- d4-boundary: retrieval-score-not-evidence -->
 <!-- d4-boundary: model-output-not-source-truth -->
 <!-- d4-boundary: migration-proof-not-claim-proof -->
 <!-- d4-nonclaim: import-is-not-activation -->
-<!-- d4-nonclaim: reader-core-not-implemented -->
+<!-- d4-reader: rc1-skeleton-implemented -->
+<!-- d4-reader: rc2-structural-map-implemented -->
+<!-- d4-nonclaim: dedicated-reader-core-not-implemented -->
 <!-- d4-nonclaim: nlnet-not-awarded -->
 <!-- d4-nonclaim: security-legal-gdpr-not-certified -->
 <!-- d4-nonclaim: native-speaker-editorial-not-certified -->
-# プロジェクト・助成・ガバナンス概要
+# Project / Grant / Governance
 
-Crystal は、監査可能な AI システム向けの local-first な記憶・証拠・意思決定境界の基盤です。
+physical L3 != strict Canon; retrieval score != evidence; model output != source truth; migration proof != claim proof。PostgreSQL は `active=false`。
+
+NLnet: submitted / under review / not awarded。約 €50,000 は planning only、budget change: none。
 
 ```text
-physical L3 != strict Canon
-retrieval score != evidence
-model output != source truth
-migration proof != claim proof
-import success != activation
+reader_core_rc1_skeleton = true
+reader_core_rc2_structural_map = true
+dedicated_reader_core = false
 ```
 
-SQLite は通常のアクティブな local-first プロファイルです。Mock は明示的な開発/CI backend です。PostgreSQL/pgvector は `active=false` の任意かつ非アクティブな対象であり、import 成功は activation を意味しません。
-
-NLnet 提案は提出済み・審査中・未採択です。約 €50,000 は計画上の申請額であり、承認済み予算や支払約束ではありません。予算変更はありません。助成契約前に merge された作業は既存 baseline であり、funded delta として再計上できません。
-
-Reader Core は未実装です。法務・GDPR・セキュリティ認証、およびネイティブ話者による編集認証はありません。
-
-英語の基準文書: [概要](../PROJECT_GRANT_AND_GOVERNANCE.md)、[用語集](../GLOSSARY.md)、[NLnet scope](../GRANT_NLNET_SCOPE.md)、[funding plan](../grants/funding-use-plan.md)。
+RC-1/RC-2 は pre-agreement baseline。dedicated multi-pass Reader は将来の作業です。security/legal/GDPR/native-speaker certification は主張しません。
