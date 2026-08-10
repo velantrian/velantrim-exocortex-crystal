@@ -57,7 +57,7 @@ The ledger still supports REFRESH_NEEDED translated document packs when future E
 
 - [Test report](../TEST_REPORT.md)
 - [Machine manifest](./status/implementation-manifest.json)
-- [NLnet scope](./GRANT_NLNET_SCOPE.md)
+- [Grant scope — NLnet](./GRANT_NLNET_SCOPE.md)
 - [Baseline-funded delta matrix](./grants/baseline-funded-delta-matrix.md)
 - [Security](../SECURITY.md)
 
