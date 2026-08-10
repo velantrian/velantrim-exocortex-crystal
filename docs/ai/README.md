@@ -28,10 +28,11 @@ Do not load the whole repository before completing this orientation pass.
 5. STATUS + IMPLEMENTATION_STATUS
 6. architecture documents and accepted ADRs
 7. English README primary public source
-8. CURRENT full-parity localized READMEs
-9. this AI context pack
-10. PRs, issues, roadmaps and research documents
-11. Notion strategy/history
+8. CURRENT full-parity localized root READMEs
+9. TRANSLATION_STATUS + locale indexes for detail-pack freshness
+10. this AI context pack
+11. PRs, issues, roadmaps and research documents
+12. Notion strategy/history
 ```
 
 Translated public text never overrides current implementation evidence when they disagree.
@@ -64,19 +65,19 @@ Notion.
 - Contradiction detection does not choose a winner without an audited decision.
 - TRACE and Receipt are proof surfaces.
 - The default runtime remains pure standard library.
+- Reader RC-1 and RC-2 are bounded implemented foundations; `dedicated_reader_core=false` remains the full Reader boundary.
 
 ## Documentation and translation
 
 English is the primary working and source language. English-first means source-first, not
 English-only.
 
-PR #340 restores full visual and semantic root README presentations in all nine supported
-languages. Agents must preserve their purpose, diagrams, tables, evidence, quick start,
-limitations and navigation when future public meaning changes.
+PR #340 restored full visual and semantic root README presentations in all nine supported
+languages. The current Reader reconciliation keeps all nine localized root READMEs `CURRENT`.
 
-Other documents are translated progressively by language or document family. Existing
-translated packs remain `REFRESH_NEEDED` until their source checkpoint is recorded. Broad
-translation work belongs in a dedicated docs-only PR. A translation may never strengthen
+The Russian D1/D3/D4/D5 detail pack is fully refreshed for Reader RC-1/RC-2. D2 and Quick Start remain `CURRENT` in all nine locale packs because Reader milestones did not alter those source semantics. The eight other locale detail packs retain their rich previous translations, but Reader-dependent D1/D3/D4/D5 documents are `REFRESH_NEEDED` until full semantic refresh. Do not replace those rich translations with compressed summaries merely to regain a `CURRENT` marker.
+
+Broad translation work belongs in a dedicated docs-only PR. A translation may never strengthen
 English capability, security, grant or authority claims.
 
 Follow [`../DOCUMENTATION_SYNC_PROTOCOL.md`](../DOCUMENTATION_SYNC_PROTOCOL.md),
