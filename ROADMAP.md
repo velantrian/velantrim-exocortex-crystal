@@ -100,7 +100,7 @@ composition. No activation, cutover, rollback, dual-write or automatic switching
 
 RC-0 now defines the docs-only architecture contract at
 [`docs/architecture/READER_CORE_ARCHITECTURE.md`](./docs/architecture/READER_CORE_ARCHITECTURE.md).
-The runtime remains **not implemented** and the machine-readable status remains
+A dedicated Reader Core remains not implemented; the machine-readable status remains
 `dedicated_reader_core=false`.
 
 The RC-0 contract fixes the future layer's boundaries:
