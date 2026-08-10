@@ -62,23 +62,35 @@ Current machine truth deliberately separates bounded implemented layers from the
 Reader capability:
 
 ```text
-reader_core_rc1_skeleton             = true
-reader_core_rc2_structural_map       = true
-reader_core_rc3_multi_pass_mechanics = true
-dedicated_reader_core                = false
+reader_core_rc1_skeleton              = true
+reader_core_rc2_structural_map        = true
+reader_core_rc3_multi_pass_mechanics  = true
+reader_core_rc4_proposition_extraction = true
+dedicated_reader_core                 = false
 ```
 
 RC-1 provides the minimal evidence-linked source/session skeleton. RC-2 provides a caller-supplied,
 source-version-bound Structural Document Map. RC-3 provides deterministic explicit multi-pass
-mechanics over those layers: declared pass kinds/targets, an attempted/completed/interrupted/degraded
-ledger, explicit legal coverage outcomes and count-only pass telemetry.
+mechanics: declared pass kinds/targets, an attempted/completed/interrupted/degraded ledger,
+explicit legal coverage outcomes and count-only pass telemetry.
 
-None has truth/Canon/ESM/planner authority. They retain no source body and add no durable Reader
-storage schema, public Reader API/CLI/background worker, automatic parser/OCR, LLM/provider-driven
-reader, embeddings/ANN/vector database or automatic cross-document reasoning runtime. RC-3 does
-not choose its own objective or infer undeclared targets. `coverage != comprehension proof`,
-`pass completion != comprehension proof`, and structural position/order/prominence is metadata,
-not truth/confidence authority.
+RC-4 provides deterministic pre-admission proposition candidate registration from completed
+substantive RC-3 targets. A candidate is a source-linked `SegmentCard` with
+`EXTRACTED_PROPOSITION` fidelity, primary/supporting replayable locators, explicit source owner,
+source-presentation category, negation and qualifiers. It requires `PROCESSED` or `REVISITED`
+recorded/pass-current coverage and fails closed for `SEEN`, `NEEDS_REVIEW`, unresolved structure,
+incomplete pass state or provenance/session/source mismatch.
+
+`FACTUAL_ASSERTION` is a source-presentation category, not a verification status. RC-4 does not call
+`core.evidence.attach_evidence()`, write a fact's `evidence_spans`, set evidence sufficiency, mutate
+`truth_status`/ESM or perform TruthGate admission.
+
+None of RC-1/RC-2/RC-3/RC-4 has truth/Canon/ESM/planner authority. They retain no source body and add
+no durable Reader storage schema, public Reader API/CLI/background worker, automatic parser/OCR,
+automatic NLP/LLM/provider-driven reader, embeddings/ANN/vector database or automatic cross-document
+reasoning runtime. `coverage != comprehension proof`, `pass completion != comprehension proof`,
+`EXTRACTED_PROPOSITION != verified fact`, `Reader candidate != admitted evidence`, and structural
+position/order/prominence is metadata, not truth/confidence authority.
 
 ## Immutable boundaries and non-claims
 
@@ -92,11 +104,14 @@ Reader artifact != admitted fact
 Reader coverage != comprehension proof
 Reader pass completion != comprehension proof
 Reader structure != epistemic authority
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
 ```
 
 SQLite remains the ordinary active local-first profile. Mock remains the explicit development/CI
 backend. PostgreSQL/pgvector remains an inactive target with `active=false`. A dedicated/full
-autonomous Reader / Semantic Reading runtime remains not implemented. NLnet remains submitted /
-under review / not awarded; approximate €50,000 is planning only, not an approved budget or payment
-commitment; budget change is none. Work merged before an agreement cannot be counted again as funded
-delta. No legal, GDPR, security or native-speaker editorial certification is claimed.
+autonomous Reader / Semantic Reading runtime remains not implemented. Automatic NLP/model proposition
+extraction remains absent. NLnet remains submitted / under review / not awarded; approximate €50,000
+is planning only, not an approved budget or payment commitment; budget change is none. Work merged
+before an agreement, including RC-4 if merged pre-agreement, cannot be counted again as funded delta.
+No legal, GDPR, security or native-speaker editorial certification is claimed.
