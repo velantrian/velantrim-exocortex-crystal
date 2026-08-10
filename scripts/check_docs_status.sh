@@ -137,7 +137,7 @@ required = {
     "docs/IMPLEMENTATION_STATUS.md": ("reader_core_rc1_skeleton", "reader_core_rc2_structural_map", "reader_core_rc3_multi_pass_mechanics", "dedicated_reader_core", "core/reader_passes.py"),
     "docs/ARCHITECTURE_OVERVIEW.md": ("RC-1", "RC-2", "RC-3", "dedicated/full autonomous Reader", "active=false", "pass completion"),
     "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md": ("Reader artifact", "Reader structure", "Reader pass ledger", "active=false", "pass completion"),
-    "docs/PROJECT_GRANT_AND_GOVERNANCE.md": ("RC-1", "RC-2", "RC-3", "submitted", "€50,000", "pass completion"),
+    "docs/PROJECT_GRANT_AND_GOVERNANCE.md": ("RC-1", "RC-2", "RC-3", "submitted", "€50,000", "Reader pass complete"),
     "docs/GLOSSARY.md": ("Reader Core RC-1", "Reader Core RC-2", "Reader Core RC-3", "dedicated/full Reader Core"),
     "docs/EXTENDED_REFERENCE_POLICY.md": ("reader_core_rc1_skeleton", "reader_core_rc2_structural_map", "reader_core_rc3_multi_pass_mechanics", "dedicated_reader_core", "REFRESH_NEEDED"),
     "docs/TRANSLATION_STATUS.md": ("Russian", "REFRESH_NEEDED", "root README", source_checkpoint),
