@@ -9,19 +9,20 @@
 ## 1. Separate identities
 
 ```text
-storage profile    = deployment identity
-physical L3        = multi-status graph state
-strict Canon       = trusted read projection
-migration bundle   = operation evidence
-retrieval score    = ranking signal
-model output       = generated text
-Reader artifact    = source-linked candidate/observation
-Reader structure   = version-bound document metadata
-Reader pass ledger = version-bound reading-process audit state
+storage profile      = deployment identity
+physical L3          = multi-status graph state
+strict Canon         = trusted read projection
+migration bundle     = operation evidence
+retrieval score      = ranking signal
+model output         = generated text
+Reader artifact      = source-linked candidate/observation
+Reader structure     = version-bound document metadata
+Reader pass ledger   = version-bound reading-process audit state
+Reader proposition   = pre-admission source-linked extracted candidate
 ```
 
 None of these identities automatically implies another. Storage, retrieval, migration, model
-output, Reader artifacts, structure and pass state cannot bypass Guardian or TruthGate.
+output, Reader artifacts, structure, pass state and extracted propositions cannot bypass Guardian or TruthGate.
 
 ## 2. Durable runtime profile
 
@@ -45,13 +46,15 @@ Strict Canon is a deny-dominant projection that admits only records allowed by c
 evidence and policy.
 
 ```text
-stored in L3        ≠ trusted answer material
-retrieved            ≠ admitted
-high score           ≠ evidence
-frequent copy        ≠ independent corroboration
-Reader card          ≠ admitted fact
-structure            ≠ truth/confidence
-Reader pass complete ≠ comprehension or truth
+stored in L3          ≠ trusted answer material
+retrieved             ≠ admitted
+high score            ≠ evidence
+frequent copy         ≠ independent corroboration
+Reader card           ≠ admitted fact
+structure             ≠ truth/confidence
+Reader pass complete  ≠ comprehension or truth
+EXTRACTED_PROPOSITION ≠ verified fact
+Reader candidate      ≠ admitted evidence
 ```
 
 ## 4. Read and write separation
@@ -77,8 +80,9 @@ source-linked candidate
 → strict read projection
 ```
 
-Reader RC-1/RC-2/RC-3 remain upstream domain layers. Producing a Reader artifact, structural node
-or pass record never performs TruthGate admission or canonical mutation.
+Reader RC-1/RC-2/RC-3/RC-4 remain upstream domain layers. Producing a Reader artifact,
+structural node, pass record or extracted proposition never performs TruthGate admission,
+attaches evidence to an admitted fact, or mutates canonical truth state.
 
 ## 5. SQLite lifecycle
 
@@ -147,10 +151,21 @@ Only one pass is active at a time; interrupted/degraded passes preserve complete
 Cross-check and targeted re-read require prior substantive processing. Unresolved structure may only
 produce fail-visible `NEEDS_REVIEW`.
 
-The dedicated/full autonomous Reader / Semantic Reading runtime is not implemented. RC-1/RC-2/RC-3
-add no automatic parser/chunker/OCR, LLM/provider-driven reader, embeddings/ANN/vector DB,
-automatic cross-document reasoning engine or planner/belief-update authority. `coverage !=
-comprehension proof`; pass completion is not comprehension proof.
+RC-4 implements bounded deterministic proposition candidate registration from completed substantive
+RC-3 regions. A candidate requires a declared completed pass target whose recorded outcome and current
+matching coverage are `PROCESSED` or `REVISITED`. The candidate uses `EXTRACTED_PROPOSITION` fidelity,
+keeps primary/supporting replayable locators, source owner, source-presentation category, explicit
+negation and qualifiers, and inherits source restriction/sensitivity metadata.
+
+`FACTUAL_ASSERTION` in RC-4 describes how the source presents a proposition; it is not a Crystal
+verification result. RC-4 does not call `core.evidence.attach_evidence()`, write `evidence_spans`,
+create an admitted fact, mutate `truth_status`/ESM, or assert evidence sufficiency.
+
+The dedicated/full autonomous Reader / Semantic Reading runtime is not implemented. RC-1/RC-2/RC-3/RC-4
+add no automatic parser/chunker/OCR, automatic NLP/LLM extraction, provider-driven reader,
+embeddings/ANN/vector DB, automatic cross-document proposition identity/reasoning engine or
+planner/belief-update authority. `coverage != comprehension proof`; pass completion is not
+comprehension proof; `EXTRACTED_PROPOSITION != verified fact`.
 
 ## 9. Secret and privacy boundary
 
@@ -160,8 +175,9 @@ issues or Notion. Endpoint identity is represented through non-secret digests.
 Migration and backup create additional copies. Erasure from the active store does not
 implicitly erase those copies. Operators need inventory, retention and deletion procedures.
 
-Selected L1 field encryption is not universal encryption. Reader RC-1/RC-2/RC-3 retain no source body;
-derived Reader artifacts and pass records inherit source restriction/sensitivity metadata.
+Selected L1 field encryption is not universal encryption. Reader RC-1/RC-2/RC-3/RC-4 retain no source
+body; derived Reader artifacts, pass records and extracted proposition candidates inherit source
+restriction/sensitivity metadata.
 
 ## 10. Authority table
 
@@ -170,6 +186,7 @@ derived Reader artifacts and pass records inherit source restriction/sensitivity
 | Reader artifact exists | bounded source-linked observation/candidate | truth, admission or comprehension |
 | structural node exists | recovered/caller-supplied document metadata | confidence, truth or importance authority |
 | Reader pass completes | declared targets received explicit legal coverage outcomes | comprehension, truth, evidence sufficiency or admission |
+| RC-4 proposition candidate exists | a caller-supplied proposition is anchored to eligible completed substantive Reader context | verified world fact, admitted evidence, confidence or Canon membership |
 | record stored in L3 | physical persistence | strict Canon membership |
 | retrieval result | candidate relevance | evidence sufficiency |
 | backup verified | backup integrity | claim truth |
@@ -182,8 +199,8 @@ derived Reader artifacts and pass records inherit source restriction/sensitivity
 
 Crystal does not claim active PostgreSQL runtime, automatic migration, accepted ANN
 production quality, cutover, rollback, dual-write, production multi-tenancy, distributed
-exactly-once coordination, a completed dedicated/full autonomous Reader runtime,
-security/legal/GDPR certification or awarded NLnet funding.
+exactly-once coordination, a completed dedicated/full autonomous Reader runtime or automatic
+NLP proposition extraction, security/legal/GDPR certification or awarded NLnet funding.
 
 ## 12. Detailed English sources
 

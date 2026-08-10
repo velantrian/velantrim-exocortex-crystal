@@ -63,6 +63,7 @@
     "reader_core_rc1_skeleton": true,
     "reader_core_rc2_structural_map": true,
     "reader_core_rc3_multi_pass_mechanics": true,
+    "reader_core_rc4_proposition_extraction": true,
     "dedicated_reader_core": false
   },
   "reader_core_rc1": {
@@ -128,6 +129,33 @@
     "truth_or_canon_authority": false,
     "dedicated_full_reader_core": false
   },
+  "reader_core_rc4": {
+    "tracking_issue": 365,
+    "architecture_contract": "docs/architecture/READER_CORE_ARCHITECTURE.md",
+    "runtime_module": "core/reader_extraction.py",
+    "test_module": "tests/test_reader_extraction.py",
+    "scope": "source_linked_pre_admission_proposition_extraction",
+    "completed_pass_required": true,
+    "substantive_outcomes": ["PROCESSED", "REVISITED"],
+    "fidelity": "EXTRACTED_PROPOSITION",
+    "source_presentation_categories": ["FACTUAL_ASSERTION", "AUTHOR_OPINION", "HYPOTHESIS", "CONDITIONAL", "EXAMPLE", "QUOTED_SPEECH", "REPORTED_POSITION", "DEFINITION", "UNCERTAIN_ASSERTION"],
+    "source_owner_preserved": true,
+    "negation_and_qualifiers_preserved": true,
+    "primary_and_supporting_locators": true,
+    "count_only_telemetry": true,
+    "source_body_storage": false,
+    "automatic_nlp_or_llm_extraction": false,
+    "fact_evidence_write": false,
+    "durable_storage_schema": false,
+    "public_api_or_cli": false,
+    "llm_or_provider_integration": false,
+    "embeddings_or_vector_database": false,
+    "automatic_cross_document_reasoning": false,
+    "contradiction_resolution_authority": false,
+    "planner_or_belief_update_authority": false,
+    "truth_or_canon_authority": false,
+    "dedicated_full_reader_core": false
+  },
   "storage_resource_limits": {
     "control_file_bytes": 1048576,
     "source_sqlite_bytes": 67108864,
@@ -146,10 +174,10 @@
     "authoritative_language": "English",
     "working_language": "English",
     "language_model": "english_primary_source_multilingual_product_surface",
-    "localized_readmes": "russian_current_eight_refresh_needed_after_rc3_source_change",
+    "localized_readmes": "russian_current_eight_refresh_needed_after_rc4_source_change",
     "translation_status_ledger": "docs/TRANSLATION_STATUS.md",
     "localization_policy": "docs/LOCALIZATION_POLICY.md",
-    "localized_readme_source_checkpoint": "0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5",
+    "localized_readme_source_checkpoint": "166fab5551c4b86ee0a546b2e1d3dc7adc240c86",
     "supported_localized_readme_count": 9,
     "full_parity_current_locales": ["ru"],
     "full_parity_refresh_needed_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"],
@@ -157,7 +185,7 @@
     "broader_document_translation": "phased_by_language_or_document_family",
     "full_corpus_translation_required_in_single_pr": false,
     "translation_tracking_issue": 341,
-    "d1_source_checkpoint": "0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5",
+    "d1_source_checkpoint": "166fab5551c4b86ee0a546b2e1d3dc7adc240c86",
     "d1_current_locales": ["ru"],
     "d1_refresh_needed_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"],
     "d1_current_documents": {
@@ -192,7 +220,7 @@
     "awarded": false,
     "budget_changed": false,
     "baseline_issue": 333,
-    "rule": "Merged pre-agreement work, including issues 331/332 and Reader RC-0/RC-1/RC-2/RC-3 when merged, cannot be counted again as funded delta"
+    "rule": "Merged pre-agreement work, including issues 331/332 and Reader RC-0/RC-1/RC-2/RC-3/RC-4 when merged, cannot be counted again as funded delta"
   },
   "authority": {
     "runtime": "GitHub main",

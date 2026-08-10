@@ -8,7 +8,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = "0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5"
+SOURCE = "166fab5551c4b86ee0a546b2e1d3dc7adc240c86"
 LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
 CURRENT_LOCALES = ("ru",)
 REFRESH_LOCALES = tuple(locale for locale in LOCALES if locale not in CURRENT_LOCALES)
@@ -59,6 +59,7 @@ def main() -> int:
         (manifest.get("reader_core_rc1_skeleton_claim") is True, "RC-1 claim"),
         (manifest.get("reader_core_rc2_structural_map_claim") is True, "RC-2 claim"),
         (manifest.get("reader_core_rc3_multi_pass_mechanics_claim") is True, "RC-3 claim"),
+        (manifest.get("reader_core_rc4_proposition_extraction_claim") is True, "RC-4 claim"),
         (manifest.get("dedicated_reader_core_implemented_claim") is False, "dedicated Reader claim"),
         (manifest.get("nlnet_awarded_claim") is False, "grant claim"),
         (manifest.get("approved_budget_claim") is False, "budget claim"),
@@ -99,8 +100,10 @@ def main() -> int:
                     "RC-1",
                     "RC-2",
                     "RC-3",
+                    "RC-4",
                     "dedicated",
-                    "pass completion",
+                    "EXTRACTED_PROPOSITION",
+                    "Reader candidate",
                 ):
                     if marker not in text:
                         errors.append(f"{relative}: missing current D4 semantic marker {marker!r}")
@@ -112,6 +115,10 @@ def main() -> int:
                 for marker in grant_markers:
                     if marker not in text:
                         errors.append(f"{relative}: missing current grant marker {marker!r}")
+                if not is_grant:
+                    for marker in ("source owner", "proposition presentation category"):
+                        if marker not in text:
+                            errors.append(f"{relative}: missing RC-4 glossary marker {marker!r}")
             else:
                 for marker in LEGACY_BOUNDARY_MARKERS:
                     if marker not in text:
@@ -134,7 +141,7 @@ def main() -> int:
         for error in errors:
             print(f"  - {error}")
         return 1
-    print("D4 translation status is consistent: Russian CURRENT; 8 locales REFRESH_NEEDED")
+    print("D4 translation status is consistent: Russian CURRENT at RC-4; 8 locales REFRESH_NEEDED")
     return 0
 
 

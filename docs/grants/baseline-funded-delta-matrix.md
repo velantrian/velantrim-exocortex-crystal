@@ -2,7 +2,7 @@
 
 **Status:** grant-planning control · documentation only · no award/budget change  
 **Frozen runtime checkpoint:** `main@bbd816c09dd39a02e6de6c1014438490572f40f6`  
-**Current Reader baseline:** Reader RC-1 + Reader RC-2 implemented; Reader RC-3 explicit multi-pass mechanics becomes pre-agreement baseline if this work merges before an agreement; dedicated/full autonomous Reader remains absent.  
+**Current Reader baseline:** Reader RC-1 + RC-2 + RC-3 implemented; Reader RC-4 source-linked proposition extraction becomes pre-agreement baseline if this work merges before an agreement; dedicated/full autonomous Reader remains absent.  
 **Baseline evidence:** 2078 passed / 13 skipped / 9756 statements / 100% coverage / 9 CI jobs / 1 PostgreSQL integration job
 
 ## Control rule
@@ -14,7 +14,7 @@ verified baseline + new measurable funded delta
 
 Anything already merged before an agreement is existing capability and cannot be counted again as
 future paid work. This includes #331 / PR #335, #332 / PR #337, Reader RC-0, Reader RC-1, Reader RC-2,
-Reader RC-3 if merged pre-agreement, and merged multilingual documentation baselines.
+Reader RC-3, Reader RC-4 if merged pre-agreement, and merged multilingual documentation baselines.
 
 ## M1 — Reproducible runtime and release evidence
 
@@ -72,32 +72,39 @@ restore drill, retention/upgrade sequencing, pooling, retry and observability.
 **Funded delta:** reviewer-facing visualization, source-span navigation, uncertainty/refusal views and
 content-light audit export. UI cannot promote or mutate Canon.
 
-## M8 — Reader work beyond RC-3
+## M8 — Reader work beyond RC-4
 
 **Baseline:** Reader RC-0 architecture contract plus implemented/tested RC-1 evidence-linked skeleton,
-RC-2 caller-supplied Structural Document Map and RC-3 explicit deterministic multi-pass mechanics when
-RC-3 merges before an agreement:
+RC-2 caller-supplied Structural Document Map, RC-3 explicit deterministic multi-pass mechanics and
+RC-4 deterministic source-linked proposition candidate registration when RC-4 merges before an agreement:
 
 ```text
-reader_core_rc1_skeleton             = true
-reader_core_rc2_structural_map       = true
-reader_core_rc3_multi_pass_mechanics = true
-dedicated_reader_core                = false
+reader_core_rc1_skeleton              = true
+reader_core_rc2_structural_map        = true
+reader_core_rc3_multi_pass_mechanics  = true
+reader_core_rc4_proposition_extraction = true
+dedicated_reader_core                 = false
 ```
 
 RC-3 baseline includes explicit `ORIENTATION`, `BROAD_READ`, `FOCUSED_READ`, `CROSS_CHECK` and
 `TARGETED_REREAD`; declared structural targets; attempted/completed/interrupted/degraded pass state;
 explicit legal RC-1 coverage outcomes; partial-progress preservation; and count-only telemetry.
 
+RC-4 baseline adds `EXTRACTED_PROPOSITION` candidates only from completed substantive pass targets,
+with primary/supporting source locators, source owner, source-presentation category, explicit negation
+and qualifiers, privacy inheritance and count-only candidate telemetry. It performs no automatic
+NLP/LLM extraction and no `core.evidence.attach_evidence()`/fact evidence write.
+
 These existing milestones cannot be counted again as future paid work.
 
-**Funded delta:** only separately reviewed Reader work beyond RC-3. The next roadmap candidate is RC-4
-evidence extraction; later exception/contradiction candidates and long-context work must each remain
+**Funded delta:** only separately reviewed Reader work beyond RC-4. The next roadmap candidate is RC-5
+exceptions/contradiction candidates; later long-context and cross-document work must each remain
 separately bounded. Embeddings/ANN/vector DB are not assumed.
 
-**Acceptance:** output stays upstream of Guardian/TruthGate; fidelity remains explicit; coverage remains
-version-specific and `coverage != comprehension proof`; `pass completion != comprehension proof`; no second
-Canon owner, planner authority or automatic belief update.
+**Acceptance:** output stays upstream of Guardian/TruthGate; fidelity and attribution remain explicit;
+coverage remains version-specific and `coverage != comprehension proof`; `pass completion != comprehension
+proof`; `EXTRACTED_PROPOSITION != verified fact`; `Reader candidate != admitted evidence`; no second Canon
+owner, planner authority or automatic belief update.
 
 A dedicated/full autonomous Reader remains not implemented until a later exact implementation gate proves it.
 

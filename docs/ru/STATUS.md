@@ -1,4 +1,4 @@
-<!-- translation-source: docs/STATUS.md@0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5 -->
+<!-- translation-source: docs/STATUS.md@166fab5551c4b86ee0a546b2e1d3dc7adc240c86 -->
 <!-- translation-status: CURRENT -->
 <!-- d1-locale: ru -->
 # Velantrim Crystal — текущий статус
@@ -44,7 +44,7 @@ PostgreSQL driver — optional extra и lazy-load только для явных
 
 ## Bounded implementation Reader Core
 
-RC-0 — нормативный архитектурный контракт. Три ограниченных слоя Reader теперь представлены в RC-3 implementation и должны приниматься только с собственным exact CI evidence:
+RC-0 — нормативный архитектурный контракт. Четыре ограниченных слоя Reader представлены в текущей implementation line и имеют собственное exact CI evidence:
 
 ```text
 RC-1
@@ -70,6 +70,14 @@ RC-3
 → явные per-region coverage outcomes
 → сохранение partial progress при interruption/degradation
 → count-only pass telemetry
+
+RC-4
+→ completed substantive RC-3 pass context
+→ source-linked EXTRACTED_PROPOSITION candidate
+→ explicit source owner + proposition presentation category
+→ explicit negation + scope/exception qualifiers
+→ primary + supporting replayable locators
+→ count-only extraction telemetry
 ```
 
 Machine truth отличает эти bounded-слои от более крупной Reader capability:
@@ -78,20 +86,27 @@ Machine truth отличает эти bounded-слои от более круп�
 reader_core_rc1_skeleton = true
 reader_core_rc2_structural_map = true
 reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc4_proposition_extraction = true
 dedicated_reader_core = false
 ```
 
 RC-3 — deterministic orchestration mechanics, а не автономный агент чтения. Он не вызывает модель/provider, не обнаруживает структуру сам, не выбирает собственную research objective и не выводит скрытые targets. Каждый pass, structural targets и region outcomes объявляет caller. RC-1 coverage rules остаются authority для допустимых переходов coverage.
 
-`CROSS_CHECK` и `TARGETED_REREAD` требуют prior substantive processing. Targeted re-read требует явного rationale. Unresolved RC-2 structure может оставаться только fail-visible через `NEEDS_REVIEW`. Завершение pass означает лишь, что все объявленные targets получили явные допустимые outcomes.
+RC-4 — deterministic validation/registration layer, а не automatic NLP/model extractor. Candidate разрешён только из target завершённого (`COMPLETED`) RC-3 pass, если pass outcome и текущий matching coverage равны `PROCESSED` или `REVISITED`. Неопределённая структура, `SEEN`, `NEEDS_REVIEW`, незавершённый pass, source/session mismatch или mismatched provenance завершаются fail-closed.
 
-RC-1/RC-2/RC-3 не удерживают source body и не добавляют durable Reader storage schema, public API/CLI/background worker, parser/chunker/OCR/PDF-layout engine, LLM/provider-driven Reader, embeddings/ANN/vector DB или automatic cross-document reasoning. У них нет метода или runtime wiring, который меняет `truth_status`/ESM, пишет strict Canon, обходит Guardian/TruthGate, разрешает contradictions или создаёт planner/belief-update authority.
+Каждый RC-4 candidate остаётся `SegmentCard` с fidelity `EXTRACTED_PROPOSITION`. Источник/владелец высказывания (`source_owner`), категория подачи proposition, negation и scope/exception qualifiers сохраняются явно. Категории включают factual assertion, author opinion, hypothesis, conditional, example, quoted speech, reported position, definition и uncertain assertion.
+
+`FACTUAL_ASSERTION` означает лишь, что **источник подаёт** высказывание как факт; это не означает, что Crystal его проверил. RC-4 не вызывает `core.evidence.attach_evidence()`, не пишет fact evidence / `evidence_spans`, не устанавливает evidence sufficiency и не выполняет admission.
 
 ```text
 coverage != comprehension proof
 pass completion != comprehension proof
 structure/order/prominence != epistemic authority
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
 ```
+
+RC-1/RC-2/RC-3/RC-4 не удерживают source body и не добавляют durable Reader storage schema, public API/CLI/background worker, parser/chunker/OCR/PDF-layout engine, automatic NLP/LLM/provider-driven Reader, embeddings/ANN/vector DB или automatic cross-document reasoning. У них нет метода или runtime wiring, который меняет `truth_status`/ESM, пишет strict Canon, обходит Guardian/TruthGate, разрешает contradictions или создаёт planner/belief-update authority.
 
 ## Граница authority
 
@@ -103,11 +118,14 @@ strict Canon            = trusted read projection
 Reader artifact         = source-linked candidate/observation
 Reader structure        = document metadata
 Reader pass ledger      = reading-process audit state
+Reader proposition      = pre-admission source-linked candidate
 migration/import        != TruthGate admission
 successful equivalence  != backend activation
 Reader coverage         != comprehension proof
 Reader pass completion  != comprehension proof
 Reader structure        != epistemic authority
+EXTRACTED_PROPOSITION   != verified fact
+Reader candidate        != admitted evidence
 ```
 
 Guardian, TruthGate, restrictions, TrustSnapshot и CanonicalView остаются неизменными.
@@ -121,10 +139,12 @@ Guardian, TruthGate, restrictions, TrustSnapshot и CanonicalView остаютс
 - production IdP/multi-tenancy и legal/security/GDPR certification;
 - automatic Reader parser/semantic chunker/OCR/PDF-layout или multimodal understanding;
 - dedicated/full autonomous Reader / Semantic Reading runtime;
-- Reader LLM/provider-driven agent, embeddings, ANN/vector database или automatic cross-document reasoning engine;
+- automatic NLP/LLM proposition extraction или Reader provider-driven agent;
+- embeddings, ANN/vector database или automatic cross-document proposition identity/reasoning engine;
+- automatic evidence attachment к фактам или admission Reader candidates;
 - planner/autonomous research/belief-update authority.
 
 ## Статус гранта
 
 Проект подан и находится на рассмотрении. **Award или budget change не заявляются.** PR #337,
-Reader RC-0/RC-1/RC-2 и RC-3, если он будет смержен до любого соглашения, являются existing baseline и не могут повторно считаться future funded delta. Будущее финансирование должно начинаться с отдельно рассмотренной работы за пределами проверенного pre-agreement baseline.
+Reader RC-0/RC-1/RC-2/RC-3 и RC-4, если он будет смержен до любого соглашения, являются existing baseline и не могут повторно считаться future funded delta. Будущее финансирование должно начинаться с отдельно рассмотренной работы за пределами реально смерженного pre-agreement baseline.

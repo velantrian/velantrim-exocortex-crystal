@@ -1,6 +1,6 @@
 # 🧭 Статус реализации: Crystal и будущая работа Exo-Cortex
 
-<!-- translation-source: docs/IMPLEMENTATION_STATUS.md@0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5 -->
+<!-- translation-source: docs/IMPLEMENTATION_STATUS.md@166fab5551c4b86ee0a546b2e1d3dc7adc240c86 -->
 <!-- translation-status: CURRENT -->
 <!-- d1-locale: ru -->
 
@@ -27,7 +27,8 @@
 | Reader Core RC-1 minimal evidence-linked skeleton | Реализован и протестирован | `core/reader_core.py`; source/version/locator, fidelity, coverage, bookmarks/open loops, stale/failure/privacy; без admission side effects |
 | Reader Core RC-2 Structural Document Map | Реализован и протестирован | `core/reader_structure.py`; caller-supplied version-bound hierarchy/order/ambiguity; без parser и admission side effects |
 | Reader Core RC-3 explicit multi-pass mechanics | Реализован в bounded orchestration layer | `core/reader_passes.py`; explicit pass ledger и coverage effects по заранее объявленным RC-2 targets; без autonomous/model authority |
-| Dedicated/full Semantic Reading runtime | Не реализован | нет automatic parser, model-driven reader, cross-document engine или autonomous planner; `dedicated_reader_core=false` |
+| Reader Core RC-4 proposition extraction | Реализован в bounded pre-admission layer | `core/reader_extraction.py`; completed substantive RC-3 regions → source-linked `EXTRACTED_PROPOSITION` candidates; без fact evidence и truth admission |
+| Dedicated/full Semantic Reading runtime | Не реализован | нет automatic parser, autonomous NLP/model reader, cross-document engine или autonomous planner; `dedicated_reader_core=false` |
 
 ## Текущая storage sequence
 
@@ -65,7 +66,7 @@ strict read-only canonical projection
 
 ## Reader Core — реализованная bounded-граница
 
-RC-1, RC-2 и RC-3 — не «полный Reader», а три проверяемых bounded-слоя:
+RC-1, RC-2, RC-3 и RC-4 — не «полный Reader», а четыре проверяемых bounded-слоя:
 
 ```text
 SourceVersion(document_id + source_uri + SHA-256)
@@ -95,6 +96,17 @@ ReaderSession + DocumentStructuralMap
    ├─ declared structural targets
    ├─ explicit per-region coverage outcomes
    └─ count-only pass telemetry
+
+COMPLETED substantive Reader pass
+→ ReaderPropositionExtractor
+   ├─ primary + optional supporting structural targets
+   ├─ PROCESSED / REVISITED outcome required
+   ├─ EXTRACTED_PROPOSITION SegmentCard
+   ├─ source owner
+   ├─ factual assertion / opinion / hypothesis / conditional
+   ├─ example / quoted speech / reported position / definition / uncertainty
+   ├─ explicit negation + scope/exception qualifiers
+   └─ count-only extraction telemetry
 ```
 
 Machine truth:
@@ -103,20 +115,27 @@ Machine truth:
 reader_core_rc1_skeleton = true
 reader_core_rc2_structural_map = true
 reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc4_proposition_extraction = true
 dedicated_reader_core = false
 ```
 
 RC-3 записывает то, что caller явно попытался прочитать. Он не вызывает LLM/provider, не выбирает собственную objective, не обнаруживает структуру и не выводит undeclared targets. Один pass активен за раз. `CROSS_CHECK` и `TARGETED_REREAD` требуют substantive prior processing; targeted re-read требует явный rationale. Pass нельзя завершить, пока каждый declared target не получил outcome. Interrupted/degraded pass сохраняет уже полученные outcomes и оставляет пробелы видимыми.
 
-Unresolved `AMBIGUOUS` / `UNSUPPORTED` structural region не может молча считаться прочитанным: его допустимый outcome — fail-visible `NEEDS_REVIEW`.
+RC-4 не «извлекает смысл сам». Caller передаёт нормализованную proposition, а RC-4 проверяет, что она имеет право существовать как Reader candidate: pass должен быть `COMPLETED`; каждый node должен быть declared target; recorded outcome и текущий matching coverage должны быть `PROCESSED` или `REVISITED`; source/session/version/provenance должны совпадать; unresolved structure и `NEEDS_REVIEW` fail closed.
 
-Reader artifacts не могут менять `truth_status`/ESM, писать strict Canon, обходить Guardian/TruthGate, разрешать contradictions или становиться planner/belief-update authority. RC-1/RC-2/RC-3 не хранят source body и не добавляют durable Reader storage schema, публичный Reader API/CLI/background worker, automatic parser/semantic chunker/OCR/PDF-layout, model/provider-driven Reader, embeddings, ANN/vector DB или automatic cross-document reasoning.
+Каждый candidate использует `SourceFidelity.EXTRACTED_PROPOSITION`. `source_owner`, категория подачи proposition, negation и qualifiers сохраняются явно. Категории различают factual assertion, author opinion, hypothesis, conditional, example, quoted speech, reported position, definition и uncertain assertion.
+
+`FACTUAL_ASSERTION` означает только, что источник подаёт утверждение как фактическое; это не Crystal verification. RC-4 не вызывает `core.evidence.attach_evidence()`, не пишет `evidence_spans`, не присоединяет evidence к fact, не выставляет evidence sufficiency и не выполняет admission.
 
 ```text
 coverage != comprehension proof
 pass completion != comprehension proof
 structure/order/prominence != epistemic authority
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
 ```
+
+Reader artifacts не могут менять `truth_status`/ESM, писать strict Canon, обходить Guardian/TruthGate, разрешать contradictions или становиться planner/belief-update authority. RC-1/RC-2/RC-3/RC-4 не хранят source body и не добавляют durable Reader storage schema, публичный Reader API/CLI/background worker, automatic parser/semantic chunker/OCR/PDF-layout, automatic NLP/LLM/provider-driven Reader, embeddings, ANN/vector DB или automatic cross-document reasoning.
 
 ## Будущая работа
 
@@ -128,7 +147,7 @@ exact-vs-ANN retrieval evaluation
 → multi-process concurrency + production observability
 ```
 
-Отдельно остаются production IdP/multi-tenancy и supply-chain release evidence. Следующий Reader milestone после принятого RC-3 должен быть отдельно bounded; roadmap-кандидат — RC-4 evidence extraction. Это не часть RC-3 и не текущая implementation authority.
+Отдельно остаются production IdP/multi-tenancy и supply-chain release evidence. Следующий Reader milestone после принятого RC-4 должен быть отдельно bounded; roadmap-кандидат — RC-5 exceptions / contradiction candidates, затем long-context и cross-document work. Это не часть RC-4 и не текущая implementation authority.
 
 ## Чего Crystal не заявляет
 
@@ -140,11 +159,12 @@ Crystal не заявляет:
 - universal truth или zero hallucinations;
 - legal, GDPR или security certification;
 - automatic Reader parser/OCR или multimodal comprehension;
-- autonomous Reader LLM/provider agent, embeddings/ANN/vector DB или automatic cross-document reasoning;
+- automatic NLP/LLM proposition extraction, autonomous Reader provider agent, embeddings/ANN/vector DB или automatic cross-document reasoning;
+- что RC-4 candidates являются verified facts или admitted evidence;
 - completed dedicated/full autonomous Reader Core;
 - consciousness.
 
-NLnet остаётся `submitted / under review / not awarded`; приблизительно €50,000 — planning only, budget change none. RC-0/RC-1/RC-2 и RC-3, если он смержен до соглашения, являются existing baseline и не могут повторно считаться future funded delivery.
+NLnet остаётся `submitted / under review / not awarded`; приблизительно €50,000 — planning only, budget change none. RC-0/RC-1/RC-2/RC-3 и RC-4, если он смержен до соглашения, являются existing baseline и не могут повторно считаться future funded delivery.
 
 ## Authority переводов
 

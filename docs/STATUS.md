@@ -45,7 +45,7 @@ normal reads or writes.
 
 ## Reader Core bounded implementation
 
-RC-0 is the normative architecture contract. Three bounded implementation milestones are now represented in the RC-3 implementation branch and must be accepted only with their own exact CI evidence:
+RC-0 is the normative architecture contract. Four bounded implementation milestones are represented by the current Reader implementation line; each milestone carries its own exact CI evidence rather than rewriting the retained historical runtime checkpoint:
 
 ```text
 RC-1
@@ -70,20 +70,31 @@ RC-3
 → declared structural targets + explicit per-region coverage outcomes
 → partial progress preserved across interrupted/degraded passes
 → count-only pass telemetry
+
+RC-4
+→ completed substantive RC-3 pass context
+→ source-linked EXTRACTED_PROPOSITION candidate
+→ explicit source owner + proposition presentation category
+→ explicit negation + scope/exception qualifiers
+→ primary + supporting replayable locators
+→ count-only extraction telemetry
 ```
 
 Machine truth distinguishes these bounded layers from the larger Reader capability:
 
 ```text
-reader_core_rc1_skeleton            = true
-reader_core_rc2_structural_map      = true
+reader_core_rc1_skeleton             = true
+reader_core_rc2_structural_map       = true
 reader_core_rc3_multi_pass_mechanics = true
-dedicated_reader_core               = false
+reader_core_rc4_proposition_extraction = true
+dedicated_reader_core                = false
 ```
 
-RC-3 is deterministic orchestration mechanics, **not** an autonomous reading agent. It does not call a model or provider, discover document structure, choose its own research objective, perform automatic cross-document reasoning, resolve contradictions or admit beliefs. Callers explicitly declare each pass, structural targets and region outcomes; RC-1 coverage rules remain the authority for legal coverage transitions.
+RC-4 is deterministic candidate registration, **not** autonomous NLP/model extraction. A proposition may be created only from a `COMPLETED` RC-3 pass target whose recorded outcome and current matching coverage are `PROCESSED` or `REVISITED`. RC-4 preserves source-presentation distinctions for factual assertion, author opinion, hypothesis, conditional, example, quoted speech, reported position, definition and uncertain assertion. It also preserves source ownership, negation and qualifiers instead of silently turning reported or conditional text into an unqualified world fact.
 
-RC-1/RC-2/RC-3 retain no source body and add no durable Reader storage schema, public API/CLI/background worker, parser/chunker/OCR/PDF-layout engine, LLM/provider integration, embeddings/ANN/vector DB or automatic cross-document reasoning. They have no method/runtime wiring that mutates `truth_status`/ESM, writes strict Canon, bypasses Guardian/TruthGate, resolves contradictions or creates planner/belief-update authority. `coverage != comprehension proof`; pass completion likewise does not prove comprehension. Structural position/order/prominence is metadata, not truth/confidence authority.
+RC-4 candidates are implemented as source-linked `SegmentCard` artifacts with `EXTRACTED_PROPOSITION` fidelity. They are upstream Reader candidates only. RC-4 does **not** call `core.evidence.attach_evidence()`, attach evidence to a fact, create a Canon fact, mutate `truth_status`/ESM or assert evidence sufficiency. `EXTRACTED_PROPOSITION != verified fact`; `Reader candidate != admitted evidence`.
+
+RC-1/RC-2/RC-3/RC-4 retain no source body and add no durable Reader storage schema, public API/CLI/background worker, parser/chunker/OCR/PDF-layout engine, LLM/provider integration, embeddings/ANN/vector DB or automatic cross-document reasoning. They have no method/runtime wiring that mutates `truth_status`/ESM, writes strict Canon, bypasses Guardian/TruthGate, resolves contradictions or creates planner/belief-update authority. `coverage != comprehension proof`; pass completion likewise does not prove comprehension. Structural position/order/prominence is metadata, not truth/confidence authority.
 
 ## Authority boundary
 
@@ -95,11 +106,14 @@ strict Canon            = trusted read projection
 Reader artifact         = source-linked candidate/observation
 Reader structure        = document metadata
 Reader pass ledger      = reading-process audit state
+Reader proposition      = pre-admission source-linked candidate
 migration/import        != TruthGate admission
 successful equivalence  != backend activation
 Reader coverage         != comprehension proof
 Reader pass completion  != comprehension proof
 Reader structure        != epistemic authority
+EXTRACTED_PROPOSITION   != verified fact
+Reader candidate        != admitted evidence
 ```
 
 Guardian, TruthGate, restrictions, TrustSnapshot and CanonicalView remain unchanged.
@@ -113,12 +127,14 @@ Guardian, TruthGate, restrictions, TrustSnapshot and CanonicalView remain unchan
 - production IdP/multi-tenancy and legal/security/GDPR certification;
 - automatic Reader parser/semantic chunker/OCR/PDF-layout or multimodal understanding;
 - dedicated autonomous/full Semantic Reading runtime;
-- Reader LLM/provider integration, embeddings, ANN/vector database or automatic cross-document reasoning engine;
+- automatic NLP/LLM proposition extraction or Reader provider integration;
+- embeddings, ANN/vector database or automatic cross-document proposition identity/reasoning engine;
+- automatic evidence attachment to facts or admission of Reader candidates;
 - planner/autonomous research/belief-update authority.
 
 ## Grant status
 
 The project is submitted and under review. **No award or budget change** is claimed. PR #337,
-Reader RC-0/RC-1/RC-2 and any RC-3 work merged before an agreement are existing baseline and cannot
+Reader RC-0/RC-1/RC-2/RC-3 and any RC-4 work merged before an agreement are existing baseline and cannot
 be counted again as future funded delta. Future funding must begin with separately reviewed work
 beyond the verified pre-agreement baseline.

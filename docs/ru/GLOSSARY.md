@@ -1,4 +1,4 @@
-<!-- translation-source: docs/GLOSSARY.md@0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5 -->
+<!-- translation-source: docs/GLOSSARY.md@166fab5551c4b86ee0a546b2e1d3dc7adc240c86 -->
 <!-- translation-status: CURRENT -->
 <!-- d4-locale: ru -->
 <!-- d4-boundary: physical-l3-not-strict-canon -->
@@ -55,7 +55,11 @@ Programmatic identifiers остаются неизменными в code, schema
 | **Reader Core RC-1** | Реализованный/протестированный bounded evidence-linked source/session skeleton с source-version identity, locators, fidelity, coverage, bookmarks/open loops и stale/failure/privacy semantics; без truth/admission authority. |
 | **Reader Core RC-2** | Реализованный/протестированный caller-supplied Structural Document Map с version-bound hierarchy/order и explicit ambiguity; не automatic parser и не truth/confidence authority. |
 | **Reader Core RC-3** | Bounded deterministic multi-pass mechanics: explicit pass kinds, declared structural targets, attempted/completed/interrupted/degraded ledger и explicit RC-1 coverage outcomes; не autonomous reader и не comprehension authority. |
-| **dedicated/full Reader Core** | Будущий autonomous Semantic Reading runtime за пределами bounded RC-1/RC-2/RC-3; не реализован. |
+| **Reader Core RC-4** | Bounded deterministic proposition registration из completed substantive RC-3 regions. Создаёт source-linked `EXTRACTED_PROPOSITION` candidates с attribution, category, negation и qualifiers; не automatic NLP/model extraction, fact evidence или truth admission. |
+| **EXTRACTED_PROPOSITION** | Нормализованная proposition, производная от replayable source locator(s). Это Reader candidate representation, не verified world fact и не admitted evidence. |
+| **source owner** | Speaker/author/entity, которому источник приписывает proposition. Attribution не устанавливает truth. |
+| **proposition presentation category** | Как источник подаёт proposition: factual assertion, opinion, hypothesis, conditional, example, quoted speech, reported position, definition или uncertain assertion. Категория описательная, не epistemic admission. |
+| **dedicated/full Reader Core** | Будущий autonomous Semantic Reading runtime за пределами bounded RC-1/RC-2/RC-3/RC-4; не реализован. |
 | **NLnet planning amount** | Приблизительно **€50,000** — только planning magnitude, не approved budget и не payment commitment. |
 | **budget change** | Текущий grant-safe статус: **budget change: none**. Изменение допустимо только по verified external grant communication. |
 
@@ -86,16 +90,32 @@ Open PR, RFC, issue, prototype или Notion page не являются current 
 Не сворачивайте текущие bounded milestones в claim о полной capability. Предпочтительная формулировка:
 
 ```text
-RC-1 minimal evidence-linked skeleton    = implemented/tested
-RC-2 Structural Document Map             = implemented/tested
-RC-3 explicit multi-pass mechanics       = implemented/tested after exact CI/merge
-dedicated/full autonomous Reader runtime = not implemented
-coverage                                 != comprehension proof
-pass completion                          != comprehension proof
-structure/order/prominence               != epistemic authority
+RC-1 minimal evidence-linked skeleton     = implemented/tested
+RC-2 Structural Document Map              = implemented/tested
+RC-3 explicit multi-pass mechanics        = implemented/tested
+RC-4 source-linked proposition extraction = implemented/tested after exact CI/merge
+dedicated/full autonomous Reader runtime   = not implemented
+coverage                                   != comprehension proof
+pass completion                            != comprehension proof
+EXTRACTED_PROPOSITION                      != verified fact
+Reader candidate                           != admitted evidence
+structure/order/prominence                 != epistemic authority
 ```
 
 RC-3 означает process mechanics: один active pass, declared targets, explicit outcomes и fail-visible gaps. Pass completion не означает понимание, truth или evidence sufficiency.
+
+### «Factual assertion»
+
+В RC-4 `FACTUAL_ASSERTION` означает, что **источник подаёт** proposition как фактическую. Это не означает, что Crystal проверил proposition. Verification/admission остаются во внешнем evidence/Guardian/TruthGate path.
+
+### «Evidence extraction»
+
+RC-4 extraction создаёт pre-admission Reader candidates. Он не вызывает `core.evidence.attach_evidence()` и не пишет `evidence_spans` для admitted fact.
+
+```text
+Reader extraction candidate != fact evidence attachment
+source locator               != evidence sufficiency
+```
 
 ### «GDPR compliant», «secure» и «hardened»
 
@@ -115,6 +135,7 @@ hardened against documented threats
 Receipt replay    = re-check existing evidence
 trajectory replay = repeat an execution path for evaluation
 Reader reread     = explicit source-linked pass over declared regions
+Reader provenance = exact locator path back to source version
 ```
 
 ### «Grant funded» или «awarded»
@@ -141,8 +162,9 @@ SQLite — ordinary active local-first profile. Первый durable `auto` мо
 - Сохраняйте public-query read-only и explicit-ingest write separation.
 - Сохраняйте SQLite ordinary runtime и PostgreSQL `active=false`.
 - Сохраняйте `import/equivalence != activation`.
-- Сохраняйте различие RC-1/RC-2/RC-3 bounded-implemented и dedicated/full-Reader-not-implemented.
-- Сохраняйте `coverage != comprehension proof`, `pass completion != comprehension proof` и structure/order/prominence != epistemic authority.
+- Сохраняйте различие RC-1/RC-2/RC-3/RC-4 bounded-implemented и dedicated/full-Reader-not-implemented.
+- Сохраняйте `coverage != comprehension proof`, `pass completion != comprehension proof`, `EXTRACTED_PROPOSITION != verified fact`, `Reader candidate != admitted evidence` и structure/order/prominence != epistemic authority.
+- Сохраняйте source owner/category/negation/qualifiers вместо схлопывания reported, conditional или uncertain source language.
 - Сохраняйте no-certification и no-award boundaries.
 - Не подразумевайте native-speaker editorial certification, если её не было.
 

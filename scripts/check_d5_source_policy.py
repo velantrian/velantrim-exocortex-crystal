@@ -77,14 +77,16 @@ def main() -> int:
     if manifest.get("supported_locales") != list(LOCALES):
         errors.append("D5 manifest: supported locale set/order mismatch")
     if manifest.get("fully_current_locales") != ["ru"]:
-        errors.append("D5 manifest: Russian must be the only fully current detail locale after RC-3")
+        errors.append("D5 manifest: Russian must be the only fully current detail locale after RC-4")
     expected_refresh_locales = [locale for locale in LOCALES if locale != "ru"]
     if manifest.get("refresh_needed_locales") != expected_refresh_locales:
         errors.append("D5 manifest: refresh-needed locale set/order mismatch")
     if manifest.get("root_readme_current_locales") != ["ru"]:
-        errors.append("D5 manifest: Russian must be the only RC-3-current localized root README")
+        errors.append("D5 manifest: Russian must be the only RC-4-current localized root README")
     if manifest.get("root_readme_refresh_needed_locales") != expected_refresh_locales:
         errors.append("D5 manifest: root README refresh-needed locale set/order mismatch")
+    if manifest.get("localized_d5_decision") != "RC4_RUSSIAN_ROOT_AND_DETAILS_CURRENT_EIGHT_ROOT_AND_READER_DETAILS_REFRESH_NEEDED":
+        errors.append("D5 manifest: RC-4 localization decision mismatch")
     if set(manifest.get("allowed_states", [])) != ALLOWED:
         errors.append("D5 manifest: allowed state set mismatch")
     if manifest.get("default_state") != "ENGLISH_ONLY_BY_DESIGN":
@@ -108,6 +110,7 @@ def main() -> int:
         "reader_core_rc1_skeleton_claim",
         "reader_core_rc2_structural_map_claim",
         "reader_core_rc3_multi_pass_mechanics_claim",
+        "reader_core_rc4_proposition_extraction_claim",
     ):
         if manifest.get(key) is not True:
             errors.append(f"D5 manifest: missing bounded Reader claim {key}")
@@ -164,8 +167,11 @@ def main() -> int:
         "reader_core_rc1_skeleton",
         "reader_core_rc2_structural_map",
         "reader_core_rc3_multi_pass_mechanics",
+        "reader_core_rc4_proposition_extraction",
         "dedicated_reader_core",
         "pass completion != comprehension proof",
+        "extracted_proposition != verified fact",
+        "reader candidate != admitted evidence",
         "submitted / under review / not awarded",
         "budget change is none",
     ):
@@ -202,7 +208,7 @@ def main() -> int:
         return 1
     print(
         "D5 source inventory is consistent: Russian root/detail CURRENT; "
-        f"RC-3 localized refresh debt={expected_refresh_count}"
+        f"RC-4 localized refresh debt={expected_refresh_count}"
     )
     return 0
 

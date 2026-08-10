@@ -29,25 +29,30 @@ REQUIRED = {
         "budget change: none", "approximate €50,000 request",
         "not an approved budget or payment commitment", "physical l3",
         "postgresql/pgvector remains an optional inactive migration/equivalence target with `active=false`",
-        "reader core rc-1, rc-2 and rc-3", "dedicated/full autonomous semantic reading runtime",
-        "anything merged before a grant agreement is existing baseline", "reader pass complete",
+        "reader core rc-1, rc-2, rc-3 and rc-4", "dedicated/full autonomous semantic reading runtime",
+        "anything merged before a grant agreement is existing baseline", "extracted_proposition",
+        "reader candidate", "core.evidence.attach_evidence()",
     ),
     "docs/GLOSSARY.md": (
         "physical l3", "strict canon", "active=false", "funded delta",
         "submitted / under review / not awarded", "reader core rc-1", "reader core rc-2",
-        "reader core rc-3", "dedicated/full reader core", "pass completion",
+        "reader core rc-3", "reader core rc-4", "extracted_proposition",
+        "source owner", "proposition presentation category", "dedicated/full reader core",
         "native-speaker editorial certification",
     ),
     "docs/GRANT_NLNET_SCOPE.md": (
         "grant status:** submitted / under review / not awarded", "budget change:** none",
-        "reader rc-1/rc-2 and rc-3", "dedicated/full autonomous reader", "rc-3",
-        "cannot be budgeted again as funded delivery", "submitted proposal   != awarded grant",
+        "reader rc-1/rc-2/rc-3 and rc-4", "dedicated/full autonomous reader", "rc-4",
+        "cannot be budgeted again as funded delivery", "submitted proposal    != awarded grant",
+        "potential funded delta after rc-4",
     ),
     "ROADMAP.md": (
         "grant status:** submitted / under review / not awarded", "budget change:** none",
         "reader_core_rc1_skeleton", "reader_core_rc2_structural_map",
-        "reader_core_rc3_multi_pass_mechanics", "dedicated_reader_core",
-        "rc-3 — explicit multi-pass reading mechanics", "pass completion != comprehension proof",
+        "reader_core_rc3_multi_pass_mechanics", "reader_core_rc4_proposition_extraction",
+        "dedicated_reader_core", "rc-4 — source-linked proposition extraction",
+        "extracted_proposition != verified fact", "reader candidate      != admitted evidence",
+        "rc-5 exceptions / contradiction candidates",
     ),
     "GOVERNANCE.md": (
         "physical l3 != strict canon", "public query surfaces remain read-only",
@@ -67,7 +72,7 @@ STALE = (
     "the l3 canonical graph is the single source of truth",
     "default backends are dependency-free (`mock` l3", "grant status: awarded",
     "crystal is gdpr compliant", "automatic backend switching is enabled",
-    "rc-1/rc-2 are funded delivery",
+    "rc-1/rc-2 are funded delivery", "reader work beyond rc-3",
 )
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 
@@ -134,9 +139,10 @@ def main() -> int:
 
     require("baseline/delta matrix", supporting.get("docs/grants/baseline-funded-delta-matrix.md", ""), (
         "no award/budget change", "cannot be counted again as future paid work",
-        "target remains `active=false`", "reader rc-1", "reader rc-2", "reader rc-3",
-        "reader_core_rc3_multi_pass_mechanics = true", "pass completion != comprehension proof",
-        "reader work beyond rc-3",
+        "target remains `active=false`", "reader rc-1", "reader rc-2", "reader rc-3", "reader rc-4",
+        "reader_core_rc4_proposition_extraction = true",
+        "extracted_proposition != verified fact", "reader candidate != admitted evidence",
+        "reader work beyond rc-4",
     ), errors)
     require("funding use plan", supporting.get("docs/grants/funding-use-plan.md", ""), (
         "submitted to nlnet for review", "proposal has been submitted and is under review",
@@ -155,7 +161,9 @@ def main() -> int:
         "Russian Reader-dependent public/detail documentation is refreshed",
         "eight other localized root README files and Reader-dependent detail packs",
         "reader_core_rc1_skeleton", "reader_core_rc2_structural_map",
-        "reader_core_rc3_multi_pass_mechanics", "dedicated_reader_core",
+        "reader_core_rc3_multi_pass_mechanics", "reader_core_rc4_proposition_extraction",
+        "dedicated_reader_core", "EXTRACTED_PROPOSITION != verified fact",
+        "Reader candidate != admitted evidence",
     ), errors)
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
     require("translation ledger", ledger, (
@@ -174,7 +182,7 @@ def main() -> int:
         for error in errors:
             print(f"  - {error}")
         return 1
-    print("English D4 project/grant/governance/glossary source contract is consistent")
+    print("English D4 project/grant/governance/glossary source contract is consistent through RC-4")
     return 0
 
 

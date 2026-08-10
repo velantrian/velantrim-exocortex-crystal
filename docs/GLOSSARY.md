@@ -46,7 +46,11 @@ Programmatic identifiers remain unchanged in code, schemas, CLI, APIs and transl
 | **Reader Core RC-1** | Implemented/tested bounded evidence-linked source/session skeleton with source-version identity, locators, fidelity, coverage, bookmarks/open loops and stale/failure/privacy semantics; no truth/admission authority. |
 | **Reader Core RC-2** | Implemented/tested caller-supplied Structural Document Map with version-bound hierarchy/order and explicit ambiguity; not an automatic parser and not truth/confidence authority. |
 | **Reader Core RC-3** | Bounded deterministic multi-pass mechanics: explicit pass kinds, declared structural targets, attempted/completed/interrupted/degraded ledger and explicit RC-1 coverage outcomes; not an autonomous reader and not comprehension authority. |
-| **dedicated/full Reader Core** | Future autonomous Semantic Reading capability beyond the bounded RC-1/RC-2/RC-3 layers; not implemented. |
+| **Reader Core RC-4** | Bounded deterministic proposition registration from completed substantive RC-3 regions. Produces source-linked `EXTRACTED_PROPOSITION` candidates with attribution, category, negation and qualifiers; not automatic NLP/model extraction, fact evidence or truth admission. |
+| **EXTRACTED_PROPOSITION** | A normalized proposition derived from replayable source locator(s). It is a Reader candidate representation, not a verified world fact or admitted evidence. |
+| **source owner** | The speaker/author/entity to whom the source proposition is attributed. Attribution does not establish truth. |
+| **proposition presentation category** | How the source presents a proposition: factual assertion, opinion, hypothesis, conditional, example, quoted speech, reported position, definition or uncertain assertion. Category is descriptive, not epistemic admission. |
+| **dedicated/full Reader Core** | Future autonomous Semantic Reading capability beyond the bounded RC-1/RC-2/RC-3/RC-4 layers; not implemented. |
 
 ## Terms requiring caution
 
@@ -75,13 +79,29 @@ An open PR, RFC, issue, prototype or Notion page is not current runtime evidence
 Do not collapse the current bounded milestones into a full capability claim. Preferred wording:
 
 ```text
-RC-1 minimal evidence-linked skeleton   = implemented/tested
-RC-2 Structural Document Map            = implemented/tested
-RC-3 explicit multi-pass mechanics      = implemented/tested after exact CI/merge
-dedicated/full autonomous Reader runtime = not implemented
-coverage                                != comprehension proof
-pass completion                         != comprehension proof
-structure/order/prominence              != epistemic authority
+RC-1 minimal evidence-linked skeleton    = implemented/tested
+RC-2 Structural Document Map             = implemented/tested
+RC-3 explicit multi-pass mechanics       = implemented/tested
+RC-4 source-linked proposition extraction = implemented/tested after exact CI/merge
+dedicated/full autonomous Reader runtime  = not implemented
+coverage                                  != comprehension proof
+pass completion                           != comprehension proof
+EXTRACTED_PROPOSITION                     != verified fact
+Reader candidate                          != admitted evidence
+structure/order/prominence                != epistemic authority
+```
+
+### “Factual assertion”
+
+Within RC-4, `FACTUAL_ASSERTION` means the **source presents** the proposition as factual. It does not mean Crystal verified that proposition. Verification/admission remains owned by the existing evidence/Guardian/TruthGate path.
+
+### “Evidence extraction”
+
+RC-4 extraction creates pre-admission Reader candidates. It does **not** call `core.evidence.attach_evidence()` and does not write an `evidence_spans` record attached to an admitted fact. Preferred distinction:
+
+```text
+Reader extraction candidate != fact evidence attachment
+source locator               != evidence sufficiency
 ```
 
 ### “GDPR compliant”, “secure” and “hardened”
@@ -102,6 +122,7 @@ Do not claim legal, GDPR or security certification without external authoritativ
 Receipt replay    = re-check existing evidence
 trajectory replay = repeat an execution path for evaluation
 Reader reread     = explicit source-linked pass over declared regions
+Reader provenance = exact locator path back to the source version
 ```
 
 ### “Grant funded” or “awarded”
@@ -126,8 +147,9 @@ SQLite is the ordinary active local-first profile. First durable `auto` may choo
 - Preserve public-query read-only and explicit-ingest write separation.
 - Preserve SQLite ordinary runtime and PostgreSQL `active=false`.
 - Preserve `import/equivalence != activation`.
-- Preserve RC-1/RC-2/RC-3-bounded-implemented versus dedicated/full-Reader-not-implemented distinction.
-- Preserve `coverage != comprehension proof`, `pass completion != comprehension proof` and structure/order/prominence != epistemic authority.
+- Preserve RC-1/RC-2/RC-3/RC-4-bounded-implemented versus dedicated/full-Reader-not-implemented distinction.
+- Preserve `coverage != comprehension proof`, `pass completion != comprehension proof`, `EXTRACTED_PROPOSITION != verified fact`, `Reader candidate != admitted evidence` and structure/order/prominence != epistemic authority.
+- Preserve source ownership/category/negation/qualifiers rather than collapsing reported, conditional or uncertain source language.
 - Preserve no-certification and no-award boundaries.
 - Do not imply native-speaker editorial certification unless it occurred.
 

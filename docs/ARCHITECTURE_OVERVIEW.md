@@ -17,6 +17,8 @@ RC-2 caller-supplied Structural Document Map
         ↓
 RC-3 explicit multi-pass mechanics over declared structural targets
         ↓
+RC-4 source-linked EXTRACTED_PROPOSITION candidates
+        ↓
 normal ingest/review/evidence path
         ↓
 Guardian policy checks
@@ -30,8 +32,7 @@ deny-dominant strict Canon read projection
 read-only retrieval / answer / bounded refusal
 ```
 
-Reader artifacts, structural metadata and pass ledgers remain upstream observations/process state.
-They do not own truth, admission, contradiction resolution or planner authority.
+Reader artifacts, structural metadata, pass ledgers and extracted propositions remain upstream observations/process/candidate state. They do not own truth, evidence admission, contradiction resolution or planner authority.
 
 Crystal does not treat every stored node, retrieved result or model output as truth. Physical
 L3 stores multiple statuses. Strict Canon is the trusted read projection produced by current
@@ -44,6 +45,7 @@ policy and evidence constraints.
 | Reader RC-1 | source/version/session artifacts, fidelity and coverage | source-linked observation/candidate, not truth |
 | Reader RC-2 | version-bound structural hierarchy/order | structure and prominence are metadata, not confidence |
 | Reader RC-3 | explicit pass attempts, declared targets and coverage outcomes | process audit, not comprehension or admission |
+| Reader RC-4 | source-linked extracted proposition candidates from completed substantive pass regions | source presentation/candidate state, not verified fact or admitted evidence |
 | L0 | process-local working state | ephemeral, not durable truth |
 | L1 | SQLite operational memory | durable facts, ESM, evidence, audit, receipts, import/review and outbox state |
 | L2 | pending/review staging | candidate or quarantined claims before final admission |
@@ -53,9 +55,9 @@ policy and evidence constraints.
 ## Read and write separation
 
 ```text
-ask / receipt / MCP inspection → core.query_pipeline.query() → read-only
-explicit ingest                → Guardian / TruthGate → admission-capable write
-Reader RC-1 / RC-2 / RC-3      → source-linked artifacts/process state only → no admission side effects
+ask / receipt / MCP inspection       → core.query_pipeline.query() → read-only
+explicit ingest                      → Guardian / TruthGate → admission-capable write
+Reader RC-1 / RC-2 / RC-3 / RC-4    → source-linked artifacts/process/candidate state only → no admission side effects
 ```
 
 A public query must not mutate facts, ESM, L3, outbox, episode links, embedding identity or
@@ -106,10 +108,20 @@ structural targets, records `ATTEMPTED` / `COMPLETED` / `INTERRUPTED` / `DEGRADE
 explicit legal RC-1 coverage outcomes. Partial progress remains visible. Cross-check and targeted
 re-read require prior substantive processing. Pass counts are telemetry, not comprehension scores.
 
+RC-4 adds deterministic pre-admission proposition extraction. It can register a candidate only from
+a `COMPLETED` RC-3 pass target whose recorded outcome and current matching coverage are `PROCESSED`
+or `REVISITED`. Every candidate remains a `SegmentCard` with `EXTRACTED_PROPOSITION` fidelity and
+replayable primary/supporting source locators. Source owner, negation, qualifiers and source-presentation
+category remain explicit so an opinion, hypothesis, conditional, example, quotation or reported
+position is not silently collapsed into an author-endorsed world fact.
+
+RC-4 does not call `core.evidence.attach_evidence()`, create an `evidence_spans` row for a fact or
+perform truth admission. `EXTRACTED_PROPOSITION != verified fact`; `Reader candidate != admitted evidence`.
+
 The dedicated/full autonomous Reader / Semantic Reading runtime remains future work. There is no
-automatic parser/semantic chunker, LLM/provider-driven reading agent, embeddings/ANN/vector DB,
-automatic cross-document reasoning engine or automatic belief update. `coverage != comprehension proof`
-and `pass completion != comprehension proof`.
+automatic parser/semantic chunker, automatic NLP/LLM extraction, provider-driven reading agent,
+embeddings/ANN/vector DB, automatic cross-document reasoning engine or automatic belief update.
+`coverage != comprehension proof` and `pass completion != comprehension proof`.
 
 ## Safety and privacy
 
@@ -118,9 +130,9 @@ Optional remote adapters, wider API exposure and migration targets require expli
 configuration. Selected L1 field encryption is not universal encryption. Active-store
 erasure is not global erasure of backups, exports, remote systems or provider copies.
 
-Reader RC-1/RC-2/RC-3 retain no source body. Derived Reader artifacts and pass records inherit
-source restriction/sensitivity metadata. Reader structure/order/prominence and pass completion
-cannot weaken privacy or epistemic policy.
+Reader RC-1/RC-2/RC-3/RC-4 retain no source body. Derived Reader artifacts, pass records and RC-4
+proposition candidates inherit source restriction/sensitivity metadata. Reader structure/order/
+prominence, pass completion and proposition extraction cannot weaken privacy or epistemic policy.
 
 ## Current non-claims
 
@@ -130,7 +142,7 @@ Crystal does not claim:
 - active PostgreSQL runtime or automatic backend switching;
 - cutover, rollback, dual-write or accepted ANN production profile;
 - production multi-tenancy or distributed exactly-once coordination;
-- a completed dedicated/full autonomous Reader Core or automatic document comprehension;
+- a completed dedicated/full autonomous Reader Core or automatic document comprehension/extraction;
 - security, legal or GDPR certification;
 - awarded NLnet funding.
 
