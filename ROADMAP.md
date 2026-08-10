@@ -102,12 +102,13 @@ composition. No activation, cutover, rollback, dual-write or automatic switching
 
 RC-0 defines the normative architecture contract at
 [`docs/architecture/READER_CORE_ARCHITECTURE.md`](./docs/architecture/READER_CORE_ARCHITECTURE.md).
-RC-1 adds the **minimal evidence-linked domain skeleton** needed to prove the first contract
-invariants. The machine-readable distinction remains deliberately narrow:
+RC-1 adds the minimal evidence-linked source/session skeleton. RC-2 adds the bounded Structural
+Document Map. The machine-readable distinction remains deliberately narrow:
 
 ```text
-reader_core_rc1_skeleton = true
-dedicated_reader_core    = false
+reader_core_rc1_skeleton       = true
+reader_core_rc2_structural_map = true
+dedicated_reader_core          = false
 ```
 
 ### ✅ RC-1 — Minimal Evidence-Linked Reading Skeleton
@@ -126,20 +127,35 @@ The bounded RC-1 implementation provides:
 - tests that structurally isolate RC-1 from ingest, TruthGate, Canon/ESM, contradiction decision
   writers and planner authority.
 
-RC-1 deliberately does **not** add a structural parser/semantic chunker, multi-pass orchestration,
-LLM/provider integration, embeddings, ANN/vector DB, durable Reader storage schema, public
-API/CLI/background worker, cross-document reasoning engine, planner or automatic belief update.
-Source body text is not retained by the RC-1 source-version object.
+### ✅ RC-2 — Structural Document Map
+
+The bounded RC-2 implementation provides a caller-supplied structural model anchored to the
+same exact `SourceVersion` / `SourceLocator` semantics:
+
+- document, section/subsection, paragraph, dialogue turn, list/list item, table/table region,
+  code block, quotation, footnote/endnote/reference and figure/caption structural kinds;
+- stable version-local node IDs, explicit global document order and parent/child hierarchy;
+- duplicate-ID/order, missing-parent, cycle and parent-before-child validation;
+- exact-span containment checks where parent and child both have exact offsets;
+- explicit `RECOVERED`, `AMBIGUOUS` and `UNSUPPORTED` structural state with reasons;
+- immutable traversal helpers and structural counts with no comprehension/truth score;
+- restriction/sensitivity inheritance from the source version.
+
+RC-2 does **not** discover structure automatically. It adds no parser/semantic chunker, OCR,
+PDF-layout reconstruction, image understanding, multimodal parser, LLM/provider integration,
+embeddings, ANN/vector DB, durable Reader storage schema, public API/CLI/background worker,
+cross-document reasoning engine, planner or automatic belief update. Structural prominence and
+document order are metadata, not truth/confidence authority.
 
 ### ⏭️ Later Reader phases
 
-A dedicated Reader Core remains not implemented; RC-1 is only the bounded evidence-linked
-skeleton. The next separately bounded phase should be chosen from measured needs after RC-1
-rather than pre-committing to a vector stack. Candidate later work includes structural document
-mapping and then explicit multi-pass mechanics. Any later phase must preserve:
+A dedicated Reader Core remains not implemented; RC-1 and RC-2 are bounded foundations only.
+The next separately authorized phase should be chosen from measured needs, with explicit
+multi-pass mechanics a candidate before any vector-stack commitment. Any later phase must preserve:
 
 - reader artifacts/candidates upstream of normal admission;
 - `coverage != comprehension proof`;
+- structural position != epistemic authority;
 - source observation/extraction/interpretation/summary/inference separation;
 - contradiction candidates without automatic resolution;
 - no second Canon owner or planner/belief-update authority.
@@ -155,10 +171,8 @@ verified existing baseline + new measurable funded delta
 
 Issues #331/#332, PRs #335/#337 and D1–D4 documentation work merged before an agreement are
 existing baseline. D5 documentation work also merged before any agreement and is existing
-baseline. The merged Reader Core RC-0 architecture contract is likewise documentation baseline,
-not funded Reader runtime implementation. If RC-1 merges before a grant agreement exists, that
-minimal skeleton also becomes existing pre-agreement baseline and cannot be counted again as
-future paid delivery.
+baseline. Reader RC-0 and RC-1 are pre-agreement baseline. RC-2 is likewise pre-agreement work;
+merged RC-2 becomes existing baseline and cannot be counted again as future paid delivery.
 
 No grant award or approved budget is claimed. Approximate €50,000 remains planning only.
 Active PostgreSQL runtime selection, automatic switching, production multi-tenancy, universal

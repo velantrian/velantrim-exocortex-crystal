@@ -26,6 +26,7 @@ integration = manifest.get("postgresql_integration", {})
 mutation = manifest.get("mutation_gate", {})
 boundaries = manifest.get("implemented_boundaries", {})
 reader = manifest.get("reader_core_rc1", {})
+reader_structure = manifest.get("reader_core_rc2", {})
 documentation = manifest.get("documentation", {})
 grant = manifest.get("grant", {})
 limits = manifest.get("storage_resource_limits", {})
@@ -69,6 +70,7 @@ for key in (
     "sqlite_logical_export_verification", "bounded_streaming_logical_migration",
     "postgresql_optional_driver_lazy_loaded", "postgresql_inactive_import",
     "postgresql_exact_state_equivalence", "reader_core_rc1_skeleton",
+    "reader_core_rc2_structural_map",
 ):
     expect(boundaries.get(key), True, f"implemented_boundaries.{key}")
 for key in (
@@ -93,6 +95,22 @@ for key in (
     "truth_or_canon_authority", "dedicated_full_reader_core",
 ):
     expect(reader.get(key), False, f"reader_core_rc1.{key}")
+
+expect(reader_structure.get("tracking_issue"), 359, "Reader RC-2 tracking issue")
+expect(reader_structure.get("architecture_contract"), "docs/architecture/READER_CORE_ARCHITECTURE.md", "Reader RC-2 architecture contract")
+expect(reader_structure.get("runtime_module"), "core/reader_structure.py", "Reader RC-2 runtime module")
+expect(reader_structure.get("test_module"), "tests/test_reader_structure.py", "Reader RC-2 test module")
+expect(reader_structure.get("scope"), "source_version_bound_structural_document_map", "Reader RC-2 scope")
+expect(reader_structure.get("caller_supplied_structure"), True, "Reader RC-2 caller-supplied structure")
+for key in (
+    "source_body_storage", "parser_or_semantic_chunker",
+    "ocr_or_pdf_layout_reconstruction", "multimodal_image_understanding",
+    "durable_storage_schema", "public_api_or_cli", "llm_or_provider_integration",
+    "embeddings_or_vector_database", "multi_pass_orchestration",
+    "planner_or_belief_update_authority", "truth_or_canon_authority",
+    "dedicated_full_reader_core",
+):
+    expect(reader_structure.get(key), False, f"reader_core_rc2.{key}")
 
 expect(limits.get("bounded_streaming_issue_completed"), 331, "bounded migration issue")
 expect(limits.get("postgresql_inactive_import_issue_completed"), 332, "PostgreSQL import issue")
@@ -190,11 +208,11 @@ required: dict[str, tuple[str, ...]] = {
     "docs/TRANSLATION_STATUS.md": ("Root README status", "D1 — entry and use documents", "D5 — extended reference documents"),
     "docs/DOCUMENTATION_MAP.md": ("CURRENT full-parity localized READMEs", "REFRESH_NEEDED translated document packs", "Inactive PostgreSQL import"),
     "docs/DOCUMENTATION_SYNC_PROTOCOL.md": ("Root README target", "Progressive document translation", "A permanent short-summary model is not acceptable"),
-    "docs/ai/CURRENT_STATE.md": ("all nine supported", "REFRESH_NEEDED", "active=false"),
+    "docs/ai/CURRENT_STATE.md": ("all nine supported", "REFRESH_NEEDED", "active=false", "reader_core_rc2_structural_map = true"),
     "docs/ai/README.md": ("all nine supported", "docs-only PR", "REFRESH_NEEDED"),
     "TEST_REPORT.md": (runtime_commit, "2078 passed / 13 skipped / 0 failed", "31256316532"),
     "docs/STATUS.md": (runtime_commit, "PostgreSQL 16", "active=false"),
-    "docs/IMPLEMENTATION_STATUS.md": ("Inactive PostgreSQL/pgvector import", "#332"),
+    "docs/IMPLEMENTATION_STATUS.md": ("Inactive PostgreSQL/pgvector import", "#332", "reader_core_rc2_structural_map = true"),
     "docs/GRANT_NLNET_SCOPE.md": ("submitted / under review / not awarded", "cannot be budgeted again"),
     "SECURITY.md": ("not a security, legal or GDPR certification", "No automatic switching"),
 }
@@ -258,7 +276,7 @@ if errors:
 print(
     "Documentation status is internally consistent: checkpoint=bbd816c, "
     "tests=2078/13, statements=9756, coverage=100.00%, CI=9, mutants=7/7, "
-    "reader-rc1=minimal-skeleton, dedicated-reader=false, "
+    "reader-rc1=minimal-skeleton, reader-rc2=structural-map, dedicated-reader=false, "
     "root-readmes=10-full, localized=9-current, broader-docs=phased-refresh"
 )
 PY
