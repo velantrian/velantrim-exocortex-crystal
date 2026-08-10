@@ -9,14 +9,161 @@
 <!-- d3-reader: rc2-structural-map-implemented -->
 <!-- d3-nonclaim: dedicated-reader-core-not-implemented -->
 <!-- d3-nonclaim: nlnet-not-awarded -->
-# Хранилище и границы authority
+# Границы хранения и authority
 
-physical L3 ≠ strict Canon. Retrieval, migration и Reader artifacts не обходят Guardian/TruthGate. Публичный `core.query_pipeline.query()` read-only. PostgreSQL target `active=false`; import success ≠ activation.
+**Дата статуса:** 10 августа 2026 года  
+**Назначение:** стабильный архитектурный контракт для хранения, миграций и epistemic authority.  
+**Runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6`.
+
+## 1. Раздельные идентичности
 
 ```text
-reader_core_rc1_skeleton = true
-reader_core_rc2_structural_map = true
-dedicated_reader_core = false
+storage profile    = deployment identity
+physical L3        = multi-status graph state
+strict Canon       = trusted read projection
+migration bundle   = operation evidence
+retrieval score    = ranking signal
+model output       = generated text
+Reader artifact    = source-linked candidate/observation
+Reader structure   = version-bound document metadata
 ```
 
-RC-1/RC-2 не хранят source body и не имеют Canon/ESM/planner authority. Структурный порядок — metadata, а не truth/confidence.
+Ни одна из этих идентичностей автоматически не подразумевает другую. Storage, retrieval, migration, model output и Reader artifacts не могут обходить Guardian или TruthGate.
+
+## 2. Durable runtime profile
+
+SQLite — обычный активный local-first профиль. При первом durable выборе `auto` может использоваться опциональный LadybugDB, если он установлен, иначе SQLite. Выбранный backend и несекретная locator identity сохраняются атомарно и повторно используются.
+
+Runtime fail closed при конфликте backend или locator. Он не переключается тихо на эфемерный Mock. Явный Mock остаётся доступным для целенаправленной разработки и CI, когда durable profile не заявляется.
+
+Neo4j — явный опциональный remote/server adapter, расширяющий trust boundary.
+
+## 3. Physical L3 и strict Canon
+
+Physical L3 может содержать verified, user-claimed, unverified, hypothetical, subjective, contested, superseded или restricted records. Erasure удаляет материал active store в рамках реализованного erasure contract; независимые копии требуют отдельной обработки.
+
+Strict Canon — deny-dominant проекция, допускающая только записи, разрешённые текущими evidence и policy.
+
+```text
+stored in L3 ≠ trusted answer material
+retrieved     ≠ admitted
+high score    ≠ evidence
+frequent copy ≠ independent corroboration
+Reader card   ≠ admitted fact
+structure     ≠ truth/confidence
+```
+
+## 4. Разделение чтения и записи
+
+Публичные query surfaces проходят через `core.query_pipeline.query()` и остаются read-only относительно canonical truth state.
+
+```text
+HTTP /ask
+CLI ask
+MCP search / inspection
+→ read-only retrieval
+→ trace / answer / bounded refusal
+```
+
+Явный ingest — admission-capable path:
+
+```text
+source-linked candidate
+→ Guardian
+→ TruthGate
+→ operational state + physical L3
+→ strict read projection
+```
+
+Reader RC-1/RC-2 остаются upstream domain layers. Создание Reader artifact или structural node никогда само по себе не выполняет TruthGate admission или canonical mutation.
+
+## 5. Жизненный цикл SQLite
+
+Текущий проверенный local-first lifecycle:
+
+```text
+active SQLite store
+→ backup
+→ independent verification
+→ inactive restore
+→ bounded logical export
+→ deterministic bundle verification
+```
+
+Inactive restore и logical export сохраняют состояние для операций. Они не выполняют TruthGate admission и не выбирают другой runtime backend.
+
+## 6. Cross-backend migration
+
+Реализованная фаза переносимости physical L3 поддерживает verified logical bundle и опциональную неактивную PostgreSQL/pgvector target:
+
+```text
+completed verified bundle
+→ PostgreSQL version / pgvector / TLS preflight
+→ fresh inactive target schema
+→ serializable import
+→ independent read-only canonical re-hash
+→ exact count / byte / SHA-256 equivalence
+→ non-secret receipt
+→ active=false
+```
+
+Она покрывает только bounded approved physical-L3 datasets. Она не мигрирует автоматически каждую подсистему, включая всё L1 operational state, audit/outbox state, encryption metadata или deployment configuration.
+
+## 7. Явно отсутствующие lifecycle stages
+
+Не реализованы:
+
+- active PostgreSQL read/write runtime adapter;
+- automatic SQLite/PostgreSQL selection или switching;
+- source fencing и explicit cutover receipt;
+- rollback proof и rollback-expiry policy;
+- dual-write;
+- accepted exact-vs-ANN production retrieval profile;
+- PostgreSQL production backup/restore/upgrade lifecycle;
+- production role provisioning, pooling, IdP/multi-tenancy или distributed fencing.
+
+## 8. Source-grounded document ingestion и Reader foundation
+
+Source spans и import-session evidence входят в реализованный baseline. Document records и candidate claims остаются upstream от обычного Guardian и TruthGate admission.
+
+RC-1 реализует ограниченный evidence-linked Reader source/session skeleton с точной привязкой source version/hash, replayable locators, SegmentCards, fidelity classes, coverage states, bookmarks/open loops и stale/failure/privacy semantics. RC-2 реализует bounded caller-supplied Structural Document Map с hierarchy/order, exact-span containment и явной структурой `RECOVERED` / `AMBIGUOUS` / `UNSUPPORTED`.
+
+Dedicated multi-pass Reader / Semantic Reading runtime не реализован. RC-1/RC-2 не добавляют automatic parser/chunker/OCR, LLM/provider orchestration, embeddings/ANN/vector DB, cross-document reasoning engine или planner/belief-update authority. `coverage != comprehension proof`.
+
+## 9. Secret и privacy boundary
+
+Credentials и credential-bearing DSNs не должны попадать в profiles, bundles, receipts, logs, issues или Notion. Endpoint identity представляется через non-secret digests.
+
+Migration и backup создают дополнительные копии. Erasure из active store не стирает эти копии автоматически. Операторам нужны inventory, retention и deletion procedures.
+
+Шифрование отдельных полей L1 не является универсальным шифрованием. Reader RC-1/RC-2 не удерживают source body; производные Reader artifacts наследуют source restriction/sensitivity metadata.
+
+## 10. Таблица authority
+
+| Событие | Что оно доказывает | Чего оно не доказывает |
+|---|---|---|
+| Reader artifact существует | bounded source-linked observation/candidate | truth, admission или comprehension |
+| structural node существует | recovered/caller-supplied document metadata | confidence, truth или importance authority |
+| record хранится в L3 | physical persistence | strict Canon membership |
+| retrieval result | candidate relevance | evidence sufficiency |
+| backup verified | backup integrity | claim truth |
+| inactive restore verified | restored state integrity | admission или activation |
+| PostgreSQL import succeeds | transactional import | runtime selection |
+| exact equivalence receipt | approved dataset equality | production readiness или cutover |
+| curator override | explicit audited governance action | rewritten TruthGate policy |
+
+## 11. Текущие non-claims
+
+Crystal не заявляет active PostgreSQL runtime, automatic migration, accepted ANN production quality, cutover, rollback, dual-write, production multi-tenancy, distributed exactly-once coordination, завершённый dedicated multi-pass Reader runtime, security/legal/GDPR certification или присуждённое финансирование NLnet.
+
+## 12. Подробные английские источники
+
+- [Полная архитектура](../ARCHITECTURE.md)
+- [Обзор архитектуры](../ARCHITECTURE_OVERVIEW.md)
+- [Архитектурный контракт Reader Core](../architecture/READER_CORE_ARCHITECTURE.md)
+- [Durable storage profile](../architecture/DURABLE_STORAGE_PROFILE.md)
+- [SQLite lifecycle](../architecture/SQLITE_STORAGE_LIFECYCLE.md)
+- [Cross-backend migration contract](../architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md)
+- [Inactive PostgreSQL import](../architecture/POSTGRESQL_INACTIVE_IMPORT.md)
+- [PostgreSQL/pgvector RFC](../architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
+- [ADR-021](../adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md)
