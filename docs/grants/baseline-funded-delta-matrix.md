@@ -2,7 +2,7 @@
 
 **Status:** grant-planning control · documentation only · no award/budget change  
 **Frozen runtime checkpoint:** `main@bbd816c09dd39a02e6de6c1014438490572f40f6`  
-**Current Reader baseline:** RC-1 + RC-2 merged pre-agreement; dedicated multi-pass Reader absent.  
+**Current Reader baseline:** Reader RC-1 + Reader RC-2 merged pre-agreement; dedicated multi-pass Reader absent.  
 **Baseline evidence:** 2078 passed / 13 skipped / 9756 statements / 100% coverage / 9 CI jobs / 1 PostgreSQL integration job
 
 ## Control rule
@@ -13,8 +13,8 @@ verified baseline + new measurable funded delta
 ```
 
 Anything already merged before an agreement is existing capability and cannot be counted again as
-future paid work. This includes #331 / PR #335, #332 / PR #337, Reader RC-0/RC-1/RC-2 and merged
-multilingual documentation baselines.
+future paid work. This includes #331 / PR #335, #332 / PR #337, Reader RC-0, Reader RC-1, Reader RC-2
+and merged multilingual documentation baselines.
 
 ## M1 — Reproducible runtime and release evidence
 
@@ -74,8 +74,8 @@ content-light audit export. UI cannot promote or mutate Canon.
 
 ## M8 — Reader work beyond RC-1 / RC-2
 
-**Baseline:** Reader RC-0 architecture contract plus implemented/tested RC-1 evidence-linked skeleton and
-RC-2 caller-supplied Structural Document Map:
+**Baseline:** Reader RC-0 architecture contract plus implemented/tested Reader RC-1 evidence-linked skeleton
+and Reader RC-2 caller-supplied Structural Document Map:
 
 ```text
 reader_core_rc1_skeleton       = true
