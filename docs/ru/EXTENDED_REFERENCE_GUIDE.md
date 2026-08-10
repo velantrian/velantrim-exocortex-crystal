@@ -58,7 +58,7 @@ SQLite остаётся ordinary active local-first profile. Mock остаётс
 
 ## Грант и certification non-claims
 
-NLnet остаётся `submitted / under review / not awarded`. Приблизительно €50,000 — planning only, не approved budget и не payment commitment; budget change — none. Работа, смерженная до соглашения, включая RC-0/RC-1/RC-2, не может повторно считаться funded delta.
+NLnet остаётся `submitted / under review / not awarded`. Приблизительно €50,000 — planning only, не approved budget и не payment commitment. Текущая grant-safe граница: **budget change: none**. Работа, смерженная до соглашения, включая RC-0/RC-1/RC-2, не может повторно считаться funded delta.
 
 Не заявляются legal, GDPR, security или native-speaker editorial certification.
 
