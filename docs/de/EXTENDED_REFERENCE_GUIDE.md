@@ -1,25 +1,21 @@
-<!-- translation-source: docs/EXTENDED_REFERENCE_POLICY.md@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
-<!-- translation-status: CURRENT -->
+<!-- translation-source: docs/EXTENDED_REFERENCE_POLICY.md@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9 -->
 <!-- d5-locale: de -->
+<!-- translation-status: CURRENT -->
 <!-- d5-boundary: physical-l3-not-strict-canon -->
 <!-- d5-boundary: retrieval-score-not-evidence -->
 <!-- d5-boundary: model-output-not-source-truth -->
 <!-- d5-boundary: migration-proof-not-claim-proof -->
 <!-- d5-nonclaim: import-is-not-activation -->
-<!-- d5-reader: rc1-skeleton-implemented -->
-<!-- d5-reader: rc2-structural-map-implemented -->
-<!-- d5-nonclaim: dedicated-reader-core-not-implemented -->
+<!-- d5-nonclaim: reader-core-not-implemented -->
 <!-- d5-nonclaim: nlnet-not-awarded -->
 <!-- d5-nonclaim: security-legal-gdpr-not-certified -->
 <!-- d5-nonclaim: native-speaker-editorial-not-certified -->
-# Erweiterte Crystal-Referenz
+# Leitfaden für erweiterte Referenzen
 
-D5 unterscheidet `CURRENT`, `RETIRED` und `ENGLISH_ONLY_BY_DESIGN`. physical L3 != strict Canon; retrieval score != evidence; model output != source truth; migration proof != claim proof; import success != activation. PostgreSQL `active=false`.
+Dieser Leitfaden führt zu detaillierten englischen Quellen, ohne volatile Evidenz zu duplizieren. `CURRENT` ist gepflegt, `RETIRED` ist nicht maßgebliche Historie und `ENGLISH_ONLY_BY_DESIGN` bleibt wegen technischer, rechtlicher oder auditbezogener Detailtiefe englisch.
 
-```text
-reader_core_rc1_skeleton = true
-reader_core_rc2_structural_map = true
-dedicated_reader_core = false
-```
+Grenzen: physical L3 != strict Canon; retrieval score != evidence; model output != source truth; migration proof != claim proof; import success != activation. SQLite ist das gewöhnliche aktive local-first Profil, Mock dient Entwicklung/CI, PostgreSQL/pgvector bleibt mit `active=false` inaktiv. Reader Core ist nicht implementiert.
 
-RC-1/RC-2 sind implementierte bounded Grundlagen; der dedicated multi-pass Reader fehlt. Grant: submitted / under review / not awarded; €50,000 planning only; budget change: none.
+NLnet: submitted / under review / not awarded. Etwa €50,000 sind nur Planung, kein genehmigtes Budget oder Zahlungsversprechen; budget change: none; vor Vereinbarung gemergte Baseline ist kein erneut finanzierbarer funded delta. Keine legal/GDPR/security oder native-speaker editorial certification.
+
+Routen: [Policy](../EXTENDED_REFERENCE_POLICY.md), [Map](../DOCUMENTATION_MAP.md), [Status](../STATUS.md), [Architecture](../ARCHITECTURE.md), [ADR](../ADR.md), [Security](../../SECURITY.md), [Privacy](../../PRIVACY.md), [GDPR](../../GDPR.md), [Archive](../archive/README.md).

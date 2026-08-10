@@ -1,25 +1,21 @@
-<!-- translation-source: docs/EXTENDED_REFERENCE_POLICY.md@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
-<!-- translation-status: CURRENT -->
+<!-- translation-source: docs/EXTENDED_REFERENCE_POLICY.md@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9 -->
 <!-- d5-locale: ar -->
+<!-- translation-status: CURRENT -->
 <!-- d5-boundary: physical-l3-not-strict-canon -->
 <!-- d5-boundary: retrieval-score-not-evidence -->
 <!-- d5-boundary: model-output-not-source-truth -->
 <!-- d5-boundary: migration-proof-not-claim-proof -->
 <!-- d5-nonclaim: import-is-not-activation -->
-<!-- d5-reader: rc1-skeleton-implemented -->
-<!-- d5-reader: rc2-structural-map-implemented -->
-<!-- d5-nonclaim: dedicated-reader-core-not-implemented -->
+<!-- d5-nonclaim: reader-core-not-implemented -->
 <!-- d5-nonclaim: nlnet-not-awarded -->
 <!-- d5-nonclaim: security-legal-gdpr-not-certified -->
 <!-- d5-nonclaim: native-speaker-editorial-not-certified -->
-# المرجع الموسع لـ Crystal
+# دليل المراجع الموسعة
 
-يميز D5 بين `CURRENT` و`RETIRED` و`ENGLISH_ONLY_BY_DESIGN`. physical L3 != strict Canon; retrieval score != evidence; model output != source truth; migration proof != claim proof; import success != activation. PostgreSQL `active=false`.
+يوجّه هذا الدليل إلى المراجع الإنجليزية التفصيلية من دون ترجمة الأدلة المتقلبة. `CURRENT` يعني سطحاً مُصاناً، و`RETIRED` تاريخاً غير حاكم، و`ENGLISH_ONLY_BY_DESIGN` مادة تقنية أو قانونية أو تدقيقية مفصلة تبقى بالإنجليزية.
 
-```text
-reader_core_rc1_skeleton = true
-reader_core_rc2_structural_map = true
-dedicated_reader_core = false
-```
+الحدود الثابتة: physical L3 != strict Canon؛ retrieval score != evidence؛ model output != source truth؛ migration proof != claim proof؛ import success != activation. SQLite هو الملف المحلي النشط المعتاد، وMock للتطوير/CI، وPostgreSQL/pgvector غير نشط مع `active=false`. Reader Core غير منفذ.
 
-RC-1/RC-2 أساسان محدودان منفذان؛ الـReader المخصص multi-pass غير منفذ. Grant: submitted / under review / not awarded; €50,000 planning only; budget change: none.
+NLnet: submitted / under review / not awarded. نحو €50,000 تخطيط فقط وليس ميزانية معتمدة أو التزام دفع؛ budget change: none؛ baseline المدمج قبل الاتفاق لا يُحسب funded delta مرة أخرى. لا توجد شهادة legal/GDPR/security أو native-speaker editorial certification.
+
+المسارات: [السياسة](../EXTENDED_REFERENCE_POLICY.md)، [خريطة الوثائق](../DOCUMENTATION_MAP.md)، [الحالة](../STATUS.md)، [البنية](../ARCHITECTURE.md)، [ADR](../ADR.md)، [الأمن](../../SECURITY.md)، [الخصوصية](../../PRIVACY.md)، [GDPR](../../GDPR.md)، [أرشيف](../archive/README.md).

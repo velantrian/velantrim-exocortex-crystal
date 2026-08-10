@@ -1,25 +1,21 @@
-<!-- translation-source: docs/EXTENDED_REFERENCE_POLICY.md@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
-<!-- translation-status: CURRENT -->
+<!-- translation-source: docs/EXTENDED_REFERENCE_POLICY.md@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9 -->
 <!-- d5-locale: hi -->
+<!-- translation-status: CURRENT -->
 <!-- d5-boundary: physical-l3-not-strict-canon -->
 <!-- d5-boundary: retrieval-score-not-evidence -->
 <!-- d5-boundary: model-output-not-source-truth -->
 <!-- d5-boundary: migration-proof-not-claim-proof -->
 <!-- d5-nonclaim: import-is-not-activation -->
-<!-- d5-reader: rc1-skeleton-implemented -->
-<!-- d5-reader: rc2-structural-map-implemented -->
-<!-- d5-nonclaim: dedicated-reader-core-not-implemented -->
+<!-- d5-nonclaim: reader-core-not-implemented -->
 <!-- d5-nonclaim: nlnet-not-awarded -->
 <!-- d5-nonclaim: security-legal-gdpr-not-certified -->
 <!-- d5-nonclaim: native-speaker-editorial-not-certified -->
-# Crystal विस्तारित संदर्भ
+# विस्तृत संदर्भ मार्गदर्शिका
 
-D5 `CURRENT`, `RETIRED` और `ENGLISH_ONLY_BY_DESIGN` को अलग रखता है। physical L3 != strict Canon; retrieval score != evidence; model output != source truth; migration proof != claim proof; import success != activation. PostgreSQL `active=false`.
+यह मार्गदर्शिका अस्थिर evidence की नकल किए बिना विस्तृत अंग्रेज़ी स्रोतों तक ले जाती है। `CURRENT` अनुरक्षित सामग्री है, `RETIRED` गैर-अधिकृत इतिहास है और `ENGLISH_ONLY_BY_DESIGN` तकनीकी, legal या audit विवरण है जो अंग्रेज़ी में रहता है।
 
-```text
-reader_core_rc1_skeleton = true
-reader_core_rc2_structural_map = true
-dedicated_reader_core = false
-```
+सीमाएँ: physical L3 != strict Canon; retrieval score != evidence; model output != source truth; migration proof != claim proof; import success != activation। SQLite सामान्य सक्रिय local-first profile है, Mock development/CI के लिए है और PostgreSQL/pgvector `active=false` के साथ निष्क्रिय है। Reader Core not implemented।
 
-RC-1/RC-2 implemented bounded foundations हैं; dedicated multi-pass Reader नहीं है। Grant: submitted / under review / not awarded; €50,000 planning only; budget change: none.
+NLnet: submitted / under review / not awarded। लगभग €50,000 केवल planning है, approved budget या payment commitment नहीं; budget change: none; agreement से पहले merged baseline दोबारा funded delta नहीं। कोई legal/GDPR/security या native-speaker editorial certification नहीं।
+
+मार्ग: [policy](../EXTENDED_REFERENCE_POLICY.md), [map](../DOCUMENTATION_MAP.md), [status](../STATUS.md), [architecture](../ARCHITECTURE.md), [ADR](../ADR.md), [security](../../SECURITY.md), [privacy](../../PRIVACY.md), [GDPR](../../GDPR.md), [archive](../archive/README.md)।

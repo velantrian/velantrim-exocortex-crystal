@@ -1,25 +1,28 @@
-<!-- translation-source: docs/GLOSSARY.md@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
-<!-- translation-status: CURRENT -->
+<!-- translation-source: docs/GLOSSARY.md@151b41c680190f7f3de729bf63e8e80a9d2285ce -->
 <!-- d4-locale: hi -->
+<!-- translation-status: CURRENT -->
 <!-- d4-boundary: physical-l3-not-strict-canon -->
 <!-- d4-boundary: retrieval-score-not-evidence -->
 <!-- d4-boundary: model-output-not-source-truth -->
 <!-- d4-boundary: migration-proof-not-claim-proof -->
 <!-- d4-nonclaim: import-is-not-activation -->
-<!-- d4-reader: rc1-skeleton-implemented -->
-<!-- d4-reader: rc2-structural-map-implemented -->
-<!-- d4-nonclaim: dedicated-reader-core-not-implemented -->
+<!-- d4-nonclaim: reader-core-not-implemented -->
 <!-- d4-nonclaim: nlnet-not-awarded -->
 <!-- d4-nonclaim: security-legal-gdpr-not-certified -->
 <!-- d4-nonclaim: native-speaker-editorial-not-certified -->
-# Crystal glossary
+# Crystal शब्दावली और दावे की अनुशासन-सीमा
 
-physical L3 strict Canon नहीं है; retrieval score evidence नहीं है। RC-1 = bounded evidence-linked skeleton. RC-2 = bounded Structural Document Map. Dedicated Reader Core = future multi-pass runtime.
+- **physical L3**: बहु-स्थिति संग्रह; अपने-आप **strict Canon** नहीं।
+- **retrieval score**: ranking संकेत, evidence नहीं।
+- **model output**: generated सामग्री, source truth नहीं।
+- **migration proof**: migration/equivalence प्रमाण, claim proof नहीं।
+- **SQLite**: सामान्य सक्रिय local-first profile।
+- **Mock**: स्पष्ट development/CI backend।
+- **PostgreSQL/pgvector**: `active=false` वाला वैकल्पिक निष्क्रिय लक्ष्य; import success activation नहीं।
+- **Reader Core**: नियोजित और अभी not implemented।
+- **NLnet**: submitted / under review / not awarded।
+- **लगभग €50,000**: planning, approved budget या payment commitment नहीं; budget change: none।
+- **baseline**: agreement से पहले merge काम; funded delta में दोबारा नहीं।
+- legal, GDPR, security या native-speaker editorial certification का दावा नहीं।
 
-```text
-reader_core_rc1_skeleton = true
-reader_core_rc2_structural_map = true
-dedicated_reader_core = false
-```
-
-PostgreSQL `active=false`; €50,000 केवल planning है।
+टकराव में [English glossary](../GLOSSARY.md), [Translation status](../TRANSLATION_STATUS.md), [Localization policy](../LOCALIZATION_POLICY.md) मान्य हैं।

@@ -1,27 +1,31 @@
-<!-- translation-source: docs/PROJECT_GRANT_AND_GOVERNANCE.md@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
-<!-- translation-status: CURRENT -->
+<!-- translation-source: docs/PROJECT_GRANT_AND_GOVERNANCE.md@151b41c680190f7f3de729bf63e8e80a9d2285ce -->
 <!-- d4-locale: zh-CN -->
+<!-- translation-status: CURRENT -->
 <!-- d4-boundary: physical-l3-not-strict-canon -->
 <!-- d4-boundary: retrieval-score-not-evidence -->
 <!-- d4-boundary: model-output-not-source-truth -->
 <!-- d4-boundary: migration-proof-not-claim-proof -->
 <!-- d4-nonclaim: import-is-not-activation -->
-<!-- d4-reader: rc1-skeleton-implemented -->
-<!-- d4-reader: rc2-structural-map-implemented -->
-<!-- d4-nonclaim: dedicated-reader-core-not-implemented -->
+<!-- d4-nonclaim: reader-core-not-implemented -->
 <!-- d4-nonclaim: nlnet-not-awarded -->
 <!-- d4-nonclaim: security-legal-gdpr-not-certified -->
 <!-- d4-nonclaim: native-speaker-editorial-not-certified -->
-# 项目、资助与治理
+# 项目、资助与治理概览
 
-physical L3 != strict Canon; retrieval score != evidence; model output != source truth; migration proof != claim proof。PostgreSQL 保持 `active=false`。
-
-NLnet: submitted / under review / not awarded。约 €50,000 仅为规划；budget change: none。
+Crystal 是面向可审计 AI 系统的 local-first 记忆、证据与决策边界基础设施。
 
 ```text
-reader_core_rc1_skeleton = true
-reader_core_rc2_structural_map = true
-dedicated_reader_core = false
+physical L3 != strict Canon
+retrieval score != evidence
+model output != source truth
+migration proof != claim proof
+import success != activation
 ```
 
-RC-1/RC-2 是 pre-agreement baseline。dedicated multi-pass Reader 属于未来工作。不声称 security/legal/GDPR/native-speaker certification。
+SQLite 是普通的活跃 local-first 配置。Mock 是明确的开发/CI backend。PostgreSQL/pgvector 仍是 `active=false` 的可选非活跃目标；import 成功不等于 activation。
+
+NLnet 提案已提交、正在审查、尚未获批。约 €50,000 只是申请规划数额，不是获批预算或付款承诺。预算变更：无。资助协议前已 merge 的工作属于现有 baseline，不能再次计为 funded delta。
+
+Reader Core 尚未实现。没有法律、GDPR 或安全认证，也没有母语编辑认证。
+
+英语基准来源：[概览](../PROJECT_GRANT_AND_GOVERNANCE.md)、[术语表](../GLOSSARY.md)、[NLnet scope](../GRANT_NLNET_SCOPE.md)、[funding plan](../grants/funding-use-plan.md)。

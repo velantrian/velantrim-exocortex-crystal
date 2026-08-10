@@ -1,27 +1,31 @@
-<!-- translation-source: docs/PROJECT_GRANT_AND_GOVERNANCE.md@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
-<!-- translation-status: CURRENT -->
+<!-- translation-source: docs/PROJECT_GRANT_AND_GOVERNANCE.md@151b41c680190f7f3de729bf63e8e80a9d2285ce -->
 <!-- d4-locale: de -->
+<!-- translation-status: CURRENT -->
 <!-- d4-boundary: physical-l3-not-strict-canon -->
 <!-- d4-boundary: retrieval-score-not-evidence -->
 <!-- d4-boundary: model-output-not-source-truth -->
 <!-- d4-boundary: migration-proof-not-claim-proof -->
 <!-- d4-nonclaim: import-is-not-activation -->
-<!-- d4-reader: rc1-skeleton-implemented -->
-<!-- d4-reader: rc2-structural-map-implemented -->
-<!-- d4-nonclaim: dedicated-reader-core-not-implemented -->
+<!-- d4-nonclaim: reader-core-not-implemented -->
 <!-- d4-nonclaim: nlnet-not-awarded -->
 <!-- d4-nonclaim: security-legal-gdpr-not-certified -->
 <!-- d4-nonclaim: native-speaker-editorial-not-certified -->
-# Projekt, Förderung und Governance
+# Projekt-, Förder- und Governance-Überblick
 
-physical L3 != strict Canon; retrieval score != evidence; model output != source truth; migration proof != claim proof. PostgreSQL ist `active=false`.
-
-NLnet: submitted / under review / not awarded. Rund €50,000 sind Planung; budget change: none.
+Crystal ist eine local-first Infrastruktur für Gedächtnis, Evidenz und Entscheidungsgrenzen in prüfbaren KI-Systemen.
 
 ```text
-reader_core_rc1_skeleton = true
-reader_core_rc2_structural_map = true
-dedicated_reader_core = false
+physical L3 != strict Canon
+retrieval score != evidence
+model output != source truth
+migration proof != claim proof
+import success != activation
 ```
 
-RC-1/RC-2 sind pre-agreement Baseline. Der dedicated multi-pass Reader bleibt zukünftige Arbeit. Keine Security/Legal/GDPR- oder Muttersprachler-Zertifizierung.
+SQLite ist das gewöhnliche aktive local-first Profil. Mock ist ein explizites Entwicklungs-/CI-Backend. PostgreSQL/pgvector bleibt ein optionales inaktives Ziel mit `active=false`; erfolgreicher Import ist keine Aktivierung.
+
+Der NLnet-Antrag wurde eingereicht, wird geprüft und ist nicht bewilligt. Rund €50,000 sind Planungsgröße, kein genehmigtes Budget oder Zahlungsversprechen. Budgetänderung: keine. Vor einer Fördervereinbarung gemergte Arbeit ist bestehende Baseline und darf nicht erneut als finanzierter Delta-Umfang angesetzt werden.
+
+Reader Core ist nicht implementiert. Es gibt keine Rechts-, GDPR- oder Sicherheitszertifizierung und keine redaktionelle Zertifizierung durch Muttersprachler.
+
+Verbindliche englische Quellen: [Projektüberblick](../PROJECT_GRANT_AND_GOVERNANCE.md), [Glossar](../GLOSSARY.md), [NLnet-Scope](../GRANT_NLNET_SCOPE.md), [Funding plan](../grants/funding-use-plan.md).
