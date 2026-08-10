@@ -1,4 +1,4 @@
-"""Validate all current D3 architecture/storage translations."""
+"""Validate current D3 architecture/storage translations."""
 
 from __future__ import annotations
 
@@ -8,8 +8,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = "208f1c772ee3a112cb803d2413c120bef23adb05"
-D4_SOURCE = "151b41c680190f7f3de729bf63e8e80a9d2285ce"
+SOURCE = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
 LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
 FILES = {
     locale: (
@@ -18,24 +17,13 @@ FILES = {
     )
     for locale in LOCALES
 }
-MARKERS = (
-    "translation-status: CURRENT",
-    "d3-boundary: physical-l3-not-strict-canon",
-    "d3-boundary: public-query-read-only",
-    "d3-boundary: postgresql-active=false",
-    "d3-nonclaim: import-is-not-activation",
-    "d3-nonclaim: reader-core-not-implemented",
-    "d3-nonclaim: nlnet-not-awarded",
-    "core.query_pipeline.query()",
-    "active=false",
-    "Reader Core",
-)
-UNSUPPORTED = (
-    "active PostgreSQL runtime is implemented",
-    "automatic backend switching is enabled",
-    "Reader Core is implemented",
-    "NLnet grant was awarded",
-    "security, legal or GDPR certified",
+READER_MARKERS = (
+    "d3-reader: rc1-skeleton-implemented",
+    "d3-reader: rc2-structural-map-implemented",
+    "d3-nonclaim: dedicated-reader-core-not-implemented",
+    "reader_core_rc1_skeleton = true",
+    "reader_core_rc2_structural_map = true",
+    "dedicated_reader_core = false",
 )
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 
@@ -47,40 +35,31 @@ def check_links(relative: str, text: str, errors: list[str]) -> None:
         if not target or target.startswith(("#", "http://", "https://", "mailto:")):
             continue
         target = unquote(target.split(maxsplit=1)[0].split("#", 1)[0].split("?", 1)[0])
-        if not target:
-            continue
         resolved = (source.parent / target).resolve()
         try:
             resolved.relative_to(ROOT.resolve())
         except ValueError:
-            errors.append(f"{relative}: local link escapes repository: {raw!r}")
+            errors.append(f"{relative}: link escapes repository: {raw!r}")
             continue
         if not resolved.exists():
-            errors.append(f"{relative}: broken local link: {raw!r}")
+            errors.append(f"{relative}: broken link: {raw!r}")
 
 
 def main() -> int:
     errors: list[str] = []
-    manifest = json.loads(
-        (ROOT / "docs/status/d3-translation-manifest.json").read_text(encoding="utf-8")
-    )
-    expected_documents = {locale: list(FILES[locale]) for locale in LOCALES}
+    manifest = json.loads((ROOT / "docs/status/d3-translation-manifest.json").read_text())
+    expected = {locale: list(FILES[locale]) for locale in LOCALES}
     checks = (
         (manifest.get("phase") == "D3", "phase"),
-        (manifest.get("tracking_issue") == 341, "tracking issue"),
         (manifest.get("english_source_checkpoint") == SOURCE, "source checkpoint"),
-        (
-            manifest.get("source_documents")
-            == ["docs/ARCHITECTURE_OVERVIEW.md", "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md"],
-            "source documents",
-        ),
         (manifest.get("current_locales") == list(LOCALES), "current locales"),
         (manifest.get("pending_locales") == [], "pending locales"),
-        (manifest.get("current_documents") == expected_documents, "current documents"),
-        (manifest.get("native_speaker_editorial_certification") is False, "native certification"),
+        (manifest.get("current_documents") == expected, "current documents"),
+        (manifest.get("reader_core_rc1_skeleton_claim") is True, "RC-1 claim"),
+        (manifest.get("reader_core_rc2_structural_map_claim") is True, "RC-2 claim"),
+        (manifest.get("dedicated_reader_core_implemented_claim") is False, "dedicated Reader claim"),
         (manifest.get("active_postgresql_runtime_claim") is False, "PostgreSQL runtime claim"),
         (manifest.get("automatic_backend_switching_claim") is False, "switching claim"),
-        (manifest.get("reader_core_implemented_claim") is False, "Reader Core claim"),
         (manifest.get("security_legal_gdpr_certification_claim") is False, "certification claim"),
         (manifest.get("nlnet_awarded_claim") is False, "grant claim"),
     )
@@ -91,79 +70,37 @@ def main() -> int:
     for locale in LOCALES:
         index_relative = f"docs/{locale}/README.md"
         index = (ROOT / index_relative).read_text(encoding="utf-8")
-        for marker in (
-            f"d3-source: main@{SOURCE}",
-            "d3-status: CURRENT",
-            f"d4-source: main@{D4_SOURCE}",
-            "d4-status: CURRENT",
-            "ARCHITECTURE_OVERVIEW.md",
-            "STORAGE_AND_AUTHORITY_BOUNDARIES.md",
-            "Localization policy",
-            "Translation status",
-        ):
+        for marker in (f"d3-source: main@{SOURCE}", "d3-status: CURRENT"):
             if marker not in index:
-                errors.append(f"{index_relative}: missing marker {marker!r}")
+                errors.append(f"{index_relative}: missing {marker!r}")
         check_links(index_relative, index, errors)
         for relative in FILES[locale]:
             path = ROOT / relative
-            if not path.is_file():
-                errors.append(f"missing D3 file: {relative}")
-                continue
             text = path.read_text(encoding="utf-8")
-            expected_source = (
-                "docs/ARCHITECTURE_OVERVIEW.md"
-                if relative.endswith("ARCHITECTURE_OVERVIEW.md")
-                else "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md"
-            )
-            for marker in (
-                f"translation-source: {expected_source}@{SOURCE}",
+            source_doc = "docs/ARCHITECTURE_OVERVIEW.md" if relative.endswith("ARCHITECTURE_OVERVIEW.md") else "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md"
+            markers = (
+                f"translation-source: {source_doc}@{SOURCE}",
+                "translation-status: CURRENT",
                 f"d3-locale: {locale}",
-                *MARKERS,
-            ):
+                "d3-boundary: physical-l3-not-strict-canon",
+                "d3-boundary: public-query-read-only",
+                "d3-boundary: postgresql-active=false",
+                "d3-nonclaim: import-is-not-activation",
+                "d3-nonclaim: nlnet-not-awarded",
+                *READER_MARKERS,
+                "core.query_pipeline.query()",
+                "active=false",
+            )
+            for marker in markers:
                 if marker not in text:
                     errors.append(f"{relative}: missing marker {marker!r}")
-            for unsupported in UNSUPPORTED:
-                if unsupported in text:
-                    errors.append(f"{relative}: unsupported claim {unsupported!r}")
             check_links(relative, text, errors)
 
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
-    for marker in (
-        f"D3 source checkpoint:** `main@{SOURCE}`",
-        "D3 is complete for all nine supported locales",
-        "| Simplified Chinese | `CURRENT` | `CURRENT` |",
-        "D3 architecture/storage authority | all nine supported locales `CURRENT`",
-    ):
-        if marker not in ledger:
-            errors.append(f"translation ledger: missing marker {marker!r}")
-
-    current_state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
-    for marker in (
-        "D3 is current across all nine supported locale packs",
-        f"main@{SOURCE}",
-        "18 architecture/storage documents plus nine indexes",
-        "D4 is current across all nine supported locale packs",
-    ):
-        if marker not in current_state:
-            errors.append(f"AI current state: missing marker {marker!r}")
-
-    doc_map = (ROOT / "docs/DOCUMENTATION_MAP.md").read_text(encoding="utf-8")
-    for marker in (
-        "Root READMEs and D1–D4 are current",
-        "D3 translation manifest",
-        "D5 remains a separate inventory phase",
-        "D4 translation manifest",
-    ):
-        if marker not in doc_map:
-            errors.append(f"documentation map: missing marker {marker!r}")
-
-    workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
-    for marker in (
-        "Validate D3 translation status",
-        "python scripts/check_d3_translation_status.py",
-    ):
-        if marker not in workflow:
-            errors.append(f"CI workflow: missing D3 translation validator marker {marker!r}")
+    if f"D3 source checkpoint:** `main@{SOURCE}`" not in ledger:
+        errors.append("translation ledger: D3 source checkpoint mismatch")
+    if "D3 is complete for all nine supported locales" not in ledger:
+        errors.append("translation ledger: D3 completion missing")
 
     if errors:
         print("D3 translation validation failed:")

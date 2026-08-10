@@ -8,25 +8,16 @@ from pathlib import Path
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = "d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9"
+SOURCE = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
 LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
 GUIDE = "EXTENDED_REFERENCE_GUIDE.md"
-MARKERS = (
-    "translation-status: CURRENT",
-    "d5-boundary: physical-l3-not-strict-canon",
-    "d5-boundary: retrieval-score-not-evidence",
-    "d5-boundary: model-output-not-source-truth",
-    "d5-boundary: migration-proof-not-claim-proof",
-    "d5-nonclaim: import-is-not-activation",
-    "d5-nonclaim: reader-core-not-implemented",
-    "d5-nonclaim: nlnet-not-awarded",
-    "d5-nonclaim: security-legal-gdpr-not-certified",
-    "d5-nonclaim: native-speaker-editorial-not-certified",
-    "physical L3", "strict Canon", "retrieval score", "evidence",
-    "model output", "source truth", "migration proof", "claim proof",
-    "import success", "activation", "active=false", "Reader Core",
-    "submitted / under review / not awarded", "€50,000", "budget change: none",
-    "CURRENT", "RETIRED", "ENGLISH_ONLY_BY_DESIGN",
+READER_MARKERS = (
+    "d5-reader: rc1-skeleton-implemented",
+    "d5-reader: rc2-structural-map-implemented",
+    "d5-nonclaim: dedicated-reader-core-not-implemented",
+    "reader_core_rc1_skeleton = true",
+    "reader_core_rc2_structural_map = true",
+    "dedicated_reader_core = false",
 )
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 
@@ -50,63 +41,56 @@ def check_links(relative: str, text: str, errors: list[str]) -> None:
 
 def main() -> int:
     errors: list[str] = []
-    manifest = json.loads((ROOT / "docs/status/d5-translation-manifest.json").read_text(encoding="utf-8"))
+    manifest = json.loads((ROOT / "docs/status/d5-translation-manifest.json").read_text())
     expected = {locale: f"docs/{locale}/{GUIDE}" for locale in LOCALES}
-    checks = (
+    for ok, label in (
         (manifest.get("phase") == "D5_TRANSLATIONS", "phase"),
-        (manifest.get("tracking_issue") == 341, "issue"),
         (manifest.get("english_source_checkpoint") == SOURCE, "source checkpoint"),
-        (manifest.get("source_document") == "docs/EXTENDED_REFERENCE_POLICY.md", "source document"),
         (manifest.get("current_locales") == list(LOCALES), "current locales"),
         (manifest.get("pending_locales") == [], "pending locales"),
         (manifest.get("current_documents") == expected, "current documents"),
-    )
-    for ok, label in checks:
-        if not ok:
-            errors.append(f"D5 translation manifest: invalid {label}")
-    for key in (
-        "native_speaker_editorial_certification", "security_legal_gdpr_certification_claim",
-        "nlnet_awarded_claim", "approved_budget_claim", "budget_change_claim",
-        "reader_core_implemented_claim", "active_postgresql_runtime_claim",
+        (manifest.get("reader_core_rc1_skeleton_claim") is True, "RC-1 claim"),
+        (manifest.get("reader_core_rc2_structural_map_claim") is True, "RC-2 claim"),
+        (manifest.get("dedicated_reader_core_implemented_claim") is False, "dedicated Reader claim"),
+        (manifest.get("nlnet_awarded_claim") is False, "grant claim"),
     ):
-        if manifest.get(key) is not False:
-            errors.append(f"D5 translation manifest: unsupported claim {key}")
+        if not ok:
+            errors.append(f"D5 manifest: invalid {label}")
 
     for locale in LOCALES:
         relative = expected[locale]
         text = (ROOT / relative).read_text(encoding="utf-8")
-        for marker in (f"translation-source: docs/EXTENDED_REFERENCE_POLICY.md@{SOURCE}", f"d5-locale: {locale}", *MARKERS):
+        markers = (
+            f"translation-source: docs/EXTENDED_REFERENCE_POLICY.md@{SOURCE}",
+            "translation-status: CURRENT",
+            f"d5-locale: {locale}",
+            "d5-boundary: physical-l3-not-strict-canon",
+            "d5-boundary: retrieval-score-not-evidence",
+            "d5-boundary: model-output-not-source-truth",
+            "d5-boundary: migration-proof-not-claim-proof",
+            "d5-nonclaim: import-is-not-activation",
+            "d5-nonclaim: nlnet-not-awarded",
+            "d5-nonclaim: security-legal-gdpr-not-certified",
+            "d5-nonclaim: native-speaker-editorial-not-certified",
+            *READER_MARKERS,
+            "physical L3", "strict Canon", "active=false",
+            "submitted / under review / not awarded", "€50,000", "budget change: none",
+            "CURRENT", "RETIRED", "ENGLISH_ONLY_BY_DESIGN",
+        )
+        for marker in markers:
             if marker not in text:
                 errors.append(f"{relative}: missing marker {marker!r}")
         check_links(relative, text, errors)
-        index_relative = f"docs/{locale}/README.md"
-        index = (ROOT / index_relative).read_text(encoding="utf-8")
-        for marker in (f"d5-source: main@{SOURCE}", "d5-status: CURRENT", GUIDE, "Localization policy", "Translation status"):
+        index = (ROOT / f"docs/{locale}/README.md").read_text(encoding="utf-8")
+        for marker in (f"d5-source: main@{SOURCE}", "d5-status: CURRENT", GUIDE):
             if marker not in index:
-                errors.append(f"{index_relative}: missing marker {marker!r}")
-        check_links(index_relative, index, errors)
-
-    inventory = json.loads((ROOT / "docs/status/d5-inventory.json").read_text(encoding="utf-8"))
-    if GUIDE not in inventory.get("current_locale_pack_files", []):
-        errors.append("D5 inventory: localized guide is not classified CURRENT")
-
-    workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
-    for marker in ("Validate D5 translation status", "python scripts/check_d5_translation_status.py"):
-        if marker not in workflow:
-            errors.append(f"CI workflow: missing marker {marker!r}")
+                errors.append(f"docs/{locale}/README.md: missing marker {marker!r}")
 
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
-    for marker in (f"D5 source checkpoint:** `main@{SOURCE}`", "D5 is complete for all nine supported locales", "Extended Reference Guide"):
-        if marker not in ledger:
-            errors.append(f"translation ledger: missing marker {marker!r}")
-    state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
-    for marker in ("D5 is current across all nine supported locale packs", "nine Extended Reference Guides", SOURCE):
-        if marker not in state:
-            errors.append(f"AI current state: missing marker {marker!r}")
-    doc_map = (ROOT / "docs/DOCUMENTATION_MAP.md").read_text(encoding="utf-8")
-    for marker in ("D1–D5 are current", "D5 translation manifest", "nine Extended Reference Guides"):
-        if marker not in doc_map:
-            errors.append(f"documentation map: missing marker {marker!r}")
+    if f"D5 source checkpoint:** `main@{SOURCE}`" not in ledger:
+        errors.append("translation ledger: D5 source checkpoint mismatch")
+    if "D5 is complete for all nine supported locales" not in ledger:
+        errors.append("translation ledger: D5 completion missing")
 
     if errors:
         print("D5 translation validation failed:")

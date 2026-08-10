@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "phase": "D5_TRANSLATIONS",
-  "status_date": "2026-08-09",
+  "status_date": "2026-08-10",
   "tracking_issue": 341,
-  "english_source_checkpoint": "d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9",
+  "english_source_checkpoint": "6b45bdd196eb42dea7bc30f58d69799b4b1712f2",
   "source_document": "docs/EXTENDED_REFERENCE_POLICY.md",
   "current_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN"],
   "pending_locales": [],
@@ -23,6 +23,8 @@
   "nlnet_awarded_claim": false,
   "approved_budget_claim": false,
   "budget_change_claim": false,
-  "reader_core_implemented_claim": false,
+  "reader_core_rc1_skeleton_claim": true,
+  "reader_core_rc2_structural_map_claim": true,
+  "dedicated_reader_core_implemented_claim": false,
   "active_postgresql_runtime_claim": false
 }

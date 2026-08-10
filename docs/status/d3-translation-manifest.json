@@ -1,24 +1,11 @@
 {
   "schema_version": 1,
   "phase": "D3",
-  "status_date": "2026-08-09",
+  "status_date": "2026-08-10",
   "tracking_issue": 341,
-  "english_source_checkpoint": "208f1c772ee3a112cb803d2413c120bef23adb05",
-  "source_documents": [
-    "docs/ARCHITECTURE_OVERVIEW.md",
-    "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md"
-  ],
-  "current_locales": [
-    "ar",
-    "de",
-    "es",
-    "fr",
-    "hi",
-    "it",
-    "ja",
-    "ru",
-    "zh-CN"
-  ],
+  "english_source_checkpoint": "6b45bdd196eb42dea7bc30f58d69799b4b1712f2",
+  "source_documents": ["docs/ARCHITECTURE_OVERVIEW.md", "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md"],
+  "current_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN"],
   "pending_locales": [],
   "current_documents": {
     "ar": ["docs/ar/ARCHITECTURE_OVERVIEW.md", "docs/ar/STORAGE_AND_AUTHORITY_BOUNDARIES.md"],
@@ -31,17 +18,12 @@
     "ru": ["docs/ru/ARCHITECTURE_OVERVIEW.md", "docs/ru/STORAGE_AND_AUTHORITY_BOUNDARIES.md"],
     "zh-CN": ["docs/zh-CN/ARCHITECTURE_OVERVIEW.md", "docs/zh-CN/STORAGE_AND_AUTHORITY_BOUNDARIES.md"]
   },
-  "detailed_english_contracts": [
-    "docs/ARCHITECTURE.md",
-    "docs/architecture/DURABLE_STORAGE_PROFILE.md",
-    "docs/architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md",
-    "docs/architecture/POSTGRESQL_INACTIVE_IMPORT.md",
-    "docs/adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md"
-  ],
   "native_speaker_editorial_certification": false,
   "active_postgresql_runtime_claim": false,
   "automatic_backend_switching_claim": false,
-  "reader_core_implemented_claim": false,
+  "reader_core_rc1_skeleton_claim": true,
+  "reader_core_rc2_structural_map_claim": true,
+  "dedicated_reader_core_implemented_claim": false,
   "security_legal_gdpr_certification_claim": false,
   "nlnet_awarded_claim": false
 }
