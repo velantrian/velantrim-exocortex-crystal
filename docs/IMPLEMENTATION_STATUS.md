@@ -7,7 +7,7 @@
 
 | Component | Status | Current boundary |
 |---|---|---|
-| Guardian / TruthGate / strict read projection | Implemented | storage and migration cannot bypass authority |
+| Guardian / TruthGate / strict read projection | Implemented | storage, migration and Reader artifacts cannot bypass authority |
 | Read-only HTTP/CLI/MCP query boundary | Implemented | ordinary queries do not mutate Canon |
 | SQLite backup/verify/inactive restore | Implemented and tested | restore is inactive and never admission |
 | Bounded-streaming SQLite logical export/verify | Implemented and tested | canonical backend-neutral bundle |
@@ -19,8 +19,9 @@
 | Exact-vs-ANN retrieval evaluation | Not implemented | later separately reviewed phase |
 | Cutover / rollback / dual-write | Not implemented | explicit later phases only |
 | PostgreSQL server lifecycle | Not implemented | backup/restore/upgrade/pooling remain future work |
-| Reader Core RC-0 architecture contract | Documented | [docs-only contract](./architecture/READER_CORE_ARCHITECTURE.md); no runtime capability |
-| Reader Core / Semantic Reading runtime | Not implemented | future evidence-linked layer upstream of normal admission; `dedicated_reader_core=false` |
+| Reader Core RC-0 architecture contract | Documented | [architecture contract](./architecture/READER_CORE_ARCHITECTURE.md) defines the authority and validation baseline |
+| Reader Core RC-1 minimal evidence-linked skeleton | Implemented in bounded domain layer | `core/reader_core.py`; source/version/locator, fidelity, coverage, bookmarks/open loops, stale/failure/privacy semantics; no admission side effects |
+| Dedicated multi-pass Reader Core / Semantic Reading runtime | Not implemented | no parser/orchestration/model/vector runtime; `dedicated_reader_core=false` |
 
 ## Current storage sequence
 
@@ -41,7 +42,7 @@ pure standard library; PostgreSQL support is an optional operator path. `active=
 constrained in the target control state and successful equivalence cannot activate a
 backend or change Guardian, TruthGate or strict Canon.
 
-Future work:
+Future storage work:
 
 ```text
 exact-vs-ANN retrieval evaluation
@@ -51,11 +52,39 @@ exact-vs-ANN retrieval evaluation
 → multi-process concurrency and production observability
 ```
 
-Reader Core RC-0 defines source-grounded reading semantics, coverage, replayable artifacts,
-version invalidation and authority boundaries only. It does not add code, storage, API, CLI,
-dependencies, model/provider coupling or a second admission path. The machine-readable
-runtime flag remains `dedicated_reader_core=false` until implementation evidence exists.
+## Reader Core implementation boundary
+
+RC-0 remains the normative architecture contract. RC-1 adds only the smallest testable,
+pure-standard-library domain skeleton needed to prove its early invariants:
+
+```text
+SourceVersion(document_id + source_uri + SHA-256)
+→ SourceLocator(exact span or explicit structural locator)
+→ ReaderSession
+   ├─ SegmentCard + mandatory SourceFidelity
+   ├─ CoverageEntry / CoverageTelemetry
+   ├─ ReaderBookmark
+   └─ OpenLoop
+→ conservative stale/failure state
+```
+
+RC-1 retains no source body, adds no durable Reader storage schema, public API, CLI,
+background worker or mandatory dependency, and has no LLM/provider, semantic chunker,
+embedding, ANN/vector-database or multi-pass orchestration integration. It has no method or
+runtime wiring that writes Canon, mutates `truth_status`/ESM, bypasses Guardian/TruthGate,
+resolves contradictions or creates planner/belief-update authority.
+
+Machine truth therefore distinguishes the bounded milestone from the larger capability:
+
+```text
+reader_core_rc1_skeleton = true
+dedicated_reader_core    = false
+```
+
+Coverage telemetry reports touched/unresolved regions only; it is not a comprehension
+percentage. A changed source hash conservatively makes the RC-1 session stale until a later,
+separately reviewed remapping/re-read capability exists.
 
 Crystal does not claim an active PostgreSQL runtime backend, automatic migration,
 production multi-tenancy, universal truth, zero hallucinations, legal/security
-certification, consciousness or an implemented Reader Core runtime.
+certification, consciousness or a dedicated multi-pass Reader Core runtime.
