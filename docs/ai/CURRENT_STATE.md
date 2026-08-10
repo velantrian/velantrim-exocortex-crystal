@@ -72,7 +72,7 @@ The bounded remaining backlog is:
 
 Issues #156, #157, #203, #219 and ASR Phase-0 #228 were closed as completed from current evidence; #159 was closed as superseded; #211 was closed as out of scope for Crystal; #215 was closed as expired. None of those closures adds a runtime capability.
 
-## 8. Reader Core RC-0 / RC-1 state
+## 8. Reader Core RC-0 / RC-1 / RC-2 state
 
 The normative Reader Core architecture remains
 [`../architecture/READER_CORE_ARCHITECTURE.md`](../architecture/READER_CORE_ARCHITECTURE.md).
@@ -81,9 +81,8 @@ multi-pass reading, source-linked bookmarks, exception preservation, contradicti
 open questions, source-fidelity classes, provenance, stale-version invalidation, fail-visible
 partial reading and the non-authority test plan.
 
-RC-1 implements only the minimum evidence-linked domain skeleton needed to prove the first
-contract invariants. The implementation surface is `core/reader_core.py` with tests in
-`tests/test_reader_core.py`:
+RC-1 implements the minimum evidence-linked domain skeleton in `core/reader_core.py`; RC-2 adds
+the bounded structural-map layer in `core/reader_structure.py`:
 
 ```text
 SourceVersion
@@ -91,17 +90,23 @@ SourceVersion
         ↓
 SourceLocator
   exact half-open span OR explicit structural locator
-        ↓
-ReaderSession
-  ├─ SegmentCard + SourceFidelity
-  ├─ CoverageEntry / CoverageTelemetry
-  ├─ ReaderBookmark
-  └─ OpenLoop
-        ↓
-fail-visible interrupted/degraded/stale state
+        ├──────────────────────────────┐
+        ↓                              ↓
+ReaderSession                  DocumentStructuralMap
+  ├─ SegmentCard               ├─ StructuralNode
+  ├─ Coverage                  ├─ kind + order + parent
+  ├─ Bookmark/OpenLoop         ├─ RECOVERED / AMBIGUOUS / UNSUPPORTED
+  └─ stale/failure state       └─ hierarchy/span validation + traversal
 ```
 
-The five fidelity classes remain explicit:
+RC-2 represents structure already recovered by a caller. It covers document, section/subsection,
+paragraph, dialogue turn, list/list item, table/table region, code block, quotation,
+footnote/endnote/reference and figure/caption metadata categories. It validates duplicate IDs and
+orders, missing parents, cycles, parent-before-child order and exact-span containment where exact
+offsets are available. Ambiguous or unsupported structure requires an explicit reason rather than
+invented boundaries.
+
+The five RC-1 fidelity classes remain explicit:
 
 ```text
 DIRECT_SOURCE_OBSERVATION
@@ -112,15 +117,15 @@ INFERENCE
 ```
 
 Coverage retains the RC-0 states `UNREAD`, `SEEN`, `PROCESSED`, `REVISITED` and
-`NEEDS_REVIEW`. Telemetry reports state counts/gaps only: `coverage != comprehension proof`.
-A changed source version conservatively stales the RC-1 session; there is no remapping/diff
-engine in this milestone and historical artifacts keep their old source binding.
+`NEEDS_REVIEW`. Coverage telemetry reports state counts/gaps only; RC-2 structural telemetry
+reports node/status counts only. `coverage != comprehension proof`, and structure/order/prominence
+are not truth or confidence.
 
 Authority remains unchanged:
 
 ```text
 source/document + exact provenance
-→ RC-1 Reader artifacts/candidates
+→ RC-1 session/artifact state + RC-2 structural metadata
 → no automatic admission side effect
 → existing explicit ingest/review/evidence path
 → Guardian / Immune boundary
@@ -132,17 +137,19 @@ source/document + exact provenance
 The machine-readable distinction is intentional:
 
 ```text
-reader_core_rc1_skeleton = true
-dedicated_reader_core    = false
+reader_core_rc1_skeleton       = true
+reader_core_rc2_structural_map = true
+dedicated_reader_core          = false
 ```
 
-RC-1 has no durable Reader storage schema or migration, public API/CLI/background worker,
-mandatory dependency, LLM/provider integration, parser/semantic chunker, embeddings/ANN/vector
-database, multi-pass orchestration, cross-document reasoning engine, planner/belief-update
-authority or direct Canon/TruthGate wiring. Source body text is not retained by the RC-1
-source-version object. Restrictions/sensitivity are inherited by derived Reader artifacts.
+RC-1/RC-2 have no durable Reader storage schema or migration, public API/CLI/background worker,
+mandatory dependency, LLM/provider integration, automatic structural parser/semantic chunker,
+OCR/PDF-layout or image-understanding engine, embeddings/ANN/vector database, multi-pass
+orchestration, cross-document reasoning engine, planner/belief-update authority or direct
+Canon/TruthGate wiring. Source body text is not retained by their source/structure objects;
+restrictions and sensitivity are inherited from the bound source version.
 
-Therefore RC-1 is implementation evidence for a **minimal evidence-linked skeleton**, not for
-a dedicated/full long-document reading system. Reader importance is not truth, Reader
-observations are not Canon admission, and contradiction candidates do not replace the existing
-contradiction/curator decision contract.
+Therefore RC-1 and RC-2 are implementation evidence for bounded Reader foundations, not for a
+dedicated/full long-document reading system. Reader importance is not truth, structural prominence
+is not authority, Reader observations are not Canon admission, and contradiction candidates do not
+replace the existing contradiction/curator decision contract.
