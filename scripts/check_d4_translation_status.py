@@ -13,13 +13,15 @@ LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
 CURRENT_LOCALES = ("ru",)
 REFRESH_LOCALES = tuple(locale for locale in LOCALES if locale not in CURRENT_LOCALES)
 FILES = {locale: (f"docs/{locale}/GRANT_OVERVIEW.md", f"docs/{locale}/GLOSSARY.md") for locale in LOCALES}
-READER_MARKERS = (
-    "d4-reader: rc1-skeleton-implemented",
-    "d4-reader: rc2-structural-map-implemented",
-    "d4-nonclaim: dedicated-reader-core-not-implemented",
-    "reader_core_rc1_skeleton = true",
-    "reader_core_rc2_structural_map = true",
-    "dedicated_reader_core = false",
+LEGACY_BOUNDARY_MARKERS = (
+    "d4-boundary: physical-l3-not-strict-canon",
+    "d4-boundary: retrieval-score-not-evidence",
+    "d4-boundary: model-output-not-source-truth",
+    "d4-boundary: migration-proof-not-claim-proof",
+    "d4-nonclaim: import-is-not-activation",
+    "d4-nonclaim: nlnet-not-awarded",
+    "d4-nonclaim: security-legal-gdpr-not-certified",
+    "d4-nonclaim: native-speaker-editorial-not-certified",
 )
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 
@@ -85,14 +87,6 @@ def main() -> int:
             for marker in (
                 f"translation-source: {source_doc}@",
                 f"d4-locale: {locale}",
-                "d4-boundary: physical-l3-not-strict-canon",
-                "d4-boundary: retrieval-score-not-evidence",
-                "d4-boundary: model-output-not-source-truth",
-                "d4-boundary: migration-proof-not-claim-proof",
-                "d4-nonclaim: import-is-not-activation",
-                "d4-nonclaim: nlnet-not-awarded",
-                "d4-nonclaim: security-legal-gdpr-not-certified",
-                "d4-nonclaim: native-speaker-editorial-not-certified",
                 "physical L3",
                 "strict Canon",
                 "active=false",
@@ -104,11 +98,17 @@ def main() -> int:
                 for marker in (
                     f"translation-source: {source_doc}@{SOURCE}",
                     "translation-status: CURRENT",
-                    *READER_MARKERS,
+                    "RC-1",
+                    "RC-2",
+                    "dedicated",
+                    "submitted / under review / not awarded",
                 ):
                     if marker not in text:
-                        errors.append(f"{relative}: missing current Reader marker {marker!r}")
+                        errors.append(f"{relative}: missing current D4 semantic marker {marker!r}")
             else:
+                for marker in LEGACY_BOUNDARY_MARKERS:
+                    if marker not in text:
+                        errors.append(f"{relative}: restored baseline missing legacy boundary marker {marker!r}")
                 if f"translation-source: {source_doc}@{SOURCE}" in text:
                     errors.append(f"{relative}: refresh-needed translation falsely pins current source")
             check_links(relative, text, errors)
