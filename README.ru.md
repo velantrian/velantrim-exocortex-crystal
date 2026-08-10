@@ -2,7 +2,7 @@
 
 > 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 **Русский** · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
 
-<!-- localization-source: main@0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5 -->
+<!-- localization-source: main@166fab5551c4b86ee0a546b2e1d3dc7adc240c86 -->
 <!-- localization-status: CURRENT -->
 
 ### Проверяемая local-first инфраструктура памяти, доказательств и решений для надёжных ИИ-систем
@@ -12,7 +12,7 @@
 > Crystal — не чат-бот и не автономный «оракул истины». Это инфраструктура памяти, evidence и decision boundaries: она фиксирует происхождение утверждения, его эпистемическое состояние, допустимость для grounding и явные audited решения по противоречиям.
 
 **Проверенный runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` — PR #337.  
-**Reader foundation:** RC-1 evidence-linked skeleton, RC-2 caller-supplied Structural Document Map и RC-3 explicit deterministic multi-pass mechanics являются bounded реализованными/протестированными слоями; dedicated/full autonomous Semantic Reading runtime остаётся не реализован.  
+**Reader foundation:** RC-1 evidence-linked skeleton, RC-2 caller-supplied Structural Document Map, RC-3 explicit deterministic multi-pass mechanics и RC-4 source-linked proposition extraction являются bounded реализованными/протестированными слоями; dedicated/full autonomous Semantic Reading runtime остаётся не реализован.  
 **Grant:** `submitted / under review / not awarded`.  
 **Evidence:** [TEST_REPORT.md](./TEST_REPORT.md), [STATUS.md](./docs/STATUS.md), [implementation manifest](./docs/status/implementation-manifest.json).
 
@@ -25,15 +25,17 @@
 Обычные AI/RAG-системы часто смешивают документы, слова пользователя, model output, hypotheses и memory. Тогда убедительный текст может получить authority без достаточного evidence. Crystal делает границы явными:
 
 ```text
-fluent claim         != trusted fact
-physical L3          != strict Canon
-retrieval score      != evidence
-model output         != independent source truth
-migration receipt    != claim evidence
-import success       != backend activation
-Reader coverage      != comprehension proof
-Reader structure     != truth/confidence authority
-Reader pass complete != comprehension proof
+fluent claim          != trusted fact
+physical L3           != strict Canon
+retrieval score       != evidence
+model output          != independent source truth
+migration receipt     != claim evidence
+import success        != backend activation
+Reader coverage       != comprehension proof
+Reader structure      != truth/confidence authority
+Reader pass complete  != comprehension proof
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate      != admitted evidence
 ```
 
 ## 🧠 Что уже предоставляет Crystal
@@ -43,6 +45,7 @@ Reader pass complete != comprehension proof
 - RC-1: source/version/session, SegmentCard, fidelity, coverage, bookmarks/open loops, stale/failure/privacy semantics;
 - RC-2: version-bound caller-supplied structural hierarchy/order с `RECOVERED` / `AMBIGUOUS` / `UNSUPPORTED`;
 - RC-3: explicit deterministic multi-pass mechanics над declared structural targets;
+- RC-4: source-linked `EXTRACTED_PROPOSITION` candidates с explicit attribution/category/negation/qualifiers;
 - Guardian и TruthGate как admission boundaries;
 - multi-status physical L3 отдельно от strict Canon;
 - immutable deny-dominant TrustSnapshot и CanonicalView;
@@ -75,7 +78,13 @@ DEGRADED
 
 Один pass активен за раз. Completion разрешён только после explicit outcome для каждого declared target. Partial outcomes не исчезают при interruption/degradation. `CROSS_CHECK` и `TARGETED_REREAD` требуют prior substantive processing; targeted re-read требует explicit rationale. `AMBIGUOUS` / `UNSUPPORTED` structure не может молча считаться прочитанной и остаётся fail-visible через `NEEDS_REVIEW`.
 
-RC-1/RC-2/RC-3 не хранят source body, не добавляют Reader API/CLI/worker или durable Reader schema и не имеют Canon/ESM/planner authority. Нет automatic parser/OCR, autonomous LLM/provider Reader agent, embeddings/ANN/vector DB или automatic cross-document reasoning runtime. Pass telemetry — только counts/state, а не comprehension/truth score.
+RC-4 создаёт candidate только из target `COMPLETED` RC-3 pass, если recorded outcome и текущий matching coverage равны `PROCESSED` или `REVISITED`. Candidate остаётся `SegmentCard` с fidelity `EXTRACTED_PROPOSITION`, exact primary/supporting locators, `source_owner`, source-presentation category, explicit negation и qualifiers.
+
+RC-4 различает `FACTUAL_ASSERTION`, `AUTHOR_OPINION`, `HYPOTHESIS`, `CONDITIONAL`, `EXAMPLE`, `QUOTED_SPEECH`, `REPORTED_POSITION`, `DEFINITION` и `UNCERTAIN_ASSERTION`. Это категории подачи источника, а не truth verdict. `FACTUAL_ASSERTION` означает лишь, что источник подаёт proposition как фактическую; Crystal не подтверждает её автоматически.
+
+RC-4 не является automatic NLP/model extraction. Он не вызывает `core.evidence.attach_evidence()`, не пишет fact `evidence_spans`, не устанавливает evidence sufficiency и не выполняет TruthGate admission.
+
+RC-1/RC-2/RC-3/RC-4 не хранят source body, не добавляют Reader API/CLI/worker или durable Reader schema и не имеют Canon/ESM/planner authority. Нет automatic parser/OCR, automatic NLP/LLM/provider Reader agent, embeddings/ANN/vector DB или automatic cross-document reasoning runtime. Telemetry — только counts/state, а не comprehension/truth/confidence score.
 
 ## 🏛️ Архитектура в трёх представлениях
 
@@ -87,6 +96,7 @@ RC-1/RC-2/RC-3 не хранят source body, не добавляют Reader API
 │   ├── RC-1 evidence-linked skeleton
 │   ├── RC-2 Structural Document Map
 │   ├── RC-3 explicit multi-pass mechanics
+│   ├── RC-4 source-linked proposition extraction
 │   └── dedicated/full autonomous Reader — NOT IMPLEMENTED
 ├── 🏛️ Memory
 │   ├── L0 — rebuildable working cache
@@ -119,6 +129,8 @@ RC-2 structural metadata
       ↓
 RC-3 explicit pass ledger + coverage effects
       ↓
+RC-4 source-linked EXTRACTED_PROPOSITION candidates
+      ↓
 explicit ingest / review / evidence path
       ↓
 Guardian → TruthGate
@@ -132,20 +144,21 @@ Grounded answer / bounded refusal
 TRACE + Receipt
 ```
 
-Reader RC-1/RC-2/RC-3 остаётся upstream normal admission path. Pass completion не переводит observation в факт и не создаёт admission.
+Reader RC-1/RC-2/RC-3/RC-4 остаются upstream normal admission path. Pass completion и proposition extraction не переводят observation/candidate в verified fact и не создают admission.
 
 ### 🌳 Module tree
 
 ```text
 🌳 core
-├── reader_core.py       # RC-1 source/session artifacts
-├── reader_structure.py  # RC-2 Structural Document Map
-├── reader_passes.py     # RC-3 explicit multi-pass mechanics
-├── evidence.py          # source/evidence semantics
-├── truth_gate.py        # admission policy
-├── pipeline.py          # Guardian path
-├── query_pipeline.py    # read-only public query
-└── storage/...          # local-first/storage lifecycle
+├── reader_core.py        # RC-1 source/session artifacts
+├── reader_structure.py   # RC-2 Structural Document Map
+├── reader_passes.py      # RC-3 explicit multi-pass mechanics
+├── reader_extraction.py  # RC-4 source-linked proposition candidates
+├── evidence.py           # source/evidence semantics
+├── truth_gate.py         # admission policy
+├── pipeline.py           # Guardian path
+├── query_pipeline.py     # read-only public query
+└── storage/...           # local-first/storage lifecycle
 ```
 
 ## 🧱 Поверхности памяти и authority
@@ -155,6 +168,7 @@ Reader RC-1/RC-2/RC-3 остаётся upstream normal admission path. Pass comp
 | Reader RC-1 | source-linked artifacts | observation/candidate ≠ truth |
 | Reader RC-2 | structural map | structure/order ≠ authority |
 | Reader RC-3 | explicit pass ledger | pass completion ≠ comprehension/truth |
+| Reader RC-4 | source-linked extracted proposition candidates | source presentation/candidate state ≠ verified fact/admitted evidence |
 | L0 | working cache | ephemeral |
 | L1 | operational state | durable, но не весь strict Canon |
 | L2 | review/pending | ожидание решения |
@@ -164,19 +178,24 @@ Reader RC-1/RC-2/RC-3 остаётся upstream normal admission path. Pass comp
 | TRACE / Receipt | audit/replay | evidence, не truth generator |
 | ContradictionReport | conflict object | не выбирает winner сам |
 
-## 🔐 Authority firewall Reader RC-3
+## 🔐 Authority firewall Reader RC-4
 
 ```text
-Reader artifact      != admitted fact
-Reader coverage      != comprehension proof
-Reader structure     != epistemic authority
-Reader pass complete != comprehension proof
-Reader pass complete != TruthGate admission
-importance           != truth
-repetition           != corroboration
+Reader artifact       != admitted fact
+Reader coverage       != comprehension proof
+Reader structure      != epistemic authority
+Reader pass complete  != comprehension proof
+Reader pass complete  != TruthGate admission
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate      != admitted evidence
+source locator        != evidence sufficiency
+importance            != truth
+repetition            != corroboration
 ```
 
 RC-3 не вызывает model/provider и не может выбирать собственную objective, создавать undeclared target, писать strict Canon, менять `truth_status`/ESM, обходить Guardian/TruthGate, разрешать `ContradictionReport` или становиться planner/belief-update authority.
+
+RC-4 дополнительно не может прикреплять evidence к fact, превращать `FACTUAL_ASSERTION` в verification, схлопывать quotation/opinion/hypothesis/conditional в unqualified world fact или считать количество candidates доказательством понимания/истины.
 
 ## 🗄️ SQLite и PostgreSQL/pgvector
 
@@ -206,6 +225,7 @@ PostgreSQL 16 + pgvector
 | Source/version provenance | часто частично | first-class |
 | Reader coverage/structure | обычно chunk-centric | RC-1/RC-2 bounded foundation |
 | Явный multi-pass audit | обычно application-specific | RC-3 deterministic pass ledger |
+| Сохранить attribution/qualifiers до admission | application-specific | RC-4 explicit proposition metadata |
 | Prevent model self-source | не inherent | Ring Zero invariant |
 | Contradiction governance | внешняя логика | explicit dispositions |
 | Replay evidence | optional | TRACE / Receipt |
@@ -239,7 +259,7 @@ COEXIST / CONTEXTUALIZE / SUPERSEDE
 audited canonical write path
 ```
 
-RC-3 может использовать `CROSS_CHECK` как процесс чтения, но не может выбрать winner или изменить contradiction disposition.
+RC-3 может использовать `CROSS_CHECK` как процесс чтения, а RC-4 может сохранять contradiction-relevant proposition candidates, но ни один слой не может выбрать winner или изменить contradiction disposition.
 
 ## 🚀 Быстрый старт
 
@@ -266,21 +286,22 @@ Ring Zero: 7/7
 reader_core_rc1_skeleton = true
 reader_core_rc2_structural_map = true
 reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc4_proposition_extraction = true
 dedicated_reader_core = false
 PostgreSQL target: active=false
 ```
 
-Числовой test/runtime block выше — сохранённый checkpoint PR #337. RC-1/RC-2/RC-3 имеют собственные exact-head/post-merge CI evidence и не должны притворяться частью старого числового checkpoint.
+Числовой test/runtime block выше — сохранённый checkpoint PR #337. RC-1/RC-2/RC-3/RC-4 имеют собственные exact-head/post-merge CI evidence и не должны притворяться частью старого числового checkpoint.
 
 ## 🚧 Что Crystal не заявляет
 
-Crystal не заявляет universal truth, zero hallucinations, AGI/consciousness, legal/GDPR/security certification, production multi-tenancy, distributed exactly-once coordination, active PostgreSQL runtime, automatic switching/cutover/rollback/dual-write, automatic Reader parsing/OCR, autonomous LLM/provider reading, embeddings/ANN/vector Reader stack, automatic cross-document reasoning или completed dedicated/full autonomous Reader Core.
+Crystal не заявляет universal truth, zero hallucinations, AGI/consciousness, legal/GDPR/security certification, production multi-tenancy, distributed exactly-once coordination, active PostgreSQL runtime, automatic switching/cutover/rollback/dual-write, automatic Reader parsing/OCR, automatic NLP/LLM proposition extraction, autonomous provider-driven reading, embeddings/ANN/vector Reader stack, automatic cross-document reasoning, что RC-4 candidates являются verified facts/admitted evidence, или completed dedicated/full autonomous Reader Core.
 
-NLnet остаётся **submitted / under review / not awarded**; около €50,000 — planning only, budget change none. RC-0/RC-1/RC-2 и RC-3, если он merged pre-agreement, являются existing baseline, а не будущим funded delta.
+NLnet остаётся **submitted / under review / not awarded**; около €50,000 — planning only, budget change none. RC-0/RC-1/RC-2/RC-3 и RC-4, если он merged pre-agreement, являются existing baseline, а не будущим funded delta.
 
-## 🌍 Состояние переводов после RC-3
+## 🌍 Состояние переводов после RC-4
 
-Русский root README и Reader-dependent D1/D3/D4/D5 pack обновлены к source checkpoint RC-3 и имеют `CURRENT`. D2 и Quick Start остаются `CURRENT` на всех девяти локалях, потому что RC-3 не меняет их semantics. Восемь других root README и Reader-dependent detail pack сохраняют полный прежний текст, но требуют RC-3 semantic refresh и отмечены центральным ledger как `REFRESH_NEEDED`.
+Русский root README и Reader-dependent D1/D3/D4/D5 pack обновлены к source checkpoint RC-4 `main@166fab5551c4b86ee0a546b2e1d3dc7adc240c86` и имеют `CURRENT`. D2 и Quick Start остаются `CURRENT` на всех девяти локалях, потому что RC-4 не меняет их semantics. Восемь других root README и Reader-dependent detail pack сохраняют полный прежний текст, но требуют RC-4 semantic refresh и отмечены центральным ledger как `REFRESH_NEEDED`. Тот же набор translation debt остаётся равен 64 documents.
 
 ## 📚 Навигация
 
