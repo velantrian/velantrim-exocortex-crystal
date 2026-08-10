@@ -12,6 +12,16 @@ English is the primary source/conflict resolver. GitHub merged code, executable 
 - [Translation status](./TRANSLATION_STATUS.md)
 - [Localization policy](./LOCALIZATION_POLICY.md)
 
+## Reviewer / safety / privacy / failures (D2)
+
+D2 uses the stable English Reviewer Guide and safety/privacy/failure source family. Reader RC-1/RC-2 did not change this source contract, so D2 retains its previous immutable source checkpoint.
+
+- [Reviewer Guide](./REVIEWER_GUIDE.md)
+- [Safety, privacy and failures](./SAFETY_PRIVACY_AND_FAILURES.md)
+- [Failure modes](./FAILURE_MODES.md)
+- [Security policy](../SECURITY.md)
+- [Privacy policy](../PRIVACY.md)
+
 ## Architecture / Reader
 
 - [Architecture](./ARCHITECTURE.md)
