@@ -1,4 +1,4 @@
-"""Validate mixed D1 localization freshness after Reader RC-3."""
+"""Validate mixed D1 localization freshness after Reader RC-4."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = "0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5"
+SOURCE = "166fab5551c4b86ee0a546b2e1d3dc7adc240c86"
 LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
 CURRENT_LOCALES = ("ru",)
 REFRESH_LOCALES = tuple(locale for locale in LOCALES if locale not in CURRENT_LOCALES)
@@ -16,6 +16,7 @@ READER_MARKERS = (
     "reader_core_rc1_skeleton = true",
     "reader_core_rc2_structural_map = true",
     "reader_core_rc3_multi_pass_mechanics = true",
+    "reader_core_rc4_proposition_extraction = true",
     "dedicated_reader_core = false",
 )
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
@@ -105,6 +106,9 @@ def main() -> int:
                 for marker in READER_MARKERS:
                     if marker not in normalized:
                         errors.append(f"{relative}: missing normalized Reader evidence {marker!r}")
+                for marker in ("EXTRACTED_PROPOSITION != verified fact", "Reader candidate != admitted evidence"):
+                    if marker not in text:
+                        errors.append(f"{relative}: missing RC-4 authority marker {marker!r}")
                 if name == "STATUS.md":
                     for marker in (
                         "2078 passed / 13 skipped / 0 failed",
@@ -138,7 +142,7 @@ def main() -> int:
         for error in errors:
             print(f"  - {error}")
         return 1
-    print("D1 translation status is consistent: Russian CURRENT; 8 locales Reader refresh needed")
+    print("D1 translation status is consistent: Russian CURRENT at RC-4; 8 locales Reader refresh needed")
     return 0
 
 
