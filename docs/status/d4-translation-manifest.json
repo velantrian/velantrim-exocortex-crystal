@@ -5,9 +5,13 @@
   "tracking_issue": 341,
   "english_source_checkpoint": "6b45bdd196eb42dea7bc30f58d69799b4b1712f2",
   "source_documents": ["docs/PROJECT_GRANT_AND_GOVERNANCE.md", "docs/GLOSSARY.md"],
-  "current_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN"],
+  "current_locales": ["ru"],
+  "refresh_needed_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"],
   "pending_locales": [],
   "current_documents": {
+    "ru": ["docs/ru/GRANT_OVERVIEW.md", "docs/ru/GLOSSARY.md"]
+  },
+  "refresh_needed_documents": {
     "ar": ["docs/ar/GRANT_OVERVIEW.md", "docs/ar/GLOSSARY.md"],
     "de": ["docs/de/GRANT_OVERVIEW.md", "docs/de/GLOSSARY.md"],
     "es": ["docs/es/GRANT_OVERVIEW.md", "docs/es/GLOSSARY.md"],
@@ -15,7 +19,6 @@
     "hi": ["docs/hi/GRANT_OVERVIEW.md", "docs/hi/GLOSSARY.md"],
     "it": ["docs/it/GRANT_OVERVIEW.md", "docs/it/GLOSSARY.md"],
     "ja": ["docs/ja/GRANT_OVERVIEW.md", "docs/ja/GLOSSARY.md"],
-    "ru": ["docs/ru/GRANT_OVERVIEW.md", "docs/ru/GLOSSARY.md"],
     "zh-CN": ["docs/zh-CN/GRANT_OVERVIEW.md", "docs/zh-CN/GLOSSARY.md"]
   },
   "locale_indexes": ["docs/ar/README.md", "docs/de/README.md", "docs/es/README.md", "docs/fr/README.md", "docs/hi/README.md", "docs/it/README.md", "docs/ja/README.md", "docs/ru/README.md", "docs/zh-CN/README.md"],
