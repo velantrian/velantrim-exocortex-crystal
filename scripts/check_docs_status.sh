@@ -14,8 +14,9 @@ manifest = json.loads((root / "docs/status/implementation-manifest.json").read_t
 errors: list[str] = []
 
 runtime_commit = "bbd816c09dd39a02e6de6c1014438490572f40f6"
-source_checkpoint = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
+source_checkpoint = "0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5"
 locales = ["ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN"]
+refresh_locales = ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"]
 localized = {locale: f"README.{locale}.md" for locale in locales}
 
 
@@ -29,6 +30,7 @@ ci = manifest["ci"]
 boundaries = manifest["implemented_boundaries"]
 docs = manifest["documentation"]
 grant = manifest["grant"]
+rc3 = manifest.get("reader_core_rc3", {})
 
 expect(checkpoint.get("commit"), runtime_commit, "runtime checkpoint")
 expect(tests.get("passed"), 2078, "tests passed")
@@ -39,13 +41,22 @@ expect(tests.get("coverage_percent"), 100.0, "coverage")
 expect(ci.get("job_count"), 9, "CI job count")
 expect(boundaries.get("reader_core_rc1_skeleton"), True, "Reader RC-1")
 expect(boundaries.get("reader_core_rc2_structural_map"), True, "Reader RC-2")
+expect(boundaries.get("reader_core_rc3_multi_pass_mechanics"), True, "Reader RC-3")
 expect(boundaries.get("dedicated_reader_core"), False, "dedicated Reader")
 expect(boundaries.get("postgresql_target_active"), False, "PostgreSQL active")
 expect(boundaries.get("automatic_backend_switching"), False, "automatic switching")
+expect(rc3.get("tracking_issue"), 363, "RC-3 tracking issue")
+expect(rc3.get("runtime_module"), "core/reader_passes.py", "RC-3 runtime module")
+expect(rc3.get("one_active_pass_at_a_time"), True, "RC-3 sequential pass rule")
+expect(rc3.get("count_only_telemetry"), True, "RC-3 telemetry rule")
+expect(rc3.get("llm_or_provider_integration"), False, "RC-3 model integration")
+expect(rc3.get("truth_or_canon_authority"), False, "RC-3 truth authority")
 expect(docs.get("localized_readme_source_checkpoint"), source_checkpoint, "localized README source")
-expect(docs.get("full_parity_current_locales"), locales, "root locale set")
+expect(docs.get("full_parity_current_locales"), ["ru"], "root current locale set")
+expect(docs.get("full_parity_refresh_needed_locales"), refresh_locales, "root refresh locale set")
+expect(docs.get("d1_source_checkpoint"), source_checkpoint, "D1 source")
 expect(docs.get("d1_current_locales"), ["ru"], "D1 current locales")
-expect(docs.get("d1_refresh_needed_locales"), ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"], "D1 refresh locales")
+expect(docs.get("d1_refresh_needed_locales"), refresh_locales, "D1 refresh locales")
 expect(grant.get("submitted"), True, "grant submitted")
 expect(grant.get("under_review"), True, "grant review")
 expect(grant.get("awarded"), False, "grant awarded")
@@ -59,7 +70,6 @@ common = (
     "Guardian", "TruthGate", "TrustSnapshot", "CanonicalView",
     "SQLite", "PostgreSQL", "HTTP /ask", "CLI ask", "MCP search",
     "docs/LOCALIZATION_POLICY.md", "docs/TRANSLATION_STATUS.md",
-    "reader_core_rc1_skeleton", "reader_core_rc2_structural_map", "dedicated_reader_core",
 )
 
 for locale, relative in localized.items():
@@ -68,8 +78,6 @@ for locale, relative in localized.items():
         errors.append(f"missing root README: {relative}")
         continue
     text = path.read_text(encoding="utf-8")
-    if f"localization-source: main@{source_checkpoint}" not in text:
-        errors.append(f"{relative}: wrong localization source")
     for marker in common:
         if marker not in text:
             errors.append(f"{relative}: missing marker {marker!r}")
@@ -82,13 +90,25 @@ for locale, relative in localized.items():
     for level in ("L0", "L1", "L2", "L3"):
         if level not in text:
             errors.append(f"{relative}: missing {level}")
+    if locale == "ru":
+        for marker in (
+            f"localization-source: main@{source_checkpoint}",
+            "localization-status: CURRENT",
+            "reader_core_rc3_multi_pass_mechanics",
+        ):
+            if marker not in text:
+                errors.append(f"{relative}: missing current RC-3 marker {marker!r}")
+    elif f"localization-source: main@{source_checkpoint}" in text:
+        errors.append(f"{relative}: refresh-needed root README falsely pins RC-3 source")
 
 root_readme = (root / "README.md").read_text(encoding="utf-8")
 for marker in (
     "Reader foundation",
-    "Reader RC-1: implemented/tested bounded evidence-linked skeleton",
-    "Reader RC-2: implemented/tested bounded Structural Document Map",
-    "Dedicated multi-pass Reader: not implemented",
+    "RC-1 evidence-linked skeleton",
+    "RC-2 caller-supplied Structural Document Map",
+    "RC-3 explicit deterministic multi-pass mechanics",
+    "Dedicated/full autonomous Reader: not implemented",
+    "Reader pass completion is not comprehension proof",
 ):
     if marker not in root_readme:
         errors.append(f"README.md: missing Reader marker {marker!r}")
@@ -113,19 +133,18 @@ for locale in locales:
             errors.append(f"docs/{locale}/README.md: missing {marker!r}")
 
 required = {
-    "docs/STATUS.md": (runtime_commit, "reader_core_rc1_skeleton", "reader_core_rc2_structural_map", "dedicated_reader_core", "active=false"),
-    "docs/IMPLEMENTATION_STATUS.md": ("reader_core_rc1_skeleton       = true", "reader_core_rc2_structural_map = true", "dedicated_reader_core          = false"),
-    "docs/ARCHITECTURE_OVERVIEW.md": ("RC-1", "RC-2", "dedicated multi-pass Reader", "active=false"),
-    "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md": ("Reader artifact", "Reader structure", "active=false"),
-    "docs/PROJECT_GRANT_AND_GOVERNANCE.md": ("RC-1", "RC-2", "submitted", "€50,000"),
-    "docs/GLOSSARY.md": ("Reader Core RC-1", "Reader Core RC-2", "dedicated Reader Core"),
-    "docs/EXTENDED_REFERENCE_POLICY.md": ("reader_core_rc1_skeleton", "reader_core_rc2_structural_map", "dedicated_reader_core", "REFRESH_NEEDED"),
-    "docs/TRANSLATION_STATUS.md": ("Russian detail pack", "56 `REFRESH_NEEDED`", "all nine localized root READMEs"),
-    "docs/DOCUMENTATION_MAP.md": ("CURRENT full-parity localized READMEs", "REFRESH_NEEDED translated document packs", "Inactive PostgreSQL import"),
-    "docs/ai/CURRENT_STATE.md": ("Russian D1/D3/D4/D5 detail pack is current", "eight other locale detail packs require Reader refresh", "active=false", "reader_core_rc2_structural_map = true"),
-    "docs/ai/README.md": ("all nine supported", "docs-only PR", "REFRESH_NEEDED"),
+    "docs/STATUS.md": (runtime_commit, "reader_core_rc1_skeleton", "reader_core_rc2_structural_map", "reader_core_rc3_multi_pass_mechanics", "dedicated_reader_core", "active=false", "pass completion"),
+    "docs/IMPLEMENTATION_STATUS.md": ("reader_core_rc1_skeleton", "reader_core_rc2_structural_map", "reader_core_rc3_multi_pass_mechanics", "dedicated_reader_core", "core/reader_passes.py"),
+    "docs/ARCHITECTURE_OVERVIEW.md": ("RC-1", "RC-2", "RC-3", "dedicated/full autonomous Reader", "active=false", "pass completion"),
+    "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md": ("Reader artifact", "Reader structure", "Reader pass ledger", "active=false", "pass completion"),
+    "docs/PROJECT_GRANT_AND_GOVERNANCE.md": ("RC-1", "RC-2", "RC-3", "submitted", "€50,000", "pass completion"),
+    "docs/GLOSSARY.md": ("Reader Core RC-1", "Reader Core RC-2", "Reader Core RC-3", "dedicated/full Reader Core"),
+    "docs/EXTENDED_REFERENCE_POLICY.md": ("reader_core_rc1_skeleton", "reader_core_rc2_structural_map", "reader_core_rc3_multi_pass_mechanics", "dedicated_reader_core", "REFRESH_NEEDED"),
+    "docs/TRANSLATION_STATUS.md": ("Russian", "REFRESH_NEEDED", "root README", source_checkpoint),
+    "docs/DOCUMENTATION_MAP.md": ("Inactive PostgreSQL import",),
+    "docs/ai/CURRENT_STATE.md": ("reader_core_rc3_multi_pass_mechanics = true", "eight other localized root README files", "active=false"),
     "TEST_REPORT.md": (runtime_commit, "2078 passed / 13 skipped / 0 failed", "31256316532"),
-    "docs/GRANT_NLNET_SCOPE.md": ("submitted / under review / not awarded", "cannot be budgeted again"),
+    "docs/GRANT_NLNET_SCOPE.md": ("submitted / under review / not awarded", "cannot be budgeted again", "RC-3"),
     "SECURITY.md": ("not a security, legal or GDPR certification", "No automatic switching"),
 }
 for relative, markers in required.items():
@@ -165,5 +184,5 @@ if errors:
         print(f"  - {error}")
     raise SystemExit(1)
 
-print("Documentation status is internally consistent: Reader RC-1/RC-2 bounded=true, dedicated=false, root-readmes=9-current, Russian-detail=current, 8-locale Reader detail refresh-needed")
+print("Documentation status is internally consistent: Reader RC-1/RC-2/RC-3 bounded=true, dedicated=false, Russian root/detail CURRENT, 8-locale Reader/root refresh-needed")
 PY
