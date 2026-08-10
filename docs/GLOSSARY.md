@@ -45,7 +45,8 @@ Programmatic identifiers remain unchanged in code, schemas, CLI, APIs and transl
 | **curator override** | An attributed, audited human decision; not a silent TruthGate bypass. |
 | **Reader Core RC-1** | Implemented/tested bounded evidence-linked source/session skeleton with source-version identity, locators, fidelity, coverage, bookmarks/open loops and stale/failure/privacy semantics; no truth/admission authority. |
 | **Reader Core RC-2** | Implemented/tested caller-supplied Structural Document Map with version-bound hierarchy/order and explicit ambiguity; not an automatic parser and not truth/confidence authority. |
-| **dedicated Reader Core** | Future multi-pass Semantic Reading runtime beyond RC-1/RC-2; not implemented. |
+| **Reader Core RC-3** | Bounded deterministic multi-pass mechanics: explicit pass kinds, declared structural targets, attempted/completed/interrupted/degraded ledger and explicit RC-1 coverage outcomes; not an autonomous reader and not comprehension authority. |
+| **dedicated/full Reader Core** | Future autonomous Semantic Reading capability beyond the bounded RC-1/RC-2/RC-3 layers; not implemented. |
 
 ## Terms requiring caution
 
@@ -74,11 +75,13 @@ An open PR, RFC, issue, prototype or Notion page is not current runtime evidence
 Do not collapse the current bounded milestones into a full capability claim. Preferred wording:
 
 ```text
-RC-1 minimal evidence-linked skeleton = implemented/tested
-RC-2 Structural Document Map          = implemented/tested
-dedicated multi-pass Reader runtime   = not implemented
-coverage                              != comprehension proof
-structure/order/prominence            != epistemic authority
+RC-1 minimal evidence-linked skeleton   = implemented/tested
+RC-2 Structural Document Map            = implemented/tested
+RC-3 explicit multi-pass mechanics      = implemented/tested after exact CI/merge
+dedicated/full autonomous Reader runtime = not implemented
+coverage                                != comprehension proof
+pass completion                         != comprehension proof
+structure/order/prominence              != epistemic authority
 ```
 
 ### “GDPR compliant”, “secure” and “hardened”
@@ -98,6 +101,7 @@ Do not claim legal, GDPR or security certification without external authoritativ
 ```text
 Receipt replay    = re-check existing evidence
 trajectory replay = repeat an execution path for evaluation
+Reader reread     = explicit source-linked pass over declared regions
 ```
 
 ### “Grant funded” or “awarded”
@@ -122,8 +126,8 @@ SQLite is the ordinary active local-first profile. First durable `auto` may choo
 - Preserve public-query read-only and explicit-ingest write separation.
 - Preserve SQLite ordinary runtime and PostgreSQL `active=false`.
 - Preserve `import/equivalence != activation`.
-- Preserve RC-1/RC-2-bounded-implemented versus dedicated-Reader-not-implemented distinction.
-- Preserve `coverage != comprehension proof` and structure/order/prominence != epistemic authority.
+- Preserve RC-1/RC-2/RC-3-bounded-implemented versus dedicated/full-Reader-not-implemented distinction.
+- Preserve `coverage != comprehension proof`, `pass completion != comprehension proof` and structure/order/prominence != epistemic authority.
 - Preserve no-certification and no-award boundaries.
 - Do not imply native-speaker editorial certification unless it occurred.
 
