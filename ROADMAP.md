@@ -96,20 +96,28 @@ composition. No activation, cutover, rollback, dual-write or automatic switching
 - clean-machine reproduction and public audit findings;
 - stronger claim/status lint tied to releases.
 
-## P2/P3 — Source-linked Reader Core prototype
+## P2/P3 — Source-linked Reader Core
 
-Current baseline already has source spans, document records and import sessions. A dedicated
-Reader Core remains not implemented.
+RC-0 now defines the docs-only architecture contract at
+[`docs/architecture/READER_CORE_ARCHITECTURE.md`](./docs/architecture/READER_CORE_ARCHITECTURE.md).
+A dedicated Reader Core remains not implemented; the machine-readable status remains
+`dedicated_reader_core=false`.
 
-Future bounded research/engineering may add:
+The RC-0 contract fixes the future layer's boundaries:
 
-- structure maps and safe segmentation;
-- exact source-linked candidate cards;
-- coverage, exception and contradiction reports;
-- multi-pass rereading and document-level synthesis;
-- outputs that remain upstream of Guardian and TruthGate.
+- document/version identity and exact source-linked provenance;
+- structural document maps and Segment Cards as non-authoritative reader artifacts;
+- explicit `UNREAD` / `SEEN` / `PROCESSED` / `REVISITED` / `NEEDS_REVIEW` coverage semantics;
+- multi-pass reading, bookmarks, exceptions, open questions and targeted re-reading;
+- contradiction and cross-document links as candidates only;
+- explicit separation of source observation, extraction, interpretation, summary and inference;
+- source-version invalidation and fail-visible incomplete reading;
+- outputs remain upstream of Guardian/TruthGate and never become a second Canon owner;
+- importance remains separate from truth, confidence and authority.
 
-It must not become a second Canon owner or conflate importance with truth.
+A later separately authorized **RC-1 — Minimal Evidence-Linked Reading Skeleton** may implement
+the smallest testable source-linked reading objects and invariants. RC-1 must not begin merely
+because RC-0 documentation exists; implementation requires its own bounded issue/PR/evidence.
 
 ## Grant boundary
 
@@ -122,7 +130,9 @@ verified existing baseline + new measurable funded delta
 
 Issues #331/#332, PRs #335/#337 and D1–D4 documentation work merged before an agreement are
 existing baseline. D5 documentation work also merged before any agreement and is existing
-baseline. None of that work can be counted again as future paid delivery.
+baseline. A merged Reader Core RC-0 architecture contract is likewise documentation baseline,
+not funded Reader runtime implementation, while no grant agreement exists. None of that work
+can be counted again as future paid delivery.
 
 No grant award or approved budget is claimed. Approximate €50,000 remains planning only.
 Active PostgreSQL runtime selection, automatic switching, production multi-tenancy, universal
@@ -135,5 +145,6 @@ truth, zero hallucinations and legal/security/GDPR certification remain out of s
 - [Baseline/funded-delta matrix](./docs/grants/baseline-funded-delta-matrix.md)
 - [Funding use plan](./docs/grants/funding-use-plan.md)
 - [Implementation status](./docs/IMPLEMENTATION_STATUS.md)
+- [Reader Core RC-0 architecture contract](./docs/architecture/READER_CORE_ARCHITECTURE.md)
 - [Translation status](./docs/TRANSLATION_STATUS.md)
 - [Extended reference policy](./docs/EXTENDED_REFERENCE_POLICY.md)

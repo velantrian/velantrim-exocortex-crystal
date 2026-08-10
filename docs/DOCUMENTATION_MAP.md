@@ -39,6 +39,7 @@ English is the primary source and conflict resolver. Notion stores synchronized 
 
 - [Architecture overview](./ARCHITECTURE_OVERVIEW.md)
 - [Full architecture](./ARCHITECTURE.md)
+- [Reader Core RC-0 architecture contract](./architecture/READER_CORE_ARCHITECTURE.md) — architecture only; runtime remains `NOT_IMPLEMENTED`
 - [Storage and authority boundaries](./STORAGE_AND_AUTHORITY_BOUNDARIES.md)
 - [Implementation status](./IMPLEMENTATION_STATUS.md)
 - [Durable storage profile](./architecture/DURABLE_STORAGE_PROFILE.md)
@@ -46,7 +47,7 @@ English is the primary source and conflict resolver. Notion stores synchronized 
 - [Inactive PostgreSQL import](./architecture/POSTGRESQL_INACTIVE_IMPORT.md)
 - [ADR-021](./adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md)
 
-D3 uses the complete stable English architecture source family. Compact architecture/storage documents are current across all nine locales. Detailed profiles and ADRs remain conflict-resolving English technical contracts.
+D3 uses the complete stable English architecture source family. Compact architecture/storage documents are current across all nine locales. Detailed profiles and ADRs remain conflict-resolving English technical contracts. The Reader Core RC-0 contract is a detailed English architecture contract and does not itself create a new translated runtime capability or change D1–D5 status.
 
 ## Safety, privacy and failure behaviour
 

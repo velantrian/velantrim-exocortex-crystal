@@ -1,6 +1,6 @@
 # Implementation Status: Crystal vs Future Exo-Cortex Work
 
-**Status date:** 2026-08-08  
+**Status date:** 2026-08-10  
 **Verified runtime checkpoint:** `bbd816c` / PR #337  
 **Exact evidence:** [TEST_REPORT.md](../TEST_REPORT.md)  
 **Machine-readable status:** [status/implementation-manifest.json](./status/implementation-manifest.json)
@@ -19,7 +19,8 @@
 | Exact-vs-ANN retrieval evaluation | Not implemented | later separately reviewed phase |
 | Cutover / rollback / dual-write | Not implemented | explicit later phases only |
 | PostgreSQL server lifecycle | Not implemented | backup/restore/upgrade/pooling remain future work |
-| Reader Core / Semantic Reading Layer | Not implemented | candidate layer upstream of normal admission |
+| Reader Core RC-0 architecture contract | Documented | [docs-only contract](./architecture/READER_CORE_ARCHITECTURE.md); no runtime capability |
+| Reader Core / Semantic Reading runtime | Not implemented | future evidence-linked layer upstream of normal admission; `dedicated_reader_core=false` |
 
 ## Current storage sequence
 
@@ -50,6 +51,11 @@ exact-vs-ANN retrieval evaluation
 → multi-process concurrency and production observability
 ```
 
+Reader Core RC-0 defines source-grounded reading semantics, coverage, replayable artifacts,
+version invalidation and authority boundaries only. It does not add code, storage, API, CLI,
+dependencies, model/provider coupling or a second admission path. The machine-readable
+runtime flag remains `dedicated_reader_core=false` until implementation evidence exists.
+
 Crystal does not claim an active PostgreSQL runtime backend, automatic migration,
 production multi-tenancy, universal truth, zero hallucinations, legal/security
-certification or consciousness.
+certification, consciousness or an implemented Reader Core runtime.

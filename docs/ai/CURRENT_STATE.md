@@ -23,7 +23,7 @@ SQLite remains the ordinary active local-first profile. PostgreSQL remains `acti
 
 ## 3. Grant and remaining limitations
 
-The NLnet proposal is submitted / under review / not awarded. Approximate €50,000 is planning only, not an approved budget or payment commitment. Budget change is none. Work merged before an agreement is existing baseline and cannot be counted again as funded delta. Reader Core is not implemented. No legal, GDPR, security or native-speaker editorial certification is claimed.
+The NLnet proposal is submitted / under review / not awarded. Approximate €50,000 is planning only, not an approved budget or payment commitment. Budget change is none. Work merged before an agreement is existing baseline and cannot be counted again as funded delta. Reader Core runtime is not implemented. No legal, GDPR, security or native-speaker editorial certification is claimed.
 
 ## 4. Documentation language and D1–D3
 
@@ -69,3 +69,30 @@ The bounded remaining backlog is:
 - #214 → `STILL_VALID`: residual fixture review and reproducible supply-chain pinning remain P2 hygiene.
 
 Issues #156, #157, #203, #219 and ASR Phase-0 #228 were closed as completed from current evidence; #159 was closed as superseded; #211 was closed as out of scope for Crystal; #215 was closed as expired. None of those closures adds a runtime capability.
+
+## 8. Reader Core RC-0 architecture state
+
+The docs-only Reader Core RC-0 contract is defined at
+[`../architecture/READER_CORE_ARCHITECTURE.md`](../architecture/READER_CORE_ARCHITECTURE.md).
+It specifies source/version identity, structural maps, Segment Cards, explicit coverage,
+multi-pass reading, source-linked bookmarks, exception preservation, contradiction candidates,
+open questions, source-fidelity classes, provenance, stale-version invalidation and fail-visible
+partial reading.
+
+Authority remains unchanged:
+
+```text
+source/document + exact provenance
+→ Reader Core artifacts/candidates
+→ existing ingest/review/evidence path
+→ Guardian / Immune boundary
+→ TruthGate
+→ multi-status storage
+→ strict read projection
+```
+
+The architecture contract is not runtime evidence. `dedicated_reader_core=false` remains the
+machine-readable implementation truth; no Reader runtime, API, CLI, dependency, schema,
+migration, embedding/vector-store feature or cross-project integration is added by RC-0.
+Reader importance is not truth, Reader observations are not Canon admission, and Reader
+contradiction candidates do not replace the existing contradiction/curator decision contract.
