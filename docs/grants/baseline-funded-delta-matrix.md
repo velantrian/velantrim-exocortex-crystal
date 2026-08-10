@@ -2,7 +2,7 @@
 
 **Status:** grant-planning control · documentation only · no award/budget change  
 **Frozen runtime checkpoint:** `main@bbd816c09dd39a02e6de6c1014438490572f40f6`  
-**Current Reader baseline:** Reader RC-1 + Reader RC-2 merged pre-agreement; dedicated multi-pass Reader absent.  
+**Current Reader baseline:** Reader RC-1 + Reader RC-2 implemented; Reader RC-3 explicit multi-pass mechanics becomes pre-agreement baseline if this work merges before an agreement; dedicated/full autonomous Reader remains absent.  
 **Baseline evidence:** 2078 passed / 13 skipped / 9756 statements / 100% coverage / 9 CI jobs / 1 PostgreSQL integration job
 
 ## Control rule
@@ -13,8 +13,8 @@ verified baseline + new measurable funded delta
 ```
 
 Anything already merged before an agreement is existing capability and cannot be counted again as
-future paid work. This includes #331 / PR #335, #332 / PR #337, Reader RC-0, Reader RC-1, Reader RC-2
-and merged multilingual documentation baselines.
+future paid work. This includes #331 / PR #335, #332 / PR #337, Reader RC-0, Reader RC-1, Reader RC-2,
+Reader RC-3 if merged pre-agreement, and merged multilingual documentation baselines.
 
 ## M1 — Reproducible runtime and release evidence
 
@@ -72,28 +72,34 @@ restore drill, retention/upgrade sequencing, pooling, retry and observability.
 **Funded delta:** reviewer-facing visualization, source-span navigation, uncertainty/refusal views and
 content-light audit export. UI cannot promote or mutate Canon.
 
-## M8 — Reader work beyond RC-1 / RC-2
+## M8 — Reader work beyond RC-3
 
-**Baseline:** Reader RC-0 architecture contract plus implemented/tested Reader RC-1 evidence-linked skeleton
-and Reader RC-2 caller-supplied Structural Document Map:
+**Baseline:** Reader RC-0 architecture contract plus implemented/tested RC-1 evidence-linked skeleton,
+RC-2 caller-supplied Structural Document Map and RC-3 explicit deterministic multi-pass mechanics when
+RC-3 merges before an agreement:
 
 ```text
-reader_core_rc1_skeleton       = true
-reader_core_rc2_structural_map = true
-dedicated_reader_core          = false
+reader_core_rc1_skeleton             = true
+reader_core_rc2_structural_map       = true
+reader_core_rc3_multi_pass_mechanics = true
+dedicated_reader_core                = false
 ```
+
+RC-3 baseline includes explicit `ORIENTATION`, `BROAD_READ`, `FOCUSED_READ`, `CROSS_CHECK` and
+`TARGETED_REREAD`; declared structural targets; attempted/completed/interrupted/degraded pass state;
+explicit legal RC-1 coverage outcomes; partial-progress preservation; and count-only telemetry.
 
 These existing milestones cannot be counted again as future paid work.
 
-**Funded delta:** only separately reviewed Reader work beyond that baseline. The next candidate is RC-3
-explicit multi-pass reading mechanics; later evidence extraction, exception/contradiction candidates and
-long-context work must each remain separately bounded. Embeddings/ANN/vector DB are not assumed.
+**Funded delta:** only separately reviewed Reader work beyond RC-3. The next roadmap candidate is RC-4
+evidence extraction; later exception/contradiction candidates and long-context work must each remain
+separately bounded. Embeddings/ANN/vector DB are not assumed.
 
 **Acceptance:** output stays upstream of Guardian/TruthGate; fidelity remains explicit; coverage remains
-version-specific and `coverage != comprehension proof`; no second Canon owner, planner authority or
-automatic belief update.
+version-specific and `coverage != comprehension proof`; `pass completion != comprehension proof`; no second
+Canon owner, planner authority or automatic belief update.
 
-A dedicated multi-pass Reader remains not implemented until a later exact implementation gate proves it.
+A dedicated/full autonomous Reader remains not implemented until a later exact implementation gate proves it.
 
 ## M9 — Claim discipline, maintenance and independent audit
 
@@ -109,6 +115,7 @@ artifacts and release-linked remediation.
 - automatic GDPR/legal/security certification;
 - autonomous self-canonization or hidden chain-of-thought storage;
 - automatic backend switching or live dual-write without separate review;
+- dedicated/full autonomous Reader semantics beyond separately accepted milestones;
 - Titan, Native Kernel, Mentaury or Research Mode as current Crystal runtime.
 
 ## Change control
