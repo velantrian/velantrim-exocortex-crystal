@@ -82,7 +82,12 @@ for locale, relative in localized.items():
             errors.append(f"{relative}: missing {level}")
 
 root_readme = (root / "README.md").read_text(encoding="utf-8")
-for marker in ("Reader foundation", "reader_core_rc1", "reader_core_rc2", "dedicated multi-pass Reader"):
+for marker in (
+    "Reader foundation",
+    "Reader RC-1: implemented/tested bounded evidence-linked skeleton",
+    "Reader RC-2: implemented/tested bounded Structural Document Map",
+    "Dedicated multi-pass Reader: not implemented",
+):
     if marker not in root_readme:
         errors.append(f"README.md: missing Reader marker {marker!r}")
 
@@ -102,7 +107,7 @@ for locale in locales:
 
 required = {
     "docs/STATUS.md": (runtime_commit, "reader_core_rc1_skeleton", "reader_core_rc2_structural_map", "dedicated_reader_core", "active=false"),
-    "docs/IMPLEMENTATION_STATUS.md": ("reader_core_rc1_skeleton = true", "reader_core_rc2_structural_map = true", "dedicated_reader_core          = false"),
+    "docs/IMPLEMENTATION_STATUS.md": ("reader_core_rc1_skeleton       = true", "reader_core_rc2_structural_map = true", "dedicated_reader_core          = false"),
     "docs/ARCHITECTURE_OVERVIEW.md": ("RC-1", "RC-2", "dedicated multi-pass Reader", "active=false"),
     "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md": ("Reader artifact", "Reader structure", "active=false"),
     "docs/PROJECT_GRANT_AND_GOVERNANCE.md": ("RC-1", "RC-2", "submitted", "€50,000"),
