@@ -36,7 +36,6 @@ def classify(relative: str, manifest: dict[str, object]) -> str:
     retired_exceptions = set(manifest["retired_prefix_exceptions"])
     current_exact = set(manifest["current_exact"])
     refresh_exact = set(manifest["refresh_needed_exact"])
-
     if relative in retired_exact:
         return "RETIRED"
     if relative.startswith(retired_prefixes) and relative not in retired_exceptions:
@@ -45,7 +44,6 @@ def classify(relative: str, manifest: dict[str, object]) -> str:
         return "CURRENT"
     if relative in refresh_exact:
         return "REFRESH_NEEDED"
-
     for locale in LOCALES:
         if relative == f"README.{locale}.md":
             return "CURRENT"
@@ -54,7 +52,6 @@ def classify(relative: str, manifest: dict[str, object]) -> str:
             if name in manifest["current_locale_pack_files"]:
                 return "CURRENT"
             return "REFRESH_NEEDED"
-
     return str(manifest["default_state"])
 
 
@@ -62,11 +59,10 @@ def main() -> int:
     errors: list[str] = []
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     policy = POLICY_PATH.read_text(encoding="utf-8")
-
     if manifest.get("phase") != "D5_SOURCE_INVENTORY":
         errors.append("D5 manifest: invalid phase")
     if manifest.get("repository_checkpoint") != "3de746e74be844c6fda55849c10faac5c3f0631a":
-        errors.append("D5 manifest: source checkpoint must be the signed PR #350 merge")
+        errors.append("D5 manifest: source-inventory checkpoint must remain the signed PR #350 merge")
     if manifest.get("supported_locales") != list(LOCALES):
         errors.append("D5 manifest: supported locale set/order mismatch")
     if set(manifest.get("allowed_states", [])) != ALLOWED:
@@ -76,17 +72,21 @@ def main() -> int:
     if manifest.get("refresh_needed_exact") != []:
         errors.append("D5 manifest: unresolved refresh entries remain")
 
-    for key in (
+    false_claims = (
         "native_speaker_editorial_certification",
         "security_legal_gdpr_certification_claim",
         "nlnet_awarded_claim",
         "approved_budget_claim",
         "budget_change_claim",
-        "reader_core_implemented_claim",
+        "dedicated_reader_core_implemented_claim",
         "active_postgresql_runtime_claim",
-    ):
+    )
+    for key in false_claims:
         if manifest.get(key) is not False:
             errors.append(f"D5 manifest: unsupported claim flag {key}")
+    for key in ("reader_core_rc1_skeleton_claim", "reader_core_rc2_structural_map_claim"):
+        if manifest.get(key) is not True:
+            errors.append(f"D5 manifest: missing bounded Reader claim {key}")
 
     extensions = set(manifest["eligible_extensions"])
     resolved: dict[str, str] = {}
@@ -98,17 +98,13 @@ def main() -> int:
 
     locale_files = set(manifest["current_locale_pack_files"])
     for locale in LOCALES:
-        actual = {
-            path.name
-            for path in (ROOT / "docs" / locale).iterdir()
-            if path.is_file() and path.suffix == ".md"
-        }
+        actual = {path.name for path in (ROOT / "docs" / locale).iterdir() if path.is_file() and path.suffix == ".md"}
         unexpected = actual - locale_files
         missing = locale_files - actual
         if unexpected:
             errors.append(f"docs/{locale}: unclassified extra localized files {sorted(unexpected)}")
         if missing:
-            errors.append(f"docs/{locale}: missing current D1-D4 files {sorted(missing)}")
+            errors.append(f"docs/{locale}: missing current D1-D5 files {sorted(missing)}")
 
     for relative in manifest["retired_exact"]:
         path = ROOT / relative
@@ -126,11 +122,10 @@ def main() -> int:
 
     policy_searchable = normalized(policy)
     for marker in (
-        "d5-source-policy: current",
-        "current", "refresh_needed", "retired", "english_only_by_design",
-        "physical l3 != strict canon", "retrieval score != evidence",
-        "model output != source truth", "migration proof != claim proof",
-        "import success != activation", "active=false", "reader core is not implemented",
+        "d5-source-policy: current", "current", "refresh_needed", "retired", "english_only_by_design",
+        "physical l3 != strict canon", "retrieval score != evidence", "model output != source truth",
+        "migration proof != claim proof", "import success != activation", "active=false",
+        "reader_core_rc1_skeleton", "reader_core_rc2_structural_map", "dedicated_reader_core",
         "submitted / under review / not awarded", "budget change is none",
     ):
         if normalized(marker) not in policy_searchable:
@@ -149,7 +144,6 @@ def main() -> int:
 
     print("D5 resolved inventory counts: " + ", ".join(f"{state}={counts[state]}" for state in sorted(ALLOWED)))
     print(f"D5 resolved inventory total: {len(resolved)}")
-
     if errors:
         print("D5 source policy validation failed:")
         for error in errors:

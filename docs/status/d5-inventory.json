@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "phase": "D5_SOURCE_INVENTORY",
-  "status_date": "2026-08-09",
+  "status_date": "2026-08-10",
   "tracking_issue": 341,
   "repository_checkpoint": "3de746e74be844c6fda55849c10faac5c3f0631a",
   "primary_language": "en",
@@ -37,6 +37,8 @@
   "nlnet_awarded_claim": false,
   "approved_budget_claim": false,
   "budget_change_claim": false,
-  "reader_core_implemented_claim": false,
+  "reader_core_rc1_skeleton_claim": true,
+  "reader_core_rc2_structural_map_claim": true,
+  "dedicated_reader_core_implemented_claim": false,
   "active_postgresql_runtime_claim": false
 }
