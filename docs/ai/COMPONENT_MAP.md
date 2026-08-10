@@ -76,11 +76,12 @@ automatic switching or ANN acceptance is implemented.
 
 ## 5. Truth admission and safety
 
-**Start:** `core/truth_gate.py`, `core/guardian.py`,
-`core/api_ingest_policy.py`, `docs/ARCHITECTURE.md`.
+**Start:** Guardian functions in `core/pipeline.py`, `core/truth_gate.py`, `core/immune.py`,
+`core/api_ingest_policy.py`, `docs/IMMUNE_LAYER.md`, `docs/ARCHITECTURE.md`.
 
 A caller, model, retriever, storage profile or migration tool must not mutate strict Canon
-outside the audited admission path.
+outside the audited admission path. Guardian is an architectural/runtime boundary implemented
+inside the current pipeline rather than a standalone `core/guardian.py` module.
 
 ## 6. Strict read grounding
 
@@ -132,9 +133,15 @@ are not production SLOs or certification.
 
 ## 12. Long-document semantic reading
 
-No verified dedicated Reader Core exists. A future structure/segmentation/coverage layer must
-remain upstream of Guardian/TruthGate, preserve exact source spans and never become a second
-Canon owner.
+**Start:** `docs/architecture/READER_CORE_ARCHITECTURE.md`, `core/evidence.py`,
+`docs/core/INGEST_SCHEMA.md`, `docs/CONTRADICTION_POLICY.md`.
+
+Reader Core RC-0 is an architecture contract only. No verified dedicated Reader Core runtime
+exists and `dedicated_reader_core=false` remains authoritative machine status. The future
+reading layer is upstream of Guardian/TruthGate, preserves document/version identity and
+exact source spans, makes coverage and re-read state explicit, produces only source-linked
+reader artifacts/candidates and never becomes a second Canon owner. Importance, similarity,
+summary and interpretation do not create truth authority.
 
 ## 13. Documentation, grant and research governance
 
