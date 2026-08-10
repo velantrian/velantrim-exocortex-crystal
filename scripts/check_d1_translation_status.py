@@ -1,4 +1,4 @@
-"""Validate mixed D1 localization freshness after Reader RC-1/RC-2."""
+"""Validate mixed D1 localization freshness after Reader RC-3."""
 
 from __future__ import annotations
 
@@ -8,13 +8,14 @@ from pathlib import Path
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
+SOURCE = "0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5"
 LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
 CURRENT_LOCALES = ("ru",)
 REFRESH_LOCALES = tuple(locale for locale in LOCALES if locale not in CURRENT_LOCALES)
 READER_MARKERS = (
     "reader_core_rc1_skeleton = true",
     "reader_core_rc2_structural_map = true",
+    "reader_core_rc3_multi_pass_mechanics = true",
     "dedicated_reader_core = false",
 )
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
@@ -59,6 +60,7 @@ def main() -> int:
     }
     for ok, label in (
         (documentation.get("translation_tracking_issue") == 341, "tracking issue"),
+        (documentation.get("d1_source_checkpoint") == SOURCE, "source checkpoint"),
         (documentation.get("d1_current_locales") == list(CURRENT_LOCALES), "current locales"),
         (documentation.get("d1_refresh_needed_locales") == list(REFRESH_LOCALES), "refresh locales"),
         (documentation.get("d1_current_documents") == current_docs, "current documents"),
@@ -124,7 +126,10 @@ def main() -> int:
             errors.append(f"translation ledger: missing D1 marker {marker!r}")
 
     state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
-    for marker in ("Russian D1/D3/D4/D5 detail pack is current", "eight other locale detail packs require Reader refresh"):
+    for marker in (
+        "Russian Reader-dependent public/detail documentation is refreshed",
+        "eight other localized root README files and Reader-dependent detail packs",
+    ):
         if marker not in state:
             errors.append(f"AI current state: missing marker {marker!r}")
 
