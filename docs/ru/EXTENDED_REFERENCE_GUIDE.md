@@ -1,21 +1,29 @@
-<!-- translation-source: docs/EXTENDED_REFERENCE_POLICY.md@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9 -->
-<!-- d5-locale: ru -->
+<!-- translation-source: docs/EXTENDED_REFERENCE_POLICY.md@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
 <!-- translation-status: CURRENT -->
+<!-- d5-locale: ru -->
 <!-- d5-boundary: physical-l3-not-strict-canon -->
 <!-- d5-boundary: retrieval-score-not-evidence -->
 <!-- d5-boundary: model-output-not-source-truth -->
 <!-- d5-boundary: migration-proof-not-claim-proof -->
 <!-- d5-nonclaim: import-is-not-activation -->
-<!-- d5-nonclaim: reader-core-not-implemented -->
+<!-- d5-reader: rc1-skeleton-implemented -->
+<!-- d5-reader: rc2-structural-map-implemented -->
+<!-- d5-nonclaim: dedicated-reader-core-not-implemented -->
 <!-- d5-nonclaim: nlnet-not-awarded -->
 <!-- d5-nonclaim: security-legal-gdpr-not-certified -->
 <!-- d5-nonclaim: native-speaker-editorial-not-certified -->
-# Руководство по расширенным источникам
+# Расширенная справка Crystal
 
-Этот файл направляет к подробным английским источникам, не дублируя изменчивые evidence-материалы. `CURRENT` означает поддерживаемый документ, `RETIRED` — неавторитетную историю, а `ENGLISH_ONLY_BY_DESIGN` — технические, правовые или аудиторские детали, оставленные на английском намеренно.
+D5 различает `CURRENT`, `RETIRED` и `ENGLISH_ONLY_BY_DESIGN`. Детальные ADR, CI/eval, machine state и grant evidence могут оставаться на английском.
 
-Границы: physical L3 != strict Canon; retrieval score != evidence; model output != source truth; migration proof != claim proof; import success != activation. SQLite — обычный активный local-first профиль, Mock — backend разработки/CI, PostgreSQL/pgvector остаётся неактивным с `active=false`. Reader Core не реализован.
+physical L3 != strict Canon; retrieval score != evidence; model output != source truth; migration proof != claim proof; import success != activation. PostgreSQL `active=false`.
 
-NLnet: submitted / under review / not awarded. Примерно €50,000 — только планирование, не утверждённый бюджет и не обязательство выплаты; budget change: none; baseline, смерженный до соглашения, нельзя повторно считать funded delta. Нет legal/GDPR/security или native-speaker editorial certification.
+```text
+reader_core_rc1_skeleton = true
+reader_core_rc2_structural_map = true
+dedicated_reader_core = false
+```
 
-Маршруты: [политика](../EXTENDED_REFERENCE_POLICY.md), [карта](../DOCUMENTATION_MAP.md), [статус](../STATUS.md), [архитектура](../ARCHITECTURE.md), [ADR](../ADR.md), [безопасность](../../SECURITY.md), [privacy](../../PRIVACY.md), [GDPR](../../GDPR.md), [архив](../archive/README.md).
+RC-1/RC-2 реализованы как bounded foundation; dedicated multi-pass Reader не реализован. `coverage != comprehension proof`.
+
+Grant: submitted / under review / not awarded; €50,000 planning only; budget change: none. Сертификация security/legal/GDPR/native-speaker не заявляется.
