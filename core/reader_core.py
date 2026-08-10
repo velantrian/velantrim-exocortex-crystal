@@ -344,10 +344,12 @@ class ReaderSession:
             raise ValueError("reader artifact belongs to a different source version")
 
     def add_segment_card(self, card: SegmentCard) -> None:
+        self._require_open("add segment card to")
         self._require_source(card.locator)
         self.segment_cards.append(card)
 
     def set_coverage(self, entry: CoverageEntry) -> None:
+        self._require_open("set coverage on")
         if entry.locator is not None:
             self._require_source(entry.locator)
         self.coverage[entry.region_id] = entry
@@ -359,6 +361,7 @@ class ReaderSession:
         *,
         reason: Optional[str] = None,
     ) -> CoverageEntry:
+        self._require_open("transition coverage on")
         if region_id not in self.coverage:
             raise KeyError(region_id)
         updated = self.coverage[region_id].transition(target, reason=reason)
@@ -366,10 +369,12 @@ class ReaderSession:
         return updated
 
     def add_bookmark(self, bookmark: ReaderBookmark) -> None:
+        self._require_open("add bookmark to")
         self._require_source(bookmark.locator)
         self.bookmarks.append(bookmark)
 
     def add_open_loop(self, open_loop: OpenLoop) -> None:
+        self._require_open("add open loop to")
         self._require_source(open_loop.locator)
         self.open_loops.append(open_loop)
 
@@ -395,14 +400,16 @@ class ReaderSession:
 
     def interrupt(self, reason: str) -> None:
         self._require_open("interrupt")
+        validated_reason = _required_text(reason, "reason")
         self.state = ReaderSessionState.INTERRUPTED
-        self.state_reason = _required_text(reason, "reason")
+        self.state_reason = validated_reason
 
     def degrade(self, reason: str) -> None:
         if self.state is ReaderSessionState.STALE:
             raise ValueError("cannot degrade a stale session")
+        validated_reason = _required_text(reason, "reason")
         self.state = ReaderSessionState.DEGRADED
-        self.state_reason = _required_text(reason, "reason")
+        self.state_reason = validated_reason
 
     def _require_open(self, operation: str) -> None:
         if self.state is not ReaderSessionState.OPEN:
