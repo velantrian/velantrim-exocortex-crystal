@@ -96,12 +96,17 @@ def main() -> int:
                     f"translation-source: {english}@{SOURCE}",
                     "translation-status: CURRENT",
                     *READER_MARKERS,
-                    "2078 passed / 13 skipped / 0 failed",
-                    "9756 statements / 100.00% line coverage",
                     "active=false",
                 ):
                     if marker not in text:
-                        errors.append(f"{relative}: missing current evidence {marker!r}")
+                        errors.append(f"{relative}: missing current Reader evidence {marker!r}")
+                if name == "STATUS.md":
+                    for marker in (
+                        "2078 passed / 13 skipped / 0 failed",
+                        "9756 statements / 100.00% line coverage",
+                    ):
+                        if marker not in text:
+                            errors.append(f"{relative}: missing runtime evidence {marker!r}")
             elif f"translation-source: {english}@{SOURCE}" in text:
                 errors.append(f"{relative}: refresh-needed translation falsely pins current source")
             check_links(relative, text, errors)
