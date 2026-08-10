@@ -57,13 +57,14 @@ def test_source_hash_matches_existing_evidence_convention_and_text_is_not_retain
     assert text not in repr(source)
 
 
-def test_source_version_validation_normalization_and_identity():
+def test_source_version_validation_normalization_identity_and_runtime_types():
     digest = "A" * 64
     source = SourceVersion("doc", "file:///x", digest, sensitivity=" restricted ")
     assert source.source_sha256 == digest.lower()
     assert source.sensitivity == "restricted"
     assert source.same_version(SourceVersion("doc", "file:///x", digest.lower()))
     assert not source.same_version(SourceVersion("doc", "file:///other", digest.lower()))
+    assert source.same_version(object()) is False  # type: ignore[arg-type]
 
     with pytest.raises(ValueError, match="document_id"):
         SourceVersion(" ", "file:///x", digest)
@@ -71,6 +72,8 @@ def test_source_version_validation_normalization_and_identity():
         SourceVersion("doc", " ", digest)
     with pytest.raises(ValueError, match="source_sha256"):
         SourceVersion("doc", "file:///x", "bad")
+    with pytest.raises(ValueError, match="restricted must be a bool"):
+        SourceVersion("doc", "file:///x", digest, restricted=1)  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="sensitivity"):
         SourceVersion("doc", "file:///x", digest, sensitivity=" ")
 
@@ -103,8 +106,10 @@ def test_source_locator_supports_exact_and_structural_replayable_addresses():
     assert structural.replay_key[-1] == "section:2"
 
 
-def test_source_locator_rejects_missing_or_invalid_addresses():
+def test_source_locator_rejects_missing_or_invalid_addresses_and_source_type():
     source = _source()
+    with pytest.raises(ValueError, match="SourceVersion"):
+        SourceLocator(object(), span_start=0, span_end=1)  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="given together"):
         SourceLocator(source, span_start=0)
     with pytest.raises(ValueError, match="integers"):
@@ -134,17 +139,33 @@ def test_segment_card_preserves_fidelity_provenance_and_source_restrictions():
             locator=locator,
             fidelity=fidelity,
             statement=" derived statement ",
-            supporting_locators=(support,),
+            supporting_locators=[support],  # type: ignore[arg-type]
         )
         assert card.statement == "derived statement"
         assert card.restricted is True
         assert card.sensitivity == "PII"
         assert card.locator.source.source_sha256 == source.source_sha256
+        assert card.supporting_locators == (support,)
 
+
+def test_segment_card_rejects_invalid_runtime_types_and_mixed_versions():
+    locator = _locator()
     with pytest.raises(ValueError, match="card_id"):
         SegmentCard(" ", locator, SourceFidelity.SUMMARY, "summary")
+    with pytest.raises(ValueError, match="locator must be a SourceLocator"):
+        SegmentCard("card", object(), SourceFidelity.SUMMARY, "summary")  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="fidelity must be a SourceFidelity"):
+        SegmentCard("card", locator, "SUMMARY", "summary")  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="statement"):
         SegmentCard("card", locator, SourceFidelity.SUMMARY, " ")
+    with pytest.raises(ValueError, match="supporting locators must be SourceLocator"):
+        SegmentCard(
+            "card",
+            locator,
+            SourceFidelity.INFERENCE,
+            "inference",
+            supporting_locators=(object(),),  # type: ignore[arg-type]
+        )
 
     other_version = _source("changed")
     with pytest.raises(ValueError, match="same source version"):
@@ -157,9 +178,14 @@ def test_segment_card_preserves_fidelity_provenance_and_source_restrictions():
         )
 
 
-def test_coverage_entry_requires_fail_visible_missing_locator_and_review_reason():
+def test_coverage_entry_requires_fail_visible_missing_locator_and_typed_state():
+    locator = _locator()
     with pytest.raises(ValueError, match="region_id"):
         CoverageEntry(" ", CoverageState.NEEDS_REVIEW, reason="missing")
+    with pytest.raises(ValueError, match="state must be a CoverageState"):
+        CoverageEntry("r1", "UNREAD", locator=locator)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="locator must be a SourceLocator"):
+        CoverageEntry("r1", CoverageState.UNREAD, locator=object())  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="must be NEEDS_REVIEW"):
         CoverageEntry("r1", CoverageState.UNREAD)
     with pytest.raises(ValueError, match="explicit reason"):
@@ -177,6 +203,9 @@ def test_coverage_transitions_are_explicit_and_review_recovery_is_auditable():
     locator = _locator()
     unread = CoverageEntry("r1", CoverageState.UNREAD, locator=locator)
     assert unread.transition(CoverageState.UNREAD) is unread
+
+    with pytest.raises(ValueError, match="target must be a CoverageState"):
+        unread.transition("SEEN")  # type: ignore[arg-type]
 
     seen = unread.transition(CoverageState.SEEN)
     assert seen.state is CoverageState.SEEN
@@ -210,8 +239,8 @@ def test_coverage_transitions_are_explicit_and_review_recovery_is_auditable():
     assert direct.reason is None
 
 
-def test_bookmarks_and_open_loops_are_source_linked_and_inherit_restrictions():
-    source = _source(restricted=True)
+def test_bookmarks_and_open_loops_are_source_linked_and_inherit_privacy_metadata():
+    source = _source(restricted=True, sensitivity="private")
     locator = _locator(source)
     bookmark = ReaderBookmark(" bookmark ", locator, " revisit qualifier ")
     open_loop = OpenLoop(" loop ", locator, " what does this reference mean? ")
@@ -219,62 +248,109 @@ def test_bookmarks_and_open_loops_are_source_linked_and_inherit_restrictions():
     assert bookmark.bookmark_id == "bookmark"
     assert bookmark.reason == "revisit qualifier"
     assert bookmark.restricted is True
+    assert bookmark.sensitivity == "private"
     assert open_loop.loop_id == "loop"
     assert open_loop.question == "what does this reference mean?"
     assert open_loop.restricted is True
+    assert open_loop.sensitivity == "private"
 
     with pytest.raises(ValueError, match="bookmark_id"):
         ReaderBookmark(" ", locator, "reason")
+    with pytest.raises(ValueError, match="locator must be a SourceLocator"):
+        ReaderBookmark("bookmark", object(), "reason")  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="reason"):
         ReaderBookmark("bookmark", locator, " ")
     with pytest.raises(ValueError, match="loop_id"):
         OpenLoop(" ", locator, "question")
+    with pytest.raises(ValueError, match="locator must be a SourceLocator"):
+        OpenLoop("loop", object(), "question")  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="question"):
         OpenLoop("loop", locator, " ")
 
 
-def test_reader_session_collects_only_same_version_artifacts_and_coverage():
+def test_reader_session_identity_is_read_only_and_collections_are_encapsulated():
     source = _source(restricted=True, sensitivity="private")
     locator = _locator(source)
     session = ReaderSession(" session ", source, " read objective ", state_reason=" initial ")
     assert session.session_id == "session"
+    assert session.source is source
     assert session.objective == "read objective"
+    assert session.state is ReaderSessionState.OPEN
     assert session.state_reason == "initial"
+    assert not hasattr(session, "__dict__")
 
     card = SegmentCard("card", locator, SourceFidelity.DIRECT_SOURCE_OBSERVATION, "source says X")
     bookmark = ReaderBookmark("bookmark", locator, "important")
     open_loop = OpenLoop("loop", locator, "resolve reference")
+    coverage = CoverageEntry("r1", CoverageState.UNREAD, locator=locator)
     session.add_segment_card(card)
     session.add_bookmark(bookmark)
     session.add_open_loop(open_loop)
-    session.set_coverage(CoverageEntry("r1", CoverageState.UNREAD, locator=locator))
-    session.set_coverage(
-        CoverageEntry("missing", CoverageState.NEEDS_REVIEW, reason="missing locator")
-    )
+    session.set_coverage(coverage)
 
-    assert session.segment_cards == [card]
-    assert session.bookmarks == [bookmark]
-    assert session.open_loops == [open_loop]
-    assert session.transition_coverage("r1", CoverageState.SEEN).state is CoverageState.SEEN
+    assert session.segment_cards == (card,)
+    assert session.bookmarks == (bookmark,)
+    assert session.open_loops == (open_loop,)
+    assert session.coverage == {"r1": coverage}
+
+    coverage_snapshot = session.coverage
+    coverage_snapshot.clear()
+    assert session.coverage == {"r1": coverage}
+    cards_snapshot = session.segment_cards
+    cards_snapshot += (card,)
+    assert session.segment_cards == (card,)
+
+    with pytest.raises(AttributeError):
+        session.source = _source("changed")  # type: ignore[misc]
+
+
+def test_reader_session_rejects_wrong_types_versions_and_unknown_regions():
+    source = _source()
+    locator = _locator(source)
+    session = ReaderSession("session", source, "objective")
+
+    with pytest.raises(ValueError, match="card must be a SegmentCard"):
+        session.add_segment_card(object())  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="entry must be a CoverageEntry"):
+        session.set_coverage(object())  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="bookmark must be a ReaderBookmark"):
+        session.add_bookmark(object())  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="open_loop must be an OpenLoop"):
+        session.add_open_loop(object())  # type: ignore[arg-type]
 
     other = _source("changed")
     with pytest.raises(ValueError, match="different source version"):
         session.add_segment_card(
             SegmentCard("other", _locator(other), SourceFidelity.SUMMARY, "summary")
         )
+    with pytest.raises(ValueError, match="different source version"):
+        session.set_coverage(CoverageEntry("other", CoverageState.PROCESSED, _locator(other)))
+    with pytest.raises(ValueError, match="different source version"):
+        session.add_bookmark(ReaderBookmark("other", _locator(other), "reason"))
+    with pytest.raises(ValueError, match="different source version"):
+        session.add_open_loop(OpenLoop("other", _locator(other), "question"))
+
+    session.set_coverage(CoverageEntry("r1", CoverageState.UNREAD, locator=locator))
+    with pytest.raises(ValueError, match="region_id"):
+        session.transition_coverage(" ", CoverageState.SEEN)
     with pytest.raises(KeyError):
         session.transition_coverage("unknown", CoverageState.SEEN)
+    assert session.transition_coverage("r1", CoverageState.SEEN).state is CoverageState.SEEN
 
 
-def test_reader_session_validation_and_closed_sessions_fail_closed():
+def test_reader_session_constructor_validation_and_closed_sessions_fail_closed():
     source = _source()
     locator = _locator(source)
     card = SegmentCard("card", locator, SourceFidelity.SUMMARY, "summary")
 
     with pytest.raises(ValueError, match="session_id"):
         ReaderSession(" ", source, "objective")
+    with pytest.raises(ValueError, match="source must be a SourceVersion"):
+        ReaderSession("session", object(), "objective")  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="objective"):
         ReaderSession("session", source, " ")
+    with pytest.raises(ValueError, match="state must be a ReaderSessionState"):
+        ReaderSession("session", source, "objective", state="OPEN")  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="state_reason"):
         ReaderSession("session", source, "objective", state_reason=" ")
 
@@ -334,6 +410,9 @@ def test_coverage_telemetry_exposes_gaps_without_a_comprehension_percentage():
     assert not hasattr(telemetry, "comprehension")
     assert not hasattr(telemetry, "comprehension_percentage")
 
+    telemetry.counts[CoverageState.UNREAD] = 99
+    assert session.coverage_telemetry().counts[CoverageState.UNREAD] == 1
+
     clean = ReaderSession("clean", source, "objective")
     clean.set_coverage(CoverageEntry("p", CoverageState.PROCESSED, locator=locator))
     assert clean.coverage_telemetry().has_visible_gaps is False
@@ -348,6 +427,9 @@ def test_source_change_stales_whole_rc1_session_without_rewriting_history():
     session.add_bookmark(ReaderBookmark("bookmark", locator, "revisit"))
     session.add_open_loop(OpenLoop("loop", locator, "question"))
     session.set_coverage(CoverageEntry("r1", CoverageState.PROCESSED, locator=locator))
+
+    with pytest.raises(ValueError, match="new_source must be a SourceVersion"):
+        session.invalidate_for(object())  # type: ignore[arg-type]
 
     same = session.invalidate_for(source)
     assert same.stale is False
@@ -387,16 +469,7 @@ def test_reader_core_has_structural_authority_firewall_and_no_truth_fields():
         elif isinstance(node, ast.ImportFrom) and node.module:
             imported_modules.add(node.module)
 
-    forbidden = {
-        "core.memory",
-        "core.ingest",
-        "core.truth_gate",
-        "core.pipeline",
-        "core.canonical_view",
-        "core.contradiction_report",
-        "core.conflict_decision",
-    }
-    assert imported_modules.isdisjoint(forbidden)
+    assert not any(module == "core" or module.startswith("core.") for module in imported_modules)
 
     authority_fields = {
         "truth_status",
@@ -413,10 +486,12 @@ def test_reader_core_has_structural_authority_firewall_and_no_truth_fields():
         CoverageEntry,
         ReaderBookmark,
         OpenLoop,
-        ReaderSession,
     ):
         assert authority_fields.isdisjoint({field.name for field in dataclasses.fields(cls)})
 
+    normalized_slots = {name.lstrip("_") for name in ReaderSession.__slots__}
+    assert authority_fields.isdisjoint(normalized_slots)
     assert not hasattr(ReaderSession, "ingest")
     assert not hasattr(ReaderSession, "promote")
     assert not hasattr(ReaderSession, "resolve_contradiction")
+    assert not hasattr(ReaderSession, "plan")
