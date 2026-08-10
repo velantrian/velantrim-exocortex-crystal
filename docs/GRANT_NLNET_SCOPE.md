@@ -21,21 +21,23 @@ bounded logical export, inactive PostgreSQL 16 / pgvector import with exact equi
 `active=false`, TRACE/Receipt, review/contradiction governance and all work already merged before
 an agreement.
 
-Reader RC-1 and RC-2 are also existing pre-agreement baseline:
+Reader RC-1/RC-2 and RC-3, if merged before an agreement, are existing pre-agreement baseline:
 
 ```text
-reader_core_rc1_skeleton       = true
-reader_core_rc2_structural_map = true
-dedicated_reader_core          = false
+reader_core_rc1_skeleton             = true
+reader_core_rc2_structural_map       = true
+reader_core_rc3_multi_pass_mechanics = true
+dedicated_reader_core                = false
 ```
 
 RC-1 provides the bounded evidence-linked source/session skeleton. RC-2 provides the bounded
-caller-supplied Structural Document Map. They retain no source body, add no Reader API/CLI/worker
-or durable Reader storage schema and have no truth/Canon/ESM/planner authority. They do not provide
-automatic parser/OCR, Reader LLM/provider orchestration, embeddings/ANN/vector DB, multi-pass or
-cross-document reasoning.
+caller-supplied Structural Document Map. RC-3 provides deterministic explicit pass mechanics over
+those exact source/structure layers. They retain no source body, add no Reader API/CLI/worker or
+durable Reader storage schema and have no truth/Canon/ESM/planner authority. They do not provide an
+automatic parser/OCR, autonomous Reader LLM/provider agent, embeddings/ANN/vector DB or automatic
+cross-document reasoning engine. Pass completion is not comprehension proof.
 
-Verification remains:
+The retained runtime checkpoint remains:
 
 ```text
 Python 3.11 / 3.12: 2078 passed / 13 skipped / 0 failed
@@ -45,14 +47,17 @@ Python 3.11 / 3.12: 2078 passed / 13 skipped / 0 failed
 1/1 PostgreSQL integration job successful
 ```
 
+Later Reader milestones carry separate exact-head and post-merge CI evidence.
+
 ## Current documentation baseline
 
-English is the working/source/conflict-resolving language. Root READMEs and D1–D5 public families
-are current across nine supported locales after the Reader RC-1/RC-2 documentation reconciliation.
-Detailed volatile evidence remains English-only by design where policy says so.
+English is the working/source/conflict-resolving language. RC-3 advances the Reader public-source
+checkpoint. Russian Reader-dependent public/detail surfaces are refreshed against that checkpoint;
+other locale Reader surfaces remain explicit translation debt until fully refreshed. D2/QuickStart
+semantics remain unchanged.
 
-Any localization, Reader RC-0/RC-1/RC-2, storage or governance work merged before a grant agreement
-is existing baseline and cannot be budgeted again as funded delivery.
+Any localization, Reader RC-0/RC-1/RC-2/RC-3, storage or governance work merged before a grant
+agreement is existing baseline and cannot be budgeted again as funded delivery.
 
 ## Baseline and funded-delta control
 
@@ -67,7 +72,7 @@ independently verifiable public deliverable
 If `main` advances before an agreement, the baseline/funded-delta matrix must be reconciled so each
 funded package remains genuinely additional and independently auditable.
 
-## Potential funded delta after the current baseline
+## Potential funded delta after RC-3
 
 Qualifying future packages may include:
 
@@ -77,12 +82,12 @@ Qualifying future packages may include:
 4. PostgreSQL production roles, backup/restore/upgrade lifecycle and observability;
 5. reviewer-facing evidence/TRACE inspection UX;
 6. maintenance, claim lint and independent audit evidence;
-7. **Reader work strictly beyond RC-1/RC-2**, beginning only as separately reviewed new delta.
+7. **Reader work strictly beyond RC-3**, beginning only as separately reviewed new delta.
 
-For Reader, the next candidate is **RC-3 — explicit multi-pass reading mechanics**. A dedicated
-multi-pass Reader / Semantic Reading runtime is not implemented. RC-3 is not started and is not
-current implementation authority. Any funded Reader milestone must exclude RC-0 architecture,
-RC-1 skeleton and RC-2 Structural Document Map already merged pre-agreement.
+For Reader, the next candidate after RC-3 is separately bounded evidence extraction work. A
+dedicated/full autonomous Reader / Semantic Reading runtime remains not implemented. Any funded
+Reader milestone must exclude RC-0 architecture, RC-1 skeleton, RC-2 Structural Document Map and
+RC-3 explicit pass mechanics already merged pre-agreement.
 
 ## Critical distinctions and exclusions
 
@@ -93,6 +98,7 @@ successful import    != activation
 exact equivalence    != production runtime
 Reader artifact      != admitted fact
 Reader coverage      != comprehension proof
+Reader pass complete != comprehension proof
 Reader structure     != epistemic authority
 GDPR-oriented design != legal certification
 submitted proposal   != awarded grant
@@ -100,7 +106,7 @@ submitted proposal   != awarded grant
 
 No automatic backend switching, active PostgreSQL runtime selection, ANN production acceptance,
 cutover, rollback, dual-write, production multi-tenancy, distributed exactly-once, universal truth,
-zero hallucinations, AGI, consciousness or completed dedicated multi-pass Reader is claimed.
+zero hallucinations, AGI, consciousness or completed dedicated/full autonomous Reader is claimed.
 
 ## Budget and award control
 
