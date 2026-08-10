@@ -1,4 +1,4 @@
-"""Validate current D3 architecture/storage translations."""
+"""Validate mixed D3 architecture/storage translation freshness."""
 
 from __future__ import annotations
 
@@ -10,6 +10,8 @@ from urllib.parse import unquote
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
 LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
+CURRENT_LOCALES = ("ru",)
+REFRESH_LOCALES = tuple(locale for locale in LOCALES if locale not in CURRENT_LOCALES)
 FILES = {
     locale: (
         f"docs/{locale}/ARCHITECTURE_OVERVIEW.md",
@@ -48,13 +50,16 @@ def check_links(relative: str, text: str, errors: list[str]) -> None:
 def main() -> int:
     errors: list[str] = []
     manifest = json.loads((ROOT / "docs/status/d3-translation-manifest.json").read_text())
-    expected = {locale: list(FILES[locale]) for locale in LOCALES}
+    current = {"ru": list(FILES["ru"])}
+    refresh = {locale: list(FILES[locale]) for locale in REFRESH_LOCALES}
     checks = (
         (manifest.get("phase") == "D3", "phase"),
         (manifest.get("english_source_checkpoint") == SOURCE, "source checkpoint"),
-        (manifest.get("current_locales") == list(LOCALES), "current locales"),
+        (manifest.get("current_locales") == list(CURRENT_LOCALES), "current locales"),
+        (manifest.get("refresh_needed_locales") == list(REFRESH_LOCALES), "refresh locales"),
         (manifest.get("pending_locales") == [], "pending locales"),
-        (manifest.get("current_documents") == expected, "current documents"),
+        (manifest.get("current_documents") == current, "current documents"),
+        (manifest.get("refresh_needed_documents") == refresh, "refresh documents"),
         (manifest.get("reader_core_rc1_skeleton_claim") is True, "RC-1 claim"),
         (manifest.get("reader_core_rc2_structural_map_claim") is True, "RC-2 claim"),
         (manifest.get("dedicated_reader_core_implemented_claim") is False, "dedicated Reader claim"),
@@ -68,46 +73,62 @@ def main() -> int:
             errors.append(f"D3 manifest: invalid {label}")
 
     for locale in LOCALES:
+        expected_status = "CURRENT" if locale in CURRENT_LOCALES else "REFRESH_NEEDED"
         index_relative = f"docs/{locale}/README.md"
         index = (ROOT / index_relative).read_text(encoding="utf-8")
-        for marker in (f"d3-source: main@{SOURCE}", "d3-status: CURRENT"):
+        for marker in (f"d3-source: main@{SOURCE}", f"d3-status: {expected_status}"):
             if marker not in index:
                 errors.append(f"{index_relative}: missing {marker!r}")
         check_links(index_relative, index, errors)
+
         for relative in FILES[locale]:
-            path = ROOT / relative
-            text = path.read_text(encoding="utf-8")
-            source_doc = "docs/ARCHITECTURE_OVERVIEW.md" if relative.endswith("ARCHITECTURE_OVERVIEW.md") else "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md"
-            markers = (
-                f"translation-source: {source_doc}@{SOURCE}",
-                "translation-status: CURRENT",
+            text = (ROOT / relative).read_text(encoding="utf-8")
+            source_doc = (
+                "docs/ARCHITECTURE_OVERVIEW.md"
+                if relative.endswith("ARCHITECTURE_OVERVIEW.md")
+                else "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md"
+            )
+            for marker in (
+                f"translation-source: {source_doc}@",
                 f"d3-locale: {locale}",
                 "d3-boundary: physical-l3-not-strict-canon",
                 "d3-boundary: public-query-read-only",
                 "d3-boundary: postgresql-active=false",
                 "d3-nonclaim: import-is-not-activation",
                 "d3-nonclaim: nlnet-not-awarded",
-                *READER_MARKERS,
                 "core.query_pipeline.query()",
                 "active=false",
-            )
-            for marker in markers:
+            ):
                 if marker not in text:
                     errors.append(f"{relative}: missing marker {marker!r}")
+            if locale in CURRENT_LOCALES:
+                for marker in (
+                    f"translation-source: {source_doc}@{SOURCE}",
+                    "translation-status: CURRENT",
+                    *READER_MARKERS,
+                ):
+                    if marker not in text:
+                        errors.append(f"{relative}: missing current Reader marker {marker!r}")
+            else:
+                if f"translation-source: {source_doc}@{SOURCE}" in text:
+                    errors.append(f"{relative}: refresh-needed translation falsely pins current source")
             check_links(relative, text, errors)
 
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
-    if f"D3 source checkpoint:** `main@{SOURCE}`" not in ledger:
-        errors.append("translation ledger: D3 source checkpoint mismatch")
-    if "D3 is complete for all nine supported locales" not in ledger:
-        errors.append("translation ledger: D3 completion missing")
+    for marker in (
+        f"D3 source checkpoint:** `main@{SOURCE}`",
+        "D3 Reader-dependent detail translations are `CURRENT` in Russian",
+        "eight other supported locales are `REFRESH_NEEDED`",
+    ):
+        if marker not in ledger:
+            errors.append(f"translation ledger: missing D3 marker {marker!r}")
 
     if errors:
         print("D3 translation validation failed:")
         for error in errors:
             print(f"  - {error}")
         return 1
-    print(f"D3 translation status is consistent: locales={len(LOCALES)}, source={SOURCE}")
+    print("D3 translation status is consistent: Russian CURRENT; 8 locales REFRESH_NEEDED")
     return 0
 
 
