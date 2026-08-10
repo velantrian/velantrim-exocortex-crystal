@@ -14,7 +14,7 @@ English is the primary source/conflict resolver. GitHub merged code, executable 
 
 ## Reviewer / safety / privacy / failures (D2)
 
-D2 uses the stable English Reviewer Guide and safety/privacy/failure source family. Reader RC-1/RC-2 did not change this source contract, so D2 retains its previous immutable source checkpoint.
+D2 uses the stable English Reviewer Guide and safety/privacy/failure source family. Reader RC-1/RC-2 did not change this source contract, so D2 retains its previous immutable source checkpoint and remains current in all nine supported locale packs.
 
 - [Reviewer Guide](./REVIEWER_GUIDE.md)
 - [Safety, privacy and failures](./SAFETY_PRIVACY_AND_FAILURES.md)
@@ -49,9 +49,11 @@ dedicated_reader_core = false
 
 ## Multilingual families
 
-Root READMEs and D1–D5 are current across all nine supported locale packs. D2 retains its prior immutable source checkpoint because Reader RC-1/RC-2 did not alter reviewer/safety source semantics; affected Root/D1/D3/D4/D5 families use the 2026-08-10 Reader reconciliation source checkpoint.
+All nine root README translations remain `CURRENT` full-parity public presentations against the 2026-08-10 Reader reconciliation checkpoint. D2 and all localized Quick Start documents remain `CURRENT` because RC-1/RC-2 did not change those source semantics.
 
-The ledger still supports REFRESH_NEEDED translated document packs when future English changes affect public meaning. D3 translation manifest, D4 translation manifest and D5 translation manifest are machine-checked in CI. D5 includes nine Extended Reference Guides. D5 remains a separate inventory phase in policy even though its current translation phase is complete.
+The Russian D1/D3/D4/D5 detail pack has been fully refreshed and is `CURRENT`. The eight other supported locale packs retain their rich pre-Reader translations, but their Reader-dependent D1 Status/Implementation, D3 Architecture/Storage, D4 Grant/Glossary and D5 Extended Reference Guide documents are explicitly `REFRESH_NEEDED` until a full RC-1/RC-2 semantic refresh is completed.
+
+The authoritative freshness map is [`TRANSLATION_STATUS.md`](./TRANSLATION_STATUS.md). Locale indexes expose the same mixed status. D3 translation manifest, D4 translation manifest, D5 translation manifest and the D5 source inventory are machine-checked in CI. The D5 inventory intentionally classifies 56 Reader-dependent localized detail documents as `REFRESH_NEEDED`; this is tracked translation debt, not an unclassified failure.
 
 ## Evidence / grant / security
 
