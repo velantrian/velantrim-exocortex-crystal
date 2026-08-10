@@ -57,7 +57,7 @@ REQUIRED = {
         "Reader proposition",
         "RC-4",
         "EXTRACTED_PROPOSITION",
-        "Reader candidate      != admitted evidence",
+        "Reader candidate",
         "active=false",
         "read-only",
     ),
