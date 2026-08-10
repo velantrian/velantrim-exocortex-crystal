@@ -74,14 +74,18 @@ def main() -> int:
         "Public `ask` routes through `core.query_pipeline.query()`",
         "Successful import or equivalence is operation evidence, not activation",
         "Erasing active local state does not automatically erase independent copies",
-        "D1 is current across all nine supported locale packs",
     ):
-        if boundary == "D1 is current across all nine supported locale packs":
-            current_state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
-            if boundary not in current_state:
-                errors.append(f"AI current state: missing marker {boundary!r}")
-        elif boundary not in combined:
+        if boundary not in combined:
             errors.append(f"D2 source contract: missing boundary {boundary!r}")
+
+    current_state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
+    for marker in (
+        "D2 reviewer/safety translations remain current across all nine supported locales",
+        "Russian D1/D3/D4/D5 detail pack is current",
+        "eight other locale detail packs require Reader refresh",
+    ):
+        if marker not in current_state:
+            errors.append(f"AI current state: missing localization marker {marker!r}")
 
     map_text = (ROOT / "docs/DOCUMENTATION_MAP.md").read_text(encoding="utf-8")
     for marker in ("SAFETY_PRIVACY_AND_FAILURES.md", "D2 uses the stable English Reviewer Guide"):
