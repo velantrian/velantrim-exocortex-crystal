@@ -79,11 +79,8 @@ def main() -> int:
 
         for relative in FILES[locale]:
             text = (ROOT / relative).read_text(encoding="utf-8")
-            source_doc = (
-                "docs/PROJECT_GRANT_AND_GOVERNANCE.md"
-                if relative.endswith("GRANT_OVERVIEW.md")
-                else "docs/GLOSSARY.md"
-            )
+            is_grant = relative.endswith("GRANT_OVERVIEW.md")
+            source_doc = "docs/PROJECT_GRANT_AND_GOVERNANCE.md" if is_grant else "docs/GLOSSARY.md"
             for marker in (
                 f"translation-source: {source_doc}@",
                 f"d4-locale: {locale}",
@@ -101,10 +98,17 @@ def main() -> int:
                     "RC-1",
                     "RC-2",
                     "dedicated",
-                    "submitted / under review / not awarded",
                 ):
                     if marker not in text:
                         errors.append(f"{relative}: missing current D4 semantic marker {marker!r}")
+                grant_markers = (
+                    ("programme: NLnet NGI0 Commons Fund", "proposal: submitted", "review: in progress", "award: not awarded", "budget change: none")
+                    if is_grant
+                    else ("submitted / under review / not awarded", "budget change", "not awarded")
+                )
+                for marker in grant_markers:
+                    if marker not in text:
+                        errors.append(f"{relative}: missing current grant marker {marker!r}")
             else:
                 for marker in LEGACY_BOUNDARY_MARKERS:
                     if marker not in text:
