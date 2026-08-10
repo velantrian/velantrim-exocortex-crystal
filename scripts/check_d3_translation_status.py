@@ -23,9 +23,6 @@ READER_MARKERS = (
     "d3-reader: rc1-skeleton-implemented",
     "d3-reader: rc2-structural-map-implemented",
     "d3-nonclaim: dedicated-reader-core-not-implemented",
-    "reader_core_rc1_skeleton = true",
-    "reader_core_rc2_structural_map = true",
-    "dedicated_reader_core = false",
 )
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 
@@ -106,6 +103,9 @@ def main() -> int:
                     f"translation-source: {source_doc}@{SOURCE}",
                     "translation-status: CURRENT",
                     *READER_MARKERS,
+                    "RC-1",
+                    "RC-2",
+                    "coverage != comprehension proof",
                 ):
                     if marker not in text:
                         errors.append(f"{relative}: missing current Reader marker {marker!r}")
