@@ -1,5 +1,6 @@
 <!-- translation-source: docs/STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
-<!-- translation-status: CURRENT -->
+<!-- translation-status: REFRESH_NEEDED -->
+<!-- refresh-reason: reader-rc1-rc2-reconciliation -->
 <!-- d1-locale: de -->
 <!-- d1-boundary: public-ask-read-only -->
 <!-- d1-boundary: postgresql-active=false -->
