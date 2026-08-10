@@ -13,6 +13,8 @@
 
 Documentation and localization work merged after the runtime checkpoint improves public
 contracts and access. It does not create a new runtime capability or grant-funded delta.
+Bounded features merged after that checkpoint must carry their own exact-head and post-merge
+CI evidence rather than silently rewriting the historical baseline above.
 
 ## ✅ Delivered runtime baseline
 
@@ -27,7 +29,7 @@ Crystal includes the trust/evidence/query/storage lifecycle baseline plus:
 - PostgreSQL 16 / pgvector 0.8.2 preflight;
 - serializable import into a new inactive schema;
 - independent exact-state equivalence and non-secret receipts;
-- 2078 tests, 9756 statements, 100% coverage and 9/9 permanent CI;
+- 2078 tests, 9756 statements, 100% coverage and 9/9 permanent CI at the retained runtime checkpoint;
 - 1/1 real PostgreSQL/pgvector integration job.
 
 ## ✅ Delivered D1–D5 documentation baseline
@@ -40,7 +42,7 @@ Crystal includes the trust/evidence/query/storage lifecycle baseline plus:
   `main@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9`; the final localized D5 checkpoint is
   `main@f4556e8f9775d28d4a1b2c20a28962a95e55d33e`.
 - Final D5 inventory: **136 CURRENT**, **126 ENGLISH_ONLY_BY_DESIGN**, **10 RETIRED**,
-  **0 REFRESH_NEEDED**, **272 total**.
+  **0 REFRESH_NEEDED**, **272 total** at that checkpoint.
 - Localization tracking issue #341 is **closed / completed**.
 - Detailed residual technical, security, audit, machine-readable and research contracts remain
   English-only by design where recorded by the D5 policy; no native-speaker editorial,
@@ -98,26 +100,49 @@ composition. No activation, cutover, rollback, dual-write or automatic switching
 
 ## P2/P3 — Source-linked Reader Core
 
-RC-0 now defines the docs-only architecture contract at
+RC-0 defines the normative architecture contract at
 [`docs/architecture/READER_CORE_ARCHITECTURE.md`](./docs/architecture/READER_CORE_ARCHITECTURE.md).
-A dedicated Reader Core remains not implemented; the machine-readable status remains
-`dedicated_reader_core=false`.
+RC-1 adds the **minimal evidence-linked domain skeleton** needed to prove the first contract
+invariants. The machine-readable distinction remains deliberately narrow:
 
-The RC-0 contract fixes the future layer's boundaries:
+```text
+reader_core_rc1_skeleton = true
+dedicated_reader_core    = false
+```
 
-- document/version identity and exact source-linked provenance;
-- structural document maps and Segment Cards as non-authoritative reader artifacts;
-- explicit `UNREAD` / `SEEN` / `PROCESSED` / `REVISITED` / `NEEDS_REVIEW` coverage semantics;
-- multi-pass reading, bookmarks, exceptions, open questions and targeted re-reading;
-- contradiction and cross-document links as candidates only;
-- explicit separation of source observation, extraction, interpretation, summary and inference;
-- source-version invalidation and fail-visible incomplete reading;
-- outputs remain upstream of Guardian/TruthGate and never become a second Canon owner;
-- importance remains separate from truth, confidence and authority.
+### ✅ RC-1 — Minimal Evidence-Linked Reading Skeleton
 
-A later separately authorized **RC-1 — Minimal Evidence-Linked Reading Skeleton** may implement
-the smallest testable source-linked reading objects and invariants. RC-1 must not begin merely
-because RC-0 documentation exists; implementation requires its own bounded issue/PR/evidence.
+The bounded RC-1 implementation provides:
+
+- source/document identity bound to source URI and exact SHA-256 version;
+- exact half-open source spans or an explicit replayable structural locator;
+- `ReaderSession` lifecycle with explicit interrupted/degraded/stale state;
+- `SegmentCard` with mandatory source-fidelity class;
+- explicit `UNREAD` / `SEEN` / `PROCESSED` / `REVISITED` / `NEEDS_REVIEW` coverage states;
+- count/gap coverage telemetry with no comprehension percentage;
+- minimal source-linked bookmarks and open loops;
+- conservative whole-session invalidation when source version changes and no remapping is proven;
+- source restriction/sensitivity inheritance;
+- tests that structurally isolate RC-1 from ingest, TruthGate, Canon/ESM, contradiction decision
+  writers and planner authority.
+
+RC-1 deliberately does **not** add a structural parser/semantic chunker, multi-pass orchestration,
+LLM/provider integration, embeddings, ANN/vector DB, durable Reader storage schema, public
+API/CLI/background worker, cross-document reasoning engine, planner or automatic belief update.
+Source body text is not retained by the RC-1 source-version object.
+
+### ⏭️ Later Reader phases
+
+A dedicated Reader Core remains future work. The next separately bounded phase should be chosen
+from measured needs after RC-1 rather than pre-committing to a vector stack. Candidate later work
+includes structural document mapping and then explicit multi-pass mechanics. Any later phase must
+preserve:
+
+- reader artifacts/candidates upstream of normal admission;
+- `coverage != comprehension proof`;
+- source observation/extraction/interpretation/summary/inference separation;
+- contradiction candidates without automatic resolution;
+- no second Canon owner or planner/belief-update authority.
 
 ## Grant boundary
 
@@ -130,9 +155,10 @@ verified existing baseline + new measurable funded delta
 
 Issues #331/#332, PRs #335/#337 and D1–D4 documentation work merged before an agreement are
 existing baseline. D5 documentation work also merged before any agreement and is existing
-baseline. A merged Reader Core RC-0 architecture contract is likewise documentation baseline,
-not funded Reader runtime implementation, while no grant agreement exists. None of that work
-can be counted again as future paid delivery.
+baseline. The merged Reader Core RC-0 architecture contract is likewise documentation baseline,
+not funded Reader runtime implementation. If RC-1 merges before a grant agreement exists, that
+minimal skeleton also becomes existing pre-agreement baseline and cannot be counted again as
+future paid delivery.
 
 No grant award or approved budget is claimed. Approximate €50,000 remains planning only.
 Active PostgreSQL runtime selection, automatic switching, production multi-tenancy, universal
