@@ -19,6 +19,11 @@ Earlier detailed entries remain available through Git history.
   #219 and Phase-0 #228 completed; #159 superseded; #211 out of Crystal scope; #215 expired.
 - Confirmed ROADMAP drift: it still described the delivered documentation baseline as D1–D4
   even though CURRENT_STATE, TRANSLATION_STATUS, D5 manifests and CI already establish D1–D5.
+- First PR #354 head `d61e6d3ee71b35a54b3ec745dece4aabf3a05283` failed only the English
+  D4 source-contract step in CI `31361361724`: the D1–D5 ROADMAP wording had removed the
+  validator's historical literal `D1–D4 documentation work merged before an agreement`.
+  ROADMAP was corrected to preserve that D4 contract while separately recording D5 as
+  pre-agreement existing baseline; the validator itself was not weakened or bypassed.
 - Reconciliation changes are documentation/governance only. Runtime/API/dependencies,
   SQLite behavior, PostgreSQL `active=false`, Reader Core `NOT_IMPLEMENTED` and NLnet
   submitted/under-review/not-awarded status remain unchanged.
