@@ -32,23 +32,14 @@ Crystal includes the trust/evidence/query/storage lifecycle baseline plus:
 - 2078 tests, 9756 statements, 100% coverage and 9/9 permanent CI at the retained runtime checkpoint;
 - 1/1 real PostgreSQL/pgvector integration job.
 
-## ✅ Delivered D1–D5 documentation baseline
+## ✅ Delivered / tracked multilingual documentation baseline
 
 - English remains the working, source and conflict-resolving language.
-- D1 entry/use, D2 reviewer/safety, D3 architecture/storage-authority, D4 project/grant/
-  governance/glossary and D5 extended-reference surfaces are current for all nine supported
-  locales: `ar`, `de`, `es`, `fr`, `hi`, `it`, `ja`, `ru`, `zh-CN`.
-- D5 source inventory/policy is anchored to signed
-  `main@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9`; the final localized D5 checkpoint is
-  `main@f4556e8f9775d28d4a1b2c20a28962a95e55d33e`.
-- Final D5 inventory: **136 CURRENT**, **126 ENGLISH_ONLY_BY_DESIGN**, **10 RETIRED**,
-  **0 REFRESH_NEEDED**, **272 total** at that checkpoint.
-- Localization tracking issue #341 is **closed / completed**.
-- Detailed residual technical, security, audit, machine-readable and research contracts remain
-  English-only by design where recorded by the D5 policy; no native-speaker editorial,
-  security, legal or GDPR certification is implied.
-- Merged D1–D5 localization is existing baseline and cannot be budgeted again as future
-  delivery.
+- All nine localized root README files were full-parity `CURRENT` at the RC-1/RC-2 reconciliation checkpoint.
+- Russian Reader-dependent D1/D3/D4/D5 details were fully refreshed for RC-1/RC-2.
+- D2 reviewer/safety and Quick Start remained current for all nine locales because those source semantics did not change.
+- Eight other locale detail packs preserve rich translations and explicitly track Reader-dependent `REFRESH_NEEDED` debt rather than using shortened replacements.
+- Detailed residual technical, security, audit, machine-readable and research contracts remain English-only by design where recorded by D5 policy; no native-speaker editorial, security, legal or GDPR certification is implied.
 
 ## ✅ Completed storage phases — issues #331 and #332
 
@@ -103,12 +94,13 @@ composition. No activation, cutover, rollback, dual-write or automatic switching
 RC-0 defines the normative architecture contract at
 [`docs/architecture/READER_CORE_ARCHITECTURE.md`](./docs/architecture/READER_CORE_ARCHITECTURE.md).
 RC-1 adds the minimal evidence-linked source/session skeleton. RC-2 adds the bounded Structural
-Document Map. The machine-readable distinction remains deliberately narrow:
+Document Map. RC-3 adds explicit multi-pass mechanics. The machine-readable distinction remains deliberately narrow:
 
 ```text
-reader_core_rc1_skeleton       = true
-reader_core_rc2_structural_map = true
-dedicated_reader_core          = false
+reader_core_rc1_skeleton             = true
+reader_core_rc2_structural_map       = true
+reader_core_rc3_multi_pass_mechanics = true
+dedicated_reader_core                = false
 ```
 
 ### ✅ RC-1 — Minimal Evidence-Linked Reading Skeleton
@@ -124,8 +116,7 @@ The bounded RC-1 implementation provides:
 - minimal source-linked bookmarks and open loops;
 - conservative whole-session invalidation when source version changes and no remapping is proven;
 - source restriction/sensitivity inheritance;
-- tests that structurally isolate RC-1 from ingest, TruthGate, Canon/ESM, contradiction decision
-  writers and planner authority.
+- tests that structurally isolate RC-1 from ingest, TruthGate, Canon/ESM, contradiction decision writers and planner authority.
 
 ### ✅ RC-2 — Structural Document Map
 
@@ -147,14 +138,47 @@ embeddings, ANN/vector DB, durable Reader storage schema, public API/CLI/backgro
 cross-document reasoning engine, planner or automatic belief update. Structural prominence and
 document order are metadata, not truth/confidence authority.
 
+### ✅ RC-3 — Explicit Multi-Pass Reading Mechanics
+
+The bounded RC-3 implementation provides deterministic process mechanics over one OPEN RC-1
+session and one exact-version RC-2 structural map:
+
+- five pass kinds: `ORIENTATION`, `BROAD_READ`, `FOCUSED_READ`, `CROSS_CHECK`, `TARGETED_REREAD`;
+- one active pass at a time;
+- immutable-style pass records with `ATTEMPTED`, `COMPLETED`, `INTERRUPTED`, `DEGRADED` state;
+- declared structural target IDs before a pass starts;
+- explicit per-target RC-1 coverage outcomes rather than hidden progress;
+- completion only when every declared target has an outcome;
+- partial progress preserved on interrupted/degraded passes;
+- unresolved RC-2 structure forced to fail-visible `NEEDS_REVIEW`;
+- cross-check and targeted re-read require prior substantive processing;
+- targeted re-read requires an explicit rationale;
+- count-only telemetry; no comprehension, truth or authority score;
+- source restriction/sensitivity inherited by pass records.
+
+RC-3 is **not** an autonomous reader. It does not call an LLM/provider, discover structure, choose
+research objectives, infer undeclared targets, resolve contradictions, perform automatic
+cross-document reasoning, mutate Canon/ESM or own planner/belief authority. `pass completion !=
+comprehension proof`.
+
 ### ⏭️ Later Reader phases
 
-A dedicated Reader Core remains not implemented; RC-1 and RC-2 are bounded foundations only.
-The next separately authorized phase should be chosen from measured needs, with explicit
-multi-pass mechanics a candidate before any vector-stack commitment. Any later phase must preserve:
+A dedicated/full autonomous Reader Core remains not implemented; RC-1/RC-2/RC-3 are bounded layers.
+The next phase must be separately authorized and should come from measured need. Candidate sequence:
 
-- reader artifacts/candidates upstream of normal admission;
+```text
+RC-4 evidence extraction
+→ RC-5 exceptions / contradiction candidates
+→ RC-6 long-context strategy
+→ RC-7 cross-document reading
+→ only then reassess semantic/vector retrieval needs
+```
+
+Any later phase must preserve:
+
+- Reader artifacts/candidates upstream of normal admission;
 - `coverage != comprehension proof`;
+- `pass completion != comprehension proof`;
 - structural position != epistemic authority;
 - source observation/extraction/interpretation/summary/inference separation;
 - contradiction candidates without automatic resolution;
@@ -169,10 +193,9 @@ verified existing baseline + new measurable funded delta
 = independently verifiable public deliverable
 ```
 
-Issues #331/#332, PRs #335/#337 and D1–D4 documentation work merged before an agreement are
-existing baseline. D5 documentation work also merged before any agreement and is existing
-baseline. Reader RC-0 and RC-1 are pre-agreement baseline. RC-2 is likewise pre-agreement work;
-merged RC-2 becomes existing baseline and cannot be counted again as future paid delivery.
+Issues #331/#332, PRs #335/#337 and D1–D5 documentation work merged before an agreement are
+existing baseline. Reader RC-0, RC-1 and RC-2 are pre-agreement baseline. RC-3, if merged before an
+agreement, likewise becomes existing baseline and cannot be counted again as future paid delivery.
 
 No grant award or approved budget is claimed. Approximate €50,000 remains planning only.
 Active PostgreSQL runtime selection, automatic switching, production multi-tenancy, universal
