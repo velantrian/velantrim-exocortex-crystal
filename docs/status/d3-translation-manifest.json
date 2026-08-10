@@ -3,7 +3,7 @@
   "phase": "D3",
   "status_date": "2026-08-10",
   "tracking_issue": 341,
-  "english_source_checkpoint": "6b45bdd196eb42dea7bc30f58d69799b4b1712f2",
+  "english_source_checkpoint": "0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5",
   "source_documents": ["docs/ARCHITECTURE_OVERVIEW.md", "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md"],
   "current_locales": ["ru"],
   "refresh_needed_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"],
@@ -26,6 +26,7 @@
   "automatic_backend_switching_claim": false,
   "reader_core_rc1_skeleton_claim": true,
   "reader_core_rc2_structural_map_claim": true,
+  "reader_core_rc3_multi_pass_mechanics_claim": true,
   "dedicated_reader_core_implemented_claim": false,
   "security_legal_gdpr_certification_claim": false,
   "nlnet_awarded_claim": false
