@@ -134,7 +134,9 @@ def main() -> int:
 
     require("baseline/delta matrix", supporting.get("docs/grants/baseline-funded-delta-matrix.md", ""), (
         "no award/budget change", "cannot be counted again as future paid work",
-        "target remains `active=false`", "reader rc-1", "reader rc-2",
+        "target remains `active=false`", "reader rc-1", "reader rc-2", "reader rc-3",
+        "reader_core_rc3_multi_pass_mechanics = true", "pass completion != comprehension proof",
+        "reader work beyond rc-3",
     ), errors)
     require("funding use plan", supporting.get("docs/grants/funding-use-plan.md", ""), (
         "submitted to nlnet for review", "proposal has been submitted and is under review",
