@@ -1,8 +1,9 @@
 # Crystal Current State
 
-**Status date:** 2026-08-09  
+**Status date:** 2026-08-10  
 **Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
 **Validated runtime head / CI:** `d7af7c80722274f9217bc5545d150f92e9363f37` / `31256316536`  
+**Completed D1–D5 documentation checkpoint:** `f4556e8f9775d28d4a1b2c20a28962a95e55d33e` / PR #352  
 **Version:** `0.3.0`
 
 GitHub `main`, executable tests and completed CI are implementation truth. Notion stores synchronized rationale and history; it does not override repository evidence.
@@ -44,10 +45,27 @@ D1–D4 remain current multilingual public surfaces while D5 adds the extended-r
 
 ## 6. D5 completed state
 
-D5 source inventory/policy is anchored to signed `main@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9`. D5 is current across all nine supported locale packs through **nine Extended Reference Guides** and nine synchronized indexes.
+D5 source inventory/policy is anchored to signed `main@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9`. D5 is current across all nine supported locale packs through **nine Extended Reference Guides** and nine synchronized indexes. The final D5 documentation checkpoint is signed `main@f4556e8f9775d28d4a1b2c20a28962a95e55d33e` from PR #352.
 
-The D5 source validator classifies the live corpus as `CURRENT`, `REFRESH_NEEDED`, `RETIRED` or `ENGLISH_ONLY_BY_DESIGN`; the final localized phase adds the guides as current and leaves zero unresolved `REFRESH_NEEDED` documents. Detailed ADR/profile contracts, security/privacy/GDPR/legal mapping, tests/benchmarks/CI, machine-readable status, AI/audit/archive context, research/RFC and grant evidence are not bulk translated. Historical snapshots remain preserved with retirement routing.
+The D5 source validator classifies the live corpus as `CURRENT`, `REFRESH_NEEDED`, `RETIRED` or `ENGLISH_ONLY_BY_DESIGN`. Final inventory is **136 CURRENT**, **126 ENGLISH_ONLY_BY_DESIGN**, **10 RETIRED**, **0 REFRESH_NEEDED**, **272 total**. Detailed ADR/profile contracts, security/privacy/GDPR/legal mapping, tests/benchmarks/CI, machine-readable status, AI/audit/archive context, research/RFC and grant evidence are not bulk translated. Historical snapshots remain preserved with retirement routing.
 
-D1–D5 are current multilingual public surfaces for all nine supported locales.
+D1–D5 are current multilingual public surfaces for all nine supported locales: `ar`, `de`, `es`, `fr`, `hi`, `it`, `ja`, `ru`, `zh-CN`. Issue #341 is closed / completed.
 
 See [`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md), [`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md), [`../EXTENDED_REFERENCE_POLICY.md`](../EXTENDED_REFERENCE_POLICY.md), [`../status/d4-translation-manifest.json`](../status/d4-translation-manifest.json), [`../status/d5-inventory.json`](../status/d5-inventory.json) and [`../status/d5-translation-manifest.json`](../status/d5-translation-manifest.json).
+
+## 7. Post-i18n backlog reconciliation
+
+Tracking issue #353 records the reconciliation evidence. The four stale pre-D5 pull requests were resolved without rebasing them onto current `main`:
+
+- #245 → `MOVE_TO_SEPARATE_RESEARCH_TRACK`; Essence Workdesk prototype was not promoted into Crystal;
+- #249 → `MOVE_TO_SEPARATE_RESEARCH_TRACK`; Personal/Full Exo-Cortex planning research stays outside Crystal;
+- #261 → `REQUIRES_OPERATOR_DECISION`; no branding, repository, package, import, CLI or environment rename was applied;
+- #262 → `SUPERSEDED`; current repository governance already defines the Native Kernel independence boundary and no runtime integration was created.
+
+The bounded remaining backlog is:
+
+- #155 → `REQUIRES_REWRITE`: Epistemic Router remains unimplemented and requires a fresh evidence-based RFC before any runtime discussion;
+- #165 → `STILL_VALID`: legacy normalized-ID migration/index remains a separate data-maintenance task;
+- #214 → `STILL_VALID`: residual fixture review and reproducible supply-chain pinning remain P2 hygiene.
+
+Issues #156, #157, #203, #219 and ASR Phase-0 #228 were closed as completed from current evidence; #159 was closed as superseded; #211 was closed as out of scope for Crystal; #215 was closed as expired. None of those closures adds a runtime capability.

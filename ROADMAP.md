@@ -7,6 +7,7 @@
 **Current verified runtime baseline:** `main@bbd816c09dd39a02e6de6c1014438490572f40f6`  
 **Validated runtime head / CI:** `d7af7c80722274f9217bc5545d150f92e9363f37` / `31256316536`  
 **PostgreSQL integration:** `31256316532`  
+**Completed D1–D5 documentation checkpoint:** `main@f4556e8f9775d28d4a1b2c20a28962a95e55d33e` / PR #352  
 **Grant status:** submitted / under review / not awarded  
 **Budget change:** none
 
@@ -29,14 +30,23 @@ Crystal includes the trust/evidence/query/storage lifecycle baseline plus:
 - 2078 tests, 9756 statements, 100% coverage and 9/9 permanent CI;
 - 1/1 real PostgreSQL/pgvector integration job.
 
-## ✅ Delivered documentation baseline
+## ✅ Delivered D1–D5 documentation baseline
 
 - English remains the working, source and conflict-resolving language.
-- Root README plus D1 entry/use, D2 reviewer/safety and D3 architecture/storage-authority
-  surfaces are current in all nine supported locales.
-- D4 source contracts cover project, grant, governance, contributing and glossary terminology
-  before localized D4 reconciliation.
-- Merged localization is existing baseline and cannot be budgeted again as future delivery.
+- D1 entry/use, D2 reviewer/safety, D3 architecture/storage-authority, D4 project/grant/
+  governance/glossary and D5 extended-reference surfaces are current for all nine supported
+  locales: `ar`, `de`, `es`, `fr`, `hi`, `it`, `ja`, `ru`, `zh-CN`.
+- D5 source inventory/policy is anchored to signed
+  `main@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9`; the final localized D5 checkpoint is
+  `main@f4556e8f9775d28d4a1b2c20a28962a95e55d33e`.
+- Final D5 inventory: **136 CURRENT**, **126 ENGLISH_ONLY_BY_DESIGN**, **10 RETIRED**,
+  **0 REFRESH_NEEDED**, **272 total**.
+- Localization tracking issue #341 is **closed / completed**.
+- Detailed residual technical, security, audit, machine-readable and research contracts remain
+  English-only by design where recorded by the D5 policy; no native-speaker editorial,
+  security, legal or GDPR certification is implied.
+- Merged D1–D5 localization is existing baseline and cannot be budgeted again as future
+  delivery.
 
 ## ✅ Completed storage phases — issues #331 and #332
 
@@ -111,11 +121,12 @@ verified existing baseline + new measurable funded delta
 ```
 
 Issues #331/#332, PRs #335/#337 and D1–D4 documentation work merged before an agreement are
-existing baseline. They cannot be counted again as future paid delivery.
+existing baseline. D5 documentation work also merged before any agreement and is existing
+baseline. None of that work can be counted again as future paid delivery.
 
-No grant award or approved budget is claimed. Active PostgreSQL runtime selection, automatic
-switching, production multi-tenancy, universal truth, zero hallucinations and legal/security/
-GDPR certification remain out of scope.
+No grant award or approved budget is claimed. Approximate €50,000 remains planning only.
+Active PostgreSQL runtime selection, automatic switching, production multi-tenancy, universal
+truth, zero hallucinations and legal/security/GDPR certification remain out of scope.
 
 ## Related documents
 
@@ -124,3 +135,5 @@ GDPR certification remain out of scope.
 - [Baseline/funded-delta matrix](./docs/grants/baseline-funded-delta-matrix.md)
 - [Funding use plan](./docs/grants/funding-use-plan.md)
 - [Implementation status](./docs/IMPLEMENTATION_STATUS.md)
+- [Translation status](./docs/TRANSLATION_STATUS.md)
+- [Extended reference policy](./docs/EXTENDED_REFERENCE_POLICY.md)
