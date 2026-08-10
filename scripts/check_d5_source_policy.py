@@ -49,8 +49,15 @@ def classify(relative: str, manifest: dict[str, object]) -> str:
             return "CURRENT"
         if relative.startswith(f"docs/{locale}/"):
             name = relative.rsplit("/", 1)[-1]
-            if name in manifest["current_locale_pack_files"]:
+            locale_files = set(manifest["locale_pack_files"])
+            if name not in locale_files:
+                return "REFRESH_NEEDED"
+            if locale in set(manifest["fully_current_locales"]):
                 return "CURRENT"
+            if name in set(manifest["current_locale_pack_files"]):
+                return "CURRENT"
+            if name in set(manifest["refresh_needed_locale_pack_files"]):
+                return "REFRESH_NEEDED"
             return "REFRESH_NEEDED"
     return str(manifest["default_state"])
 
@@ -65,12 +72,17 @@ def main() -> int:
         errors.append("D5 manifest: source-inventory checkpoint must remain the signed PR #350 merge")
     if manifest.get("supported_locales") != list(LOCALES):
         errors.append("D5 manifest: supported locale set/order mismatch")
+    if manifest.get("fully_current_locales") != ["ru"]:
+        errors.append("D5 manifest: Russian must be the only fully current detail locale after Reader reconciliation")
+    expected_refresh_locales = [locale for locale in LOCALES if locale != "ru"]
+    if manifest.get("refresh_needed_locales") != expected_refresh_locales:
+        errors.append("D5 manifest: refresh-needed locale set/order mismatch")
     if set(manifest.get("allowed_states", [])) != ALLOWED:
         errors.append("D5 manifest: allowed state set mismatch")
     if manifest.get("default_state") != "ENGLISH_ONLY_BY_DESIGN":
         errors.append("D5 manifest: detailed residual documents must default English-only")
     if manifest.get("refresh_needed_exact") != []:
-        errors.append("D5 manifest: unresolved refresh entries remain")
+        errors.append("D5 manifest: exact refresh entries must remain empty; locale-family rules own this backlog")
 
     false_claims = (
         "native_speaker_editorial_certification",
@@ -96,7 +108,7 @@ def main() -> int:
             errors.append(f"{relative}: invalid or missing state {state!r}")
         resolved[relative] = state
 
-    locale_files = set(manifest["current_locale_pack_files"])
+    locale_files = set(manifest["locale_pack_files"])
     for locale in LOCALES:
         actual = {path.name for path in (ROOT / "docs" / locale).iterdir() if path.is_file() and path.suffix == ".md"}
         unexpected = actual - locale_files
@@ -104,7 +116,7 @@ def main() -> int:
         if unexpected:
             errors.append(f"docs/{locale}: unclassified extra localized files {sorted(unexpected)}")
         if missing:
-            errors.append(f"docs/{locale}: missing current D1-D5 files {sorted(missing)}")
+            errors.append(f"docs/{locale}: missing D1-D5 files {sorted(missing)}")
 
     for relative in manifest["retired_exact"]:
         path = ROOT / relative
@@ -139,8 +151,11 @@ def main() -> int:
     counts = Counter(resolved.values())
     if counts["CURRENT"] == 0 or counts["RETIRED"] == 0 or counts["ENGLISH_ONLY_BY_DESIGN"] == 0:
         errors.append(f"D5 inventory: implausible category counts {dict(counts)}")
-    if counts["REFRESH_NEEDED"] != 0:
-        errors.append(f"D5 inventory: unresolved refresh documents={counts['REFRESH_NEEDED']}")
+    expected_refresh_count = len(manifest["refresh_needed_locales"]) * len(manifest["refresh_needed_locale_pack_files"])
+    if counts["REFRESH_NEEDED"] != expected_refresh_count:
+        errors.append(
+            f"D5 inventory: expected refresh documents={expected_refresh_count}, observed={counts['REFRESH_NEEDED']}"
+        )
 
     print("D5 resolved inventory counts: " + ", ".join(f"{state}={counts[state]}" for state in sorted(ALLOWED)))
     print(f"D5 resolved inventory total: {len(resolved)}")
@@ -149,7 +164,7 @@ def main() -> int:
         for error in errors:
             print(f"  - {error}")
         return 1
-    print("D5 source inventory and retirement policy are consistent")
+    print("D5 source inventory is consistent: Russian detail pack current; 56 Reader-dependent translations refresh-needed")
     return 0
 
 
