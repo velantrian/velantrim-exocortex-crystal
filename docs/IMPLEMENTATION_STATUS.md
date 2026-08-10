@@ -22,7 +22,8 @@
 | Reader Core RC-0 architecture contract | Documented | [architecture contract](./architecture/READER_CORE_ARCHITECTURE.md) defines the authority and validation baseline |
 | Reader Core RC-1 minimal evidence-linked skeleton | Implemented in bounded domain layer | `core/reader_core.py`; source/version/locator, fidelity, coverage, bookmarks/open loops, stale/failure/privacy semantics; no admission side effects |
 | Reader Core RC-2 structural document map | Implemented in bounded structural layer | `core/reader_structure.py`; caller-supplied version-bound hierarchy/order/ambiguity model; no parser or admission side effects |
-| Dedicated multi-pass Reader Core / Semantic Reading runtime | Not implemented | no parser/orchestration/model/vector runtime; `dedicated_reader_core=false` |
+| Reader Core RC-3 explicit multi-pass mechanics | Implemented in bounded orchestration layer | `core/reader_passes.py`; explicit pass ledger and coverage effects over declared RC-2 targets; no autonomous/model authority |
+| Dedicated/full Semantic Reading runtime | Not implemented | no automatic parser, model-driven reader, cross-document engine or autonomous planner; `dedicated_reader_core=false` |
 
 ## Current storage sequence
 
@@ -56,8 +57,9 @@ exact-vs-ANN retrieval evaluation
 ## Reader Core implementation boundary
 
 RC-0 remains the normative architecture contract. RC-1 adds the smallest evidence-linked
-source/session domain skeleton, and RC-2 adds the smallest structural-map layer needed to
-represent recovered document structure without claiming automatic parsing:
+source/session domain skeleton, RC-2 adds the smallest structural-map layer needed to
+represent recovered document structure without claiming automatic parsing, and RC-3 adds
+deterministic explicit multi-pass mechanics without claiming an autonomous reader:
 
 ```text
 SourceVersion(document_id + source_uri + SHA-256)
@@ -75,32 +77,43 @@ SourceVersion + SourceLocator
    ├─ cycle / missing-parent / duplicate validation
    ├─ exact-span containment validation
    └─ immutable traversal + structural telemetry
+
+ReaderSession + DocumentStructuralMap
+→ MultiPassReader
+   ├─ ORIENTATION
+   ├─ BROAD_READ
+   ├─ FOCUSED_READ
+   ├─ CROSS_CHECK
+   ├─ TARGETED_REREAD
+   ├─ ATTEMPTED / COMPLETED / INTERRUPTED / DEGRADED ledger
+   ├─ declared structural targets
+   ├─ explicit per-region coverage outcomes
+   └─ count-only pass telemetry
 ```
 
-RC-2 represents structure supplied by a caller. It is **not** a parser, semantic chunker, OCR,
-PDF-layout reconstruction, image-understanding or multimodal engine. Unsupported or ambiguous
-structure stays explicit with a reason instead of being invented. Structural prominence, heading
-level and document order carry no truth/confidence authority.
+RC-3 records what the caller actually attempted. It does not call an LLM/provider, decide its own objective, infer undeclared targets or convert pass completion into understanding. `CROSS_CHECK` and `TARGETED_REREAD` require prior substantive processing. Unresolved structural regions can only remain fail-visible through `NEEDS_REVIEW`. Partial outcomes remain visible when a pass is interrupted or degraded.
 
-RC-1/RC-2 retain no source body and add no durable Reader storage schema, public API, CLI,
-background worker or mandatory dependency. They have no LLM/provider, embedding, ANN/vector-
-database or multi-pass orchestration integration, and no method/runtime wiring that writes Canon,
-mutates `truth_status`/ESM, bypasses Guardian/TruthGate, resolves contradictions or creates
-planner/belief-update authority.
+RC-1/RC-2/RC-3 retain no source body and add no durable Reader storage schema, public API, CLI,
+background worker or mandatory dependency. They have no parser/semantic chunker, OCR/PDF-layout or
+multimodal engine; no model/provider integration; no embedding, ANN/vector-database Reader stack;
+no automatic cross-document reasoning; and no method/runtime wiring that writes Canon, mutates
+`truth_status`/ESM, bypasses Guardian/TruthGate, resolves contradictions or creates planner/
+belief-update authority.
 
 Machine truth distinguishes the bounded milestones from the larger capability:
 
 ```text
-reader_core_rc1_skeleton       = true
-reader_core_rc2_structural_map = true
-dedicated_reader_core          = false
+reader_core_rc1_skeleton             = true
+reader_core_rc2_structural_map       = true
+reader_core_rc3_multi_pass_mechanics = true
+dedicated_reader_core                = false
 ```
 
 Coverage telemetry reports touched/unresolved regions only; structural telemetry reports recovered
-or unresolved map nodes only. Neither is a comprehension percentage. Changed source hashes remain
-version boundaries; RC-2 structural nodes are anchored to the exact RC-1 `SourceVersion` and cannot
-silently migrate across source versions.
+or unresolved map nodes only; RC-3 telemetry reports pass counts/state only. None is a comprehension
+percentage or truth score. Changed source hashes remain version boundaries; RC-2 structural nodes and
+RC-3 pass records remain anchored to the exact RC-1 `SourceVersion`.
 
 Crystal does not claim an active PostgreSQL runtime backend, automatic migration,
 production multi-tenancy, universal truth, zero hallucinations, legal/security
-certification, consciousness or a dedicated multi-pass Reader Core runtime.
+certification, consciousness or a dedicated/full autonomous Reader Core runtime.
