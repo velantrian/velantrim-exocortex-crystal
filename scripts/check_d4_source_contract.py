@@ -150,15 +150,16 @@ def main() -> int:
     ), errors)
     state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
     require("AI current state", state, (
-        "D3 is current across all nine supported locale packs",
-        "D4 is current across all nine supported locale packs",
+        "Russian D1/D3/D4/D5 detail pack is current",
+        "eight other locale detail packs require Reader refresh",
         "reader_core_rc1_skeleton = true", "reader_core_rc2_structural_map = true",
         "dedicated_reader_core = false",
     ), errors)
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
     require("translation ledger", ledger, (
         "## D4 — project, grant, governance and glossary",
-        "D4 is complete for all nine supported locales", "`CURRENT`",
+        "D4 Reader-dependent detail translations are `CURRENT` in Russian",
+        "eight other supported locales are `REFRESH_NEEDED`",
         "## D5 — extended reference documents",
     ), errors)
     workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
