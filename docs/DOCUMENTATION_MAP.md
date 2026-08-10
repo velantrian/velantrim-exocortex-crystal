@@ -51,7 +51,7 @@ dedicated_reader_core = false
 
 All nine root README translations remain `CURRENT` full-parity public presentations against the 2026-08-10 Reader reconciliation checkpoint. D2 and all localized Quick Start documents remain `CURRENT` because RC-1/RC-2 did not change those source semantics.
 
-The Russian D1/D3/D4/D5 detail pack has been fully refreshed and is `CURRENT`. The eight other supported locale packs retain their rich pre-Reader translations, but their Reader-dependent D1 Status/Implementation, D3 Architecture/Storage, D4 Grant/Glossary and D5 Extended Reference Guide documents are explicitly `REFRESH_NEEDED` until a full RC-1/RC-2 semantic refresh is completed.
+The Russian D1/D3/D4/D5 detail pack has been fully refreshed and is `CURRENT`. The eight other supported locale packs retain their rich pre-Reader translations, but their Reader-dependent D1 Status/Implementation, D3 Architecture/Storage, D4 Grant/Glossary and D5 Extended Reference Guide documents are explicitly `REFRESH_NEEDED` until a full RC-1/RC-2 semantic refresh is completed. These are REFRESH_NEEDED translated document packs, not shortened replacements and not current implementation evidence.
 
 The authoritative freshness map is [`TRANSLATION_STATUS.md`](./TRANSLATION_STATUS.md). Locale indexes expose the same mixed status. D3 translation manifest, D4 translation manifest, D5 translation manifest and the D5 source inventory are machine-checked in CI. The D5 inventory intentionally classifies 56 Reader-dependent localized detail documents as `REFRESH_NEEDED`; this is tracked translation debt, not an unclassified failure.
 
