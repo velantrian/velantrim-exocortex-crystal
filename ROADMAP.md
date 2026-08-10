@@ -35,10 +35,9 @@ Crystal includes the trust/evidence/query/storage lifecycle baseline plus:
 ## ✅ Delivered / tracked multilingual documentation baseline
 
 - English remains the working, source and conflict-resolving language.
-- All nine localized root README files were full-parity `CURRENT` at the RC-1/RC-2 reconciliation checkpoint.
-- Russian Reader-dependent D1/D3/D4/D5 details were fully refreshed for RC-1/RC-2.
-- D2 reviewer/safety and Quick Start remained current for all nine locales because those source semantics did not change.
-- Eight other locale detail packs preserve rich translations and explicitly track Reader-dependent `REFRESH_NEEDED` debt rather than using shortened replacements.
+- Russian Reader-dependent public/detail documentation is the current fully refreshed non-English Reader surface.
+- D2 reviewer/safety and Quick Start remain current for all nine locales because Reader RC-1–RC-4 do not change their source semantics.
+- Eight other locale root/detail Reader surfaces preserve rich translations and explicitly track `REFRESH_NEEDED` debt rather than using shortened replacements.
 - Detailed residual technical, security, audit, machine-readable and research contracts remain English-only by design where recorded by D5 policy; no native-speaker editorial, security, legal or GDPR certification is implied.
 
 ## ✅ Completed storage phases — issues #331 and #332
@@ -94,13 +93,15 @@ composition. No activation, cutover, rollback, dual-write or automatic switching
 RC-0 defines the normative architecture contract at
 [`docs/architecture/READER_CORE_ARCHITECTURE.md`](./docs/architecture/READER_CORE_ARCHITECTURE.md).
 RC-1 adds the minimal evidence-linked source/session skeleton. RC-2 adds the bounded Structural
-Document Map. RC-3 adds explicit multi-pass mechanics. The machine-readable distinction remains deliberately narrow:
+Document Map. RC-3 adds explicit multi-pass mechanics. RC-4 adds bounded source-linked proposition
+extraction from substantively processed pass regions. The machine-readable distinction remains deliberately narrow:
 
 ```text
-reader_core_rc1_skeleton             = true
-reader_core_rc2_structural_map       = true
-reader_core_rc3_multi_pass_mechanics = true
-dedicated_reader_core                = false
+reader_core_rc1_skeleton              = true
+reader_core_rc2_structural_map        = true
+reader_core_rc3_multi_pass_mechanics  = true
+reader_core_rc4_proposition_extraction = true
+dedicated_reader_core                 = false
 ```
 
 ### ✅ RC-1 — Minimal Evidence-Linked Reading Skeleton
@@ -161,14 +162,41 @@ research objectives, infer undeclared targets, resolve contradictions, perform a
 cross-document reasoning, mutate Canon/ESM or own planner/belief authority. `pass completion !=
 comprehension proof`.
 
+### ✅ RC-4 — Source-Linked Proposition Extraction
+
+The bounded RC-4 implementation turns eligible completed RC-3 pass regions into explicit
+pre-admission proposition candidates:
+
+- extraction requires a `COMPLETED` Reader pass;
+- every extraction node must be a declared target of that pass;
+- the recorded pass outcome and current matching coverage must be `PROCESSED` or `REVISITED`;
+- unresolved structure, `SEEN`, `NEEDS_REVIEW`, source/session mismatch or stale/mismatched provenance fail closed;
+- every candidate is a source-linked `SegmentCard` with `EXTRACTED_PROPOSITION` fidelity;
+- primary and optional same-version supporting locators remain replayable;
+- source owner remains explicit;
+- source presentation remains explicit across factual assertion, author opinion, hypothesis,
+  conditional, example, quoted speech, reported position, definition and uncertain assertion;
+- negation and scope/exception qualifiers remain explicit;
+- restriction/sensitivity is inherited from the source;
+- telemetry is count/category state only, never truth, confidence or evidence sufficiency.
+
+RC-4 is **not** automatic NLP/model extraction. The caller supplies the proposition; RC-4 validates
+that it is structurally and procedurally eligible to exist as a Reader candidate. RC-4 does not call
+`core.evidence.attach_evidence()`, create fact evidence, write Canon, mutate `truth_status`/ESM,
+bypass Guardian/TruthGate, resolve contradictions or create planner/belief authority.
+
+```text
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate      != admitted evidence
+```
+
 ### ⏭️ Later Reader phases
 
-A dedicated/full autonomous Reader Core remains not implemented; RC-1/RC-2/RC-3 are bounded layers.
+A dedicated/full autonomous Reader Core remains not implemented; RC-1/RC-2/RC-3/RC-4 are bounded layers.
 The next phase must be separately authorized and should come from measured need. Candidate sequence:
 
 ```text
-RC-4 evidence extraction
-→ RC-5 exceptions / contradiction candidates
+RC-5 exceptions / contradiction candidates
 → RC-6 long-context strategy
 → RC-7 cross-document reading
 → only then reassess semantic/vector retrieval needs
@@ -179,6 +207,8 @@ Any later phase must preserve:
 - Reader artifacts/candidates upstream of normal admission;
 - `coverage != comprehension proof`;
 - `pass completion != comprehension proof`;
+- `EXTRACTED_PROPOSITION != verified fact`;
+- `Reader candidate != admitted evidence`;
 - structural position != epistemic authority;
 - source observation/extraction/interpretation/summary/inference separation;
 - contradiction candidates without automatic resolution;
@@ -194,8 +224,10 @@ verified existing baseline + new measurable funded delta
 ```
 
 Issues #331/#332, PRs #335/#337 and D1–D5 documentation work merged before an agreement are
-existing baseline. Reader RC-0, RC-1 and RC-2 are pre-agreement baseline. RC-3, if merged before an
+existing baseline. Reader RC-0/RC-1/RC-2/RC-3 are pre-agreement baseline. RC-4, if merged before an
 agreement, likewise becomes existing baseline and cannot be counted again as future paid delivery.
+The next Reader funded delta, if any agreement later exists, must begin after the actually merged
+pre-agreement Reader baseline rather than rebudgeting RC-4.
 
 No grant award or approved budget is claimed. Approximate €50,000 remains planning only.
 Active PostgreSQL runtime selection, automatic switching, production multi-tenancy, universal
