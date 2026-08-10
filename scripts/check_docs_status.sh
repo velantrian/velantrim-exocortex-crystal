@@ -104,15 +104,17 @@ for locale, relative in localized.items():
         if level not in text:
             errors.append(f"{relative}: missing {level}")
     if locale == "ru":
+        normalized_text = re.sub(r"\s+", " ", text)
         for marker in (
             f"localization-source: main@{source_checkpoint}",
             "localization-status: CURRENT",
             "reader_core_rc4_proposition_extraction",
             "EXTRACTED_PROPOSITION != verified fact",
-            "Reader candidate != admitted evidence",
         ):
             if marker not in text:
                 errors.append(f"{relative}: missing current RC-4 marker {marker!r}")
+        if "Reader candidate != admitted evidence" not in normalized_text:
+            errors.append(f"{relative}: missing current RC-4 marker 'Reader candidate != admitted evidence'")
     elif f"localization-source: main@{source_checkpoint}" in text:
         errors.append(f"{relative}: refresh-needed root README falsely pins RC-4 source")
 
