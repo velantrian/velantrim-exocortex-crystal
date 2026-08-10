@@ -7,7 +7,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = "0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5"
+SOURCE = "166fab5551c4b86ee0a546b2e1d3dc7adc240c86"
 FILES = (
     "docs/ARCHITECTURE.md",
     "docs/ARCHITECTURE_OVERVIEW.md",
@@ -41,7 +41,9 @@ REQUIRED = {
         "RC-1",
         "RC-2",
         "RC-3",
-        "explicit multi-pass mechanics",
+        "RC-4",
+        "EXTRACTED_PROPOSITION",
+        "Reader candidate != admitted evidence",
         "dedicated/full autonomous Reader",
         "pass completion != comprehension proof",
         "active=false",
@@ -52,8 +54,10 @@ REQUIRED = {
         "Reader artifact",
         "Reader structure",
         "Reader pass ledger",
-        "RC-3",
-        "pass completion",
+        "Reader proposition",
+        "RC-4",
+        "EXTRACTED_PROPOSITION",
+        "Reader candidate      != admitted evidence",
         "active=false",
         "read-only",
     ),
@@ -129,8 +133,9 @@ def main() -> int:
     for marker in (
         "physical L3", "strict Canon", "active=false", "not activation", "read-only",
         "SQLite", "PostgreSQL", "fallback to ephemeral Mock is forbidden",
-        "active PostgreSQL read/write runtime adapter", "RC-1", "RC-2", "RC-3",
-        "pass completion", "dedicated/full autonomous Reader",
+        "active PostgreSQL read/write runtime adapter", "RC-1", "RC-2", "RC-3", "RC-4",
+        "pass completion", "EXTRACTED_PROPOSITION", "Reader candidate",
+        "dedicated/full autonomous Reader",
     ):
         if marker not in all_text:
             errors.append(f"D3 source contract: missing boundary {marker!r}")
@@ -153,10 +158,13 @@ def main() -> int:
         "Russian Reader-dependent public/detail documentation is refreshed",
         "eight other localized root README files and Reader-dependent detail packs",
         f"{SOURCE}",
-        "reader_core_rc1_skeleton             = true",
-        "reader_core_rc2_structural_map       = true",
-        "reader_core_rc3_multi_pass_mechanics = true",
-        "dedicated_reader_core                = false",
+        "reader_core_rc1_skeleton              = true",
+        "reader_core_rc2_structural_map        = true",
+        "reader_core_rc3_multi_pass_mechanics  = true",
+        "reader_core_rc4_proposition_extraction = true",
+        "dedicated_reader_core                 = false",
+        "EXTRACTED_PROPOSITION != verified fact",
+        "Reader candidate != admitted evidence",
     ):
         if marker not in current_state:
             errors.append(f"AI current state: missing source marker {marker!r}")
@@ -166,7 +174,7 @@ def main() -> int:
         for error in errors:
             print(f"  - {error}")
         return 1
-    print(f"Complete D3 English architecture/storage/authority source contract is consistent: source={SOURCE}")
+    print(f"Complete D3 English architecture/storage/authority source contract is consistent: source={SOURCE}; RC-4 bounded=true")
     return 0
 
 
