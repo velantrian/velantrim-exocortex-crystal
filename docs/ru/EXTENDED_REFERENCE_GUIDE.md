@@ -1,4 +1,4 @@
-<!-- translation-source: docs/EXTENDED_REFERENCE_POLICY.md@0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5 -->
+<!-- translation-source: docs/EXTENDED_REFERENCE_POLICY.md@166fab5551c4b86ee0a546b2e1d3dc7adc240c86 -->
 <!-- d5-locale: ru -->
 <!-- translation-status: CURRENT -->
 <!-- d5-boundary: physical-l3-not-strict-canon -->
@@ -9,6 +9,7 @@
 <!-- d5-reader: rc1-skeleton-implemented -->
 <!-- d5-reader: rc2-structural-map-implemented -->
 <!-- d5-reader: rc3-multi-pass-mechanics-implemented -->
+<!-- d5-reader: rc4-proposition-extraction-implemented -->
 <!-- d5-nonclaim: dedicated-reader-core-not-implemented -->
 <!-- d5-nonclaim: nlnet-not-awarded -->
 <!-- d5-nonclaim: security-legal-gdpr-not-certified -->
@@ -28,7 +29,7 @@
 
 Machine-readable inventory находится в [`../status/d5-inventory.json`](../status/d5-inventory.json). Не классифицированная documentation-like surface является validation failure.
 
-После RC-3 русский root README и Reader-dependent detail pack имеют `CURRENT`. Восемь других localized root README плюс семь Reader-dependent detail document types на каждую из восьми локалей имеют `REFRESH_NEEDED`: всего 64 отслеживаемых translation debt documents. Их rich предыдущие переводы сохранены; сокращённые замены не считаются допустимым refresh.
+После RC-4 русский root README и Reader-dependent detail pack имеют `CURRENT`. Восемь других localized root README плюс семь Reader-dependent detail document types на каждую из восьми локалей имеют `REFRESH_NEEDED`: всего 64 отслеживаемых translation debt documents. Их rich предыдущие переводы сохранены; сокращённые замены не считаются допустимым refresh.
 
 ## Reader Core boundary
 
@@ -38,19 +39,26 @@ Machine-readable inventory находится в [`../status/d5-inventory.json`]
 reader_core_rc1_skeleton = true
 reader_core_rc2_structural_map = true
 reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc4_proposition_extraction = true
 dedicated_reader_core = false
 ```
 
 RC-1 реализует минимальный evidence-linked source/session skeleton. RC-2 реализует caller-supplied, source-version-bound Structural Document Map. RC-3 реализует deterministic explicit multi-pass mechanics: `ORIENTATION`, `BROAD_READ`, `FOCUSED_READ`, `CROSS_CHECK`, `TARGETED_REREAD`; declared structural targets; `ATTEMPTED` / `COMPLETED` / `INTERRUPTED` / `DEGRADED` ledger; explicit legal coverage outcomes и count-only telemetry.
 
-RC-3 не вызывает LLM/provider, не обнаруживает структуру автоматически, не выбирает objective и не выводит undeclared targets. Один pass активен за раз. `CROSS_CHECK` и `TARGETED_REREAD` требуют prior substantive processing. Unresolved structure может дать только fail-visible `NEEDS_REVIEW`. Partial progress сохраняется при interruption/degradation.
+RC-4 реализует deterministic pre-admission proposition candidate registration из completed substantive RC-3 targets. Candidate требует pass state `COMPLETED`; recorded pass outcome и current matching coverage должны быть `PROCESSED` или `REVISITED`. Candidate остаётся source-linked `SegmentCard` с `EXTRACTED_PROPOSITION` fidelity, replayable primary/supporting locators, explicit source owner, proposition-presentation category, negation и qualifiers.
 
-RC-1/RC-2/RC-3 не имеют truth/Canon/ESM/planner authority, не удерживают source body и не добавляют durable Reader storage schema, public Reader API/CLI/background worker, automatic parser/OCR, autonomous model-driven Reader, embeddings/ANN/vector database или automatic cross-document reasoning runtime.
+Категории factual assertion, author opinion, hypothesis, conditional, example, quoted speech, reported position, definition и uncertain assertion описывают presentation источника, а не truth admission. `FACTUAL_ASSERTION` не означает, что Crystal проверил утверждение.
+
+RC-4 не является automatic NLP/LLM extraction. Он не вызывает `core.evidence.attach_evidence()`, не пишет fact `evidence_spans`, не устанавливает evidence sufficiency, не меняет `truth_status`/ESM и не выполняет TruthGate admission.
+
+RC-1/RC-2/RC-3/RC-4 не имеют truth/Canon/ESM/planner authority, не удерживают source body и не добавляют durable Reader storage schema, public Reader API/CLI/background worker, automatic parser/OCR, autonomous model-driven Reader, embeddings/ANN/vector database или automatic cross-document reasoning runtime.
 
 ```text
 coverage != comprehension proof
 pass completion != comprehension proof
 structure/order/prominence != epistemic authority
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
 ```
 
 ## Неизменные границы
@@ -65,13 +73,15 @@ Reader artifact != admitted fact
 Reader coverage != comprehension proof
 Reader pass completion != comprehension proof
 Reader structure != epistemic authority
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
 ```
 
-SQLite остаётся ordinary active local-first profile. Mock остаётся явным development/CI backend. PostgreSQL/pgvector остаётся неактивной target с `active=false`. Dedicated/full autonomous Reader / Semantic Reading runtime не реализован.
+SQLite остаётся ordinary active local-first profile. Mock остаётся явным development/CI backend. PostgreSQL/pgvector остаётся неактивной target с `active=false`. Dedicated/full autonomous Reader / Semantic Reading runtime и automatic NLP/model proposition extraction не реализованы.
 
 ## Грант и certification non-claims
 
-NLnet остаётся `submitted / under review / not awarded`. Приблизительно €50,000 — planning only, не approved budget и не payment commitment. Текущая grant-safe граница: **budget change: none**. Работа, смерженная до соглашения, включая RC-0/RC-1/RC-2 и RC-3, если он merged pre-agreement, не может повторно считаться funded delta.
+NLnet остаётся `submitted / under review / not awarded`. Приблизительно €50,000 — planning only, не approved budget и не payment commitment. Текущая grant-safe граница: **budget change: none**. Работа, смерженная до соглашения, включая RC-0/RC-1/RC-2/RC-3 и RC-4, если он merged pre-agreement, не может повторно считаться funded delta.
 
 Не заявляются legal, GDPR, security или native-speaker editorial certification.
 
