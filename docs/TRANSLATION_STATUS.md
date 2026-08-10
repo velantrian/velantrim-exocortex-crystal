@@ -31,7 +31,7 @@ The Russian detail pack has been fully refreshed against this boundary. For the 
 
 ## Root README status
 
-All nine localized root READMEs remain full-parity public presentations and are current against the Reader reconciliation checkpoint.
+The root README layer keeps all nine localized root READMEs as full-parity `CURRENT` public presentations against the Reader reconciliation checkpoint.
 
 | Language | File | Status |
 |---|---|---:|
