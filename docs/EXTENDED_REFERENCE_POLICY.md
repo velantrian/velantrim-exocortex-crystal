@@ -16,8 +16,8 @@ surfaces and prints the authoritative category counts.
 
 | State | Meaning |
 |---|---|
-| `CURRENT` | Maintained public or routing surface. Localized D1–D5 documents are current against immutable source checkpoints. |
-| `REFRESH_NEEDED` | Reader-relevant surface whose current wording is known to lag its governing source. This is never a silent default. |
+| `CURRENT` | Maintained public or routing surface current against its recorded source checkpoint. |
+| `REFRESH_NEEDED` | Surface whose current wording is known to lag its governing source. This is never a silent default. |
 | `RETIRED` | Preserved historical snapshot or handoff. It is audit history, not current authority, capability or grant evidence. |
 | `ENGLISH_ONLY_BY_DESIGN` | Detailed or volatile technical, legal-mapping, security, test, CI, machine-readable, AI-context, research, RFC, ADR or grant-evidence material maintained only in English. |
 
@@ -32,8 +32,8 @@ The inventory covers documentation-like files at repository root, under `docs/`,
 4. stable current English public/source documents;
 5. all remaining detailed evidence and technical material as `ENGLISH_ONLY_BY_DESIGN`.
 
-An unmatched eligible file is a validation failure. `REFRESH_NEEDED` may be empty only when the
-live-tree validator confirms that no reader-relevant surface is known to require refresh.
+An unmatched eligible file is a validation failure. `REFRESH_NEEDED` is explicit translation debt,
+not an error by itself, provided the inventory and localization ledger agree.
 
 ## Retirement rules
 
@@ -58,21 +58,27 @@ status, legal mappings or grant evidence.
 
 ## Reader Core boundary
 
-Current machine truth deliberately separates bounded implemented foundations from the absent
-full Reader capability:
+Current machine truth deliberately separates bounded implemented layers from the absent full
+Reader capability:
 
 ```text
-reader_core_rc1_skeleton       = true
-reader_core_rc2_structural_map = true
-dedicated_reader_core          = false
+reader_core_rc1_skeleton             = true
+reader_core_rc2_structural_map       = true
+reader_core_rc3_multi_pass_mechanics = true
+dedicated_reader_core                = false
 ```
 
 RC-1 provides the minimal evidence-linked source/session skeleton. RC-2 provides a caller-supplied,
-source-version-bound Structural Document Map. Neither has truth/Canon/ESM/planner authority.
-They retain no source body and add no durable Reader storage schema, public Reader API/CLI/background
-worker, automatic parser/OCR, LLM/provider orchestration, embeddings/ANN/vector database or
-multi-pass/cross-document reasoning runtime. `coverage != comprehension proof`; structural
-position/order/prominence is metadata, not truth/confidence authority.
+source-version-bound Structural Document Map. RC-3 provides deterministic explicit multi-pass
+mechanics over those layers: declared pass kinds/targets, an attempted/completed/interrupted/degraded
+ledger, explicit legal coverage outcomes and count-only pass telemetry.
+
+None has truth/Canon/ESM/planner authority. They retain no source body and add no durable Reader
+storage schema, public Reader API/CLI/background worker, automatic parser/OCR, LLM/provider-driven
+reader, embeddings/ANN/vector database or automatic cross-document reasoning runtime. RC-3 does
+not choose its own objective or infer undeclared targets. `coverage != comprehension proof`,
+`pass completion != comprehension proof`, and structural position/order/prominence is metadata,
+not truth/confidence authority.
 
 ## Immutable boundaries and non-claims
 
@@ -84,12 +90,13 @@ migration proof != claim proof
 import success != activation
 Reader artifact != admitted fact
 Reader coverage != comprehension proof
+Reader pass completion != comprehension proof
 Reader structure != epistemic authority
 ```
 
 SQLite remains the ordinary active local-first profile. Mock remains the explicit development/CI
-backend. PostgreSQL/pgvector remains an inactive target with `active=false`. A dedicated multi-pass
-Reader / Semantic Reading runtime remains not implemented. NLnet remains submitted / under review /
-not awarded; approximate €50,000 is planning only, not an approved budget or payment commitment;
-budget change is none. Work merged before an agreement cannot be counted again as funded delta. No
-legal, GDPR, security or native-speaker editorial certification is claimed.
+backend. PostgreSQL/pgvector remains an inactive target with `active=false`. A dedicated/full
+autonomous Reader / Semantic Reading runtime remains not implemented. NLnet remains submitted /
+under review / not awarded; approximate €50,000 is planning only, not an approved budget or payment
+commitment; budget change is none. Work merged before an agreement cannot be counted again as funded
+delta. No legal, GDPR, security or native-speaker editorial certification is claimed.

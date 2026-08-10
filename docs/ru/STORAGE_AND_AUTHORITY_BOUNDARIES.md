@@ -1,4 +1,4 @@
-<!-- translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
+<!-- translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5 -->
 <!-- translation-status: CURRENT -->
 <!-- d3-locale: ru -->
 <!-- d3-boundary: physical-l3-not-strict-canon -->
@@ -7,6 +7,7 @@
 <!-- d3-nonclaim: import-is-not-activation -->
 <!-- d3-reader: rc1-skeleton-implemented -->
 <!-- d3-reader: rc2-structural-map-implemented -->
+<!-- d3-reader: rc3-multi-pass-mechanics-implemented -->
 <!-- d3-nonclaim: dedicated-reader-core-not-implemented -->
 <!-- d3-nonclaim: nlnet-not-awarded -->
 # Границы хранения и authority
@@ -26,9 +27,10 @@ retrieval score    = ranking signal
 model output       = generated text
 Reader artifact    = source-linked candidate/observation
 Reader structure   = version-bound document metadata
+Reader pass ledger = version-bound reading-process audit state
 ```
 
-Ни одна из этих идентичностей автоматически не подразумевает другую. Storage, retrieval, migration, model output и Reader artifacts не могут обходить Guardian или TruthGate.
+Ни одна из этих идентичностей автоматически не подразумевает другую. Storage, retrieval, migration, model output, Reader artifacts, structure и pass state не могут обходить Guardian или TruthGate.
 
 ## 2. Durable runtime profile
 
@@ -45,12 +47,13 @@ Physical L3 может содержать verified, user-claimed, unverified, hy
 Strict Canon — deny-dominant проекция, допускающая только записи, разрешённые текущими evidence и policy.
 
 ```text
-stored in L3 ≠ trusted answer material
-retrieved     ≠ admitted
-high score    ≠ evidence
-frequent copy ≠ independent corroboration
-Reader card   ≠ admitted fact
-structure     ≠ truth/confidence
+stored in L3        ≠ trusted answer material
+retrieved            ≠ admitted
+high score           ≠ evidence
+frequent copy        ≠ independent corroboration
+Reader card          ≠ admitted fact
+structure            ≠ truth/confidence
+Reader pass complete ≠ comprehension or truth
 ```
 
 ## 4. Разделение чтения и записи
@@ -75,7 +78,7 @@ source-linked candidate
 → strict read projection
 ```
 
-Reader RC-1/RC-2 остаются upstream domain layers. Создание Reader artifact или structural node никогда само по себе не выполняет TruthGate admission или canonical mutation.
+Reader RC-1/RC-2/RC-3 остаются upstream domain layers. Создание Reader artifact, structural node или pass record никогда само по себе не выполняет TruthGate admission или canonical mutation.
 
 ## 5. Жизненный цикл SQLite
 
@@ -128,7 +131,15 @@ Source spans и import-session evidence входят в реализованны
 
 RC-1 реализует ограниченный evidence-linked Reader source/session skeleton с точной привязкой source version/hash, replayable locators, SegmentCards, fidelity classes, coverage states, bookmarks/open loops и stale/failure/privacy semantics. RC-2 реализует bounded caller-supplied Structural Document Map с hierarchy/order, exact-span containment и явной структурой `RECOVERED` / `AMBIGUOUS` / `UNSUPPORTED`.
 
-Dedicated multi-pass Reader / Semantic Reading runtime не реализован. RC-1/RC-2 не добавляют automatic parser/chunker/OCR, LLM/provider orchestration, embeddings/ANN/vector DB, cross-document reasoning engine или planner/belief-update authority. `coverage != comprehension proof`.
+RC-3 реализует bounded deterministic multi-pass mechanics над OPEN RC-1 ReaderSession и RC-2 structural map той же точной source version. Он записывает пять pass kinds, заранее объявленные structural targets, per-target RC-1 coverage outcomes и pass state (`ATTEMPTED`, `COMPLETED`, `INTERRUPTED`, `DEGRADED`). Один pass активен за раз; interrupted/degraded pass сохраняет уже завершённые region outcomes. Cross-check и targeted re-read требуют prior substantive processing. Unresolved structure допускает только fail-visible `NEEDS_REVIEW`.
+
+Dedicated/full autonomous Reader / Semantic Reading runtime не реализован. RC-1/RC-2/RC-3 не добавляют automatic parser/chunker/OCR, LLM/provider-driven reader, embeddings/ANN/vector DB, automatic cross-document reasoning engine или planner/belief-update authority.
+
+```text
+coverage != comprehension proof
+pass completion != comprehension proof
+structure/order/prominence != epistemic authority
+```
 
 ## 9. Secret и privacy boundary
 
@@ -136,7 +147,7 @@ Credentials и credential-bearing DSNs не должны попадать в pro
 
 Migration и backup создают дополнительные копии. Erasure из active store не стирает эти копии автоматически. Операторам нужны inventory, retention и deletion procedures.
 
-Шифрование отдельных полей L1 не является универсальным шифрованием. Reader RC-1/RC-2 не удерживают source body; производные Reader artifacts наследуют source restriction/sensitivity metadata.
+Шифрование отдельных полей L1 не является универсальным шифрованием. Reader RC-1/RC-2/RC-3 не удерживают source body; производные Reader artifacts и pass records наследуют source restriction/sensitivity metadata.
 
 ## 10. Таблица authority
 
@@ -144,6 +155,7 @@ Migration и backup создают дополнительные копии. Eras
 |---|---|---|
 | Reader artifact существует | bounded source-linked observation/candidate | truth, admission или comprehension |
 | structural node существует | recovered/caller-supplied document metadata | confidence, truth или importance authority |
+| Reader pass завершается | declared targets получили явные legal coverage outcomes | comprehension, truth, evidence sufficiency или admission |
 | record хранится в L3 | physical persistence | strict Canon membership |
 | retrieval result | candidate relevance | evidence sufficiency |
 | backup verified | backup integrity | claim truth |
@@ -154,7 +166,7 @@ Migration и backup создают дополнительные копии. Eras
 
 ## 11. Текущие non-claims
 
-Crystal не заявляет active PostgreSQL runtime, automatic migration, accepted ANN production quality, cutover, rollback, dual-write, production multi-tenancy, distributed exactly-once coordination, завершённый dedicated multi-pass Reader runtime, security/legal/GDPR certification или присуждённое финансирование NLnet.
+Crystal не заявляет active PostgreSQL runtime, automatic migration, accepted ANN production quality, cutover, rollback, dual-write, production multi-tenancy, distributed exactly-once coordination, завершённый dedicated/full autonomous Reader runtime, security/legal/GDPR certification или присуждённое финансирование NLnet.
 
 ## 12. Подробные английские источники
 

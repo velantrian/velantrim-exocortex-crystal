@@ -1,10 +1,18 @@
-<!-- translation-source: docs/GLOSSARY.md@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
+<!-- translation-source: docs/GLOSSARY.md@0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5 -->
 <!-- translation-status: CURRENT -->
 <!-- d4-locale: ru -->
+<!-- d4-boundary: physical-l3-not-strict-canon -->
+<!-- d4-boundary: retrieval-score-not-evidence -->
+<!-- d4-boundary: model-output-not-source-truth -->
+<!-- d4-boundary: migration-proof-not-claim-proof -->
+<!-- d4-nonclaim: import-is-not-activation -->
+<!-- d4-nonclaim: nlnet-not-awarded -->
+<!-- d4-nonclaim: security-legal-gdpr-not-certified -->
+<!-- d4-nonclaim: native-speaker-editorial-not-certified -->
 # Crystal — глоссарий и руководство по дисциплине claims
 
 **Дата статуса:** 10 августа 2026 года  
-**Назначение:** authoritative English terminology source для D4 translations.  
+**Назначение:** поддерживаемый русский D4 glossary.  
 **Authority:** merged implementation, executable tests, exact CI и подробные English contracts сильнее этой сводки.
 
 ## Имена контрактов
@@ -46,7 +54,8 @@ Programmatic identifiers остаются неизменными в code, schema
 | **curator override** | Атрибутированное audited human decision; не скрытый bypass TruthGate. |
 | **Reader Core RC-1** | Реализованный/протестированный bounded evidence-linked source/session skeleton с source-version identity, locators, fidelity, coverage, bookmarks/open loops и stale/failure/privacy semantics; без truth/admission authority. |
 | **Reader Core RC-2** | Реализованный/протестированный caller-supplied Structural Document Map с version-bound hierarchy/order и explicit ambiguity; не automatic parser и не truth/confidence authority. |
-| **dedicated Reader Core** | Будущий multi-pass Semantic Reading runtime за пределами RC-1/RC-2; не реализован. |
+| **Reader Core RC-3** | Bounded deterministic multi-pass mechanics: explicit pass kinds, declared structural targets, attempted/completed/interrupted/degraded ledger и explicit RC-1 coverage outcomes; не autonomous reader и не comprehension authority. |
+| **dedicated/full Reader Core** | Будущий autonomous Semantic Reading runtime за пределами bounded RC-1/RC-2/RC-3; не реализован. |
 | **NLnet planning amount** | Приблизительно **€50,000** — только planning magnitude, не approved budget и не payment commitment. |
 | **budget change** | Текущий grant-safe статус: **budget change: none**. Изменение допустимо только по verified external grant communication. |
 
@@ -77,12 +86,16 @@ Open PR, RFC, issue, prototype или Notion page не являются current 
 Не сворачивайте текущие bounded milestones в claim о полной capability. Предпочтительная формулировка:
 
 ```text
-RC-1 minimal evidence-linked skeleton = implemented/tested
-RC-2 Structural Document Map          = implemented/tested
-dedicated multi-pass Reader runtime   = not implemented
-coverage                              != comprehension proof
-structure/order/prominence            != epistemic authority
+RC-1 minimal evidence-linked skeleton    = implemented/tested
+RC-2 Structural Document Map             = implemented/tested
+RC-3 explicit multi-pass mechanics       = implemented/tested after exact CI/merge
+dedicated/full autonomous Reader runtime = not implemented
+coverage                                 != comprehension proof
+pass completion                          != comprehension proof
+structure/order/prominence               != epistemic authority
 ```
+
+RC-3 означает process mechanics: один active pass, declared targets, explicit outcomes и fail-visible gaps. Pass completion не означает понимание, truth или evidence sufficiency.
 
 ### «GDPR compliant», «secure» и «hardened»
 
@@ -101,6 +114,7 @@ hardened against documented threats
 ```text
 Receipt replay    = re-check existing evidence
 trajectory replay = repeat an execution path for evaluation
+Reader reread     = explicit source-linked pass over declared regions
 ```
 
 ### «Grant funded» или «awarded»
@@ -127,10 +141,12 @@ SQLite — ordinary active local-first profile. Первый durable `auto` мо
 - Сохраняйте public-query read-only и explicit-ingest write separation.
 - Сохраняйте SQLite ordinary runtime и PostgreSQL `active=false`.
 - Сохраняйте `import/equivalence != activation`.
-- Сохраняйте различие RC-1/RC-2 bounded-implemented и dedicated-Reader-not-implemented.
-- Сохраняйте `coverage != comprehension proof` и structure/order/prominence != epistemic authority.
+- Сохраняйте различие RC-1/RC-2/RC-3 bounded-implemented и dedicated/full-Reader-not-implemented.
+- Сохраняйте `coverage != comprehension proof`, `pass completion != comprehension proof` и structure/order/prominence != epistemic authority.
 - Сохраняйте no-certification и no-award boundaries.
 - Не подразумевайте native-speaker editorial certification, если её не было.
+
+NLnet: `submitted / under review / not awarded`; `budget change: none`; award: not awarded.
 
 ## Связанные authoritative документы
 

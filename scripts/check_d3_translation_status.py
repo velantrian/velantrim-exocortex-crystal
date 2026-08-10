@@ -8,7 +8,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
+SOURCE = "0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5"
 LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
 CURRENT_LOCALES = ("ru",)
 REFRESH_LOCALES = tuple(locale for locale in LOCALES if locale not in CURRENT_LOCALES)
@@ -22,6 +22,7 @@ FILES = {
 READER_MARKERS = (
     "d3-reader: rc1-skeleton-implemented",
     "d3-reader: rc2-structural-map-implemented",
+    "d3-reader: rc3-multi-pass-mechanics-implemented",
     "d3-nonclaim: dedicated-reader-core-not-implemented",
 )
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
@@ -59,6 +60,7 @@ def main() -> int:
         (manifest.get("refresh_needed_documents") == refresh, "refresh documents"),
         (manifest.get("reader_core_rc1_skeleton_claim") is True, "RC-1 claim"),
         (manifest.get("reader_core_rc2_structural_map_claim") is True, "RC-2 claim"),
+        (manifest.get("reader_core_rc3_multi_pass_mechanics_claim") is True, "RC-3 claim"),
         (manifest.get("dedicated_reader_core_implemented_claim") is False, "dedicated Reader claim"),
         (manifest.get("active_postgresql_runtime_claim") is False, "PostgreSQL runtime claim"),
         (manifest.get("automatic_backend_switching_claim") is False, "switching claim"),
@@ -105,13 +107,14 @@ def main() -> int:
                     *READER_MARKERS,
                     "RC-1",
                     "RC-2",
+                    "RC-3",
                     "coverage != comprehension proof",
+                    "pass completion != comprehension proof",
                 ):
                     if marker not in text:
                         errors.append(f"{relative}: missing current Reader marker {marker!r}")
-            else:
-                if f"translation-source: {source_doc}@{SOURCE}" in text:
-                    errors.append(f"{relative}: refresh-needed translation falsely pins current source")
+            elif f"translation-source: {source_doc}@{SOURCE}" in text:
+                errors.append(f"{relative}: refresh-needed translation falsely pins current source")
             check_links(relative, text, errors)
 
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")

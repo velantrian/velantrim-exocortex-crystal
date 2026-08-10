@@ -46,7 +46,11 @@ def classify(relative: str, manifest: dict[str, object]) -> str:
         return "REFRESH_NEEDED"
     for locale in LOCALES:
         if relative == f"README.{locale}.md":
-            return "CURRENT"
+            return (
+                "CURRENT"
+                if locale in set(manifest["root_readme_current_locales"])
+                else "REFRESH_NEEDED"
+            )
         if relative.startswith(f"docs/{locale}/"):
             name = relative.rsplit("/", 1)[-1]
             locale_files = set(manifest["locale_pack_files"])
@@ -73,10 +77,14 @@ def main() -> int:
     if manifest.get("supported_locales") != list(LOCALES):
         errors.append("D5 manifest: supported locale set/order mismatch")
     if manifest.get("fully_current_locales") != ["ru"]:
-        errors.append("D5 manifest: Russian must be the only fully current detail locale after Reader reconciliation")
+        errors.append("D5 manifest: Russian must be the only fully current detail locale after RC-3")
     expected_refresh_locales = [locale for locale in LOCALES if locale != "ru"]
     if manifest.get("refresh_needed_locales") != expected_refresh_locales:
         errors.append("D5 manifest: refresh-needed locale set/order mismatch")
+    if manifest.get("root_readme_current_locales") != ["ru"]:
+        errors.append("D5 manifest: Russian must be the only RC-3-current localized root README")
+    if manifest.get("root_readme_refresh_needed_locales") != expected_refresh_locales:
+        errors.append("D5 manifest: root README refresh-needed locale set/order mismatch")
     if set(manifest.get("allowed_states", [])) != ALLOWED:
         errors.append("D5 manifest: allowed state set mismatch")
     if manifest.get("default_state") != "ENGLISH_ONLY_BY_DESIGN":
@@ -96,7 +104,11 @@ def main() -> int:
     for key in false_claims:
         if manifest.get(key) is not False:
             errors.append(f"D5 manifest: unsupported claim flag {key}")
-    for key in ("reader_core_rc1_skeleton_claim", "reader_core_rc2_structural_map_claim"):
+    for key in (
+        "reader_core_rc1_skeleton_claim",
+        "reader_core_rc2_structural_map_claim",
+        "reader_core_rc3_multi_pass_mechanics_claim",
+    ):
         if manifest.get(key) is not True:
             errors.append(f"D5 manifest: missing bounded Reader claim {key}")
 
@@ -110,7 +122,11 @@ def main() -> int:
 
     locale_files = set(manifest["locale_pack_files"])
     for locale in LOCALES:
-        actual = {path.name for path in (ROOT / "docs" / locale).iterdir() if path.is_file() and path.suffix == ".md"}
+        actual = {
+            path.name
+            for path in (ROOT / "docs" / locale).iterdir()
+            if path.is_file() and path.suffix == ".md"
+        }
         unexpected = actual - locale_files
         missing = locale_files - actual
         if unexpected:
@@ -134,11 +150,24 @@ def main() -> int:
 
     policy_searchable = normalized(policy)
     for marker in (
-        "d5-source-policy: current", "current", "refresh_needed", "retired", "english_only_by_design",
-        "physical l3 != strict canon", "retrieval score != evidence", "model output != source truth",
-        "migration proof != claim proof", "import success != activation", "active=false",
-        "reader_core_rc1_skeleton", "reader_core_rc2_structural_map", "dedicated_reader_core",
-        "submitted / under review / not awarded", "budget change is none",
+        "d5-source-policy: current",
+        "current",
+        "refresh_needed",
+        "retired",
+        "english_only_by_design",
+        "physical l3 != strict canon",
+        "retrieval score != evidence",
+        "model output != source truth",
+        "migration proof != claim proof",
+        "import success != activation",
+        "active=false",
+        "reader_core_rc1_skeleton",
+        "reader_core_rc2_structural_map",
+        "reader_core_rc3_multi_pass_mechanics",
+        "dedicated_reader_core",
+        "pass completion != comprehension proof",
+        "submitted / under review / not awarded",
+        "budget change is none",
     ):
         if normalized(marker) not in policy_searchable:
             errors.append(f"D5 policy: missing marker {marker!r}")
@@ -151,20 +180,30 @@ def main() -> int:
     counts = Counter(resolved.values())
     if counts["CURRENT"] == 0 or counts["RETIRED"] == 0 or counts["ENGLISH_ONLY_BY_DESIGN"] == 0:
         errors.append(f"D5 inventory: implausible category counts {dict(counts)}")
-    expected_refresh_count = len(manifest["refresh_needed_locales"]) * len(manifest["refresh_needed_locale_pack_files"])
+    expected_refresh_count = (
+        len(manifest["root_readme_refresh_needed_locales"])
+        + len(manifest["refresh_needed_locales"])
+        * len(manifest["refresh_needed_locale_pack_files"])
+    )
     if counts["REFRESH_NEEDED"] != expected_refresh_count:
         errors.append(
             f"D5 inventory: expected refresh documents={expected_refresh_count}, observed={counts['REFRESH_NEEDED']}"
         )
 
-    print("D5 resolved inventory counts: " + ", ".join(f"{state}={counts[state]}" for state in sorted(ALLOWED)))
+    print(
+        "D5 resolved inventory counts: "
+        + ", ".join(f"{state}={counts[state]}" for state in sorted(ALLOWED))
+    )
     print(f"D5 resolved inventory total: {len(resolved)}")
     if errors:
         print("D5 source policy validation failed:")
         for error in errors:
             print(f"  - {error}")
         return 1
-    print("D5 source inventory is consistent: Russian detail pack current; 56 Reader-dependent translations refresh-needed")
+    print(
+        "D5 source inventory is consistent: Russian root/detail CURRENT; "
+        f"RC-3 localized refresh debt={expected_refresh_count}"
+    )
     return 0
 
 

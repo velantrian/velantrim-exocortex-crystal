@@ -62,6 +62,7 @@
     "production_idp_multitenancy": false,
     "reader_core_rc1_skeleton": true,
     "reader_core_rc2_structural_map": true,
+    "reader_core_rc3_multi_pass_mechanics": true,
     "dedicated_reader_core": false
   },
   "reader_core_rc1": {
@@ -100,6 +101,33 @@
     "truth_or_canon_authority": false,
     "dedicated_full_reader_core": false
   },
+  "reader_core_rc3": {
+    "tracking_issue": 363,
+    "architecture_contract": "docs/architecture/READER_CORE_ARCHITECTURE.md",
+    "runtime_module": "core/reader_passes.py",
+    "test_module": "tests/test_reader_passes.py",
+    "scope": "deterministic_explicit_multi_pass_mechanics",
+    "pass_kinds": ["ORIENTATION", "BROAD_READ", "FOCUSED_READ", "CROSS_CHECK", "TARGETED_REREAD"],
+    "pass_states": ["ATTEMPTED", "COMPLETED", "INTERRUPTED", "DEGRADED"],
+    "one_active_pass_at_a_time": true,
+    "declared_structural_targets": true,
+    "explicit_region_outcomes": true,
+    "partial_progress_preserved": true,
+    "targeted_reread_requires_prior_processing": true,
+    "count_only_telemetry": true,
+    "source_body_storage": false,
+    "parser_or_semantic_chunker": false,
+    "ocr_or_pdf_layout_reconstruction": false,
+    "llm_or_provider_integration": false,
+    "embeddings_or_vector_database": false,
+    "automatic_cross_document_reasoning": false,
+    "contradiction_resolution_authority": false,
+    "durable_storage_schema": false,
+    "public_api_or_cli": false,
+    "planner_or_belief_update_authority": false,
+    "truth_or_canon_authority": false,
+    "dedicated_full_reader_core": false
+  },
   "storage_resource_limits": {
     "control_file_bytes": 1048576,
     "source_sqlite_bytes": 67108864,
@@ -118,17 +146,18 @@
     "authoritative_language": "English",
     "working_language": "English",
     "language_model": "english_primary_source_multilingual_product_surface",
-    "localized_readmes": "all_supported_locales_full_visual_and_semantic_parity",
+    "localized_readmes": "russian_current_eight_refresh_needed_after_rc3_source_change",
     "translation_status_ledger": "docs/TRANSLATION_STATUS.md",
     "localization_policy": "docs/LOCALIZATION_POLICY.md",
-    "localized_readme_source_checkpoint": "6b45bdd196eb42dea7bc30f58d69799b4b1712f2",
+    "localized_readme_source_checkpoint": "0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5",
     "supported_localized_readme_count": 9,
-    "full_parity_current_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN"],
+    "full_parity_current_locales": ["ru"],
+    "full_parity_refresh_needed_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"],
     "orientation_only_locales": [],
     "broader_document_translation": "phased_by_language_or_document_family",
     "full_corpus_translation_required_in_single_pr": false,
     "translation_tracking_issue": 341,
-    "d1_source_checkpoint": "6b45bdd196eb42dea7bc30f58d69799b4b1712f2",
+    "d1_source_checkpoint": "0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5",
     "d1_current_locales": ["ru"],
     "d1_refresh_needed_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"],
     "d1_current_documents": {
@@ -163,7 +192,7 @@
     "awarded": false,
     "budget_changed": false,
     "baseline_issue": 333,
-    "rule": "Merged baseline work, including issues 331 and 332, cannot be counted again as funded delta"
+    "rule": "Merged pre-agreement work, including issues 331/332 and Reader RC-0/RC-1/RC-2/RC-3 when merged, cannot be counted again as funded delta"
   },
   "authority": {
     "runtime": "GitHub main",

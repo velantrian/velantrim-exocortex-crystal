@@ -11,6 +11,8 @@
   "supported_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN"],
   "fully_current_locales": ["ru"],
   "refresh_needed_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"],
+  "root_readme_current_locales": ["ru"],
+  "root_readme_refresh_needed_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"],
   "retired_exact": ["SPRINT_A_V2_ADDITIONAL_PATCHES.md", "WORK_SUMMARY.md", "docs/CLAUDE_CODE_HANDOFF_2026_06_17.md"],
   "retired_prefixes": ["docs/archive/"],
   "retired_prefix_exceptions": ["docs/archive/README.md"],
@@ -41,7 +43,7 @@
   ],
   "default_state": "ENGLISH_ONLY_BY_DESIGN",
   "refresh_needed_exact": [],
-  "localized_d5_decision": "RUSSIAN_CURRENT_OTHER_READER_DETAILS_REFRESH_NEEDED",
+  "localized_d5_decision": "RC3_RUSSIAN_ROOT_AND_DETAILS_CURRENT_EIGHT_ROOT_AND_READER_DETAILS_REFRESH_NEEDED",
   "native_speaker_editorial_certification": false,
   "security_legal_gdpr_certification_claim": false,
   "nlnet_awarded_claim": false,
@@ -49,6 +51,7 @@
   "budget_change_claim": false,
   "reader_core_rc1_skeleton_claim": true,
   "reader_core_rc2_structural_map_claim": true,
+  "reader_core_rc3_multi_pass_mechanics_claim": true,
   "dedicated_reader_core_implemented_claim": false,
   "active_postgresql_runtime_claim": false
 }

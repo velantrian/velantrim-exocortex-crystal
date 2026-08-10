@@ -14,7 +14,7 @@
 **Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` — merged PR #337.  
 **Validated runtime head / CI:** `d7af7c80722274f9217bc5545d150f92e9363f37` / `31256316536` — 9/9 successful.  
 **PostgreSQL integration:** `31256316532` — successful against PostgreSQL 16 and pgvector 0.8.2.  
-**Reader foundation:** RC-1 evidence-linked skeleton + RC-2 caller-supplied Structural Document Map are implemented and tested; the dedicated multi-pass Reader runtime remains **not implemented**.  
+**Reader foundation:** RC-1 evidence-linked skeleton, RC-2 caller-supplied Structural Document Map and RC-3 explicit deterministic multi-pass mechanics are implemented/tested bounded layers; the dedicated/full autonomous Semantic Reading runtime remains **not implemented**.  
 **Exact public evidence:** [TEST_REPORT.md](./TEST_REPORT.md), [STATUS.md](./docs/STATUS.md) and the [machine-readable implementation manifest](./docs/status/implementation-manifest.json).
 
 > **Documentation language policy:** English is the primary working and source language,
@@ -43,6 +43,7 @@ A contradiction does not select its own winner.
 A topic label is not a truth verdict.
 A successful data import is not backend activation.
 Reader structure or coverage is not epistemic authority.
+Reader pass completion is not comprehension proof.
 ```
 
 ## 🧠 What Crystal provides
@@ -51,6 +52,7 @@ Reader structure or coverage is not epistemic authority.
 - source identity, evidence spans and provenance;
 - bounded Reader RC-1 source/session artifacts with fidelity and coverage semantics;
 - bounded Reader RC-2 caller-supplied structural document maps with explicit ambiguity;
+- bounded Reader RC-3 explicit multi-pass process mechanics with auditable coverage effects;
 - Guardian and TruthGate admission boundaries;
 - a multi-status physical L3 graph separated from strict Canon;
 - immutable deny-dominant `TrustSnapshot` read reconciliation;
@@ -66,10 +68,11 @@ Reader structure or coverage is not epistemic authority.
 - verified SQLite backup/restore and bounded logical migration;
 - optional PostgreSQL/pgvector inactive import with independent exact-state equivalence.
 
-Reader RC-1/RC-2 retain no source body, add no public Reader API/CLI or durable Reader
-storage schema, and have no truth/Canon/ESM/planner authority. They do **not** provide an
-automatic parser, multi-pass orchestration, LLM/provider integration, embeddings, ANN or
-vector-database Reader stack. `coverage != comprehension proof`.
+Reader RC-1/RC-2/RC-3 retain no source body, add no public Reader API/CLI or durable Reader
+storage schema, and have no truth/Canon/ESM/planner authority. RC-3 provides explicit deterministic
+pass mechanics, but these layers do **not** provide an automatic parser, autonomous model-driven
+reader, LLM/provider integration, embeddings, ANN/vector-database Reader stack or automatic
+cross-document reasoning. `coverage != comprehension proof`; `pass completion != comprehension proof`.
 
 ## 🏛️ Architecture in three views
 
@@ -86,7 +89,8 @@ vector-database Reader stack. `coverage != comprehension proof`.
 ├── 📖 Reader foundation
 │   ├── RC-1 — evidence-linked source/session skeleton
 │   ├── RC-2 — caller-supplied Structural Document Map
-│   └── dedicated multi-pass Reader — not implemented
+│   ├── RC-3 — explicit deterministic multi-pass mechanics
+│   └── dedicated/full autonomous Reader — not implemented
 │
 ├── 🏛️ Memory model
 │   ├── L0 — fast working cache
@@ -193,7 +197,8 @@ vector-database Reader stack. `coverage != comprehension proof`.
 │
 ├── 📖 Reader foundation
 │   ├── core/reader_core.py — RC-1 source/session artifacts
-│   └── core/reader_structure.py — RC-2 Structural Document Map
+│   ├── core/reader_structure.py — RC-2 Structural Document Map
+│   └── core/reader_passes.py — RC-3 explicit multi-pass mechanics
 │
 ├── 🧠 Memory surfaces
 │   ├── L0 — rebuildable working cache
@@ -252,6 +257,7 @@ successful import    != backend activation
 process-local lease  != distributed coordination
 Reader coverage      != comprehension proof
 Reader structure     != truth/confidence authority
+Reader pass complete != comprehension proof
 ```
 
 TruthGate is an admission-policy gate, not an oracle that independently knows
@@ -264,6 +270,7 @@ status, ESM state, confidence shape and processing restrictions.
 |---|---|---|
 | Reader RC-1 | evidence-linked source/session artifacts | observations and coverage do not admit truth |
 | Reader RC-2 | version-bound structural map | order/prominence is metadata, not authority |
+| Reader RC-3 | explicit pass ledger over declared targets | pass completion is process state, not comprehension/truth |
 | L0 | in-process working cache | fast and rebuildable |
 | L1 | SQLite/WAL operational memory | lifecycle, restrictions and pending work |
 | L2 | logical review boundary | not automatically strict Canon |
@@ -317,7 +324,7 @@ profiles, bundles, receipts, application logs, GitHub issues or Notion.
 | Find relevant material | primary strength | supported through retrieval adapters |
 | Separate user claim from verified fact | application-specific | explicit typed boundary |
 | Track lifecycle and contradictions | usually external logic | first-class states and reports |
-| Preserve version-bound reading artifacts | application-specific | RC-1/RC-2 bounded Reader foundation |
+| Preserve version-bound reading/process artifacts | application-specific | RC-1/RC-2/RC-3 bounded Reader foundation |
 | Prevent generated text becoming its own source | not inherent | Ring Zero admission invariant |
 | Replay answer evidence | optional | TRACE and Receipt architecture |
 | Resolve contradictions accountably | application-specific | explicit authorized dispositions |
@@ -410,8 +417,12 @@ CI jobs:     9/9
 PostgreSQL integration: successful against PostgreSQL 16 + pgvector 0.8.2
 Reader RC-1: implemented/tested bounded evidence-linked skeleton
 Reader RC-2: implemented/tested bounded Structural Document Map
-Dedicated multi-pass Reader: not implemented
+Reader RC-3: implemented/tested bounded explicit multi-pass mechanics
+Dedicated/full autonomous Reader: not implemented
 ```
+
+The numeric runtime/test block above is the retained PR #337 verification checkpoint; later Reader
+milestones use their own exact-head and post-merge CI evidence.
 
 ## 🚧 Boundary of the claim
 
@@ -424,8 +435,8 @@ Crystal does not claim:
 - distributed locking or exactly-once orchestration;
 - artificial consciousness, AGI or a “living digital personality”;
 - an active PostgreSQL runtime, automatic switching, cutover or rollback;
-- a completed dedicated multi-pass Reader Core;
-- automatic Reader parsing, LLM orchestration, embeddings/ANN/vector search or comprehension proof;
+- a completed dedicated/full autonomous Reader Core;
+- automatic Reader parsing, autonomous LLM-driven reading, embeddings/ANN/vector search, automatic cross-document reasoning or comprehension proof;
 - Titan, Full Exo-Cortex, Mentaury or Native Kernel functionality as current runtime.
 
 The NLnet proposal remains **submitted / under review / not awarded**. Merged

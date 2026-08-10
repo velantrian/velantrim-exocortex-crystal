@@ -27,26 +27,27 @@ REQUIRED = {
     "docs/PROJECT_GRANT_AND_GOVERNANCE.md": (
         "proposal: submitted", "review: in progress", "award: not awarded",
         "budget change: none", "approximate €50,000 request",
-        "not an approved budget or payment commitment", "physical l3 != strict canon",
+        "not an approved budget or payment commitment", "physical l3",
         "postgresql/pgvector remains an optional inactive migration/equivalence target with `active=false`",
-        "reader core rc-1 and rc-2", "dedicated multi-pass semantic reading runtime",
-        "anything merged before a grant agreement is existing baseline",
+        "reader core rc-1, rc-2 and rc-3", "dedicated/full autonomous semantic reading runtime",
+        "anything merged before a grant agreement is existing baseline", "reader pass complete",
     ),
     "docs/GLOSSARY.md": (
         "physical l3", "strict canon", "active=false", "funded delta",
         "submitted / under review / not awarded", "reader core rc-1", "reader core rc-2",
-        "dedicated reader core", "native-speaker editorial certification",
+        "reader core rc-3", "dedicated/full reader core", "pass completion",
+        "native-speaker editorial certification",
     ),
     "docs/GRANT_NLNET_SCOPE.md": (
         "grant status:** submitted / under review / not awarded", "budget change:** none",
-        "reader rc-1 and rc-2", "dedicated multi-pass reader", "rc-3",
-        "cannot be budgeted again as funded delivery", "submitted proposal != awarded grant",
+        "reader rc-1/rc-2 and rc-3", "dedicated/full autonomous reader", "rc-3",
+        "cannot be budgeted again as funded delivery", "submitted proposal   != awarded grant",
     ),
     "ROADMAP.md": (
         "grant status:** submitted / under review / not awarded", "budget change:** none",
-        "sqlite ordinary active local-first profile", "reader_core_rc1_skeleton",
-        "reader_core_rc2_structural_map", "dedicated_reader_core",
-        "merged rc-2 becomes existing baseline and cannot be counted again as future paid delivery",
+        "reader_core_rc1_skeleton", "reader_core_rc2_structural_map",
+        "reader_core_rc3_multi_pass_mechanics", "dedicated_reader_core",
+        "rc-3 — explicit multi-pass reading mechanics", "pass completion != comprehension proof",
     ),
     "GOVERNANCE.md": (
         "physical l3 != strict canon", "public query surfaces remain read-only",
@@ -133,8 +134,9 @@ def main() -> int:
 
     require("baseline/delta matrix", supporting.get("docs/grants/baseline-funded-delta-matrix.md", ""), (
         "no award/budget change", "cannot be counted again as future paid work",
-        "target remains `active=false`", "reader rc-1", "reader rc-2",
-        "dedicated multi-pass reader", "rc-3",
+        "target remains `active=false`", "reader rc-1", "reader rc-2", "reader rc-3",
+        "reader_core_rc3_multi_pass_mechanics = true", "pass completion != comprehension proof",
+        "reader work beyond rc-3",
     ), errors)
     require("funding use plan", supporting.get("docs/grants/funding-use-plan.md", ""), (
         "submitted to nlnet for review", "proposal has been submitted and is under review",
@@ -150,10 +152,10 @@ def main() -> int:
     ), errors)
     state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
     require("AI current state", state, (
-        "Russian D1/D3/D4/D5 detail pack is current",
-        "eight other locale detail packs require Reader refresh",
-        "reader_core_rc1_skeleton = true", "reader_core_rc2_structural_map = true",
-        "dedicated_reader_core = false",
+        "Russian Reader-dependent public/detail documentation is refreshed",
+        "eight other localized root README files and Reader-dependent detail packs",
+        "reader_core_rc1_skeleton", "reader_core_rc2_structural_map",
+        "reader_core_rc3_multi_pass_mechanics", "dedicated_reader_core",
     ), errors)
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
     require("translation ledger", ledger, (
