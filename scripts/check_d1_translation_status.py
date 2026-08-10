@@ -95,11 +95,14 @@ def main() -> int:
                 for marker in (
                     f"translation-source: {english}@{SOURCE}",
                     "translation-status: CURRENT",
-                    *READER_MARKERS,
                     "active=false",
                 ):
                     if marker not in text:
                         errors.append(f"{relative}: missing current Reader evidence {marker!r}")
+                normalized = re.sub(r"[ \t]+", " ", text)
+                for marker in READER_MARKERS:
+                    if marker not in normalized:
+                        errors.append(f"{relative}: missing normalized Reader evidence {marker!r}")
                 if name == "STATUS.md":
                     for marker in (
                         "2078 passed / 13 skipped / 0 failed",
