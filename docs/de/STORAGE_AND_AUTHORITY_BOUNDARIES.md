@@ -1,5 +1,6 @@
 <!-- translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@208f1c772ee3a112cb803d2413c120bef23adb05 -->
-<!-- translation-status: CURRENT -->
+<!-- translation-status: REFRESH_NEEDED -->
+<!-- refresh-reason: reader-rc1-rc2-reconciliation -->
 <!-- d3-locale: de -->
 <!-- d3-boundary: physical-l3-not-strict-canon -->
 <!-- d3-boundary: public-query-read-only -->
