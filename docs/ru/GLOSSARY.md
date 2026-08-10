@@ -47,6 +47,8 @@ Programmatic identifiers остаются неизменными в code, schema
 | **Reader Core RC-1** | Реализованный/протестированный bounded evidence-linked source/session skeleton с source-version identity, locators, fidelity, coverage, bookmarks/open loops и stale/failure/privacy semantics; без truth/admission authority. |
 | **Reader Core RC-2** | Реализованный/протестированный caller-supplied Structural Document Map с version-bound hierarchy/order и explicit ambiguity; не automatic parser и не truth/confidence authority. |
 | **dedicated Reader Core** | Будущий multi-pass Semantic Reading runtime за пределами RC-1/RC-2; не реализован. |
+| **NLnet planning amount** | Приблизительно **€50,000** — только planning magnitude, не approved budget и не payment commitment. |
+| **budget change** | Текущий grant-safe статус: **budget change: none**. Изменение допустимо только по verified external grant communication. |
 
 ## Термины, требующие осторожности
 
@@ -107,9 +109,11 @@ trajectory replay = repeat an execution path for evaluation
 
 ```text
 submitted / under review / not awarded
+approximate planning amount: €50,000
+budget change: none
 ```
 
-Merged baseline work нельзя переименовывать в future funded delivery. Budget или award state может измениться только по verified external grant communication.
+Сумма €50,000 — planning only, не approved budget и не payment commitment. Merged baseline work нельзя переименовывать в future funded delivery. Budget или award state может измениться только по verified external grant communication.
 
 ### «Default backend»
 
