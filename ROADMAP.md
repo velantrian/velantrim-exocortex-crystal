@@ -133,10 +133,10 @@ Source body text is not retained by the RC-1 source-version object.
 
 ### ⏭️ Later Reader phases
 
-A dedicated Reader Core remains future work. The next separately bounded phase should be chosen
-from measured needs after RC-1 rather than pre-committing to a vector stack. Candidate later work
-includes structural document mapping and then explicit multi-pass mechanics. Any later phase must
-preserve:
+A dedicated Reader Core remains not implemented; RC-1 is only the bounded evidence-linked
+skeleton. The next separately bounded phase should be chosen from measured needs after RC-1
+rather than pre-committing to a vector stack. Candidate later work includes structural document
+mapping and then explicit multi-pass mechanics. Any later phase must preserve:
 
 - reader artifacts/candidates upstream of normal admission;
 - `coverage != comprehension proof`;
