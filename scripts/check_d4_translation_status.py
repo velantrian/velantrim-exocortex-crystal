@@ -1,4 +1,4 @@
-"""Validate current D4 project/grant/governance/glossary translations."""
+"""Validate mixed D4 project/grant/governance translation freshness."""
 
 from __future__ import annotations
 
@@ -10,6 +10,8 @@ from urllib.parse import unquote
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
 LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
+CURRENT_LOCALES = ("ru",)
+REFRESH_LOCALES = tuple(locale for locale in LOCALES if locale not in CURRENT_LOCALES)
 FILES = {locale: (f"docs/{locale}/GRANT_OVERVIEW.md", f"docs/{locale}/GLOSSARY.md") for locale in LOCALES}
 READER_MARKERS = (
     "d4-reader: rc1-skeleton-implemented",
@@ -42,13 +44,16 @@ def check_links(relative: str, text: str, errors: list[str]) -> None:
 def main() -> int:
     errors: list[str] = []
     manifest = json.loads((ROOT / "docs/status/d4-translation-manifest.json").read_text())
-    expected = {locale: list(FILES[locale]) for locale in LOCALES}
+    current = {"ru": list(FILES["ru"])}
+    refresh = {locale: list(FILES[locale]) for locale in REFRESH_LOCALES}
     checks = (
         (manifest.get("phase") == "D4", "phase"),
         (manifest.get("english_source_checkpoint") == SOURCE, "source checkpoint"),
-        (manifest.get("current_locales") == list(LOCALES), "current locales"),
+        (manifest.get("current_locales") == list(CURRENT_LOCALES), "current locales"),
+        (manifest.get("refresh_needed_locales") == list(REFRESH_LOCALES), "refresh locales"),
         (manifest.get("pending_locales") == [], "pending locales"),
-        (manifest.get("current_documents") == expected, "current documents"),
+        (manifest.get("current_documents") == current, "current documents"),
+        (manifest.get("refresh_needed_documents") == refresh, "refresh documents"),
         (manifest.get("reader_core_rc1_skeleton_claim") is True, "RC-1 claim"),
         (manifest.get("reader_core_rc2_structural_map_claim") is True, "RC-2 claim"),
         (manifest.get("dedicated_reader_core_implemented_claim") is False, "dedicated Reader claim"),
@@ -62,18 +67,23 @@ def main() -> int:
             errors.append(f"D4 manifest: invalid {label}")
 
     for locale in LOCALES:
+        expected_status = "CURRENT" if locale in CURRENT_LOCALES else "REFRESH_NEEDED"
         index_relative = f"docs/{locale}/README.md"
         index = (ROOT / index_relative).read_text(encoding="utf-8")
-        for marker in (f"d4-source: main@{SOURCE}", "d4-status: CURRENT"):
+        for marker in (f"d4-source: main@{SOURCE}", f"d4-status: {expected_status}"):
             if marker not in index:
                 errors.append(f"{index_relative}: missing {marker!r}")
         check_links(index_relative, index, errors)
+
         for relative in FILES[locale]:
             text = (ROOT / relative).read_text(encoding="utf-8")
-            source_doc = "docs/PROJECT_GRANT_AND_GOVERNANCE.md" if relative.endswith("GRANT_OVERVIEW.md") else "docs/GLOSSARY.md"
-            markers = (
-                f"translation-source: {source_doc}@{SOURCE}",
-                "translation-status: CURRENT",
+            source_doc = (
+                "docs/PROJECT_GRANT_AND_GOVERNANCE.md"
+                if relative.endswith("GRANT_OVERVIEW.md")
+                else "docs/GLOSSARY.md"
+            )
+            for marker in (
+                f"translation-source: {source_doc}@",
                 f"d4-locale: {locale}",
                 "d4-boundary: physical-l3-not-strict-canon",
                 "d4-boundary: retrieval-score-not-evidence",
@@ -83,26 +93,41 @@ def main() -> int:
                 "d4-nonclaim: nlnet-not-awarded",
                 "d4-nonclaim: security-legal-gdpr-not-certified",
                 "d4-nonclaim: native-speaker-editorial-not-certified",
-                *READER_MARKERS,
-                "physical L3", "strict Canon", "active=false", "€50,000",
-            )
-            for marker in markers:
+                "physical L3",
+                "strict Canon",
+                "active=false",
+                "€50,000",
+            ):
                 if marker not in text:
                     errors.append(f"{relative}: missing marker {marker!r}")
+            if locale in CURRENT_LOCALES:
+                for marker in (
+                    f"translation-source: {source_doc}@{SOURCE}",
+                    "translation-status: CURRENT",
+                    *READER_MARKERS,
+                ):
+                    if marker not in text:
+                        errors.append(f"{relative}: missing current Reader marker {marker!r}")
+            else:
+                if f"translation-source: {source_doc}@{SOURCE}" in text:
+                    errors.append(f"{relative}: refresh-needed translation falsely pins current source")
             check_links(relative, text, errors)
 
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
-    if f"D4 source checkpoint:** `main@{SOURCE}`" not in ledger:
-        errors.append("translation ledger: D4 source checkpoint mismatch")
-    if "D4 is complete for all nine supported locales" not in ledger:
-        errors.append("translation ledger: D4 completion missing")
+    for marker in (
+        f"D4 source checkpoint:** `main@{SOURCE}`",
+        "D4 Reader-dependent detail translations are `CURRENT` in Russian",
+        "eight other supported locales are `REFRESH_NEEDED`",
+    ):
+        if marker not in ledger:
+            errors.append(f"translation ledger: missing D4 marker {marker!r}")
 
     if errors:
         print("D4 translation validation failed:")
         for error in errors:
             print(f"  - {error}")
         return 1
-    print(f"D4 translation status is consistent: locales={len(LOCALES)}, source={SOURCE}")
+    print("D4 translation status is consistent: Russian CURRENT; 8 locales REFRESH_NEEDED")
     return 0
 
 
