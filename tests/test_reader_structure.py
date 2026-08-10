@@ -221,14 +221,14 @@ def test_map_rejects_cross_version_duplicate_ids_and_duplicate_order():
                 ),
             ],
         )
+    duplicate_a = StructuralNode(
+        "dup", StructuralKind.PARAGRAPH, _exact(source, 1, 2), 1, "doc"
+    )
+    duplicate_b = StructuralNode(
+        "dup", StructuralKind.QUOTATION, _exact(source, 3, 4), 2, "doc"
+    )
     with pytest.raises(ValueError, match="duplicate structural node_id"):
-        DocumentStructuralMap(
-            source,
-            [
-                root,
-                StructuralNode("doc", StructuralKind.PARAGRAPH, _exact(source, 1, 2), 1, "doc"),
-            ],
-        )
+        DocumentStructuralMap(source, [root, duplicate_a, duplicate_b])
     with pytest.raises(ValueError, match="duplicate structural order"):
         DocumentStructuralMap(
             source,
