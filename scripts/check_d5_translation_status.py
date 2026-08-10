@@ -17,9 +17,6 @@ READER_MARKERS = (
     "d5-reader: rc1-skeleton-implemented",
     "d5-reader: rc2-structural-map-implemented",
     "d5-nonclaim: dedicated-reader-core-not-implemented",
-    "reader_core_rc1_skeleton = true",
-    "reader_core_rc2_structural_map = true",
-    "dedicated_reader_core = false",
 )
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 
@@ -93,6 +90,7 @@ def main() -> int:
                 "€50,000",
                 "budget change: none",
                 "REFRESH_NEEDED",
+                "coverage != comprehension proof",
             ):
                 if marker not in text:
                     errors.append(f"{relative}: missing current D5 marker {marker!r}")
