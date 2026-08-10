@@ -10,12 +10,14 @@ GitHub `main`, executable tests and completed CI are implementation truth. Notio
 
 ## 1. Verified runtime evidence
 
-- Python 3.11 and 3.12: **2078 passed / 13 skipped / 0 failed**;
-- **9756 statements / 100.00% coverage**;
+- Python 3.11 and 3.12: **2078 passed / 13 skipped / 0 failed** at the retained verified runtime checkpoint;
+- **9756 statements / 100.00% coverage** at that checkpoint;
 - PostgreSQL migration modules: **44/44 + 336/336 statements**;
 - **7/7** Ring Zero mutants killed;
 - **9/9** permanent CI jobs successful;
 - **1/1** real PostgreSQL/pgvector integration job successful.
+
+Newer bounded features must carry their own exact-head and post-merge CI evidence rather than silently rewriting the historical checkpoint above.
 
 ## 2. Current storage and migration capability
 
@@ -23,7 +25,7 @@ SQLite remains the ordinary active local-first profile. PostgreSQL remains `acti
 
 ## 3. Grant and remaining limitations
 
-The NLnet proposal is submitted / under review / not awarded. Approximate €50,000 is planning only, not an approved budget or payment commitment. Budget change is none. Work merged before an agreement is existing baseline and cannot be counted again as funded delta. Reader Core runtime is not implemented. No legal, GDPR, security or native-speaker editorial certification is claimed.
+The NLnet proposal is submitted / under review / not awarded. Approximate €50,000 is planning only, not an approved budget or payment commitment. Budget change is none. Work merged before an agreement is existing baseline and cannot be counted again as funded delta. A dedicated multi-pass Reader Core / Semantic Reading runtime is not implemented. No legal, GDPR, security or native-speaker editorial certification is claimed.
 
 ## 4. Documentation language and D1–D3
 
@@ -47,7 +49,7 @@ D1–D4 remain current multilingual public surfaces while D5 adds the extended-r
 
 D5 source inventory/policy is anchored to signed `main@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9`. D5 is current across all nine supported locale packs through **nine Extended Reference Guides** and nine synchronized indexes. The final D5 documentation checkpoint is signed `main@f4556e8f9775d28d4a1b2c20a28962a95e55d33e` from PR #352.
 
-The D5 source validator classifies the live corpus as `CURRENT`, `REFRESH_NEEDED`, `RETIRED` or `ENGLISH_ONLY_BY_DESIGN`. Final inventory is **136 CURRENT**, **126 ENGLISH_ONLY_BY_DESIGN**, **10 RETIRED**, **0 REFRESH_NEEDED**, **272 total**. Detailed ADR/profile contracts, security/privacy/GDPR/legal mapping, tests/benchmarks/CI, machine-readable status, AI/audit/archive context, research/RFC and grant evidence are not bulk translated. Historical snapshots remain preserved with retirement routing.
+The D5 source validator classifies the live corpus as `CURRENT`, `REFRESH_NEEDED`, `RETIRED` or `ENGLISH_ONLY_BY_DESIGN`. Final inventory is **136 CURRENT**, **126 ENGLISH_ONLY_BY_DESIGN**, **10 RETIRED**, **0 REFRESH_NEEDED**, **272 total** at the completed D5 checkpoint. Detailed ADR/profile contracts, security/privacy/GDPR/legal mapping, tests/benchmarks/CI, machine-readable status, AI/audit/archive context, research/RFC and grant evidence are not bulk translated. Historical snapshots remain preserved with retirement routing.
 
 D1–D5 are current multilingual public surfaces for all nine supported locales: `ar`, `de`, `es`, `fr`, `hi`, `it`, `ja`, `ru`, `zh-CN`. Issue #341 is closed / completed.
 
@@ -70,29 +72,77 @@ The bounded remaining backlog is:
 
 Issues #156, #157, #203, #219 and ASR Phase-0 #228 were closed as completed from current evidence; #159 was closed as superseded; #211 was closed as out of scope for Crystal; #215 was closed as expired. None of those closures adds a runtime capability.
 
-## 8. Reader Core RC-0 architecture state
+## 8. Reader Core RC-0 / RC-1 state
 
-The docs-only Reader Core RC-0 contract is defined at
+The normative Reader Core architecture remains
 [`../architecture/READER_CORE_ARCHITECTURE.md`](../architecture/READER_CORE_ARCHITECTURE.md).
-It specifies source/version identity, structural maps, Segment Cards, explicit coverage,
+RC-0 defines source/version identity, structural maps, Segment Cards, explicit coverage,
 multi-pass reading, source-linked bookmarks, exception preservation, contradiction candidates,
-open questions, source-fidelity classes, provenance, stale-version invalidation and fail-visible
-partial reading.
+open questions, source-fidelity classes, provenance, stale-version invalidation, fail-visible
+partial reading and the non-authority test plan.
+
+RC-1 implements only the minimum evidence-linked domain skeleton needed to prove the first
+contract invariants. The implementation surface is `core/reader_core.py` with tests in
+`tests/test_reader_core.py`:
+
+```text
+SourceVersion
+  document_id + source_uri + SHA-256
+        ↓
+SourceLocator
+  exact half-open span OR explicit structural locator
+        ↓
+ReaderSession
+  ├─ SegmentCard + SourceFidelity
+  ├─ CoverageEntry / CoverageTelemetry
+  ├─ ReaderBookmark
+  └─ OpenLoop
+        ↓
+fail-visible interrupted/degraded/stale state
+```
+
+The five fidelity classes remain explicit:
+
+```text
+DIRECT_SOURCE_OBSERVATION
+EXTRACTED_PROPOSITION
+READER_INTERPRETATION
+SUMMARY
+INFERENCE
+```
+
+Coverage retains the RC-0 states `UNREAD`, `SEEN`, `PROCESSED`, `REVISITED` and
+`NEEDS_REVIEW`. Telemetry reports state counts/gaps only: `coverage != comprehension proof`.
+A changed source version conservatively stales the RC-1 session; there is no remapping/diff
+engine in this milestone and historical artifacts keep their old source binding.
 
 Authority remains unchanged:
 
 ```text
 source/document + exact provenance
-→ Reader Core artifacts/candidates
-→ existing ingest/review/evidence path
+→ RC-1 Reader artifacts/candidates
+→ no automatic admission side effect
+→ existing explicit ingest/review/evidence path
 → Guardian / Immune boundary
 → TruthGate
 → multi-status storage
 → strict read projection
 ```
 
-The architecture contract is not runtime evidence. `dedicated_reader_core=false` remains the
-machine-readable implementation truth; no Reader runtime, API, CLI, dependency, schema,
-migration, embedding/vector-store feature or cross-project integration is added by RC-0.
-Reader importance is not truth, Reader observations are not Canon admission, and Reader
-contradiction candidates do not replace the existing contradiction/curator decision contract.
+The machine-readable distinction is intentional:
+
+```text
+reader_core_rc1_skeleton = true
+dedicated_reader_core    = false
+```
+
+RC-1 has no durable Reader storage schema or migration, public API/CLI/background worker,
+mandatory dependency, LLM/provider integration, parser/semantic chunker, embeddings/ANN/vector
+database, multi-pass orchestration, cross-document reasoning engine, planner/belief-update
+authority or direct Canon/TruthGate wiring. Source body text is not retained by the RC-1
+source-version object. Restrictions/sensitivity are inherited by derived Reader artifacts.
+
+Therefore RC-1 is implementation evidence for a **minimal evidence-linked skeleton**, not for
+a dedicated/full long-document reading system. Reader importance is not truth, Reader
+observations are not Canon admission, and contradiction candidates do not replace the existing
+contradiction/curator decision contract.
