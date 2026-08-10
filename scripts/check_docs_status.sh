@@ -44,6 +44,8 @@ expect(boundaries.get("postgresql_target_active"), False, "PostgreSQL active")
 expect(boundaries.get("automatic_backend_switching"), False, "automatic switching")
 expect(docs.get("localized_readme_source_checkpoint"), source_checkpoint, "localized README source")
 expect(docs.get("full_parity_current_locales"), locales, "root locale set")
+expect(docs.get("d1_current_locales"), ["ru"], "D1 current locales")
+expect(docs.get("d1_refresh_needed_locales"), ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"], "D1 refresh locales")
 expect(grant.get("submitted"), True, "grant submitted")
 expect(grant.get("under_review"), True, "grant review")
 expect(grant.get("awarded"), False, "grant awarded")
@@ -93,13 +95,18 @@ for marker in (
 
 for locale in locales:
     index = (root / "docs" / locale / "README.md").read_text(encoding="utf-8")
+    reader_status = "CURRENT" if locale == "ru" else "REFRESH_NEEDED"
     for marker in (
         f"localization-index-source: main@{source_checkpoint}",
         f"d1-source: main@{source_checkpoint}",
+        f"d1-status: {reader_status}",
         "d2-status: CURRENT",
         f"d3-source: main@{source_checkpoint}",
+        f"d3-status: {reader_status}",
         f"d4-source: main@{source_checkpoint}",
+        f"d4-status: {reader_status}",
         f"d5-source: main@{source_checkpoint}",
+        f"d5-status: {reader_status}",
         "Localization policy", "Translation status",
     ):
         if marker not in index:
@@ -112,10 +119,10 @@ required = {
     "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md": ("Reader artifact", "Reader structure", "active=false"),
     "docs/PROJECT_GRANT_AND_GOVERNANCE.md": ("RC-1", "RC-2", "submitted", "€50,000"),
     "docs/GLOSSARY.md": ("Reader Core RC-1", "Reader Core RC-2", "dedicated Reader Core"),
-    "docs/EXTENDED_REFERENCE_POLICY.md": ("reader_core_rc1_skeleton", "reader_core_rc2_structural_map", "dedicated_reader_core"),
-    "docs/TRANSLATION_STATUS.md": ("D1 is complete", "D2 is complete", "D3 is complete", "D4 is complete", "D5 is complete"),
+    "docs/EXTENDED_REFERENCE_POLICY.md": ("reader_core_rc1_skeleton", "reader_core_rc2_structural_map", "dedicated_reader_core", "REFRESH_NEEDED"),
+    "docs/TRANSLATION_STATUS.md": ("Russian detail pack", "56 `REFRESH_NEEDED`", "all nine localized root READMEs"),
     "docs/DOCUMENTATION_MAP.md": ("CURRENT full-parity localized READMEs", "REFRESH_NEEDED translated document packs", "Inactive PostgreSQL import"),
-    "docs/ai/CURRENT_STATE.md": ("all nine supported", "REFRESH_NEEDED", "active=false", "reader_core_rc2_structural_map = true"),
+    "docs/ai/CURRENT_STATE.md": ("Russian D1/D3/D4/D5 detail pack is current", "eight other locale detail packs require Reader refresh", "active=false", "reader_core_rc2_structural_map = true"),
     "docs/ai/README.md": ("all nine supported", "docs-only PR", "REFRESH_NEEDED"),
     "TEST_REPORT.md": (runtime_commit, "2078 passed / 13 skipped / 0 failed", "31256316532"),
     "docs/GRANT_NLNET_SCOPE.md": ("submitted / under review / not awarded", "cannot be budgeted again"),
@@ -158,5 +165,5 @@ if errors:
         print(f"  - {error}")
     raise SystemExit(1)
 
-print("Documentation status is internally consistent: Reader RC-1/RC-2 bounded=true, dedicated=false, root-readmes=9-current, D1-D5 current")
+print("Documentation status is internally consistent: Reader RC-1/RC-2 bounded=true, dedicated=false, root-readmes=9-current, Russian-detail=current, 8-locale Reader detail refresh-needed")
 PY
