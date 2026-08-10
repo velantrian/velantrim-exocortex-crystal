@@ -23,7 +23,8 @@
 | Reader Core RC-1 minimal evidence-linked skeleton | Implemented in bounded domain layer | `core/reader_core.py`; source/version/locator, fidelity, coverage, bookmarks/open loops, stale/failure/privacy semantics; no admission side effects |
 | Reader Core RC-2 structural document map | Implemented in bounded structural layer | `core/reader_structure.py`; caller-supplied version-bound hierarchy/order/ambiguity model; no parser or admission side effects |
 | Reader Core RC-3 explicit multi-pass mechanics | Implemented in bounded orchestration layer | `core/reader_passes.py`; explicit pass ledger and coverage effects over declared RC-2 targets; no autonomous/model authority |
-| Dedicated/full Semantic Reading runtime | Not implemented | no automatic parser, model-driven reader, cross-document engine or autonomous planner; `dedicated_reader_core=false` |
+| Reader Core RC-4 proposition extraction | Implemented in bounded pre-admission layer | `core/reader_extraction.py`; completed substantive RC-3 regions → source-linked `EXTRACTED_PROPOSITION` candidates; no fact evidence or truth admission |
+| Dedicated/full Semantic Reading runtime | Not implemented | no automatic parser, autonomous NLP/model reader, cross-document engine or autonomous planner; `dedicated_reader_core=false` |
 
 ## Current storage sequence
 
@@ -57,9 +58,9 @@ exact-vs-ANN retrieval evaluation
 ## Reader Core implementation boundary
 
 RC-0 remains the normative architecture contract. RC-1 adds the smallest evidence-linked
-source/session domain skeleton, RC-2 adds the smallest structural-map layer needed to
-represent recovered document structure without claiming automatic parsing, and RC-3 adds
-deterministic explicit multi-pass mechanics without claiming an autonomous reader:
+source/session domain skeleton, RC-2 adds the structural-map layer, RC-3 adds deterministic
+explicit multi-pass mechanics, and RC-4 adds bounded source-linked proposition extraction
+without claiming automatic language understanding or epistemic admission:
 
 ```text
 SourceVersion(document_id + source_uri + SHA-256)
@@ -89,30 +90,57 @@ ReaderSession + DocumentStructuralMap
    ├─ declared structural targets
    ├─ explicit per-region coverage outcomes
    └─ count-only pass telemetry
+
+COMPLETED substantive Reader pass
+→ ReaderPropositionExtractor
+   ├─ primary + optional supporting structural targets
+   ├─ PROCESSED / REVISITED outcome required
+   ├─ EXTRACTED_PROPOSITION SegmentCard
+   ├─ source owner
+   ├─ factual assertion / opinion / hypothesis / conditional
+   ├─ example / quoted speech / reported position / definition / uncertainty
+   ├─ explicit negation + scope/exception qualifiers
+   └─ count-only extraction telemetry
 ```
 
-RC-3 records what the caller actually attempted. It does not call an LLM/provider, decide its own objective, infer undeclared targets or convert pass completion into understanding. `CROSS_CHECK` and `TARGETED_REREAD` require prior substantive processing. Unresolved structural regions can only remain fail-visible through `NEEDS_REVIEW`. Partial outcomes remain visible when a pass is interrupted or degraded.
+RC-4 is a validation/registration layer, not an automatic extractor. The caller supplies the
+normalized proposition; RC-4 proves that the proposed candidate is anchored to a completed
+substantive RC-3 reading context and still-current matching RC-1/RC-2 provenance. It fails closed
+for `SEEN`, `NEEDS_REVIEW`, unresolved structure, incomplete passes, stale/mismatched coverage or
+source/session mismatch.
 
-RC-1/RC-2/RC-3 retain no source body and add no durable Reader storage schema, public API, CLI,
-background worker or mandatory dependency. They have no parser/semantic chunker, OCR/PDF-layout or
-multimodal engine; no model/provider integration; no embedding, ANN/vector-database Reader stack;
-no automatic cross-document reasoning; and no method/runtime wiring that writes Canon, mutates
-`truth_status`/ESM, bypasses Guardian/TruthGate, resolves contradictions or creates planner/
+RC-4 candidates are always `SourceFidelity.EXTRACTED_PROPOSITION`. The category
+`FACTUAL_ASSERTION` means only that the source presents a statement as factual; it does **not**
+mean Crystal verified the proposition. Quoted speech, reported positions, author opinion,
+hypotheses, conditionals, examples, definitions and uncertain assertions remain explicit instead
+of being collapsed into author-endorsed world facts.
+
+RC-4 does not call `core.evidence.attach_evidence()` and writes no `evidence_spans` fact record.
+It does not attach evidence to a fact, set evidence sufficiency, mutate `truth_status`/ESM, write
+strict Canon, bypass Guardian/TruthGate or resolve contradictions. Reader extraction remains
+upstream of the existing explicit ingest/review/evidence/admission path.
+
+RC-1/RC-2/RC-3/RC-4 retain no source body and add no durable Reader storage schema, public API,
+CLI, background worker or mandatory dependency. They have no automatic parser/semantic chunker,
+OCR/PDF-layout or multimodal engine; no model/provider integration; no embedding, ANN/vector-
+database Reader stack; no automatic cross-document proposition identity/reasoning; and no planner/
 belief-update authority.
 
 Machine truth distinguishes the bounded milestones from the larger capability:
 
 ```text
-reader_core_rc1_skeleton             = true
-reader_core_rc2_structural_map       = true
-reader_core_rc3_multi_pass_mechanics = true
-dedicated_reader_core                = false
+reader_core_rc1_skeleton              = true
+reader_core_rc2_structural_map        = true
+reader_core_rc3_multi_pass_mechanics  = true
+reader_core_rc4_proposition_extraction = true
+dedicated_reader_core                 = false
 ```
 
 Coverage telemetry reports touched/unresolved regions only; structural telemetry reports recovered
-or unresolved map nodes only; RC-3 telemetry reports pass counts/state only. None is a comprehension
-percentage or truth score. Changed source hashes remain version boundaries; RC-2 structural nodes and
-RC-3 pass records remain anchored to the exact RC-1 `SourceVersion`.
+or unresolved map nodes only; RC-3 telemetry reports pass counts/state only; RC-4 telemetry reports
+candidate/category counts only. None is a comprehension, truth, confidence or evidence-sufficiency
+score. Changed source hashes remain version boundaries; all Reader artifacts remain anchored to the
+exact RC-1 `SourceVersion`.
 
 Crystal does not claim an active PostgreSQL runtime backend, automatic migration,
 production multi-tenancy, universal truth, zero hallucinations, legal/security
