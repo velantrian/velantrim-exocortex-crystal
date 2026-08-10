@@ -25,17 +25,15 @@ RC-1 implements the bounded evidence-linked source/session skeleton. RC-2 implem
 
 ## Localization
 
-Issue #341 D1 is complete and remains the localization tracking issue. D1 is current across all nine supported locale packs at `main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2`.
+All nine localized root README files are full-parity public presentations and are current against `main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2`.
 
-D2 reviewer/safety translations are current across all nine supported locales at `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`; the Reader milestones did not change D2 source semantics.
+Russian D1/D3/D4/D5 detail pack is current against the Reader reconciliation checkpoint. The Russian pack preserves full document depth rather than replacing prior translations with shortened summaries.
 
-D3 is current across all nine supported locale packs at `main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2`: 18 architecture/storage documents plus nine indexes.
+D2 reviewer/safety translations remain current across all nine supported locales at `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`; Reader RC-1/RC-2 did not change D2 source semantics. Quick Start remains current in all nine locale packs for the same reason.
 
-D4 is current across all nine supported locale packs at `main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2`: 18 project/grant/glossary documents plus nine indexes.
+The eight other locale detail packs require Reader refresh for D1 Status/Implementation, D3 Architecture/Storage, D4 Grant/Glossary and D5 Extended Reference Guide. Their rich pre-Reader translations were restored instead of being replaced by compressed summaries. The locale indexes and `docs/TRANSLATION_STATUS.md` classify those Reader-dependent detail families as `REFRESH_NEEDED`.
 
-D5 is current across all nine supported locale packs at `main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2`: nine Extended Reference Guides plus nine indexes.
-
-All nine root README translations are full-parity public presentations and are current against `main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2`. The ledger supports `REFRESH_NEEDED`, but the reconciled current inventory has none.
+The D5 resolved inventory therefore intentionally includes 56 refresh-needed localized detail documents: seven Reader-dependent document types across eight locales. This is explicit translation debt, not an unclassified documentation failure.
 
 ## Grant truth
 
