@@ -47,7 +47,6 @@ Reader artifact      != admitted fact
 Reader coverage      != comprehension proof
 Reader structure     != truth/confidence authority
 Reader pass complete != comprehension or truth
-pass completion      != comprehension proof
 ```
 
 SQLite remains the ordinary active local-first profile. A first durable `auto` may select optional LadybugDB or SQLite and then locks the deployment identity. Explicit Mock is development/CI state.
