@@ -16,7 +16,7 @@ surfaces and prints the authoritative category counts.
 
 | State | Meaning |
 |---|---|
-| `CURRENT` | Maintained public or routing surface. Localized D1–D4 documents are current against immutable source checkpoints. |
+| `CURRENT` | Maintained public or routing surface. Localized D1–D5 documents are current against immutable source checkpoints. |
 | `REFRESH_NEEDED` | Reader-relevant surface whose current wording is known to lag its governing source. This is never a silent default. |
 | `RETIRED` | Preserved historical snapshot or handoff. It is audit history, not current authority, capability or grant evidence. |
 | `ENGLISH_ONLY_BY_DESIGN` | Detailed or volatile technical, legal-mapping, security, test, CI, machine-readable, AI-context, research, RFC, ADR or grant-evidence material maintained only in English. |
@@ -28,7 +28,7 @@ The inventory covers documentation-like files at repository root, under `docs/`,
 
 1. explicit retired files and archived snapshots;
 2. current archive routing and D5 policy/inventory surfaces;
-3. supported localized root READMEs and locale D1–D4 packs;
+3. supported localized root READMEs and locale D1–D5 packs;
 4. stable current English public/source documents;
 5. all remaining detailed evidence and technical material as `ENGLISH_ONLY_BY_DESIGN`.
 
@@ -56,6 +56,24 @@ which detailed English sources exist, why they remain English-only and how retir
 routed. It does not translate volatile low-level evidence, CI logs, ADR bodies, machine-readable
 status, legal mappings or grant evidence.
 
+## Reader Core boundary
+
+Current machine truth deliberately separates bounded implemented foundations from the absent
+full Reader capability:
+
+```text
+reader_core_rc1_skeleton       = true
+reader_core_rc2_structural_map = true
+dedicated_reader_core          = false
+```
+
+RC-1 provides the minimal evidence-linked source/session skeleton. RC-2 provides a caller-supplied,
+source-version-bound Structural Document Map. Neither has truth/Canon/ESM/planner authority.
+They retain no source body and add no durable Reader storage schema, public Reader API/CLI/background
+worker, automatic parser/OCR, LLM/provider orchestration, embeddings/ANN/vector database or
+multi-pass/cross-document reasoning runtime. `coverage != comprehension proof`; structural
+position/order/prominence is metadata, not truth/confidence authority.
+
 ## Immutable boundaries and non-claims
 
 ```text
@@ -64,11 +82,14 @@ retrieval score != evidence
 model output != source truth
 migration proof != claim proof
 import success != activation
+Reader artifact != admitted fact
+Reader coverage != comprehension proof
+Reader structure != epistemic authority
 ```
 
 SQLite remains the ordinary active local-first profile. Mock remains the explicit development/CI
-backend. PostgreSQL/pgvector remains an inactive target with `active=false`. Reader Core is not
-implemented. NLnet remains submitted / under review / not awarded; approximate €50,000 is
-planning only, not an approved budget or payment commitment; budget change is none. Work merged
-before an agreement cannot be counted again as funded delta. No legal, GDPR, security or
-native-speaker editorial certification is claimed.
+backend. PostgreSQL/pgvector remains an inactive target with `active=false`. A dedicated multi-pass
+Reader / Semantic Reading runtime remains not implemented. NLnet remains submitted / under review /
+not awarded; approximate €50,000 is planning only, not an approved budget or payment commitment;
+budget change is none. Work merged before an agreement cannot be counted again as funded delta. No
+legal, GDPR, security or native-speaker editorial certification is claimed.
