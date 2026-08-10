@@ -4,6 +4,27 @@ This compact log records material decisions, exact evidence, limitations and han
 is not a replacement for Git history, issues, pull requests, `CHANGELOG.md` or Notion.
 Earlier detailed entries remain available through Git history.
 
+## 2026-08-10 — Post-i18n truth/backlog reconciliation (#353)
+
+- Verified signed starting `main@f4556e8f9775d28d4a1b2c20a28962a95e55d33e`, PR #352
+  exact-head CI `31340722027` 9/9 and post-merge CI `31341125405` 9/9.
+- Confirmed D1–D5 current for `ar`, `de`, `es`, `fr`, `hi`, `it`, `ja`, `ru`, `zh-CN`;
+  final D5 inventory remains 136 CURRENT / 126 ENGLISH_ONLY_BY_DESIGN / 10 RETIRED /
+  0 REFRESH_NEEDED / 272 total; issue #341 is closed / completed.
+- Closed stale PR #245 as `MOVE_TO_SEPARATE_RESEARCH_TRACK`, #249 as
+  `MOVE_TO_SEPARATE_RESEARCH_TRACK`, #261 as `REQUIRES_OPERATOR_DECISION` and #262 as
+  `SUPERSEDED`. No stale branch was rebased or merged; no prototype, branding rename or
+  cross-project runtime integration was transferred.
+- Backlog triage: #155 `REQUIRES_REWRITE`, #165 and #214 `STILL_VALID`; #156, #157, #203,
+  #219 and Phase-0 #228 completed; #159 superseded; #211 out of Crystal scope; #215 expired.
+- Confirmed ROADMAP drift: it still described the delivered documentation baseline as D1–D4
+  even though CURRENT_STATE, TRANSLATION_STATUS, D5 manifests and CI already establish D1–D5.
+- Reconciliation changes are documentation/governance only. Runtime/API/dependencies,
+  SQLite behavior, PostgreSQL `active=false`, Reader Core `NOT_IMPLEMENTED` and NLnet
+  submitted/under-review/not-awarded status remain unchanged.
+- Impact classification: `GITHUB_AND_NOTION`; final Notion synchronization is allowed only
+  after exact-head CI, merge signature and post-merge CI are verified.
+
 ## 2026-08-08 — PR #337 inactive PostgreSQL import/equivalence merged
 
 - Merge: `bbd816c09dd39a02e6de6c1014438490572f40f6`; validated head
