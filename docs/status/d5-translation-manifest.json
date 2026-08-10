@@ -5,9 +5,13 @@
   "tracking_issue": 341,
   "english_source_checkpoint": "6b45bdd196eb42dea7bc30f58d69799b4b1712f2",
   "source_document": "docs/EXTENDED_REFERENCE_POLICY.md",
-  "current_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN"],
+  "current_locales": ["ru"],
+  "refresh_needed_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"],
   "pending_locales": [],
   "current_documents": {
+    "ru": "docs/ru/EXTENDED_REFERENCE_GUIDE.md"
+  },
+  "refresh_needed_documents": {
     "ar": "docs/ar/EXTENDED_REFERENCE_GUIDE.md",
     "de": "docs/de/EXTENDED_REFERENCE_GUIDE.md",
     "es": "docs/es/EXTENDED_REFERENCE_GUIDE.md",
@@ -15,7 +19,6 @@
     "hi": "docs/hi/EXTENDED_REFERENCE_GUIDE.md",
     "it": "docs/it/EXTENDED_REFERENCE_GUIDE.md",
     "ja": "docs/ja/EXTENDED_REFERENCE_GUIDE.md",
-    "ru": "docs/ru/EXTENDED_REFERENCE_GUIDE.md",
     "zh-CN": "docs/zh-CN/EXTENDED_REFERENCE_GUIDE.md"
   },
   "native_speaker_editorial_certification": false,
