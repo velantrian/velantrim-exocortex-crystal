@@ -5,9 +5,13 @@
   "tracking_issue": 341,
   "english_source_checkpoint": "6b45bdd196eb42dea7bc30f58d69799b4b1712f2",
   "source_documents": ["docs/ARCHITECTURE_OVERVIEW.md", "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md"],
-  "current_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN"],
+  "current_locales": ["ru"],
+  "refresh_needed_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"],
   "pending_locales": [],
   "current_documents": {
+    "ru": ["docs/ru/ARCHITECTURE_OVERVIEW.md", "docs/ru/STORAGE_AND_AUTHORITY_BOUNDARIES.md"]
+  },
+  "refresh_needed_documents": {
     "ar": ["docs/ar/ARCHITECTURE_OVERVIEW.md", "docs/ar/STORAGE_AND_AUTHORITY_BOUNDARIES.md"],
     "de": ["docs/de/ARCHITECTURE_OVERVIEW.md", "docs/de/STORAGE_AND_AUTHORITY_BOUNDARIES.md"],
     "es": ["docs/es/ARCHITECTURE_OVERVIEW.md", "docs/es/STORAGE_AND_AUTHORITY_BOUNDARIES.md"],
@@ -15,7 +19,6 @@
     "hi": ["docs/hi/ARCHITECTURE_OVERVIEW.md", "docs/hi/STORAGE_AND_AUTHORITY_BOUNDARIES.md"],
     "it": ["docs/it/ARCHITECTURE_OVERVIEW.md", "docs/it/STORAGE_AND_AUTHORITY_BOUNDARIES.md"],
     "ja": ["docs/ja/ARCHITECTURE_OVERVIEW.md", "docs/ja/STORAGE_AND_AUTHORITY_BOUNDARIES.md"],
-    "ru": ["docs/ru/ARCHITECTURE_OVERVIEW.md", "docs/ru/STORAGE_AND_AUTHORITY_BOUNDARIES.md"],
     "zh-CN": ["docs/zh-CN/ARCHITECTURE_OVERVIEW.md", "docs/zh-CN/STORAGE_AND_AUTHORITY_BOUNDARIES.md"]
   },
   "native_speaker_editorial_certification": false,
