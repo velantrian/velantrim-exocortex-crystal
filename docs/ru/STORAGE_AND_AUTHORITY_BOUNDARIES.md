@@ -1,4 +1,4 @@
-<!-- translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5 -->
+<!-- translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@166fab5551c4b86ee0a546b2e1d3dc7adc240c86 -->
 <!-- translation-status: CURRENT -->
 <!-- d3-locale: ru -->
 <!-- d3-boundary: physical-l3-not-strict-canon -->
@@ -8,6 +8,7 @@
 <!-- d3-reader: rc1-skeleton-implemented -->
 <!-- d3-reader: rc2-structural-map-implemented -->
 <!-- d3-reader: rc3-multi-pass-mechanics-implemented -->
+<!-- d3-reader: rc4-proposition-extraction-implemented -->
 <!-- d3-nonclaim: dedicated-reader-core-not-implemented -->
 <!-- d3-nonclaim: nlnet-not-awarded -->
 # Границы хранения и authority
@@ -19,18 +20,19 @@
 ## 1. Раздельные идентичности
 
 ```text
-storage profile    = deployment identity
-physical L3        = multi-status graph state
-strict Canon       = trusted read projection
-migration bundle   = operation evidence
-retrieval score    = ranking signal
-model output       = generated text
-Reader artifact    = source-linked candidate/observation
-Reader structure   = version-bound document metadata
-Reader pass ledger = version-bound reading-process audit state
+storage profile      = deployment identity
+physical L3          = multi-status graph state
+strict Canon         = trusted read projection
+migration bundle     = operation evidence
+retrieval score      = ranking signal
+model output         = generated text
+Reader artifact      = source-linked candidate/observation
+Reader structure     = version-bound document metadata
+Reader pass ledger   = version-bound reading-process audit state
+Reader proposition   = pre-admission source-linked extracted candidate
 ```
 
-Ни одна из этих идентичностей автоматически не подразумевает другую. Storage, retrieval, migration, model output, Reader artifacts, structure и pass state не могут обходить Guardian или TruthGate.
+Ни одна из этих идентичностей автоматически не подразумевает другую. Storage, retrieval, migration, model output, Reader artifacts, structure, pass state и extracted propositions не могут обходить Guardian или TruthGate.
 
 ## 2. Durable runtime profile
 
@@ -47,13 +49,15 @@ Physical L3 может содержать verified, user-claimed, unverified, hy
 Strict Canon — deny-dominant проекция, допускающая только записи, разрешённые текущими evidence и policy.
 
 ```text
-stored in L3        ≠ trusted answer material
-retrieved            ≠ admitted
-high score           ≠ evidence
-frequent copy        ≠ independent corroboration
-Reader card          ≠ admitted fact
-structure            ≠ truth/confidence
-Reader pass complete ≠ comprehension or truth
+stored in L3          ≠ trusted answer material
+retrieved             ≠ admitted
+high score            ≠ evidence
+frequent copy         ≠ independent corroboration
+Reader card           ≠ admitted fact
+structure             ≠ truth/confidence
+Reader pass complete  ≠ comprehension or truth
+EXTRACTED_PROPOSITION ≠ verified fact
+Reader candidate      ≠ admitted evidence
 ```
 
 ## 4. Разделение чтения и записи
@@ -78,7 +82,7 @@ source-linked candidate
 → strict read projection
 ```
 
-Reader RC-1/RC-2/RC-3 остаются upstream domain layers. Создание Reader artifact, structural node или pass record никогда само по себе не выполняет TruthGate admission или canonical mutation.
+Reader RC-1/RC-2/RC-3/RC-4 остаются upstream domain layers. Создание Reader artifact, structural node, pass record или extracted proposition никогда само по себе не выполняет TruthGate admission, не прикрепляет evidence к admitted fact и не меняет canonical truth state.
 
 ## 5. Жизненный цикл SQLite
 
@@ -133,13 +137,19 @@ RC-1 реализует ограниченный evidence-linked Reader source/s
 
 RC-3 реализует bounded deterministic multi-pass mechanics над OPEN RC-1 ReaderSession и RC-2 structural map той же точной source version. Он записывает пять pass kinds, заранее объявленные structural targets, per-target RC-1 coverage outcomes и pass state (`ATTEMPTED`, `COMPLETED`, `INTERRUPTED`, `DEGRADED`). Один pass активен за раз; interrupted/degraded pass сохраняет уже завершённые region outcomes. Cross-check и targeted re-read требуют prior substantive processing. Unresolved structure допускает только fail-visible `NEEDS_REVIEW`.
 
-Dedicated/full autonomous Reader / Semantic Reading runtime не реализован. RC-1/RC-2/RC-3 не добавляют automatic parser/chunker/OCR, LLM/provider-driven reader, embeddings/ANN/vector DB, automatic cross-document reasoning engine или planner/belief-update authority.
+RC-4 реализует bounded deterministic proposition candidate registration из completed substantive RC-3 regions. Candidate требует declared target завершённого pass, а recorded outcome и текущий matching coverage должны быть `PROCESSED` или `REVISITED`. Candidate использует fidelity `EXTRACTED_PROPOSITION`, сохраняет primary/supporting replayable locators, source owner, source-presentation category, explicit negation и qualifiers, а также наследует source restriction/sensitivity metadata.
+
+`FACTUAL_ASSERTION` в RC-4 описывает то, как источник подаёт proposition; это не verification result Crystal. RC-4 не вызывает `core.evidence.attach_evidence()`, не пишет `evidence_spans`, не создаёт admitted fact, не меняет `truth_status`/ESM и не устанавливает evidence sufficiency.
 
 ```text
 coverage != comprehension proof
 pass completion != comprehension proof
 structure/order/prominence != epistemic authority
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
 ```
+
+Dedicated/full autonomous Reader / Semantic Reading runtime не реализован. RC-1/RC-2/RC-3/RC-4 не добавляют automatic parser/chunker/OCR, automatic NLP/LLM extraction, provider-driven reader, embeddings/ANN/vector DB, automatic cross-document proposition identity/reasoning engine или planner/belief-update authority.
 
 ## 9. Secret и privacy boundary
 
@@ -147,7 +157,7 @@ Credentials и credential-bearing DSNs не должны попадать в pro
 
 Migration и backup создают дополнительные копии. Erasure из active store не стирает эти копии автоматически. Операторам нужны inventory, retention и deletion procedures.
 
-Шифрование отдельных полей L1 не является универсальным шифрованием. Reader RC-1/RC-2/RC-3 не удерживают source body; производные Reader artifacts и pass records наследуют source restriction/sensitivity metadata.
+Шифрование отдельных полей L1 не является универсальным шифрованием. Reader RC-1/RC-2/RC-3/RC-4 не удерживают source body; производные Reader artifacts, pass records и proposition candidates наследуют source restriction/sensitivity metadata.
 
 ## 10. Таблица authority
 
@@ -156,6 +166,7 @@ Migration и backup создают дополнительные копии. Eras
 | Reader artifact существует | bounded source-linked observation/candidate | truth, admission или comprehension |
 | structural node существует | recovered/caller-supplied document metadata | confidence, truth или importance authority |
 | Reader pass завершается | declared targets получили явные legal coverage outcomes | comprehension, truth, evidence sufficiency или admission |
+| RC-4 proposition candidate существует | caller-supplied proposition привязана к eligible completed substantive Reader context | verified world fact, admitted evidence, confidence или Canon membership |
 | record хранится в L3 | physical persistence | strict Canon membership |
 | retrieval result | candidate relevance | evidence sufficiency |
 | backup verified | backup integrity | claim truth |
@@ -166,7 +177,7 @@ Migration и backup создают дополнительные копии. Eras
 
 ## 11. Текущие non-claims
 
-Crystal не заявляет active PostgreSQL runtime, automatic migration, accepted ANN production quality, cutover, rollback, dual-write, production multi-tenancy, distributed exactly-once coordination, завершённый dedicated/full autonomous Reader runtime, security/legal/GDPR certification или присуждённое финансирование NLnet.
+Crystal не заявляет active PostgreSQL runtime, automatic migration, accepted ANN production quality, cutover, rollback, dual-write, production multi-tenancy, distributed exactly-once coordination, завершённый dedicated/full autonomous Reader runtime или automatic NLP proposition extraction, security/legal/GDPR certification или присуждённое финансирование NLnet.
 
 ## 12. Подробные английские источники
 
