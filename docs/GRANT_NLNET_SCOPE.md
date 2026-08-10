@@ -2,40 +2,40 @@
 <!-- d4-source-scope: project-grant-governance-glossary -->
 # Velantrim Crystal — NLnet Grant Scope
 
-**Baseline date:** 2026-08-09  
+**Baseline date:** 2026-08-10  
 **Frozen runtime checkpoint:** `main@bbd816c09dd39a02e6de6c1014438490572f40f6`  
 **Validated runtime head / CI:** `d7af7c80722274f9217bc5545d150f92e9363f37` / `31256316536`  
 **PostgreSQL integration:** `31256316532`  
 **Grant status:** submitted / under review / not awarded  
 **Budget change:** none
 
-Velantrim Crystal is open-source, local-first verifiable memory infrastructure. References
-to GDPR mean **GDPR-oriented technical controls**, not automatic legal compliance or
-certification.
-
 This document describes public technical scope. It is not an award notice, signed agreement,
-approved budget or payment commitment.
+approved budget or payment commitment. References to GDPR mean GDPR-oriented technical controls,
+not automatic legal compliance or certification.
 
-## Current verified runtime baseline
+## Current verified baseline
 
-The trust/evidence/query/review and bounded storage baseline includes:
+The trust/evidence/query/review/storage baseline includes Guardian, TruthGate, read-only public
+query surfaces, source spans/document records/import sessions, SQLite ordinary active local-first,
+bounded logical export, inactive PostgreSQL 16 / pgvector import with exact equivalence and
+`active=false`, TRACE/Receipt, review/contradiction governance and all work already merged before
+an agreement.
 
-- Guardian structural/safety checks and TruthGate epistemic admission;
-- read-only public query surfaces with TRACE and receipts;
-- source spans, document records, import sessions and curator review paths;
-- durable SQLite ordinary active local-first profile;
-- bounded deterministic SQLite logical export and independent verification;
-- optional lazy Psycopg extra;
-- PostgreSQL 16 / pgvector 0.8.2 / Psycopg 3.3.x preflight;
-- TLS-required ordinary PostgreSQL path and explicit local-test-only plaintext override;
-- import into a fresh `active=false` schema only;
-- SERIALIZABLE transactional import from a verified bundle;
-- independent read-only target canonical re-hash;
-- exact record-count, canonical-byte-count and SHA-256 equivalence;
-- non-secret endpoint-bound receipts and redacted failures;
-- real PostgreSQL/pgvector integration evidence.
+Reader RC-1 and RC-2 are also existing pre-agreement baseline:
 
-Verification:
+```text
+reader_core_rc1_skeleton       = true
+reader_core_rc2_structural_map = true
+dedicated_reader_core          = false
+```
+
+RC-1 provides the bounded evidence-linked source/session skeleton. RC-2 provides the bounded
+caller-supplied Structural Document Map. They retain no source body, add no Reader API/CLI/worker
+or durable Reader storage schema and have no truth/Canon/ESM/planner authority. They do not provide
+automatic parser/OCR, Reader LLM/provider orchestration, embeddings/ANN/vector DB, multi-pass or
+cross-document reasoning.
+
+Verification remains:
 
 ```text
 Python 3.11 / 3.12: 2078 passed / 13 skipped / 0 failed
@@ -45,23 +45,14 @@ Python 3.11 / 3.12: 2078 passed / 13 skipped / 0 failed
 1/1 PostgreSQL integration job successful
 ```
 
-This establishes portable inactive migration evidence for approved physical-L3 datasets. It
-does not establish active PostgreSQL runtime, whole-system migration, institution-scale
-throughput, production multi-tenancy, legal certification or grant award.
-
 ## Current documentation baseline
 
-English is the working, source and conflict-resolving language. Current public baseline
-includes:
+English is the working/source/conflict-resolving language. Root READMEs and D1–D5 public families
+are current across nine supported locales after the Reader RC-1/RC-2 documentation reconciliation.
+Detailed volatile evidence remains English-only by design where policy says so.
 
-- full root README parity for nine supported locales;
-- D1 entry/use translations;
-- D2 reviewer/safety translations;
-- D3 architecture/storage-authority translations;
-- D4 English project/grant/governance/glossary source contracts before localized D4 refresh.
-
-Any localization or governance work merged before a grant agreement is existing baseline and
-cannot be budgeted again as funded delivery.
+Any localization, Reader RC-0/RC-1/RC-2, storage or governance work merged before a grant agreement
+is existing baseline and cannot be budgeted again as funded delivery.
 
 ## Baseline and funded-delta control
 
@@ -73,43 +64,25 @@ new measurable funded delta
 independently verifiable public deliverable
 ```
 
-Issues #331 and #332, PRs #335 and #337, and merged D1–D4 documentation work cannot be
-budgeted again. If `main` advances before an agreement, the baseline/funded-delta matrix must
-be reconciled so each funded package remains genuinely additional and independently auditable.
+If `main` advances before an agreement, the baseline/funded-delta matrix must be reconciled so each
+funded package remains genuinely additional and independently auditable.
 
-## Potential funded delta after the frozen baseline
+## Potential funded delta after the current baseline
 
 Qualifying future packages may include:
 
-1. **Reproducible release evidence**
-   - wheel/sdist/container reproduction;
-   - checksums, SBOM and supported-version manifest;
-   - clean-machine verification.
-2. **Exact-vs-ANN retrieval evaluation**
-   - exact pgvector search reference;
-   - versioned HNSW/IVFFlat corpus and thresholds;
-   - recall, latency, index-size, rebuild and stale-index evidence.
-3. **Explicit cutover and source/target fencing**
-   - immutable cutover receipt;
-   - no reachability-based or automatic switching;
-   - crash-window and partial-failure tests.
-4. **Rollback proof and expiry policy**
-   - explicit rollback receipt, validity window and deterministic recovery evidence.
-5. **PostgreSQL server lifecycle and operational security**
-   - least-privilege roles, certificate and credential rotation;
-   - backup, independent restore drill, retention and upgrade sequencing;
-   - pooling, timeout/retry and observability policy.
-6. **Evidence and TRACE inspection UX**
-   - source-span navigation and reviewer-facing uncertainty/refusal views;
-   - read-only, content-light audit export.
-7. **Source-linked Reader Core prototype**
-   - bounded structure maps, segmentation, candidate cards and coverage reports;
-   - output remains upstream of Guardian and TruthGate;
-   - no second Canon owner.
-8. **Maintenance and independent audit evidence**
-   - stronger claim lint, action/dependency pinning and public remediation reports.
+1. reproducible release artifacts, checksums, SBOM and clean-machine verification;
+2. exact-vs-ANN evaluation with versioned thresholds and reproducible reports;
+3. explicit source/target fencing, cutover receipts and rollback proof;
+4. PostgreSQL production roles, backup/restore/upgrade lifecycle and observability;
+5. reviewer-facing evidence/TRACE inspection UX;
+6. maintenance, claim lint and independent audit evidence;
+7. **Reader work strictly beyond RC-1/RC-2**, beginning only as separately reviewed new delta.
 
-A dedicated Reader Core is not implemented in the current baseline.
+For Reader, the next candidate is **RC-3 — explicit multi-pass reading mechanics**. A dedicated
+multi-pass Reader / Semantic Reading runtime is not implemented. RC-3 is not started and is not
+current implementation authority. Any funded Reader milestone must exclude RC-0 architecture,
+RC-1 skeleton and RC-2 Structural Document Map already merged pre-agreement.
 
 ## Critical distinctions and exclusions
 
@@ -118,22 +91,23 @@ physical L3          != strict Canon
 migration bundle     != claim evidence
 successful import    != activation
 exact equivalence    != production runtime
+Reader artifact      != admitted fact
+Reader coverage      != comprehension proof
+Reader structure     != epistemic authority
 GDPR-oriented design != legal certification
 submitted proposal   != awarded grant
 ```
 
-No automatic backend switching, active PostgreSQL runtime selection, ANN production
-acceptance, cutover, rollback, dual-write, production multi-tenancy, distributed
-exactly-once, universal truth, zero hallucinations, AGI or consciousness is claimed.
+No automatic backend switching, active PostgreSQL runtime selection, ANN production acceptance,
+cutover, rollback, dual-write, production multi-tenancy, distributed exactly-once, universal truth,
+zero hallucinations, AGI, consciousness or completed dedicated multi-pass Reader is claimed.
 
 ## Budget and award control
 
 The public funding-use plan discusses an approximate €50,000 request. It remains planning and
-transparency material until verified external communication establishes an agreement.
-
-Award or budget state may change only from authoritative external evidence, such as a signed
-grant agreement or Memorandum of Understanding. Private correspondence details are not
-published as runtime or budget claims.
+transparency material until verified external communication establishes an agreement. Award or
+budget state may change only from authoritative external evidence such as a signed grant agreement
+or Memorandum of Understanding.
 
 ## Authoritative supporting documents
 

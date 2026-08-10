@@ -1,18 +1,16 @@
-# 📌 Velantrim Crystal — текущий статус
-
-<!-- translation-source: docs/STATUS.md@16d71e731ee658b1faa65c9ea45c0d8cca290f7c -->
+<!-- translation-source: docs/STATUS.md@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
 <!-- translation-status: CURRENT -->
+<!-- d1-locale: ru -->
+# Velantrim Crystal — текущий статус
 
-> 🌐 🇬🇧 [English](../STATUS.md) · 🇩🇪 [Deutsch](../de/STATUS.md) · 🇫🇷 [Français](../fr/STATUS.md) · 🇪🇸 [Español](../es/STATUS.md) · 🇮🇹 [Italiano](../it/STATUS.md) · 🇷🇺 **Русский** · 🇨🇳 [简体中文](../zh-CN/STATUS.md) · 🇸🇦 [العربية](../ar/STATUS.md) · 🇯🇵 [日本語](../ja/STATUS.md) · 🇮🇳 [हिन्दी](../hi/STATUS.md)
-
-**Дата статуса:** 8 августа 2026 года  
+**Дата статуса:** 10 августа 2026 года  
 **Проверенный runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
-**Проверенное tree:** `f57e58a6f4d1954b649ba324996fcde42ac287b8`  
-**Валидированный implementation head:** `d7af7c80722274f9217bc5545d150f92e9363f37`  
+**Проверенное дерево:** `f57e58a6f4d1954b649ba324996fcde42ac287b8`  
+**Проверенный implementation head:** `d7af7c80722274f9217bc5545d150f92e9363f37`  
 **Runtime PR / CI:** #337 / `31256316536`  
 **PostgreSQL integration CI:** `31256316532`
 
-## Проверка
+## Верификация
 
 - Python 3.11: **2078 passed / 13 skipped / 0 failed**;
 - Python 3.12: **2078 passed / 13 skipped / 0 failed**;
@@ -20,34 +18,57 @@
 - `core/postgresql_migration.py`: **44/44 statements**;
 - `core/postgresql_migration_impl.py`: **336/336 statements**;
 - **7/7** заявленных Ring Zero mutants уничтожены;
-- **9/9** постоянных CI jobs завершились успешно;
-- **1/1** реальный PostgreSQL/pgvector integration job завершился успешно.
+- **9/9** постоянных CI jobs успешны;
+- **1/1** реальный PostgreSQL/pgvector integration job успешен.
 
-Точные evidence: [TEST_REPORT.md](../../TEST_REPORT.md) и
+Точные evidence: [`TEST_REPORT.md`](../../TEST_REPORT.md) и
 [machine-readable manifest](../status/implementation-manifest.json).
 
 ## Текущая проверенная граница возможностей
 
-Crystal сохраняет local-first SQLite baseline и реализует фазу 1 issue #332:
+Crystal сохраняет local-first SQLite baseline и проверенный неактивный путь PostgreSQL import/equivalence:
 
 ```text
 проверенный завершённый logical bundle
-→ preflight PostgreSQL 16 / pgvector 0.8.2
+→ PostgreSQL 16 / pgvector 0.8.2 preflight
 → новая неактивная target schema
 → serializable import
-→ независимый read-only canonical re-hash цели
-→ точная equivalence по count / byte / SHA-256
-→ receipts без секретов
+→ независимый read-only canonical target re-hash
+→ точная эквивалентность count / byte / SHA-256
+→ non-secret receipts
 ```
 
-PostgreSQL driver является optional extra и lazy-load выполняется только
-явными operator commands. Обычная установка остаётся на стандартной библиотеке
-Python. Импортированная цель:
+PostgreSQL driver — optional extra и lazy-load только для явных операторских команд. Стандартная установка остаётся на pure standard library. Импортированная target не регистрируется в обычной runtime composition, остаётся `active=false` и не может обслуживать обычные reads или writes.
 
-- не регистрируется в обычной runtime composition;
-- остаётся `active=false`;
-- не обслуживает normal reads или writes;
-- не становится выбранным backend из-за доступности, импорта или equivalence.
+## Bounded implementation Reader Core
+
+RC-0 — нормативный архитектурный контракт. Два ограниченных implementation milestone теперь смержены и протестированы:
+
+```text
+RC-1
+→ SourceVersion / SourceLocator
+→ ReaderSession / SegmentCard
+→ fidelity classes + coverage states
+→ bookmarks / open loops
+→ stale, failure и privacy semantics
+
+RC-2
+→ caller-supplied DocumentStructuralMap
+→ version-bound nodes, hierarchy и document order
+→ exact-span containment
+→ RECOVERED / AMBIGUOUS / UNSUPPORTED
+→ structural traversal / telemetry
+```
+
+Machine truth отличает эти foundation-слои от более крупной Reader capability:
+
+```text
+reader_core_rc1_skeleton       = true
+reader_core_rc2_structural_map = true
+dedicated_reader_core          = false
+```
+
+RC-1/RC-2 не удерживают source body и не добавляют durable Reader storage schema, public API/CLI/background worker, LLM/provider integration, embeddings/ANN/vector DB или multi-pass orchestration. У них нет метода или runtime wiring, который меняет `truth_status`/ESM, пишет strict Canon, обходит Guardian/TruthGate, разрешает contradictions или создаёт planner/belief-update authority. `coverage != comprehension proof`; structural position/order/prominence — metadata, а не truth/confidence authority.
 
 ## Граница authority
 
@@ -56,61 +77,28 @@ storage profile         = deployment identity
 migration bundle        = operation evidence
 physical L3             = multi-status storage
 strict Canon            = trusted read projection
+Reader artifact         = source-linked candidate/observation
+Reader structure        = document metadata
 migration/import        != TruthGate admission
 successful equivalence  != backend activation
+Reader coverage         != comprehension proof
+Reader structure        != epistemic authority
 ```
 
-Guardian, TruthGate, restrictions, TrustSnapshot и CanonicalView не изменены.
-Перевод документа также не создаёт отдельную authority над кодом или evidence.
+Guardian, TruthGate, restrictions, TrustSnapshot и CanonicalView остаются неизменными.
 
-## Что ещё отсутствует
+## Что всё ещё отсутствует
 
 - active PostgreSQL read/write runtime selection;
-- exact-vs-ANN retrieval evaluation и принятые ANN thresholds;
-- activation, cutover, source/target fencing, rollback и dual-write;
+- exact-vs-ANN retrieval evaluation и accepted ANN thresholds;
+- activation, cutover, source/target fencing, rollback или dual-write;
 - PostgreSQL backup/restore/upgrade lifecycle, production pooling и distributed fencing;
-- production IdP/multi-tenancy;
-- legal, security или GDPR certification;
-- dedicated verified Reader Core / Semantic Reading Layer.
-
-## Граница публичных claims
-
-Crystal можно описывать как:
-
-- local-first инфраструктуру памяти ИИ с provenance и auditability;
-- систему с явными admission и read-only query boundaries;
-- SQLite-baseline с проверенной backup/restore и logical portability;
-- систему с неактивным PostgreSQL import/equivalence operator path;
-- open-source baseline, которую можно независимо тестировать.
-
-Crystal нельзя описывать как:
-
-- активный PostgreSQL runtime;
-- систему с automatic backend switching;
-- production-ready multi-tenant service;
-- юридически или security-сертифицированный продукт;
-- универсальный источник истины или гарантию zero hallucinations;
-- сознательную систему.
+- production IdP/multi-tenancy и legal/security/GDPR certification;
+- automatic Reader parser/semantic chunker/OCR/PDF-layout или multimodal understanding;
+- dedicated multi-pass Reader orchestration / Semantic Reading runtime;
+- Reader LLM/provider, embeddings, ANN/vector database или cross-document reasoning engine.
 
 ## Статус гранта
 
-Проект подан в NLnet и находится на рассмотрении. **Получение гранта или
-изменение бюджета не заявляется.**
-
-PR #337 и issue #332 уже являются merged baseline и не могут повторно
-учитываться как будущий funded delta. Следующая storage-фаза должна быть
-отдельно специфицирована, проверена и находиться за пределами inactive import
-и exact equivalence.
-
-## Навигация
-
-- [Быстрый старт](./QUICKSTART.md)
-- [Статус реализации](./IMPLEMENTATION_STATUS.md)
-- [Русский README](../../README.ru.md)
-- [Английский нормативный статус](../STATUS.md)
-- [Отчёт о тестах](../../TEST_REPORT.md)
-- [Архитектура inactive PostgreSQL import](../architecture/POSTGRESQL_INACTIVE_IMPORT.md)
-- [Политика локализации](../LOCALIZATION_POLICY.md)
-
-> При расхождении действует актуальный GitHub `main`, executable tests и
-> английский исходный документ, указанный в `translation-source`.
+Проект подан и находится на рассмотрении. **Award или budget change не заявляются.** PR #337,
+Reader RC-0/RC-1/RC-2 и другая работа, смерженная до любого соглашения, являются existing baseline и не могут повторно считаться future funded delta. Будущее финансирование должно начинаться с отдельно рассмотренной работы за пределами проверенного pre-agreement baseline.

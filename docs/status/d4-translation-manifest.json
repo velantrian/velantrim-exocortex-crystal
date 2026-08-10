@@ -1,16 +1,17 @@
 {
   "schema_version": 1,
   "phase": "D4",
-  "status_date": "2026-08-09",
+  "status_date": "2026-08-10",
   "tracking_issue": 341,
-  "english_source_checkpoint": "151b41c680190f7f3de729bf63e8e80a9d2285ce",
-  "source_documents": [
-    "docs/PROJECT_GRANT_AND_GOVERNANCE.md",
-    "docs/GLOSSARY.md"
-  ],
-  "current_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN"],
+  "english_source_checkpoint": "6b45bdd196eb42dea7bc30f58d69799b4b1712f2",
+  "source_documents": ["docs/PROJECT_GRANT_AND_GOVERNANCE.md", "docs/GLOSSARY.md"],
+  "current_locales": ["ru"],
+  "refresh_needed_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"],
   "pending_locales": [],
   "current_documents": {
+    "ru": ["docs/ru/GRANT_OVERVIEW.md", "docs/ru/GLOSSARY.md"]
+  },
+  "refresh_needed_documents": {
     "ar": ["docs/ar/GRANT_OVERVIEW.md", "docs/ar/GLOSSARY.md"],
     "de": ["docs/de/GRANT_OVERVIEW.md", "docs/de/GLOSSARY.md"],
     "es": ["docs/es/GRANT_OVERVIEW.md", "docs/es/GLOSSARY.md"],
@@ -18,23 +19,16 @@
     "hi": ["docs/hi/GRANT_OVERVIEW.md", "docs/hi/GLOSSARY.md"],
     "it": ["docs/it/GRANT_OVERVIEW.md", "docs/it/GLOSSARY.md"],
     "ja": ["docs/ja/GRANT_OVERVIEW.md", "docs/ja/GLOSSARY.md"],
-    "ru": ["docs/ru/GRANT_OVERVIEW.md", "docs/ru/GLOSSARY.md"],
     "zh-CN": ["docs/zh-CN/GRANT_OVERVIEW.md", "docs/zh-CN/GLOSSARY.md"]
   },
-  "locale_indexes": [
-    "docs/ar/README.md", "docs/de/README.md", "docs/es/README.md",
-    "docs/fr/README.md", "docs/hi/README.md", "docs/it/README.md",
-    "docs/ja/README.md", "docs/ru/README.md", "docs/zh-CN/README.md"
-  ],
-  "detailed_english_contracts": [
-    "docs/GRANT_NLNET_SCOPE.md", "ROADMAP.md", "GOVERNANCE.md", "CONTRIBUTING.md",
-    "docs/grants/baseline-funded-delta-matrix.md", "docs/grants/funding-use-plan.md"
-  ],
+  "locale_indexes": ["docs/ar/README.md", "docs/de/README.md", "docs/es/README.md", "docs/fr/README.md", "docs/hi/README.md", "docs/it/README.md", "docs/ja/README.md", "docs/ru/README.md", "docs/zh-CN/README.md"],
   "native_speaker_editorial_certification": false,
   "security_legal_gdpr_certification_claim": false,
   "nlnet_awarded_claim": false,
   "approved_budget_claim": false,
   "budget_change_claim": false,
-  "reader_core_implemented_claim": false,
+  "reader_core_rc1_skeleton_claim": true,
+  "reader_core_rc2_structural_map_claim": true,
+  "dedicated_reader_core_implemented_claim": false,
   "active_postgresql_runtime_claim": false
 }

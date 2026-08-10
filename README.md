@@ -14,6 +14,7 @@
 **Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` — merged PR #337.  
 **Validated runtime head / CI:** `d7af7c80722274f9217bc5545d150f92e9363f37` / `31256316536` — 9/9 successful.  
 **PostgreSQL integration:** `31256316532` — successful against PostgreSQL 16 and pgvector 0.8.2.  
+**Reader foundation:** RC-1 evidence-linked skeleton + RC-2 caller-supplied Structural Document Map are implemented and tested; the dedicated multi-pass Reader runtime remains **not implemented**.  
 **Exact public evidence:** [TEST_REPORT.md](./TEST_REPORT.md), [STATUS.md](./docs/STATUS.md) and the [machine-readable implementation manifest](./docs/status/implementation-manifest.json).
 
 > **Documentation language policy:** English is the primary working and source language,
@@ -41,12 +42,15 @@ A model output is not an independent factual source.
 A contradiction does not select its own winner.
 A topic label is not a truth verdict.
 A successful data import is not backend activation.
+Reader structure or coverage is not epistemic authority.
 ```
 
 ## 🧠 What Crystal provides
 
 - typed claims and an explicit epistemic lifecycle;
 - source identity, evidence spans and provenance;
+- bounded Reader RC-1 source/session artifacts with fidelity and coverage semantics;
+- bounded Reader RC-2 caller-supplied structural document maps with explicit ambiguity;
 - Guardian and TruthGate admission boundaries;
 - a multi-status physical L3 graph separated from strict Canon;
 - immutable deny-dominant `TrustSnapshot` read reconciliation;
@@ -62,6 +66,11 @@ A successful data import is not backend activation.
 - verified SQLite backup/restore and bounded logical migration;
 - optional PostgreSQL/pgvector inactive import with independent exact-state equivalence.
 
+Reader RC-1/RC-2 retain no source body, add no public Reader API/CLI or durable Reader
+storage schema, and have no truth/Canon/ESM/planner authority. They do **not** provide an
+automatic parser, multi-pass orchestration, LLM/provider integration, embeddings, ANN or
+vector-database Reader stack. `coverage != comprehension proof`.
+
 ## 🏛️ Architecture in three views
 
 ### 🧠 Mind map — purpose and authority boundaries
@@ -73,6 +82,11 @@ A successful data import is not backend activation.
 │   ├── Verifiable memory for AI systems
 │   ├── Local-first trust infrastructure
 │   └── Answers and decisions linked to evidence
+│
+├── 📖 Reader foundation
+│   ├── RC-1 — evidence-linked source/session skeleton
+│   ├── RC-2 — caller-supplied Structural Document Map
+│   └── dedicated multi-pass Reader — not implemented
 │
 ├── 🏛️ Memory model
 │   ├── L0 — fast working cache
@@ -177,6 +191,10 @@ A successful data import is not backend activation.
 ```text
 🌳 Crystal
 │
+├── 📖 Reader foundation
+│   ├── core/reader_core.py — RC-1 source/session artifacts
+│   └── core/reader_structure.py — RC-2 Structural Document Map
+│
 ├── 🧠 Memory surfaces
 │   ├── L0 — rebuildable working cache
 │   ├── L1 — SQLite/WAL operational state
@@ -232,6 +250,8 @@ TopicFacet relevance != truth
 migration receipt    != claim evidence
 successful import    != backend activation
 process-local lease  != distributed coordination
+Reader coverage      != comprehension proof
+Reader structure     != truth/confidence authority
 ```
 
 TruthGate is an admission-policy gate, not an oracle that independently knows
@@ -242,6 +262,8 @@ status, ESM state, confidence shape and processing restrictions.
 
 | Surface | Role | Critical boundary |
 |---|---|---|
+| Reader RC-1 | evidence-linked source/session artifacts | observations and coverage do not admit truth |
+| Reader RC-2 | version-bound structural map | order/prominence is metadata, not authority |
 | L0 | in-process working cache | fast and rebuildable |
 | L1 | SQLite/WAL operational memory | lifecycle, restrictions and pending work |
 | L2 | logical review boundary | not automatically strict Canon |
@@ -295,6 +317,7 @@ profiles, bundles, receipts, application logs, GitHub issues or Notion.
 | Find relevant material | primary strength | supported through retrieval adapters |
 | Separate user claim from verified fact | application-specific | explicit typed boundary |
 | Track lifecycle and contradictions | usually external logic | first-class states and reports |
+| Preserve version-bound reading artifacts | application-specific | RC-1/RC-2 bounded Reader foundation |
 | Prevent generated text becoming its own source | not inherent | Ring Zero admission invariant |
 | Replay answer evidence | optional | TRACE and Receipt architecture |
 | Resolve contradictions accountably | application-specific | explicit authorized dispositions |
@@ -361,6 +384,7 @@ Continue with [QUICKSTART.md](./docs/QUICKSTART.md).
 - [Current status](./docs/STATUS.md)
 - [Implementation matrix](./docs/IMPLEMENTATION_STATUS.md)
 - [Machine-readable manifest](./docs/status/implementation-manifest.json)
+- [Reader Core architecture contract](./docs/architecture/READER_CORE_ARCHITECTURE.md)
 - [Architecture](./docs/ARCHITECTURE.md)
 - [Inactive PostgreSQL import contract](./docs/architecture/POSTGRESQL_INACTIVE_IMPORT.md)
 - [PostgreSQL/pgvector RFC](./docs/architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
@@ -384,6 +408,9 @@ Coverage:    100.00%
 Mutation:    7/7 declared Ring Zero mutants killed
 CI jobs:     9/9
 PostgreSQL integration: successful against PostgreSQL 16 + pgvector 0.8.2
+Reader RC-1: implemented/tested bounded evidence-linked skeleton
+Reader RC-2: implemented/tested bounded Structural Document Map
+Dedicated multi-pass Reader: not implemented
 ```
 
 ## 🚧 Boundary of the claim
@@ -398,6 +425,7 @@ Crystal does not claim:
 - artificial consciousness, AGI or a “living digital personality”;
 - an active PostgreSQL runtime, automatic switching, cutover or rollback;
 - a completed dedicated multi-pass Reader Core;
+- automatic Reader parsing, LLM orchestration, embeddings/ANN/vector search or comprehension proof;
 - Titan, Full Exo-Cortex, Mentaury or Native Kernel functionality as current runtime.
 
 The NLnet proposal remains **submitted / under review / not awarded**. Merged

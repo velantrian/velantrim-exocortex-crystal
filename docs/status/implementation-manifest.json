@@ -13,10 +13,7 @@
     "description": "Optional inactive PostgreSQL/pgvector import and independent exact-state equivalence for verified logical bundles"
   },
   "tests": {
-    "python_versions": [
-      "3.11",
-      "3.12"
-    ],
+    "python_versions": ["3.11", "3.12"],
     "passed": 2078,
     "skipped": 13,
     "failed": 0,
@@ -25,17 +22,7 @@
   },
   "ci": {
     "job_count": 9,
-    "jobs": [
-      "code-quality",
-      "test (3.11)",
-      "test (3.12)",
-      "jsonl-integrity",
-      "eval-gate",
-      "security",
-      "docker-build",
-      "Ring Zero mutation gate",
-      "docs-status"
-    ],
+    "jobs": ["code-quality", "test (3.11)", "test (3.12)", "jsonl-integrity", "eval-gate", "security", "docker-build", "Ring Zero mutation gate", "docs-status"],
     "all_successful": true
   },
   "postgresql_integration": {
@@ -50,11 +37,7 @@
     "ann_indexes_present": false,
     "test_service_only": true
   },
-  "mutation_gate": {
-    "declared_mutants": 7,
-    "killed_mutants": 7,
-    "scope": "targeted Ring Zero semantic mutations"
-  },
+  "mutation_gate": {"declared_mutants": 7, "killed_mutants": 7, "scope": "targeted Ring Zero semantic mutations"},
   "implemented_boundaries": {
     "truth_policy_runtime_bypass_present": false,
     "physical_l3_equals_strict_canon": false,
@@ -128,10 +111,7 @@
     "bounded_streaming_issue_completed": 331,
     "postgresql_inactive_import_issue_completed": 332,
     "resource_benchmark_ci": 31224005804,
-    "benchmark_primary_records": [
-      1025,
-      8193
-    ],
+    "benchmark_primary_records": [1025, 8193],
     "benchmark_is_production_slo": false
   },
   "documentation": {
@@ -141,100 +121,38 @@
     "localized_readmes": "all_supported_locales_full_visual_and_semantic_parity",
     "translation_status_ledger": "docs/TRANSLATION_STATUS.md",
     "localization_policy": "docs/LOCALIZATION_POLICY.md",
-    "localized_readme_source_checkpoint": "e521440e9bb188d88475f17dd5bcdd161b314605",
+    "localized_readme_source_checkpoint": "6b45bdd196eb42dea7bc30f58d69799b4b1712f2",
     "supported_localized_readme_count": 9,
-    "full_parity_current_locales": [
-      "ar",
-      "de",
-      "es",
-      "fr",
-      "hi",
-      "it",
-      "ja",
-      "ru",
-      "zh-CN"
-    ],
+    "full_parity_current_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN"],
     "orientation_only_locales": [],
     "broader_document_translation": "phased_by_language_or_document_family",
     "full_corpus_translation_required_in_single_pr": false,
     "translation_tracking_issue": 341,
-    "d1_current_locales": [
-      "ar",
-      "de",
-      "es",
-      "fr",
-      "hi",
-      "it",
-      "ja",
-      "ru",
-      "zh-CN"
-    ],
-    "d1_source_checkpoints": {
-      "ar": "a497b7d3cfbe59ca75b11d7449d5a728455b3130",
-      "de": "a497b7d3cfbe59ca75b11d7449d5a728455b3130",
-      "es": "a497b7d3cfbe59ca75b11d7449d5a728455b3130",
-      "fr": "a497b7d3cfbe59ca75b11d7449d5a728455b3130",
-      "hi": "a497b7d3cfbe59ca75b11d7449d5a728455b3130",
-      "it": "a497b7d3cfbe59ca75b11d7449d5a728455b3130",
-      "ja": "a497b7d3cfbe59ca75b11d7449d5a728455b3130",
-      "ru": "16d71e731ee658b1faa65c9ea45c0d8cca290f7c",
-      "zh-CN": "a497b7d3cfbe59ca75b11d7449d5a728455b3130"
-    },
+    "d1_source_checkpoint": "6b45bdd196eb42dea7bc30f58d69799b4b1712f2",
+    "d1_current_locales": ["ru"],
+    "d1_refresh_needed_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"],
     "d1_current_documents": {
-      "ar": [
-        "docs/ar/README.md",
-        "docs/ar/QUICKSTART.md",
-        "docs/ar/STATUS.md",
-        "docs/ar/IMPLEMENTATION_STATUS.md"
-      ],
-      "de": [
-        "docs/de/README.md",
-        "docs/de/QUICKSTART.md",
-        "docs/de/STATUS.md",
-        "docs/de/IMPLEMENTATION_STATUS.md"
-      ],
-      "es": [
-        "docs/es/README.md",
-        "docs/es/QUICKSTART.md",
-        "docs/es/STATUS.md",
-        "docs/es/IMPLEMENTATION_STATUS.md"
-      ],
-      "fr": [
-        "docs/fr/README.md",
-        "docs/fr/QUICKSTART.md",
-        "docs/fr/STATUS.md",
-        "docs/fr/IMPLEMENTATION_STATUS.md"
-      ],
-      "hi": [
-        "docs/hi/README.md",
-        "docs/hi/QUICKSTART.md",
-        "docs/hi/STATUS.md",
-        "docs/hi/IMPLEMENTATION_STATUS.md"
-      ],
-      "it": [
-        "docs/it/README.md",
-        "docs/it/QUICKSTART.md",
-        "docs/it/STATUS.md",
-        "docs/it/IMPLEMENTATION_STATUS.md"
-      ],
-      "ja": [
-        "docs/ja/README.md",
-        "docs/ja/QUICKSTART.md",
-        "docs/ja/STATUS.md",
-        "docs/ja/IMPLEMENTATION_STATUS.md"
-      ],
-      "ru": [
-        "docs/ru/README.md",
-        "docs/ru/QUICKSTART.md",
-        "docs/ru/STATUS.md",
-        "docs/ru/IMPLEMENTATION_STATUS.md"
-      ],
-      "zh-CN": [
-        "docs/zh-CN/README.md",
-        "docs/zh-CN/QUICKSTART.md",
-        "docs/zh-CN/STATUS.md",
-        "docs/zh-CN/IMPLEMENTATION_STATUS.md"
-      ]
+      "ru": ["docs/ru/README.md", "docs/ru/QUICKSTART.md", "docs/ru/STATUS.md", "docs/ru/IMPLEMENTATION_STATUS.md"]
+    },
+    "d1_unchanged_current_documents": {
+      "ar": ["docs/ar/QUICKSTART.md"],
+      "de": ["docs/de/QUICKSTART.md"],
+      "es": ["docs/es/QUICKSTART.md"],
+      "fr": ["docs/fr/QUICKSTART.md"],
+      "hi": ["docs/hi/QUICKSTART.md"],
+      "it": ["docs/it/QUICKSTART.md"],
+      "ja": ["docs/ja/QUICKSTART.md"],
+      "zh-CN": ["docs/zh-CN/QUICKSTART.md"]
+    },
+    "d1_refresh_needed_documents": {
+      "ar": ["docs/ar/STATUS.md", "docs/ar/IMPLEMENTATION_STATUS.md"],
+      "de": ["docs/de/STATUS.md", "docs/de/IMPLEMENTATION_STATUS.md"],
+      "es": ["docs/es/STATUS.md", "docs/es/IMPLEMENTATION_STATUS.md"],
+      "fr": ["docs/fr/STATUS.md", "docs/fr/IMPLEMENTATION_STATUS.md"],
+      "hi": ["docs/hi/STATUS.md", "docs/hi/IMPLEMENTATION_STATUS.md"],
+      "it": ["docs/it/STATUS.md", "docs/it/IMPLEMENTATION_STATUS.md"],
+      "ja": ["docs/ja/STATUS.md", "docs/ja/IMPLEMENTATION_STATUS.md"],
+      "zh-CN": ["docs/zh-CN/STATUS.md", "docs/zh-CN/IMPLEMENTATION_STATUS.md"]
     },
     "d1_pending_locales": []
   },

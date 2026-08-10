@@ -2,211 +2,192 @@
 
 > 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 **Italiano** · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
 
-<!-- localization-source: main@e521440e9bb188d88475f17dd5bcdd161b314605 -->
-<!-- localization-status: IN_PROGRESS -->
+<!-- localization-source: main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
+<!-- localization-status: CURRENT -->
 
-### Infrastruttura local-first e verificabile di memoria, evidenza e decisione per sistemi di IA affidabili
+### Infrastruttura local-first verificabile di memoria, evidenza e decisione per sistemi di IA affidabili
 
-`v0.3.0` · 🧪 **2078 superati / 13 ignorati / 0 falliti** · 🎯 **9756 istruzioni / 100,00% copertura delle linee** · 🧬 **7/7 mutanti Ring Zero eliminati** · ✅ **9 job CI permanenti** · 🐍 **runtime predefinito solo con la libreria standard Python** · ⚖️ **AGPL-3.0**
+`v0.3.0` · 🧪 **2078 passed / 13 skipped / 0 failed** · 🎯 **9756 statements / 100.00% line coverage** · 🧬 **7/7 Ring Zero mutants killed** · ✅ **9 CI jobs** · 🐍 runtime stdlib-only predefinito · ⚖️ **AGPL-3.0**
 
-> Crystal non è un altro chatbot e non è un «oracolo della verità» autonomo. È un confine di memoria, evidenza e decisione che registra che cosa sia un’affermazione, da dove provenga, in quale stato epistemico si trovi, se possa fondare una risposta e come una contraddizione sia stata risolta mediante una decisione esplicita e verificabile.
+> Crystal non è un chatbot né un oracolo autonomo di verità. È una boundary di memoria, evidence e decisione che conserva provenance, stato epistemico, idoneità al grounding e decisioni auditabili sulle contraddizioni.
 
-**Checkpoint runtime verificato:** `bbd816c09dd39a02e6de6c1014438490572f40f6` — PR #337 unita.  
-**Head validato / CI:** `d7af7c80722274f9217bc5545d150f92e9363f37` / `31256316536` — 9/9 riusciti.  
-**Integrazione PostgreSQL:** `31256316532` — PostgreSQL 16 e pgvector 0.8.2.  
-**Evidenza primaria:** [TEST_REPORT.md](./TEST_REPORT.md), [STATUS.md](./docs/STATUS.md) e il [manifest leggibile dalla macchina](./docs/status/implementation-manifest.json).
+**Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` — PR #337.  
+**Reader foundation:** RC-1 evidence-linked skeleton e RC-2 caller-supplied Structural Document Map sono implementati/testati; il Reader multi-pass dedicato non è implementato.  
+**Grant:** `submitted / under review / not awarded`.  
+**Evidence:** [TEST_REPORT.md](./TEST_REPORT.md), [STATUS.md](./docs/STATUS.md), [implementation manifest](./docs/status/implementation-manifest.json).
 
-> **Contratto di traduzione:** questo file è una presentazione italiana completa, visiva e semantica, non un riepilogo. L’inglese resta la fonte di lavoro primaria. Gli altri documenti vengono tradotti progressivamente; vedi [politica di localizzazione](./docs/LOCALIZATION_POLICY.md) e [stato delle traduzioni](./docs/TRANSLATION_STATUS.md).
+> L’inglese resta la fonte primaria e risolve le divergenze. Questa è una presentazione pubblica completa, non un riassunto breve. Vedi [docs/LOCALIZATION_POLICY.md](./docs/LOCALIZATION_POLICY.md) e [docs/TRANSLATION_STATUS.md](./docs/TRANSLATION_STATUS.md).
 
 ---
 
 ## 🎯 Perché esiste Crystal
 
-Molti sistemi di IA mescolano documenti sorgente, dichiarazioni dell’utente, output del modello, ipotesi, frammenti recuperati e memoria durevole nello stesso contesto o archivio vettoriale. Un testo convincente può così ricevere un’autorità che le sue prove non giustificano.
+Molti sistemi AI/RAG mescolano documenti, dichiarazioni utente, model output, ipotesi e memoria. Un testo fluente può ottenere un’autorità non sostenuta dalla sua evidence.
 
 ```text
-Un’affermazione fluente non è automaticamente affidabile.
-Un nodo del grafo fisico non è automaticamente Canon rigoroso.
-Un punteggio di retrieval non è evidenza.
-Un output del modello non è una fonte fattuale indipendente.
-Una contraddizione non sceglie da sola il vincitore.
-Un’etichetta tematica non è un verdetto di verità.
-Un import riuscito non attiva il backend.
+fluent claim        != trusted fact
+physical L3         != strict Canon
+retrieval score     != evidence
+model output        != independent source truth
+migration receipt   != claim evidence
+import success      != backend activation
+Reader coverage     != comprehension proof
+Reader structure    != truth/confidence authority
 ```
 
-## 🧠 Che cosa offre Crystal
+## 🧠 Cosa fornisce Crystal
 
-- affermazioni tipizzate e ciclo di vita epistemico esplicito;
-- identità della fonte, span esatti di evidenza e provenienza;
-- confini di ammissione Guardian e TruthGate;
-- grafo fisico L3 multi-stato separato dal Canon rigoroso;
-- `TrustSnapshot` immutabile e deny-dominant;
-- superfici pubbliche HTTP, CLI e MCP in sola lettura;
-- TRACE e Receipt riproducibili e anti-manomissione;
-- restrizioni, cancellazione, audit e sessioni di importazione;
-- code di revisione e sessioni riprendibili;
-- report di contraddizione immutabili;
-- decisioni `COEXIST`, `CONTEXTUALIZE`, `SUPERSEDE`;
-- capacità scoped del curatore e lease locali al processo;
-- TopicFacet consultivo senza autorità sulla verità;
-- valutazione deterministica, copertura 100% e mutation gate Ring Zero;
-- backup/restore SQLite e migrazione logica limitata verificati;
-- import PostgreSQL/pgvector inattivo con equivalenza esatta indipendente.
+- claims tipizzati e lifecycle epistemico esplicito;
+- source identity, evidence spans e provenance;
+- Guardian e TruthGate come admission boundaries;
+- physical L3 multi-status separato da strict Canon;
+- TrustSnapshot e CanonicalView deny-dominant;
+- HTTP /ask, CLI ask e MCP search read-only;
+- TRACE e Receipts replayable/tamper-evident;
+- review queue/session e ContradictionReport;
+- decisioni COEXIST / CONTEXTUALIZE / SUPERSEDE;
+- curator capabilities scoped e process-local leases;
+- lifecycle SQLite e bounded logical migration;
+- import PostgreSQL/pgvector opzionale e inattivo con `active=false`;
+- RC-1: source/version/session, SegmentCard, fidelity, coverage, bookmarks/open loops, stale/failure/privacy;
+- RC-2: struttura caller-supplied version-bound con RECOVERED / AMBIGUOUS / UNSUPPORTED.
+
+RC-1/RC-2 non conservano source body, non aggiungono Reader API/CLI/worker o durable Reader schema e non hanno Canon/ESM/planner authority. Nessun parser/OCR automatico, Reader LLM/provider orchestration, embeddings/ANN/vector DB o runtime multi-pass/cross-document.
 
 ## 🏛️ Architettura in tre viste
 
-### 🧠 Mappa mentale
+### 🧠 Mind map
 
 ```text
 🧠 Crystal
-├── 🎯 Scopo
-│   ├── memoria verificabile per l’IA
-│   ├── infrastruttura di fiducia local-first
-│   └── risposte e decisioni collegate alle prove
-├── 🏛️ Memoria
-│   ├── L0 — cache di lavoro veloce
-│   ├── L1 — stato operativo e ciclo di vita
-│   ├── L2 — confine di attesa/revisione
-│   └── L3 — grafo fisico multi-stato
-├── 🛡️ Fiducia
+├── 📖 Reader foundation
+│   ├── RC-1 evidence-linked skeleton
+│   ├── RC-2 Structural Document Map
+│   └── dedicated multi-pass Reader — NOT IMPLEMENTED
+├── 🏛️ Memory
+│   ├── L0 — working cache
+│   ├── L1 — operational SQLite/WAL
+│   ├── L2 — pending/review
+│   └── L3 — physical multi-status graph
+├── 🛡️ Trust
 │   ├── Guardian
 │   ├── TruthGate
 │   ├── TrustSnapshot
 │   └── CanonicalView
-├── 📜 Evidenza
-│   ├── fonte + span esatto
-│   ├── provenienza
-│   ├── TRACE
-│   └── Receipt
-├── ⚖️ Contraddizione
-│   ├── coda/sessione di revisione
-│   ├── ContradictionReport
-│   └── COEXIST / CONTEXTUALIZE / SUPERSEDE
-├── 🗄️ Archiviazione
-│   ├── SQLite — profilo local-first ordinario
-│   └── PostgreSQL/pgvector — destinazione inattiva
-└── 📊 Verifica
-    ├── Python 3.11 / 3.12
-    ├── copertura 100%
-    ├── mutazione / sicurezza / Docker
-    └── evidenza CI esatta
+└── 🗄️ Storage
+    ├── SQLite — active local-first
+    └── PostgreSQL/pgvector — inactive active=false
 ```
 
-### 🏗️ Flusso delle informazioni
+### 🏗️ Flusso informativo
 
 ```text
-📥 ingest esplicito
-        ↓
-🧾 tipo di claim + fonte + span esatto di evidenza
-        ↓
-🧠 stato osservato in L0/L1
-        ↓
-🛡️ Guardian → ⚖️ TruthGate → 🚧 restrizioni
-        ↓                         ↓
-⏳ revisione L2             🏛️ grafo fisico L3
-        └──────────────┬──────────┘
-                       ↓
-             📐 TrustSnapshot immutabile
-                       ↓
-          🛡️ Guardian + CanonicalView STRICT
-                  ↓                 ↓
-          💬 risposta fondata      🚫 rifiuto motivato
-                  ↓
-             🧾 Receipt riproducibile
+Source / document
+      ↓
+RC-1 Reader artifacts
+      ↓
+RC-2 structural metadata
+      ↓
+explicit ingest / review
+      ↓
+Guardian → TruthGate
+      ↓
+L1 + physical L3
+      ↓
+TrustSnapshot → CanonicalView STRICT
+      ↓
+Grounded answer / bounded refusal
+      ↓
+TRACE + Receipt
 ```
 
 ### 🌳 Albero dei moduli
 
 ```text
-🌳 Crystal
-├── 🧠 Memory: L0 / L1 / L2 / L3
-├── 🛡️ Trust: Guardian / TruthGate / TrustSnapshot / CanonicalView
-├── 📜 Evidence: Source / Span / Provenance / TRACE / Receipt
-├── ⚖️ Review: Queue / Session / ContradictionReport / Disposition
-├── 🔎 Query: HTTP / CLI / MCP
-├── 🗄️ Portability: SQLite lifecycle / bundle logico / import PostgreSQL inattivo
-└── 📊 Verification: test / copertura / mutazione / sicurezza / Docker / docs-status
+🌳 core
+├── reader_core.py       # RC-1
+├── reader_structure.py  # RC-2
+├── evidence.py
+├── truth_gate.py
+├── pipeline.py
+├── query_pipeline.py
+└── storage/...
 ```
 
-## 🧭 Distinzioni centrali
+## 🧱 Superfici memory e authority
 
-```text
-grafo fisico L3      != Canon rigoroso
-query                != ingest
-confidence           != evidenza indipendente
-output LLM           != fonte fattuale indipendente
-rilevare conflitto   != vincitore automatico
-rilevanza TopicFacet != verità
-Receipt di migrazione != evidenza di claim
-import riuscito      != attivazione backend
-lease locale         != coordinamento distribuito
-```
-
-TruthGate è un gate di politica di ammissione, non un oracolo. Il Canon rigoroso è una proiezione di lettura consentita dalla policy su evidenza, stato, ESM, forma della confidence e restrizioni di trattamento.
-
-## 🧱 Superfici di memoria ed evidenza
-
-| Superficie | Ruolo | Confine critico |
+| Superficie | Ruolo | Limite |
 |---|---|---|
-| L0 | cache di lavoro nel processo | veloce e ricostruibile |
-| L1 | memoria operativa SQLite/WAL | ciclo di vita e restrizioni |
-| L2 | confine logico di revisione | non automaticamente Canon |
-| L3 | memoria fisica multi-stato | presenza ≠ fiducia |
-| TrustSnapshot | riconciliazione immutabile | risoluzione deny-dominant |
-| CanonicalView | proiezione rigorosa | solo letture consentite |
-| TRACE / Receipt | prova e replay | grounding, deriva, manomissione |
-| ContradictionReport | conflitto immutabile | confidence non decide |
-| TopicFacet | navigazione | non cambia verità o Canon |
+| Reader RC-1 | source-linked artifacts | candidate ≠ truth |
+| Reader RC-2 | structural map | order ≠ authority |
+| L0 | working cache | ephemeral |
+| L1 | operational state | durable |
+| L2 | review/pending | nessuna admission automatica |
+| L3 | physical graph | multi-status |
+| TrustSnapshot | reconciliation | deny-dominant |
+| CanonicalView | grounding | policy-allowed only |
+| TRACE / Receipt | audit/replay | evidence, non truth generator |
+| ContradictionReport | conflitto | nessun winner automatico |
 
 ## 🗄️ SQLite e PostgreSQL/pgvector
 
 ```text
 SQLite
-└── runtime local-first ordinario
-    ├── letture/scritture
+└── ordinary active local-first runtime
+    ├── reads/writes
     ├── backup/restore
-    ├── recupero dei lock
-    └── export logico canonico limitato
+    └── bounded logical export
 
 PostgreSQL 16 + pgvector
-└── profilo opzionale di migrazione/equivalenza
-    ├── extra opzionale [postgresql]
-    ├── caricamento lazy del driver
-    ├── nuovo schema destinazione
-    ├── active=false
-    ├── import SERIALIZABLE
-    └── equivalenza indipendente count/byte/SHA-256
+└── optional inactive target
+    ├── explicit optional dependency
+    ├── SERIALIZABLE import
+    ├── exact target re-hash
+    └── active=false
 ```
 
-La destinazione PostgreSQL è assente dalla composizione runtime ordinaria e non serve letture o scritture normali. L’import riuscito non stabilisce attivazione, selezione automatica, cutover, rollback, dual-write, ammissione TruthGate, appartenenza al Canon, accettazione ANN o multi-tenancy di produzione.
+Un import riuscito non implica activation, cutover, rollback, dual-write, automatic switching, ANN acceptance o TruthGate admission. Il runtime adapter PostgreSQL normale non è attivo.
 
-## 🔎 Crystal rispetto al RAG classico
+## 🔎 Crystal e RAG classico
 
-| Domanda | RAG classico | Crystal |
+| Domanda | Classic RAG | Crystal |
 |---|---|---|
-| Trovare materiale rilevante | forza principale | adapter di retrieval |
-| Separare dichiarazione utente e fatto verificato | logica applicativa | confine tipizzato esplicito |
-| Tracciare ciclo di vita e contraddizioni | spesso esterno | stati e report first-class |
-| Impedire al testo generato di diventare la propria fonte | non intrinseco | invariante Ring Zero |
-| Riprodurre le prove di una risposta | opzionale | TRACE e Receipt |
-| Risolvere contraddizioni responsabilmente | specifico dell’app | disposizioni autorizzate |
-| Funzionare senza provider cloud/modello obbligatorio | variabile | base local-first pure-stdlib |
+| Trovare materiale | forza principale | adapters |
+| Claim vs trusted fact | app-specific | typed boundary |
+| Provenance | variabile | first-class |
+| Reader structure/coverage | chunk-centric | RC-1/RC-2 foundation |
+| Evitare model self-source | non intrinseco | Ring Zero |
+| Contraddizioni | logica esterna | explicit dispositions |
+| Replay evidence | optional | TRACE / Receipt |
+| Cloud/model obbligatorio | variabile | no nel default runtime |
 
-## 🛡️ Confine pubblico in sola lettura
+## 🛡️ Query boundary read-only
 
-`HTTP /ask`, `HTTP /receipt`, `CLI ask`, `CLI receipt` e `MCP search` condividono `core.query_pipeline`. Non creano fatti, non cambiano lo stato ESM, non scrivono in L3 e non modificano il Canon.
-
-## ⚖️ Decisione esplicita sulle contraddizioni
-
-```bash
-python -m core.conflict_surfaces FACT_ID \
-  --disposition COEXIST \
-  --actor alice \
-  --reason "le affermazioni descrivono contesti diversi" \
-  --expected-report-id REPORT_ID
+```text
+HTTP /ask
+CLI ask
+MCP search
+     ↓
+core.query_pipeline.query()
+     ↓
+strict read-only canonical projection
 ```
 
-`CuratorLeaseRegistry` coordina solo all’interno di un processo. Un deployment distribuito richiede un adapter di lease esterno.
+Queste superfici non creano fatti, non mutano ESM e non scrivono L3. Explicit ingest resta il write path separato.
+
+## ⚖️ Decisioni sulle contraddizioni
+
+```text
+unresolved contradiction
+        ↓
+ContradictionReport
+        ↓
+scoped curator + capability + lease
+        ↓
+COEXIST / CONTEXTUALIZE / SUPERSEDE
+        ↓
+audited canonical write path
+```
 
 ## 🚀 Avvio rapido
 
@@ -219,38 +200,42 @@ pip install -e '.[dev]'
 pytest tests/ --cov=. --cov-fail-under=100
 ```
 
-Tooling PostgreSQL inattivo opzionale: `pip install -e '.[postgresql]'`.
-
-## 📚 Navigazione
-
-- [Indice italiano](./docs/it/README.md)
-- [Mappa inglese](./docs/DOCUMENTATION_MAP.md)
-- [Report test](./TEST_REPORT.md)
-- [Stato](./docs/STATUS.md)
-- [Stato implementazione](./docs/IMPLEMENTATION_STATUS.md)
-- [Architettura](./docs/ARCHITECTURE.md)
-- [Sicurezza](./SECURITY.md)
-- [Ambito NLnet](./docs/GRANT_NLNET_SCOPE.md)
-- [Politica di localizzazione](./docs/LOCALIZATION_POLICY.md)
-- [Stato traduzioni](./docs/TRANSLATION_STATUS.md)
+PostgreSQL opzionale: `pip install -e '.[postgresql]'`.
 
 ## ✅ Baseline verificata
 
 ```text
-Runtime merge: bbd816c09dd39a02e6de6c1014438490572f40f6 (PR #337)
-Python 3.11: 2078 passed / 13 skipped / 0 failed
-Python 3.12: 2078 passed / 13 skipped / 0 failed
+Runtime checkpoint: bbd816c09dd39a02e6de6c1014438490572f40f6
+Python 3.11/3.12: 2078 passed / 13 skipped / 0 failed
 Statements: 9756
 Coverage: 100.00%
-Mutation: 7/7
 CI: 9/9
-PostgreSQL integration: PostgreSQL 16 + pgvector 0.8.2 riuscita
+Ring Zero: 7/7
+reader_core_rc1_skeleton = true
+reader_core_rc2_structural_map = true
+dedicated_reader_core = false
+PostgreSQL target: active=false
 ```
 
-## 🚧 Limite delle affermazioni
+## 🚧 Non-claims
 
-Crystal non dichiara rilevamento universale della verità, zero allucinazioni, certificazione legale GDPR/sicurezza, multi-tenancy pronta per la produzione, locking distribuito, AGI o coscienza, runtime PostgreSQL attivo, switching automatico, cutover/rollback o un Reader Core dedicato completato. La proposta NLnet resta **submitted / under review / not awarded**.
+Crystal non dichiara universal truth, zero hallucinations, AGI/consciousness, certificazione legal/GDPR/security, production multi-tenancy, distributed exactly-once, runtime PostgreSQL attivo, automatic switching/cutover/rollback/dual-write, parsing Reader automatico, stack embeddings/ANN/vector Reader o completed dedicated multi-pass Reader Core.
+
+NLnet resta **submitted / under review / not awarded**; circa €50,000 è planning only, budget change none. Il lavoro merged prima di un accordo resta baseline.
+
+## 📚 Navigazione
+
+- [Documentation map](./docs/DOCUMENTATION_MAP.md)
+- [Quick Start](./docs/QUICKSTART.md)
+- [Status](./docs/STATUS.md)
+- [Implementation Status](./docs/IMPLEMENTATION_STATUS.md)
+- [Reader architecture](./docs/architecture/READER_CORE_ARCHITECTURE.md)
+- [Localization policy](./docs/LOCALIZATION_POLICY.md)
+- [Translation status](./docs/TRANSLATION_STATUS.md)
+- [Security](./SECURITY.md)
+- [Governance](./GOVERNANCE.md)
+- [Contributing](./CONTRIBUTING.md)
 
 ## 🤝 Contributi e licenza
 
-Vedi [CONTRIBUTING.md](./CONTRIBUTING.md), [SECURITY.md](./SECURITY.md), [GOVERNANCE.md](./GOVERNANCE.md) e [AGPL-3.0](./LICENSE).
+Le modifiche devono preservare authority boundaries, tests/coverage e claims precisi. Vedi [CONTRIBUTING.md](./CONTRIBUTING.md). Licenza: [AGPL-3.0](./LICENSE).

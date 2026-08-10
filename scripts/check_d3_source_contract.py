@@ -7,6 +7,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
+SOURCE = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
 FILES = (
     "docs/ARCHITECTURE.md",
     "docs/ARCHITECTURE_OVERVIEW.md",
@@ -28,13 +29,52 @@ STALE = (
     "This change deliberately adds no PostgreSQL",
 )
 REQUIRED = {
-    "docs/ARCHITECTURE.md": ("core.query_pipeline.query()", "Source spans, document records, import sessions and dry-run/review flows are implemented baseline", "active=false", "dedicated multi-pass Reader Core"),
-    "docs/ARCHITECTURE_OVERVIEW.md": ("fallback to ephemeral Mock is forbidden", "The PostgreSQL target is absent from ordinary runtime composition", "active=false"),
-    "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md": ("physical L3", "strict Canon", "active=false", "read-only"),
-    "docs/architecture/DURABLE_STORAGE_PROFILE.md": ("IMPLEMENTED / TESTED / MERGED BASELINE", "first-run `auto` reaches the in-memory Mock backend", "active=false"),
-    "docs/architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md": ("phases 1–6 implemented", "Phase 5 — Inactive PostgreSQL target import", "Phase 6 — Exact state equivalence", "Phase 8 — Explicit cutover and fencing", "Not implemented."),
-    "docs/architecture/POSTGRESQL_INACTIVE_IMPORT.md": ("IMPLEMENTED / TESTED / MERGED BASELINE", "bbd816c09dd39a02e6de6c1014438490572f40f6", "active=false", "active PostgreSQL runtime reads or writes"),
-    "docs/adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md": ("Accepted and partially implemented", "#331 / PR #335", "#332 / PR #337", "**Active runtime cutover:** not implemented"),
+    "docs/ARCHITECTURE.md": (
+        "core.query_pipeline.query()",
+        "Source spans, document records, import sessions and dry-run/review flows are implemented baseline",
+        "active=false",
+        "dedicated multi-pass Reader Core",
+    ),
+    "docs/ARCHITECTURE_OVERVIEW.md": (
+        "fallback to ephemeral Mock is forbidden",
+        "The PostgreSQL target is absent from ordinary runtime composition",
+        "RC-1",
+        "RC-2",
+        "dedicated multi-pass Reader",
+        "active=false",
+    ),
+    "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md": (
+        "physical L3",
+        "strict Canon",
+        "Reader artifact",
+        "Reader structure",
+        "active=false",
+        "read-only",
+    ),
+    "docs/architecture/DURABLE_STORAGE_PROFILE.md": (
+        "IMPLEMENTED / TESTED / MERGED BASELINE",
+        "first-run `auto` reaches the in-memory Mock backend",
+        "active=false",
+    ),
+    "docs/architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md": (
+        "phases 1–6 implemented",
+        "Phase 5 — Inactive PostgreSQL target import",
+        "Phase 6 — Exact state equivalence",
+        "Phase 8 — Explicit cutover and fencing",
+        "Not implemented.",
+    ),
+    "docs/architecture/POSTGRESQL_INACTIVE_IMPORT.md": (
+        "IMPLEMENTED / TESTED / MERGED BASELINE",
+        "bbd816c09dd39a02e6de6c1014438490572f40f6",
+        "active=false",
+        "active PostgreSQL runtime reads or writes",
+    ),
+    "docs/adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md": (
+        "Accepted and partially implemented",
+        "#331 / PR #335",
+        "#332 / PR #337",
+        "**Active runtime cutover:** not implemented",
+    ),
 }
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 
@@ -80,7 +120,12 @@ def main() -> int:
         check_links(relative, text, errors)
 
     all_text = "\n".join(combined)
-    for marker in ("physical L3", "strict Canon", "active=false", "not activation", "read-only", "SQLite", "PostgreSQL", "fallback to ephemeral Mock is forbidden", "active PostgreSQL read/write runtime adapter", "dedicated Reader Core"):
+    for marker in (
+        "physical L3", "strict Canon", "active=false", "not activation", "read-only",
+        "SQLite", "PostgreSQL", "fallback to ephemeral Mock is forbidden",
+        "active PostgreSQL read/write runtime adapter", "RC-1", "RC-2",
+        "dedicated multi-pass Reader",
+    ):
         if marker not in all_text:
             errors.append(f"D3 source contract: missing boundary {marker!r}")
 
@@ -90,12 +135,23 @@ def main() -> int:
             errors.append(f"CI workflow: missing D3 source validator marker {marker!r}")
 
     doc_map = (ROOT / "docs/DOCUMENTATION_MAP.md").read_text(encoding="utf-8")
-    for marker in ("ARCHITECTURE_OVERVIEW.md", "STORAGE_AND_AUTHORITY_BOUNDARIES.md", "D3 uses the complete stable English architecture source family", "CURRENT full-parity localized READMEs", "REFRESH_NEEDED translated document packs", "Inactive PostgreSQL import"):
+    for marker in (
+        "ARCHITECTURE_OVERVIEW.md", "STORAGE_AND_AUTHORITY_BOUNDARIES.md",
+        "Reader Core architecture contract", "CURRENT full-parity localized READMEs",
+        "REFRESH_NEEDED translated document packs", "Inactive PostgreSQL import",
+    ):
         if marker not in doc_map:
             errors.append(f"documentation map: missing marker {marker!r}")
 
     current_state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
-    for marker in ("D3 English source checkpoint", "main@208f1c772ee3a112cb803d2413c120bef23adb05", "complete D3 source validator"):
+    for marker in (
+        "Russian D1/D3/D4/D5 detail pack is current",
+        "eight other locale detail packs require Reader refresh",
+        f"main@{SOURCE}",
+        "reader_core_rc1_skeleton = true",
+        "reader_core_rc2_structural_map = true",
+        "dedicated_reader_core = false",
+    ):
         if marker not in current_state:
             errors.append(f"AI current state: missing source marker {marker!r}")
 
@@ -104,7 +160,7 @@ def main() -> int:
         for error in errors:
             print(f"  - {error}")
         return 1
-    print("Complete D3 English architecture/storage/authority source contract is consistent")
+    print(f"Complete D3 English architecture/storage/authority source contract is consistent: source={SOURCE}")
     return 0
 
 

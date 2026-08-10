@@ -1,107 +1,66 @@
-# 🧭 Crystal Documentation Map
+# Crystal Documentation Map
 
-This page routes readers to the smallest reliable document and prevents duplicate claims.
+English is the primary source/conflict resolver. GitHub merged code, executable tests, exact CI and machine-readable status are implementation truth.
 
-## Authority hierarchy
+## Public entry points
+
+- [Root README](../README.md)
+- CURRENT full-parity localized READMEs: Arabic, German, Spanish, French, Hindi, Italian, Japanese, Russian and Simplified Chinese
+- [Quick Start](./QUICKSTART.md)
+- [Status](./STATUS.md)
+- [Implementation Status](./IMPLEMENTATION_STATUS.md)
+- [Translation status](./TRANSLATION_STATUS.md)
+- [Localization policy](./LOCALIZATION_POLICY.md)
+
+## Reviewer / safety / privacy / failures (D2)
+
+D2 uses the stable English Reviewer Guide and safety/privacy/failure source family. Reader RC-1/RC-2 did not change this source contract, so D2 retains its previous immutable source checkpoint and remains current in all nine supported locale packs.
+
+- [Reviewer Guide](./REVIEWER_GUIDE.md)
+- [Safety, privacy and failures](./SAFETY_PRIVACY_AND_FAILURES.md)
+- [Failure modes](./FAILURE_MODES.md)
+- [Security policy](../SECURITY.md)
+- [Privacy policy](../PRIVACY.md)
+
+## Architecture / Reader
+
+- [Architecture](./ARCHITECTURE.md)
+- [Architecture overview](./ARCHITECTURE_OVERVIEW.md)
+- [Storage and authority boundaries](./STORAGE_AND_AUTHORITY_BOUNDARIES.md)
+- [Reader Core architecture contract](./architecture/READER_CORE_ARCHITECTURE.md)
+- `core/reader_core.py` — RC-1 bounded evidence-linked skeleton
+- `core/reader_structure.py` — RC-2 bounded Structural Document Map
+
+Machine distinction:
 
 ```text
-merged GitHub main code and executable tests
-        ↓
-TEST_REPORT + implementation manifest + exact CI
-        ↓
-STATUS + IMPLEMENTATION_STATUS
-        ↓
-English architecture / ADR / security / grant / governance contracts
-        ↓
-English README primary public source
-        ↓
-CURRENT full-parity localized READMEs and D1–D5 translations
-        ↓
-D5 inventory: CURRENT / REFRESH_NEEDED / RETIRED / ENGLISH_ONLY_BY_DESIGN
-        ↓
-AI context, roadmap, RFC and research material
+reader_core_rc1_skeleton = true
+reader_core_rc2_structural_map = true
+dedicated_reader_core = false
 ```
 
-English is the primary source and conflict resolver. Notion stores synchronized strategy and history, not implementation evidence.
+## Storage
 
-## Start here by audience
+- SQLite ordinary active local-first runtime and lifecycle
+- Bounded logical export/verification
+- Inactive PostgreSQL import and exact-state equivalence
+- PostgreSQL/pgvector target remains `active=false`
+- No automatic backend switching, cutover, rollback or dual-write
 
-| Audience | First document | Then read |
-|---|---|---|
-| New user | [README](../README.md) or [translation status](./TRANSLATION_STATUS.md) | [Quick start](./QUICKSTART.md), [Architecture overview](./ARCHITECTURE_OVERVIEW.md) |
-| Grant reviewer | [Project/grant/governance overview](./PROJECT_GRANT_AND_GOVERNANCE.md) | [Grant scope](./GRANT_NLNET_SCOPE.md), [baseline/delta matrix](./grants/baseline-funded-delta-matrix.md) |
-| Engineer | [Implementation status](./IMPLEMENTATION_STATUS.md) | [Architecture](./ARCHITECTURE.md), [ADR index](./ADR.md) |
-| Security reviewer | [Safety/privacy/failure summary](./SAFETY_PRIVACY_AND_FAILURES.md) | [Security](../SECURITY.md), [Privacy](../PRIVACY.md), [GDPR mapping](../GDPR.md) |
-| Contributor | [Contributing](../CONTRIBUTING.md) | [Governance](../GOVERNANCE.md), [Glossary](./GLOSSARY.md) |
-| AI agent | [AI entry point](./ai/README.md) | [Current state](./ai/CURRENT_STATE.md), [Audit playbook](./ai/AUDIT_PLAYBOOK.md) |
+## Multilingual families
 
-## Architecture and storage authority
+All nine root README translations remain `CURRENT` full-parity public presentations against the 2026-08-10 Reader reconciliation checkpoint. D2 and all localized Quick Start documents remain `CURRENT` because RC-1/RC-2 did not change those source semantics.
 
-- [Architecture overview](./ARCHITECTURE_OVERVIEW.md)
-- [Full architecture](./ARCHITECTURE.md)
-- [Reader Core RC-0 architecture contract](./architecture/READER_CORE_ARCHITECTURE.md) — architecture only; runtime remains `NOT_IMPLEMENTED`
-- [Storage and authority boundaries](./STORAGE_AND_AUTHORITY_BOUNDARIES.md)
-- [Implementation status](./IMPLEMENTATION_STATUS.md)
-- [Durable storage profile](./architecture/DURABLE_STORAGE_PROFILE.md)
-- [Cross-backend migration contract](./architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md)
-- [Inactive PostgreSQL import](./architecture/POSTGRESQL_INACTIVE_IMPORT.md)
-- [ADR-021](./adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md)
+The Russian D1/D3/D4/D5 detail pack has been fully refreshed and is `CURRENT`. The eight other supported locale packs retain their rich pre-Reader translations, but their Reader-dependent D1 Status/Implementation, D3 Architecture/Storage, D4 Grant/Glossary and D5 Extended Reference Guide documents are explicitly `REFRESH_NEEDED` until a full RC-1/RC-2 semantic refresh is completed. These are REFRESH_NEEDED translated document packs, not shortened replacements and not current implementation evidence.
 
-D3 uses the complete stable English architecture source family. Compact architecture/storage documents are current across all nine locales. Detailed profiles and ADRs remain conflict-resolving English technical contracts. The Reader Core RC-0 contract is a detailed English architecture contract and does not itself create a new translated runtime capability or change D1–D5 status.
+The authoritative freshness map is [`TRANSLATION_STATUS.md`](./TRANSLATION_STATUS.md). Locale indexes expose the same mixed status. D3 translation manifest, D4 translation manifest, D5 translation manifest and the D5 source inventory are machine-checked in CI. The D5 inventory intentionally classifies 56 Reader-dependent localized detail documents as `REFRESH_NEEDED`; this is tracked translation debt, not an unclassified failure.
 
-## Safety, privacy and failure behaviour
-
-- [Reviewer guide](./REVIEWER_GUIDE.md)
-- [Safety/privacy/failure summary](./SAFETY_PRIVACY_AND_FAILURES.md)
-- [Security policy](../SECURITY.md)
-- [Threat model](./security/threat-model.md)
-- [Privacy](../PRIVACY.md)
-- [GDPR mapping](../GDPR.md)
-- [Failure modes](./FAILURE_MODES.md)
-
-D2 uses the stable English Reviewer Guide and Safety/Privacy/Failure summary as its source contract. D2 compact reviewer/safety documents are current across all nine locales. No legal, GDPR or security certification is implied.
-
-## Project, grant and governance
-
-- [Project, grant and governance overview](./PROJECT_GRANT_AND_GOVERNANCE.md)
-- [Glossary and claim discipline](./GLOSSARY.md)
-- [NLnet scope](./GRANT_NLNET_SCOPE.md)
-- [Baseline versus funded delta](./grants/baseline-funded-delta-matrix.md)
-- [Funding use plan](./grants/funding-use-plan.md)
-- [Roadmap](../ROADMAP.md)
-- [Governance](../GOVERNANCE.md)
-- [Contributing](../CONTRIBUTING.md)
-
-D4 uses the compact Project/Grant/Governance overview and English Glossary as its translation-oriented source pair. The proposal remains submitted and under review, not awarded. Approximate €50,000 is planning only; budget change is none; merged baseline work cannot be budgeted again as future delivery.
-
-D4 translations are current in all nine supported locale packs against `main@151b41c680190f7f3de729bf63e8e80a9d2285ce`.
-
-## D5 extended references and retirement
-
-- [Extended-reference policy](./EXTENDED_REFERENCE_POLICY.md)
-- [Machine-readable D5 inventory](./status/d5-inventory.json)
-- [D5 translation manifest](./status/d5-translation-manifest.json)
-- [Archive routing](./archive/README.md)
-
-D5 is complete through nine Extended Reference Guides pinned to `main@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9`. Detailed ADR/profile, security/privacy/GDPR/legal mapping, tests/benchmarks/CI, machine-readable status, AI/audit, research/RFC and grant-evidence material remains English-only by design. Historical snapshots remain preserved and routed; they are not implementation or grant evidence.
-
-The historical sequencing phrase `D5 remains a separate inventory phase` is retained here only to explain that D5 was intentionally completed after D4. It is no longer pending.
-
-## Evidence and multilingual governance
+## Evidence / grant / security
 
 - [Test report](../TEST_REPORT.md)
-- [Current status](./STATUS.md)
-- [Implementation manifest](./status/implementation-manifest.json)
-- [D2 translation manifest](./status/d2-translation-manifest.json)
-- [D3 translation manifest](./status/d3-translation-manifest.json)
-- [D4 translation manifest](./status/d4-translation-manifest.json)
-- [D5 source inventory](./status/d5-inventory.json)
-- [D5 translation manifest](./status/d5-translation-manifest.json)
-- [Localization policy](./LOCALIZATION_POLICY.md)
-- [Translation status](./TRANSLATION_STATUS.md)
+- [Machine manifest](./status/implementation-manifest.json)
+- [Grant scope — NLnet](./GRANT_NLNET_SCOPE.md)
+- [Baseline-funded delta matrix](./grants/baseline-funded-delta-matrix.md)
+- [Security](../SECURITY.md)
 
-Locale indexes: [ar](./ar/README.md), [de](./de/README.md), [es](./es/README.md), [fr](./fr/README.md), [hi](./hi/README.md), [it](./it/README.md), [ja](./ja/README.md), [ru](./ru/README.md), [zh-CN](./zh-CN/README.md).
-
-Root READMEs and D1–D4 are current. D1–D5 are current across all nine supported locales. The nine Extended Reference Guides route to current English sources without bulk-translating volatile evidence.
-
-The legacy phrase `REFRESH_NEEDED translated document packs` remains validation vocabulary; the live D5 inventory resolves zero such documents.
+Grant remains submitted / under review / not awarded. No legal/GDPR/security/native-speaker certification is implied by translation status.

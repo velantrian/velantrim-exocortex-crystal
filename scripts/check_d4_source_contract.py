@@ -29,24 +29,24 @@ REQUIRED = {
         "budget change: none", "approximate €50,000 request",
         "not an approved budget or payment commitment", "physical l3 != strict canon",
         "postgresql/pgvector remains an optional inactive migration/equivalence target with `active=false`",
-        "a dedicated reader core remains not implemented",
+        "reader core rc-1 and rc-2", "dedicated multi-pass semantic reading runtime",
         "anything merged before a grant agreement is existing baseline",
     ),
     "docs/GLOSSARY.md": (
         "physical l3", "strict canon", "active=false", "funded delta",
-        "submitted / under review / not awarded", "reader core",
-        "native-speaker editorial certification",
+        "submitted / under review / not awarded", "reader core rc-1", "reader core rc-2",
+        "dedicated reader core", "native-speaker editorial certification",
     ),
     "docs/GRANT_NLNET_SCOPE.md": (
         "grant status:** submitted / under review / not awarded", "budget change:** none",
-        "d1–d4 documentation work", "reader core is not implemented",
-        "submitted proposal != awarded grant",
+        "reader rc-1 and rc-2", "dedicated multi-pass reader", "rc-3",
+        "cannot be budgeted again as funded delivery", "submitted proposal != awarded grant",
     ),
     "ROADMAP.md": (
         "grant status:** submitted / under review / not awarded", "budget change:** none",
-        "sqlite ordinary active local-first profile",
-        "a dedicated reader core remains not implemented",
-        "d1–d4 documentation work merged before an agreement",
+        "sqlite ordinary active local-first profile", "reader_core_rc1_skeleton",
+        "reader_core_rc2_structural_map", "dedicated_reader_core",
+        "merged rc-2 becomes existing baseline and cannot be counted again as future paid delivery",
     ),
     "GOVERNANCE.md": (
         "physical l3 != strict canon", "public query surfaces remain read-only",
@@ -66,7 +66,7 @@ STALE = (
     "the l3 canonical graph is the single source of truth",
     "default backends are dependency-free (`mock` l3", "grant status: awarded",
     "crystal is gdpr compliant", "automatic backend switching is enabled",
-    "reader core is implemented",
+    "rc-1/rc-2 are funded delivery",
 )
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 
@@ -121,7 +121,7 @@ def main() -> int:
                 errors.append(f"{relative}: stale or unsupported claim {stale!r}")
         check_links(relative, text, errors)
 
-    supporting = {}
+    supporting: dict[str, str] = {}
     for relative in SUPPORTING_FILES:
         path = ROOT / relative
         if not path.is_file():
@@ -133,7 +133,8 @@ def main() -> int:
 
     require("baseline/delta matrix", supporting.get("docs/grants/baseline-funded-delta-matrix.md", ""), (
         "no award/budget change", "cannot be counted again as future paid work",
-        "target remains `active=false`", "no dedicated reader core",
+        "target remains `active=false`", "reader rc-1", "reader rc-2",
+        "dedicated multi-pass reader", "rc-3",
     ), errors)
     require("funding use plan", supporting.get("docs/grants/funding-use-plan.md", ""), (
         "submitted to nlnet for review", "proposal has been submitted and is under review",
@@ -144,20 +145,21 @@ def main() -> int:
 
     doc_map = (ROOT / "docs/DOCUMENTATION_MAP.md").read_text(encoding="utf-8")
     require("documentation map", doc_map, (
-        "PROJECT_GRANT_AND_GOVERNANCE.md", "GLOSSARY.md",
-        "D4 uses the compact Project/Grant/Governance overview",
-        "submitted and under review, not awarded", "D4 translations are current",
+        "Reader Core architecture contract", "Grant scope", "Baseline-funded delta matrix",
+        "submitted / under review / not awarded", "D4",
     ), errors)
     state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
     require("AI current state", state, (
-        "D3 is current across all nine supported locale packs",
-        "The D4 English source family is reconciled",
-        "D4 is current across all nine supported locale packs", "D1–D4",
+        "Russian D1/D3/D4/D5 detail pack is current",
+        "eight other locale detail packs require Reader refresh",
+        "reader_core_rc1_skeleton = true", "reader_core_rc2_structural_map = true",
+        "dedicated_reader_core = false",
     ), errors)
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
     require("translation ledger", ledger, (
         "## D4 — project, grant, governance and glossary",
-        "D4 is complete for all nine supported locales", "remain `CURRENT`",
+        "D4 Reader-dependent detail translations are `CURRENT` in Russian",
+        "eight other supported locales are `REFRESH_NEEDED`",
         "## D5 — extended reference documents",
     ), errors)
     workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")

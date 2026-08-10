@@ -2,7 +2,7 @@
 <!-- d4-source-scope: project-grant-governance-glossary -->
 # Crystal Glossary and Claim-Discipline Guide
 
-**Status date:** 2026-08-09  
+**Status date:** 2026-08-10  
 **Purpose:** authoritative English terminology source for D4 translations.  
 **Authority:** merged implementation, executable tests, exact CI and detailed English contracts remain stronger than this summary.
 
@@ -43,7 +43,9 @@ Programmatic identifiers remain unchanged in code, schemas, CLI, APIs and transl
 | **erasure** | Removal through implemented active-store lifecycle; independent copies need separate handling. |
 | **review queue** | Pending or blocked claims awaiting explicit curator action. |
 | **curator override** | An attributed, audited human decision; not a silent TruthGate bypass. |
-| **Reader Core** | Proposed multi-pass document-reading subsystem; dedicated implementation is not present. |
+| **Reader Core RC-1** | Implemented/tested bounded evidence-linked source/session skeleton with source-version identity, locators, fidelity, coverage, bookmarks/open loops and stale/failure/privacy semantics; no truth/admission authority. |
+| **Reader Core RC-2** | Implemented/tested caller-supplied Structural Document Map with version-bound hierarchy/order and explicit ambiguity; not an automatic parser and not truth/confidence authority. |
+| **dedicated Reader Core** | Future multi-pass Semantic Reading runtime beyond RC-1/RC-2; not implemented. |
 
 ## Terms requiring caution
 
@@ -66,6 +68,18 @@ Use these labels distinctly:
 - **planned / research** — no runtime claim.
 
 An open PR, RFC, issue, prototype or Notion page is not current runtime evidence.
+
+### “Reader Core implemented”
+
+Do not collapse the current bounded milestones into a full capability claim. Preferred wording:
+
+```text
+RC-1 minimal evidence-linked skeleton = implemented/tested
+RC-2 Structural Document Map          = implemented/tested
+dedicated multi-pass Reader runtime   = not implemented
+coverage                              != comprehension proof
+structure/order/prominence            != epistemic authority
+```
 
 ### “GDPR compliant”, “secure” and “hardened”
 
@@ -108,13 +122,17 @@ SQLite is the ordinary active local-first profile. First durable `auto` may choo
 - Preserve public-query read-only and explicit-ingest write separation.
 - Preserve SQLite ordinary runtime and PostgreSQL `active=false`.
 - Preserve `import/equivalence != activation`.
-- Preserve Reader-Core-not-implemented, no-certification and no-award boundaries.
+- Preserve RC-1/RC-2-bounded-implemented versus dedicated-Reader-not-implemented distinction.
+- Preserve `coverage != comprehension proof` and structure/order/prominence != epistemic authority.
+- Preserve no-certification and no-award boundaries.
 - Do not imply native-speaker editorial certification unless it occurred.
 
 ## Authoritative related documents
 
 - [Project, grant and governance summary](./PROJECT_GRANT_AND_GOVERNANCE.md)
 - [Full architecture](./ARCHITECTURE.md)
+- [Reader Core architecture contract](./architecture/READER_CORE_ARCHITECTURE.md)
+- [Reader implementation status](./IMPLEMENTATION_STATUS.md)
 - [Grant scope](./GRANT_NLNET_SCOPE.md)
 - [Baseline/funded-delta matrix](./grants/baseline-funded-delta-matrix.md)
 - [Funding use plan](./grants/funding-use-plan.md)

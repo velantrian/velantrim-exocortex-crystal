@@ -87,12 +87,21 @@ def main() -> int:
             check_links(relative, text, errors)
 
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
-    for marker in (f"D2 source checkpoint:** `main@{SOURCE}`", "D2 is complete for all nine supported locales", "| Simplified Chinese | `CURRENT` | `CURRENT` |", "D2 reviewer/safety | all nine supported locales `CURRENT`"):
+    for marker in (
+        f"D2 source checkpoint:** `main@{SOURCE}`",
+        "D2 remains complete for all nine supported locales",
+        "| Simplified Chinese | `CURRENT` | `CURRENT` |",
+        "D2 reviewer/safety | all nine supported locales `CURRENT`",
+    ):
         if marker not in ledger:
             errors.append(f"translation ledger: missing marker {marker!r}")
 
     current_state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
-    for marker in ("D1 is current across all nine supported locale packs", "D2 reviewer/safety translations are", f"main@{SOURCE}"):
+    for marker in (
+        "Russian D1/D3/D4/D5 detail pack is current",
+        "D2 reviewer/safety translations remain current across all nine supported locales",
+        f"main@{SOURCE}",
+    ):
         if marker not in current_state:
             errors.append(f"AI current state: missing marker {marker!r}")
 
