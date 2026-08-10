@@ -25,6 +25,7 @@ ci = manifest.get("ci", {})
 integration = manifest.get("postgresql_integration", {})
 mutation = manifest.get("mutation_gate", {})
 boundaries = manifest.get("implemented_boundaries", {})
+reader = manifest.get("reader_core_rc1", {})
 documentation = manifest.get("documentation", {})
 grant = manifest.get("grant", {})
 limits = manifest.get("storage_resource_limits", {})
@@ -67,7 +68,7 @@ for key in (
     "durable_l3_profile_lock", "sqlite_storage_lifecycle",
     "sqlite_logical_export_verification", "bounded_streaming_logical_migration",
     "postgresql_optional_driver_lazy_loaded", "postgresql_inactive_import",
-    "postgresql_exact_state_equivalence",
+    "postgresql_exact_state_equivalence", "reader_core_rc1_skeleton",
 ):
     expect(boundaries.get(key), True, f"implemented_boundaries.{key}")
 for key in (
@@ -79,6 +80,20 @@ for key in (
 ):
     expect(boundaries.get(key), False, f"implemented_boundaries.{key}")
 expect(boundaries.get("sqlite_logical_export_resource_contract"), "bounded-streaming-local-first", "SQLite migration contract")
+
+expect(reader.get("tracking_issue"), 357, "Reader RC-1 tracking issue")
+expect(reader.get("architecture_contract"), "docs/architecture/READER_CORE_ARCHITECTURE.md", "Reader RC-1 architecture contract")
+expect(reader.get("runtime_module"), "core/reader_core.py", "Reader RC-1 runtime module")
+expect(reader.get("test_module"), "tests/test_reader_core.py", "Reader RC-1 test module")
+expect(reader.get("scope"), "minimal_evidence_linked_domain_skeleton", "Reader RC-1 scope")
+for key in (
+    "source_body_storage", "durable_storage_schema", "public_api_or_cli",
+    "llm_or_provider_integration", "embeddings_or_vector_database",
+    "multi_pass_orchestration", "planner_or_belief_update_authority",
+    "truth_or_canon_authority", "dedicated_full_reader_core",
+):
+    expect(reader.get(key), False, f"reader_core_rc1.{key}")
+
 expect(limits.get("bounded_streaming_issue_completed"), 331, "bounded migration issue")
 expect(limits.get("postgresql_inactive_import_issue_completed"), 332, "PostgreSQL import issue")
 expect(limits.get("institution_scale_claim"), False, "institution-scale claim")
@@ -243,6 +258,7 @@ if errors:
 print(
     "Documentation status is internally consistent: checkpoint=bbd816c, "
     "tests=2078/13, statements=9756, coverage=100.00%, CI=9, mutants=7/7, "
+    "reader-rc1=minimal-skeleton, dedicated-reader=false, "
     "root-readmes=10-full, localized=9-current, broader-docs=phased-refresh"
 )
 PY
