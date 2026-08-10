@@ -3,7 +3,7 @@
   "phase": "D4",
   "status_date": "2026-08-10",
   "tracking_issue": 341,
-  "english_source_checkpoint": "0c3d537831e4f1cb5a43d61bc2cbc8b05c080df5",
+  "english_source_checkpoint": "166fab5551c4b86ee0a546b2e1d3dc7adc240c86",
   "source_documents": ["docs/PROJECT_GRANT_AND_GOVERNANCE.md", "docs/GLOSSARY.md"],
   "current_locales": ["ru"],
   "refresh_needed_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"],
@@ -30,6 +30,7 @@
   "reader_core_rc1_skeleton_claim": true,
   "reader_core_rc2_structural_map_claim": true,
   "reader_core_rc3_multi_pass_mechanics_claim": true,
+  "reader_core_rc4_proposition_extraction_claim": true,
   "dedicated_reader_core_implemented_claim": false,
   "active_postgresql_runtime_claim": false
 }
