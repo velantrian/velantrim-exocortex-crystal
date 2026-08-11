@@ -47,7 +47,23 @@ Russian current: `docs/ru/STATUS.md`, `docs/ru/IMPLEMENTATION_STATUS.md`, locale
 
 **D2 source checkpoint:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`
 
-D2 source semantics did not change in RC-5. Reviewer Guide and Safety/Privacy/Failures remain `CURRENT` for all nine supported locales.
+D2 source semantics did not change in RC-5. D2 remains complete for all nine supported locales. Reviewer Guide and Safety/Privacy/Failures remain `CURRENT` for all nine supported locales.
+
+| D2 surface | Translation state |
+|---|---|
+| D2 reviewer/safety | all nine supported locales `CURRENT` |
+
+| Locale | Reviewer Guide | Safety/Privacy/Failures |
+|---|---|---|
+| Arabic | `CURRENT` | `CURRENT` |
+| German | `CURRENT` | `CURRENT` |
+| Spanish | `CURRENT` | `CURRENT` |
+| French | `CURRENT` | `CURRENT` |
+| Hindi | `CURRENT` | `CURRENT` |
+| Italian | `CURRENT` | `CURRENT` |
+| Japanese | `CURRENT` | `CURRENT` |
+| Russian | `CURRENT` | `CURRENT` |
+| Simplified Chinese | `CURRENT` | `CURRENT` |
 
 ## D3 — architecture/storage/authority
 
