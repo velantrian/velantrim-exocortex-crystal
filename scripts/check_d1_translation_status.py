@@ -20,7 +20,16 @@ READER_MARKERS = (
     "reader_core_rc5_relation_candidates = true",
     "dedicated_reader_core = false",
 )
+AUTHORITY_MARKERS = (
+    "EXTRACTED_PROPOSITION != verified fact",
+    "Reader candidate != admitted evidence",
+    "contradiction candidate != confirmed contradiction",
+)
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
+
+
+def normalize_spacing(text: str) -> str:
+    return re.sub(r"[ \t]+", " ", text)
 
 
 def check_links(relative: str, text: str, errors: list[str]) -> None:
@@ -103,17 +112,10 @@ def main() -> int:
                 ):
                     if marker not in text:
                         errors.append(f"{relative}: missing current Reader evidence {marker!r}")
-                normalized = re.sub(r"[ \t]+", " ", text)
-                for marker in READER_MARKERS:
+                normalized = normalize_spacing(text)
+                for marker in (*READER_MARKERS, *AUTHORITY_MARKERS):
                     if marker not in normalized:
                         errors.append(f"{relative}: missing normalized Reader evidence {marker!r}")
-                for marker in (
-                    "EXTRACTED_PROPOSITION != verified fact",
-                    "Reader candidate != admitted evidence",
-                    "contradiction candidate != confirmed contradiction",
-                ):
-                    if marker not in text:
-                        errors.append(f"{relative}: missing RC-5 authority marker {marker!r}")
                 if name == "STATUS.md":
                     for marker in (
                         "2078 passed / 13 skipped / 0 failed",
