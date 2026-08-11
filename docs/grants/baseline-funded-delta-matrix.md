@@ -1,131 +1,52 @@
-# Grant Baseline → Funded Delta → Acceptance Matrix
+# Crystal baseline → funded delta → acceptance matrix
 
-**Status:** grant-planning control · documentation only · no award/budget change  
-**Frozen runtime checkpoint:** `main@bbd816c09dd39a02e6de6c1014438490572f40f6`  
-**Current Reader baseline:** Reader RC-1 + RC-2 + RC-3 implemented; Reader RC-4 source-linked proposition extraction becomes pre-agreement baseline if this work merges before an agreement; dedicated/full autonomous Reader remains absent.  
-**Baseline evidence:** 2078 passed / 13 skipped / 9756 statements / 100% coverage / 9 CI jobs / 1 PostgreSQL integration job
+**Status date:** 2026-08-11  
+**Grant state:** submitted / under review / not awarded — **no award/budget change**.
 
-## Control rule
+Anything merged before an agreement is existing baseline and **cannot be counted again as future paid work**.
 
-```text
-verified baseline + new measurable funded delta
-= independently verifiable public deliverable
-```
+## Existing verified / pre-agreement baseline
 
-Anything already merged before an agreement is existing capability and cannot be counted again as
-future paid work. This includes #331 / PR #335, #332 / PR #337, Reader RC-0, Reader RC-1, Reader RC-2,
-Reader RC-3, Reader RC-4 if merged pre-agreement, and merged multilingual documentation baselines.
+| Area | Existing baseline | Authority/non-claim |
+|---|---|---|
+| Trust/evidence | Guardian, TruthGate, strict read projection, evidence/provenance | physical L3 != strict Canon |
+| Query | HTTP/CLI/MCP read-only query pipeline | query != ingest |
+| SQLite | ordinary active local-first + lifecycle/export | operation evidence != truth evidence |
+| PostgreSQL target | inactive import/equivalence | target remains `active=false` |
+| Reader RC-1 | source/session/provenance skeleton | no truth authority |
+| Reader RC-2 | caller-supplied structural map | structure != truth |
+| Reader RC-3 | explicit multi-pass ledger | pass completion != comprehension |
+| Reader RC-4 | source-linked proposition candidates | `EXTRACTED_PROPOSITION != verified fact`; `Reader candidate != admitted evidence` |
+| Reader RC-5 | same-session/same-version typed relation candidates | `contradiction candidate != confirmed contradiction` |
 
-## M1 — Reproducible runtime and release evidence
-
-**Baseline:** pure-standard-library default runtime, deterministic tests, 100% coverage, nine-job CI,
-Ring Zero, SQLite lifecycle and bounded logical migration.
-
-**Funded delta:** reproducible wheel/sdist/container artifacts, checksums, SBOM, supported-version
-manifest and clean-machine reproduction.
-
-**Acceptance:** public artifacts reproduce a named SHA/CI checkpoint and do not rebill existing work.
-
-## M2 — Bounded portable storage state
-
-**Baseline:** canonical bundle, fixed batches, disk-backed ordering/reference checks, same-descriptor
-verification and benchmark evidence.
-
-**Funded delta:** only new maximum-envelope/interruption evidence or new measurable tooling; no
-duplicate billing of PR #335.
-
-## M3 — Inactive PostgreSQL/pgvector import and exact equivalence
-
-**Baseline:** PR #337 provides optional lazy Psycopg loading, supported-version preflight, new inactive
-schema, serializable import, independent exact canonical re-hash and integration evidence.
-
-**Funded delta:** no duplicate billing of #332 / PR #337. Additional work must add separately reviewed
-state domains or independently measurable operational evidence.
-
-**Acceptance:** target remains `active=false`; import/equivalence never changes TruthGate or strict Canon.
-
-## M4 — Reproducible exact-vs-ANN evaluation
-
-**Baseline:** exact vector values exist in the portable bundle; no ANN index is enabled.
-
-**Funded delta:** exact pgvector reference search, versioned HNSW/IVFFlat corpus, recall@k, filtered
-recall, latency, index-size, rebuild-cost and stale-index reports.
-
-## M5 — Explicit cutover and rollback proof
-
-**Baseline:** durable profile identity, inactive restore/import and a contract requiring separate activation.
-
-**Funded delta:** source/target fencing, immutable cutover receipt, explicit rollback receipt, expiry
-policy and crash-window tests. No reachability-based switching.
-
-## M6 — Server lifecycle and operational security
-
-**Baseline:** optional migration dependency, TLS-by-default preflight, redacted failures and non-secret receipts.
-
-**Funded delta:** least-privilege roles, certificate/credential rotation, PostgreSQL backup and independent
-restore drill, retention/upgrade sequencing, pooling, retry and observability.
-
-## M7 — Evidence and TRACE inspection UX
-
-**Baseline:** provenance, TRACE, receipts, contradiction reports and read-only query boundary.
-
-**Funded delta:** reviewer-facing visualization, source-span navigation, uncertainty/refusal views and
-content-light audit export. UI cannot promote or mutate Canon.
-
-## M8 — Reader work beyond RC-4
-
-**Baseline:** Reader RC-0 architecture contract plus implemented/tested RC-1 evidence-linked skeleton,
-RC-2 caller-supplied Structural Document Map, RC-3 explicit deterministic multi-pass mechanics and
-RC-4 deterministic source-linked proposition candidate registration when RC-4 merges before an agreement:
+Machine Reader boundary:
 
 ```text
-reader_core_rc1_skeleton              = true
-reader_core_rc2_structural_map        = true
-reader_core_rc3_multi_pass_mechanics  = true
 reader_core_rc4_proposition_extraction = true
-dedicated_reader_core                 = false
+reader_core_rc5_relation_candidates    = true
+dedicated_reader_core                  = false
 ```
 
-RC-3 baseline includes explicit `ORIENTATION`, `BROAD_READ`, `FOCUSED_READ`, `CROSS_CHECK` and
-`TARGETED_REREAD`; declared structural targets; attempted/completed/interrupted/degraded pass state;
-explicit legal RC-1 coverage outcomes; partial-progress preservation; and count-only telemetry.
+## Potential funded delta after RC-5
 
-RC-4 baseline adds `EXTRACTED_PROPOSITION` candidates only from completed substantive pass targets,
-with primary/supporting source locators, source owner, source-presentation category, explicit negation
-and qualifiers, privacy inheritance and count-only candidate telemetry. It performs no automatic
-NLP/LLM extraction and no `core.evidence.attach_evidence()`/fact evidence write.
+Future packages must be genuinely additional and separately reviewed, for example:
 
-These existing milestones cannot be counted again as future paid work.
+| Potential delta | Minimum independent acceptance evidence |
+|---|---|
+| RC-6 long-context strategy | bounded contract + tests + exact CI; no comprehension overclaim |
+| RC-7 cross-document reading | exact cross-source provenance/identity rules + adversarial tests; similarity != identity |
+| retrieval experiments | versioned corpus + measured thresholds; no authority from similarity alone |
+| cutover/rollback | explicit fencing/receipts/crash tests |
+| PostgreSQL lifecycle | backup/restore/upgrade/roles/observability evidence |
+| release/audit hardening | reproducible artifacts, checksums, SBOM, independent findings |
 
-**Funded delta:** only separately reviewed Reader work beyond RC-4. The next roadmap candidate is RC-5
-exceptions/contradiction candidates; later long-context and cross-document work must each remain
-separately bounded. Embeddings/ANN/vector DB are not assumed.
+Reader work beyond RC-5 cannot silently gain evidence-admission, Canon/ESM, contradiction-resolution or planner authority.
 
-**Acceptance:** output stays upstream of Guardian/TruthGate; fidelity and attribution remain explicit;
-coverage remains version-specific and `coverage != comprehension proof`; `pass completion != comprehension
-proof`; `EXTRACTED_PROPOSITION != verified fact`; `Reader candidate != admitted evidence`; no second Canon
-owner, planner authority or automatic belief update.
+## Grant accounting rule
 
-A dedicated/full autonomous Reader remains not implemented until a later exact implementation gate proves it.
+```text
+pre-agreement RC-0..RC-5 = existing baseline
+future agreement          = only measurable delta after baseline
+```
 
-## M9 — Claim discipline, maintenance and independent audit
-
-**Baseline:** docs-status, security/mutation/evaluation gates, English-authoritative policy,
-machine-readable manifest and public risks.
-
-**Funded delta:** stronger claim lint, action/dependency pinning, scheduled maintenance, independent review
-artifacts and release-linked remediation.
-
-## Explicit non-scope across M1–M9
-
-- universal truth, zero hallucinations, AGI or consciousness;
-- automatic GDPR/legal/security certification;
-- autonomous self-canonization or hidden chain-of-thought storage;
-- automatic backend switching or live dual-write without separate review;
-- dedicated/full autonomous Reader semantics beyond separately accepted milestones;
-- Titan, Native Kernel, Mentaury or Research Mode as current Crystal runtime.
-
-## Change control
-
-Any milestone change must update this matrix, current status/manifest and synchronized Notion grant pages
-in the same work cycle. Budget or award status may change only from verified external grant communication.
+Approximate €50,000 is planning only and does not represent an approved budget or payment commitment.

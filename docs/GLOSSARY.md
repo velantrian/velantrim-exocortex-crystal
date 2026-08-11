@@ -1,167 +1,74 @@
 <!-- d4-source-contract: CURRENT -->
 <!-- d4-source-scope: project-grant-governance-glossary -->
-# Crystal Glossary and Claim-Discipline Guide
+# Crystal Glossary
 
-**Status date:** 2026-08-10  
-**Purpose:** authoritative English terminology source for D4 translations.  
-**Authority:** merged implementation, executable tests, exact CI and detailed English contracts remain stronger than this summary.
+**Status date:** 2026-08-11
 
-## Contract names
+## Authority and storage
 
-Programmatic identifiers remain unchanged in code, schemas, CLI, APIs and translated documents.
+**Physical L3** — multi-status graph/storage state. Physical presence is not strict Canon membership.
 
-| Term | Meaning and boundary |
-|---|---|
-| **claim** | A typed assertion. A claim is not automatically a verified fact. |
-| **admission** | A decision allowing a claim to enter a more trusted state or projection. |
-| **Guardian** | Structural, safety and policy checks before epistemic admission; not a replacement for TruthGate. |
-| **TruthGate** | The controlled epistemic admission boundary; not a universal truth detector. |
-| **physical L3** | Multi-status graph-oriented storage and retrieval state. Storage membership is not strict Canon membership. |
-| **strict Canon** | The deny-dominant trusted read projection allowed by current evidence and policy. |
-| **CanonicalView** | A fail-closed read projection for grounded responses. |
-| **TrustSnapshot** | A read-time trusted state view; it does not rewrite physical storage. |
-| **TRACE** | Machine-readable grounding path connecting an answer to admitted claims and evidence. |
-| **Receipt** | Replayable, tamper-sensitive operation or answer evidence. A migration receipt is not claim evidence. |
-| **provenance** | The source, creation path and lifecycle of a claim or artifact. |
-| **evidence span** | A source-linked passage supporting a candidate or admitted claim. |
-| **source status** | The origin class of a claim, such as external source, user statement or model output. |
-| **epistemic state** | The typed status describing how a claim may be treated; not merely a confidence score. |
-| **grounding** | Linking an answer to admitted claims, evidence and traceable sources. |
-| **FactsPack** | A bounded, traceable context assembled for answering; not an authority owner. |
-| **read-only query** | A query contract that cannot mutate facts, ESM, L3, outbox, episode links, embedder identity or candidate state. |
-| **fail-closed** | Refusal or bounded failure instead of hidden admission when evidence, policy or state is uncertain. |
-| **storage profile** | Durable deployment identity for a backend and non-secret locator; not epistemic authority. |
-| **migration bundle** | Deterministic portable operation artifact for approved datasets; not a whole-system truth export. |
-| **exact equivalence** | Equality of approved dataset counts, canonical bytes and hashes; not activation or retrieval acceptance. |
-| **active=false** | The PostgreSQL target is inactive and cannot serve ordinary runtime reads or writes. |
-| **baseline** | Work already merged and independently evidenced before a funded agreement. |
-| **funded delta** | New, measurable work beyond the frozen baseline, accepted through public evidence. |
-| **deliverable** | A bounded public artifact with explicit acceptance evidence. |
-| **local-first** | Data and ordinary operation remain local by default; remote services are optional. |
-| **provider independence** | Models and providers are replaceable interfaces and do not own truth authority. |
-| **restriction** | A technical limit on use or disclosure of stored material. |
-| **erasure** | Removal through implemented active-store lifecycle; independent copies need separate handling. |
-| **review queue** | Pending or blocked claims awaiting explicit curator action. |
-| **curator override** | An attributed, audited human decision; not a silent TruthGate bypass. |
-| **Reader Core RC-1** | Implemented/tested bounded evidence-linked source/session skeleton with source-version identity, locators, fidelity, coverage, bookmarks/open loops and stale/failure/privacy semantics; no truth/admission authority. |
-| **Reader Core RC-2** | Implemented/tested caller-supplied Structural Document Map with version-bound hierarchy/order and explicit ambiguity; not an automatic parser and not truth/confidence authority. |
-| **Reader Core RC-3** | Bounded deterministic multi-pass mechanics: explicit pass kinds, declared structural targets, attempted/completed/interrupted/degraded ledger and explicit RC-1 coverage outcomes; not an autonomous reader and not comprehension authority. |
-| **Reader Core RC-4** | Bounded deterministic proposition registration from completed substantive RC-3 regions. Produces source-linked `EXTRACTED_PROPOSITION` candidates with attribution, category, negation and qualifiers; not automatic NLP/model extraction, fact evidence or truth admission. |
-| **EXTRACTED_PROPOSITION** | A normalized proposition derived from replayable source locator(s). It is a Reader candidate representation, not a verified world fact or admitted evidence. |
-| **source owner** | The speaker/author/entity to whom the source proposition is attributed. Attribution does not establish truth. |
-| **proposition presentation category** | How the source presents a proposition: factual assertion, opinion, hypothesis, conditional, example, quoted speech, reported position, definition or uncertain assertion. Category is descriptive, not epistemic admission. |
-| **dedicated/full Reader Core** | Future autonomous Semantic Reading capability beyond the bounded RC-1/RC-2/RC-3/RC-4 layers; not implemented. |
+**Strict Canon** — deny-dominant trusted read projection governed by current evidence/policy.
 
-## Terms requiring caution
+**Guardian** — structural/safety policy boundary used by admission-capable paths.
 
-### “Truth” and “canonical graph”
+**TruthGate** — admission-policy gate; not an oracle that independently knows objective truth.
 
-Do not write that every graph node is truth. Preferred wording:
+**TrustSnapshot / CanonicalView** — immutable/read-policy surfaces used for trusted grounding.
+
+**`active=false`** — PostgreSQL target state proving it is not the ordinary active runtime backend.
+
+## Reader terms
+
+**Reader Core RC-1** — bounded evidence-linked source/session skeleton with exact version/provenance, fidelity and coverage.
+
+**Reader Core RC-2** — bounded caller-supplied Structural Document Map with explicit structural state.
+
+**Reader Core RC-3** — bounded explicit multi-pass process ledger over declared structural targets.
+
+**Reader Core RC-4** — bounded source-linked pre-admission proposition candidate registration.
+
+**Reader Core RC-5** — bounded same-session/same-exact-source-version explicit relation candidate registry over valid RC-4 candidates.
+
+**`EXTRACTED_PROPOSITION`** — RC-4 fidelity class meaning a proposition was extracted/registered from source-linked Reader context. It does not mean verified fact.
+
+**Source owner** — explicit attribution indicating whose statement/presentation the proposition represents.
+
+**Proposition presentation category** — RC-4 classification such as factual assertion, author opinion, hypothesis, conditional, example, quoted speech, reported position, definition or uncertain assertion. Category describes source presentation, not Crystal verification.
+
+**`POSSIBLE_CONTRADICTION`** — RC-5 symmetric suspicion that two Reader propositions may conflict. Not a confirmed contradiction.
+
+**`TENSION`** — RC-5 symmetric relation indicating tension without asserting contradiction.
+
+**`EXCEPTION`** — RC-5 directional relation: right candidate is registered as an exception to left candidate.
+
+**`QUALIFICATION`** — RC-5 directional relation: right candidate narrows/refines left candidate.
+
+**Relation rationale** — explicit text recording why the caller registered an RC-5 relation. It is audit context, not truth proof.
+
+**Dedicated/full Reader Core** — autonomous or comprehensive Semantic Reading capability. It remains not implemented; `dedicated_reader_core=false`.
+
+## Critical distinctions
 
 ```text
-physical L3 stores typed multi-status records
-strict Canon is the evidence- and policy-allowed read projection
+Reader coverage         != comprehension proof
+pass completion         != comprehension proof
+EXTRACTED_PROPOSITION   != verified fact
+Reader candidate        != admitted evidence
+relation candidate      != admitted evidence
+contradiction candidate != confirmed contradiction
+similarity              != identity
+repetition              != corroboration
 ```
 
-### “Implemented”, “tested”, “current” and “planned”
+## Grant/localization terms
 
-Use these labels distinctly:
+**Funded delta** — new measurable work performed under an agreement beyond the verified existing baseline. Merged pre-agreement work cannot be counted again.
 
-- **implemented** — merged code exists;
-- **tested** — named executable evidence exists;
-- **current** — reconciled against an exact source checkpoint;
-- **planned / research** — no runtime claim.
+**NLnet state** — submitted / under review / not awarded.
 
-An open PR, RFC, issue, prototype or Notion page is not current runtime evidence.
+**Native-speaker editorial certification** — independent human language-quality review by a qualified native speaker; not claimed merely because a translation exists.
 
-### “Reader Core implemented”
+**`CURRENT` translation** — localized surface current against its explicit source checkpoint.
 
-Do not collapse the current bounded milestones into a full capability claim. Preferred wording:
-
-```text
-RC-1 minimal evidence-linked skeleton    = implemented/tested
-RC-2 Structural Document Map             = implemented/tested
-RC-3 explicit multi-pass mechanics       = implemented/tested
-RC-4 source-linked proposition extraction = implemented/tested after exact CI/merge
-dedicated/full autonomous Reader runtime  = not implemented
-coverage                                  != comprehension proof
-pass completion                           != comprehension proof
-EXTRACTED_PROPOSITION                     != verified fact
-Reader candidate                          != admitted evidence
-structure/order/prominence                != epistemic authority
-```
-
-### “Factual assertion”
-
-Within RC-4, `FACTUAL_ASSERTION` means the **source presents** the proposition as factual. It does not mean Crystal verified that proposition. Verification/admission remains owned by the existing evidence/Guardian/TruthGate path.
-
-### “Evidence extraction”
-
-RC-4 extraction creates pre-admission Reader candidates. It does **not** call `core.evidence.attach_evidence()` and does not write an `evidence_spans` record attached to an admitted fact. Preferred distinction:
-
-```text
-Reader extraction candidate != fact evidence attachment
-source locator               != evidence sufficiency
-```
-
-### “GDPR compliant”, “secure” and “hardened”
-
-Preferred wording:
-
-```text
-GDPR-oriented technical controls
-security-relevant checks
-hardened against documented threats
-```
-
-Do not claim legal, GDPR or security certification without external authoritative evidence.
-
-### “Replay”
-
-```text
-Receipt replay    = re-check existing evidence
-trajectory replay = repeat an execution path for evaluation
-Reader reread     = explicit source-linked pass over declared regions
-Reader provenance = exact locator path back to the source version
-```
-
-### “Grant funded” or “awarded”
-
-The current public status is:
-
-```text
-submitted / under review / not awarded
-```
-
-Merged baseline work cannot be relabelled as future funded delivery. Budget or award state may change only from verified external grant communication.
-
-### “Default backend”
-
-SQLite is the ordinary active local-first profile. First durable `auto` may choose optional LadybugDB when available, otherwise SQLite, and then locks the deployment identity. Explicit Mock is development/CI state. PostgreSQL/pgvector is an inactive `active=false` import/equivalence target, not ordinary runtime.
-
-## Translation rules
-
-- Keep code identifiers and contract names unchanged.
-- Translate explanations, not machine identifiers.
-- Preserve `physical L3 != strict Canon`.
-- Preserve public-query read-only and explicit-ingest write separation.
-- Preserve SQLite ordinary runtime and PostgreSQL `active=false`.
-- Preserve `import/equivalence != activation`.
-- Preserve RC-1/RC-2/RC-3/RC-4-bounded-implemented versus dedicated/full-Reader-not-implemented distinction.
-- Preserve `coverage != comprehension proof`, `pass completion != comprehension proof`, `EXTRACTED_PROPOSITION != verified fact`, `Reader candidate != admitted evidence` and structure/order/prominence != epistemic authority.
-- Preserve source ownership/category/negation/qualifiers rather than collapsing reported, conditional or uncertain source language.
-- Preserve no-certification and no-award boundaries.
-- Do not imply native-speaker editorial certification unless it occurred.
-
-## Authoritative related documents
-
-- [Project, grant and governance summary](./PROJECT_GRANT_AND_GOVERNANCE.md)
-- [Full architecture](./ARCHITECTURE.md)
-- [Reader Core architecture contract](./architecture/READER_CORE_ARCHITECTURE.md)
-- [Reader implementation status](./IMPLEMENTATION_STATUS.md)
-- [Grant scope](./GRANT_NLNET_SCOPE.md)
-- [Baseline/funded-delta matrix](./grants/baseline-funded-delta-matrix.md)
-- [Funding use plan](./grants/funding-use-plan.md)
-- [Roadmap](../ROADMAP.md)
-- [Governance](../GOVERNANCE.md)
-- [Contributing](../CONTRIBUTING.md)
+**`REFRESH_NEEDED` translation** — rich translation preserved but known to lag its governing English source.
