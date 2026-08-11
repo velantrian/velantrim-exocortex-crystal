@@ -4,308 +4,503 @@
 
 ### Verifiable, local-first memory, evidence and decision infrastructure for trustworthy AI systems
 
-`v0.3.0` · 🧪 retained checkpoint **2078 passed / 13 skipped / 0 failed** · 🎯 **9756 statements / 100.00% line coverage** · 🧬 **7/7 Ring Zero mutants killed** · ✅ **9 permanent CI jobs** · 🐘 optional PostgreSQL/pgvector migration support · 🐍 pure-standard-library default runtime · ⚖️ AGPL-3.0
+`v0.3.0` · 🧪 **2078 passed / 13 skipped / 0 failed** · 🎯 **9756 statements / 100.00% line coverage** · 🧬 **7/7 declared Ring Zero mutants killed** · ✅ **9 permanent CI jobs** · 🐘 **real PostgreSQL/pgvector integration** · 🐍 **pure-standard-library default runtime** · ⚖️ **AGPL-3.0**
 
-> Crystal is not a chatbot and not an autonomous “truth oracle.” It is infrastructure for keeping source identity, evidence, epistemic state, review, storage and trusted read authority distinct.
+> Crystal is not another chatbot and it is not an autonomous “truth oracle.” It is a
+> memory, evidence and decision boundary that records what a claim is, where it came
+> from, what epistemic state it is in, whether it may ground an answer, and how a
+> contradiction was resolved through an explicit audited decision.
 
-**Retained verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` — merged PR #337.  
-**Reader foundation:** RC-1 evidence-linked skeleton, RC-2 caller-supplied Structural Document Map, RC-3 explicit deterministic multi-pass mechanics, RC-4 source-linked proposition extraction, and RC-5 explicit pre-admission relation candidates are bounded implemented layers.  
-**Dedicated/full autonomous Reader: not implemented.**  
-**Exact status:** [docs/STATUS.md](./docs/STATUS.md) · [implementation manifest](./docs/status/implementation-manifest.json) · [Reader architecture contract](./docs/architecture/READER_CORE_ARCHITECTURE.md)
+**Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` — merged PR #337.  
+**Validated runtime head / CI:** `d7af7c80722274f9217bc5545d150f92e9363f37` / `31256316536` — 9/9 successful.  
+**PostgreSQL integration:** `31256316532` — successful against PostgreSQL 16 and pgvector 0.8.2.  
+**Reader foundation:** RC-1 evidence-linked skeleton, RC-2 caller-supplied Structural Document Map, RC-3 explicit deterministic multi-pass mechanics, RC-4 source-linked proposition extraction, and RC-5 explicit same-session/same-version relation candidates are implemented/tested bounded layers; the dedicated/full autonomous Semantic Reading runtime remains **not implemented**.  
+**Exact public evidence:** [TEST_REPORT.md](./TEST_REPORT.md), [STATUS.md](./docs/STATUS.md) and the [machine-readable implementation manifest](./docs/status/implementation-manifest.json).
 
-> **Documentation language policy:** English is the primary/source technical language. Russian is the fully refreshed Reader secondary surface for the RC-5 source checkpoint recorded in [TRANSLATION_STATUS.md](./docs/TRANSLATION_STATUS.md). Eight other Reader-dependent locale surfaces preserve rich translations as explicit `REFRESH_NEEDED` debt; D2 and Quick Start remain current across all nine locales.
+> **Documentation language policy:** English is the primary working and source language,
+> not the only intended documentation language. Russian Reader-dependent root/detail surfaces
+> are current against the immutable RC-5 English source checkpoint recorded in
+> [TRANSLATION_STATUS.md](./docs/TRANSLATION_STATUS.md). Eight other Reader-dependent locale
+> surfaces preserve their rich translations as `REFRESH_NEEDED`; D2 and Quick Start remain
+> current across all nine supported locales.
 
 ---
 
 ## 🎯 Why Crystal exists
 
-AI systems often mix source text, user statements, retrieved fragments, hypotheses, model output and durable memory. When those categories blur, fluent language can silently gain authority that the evidence does not justify.
+Many AI systems mix source documents, user statements, model output, hypotheses,
+retrieved fragments and durable memory in one context or vector store. When those
+categories are not separated, fluent text can silently acquire authority that its
+evidence does not support.
 
 Crystal makes the boundaries explicit:
 
 ```text
-source statement        != verified fact
-segment                 != claim
-summary                 != evidence
-importance              != truth
-retrieval score         != authority
-model output             != source truth
-Reader observation      != Canon admission
-Reader coverage         != comprehension proof
-Reader pass completion  != comprehension proof
-EXTRACTED_PROPOSITION   != verified fact
-Reader candidate        != admitted evidence
-relation candidate      != admitted evidence
-contradiction candidate != confirmed contradiction
-cross-document similarity != identity
-repetition              != corroboration
+A fluent claim is not automatically trusted.
+A physical graph node is not automatically strict Canon.
+A retrieval score is not evidence.
+A model output is not an independent factual source.
+A contradiction does not select its own winner.
+A topic label is not a truth verdict.
+A successful data import is not backend activation.
+Reader structure or coverage is not epistemic authority.
+Reader pass completion is not comprehension proof.
+EXTRACTED_PROPOSITION is not a verified fact.
+Reader candidate is not admitted evidence.
+Reader relation candidate is not admitted evidence.
+Contradiction candidate is not confirmed contradiction.
+Cross-document similarity is not identity.
+Repetition is not corroboration.
 ```
 
 ## 🧠 What Crystal provides
 
-- typed claims and explicit epistemic lifecycle;
+- typed claims and an explicit epistemic lifecycle;
 - source identity, evidence spans and provenance;
+- bounded Reader RC-1 source/session artifacts with fidelity and coverage semantics;
+- bounded Reader RC-2 caller-supplied structural document maps with explicit ambiguity;
+- bounded Reader RC-3 explicit multi-pass process mechanics with auditable coverage effects;
+- bounded Reader RC-4 source-linked `EXTRACTED_PROPOSITION` candidates with explicit attribution/category/negation/qualifiers;
+- bounded Reader RC-5 explicit `POSSIBLE_CONTRADICTION`, `TENSION`, `EXCEPTION` and `QUALIFICATION` relation candidates with exact two-sided provenance and rationale;
 - Guardian and TruthGate admission boundaries;
-- multi-status physical L3 separated from strict Canon;
-- deny-dominant `TrustSnapshot` and `CanonicalView` reads;
-- read-only `HTTP /ask`, `CLI ask` and `MCP search` query surfaces;
-- TRACE and replayable receipts;
-- review queues and explicit contradiction dispositions;
-- SQLite local-first storage lifecycle and logical portability;
-- optional PostgreSQL/pgvector inactive import/equivalence path with `active=false`;
-- deterministic evaluation, full line-coverage gate, security and Docker checks;
-- a bounded five-stage Reader foundation through RC-5.
+- a multi-status physical L3 graph separated from strict Canon;
+- immutable deny-dominant `TrustSnapshot` read reconciliation;
+- read-only public HTTP, CLI and MCP query surfaces;
+- TRACE and replayable tamper-evident Receipts;
+- restriction, erasure, audit and import-session controls;
+- review queues and resumable review sessions;
+- typed immutable contradiction reports;
+- explicit `COEXIST`, `CONTEXTUALIZE` and `SUPERSEDE` decisions;
+- scoped curator roles/capabilities and process-local decision leases;
+- advisory multi-label TopicFacet metadata with no truth authority;
+- deterministic evaluation, 100% line coverage and a Ring Zero mutation gate;
+- verified SQLite backup/restore and bounded logical migration;
+- optional PostgreSQL/pgvector inactive import with independent exact-state equivalence.
 
-## 📖 Reader foundation
-
-```text
-RC-0 architecture contract
-        ↓
-RC-1 exact source/version/session/provenance skeleton
-        ↓
-RC-2 caller-supplied structural document map
-        ↓
-RC-3 explicit deterministic multi-pass mechanics
-        ↓
-RC-4 source-linked proposition extraction
-        ↓
-RC-5 explicit same-session/same-version relation candidates
-        ↓
-normal evidence/admission path remains separate
-```
-
-### RC-1 — evidence-linked skeleton
-
-`core/reader_core.py` provides `SourceVersion`, `SourceLocator`, `SegmentCard`, coverage state/telemetry, bookmarks/open loops and `ReaderSession`. Source body is not retained. Source hash/version changes invalidate old Reader context rather than silently reusing it.
-
-### RC-2 — caller-supplied Structural Document Map
-
-`core/reader_structure.py` models document/section/subsection/paragraph/dialogue/list/table/code/quotation/note/reference/figure/caption structure with explicit `RECOVERED`, `AMBIGUOUS`, `UNSUPPORTED` state and deterministic hierarchy/order validation.
-
-Structure/order/prominence is metadata, not truth or confidence authority. RC-2 is not an automatic parser, OCR engine or layout reconstruction system.
-
-### RC-3 — explicit deterministic multi-pass mechanics
-
-`core/reader_passes.py` records `ORIENTATION`, `BROAD_READ`, `FOCUSED_READ`, `CROSS_CHECK`, `TARGETED_REREAD` attempts with explicit target regions and explicit coverage outcomes. Partial progress is preserved for interrupted/degraded passes. `Reader pass completion is not comprehension proof`.
-
-### RC-4 — source-linked proposition extraction
-
-`core/reader_extraction.py` registers caller-supplied normalized proposition candidates only from completed substantive RC-3 regions with matching `PROCESSED` / `REVISITED` state. Candidates use `EXTRACTED_PROPOSITION` fidelity and keep attribution, source-presentation category, negation, qualifiers and replayable locators.
-
-**EXTRACTED_PROPOSITION is not a verified fact.**  
-**Reader candidate is not admitted evidence.**
-
-RC-4 does not call `core.evidence.attach_evidence()` and does not write fact evidence.
-
-### RC-5 — exception / qualification / tension / contradiction candidates
-
-`core/reader_relations.py` is the smallest PRE-ADMISSION relation layer over valid RC-4 candidates.
-
-| Relation kind | Meaning inside Reader | Authority |
-|---|---|---|
-| `POSSIBLE_CONTRADICTION` | explicit suspicion that two propositions may conflict | candidate only |
-| `TENSION` | explicit tension without asserting contradiction | candidate only |
-| `EXCEPTION` | right-hand proposition is registered as an exception to the left | directional candidate |
-| `QUALIFICATION` | right-hand proposition narrows/refines the left | directional candidate |
-
-RC-5 requires one OPEN `ReaderSession`, one exact `SourceVersion`, candidate IDs already registered by one RC-4 extractor, both sides' exact provenance and an explicit rationale. Symmetric relations use deterministic candidate-ID order; duplicate symmetric re-registration fails rather than becoming “corroboration.”
-
-RC-5 is **not** automatic contradiction detection from raw text. It does not infer semantic equivalence or identity, does not use similarity as proof, and does not create the broader cross-document Reader stage.
+Reader RC-1/RC-2/RC-3/RC-4/RC-5 retain no source body, add no public Reader API/CLI or durable Reader
+storage schema, and have no truth/Canon/ESM/planner authority. RC-3 provides explicit deterministic
+pass mechanics; RC-4 validates caller-supplied proposition candidates against completed substantive
+Reader context; RC-5 registers explicit relations only between already-registered RC-4 candidates
+inside one OPEN ReaderSession and exact SourceVersion. These layers do **not** provide an automatic
+parser, automatic NLP/LLM extraction, autonomous model-driven reader, embeddings, ANN/vector-database
+Reader stack, semantic equivalence engine, automatic cross-document identity/reasoning or contradiction
+resolution. RC-4/RC-5 do not call `core.evidence.attach_evidence()` or write fact evidence.
 
 ```text
-POSSIBLE_CONTRADICTION
-        !=
-confirmed contradiction
-        !=
-resolved contradiction / winner
+coverage != comprehension proof
+pass completion != comprehension proof
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+similarity != identity
+repetition != corroboration
 ```
-
-## 🛡️ Reader authority firewall
-
-Reader RC-1 through RC-5 do **not**:
-
-- mutate `truth_status` or ESM;
-- write strict Canon;
-- bypass Guardian or TruthGate;
-- attach fact evidence or declare evidence sufficiency;
-- promote confidence from Reader output;
-- select a contradiction winner;
-- treat repetition as corroboration;
-- infer cross-document identity from similarity;
-- create planner/research/belief-update authority.
-
-RC-5 has no truth/confidence/evidence-sufficiency/winner fields and does not invoke the existing contradiction-resolution workflow.
 
 ## 🏛️ Architecture in three views
 
-### Mind map
+### 🧠 Mind map — purpose and authority boundaries
 
 ```text
-🔱 Crystal
+🧠 Velantrim ExoCortex — Crystal
+│
+├── 🎯 Purpose
+│   ├── Verifiable memory for AI systems
+│   ├── Local-first trust infrastructure
+│   └── Answers and decisions linked to evidence
+│
 ├── 📖 Reader foundation
-│   ├── RC-1 exact source/provenance
-│   ├── RC-2 structure
-│   ├── RC-3 reading-process ledger
-│   ├── RC-4 proposition candidates
-│   ├── RC-5 relation candidates
-│   └── full autonomous Reader — absent
+│   ├── RC-1 — evidence-linked source/session skeleton
+│   ├── RC-2 — caller-supplied Structural Document Map
+│   ├── RC-3 — explicit deterministic multi-pass mechanics
+│   ├── RC-4 — source-linked proposition extraction
+│   ├── RC-5 — explicit pre-admission relation candidates
+│   └── dedicated/full autonomous Reader — not implemented
+│
+├── 🏛️ Memory model
+│   ├── L0 — fast working cache
+│   ├── L1 — operational memory and lifecycle
+│   ├── L2 — waiting/review boundary
+│   └── L3 — physical multi-status graph
+│
 ├── 🛡️ Trust boundary
+│   ├── Guardian — structure and safety constraints
+│   ├── TruthGate — admission policy
+│   ├── TrustSnapshot — deny-dominant reconciliation
+│   └── CanonicalView — strict trusted projection
+│
+├── 📜 Evidence and audit
+│   ├── Source identity and evidence spans
+│   ├── Provenance
+│   ├── TRACE
+│   └── Receipt
+│
+├── ⚖️ Review and contradiction
+│   ├── Review queue
+│   ├── Resumable review session
+│   ├── ContradictionReport
+│   └── COEXIST / CONTEXTUALIZE / SUPERSEDE
+│
+├── 🗄️ Storage profiles
+│   ├── SQLite — ordinary local-first profile
+│   └── PostgreSQL/pgvector — inactive migration target
+│
+├── 🔐 Governance
+│   ├── Scoped curator capability
+│   ├── Authenticated actor binding
+│   └── Process-local decision lease
+│
+└── 📊 Verification
+    ├── Python 3.11 / 3.12
+    ├── 100% line coverage
+    ├── Ring Zero mutation gate
+    ├── Security and Docker gates
+    └── Exact-head CI evidence
+```
+
+### 🏗️ ASCII architecture — information flow
+
+```text
+┌──────────────────────────────────────────────────────────────────────┐
+│               🔱 Velantrim ExoCortex — Crystal                      │
+│          Memory → evidence → review → trusted read projection       │
+└──────────────────────────────────────────────────────────────────────┘
+
+                         📥 Explicit ingest
+                                │
+                                ▼
+             🧾 Claim type + source + exact evidence span
+                                │
+                                ▼
+                      🧠 Observed state in L0 / L1
+                                │
+                                ▼
+        🛡️ Guardian ──► ⚖️ TruthGate ──► 🚧 restrictions
+                                │
+                  ┌─────────────┴─────────────┐
+                  │                           │
+                  ▼                           ▼
+          ⏳ L2 waiting / review       🏛️ Physical L3 graph
+                  │                           │
+                  │                           ▼
+                  │                 📜 provenance / TRACE
+                  └─────────────┬─────────────┘
+                                │
+                                ▼
+                    📐 Immutable TrustSnapshot
+                                │
+                                ▼
+                  🛡️ Guardian + CanonicalView STRICT
+                                │
+                   ┌────────────┴────────────┐
+                   │                         │
+                   ▼                         ▼
+             💬 Grounded answer       🚫 Restricted refusal
+                   │
+                   ▼
+              🧾 Replayable Receipt
+
+⚖️ Unresolved contradiction
+        │
+        ▼
+📋 Immutable ContradictionReport
+        │
+        ▼
+🔐 scoped principal + capability + decision lease
+        │
+        ▼
+🧑‍⚖️ explicit COEXIST / CONTEXTUALIZE / SUPERSEDE
+        │
+        ▼
+📜 audited canonical write path
+```
+
+### 🌳 Module tree — ownership and connections
+
+```text
+🌳 Crystal
+│
+├── 📖 Reader foundation
+│   ├── core/reader_core.py — RC-1 source/session artifacts
+│   ├── core/reader_structure.py — RC-2 Structural Document Map
+│   ├── core/reader_passes.py — RC-3 explicit multi-pass mechanics
+│   ├── core/reader_extraction.py — RC-4 source-linked proposition candidates
+│   └── core/reader_relations.py — RC-5 explicit relation candidates
+│
+├── 🧠 Memory surfaces
+│   ├── L0 — rebuildable working cache
+│   ├── L1 — SQLite/WAL operational state
+│   ├── L2 — logical review boundary
+│   └── L3 — multi-status physical graph
+│
+├── 🛡️ Trust surfaces
 │   ├── Guardian
 │   ├── TruthGate
 │   ├── TrustSnapshot
 │   └── CanonicalView
-├── 📜 Evidence / audit
-│   ├── source + spans
-│   ├── provenance
+│
+├── 📜 Evidence surfaces
+│   ├── Source metadata
+│   ├── Evidence spans
+│   ├── Provenance
 │   ├── TRACE
 │   └── Receipt
-├── ⚖️ Review / contradiction
-│   ├── review queue
+│
+├── ⚖️ Review and contradiction
+│   ├── Review queue/session
 │   ├── ContradictionReport
-│   └── explicit COEXIST / CONTEXTUALIZE / SUPERSEDE
-├── 🗄️ Storage
-│   ├── SQLite ordinary active local-first
-│   └── PostgreSQL/pgvector inactive target
+│   └── Explicit audited disposition
+│
+├── 🔎 Public query
+│   ├── HTTP /ask and /receipt
+│   ├── CLI ask and receipt
+│   └── MCP search
+│
+├── 🗄️ Storage portability
+│   ├── SQLite backup/restore
+│   ├── Canonical logical bundle
+│   ├── Bounded verification
+│   └── PostgreSQL inactive exact-equivalence import
+│
 └── 📊 Verification
-    ├── Python 3.11 / 3.12
-    ├── 100% line-coverage gate
-    ├── Ring Zero
-    ├── security / Docker / eval
-    └── exact-head CI
+    ├── Tests and coverage
+    ├── Mutation gate
+    ├── Security scans
+    ├── Docker build
+    └── Documentation/status gate
 ```
 
-### Information flow
+## 🧭 Central distinctions
 
 ```text
-Reader source/version
-  ↓
-RC-1 artifacts
-  ↓
-RC-2 declared structure
-  ↓
-RC-3 explicit passes
-  ↓
-RC-4 proposition candidates
-  ↓
-RC-5 relation candidates
-  │
-  └── PRE-ADMISSION ONLY
-
-Explicit ingest/evidence
-  ↓
-Guardian
-  ↓
-TruthGate
-  ↓
-L1 + physical L3
-  ↓
-TrustSnapshot / CanonicalView
-  ↓
-read-only query / answer / bounded refusal
+physical L3 graph     != strict Canon
+query                 != ingest
+confidence            != independent evidence
+LLM output            != independent factual source
+contradiction detect  != automatic winner
+TopicFacet relevance  != truth
+migration receipt     != claim evidence
+successful import     != backend activation
+process-local lease   != distributed coordination
+Reader coverage       != comprehension proof
+Reader structure      != truth/confidence authority
+Reader pass complete  != comprehension proof
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate      != admitted evidence
+relation candidate    != admitted evidence
+contradiction candidate != confirmed contradiction
+similarity              != identity
+repetition              != corroboration
 ```
 
-### Module tree
+TruthGate is an admission-policy gate, not an oracle that independently knows
+objective truth. Strict Canon is a policy-allowed read projection over evidence,
+status, ESM state, confidence shape and processing restrictions.
 
-```text
-core/reader_core.py       — RC-1 source/session/fidelity/coverage
-core/reader_structure.py  — RC-2 structural map
-core/reader_passes.py     — RC-3 pass ledger
-core/reader_extraction.py — RC-4 proposition candidates
-core/reader_relations.py  — RC-5 relation candidates
+## 🧱 Memory and evidence surfaces
 
-Reader modules
-  != core.evidence admission
-  != contradiction resolution
-  != Guardian/TruthGate policy owner
-```
-
-## ⚖️ Contradiction candidates vs contradiction decisions
-
-RC-5 can record a suspicion between Reader propositions. The existing contradiction workflow remains a different authority surface.
-
-```text
-Reader RC-5 relation candidate
-        ↓
-(no automatic promotion)
-        ↓
-normal source/evidence/admission path if a later workflow promotes material
-        ↓
-implemented contradiction report/review machinery
-        ↓
-explicit authorized disposition
-```
-
-A relation candidate never marks one side false and never selects `COEXIST`, `CONTEXTUALIZE` or `SUPERSEDE` by itself.
+| Surface | Role | Critical boundary |
+|---|---|---|
+| Reader RC-1 | evidence-linked source/session artifacts | observations and coverage do not admit truth |
+| Reader RC-2 | version-bound structural map | order/prominence is metadata, not authority |
+| Reader RC-3 | explicit pass ledger over declared targets | pass completion is process state, not comprehension/truth |
+| Reader RC-4 | source-linked extracted proposition candidates | source presentation/candidate state, not verified fact or admitted evidence |
+| Reader RC-5 | typed relation candidates between valid RC-4 candidates | relation suspicion is not contradiction confirmation/resolution or evidence admission |
+| L0 | in-process working cache | fast and rebuildable |
+| L1 | SQLite/WAL operational memory | lifecycle, restrictions and pending work |
+| L2 | logical review boundary | not automatically strict Canon |
+| L3 | physical multi-status memory | record presence does not imply trust |
+| TrustSnapshot | immutable reconciliation | deny-dominant L1/L3 resolution |
+| CanonicalView | strict grounding projection | policy-allowed reads only |
+| TRACE / Receipt | proof and replay | grounding, drift and tamper evidence |
+| ContradictionReport | immutable conflict object | confidence does not select a winner |
+| TopicFacet | navigation metadata | cannot change truth, ESM or Canon |
+| CuratorPrincipal / lease | authorization and coordination | external lease adapter required for scale |
 
 ## 🗄️ SQLite and PostgreSQL/pgvector
 
 ```text
 SQLite
-└── ordinary active local-first runtime
+└── current ordinary local-first storage profile
     ├── runtime reads/writes
-    ├── backup / verify / inactive restore
-    └── bounded logical export
+    ├── backup/restore
+    ├── lock recovery
+    └── bounded canonical logical export
 
 PostgreSQL 16 + pgvector
-└── optional migration/equivalence target
-    ├── optional dependency
-    ├── lazy driver
-    ├── fresh inactive schema
+└── optional migration/equivalence profile
+    ├── optional [postgresql] dependency
+    ├── lazy driver loading
+    ├── new target schema
     ├── active=false
-    └── independent exact-state verification
+    ├── SERIALIZABLE import
+    └── independent count / byte / SHA-256 equivalence
 ```
 
-Import support does not mean runtime activation. RC-5 changes no Reader DB schema and activates no PostgreSQL path.
+The PostgreSQL target is absent from ordinary runtime composition and cannot serve
+normal reads or writes. Successful import is operational migration evidence, but it
+does not establish:
+
+- activation or automatic backend selection;
+- cutover, rollback or dual-write;
+- TruthGate admission or strict Canon membership;
+- ANN quality acceptance;
+- production multi-tenancy or distributed exactly-once guarantees.
+
+The driver is installed only through `[postgresql]` and lazy-loaded by explicit
+operator migration commands. The default installation remains pure standard library.
+Production credentials and credential-bearing connection strings must not enter
+profiles, bundles, receipts, application logs, GitHub issues or Notion.
 
 ## 🔎 Crystal versus classic RAG
 
 | Question | Classic RAG | Crystal |
 |---|---|---|
-| Retrieve relevant material | primary strength | supported through adapters |
-| Distinguish source presentation from verified truth | application-specific | explicit boundary |
-| Track version-bound reading artifacts | application-specific | RC-1–RC-5 bounded chain |
-| Preserve attribution/negation/qualifiers | application-specific | RC-4 |
-| Preserve exception/tension/contradiction suspicion without resolving it | application-specific | RC-5 |
-| Prevent generated text becoming its own source | not inherent | admission invariants |
-| Replay evidence | optional | TRACE / Receipt |
+| Find relevant material | primary strength | supported through retrieval adapters |
+| Separate user claim from verified fact | application-specific | explicit typed boundary |
+| Track lifecycle and contradictions | usually external logic | first-class states and reports |
+| Preserve version-bound reading/process artifacts | application-specific | RC-1/RC-2/RC-3/RC-4/RC-5 bounded Reader foundation |
+| Preserve proposition attribution/qualifiers before admission | application-specific | RC-4 explicit source-presentation metadata |
+| Preserve explicit relation suspicion without resolving it | application-specific | RC-5 typed relation candidates with exact provenance |
+| Prevent generated text becoming its own source | not inherent | Ring Zero admission invariant |
+| Replay answer evidence | optional | TRACE and Receipt architecture |
 | Resolve contradictions accountably | application-specific | explicit authorized dispositions |
+| Group by topic without changing trust | application-specific | advisory TopicFacet metadata |
+| Run without a mandatory cloud/model provider | varies | pure-stdlib local-first baseline |
 
-## 🚫 What RC-5 still does not implement
+## 🛡️ Public read-only query boundary
 
-- full autonomous Semantic Reader;
-- automatic NLP/LLM proposition or contradiction extraction;
-- provider/model routing inside Reader;
-- automatic parser/chunker, OCR or PDF layout reconstruction;
-- multimodal image understanding;
-- embeddings, ANN or Reader vector database;
-- automatic semantic cross-document identity;
-- automatic contradiction resolution;
-- autonomous research planner or belief update;
-- public Reader API/CLI/background worker;
-- durable Reader database schema;
-- PostgreSQL runtime activation/switching.
+These surfaces share `core.query_pipeline`:
 
-## 💶 Grant boundary
+```text
+HTTP /ask and /receipt
+CLI ask and receipt
+MCP search
+```
 
-NLnet state remains **submitted / under review / not awarded**. Approximate **€50,000** is planning only; there is no approved budget/payment commitment and budget change is none.
+They do not create facts, transition ESM state, write L3, operate the outbox,
+record episodes, initialize an embedding fingerprint, store unknown candidates
+or mutate adaptive verification state.
 
-Anything merged before a grant agreement is existing baseline. Therefore RC-0 through RC-5, when merged pre-agreement, cannot later be counted again as future funded delta. Any future funded Reader work must start after the actually merged RC-5 baseline.
+See [Read-Only Query Boundary](./docs/architecture/read-only-query-boundary.md).
 
-## 🌍 Localization truth
+## ⚖️ Explicit contradiction decisions
 
-English is the authoritative source language. Russian Reader-dependent root/detail documentation is refreshed against the immutable RC-5 English checkpoint recorded in [docs/TRANSLATION_STATUS.md](./docs/TRANSLATION_STATUS.md). The other eight localized Reader-dependent surfaces remain `REFRESH_NEEDED`; their rich previous translations are preserved. D2 reviewer/safety and Quick Start remain current for all nine locales.
+Normal approval fails closed while a contradiction is unresolved. A curator must
+choose an explicit disposition and provide an actor and reason.
 
-## 📚 Further reading
+RC-5 does not change that authority surface. `POSSIBLE_CONTRADICTION` is only a
+Reader candidate relation; it never selects the true/false side and never chooses
+`COEXIST`, `CONTEXTUALIZE` or `SUPERSEDE`.
 
-- [Current status](./docs/STATUS.md)
-- [Implementation status](./docs/IMPLEMENTATION_STATUS.md)
-- [Architecture overview](./docs/ARCHITECTURE_OVERVIEW.md)
-- [Reader Core architecture contract](./docs/architecture/READER_CORE_ARCHITECTURE.md)
-- [Storage and authority boundaries](./docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md)
-- [Roadmap](./ROADMAP.md)
-- [Grant scope](./docs/GRANT_NLNET_SCOPE.md)
-- [Project/grant/governance overview](./docs/PROJECT_GRANT_AND_GOVERNANCE.md)
-- [Glossary](./docs/GLOSSARY.md)
+```bash
+python -m core.conflict_surfaces FACT_ID \
+  --disposition COEXIST \
+  --actor alice \
+  --reason "the claims describe different contexts" \
+  --expected-report-id REPORT_ID
+```
+
+For hosted FastAPI deployments, register `POST /review/resolve-conflict` with the
+host application's authentication dependency. The current `CuratorLeaseRegistry`
+prevents concurrent decisions only inside one process; distributed deployments
+require an external lease adapter.
+
+## 🚀 Quick start
+
+```bash
+git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
+cd velantrim-exocortex-crystal
+python -m venv .venv
+source .venv/bin/activate
+pip install -e '.[dev]'
+pytest tests/ --cov=. --cov-fail-under=100
+```
+
+Optional inactive PostgreSQL migration tooling:
+
+```bash
+pip install -e '.[postgresql]'
+```
+
+Continue with [QUICKSTART.md](./docs/QUICKSTART.md).
+
+## 📚 Evidence and navigation
+
 - [Documentation map](./docs/DOCUMENTATION_MAP.md)
+- [Verification report](./TEST_REPORT.md)
+- [Current status](./docs/STATUS.md)
+- [Implementation matrix](./docs/IMPLEMENTATION_STATUS.md)
+- [Machine-readable manifest](./docs/status/implementation-manifest.json)
+- [Reader Core architecture contract](./docs/architecture/READER_CORE_ARCHITECTURE.md)
+- [Architecture](./docs/ARCHITECTURE.md)
+- [Inactive PostgreSQL import contract](./docs/architecture/POSTGRESQL_INACTIVE_IMPORT.md)
+- [PostgreSQL/pgvector RFC](./docs/architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md)
+- [Current AI context](./docs/ai/CURRENT_STATE.md)
+- [Known risks](./docs/ai/KNOWN_RISKS.md)
+- [NLnet scope](./docs/GRANT_NLNET_SCOPE.md)
+- [Baseline → funded-delta matrix](./docs/grants/baseline-funded-delta-matrix.md)
 - [Localization policy](./docs/LOCALIZATION_POLICY.md)
 - [Translation status](./docs/TRANSLATION_STATUS.md)
+- [Roadmap](./ROADMAP.md)
+- [Security policy](./SECURITY.md)
+
+## ✅ Verified baseline
+
+```text
+Runtime merge: bbd816c09dd39a02e6de6c1014438490572f40f6 (PR #337)
+Python 3.11: 2078 passed / 13 skipped / 0 failed
+Python 3.12: 2078 passed / 13 skipped / 0 failed
+Statements:  9756
+Coverage:    100.00%
+Mutation:    7/7 declared Ring Zero mutants killed
+CI jobs:     9/9
+PostgreSQL integration: successful against PostgreSQL 16 + pgvector 0.8.2
+Reader RC-1: implemented/tested bounded evidence-linked skeleton
+Reader RC-2: implemented/tested bounded Structural Document Map
+Reader RC-3: implemented/tested bounded explicit multi-pass mechanics
+Reader RC-4: implemented/tested bounded source-linked proposition extraction
+Reader RC-5: implemented/tested bounded explicit relation candidates
+Dedicated/full autonomous Reader: not implemented
+```
+
+The numeric runtime/test block above is the retained PR #337 verification checkpoint; later Reader
+milestones use their own exact-head and post-merge CI evidence.
+
+## 🚧 Boundary of the claim
+
+Crystal does not claim:
+
+- universal objective-truth detection;
+- zero hallucinations;
+- legal GDPR or security certification;
+- production-ready multi-tenant deployment;
+- distributed locking or exactly-once orchestration;
+- artificial consciousness, AGI or a “living digital personality”;
+- an active PostgreSQL runtime, automatic switching, cutover or rollback;
+- a completed dedicated/full autonomous Reader Core;
+- automatic Reader parsing, automatic NLP/LLM proposition/contradiction extraction, embeddings/ANN/vector search, semantic equivalence, automatic cross-document identity/reasoning or comprehension proof;
+- that RC-4 extracted candidates are verified facts or admitted evidence;
+- that RC-5 relation candidates are confirmed/resolved contradictions or admitted evidence;
+- Titan, Full Exo-Cortex, Mentaury or Native Kernel functionality as current runtime.
+
+The NLnet proposal remains **submitted / under review / not awarded**. Approximate **€50,000**
+remains planning only, not an approved budget/payment commitment; budget change is none. Merged
+functionality, including RC-0 through RC-5 when merged pre-agreement, is existing baseline and must
+not be counted again as future funded delivery.
+
+## 🌍 Translation program
+
+English is the primary source language. Russian Reader-dependent root and D1/D3/D4/D5 detail
+surfaces are fully refreshed against immutable English checkpoint
+`51c205fe048fd69d39fcd47b43e042a50de432bc`. Eight other locale root/Reader-detail surfaces retain
+their rich prior translations and are explicitly `REFRESH_NEEDED` (64 tracked documents). D2 and
+Quick Start remain current across all nine supported locales.
+
+See [LOCALIZATION_POLICY.md](./docs/LOCALIZATION_POLICY.md) and
+[TRANSLATION_STATUS.md](./docs/TRANSLATION_STATUS.md).
+
+## 🤝 Contributing and license
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md), [SECURITY.md](./SECURITY.md),
+[GOVERNANCE.md](./GOVERNANCE.md) and [AGPL-3.0](./LICENSE).
