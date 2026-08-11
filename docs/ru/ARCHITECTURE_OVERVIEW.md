@@ -1,4 +1,4 @@
-<!-- translation-source: docs/ARCHITECTURE_OVERVIEW.md@166fab5551c4b86ee0a546b2e1d3dc7adc240c86 -->
+<!-- translation-source: docs/ARCHITECTURE_OVERVIEW.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
 <!-- d3-locale: ru -->
 <!-- d3-boundary: physical-l3-not-strict-canon -->
@@ -9,13 +9,14 @@
 <!-- d3-reader: rc2-structural-map-implemented -->
 <!-- d3-reader: rc3-multi-pass-mechanics-implemented -->
 <!-- d3-reader: rc4-proposition-extraction-implemented -->
+<!-- d3-reader: rc5-relation-candidates-implemented -->
 <!-- d3-nonclaim: dedicated-reader-core-not-implemented -->
 <!-- d3-nonclaim: nlnet-not-awarded -->
 # Crystal — обзор архитектуры
 
-**Дата статуса:** 2026-08-10  
+**Дата статуса:** 2026-08-11  
 **Назначение:** стабильная архитектурная точка входа, пригодная для перевода.  
-**Источник истины:** смерженный код, точный CI и machine-readable implementation manifest остаются authoritative runtime truth.
+**Источник истины:** merged code, exact CI и machine-readable implementation manifest остаются authoritative implementation truth.
 
 ## Центральная модель
 
@@ -30,83 +31,89 @@ RC-3 explicit multi-pass mechanics над declared structural targets
         ↓
 RC-4 source-linked EXTRACTED_PROPOSITION candidates
         ↓
-обычный ingest/review/evidence path
+RC-5 explicit same-session/same-version relation candidates
+        ↓
+обычный ingest/review/evidence path остаётся отдельным
         ↓
 проверки политик Guardian
         ↓
 решение TruthGate о допуске
         ↓
-операционное состояние L1 + многостатусный physical L3
+операционное состояние L1 + multi-status physical L3
         ↓
-deny-dominant проекция чтения strict Canon
+deny-dominant strict Canon read projection
         ↓
-read-only retrieval / ответ / ограниченный отказ
+read-only retrieval / ответ / bounded refusal
 ```
 
-Reader artifacts, structural metadata, pass ledger и extracted propositions остаются upstream observation/process/candidate state. Они не получают authority над истиной, evidence admission, разрешением противоречий или planner-решениями.
+Reader artifacts, structural metadata, pass ledger, extracted propositions и relation candidates остаются upstream observation/process/candidate state. Они не получают authority над truth, evidence admission, contradiction disposition или planner decisions.
 
-Crystal не считает истинным каждый сохранённый узел, найденный результат или model output. Physical L3 хранит несколько статусов. Strict Canon — доверенная read-проекция, формируемая текущей политикой и evidence-ограничениями.
-
-## Слои памяти и ревью
+## Слои памяти и Reader
 
 | Слой | Роль | Граница authority |
 |---|---|---|
-| Reader RC-1 | source/version/session artifacts, fidelity и coverage | source-linked observation/candidate, не истина |
-| Reader RC-2 | version-bound структурная иерархия и порядок | структура и prominence — metadata, не confidence |
-| Reader RC-3 | explicit pass attempts, declared targets и coverage outcomes | process audit, не comprehension или admission |
-| Reader RC-4 | source-linked extracted proposition candidates из completed substantive regions | source presentation/candidate state, не verified fact и не admitted evidence |
-| L0 | process-local рабочее состояние | эфемерно, не durable truth |
-| L1 | операционная память SQLite | durable facts, ESM, evidence, audit, receipts, import/review и outbox state |
-| L2 | pending/review staging | candidate или quarantined claims до окончательного admission |
-| L3 | графовое многостатусное хранилище | физическое хранение, не тождественное strict Canon |
+| Reader RC-1 | source/version/session artifacts, fidelity и coverage | source-linked observation/candidate, не truth |
+| Reader RC-2 | version-bound structural hierarchy/order | structure/prominence — metadata, не confidence |
+| Reader RC-3 | explicit pass attempts, declared targets и outcomes | process audit, не comprehension/admission |
+| Reader RC-4 | source-linked proposition candidates из completed substantive regions | source presentation/candidate state, не verified fact/admitted evidence |
+| Reader RC-5 | explicit relations между valid RC-4 candidates | relation suspicion, не confirmed contradiction/winner |
+| L0 | process-local working state | ephemeral, не durable truth |
+| L1 | operational SQLite memory | durable operational state, но не автоматически strict Canon |
+| L2 | pending/review staging | candidate/quarantined claims до admission |
+| L3 | graph-oriented multi-status storage | physical storage ≠ strict Canon |
 | Strict read view | TrustSnapshot / CanonicalView | deny-dominant grounding surface |
 
 ## Разделение чтения и записи
 
 ```text
-ask / receipt / MCP inspection            → core.query_pipeline.query() → read-only
-явный ingest                               → Guardian / TruthGate → admission-capable write
-Reader RC-1 / RC-2 / RC-3 / RC-4          → source-linked artifacts/process/candidate state → без admission side effects
+ask / receipt / MCP inspection             → core.query_pipeline.query() → read-only
+explicit ingest                             → Guardian / TruthGate → admission-capable write
+Reader RC-1 / RC-2 / RC-3 / RC-4 / RC-5   → source/process/candidate artifacts only → no admission side effects
 ```
 
-Публичный запрос не должен изменять facts, ESM, L3, outbox, связи эпизодов, embedding identity или unknown candidates. Если strict grounding недостаточен, ожидается ограниченный отказ.
+Public query не должен изменять facts, ESM, L3, outbox, episode links, embedding identity или unknown candidates. Если strict grounding недостаточен, ожидается bounded refusal.
 
-## Профили хранения
+## Durable storage profiles
 
-SQLite — обычный активный local-first профиль. При первом устойчивом выборе `auto` может использоваться опциональный LadybugDB, если он установлен, иначе SQLite; после этого выбранный backend и несекретная locator identity сохраняются. Последующие конфликты backend или locator fail closed. Тихий fallback на эфемерный Mock запрещён; явный Mock остаётся состоянием для разработки/тестов.
-
-Remote Neo4j — явный выбор оператора, расширяющий trust boundary.
+SQLite — ordinary active local-first profile. Существующие optional adapters не меняют Reader authority. Remote Neo4j остаётся explicit operator choice, расширяющим trust boundary.
 
 ## Переносимость и PostgreSQL
 
-Проверенная цепочка переносимости:
+Проверенная цепочка:
 
 ```text
 SQLite backup / verify / inactive restore
 → bounded deterministic logical export
 → PostgreSQL 16 + pgvector 0.8.2 preflight
-→ новая неактивная target schema
+→ fresh inactive target schema
 → serializable import
-→ независимый read-only target re-hash
+→ independent read-only target re-hash
 → exact equivalence receipt
-→ target остаётся active=false
+→ active=false
 ```
 
-PostgreSQL target отсутствует в обычной runtime composition. Успешный import или exact equivalence — evidence операции, а не activation, backend selection, TruthGate admission, strict Canon membership, cutover, rollback, dual-write или production readiness.
+PostgreSQL target отсутствует в ordinary runtime composition. Successful import/equivalence — operation evidence, не backend activation, selection, TruthGate admission, strict Canon membership, cutover, rollback, dual-write или production readiness. RC-5 не меняет storage schema и не активирует PostgreSQL.
 
 ## Source-grounded Reader foundation
 
-Source spans и evidence import-session входят в реализованный baseline. RC-1 даёт ограниченный evidence-linked каркас источника/сессии: точную source-version identity, locators, SegmentCards, source-fidelity classes, coverage states, bookmarks/open loops, stale handling и fail-visible failure/privacy semantics.
+RC-1 даёт bounded evidence-linked source/session skeleton: exact source-version identity, locators, SegmentCards, fidelity classes, coverage states, bookmarks/open loops, stale handling и fail-visible failure/privacy semantics.
 
-RC-2 добавляет caller-supplied Structural Document Map, привязанный к тем же точным семантикам SourceVersion и SourceLocator. Он моделирует иерархию/порядок и явные состояния `RECOVERED`, `AMBIGUOUS` и `UNSUPPORTED`, не заявляя автоматического parsing.
+RC-2 добавляет caller-supplied Structural Document Map, привязанный к тем же exact SourceVersion/SourceLocator semantics. Он моделирует hierarchy/order и `RECOVERED`, `AMBIGUOUS`, `UNSUPPORTED`, не заявляя automatic parsing.
 
-RC-3 добавляет deterministic explicit multi-pass mechanics: `ORIENTATION`, `BROAD_READ`, `FOCUSED_READ`, `CROSS_CHECK` и `TARGETED_REREAD`. Pass заранее объявляет structural targets, записывает `ATTEMPTED` / `COMPLETED` / `INTERRUPTED` / `DEGRADED` и применяет только явные legal RC-1 coverage outcomes. Partial progress сохраняется при interruption/degradation. Cross-check и targeted re-read требуют prior substantive processing; targeted re-read требует explicit rationale. Pass counts — telemetry, а не comprehension scores.
+RC-3 добавляет deterministic explicit multi-pass mechanics: `ORIENTATION`, `BROAD_READ`, `FOCUSED_READ`, `CROSS_CHECK`, `TARGETED_REREAD`. Pass заранее объявляет structural targets, записывает `ATTEMPTED` / `COMPLETED` / `INTERRUPTED` / `DEGRADED` и применяет только explicit legal RC-1 coverage outcomes. Partial progress сохраняется. Cross-check и targeted reread требуют prior substantive processing; targeted reread требует rationale. Pass counts — telemetry, не comprehension scores.
 
-RC-4 добавляет deterministic pre-admission proposition extraction. Candidate может быть зарегистрирован только для target из `COMPLETED` RC-3 pass, если recorded outcome и текущий matching coverage равны `PROCESSED` или `REVISITED`. Каждый candidate остаётся `SegmentCard` с fidelity `EXTRACTED_PROPOSITION`, replayable primary/supporting locators, explicit source owner, proposition-presentation category, negation и qualifiers.
+RC-4 добавляет deterministic pre-admission proposition extraction. Candidate регистрируется только для target из `COMPLETED` RC-3 pass, если recorded outcome и current matching coverage = `PROCESSED` либо `REVISITED`. Candidate остаётся `SegmentCard` с `EXTRACTED_PROPOSITION` fidelity, replayable primary/supporting locators, source owner, proposition-presentation category, negation и qualifiers. `FACTUAL_ASSERTION` описывает presentation источника, не Crystal verification.
 
-Категории factual assertion, author opinion, hypothesis, conditional, example, quoted speech, reported position, definition и uncertain assertion описывают форму высказывания источника, а не epistemic admission. `FACTUAL_ASSERTION` не означает, что Crystal проверил утверждение.
+RC-5 добавляет `core/reader_relations.py`: explicit relation registration только поверх candidates, уже зарегистрированных одним RC-4 extractor. Registry требует OPEN session, same exact source version и current candidate/card provenance. Он сохраняет обе стороны и rationale.
 
-RC-4 не вызывает `core.evidence.attach_evidence()`, не создаёт fact `evidence_spans` и не выполняет truth admission.
+```text
+POSSIBLE_CONTRADICTION  — symmetric candidate suspicion
+TENSION                 — symmetric non-resolution tension
+EXCEPTION               — directional: right limits left
+QUALIFICATION           — directional: right refines left
+```
+
+`POSSIBLE_CONTRADICTION`/`TENSION` canonicalize candidate-ID order. `EXCEPTION`/`QUALIFICATION` preserve direction. Duplicate symmetric registration fail closed и не становится corroboration.
 
 ```text
 coverage != comprehension proof
@@ -114,32 +121,40 @@ pass completion != comprehension proof
 structure/order/prominence != epistemic authority
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+similarity != identity
+repetition != corroboration
 ```
 
-Dedicated/full autonomous Reader / Semantic Reading runtime остаётся будущей работой. Нет automatic parser/semantic chunker, automatic NLP/LLM extraction, provider-driven reading agent, embeddings/ANN/vector DB, automatic cross-document reasoning engine или automatic belief update.
+RC-5 не сравнивает raw source text автоматически, не использует semantic similarity как proof, не создаёт cross-document identity и не invokes contradiction resolution. `core.evidence.attach_evidence()` остаётся за пределами Reader.
 
-## Безопасность и приватность
+Dedicated/full autonomous Reader / Semantic Reading runtime остаётся будущей работой. Нет automatic parser/semantic chunker, NLP/LLM extraction, provider-driven reading agent, embeddings/ANN/vector DB, automatic cross-document reasoning engine, contradiction resolution или automatic belief update.
 
-У стандартной установки нет обязательной зависимости от cloud, LLM, telemetry или analytics. Опциональные remote adapters, более широкая API-exposure и migration targets требуют явной настройки оператора. Шифрование отдельных полей L1 не является универсальным шифрованием. Удаление из active store не означает глобальное удаление из backups, exports, remote systems или provider copies.
+## Безопасность и privacy
 
-RC-1/RC-2/RC-3/RC-4 Reader не удерживают тело source-документа, а производные Reader artifacts, pass records и proposition candidates наследуют restriction и sensitivity metadata источника. Структура/порядок/prominence Reader, pass completion и proposition extraction не могут ослаблять privacy или epistemic policy.
+У стандартной установки нет обязательной зависимости от cloud, LLM, telemetry или analytics. Optional remote adapters расширяют trust boundary только при explicit operator configuration. Field-level encryption не является universal encryption; active-store erasure не означает deletion backups/exports/remote/provider copies.
+
+RC-1..RC-5 не удерживают source body. Derived artifacts наследуют restriction/sensitivity metadata. Structure/order/prominence, pass completion, proposition extraction и relation registration не могут ослаблять privacy или epistemic policy.
 
 ## Текущие non-claims
 
 Crystal не заявляет:
 
-- AGI, сознание, универсальную истину или нулевые hallucinations;
-- активный PostgreSQL runtime или automatic backend switching;
-- cutover, rollback, dual-write или принятый production ANN profile;
+- AGI, consciousness, universal truth или zero hallucinations;
+- active PostgreSQL runtime или automatic backend switching;
+- cutover, rollback, dual-write или accepted production ANN profile;
 - production multi-tenancy или distributed exactly-once coordination;
-- завершённый dedicated/full autonomous Reader Core или automatic document comprehension/extraction;
+- dedicated/full autonomous Reader Core;
+- automatic parsing/NLP/LLM contradiction detection/resolution;
+- semantic cross-document identity;
 - security, legal или GDPR certification;
-- присуждённое финансирование NLnet.
+- awarded NLnet funding.
 
 ## Подробные английские контракты
 
 - [Полная архитектура](../ARCHITECTURE.md)
-- [Архитектурный контракт Reader Core](../architecture/READER_CORE_ARCHITECTURE.md)
-- [Границы хранения и authority](../STORAGE_AND_AUTHORITY_BOUNDARIES.md)
-- [Статус реализации](../IMPLEMENTATION_STATUS.md)
-- [Сводка по безопасности, приватности и отказам](../SAFETY_PRIVACY_AND_FAILURES.md)
+- [Reader Core architecture contract](../architecture/READER_CORE_ARCHITECTURE.md)
+- [Storage and authority boundaries](../STORAGE_AND_AUTHORITY_BOUNDARIES.md)
+- [Implementation status](../IMPLEMENTATION_STATUS.md)
+- [Safety/privacy/failures](../SAFETY_PRIVACY_AND_FAILURES.md)

@@ -1,4 +1,4 @@
-"""Validate mixed D1 localization freshness after Reader RC-4."""
+"""Validate mixed D1 localization freshness after Reader RC-5."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = "166fab5551c4b86ee0a546b2e1d3dc7adc240c86"
+SOURCE = "51c205fe048fd69d39fcd47b43e042a50de432bc"
 LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
 CURRENT_LOCALES = ("ru",)
 REFRESH_LOCALES = tuple(locale for locale in LOCALES if locale not in CURRENT_LOCALES)
@@ -17,9 +17,19 @@ READER_MARKERS = (
     "reader_core_rc2_structural_map = true",
     "reader_core_rc3_multi_pass_mechanics = true",
     "reader_core_rc4_proposition_extraction = true",
+    "reader_core_rc5_relation_candidates = true",
     "dedicated_reader_core = false",
 )
+AUTHORITY_MARKERS = (
+    "EXTRACTED_PROPOSITION != verified fact",
+    "Reader candidate != admitted evidence",
+    "contradiction candidate != confirmed contradiction",
+)
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
+
+
+def normalize_spacing(text: str) -> str:
+    return re.sub(r"[ \t]+", " ", text)
 
 
 def check_links(relative: str, text: str, errors: list[str]) -> None:
@@ -102,13 +112,10 @@ def main() -> int:
                 ):
                     if marker not in text:
                         errors.append(f"{relative}: missing current Reader evidence {marker!r}")
-                normalized = re.sub(r"[ \t]+", " ", text)
-                for marker in READER_MARKERS:
+                normalized = normalize_spacing(text)
+                for marker in (*READER_MARKERS, *AUTHORITY_MARKERS):
                     if marker not in normalized:
                         errors.append(f"{relative}: missing normalized Reader evidence {marker!r}")
-                for marker in ("EXTRACTED_PROPOSITION != verified fact", "Reader candidate != admitted evidence"):
-                    if marker not in text:
-                        errors.append(f"{relative}: missing RC-4 authority marker {marker!r}")
                 if name == "STATUS.md":
                     for marker in (
                         "2078 passed / 13 skipped / 0 failed",
@@ -133,6 +140,7 @@ def main() -> int:
     for marker in (
         "Russian Reader-dependent public/detail documentation is refreshed",
         "eight other localized root README files and Reader-dependent detail packs",
+        "reader_core_rc5_relation_candidates    = true",
     ):
         if marker not in state:
             errors.append(f"AI current state: missing marker {marker!r}")
@@ -142,7 +150,7 @@ def main() -> int:
         for error in errors:
             print(f"  - {error}")
         return 1
-    print("D1 translation status is consistent: Russian CURRENT at RC-4; 8 locales Reader refresh needed")
+    print("D1 translation status consistent: Russian CURRENT at RC-5; 8 locales REFRESH_NEEDED")
     return 0
 
 

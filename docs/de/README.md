@@ -1,19 +1,19 @@
-<!-- localization-index-source: main@166fab5551c4b86ee0a546b2e1d3dc7adc240c86 -->
-<!-- d1-source: main@166fab5551c4b86ee0a546b2e1d3dc7adc240c86 -->
+<!-- localization-index-source: main@51c205fe048fd69d39fcd47b43e042a50de432bc -->
+<!-- d1-source: main@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- d1-status: REFRESH_NEEDED -->
 <!-- d2-source: main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f -->
 <!-- d2-status: CURRENT -->
-<!-- d3-source: main@166fab5551c4b86ee0a546b2e1d3dc7adc240c86 -->
+<!-- d3-source: main@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- d3-status: REFRESH_NEEDED -->
-<!-- d4-source: main@166fab5551c4b86ee0a546b2e1d3dc7adc240c86 -->
+<!-- d4-source: main@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- d4-status: REFRESH_NEEDED -->
-<!-- d5-source: main@166fab5551c4b86ee0a546b2e1d3dc7adc240c86 -->
+<!-- d5-source: main@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- d5-status: REFRESH_NEEDED -->
 # 🇩🇪 Crystal-Dokumentation auf Deutsch
 
-Englisch bleibt die primäre Quelle bei Konflikten. D2 und Quick Start bleiben `CURRENT`. Der vollständige Root-README und die Reader-abhängigen Detaildokumente in D1/D3/D4/D5 behalten ihren reichen bisherigen Inhalt, benötigen aber einen RC-4-Semantik-Refresh und sind deshalb ausdrücklich `REFRESH_NEEDED`.
+Englisch bleibt die primäre Quelle bei Konflikten. D2 und Quick Start bleiben `CURRENT`. Der vollständige Root-README und die Reader-abhängigen Detaildokumente in D1/D3/D4/D5 behalten ihren reichen bisherigen Inhalt, benötigen aber einen RC-5-Semantik-Refresh und sind deshalb ausdrücklich `REFRESH_NEEDED`.
 
-- Root README: `REFRESH_NEEDED` für RC-4
+- Root README: `REFRESH_NEEDED` für RC-5
 - D1: [Quick Start — CURRENT](./QUICKSTART.md), [Status — REFRESH_NEEDED](./STATUS.md), [Implementierungsstatus — REFRESH_NEEDED](./IMPLEMENTATION_STATUS.md)
 - D2: [Reviewer Guide — CURRENT](./REVIEWER_GUIDE.md), [Safety/Privacy/Failures — CURRENT](./SAFETY_PRIVACY_AND_FAILURES.md)
 - D3: [Architektur — REFRESH_NEEDED](./ARCHITECTURE_OVERVIEW.md), [Storage/Authority — REFRESH_NEEDED](./STORAGE_AND_AUTHORITY_BOUNDARIES.md)

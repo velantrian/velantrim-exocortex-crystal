@@ -1,11 +1,12 @@
 # Velantrim Crystal — Current Status
 
-**Status date:** 2026-08-10  
+**Status date:** 2026-08-11  
 **Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
 **Verified tree:** `f57e58a6f4d1954b649ba324996fcde42ac287b8`  
 **Validated implementation head:** `d7af7c80722274f9217bc5545d150f92e9363f37`  
 **Runtime PR / CI:** #337 / `31256316536`  
-**PostgreSQL integration CI:** `31256316532`
+**PostgreSQL integration CI:** `31256316532`  
+**Reader RC-5 tracking:** issue #367 / PR #368
 
 ## Verification
 
@@ -21,8 +22,9 @@
 These counts remain the retained verified runtime checkpoint. Reader milestones merged later carry
 their own exact-head and post-merge CI evidence rather than rewriting that historical checkpoint.
 
-Exact evidence: [`TEST_REPORT.md`](../TEST_REPORT.md) and the
-[machine-readable manifest](./status/implementation-manifest.json).
+Exact historical evidence: [`TEST_REPORT.md`](../TEST_REPORT.md) and the
+[machine-readable manifest](./status/implementation-manifest.json). Reader RC-5 is accepted only
+with its own exact-head 9/9 CI and post-merge 9/9 CI recorded on PR #368 / issue #367 completion evidence.
 
 ## Current verified capability boundary
 
@@ -36,6 +38,7 @@ verified completed logical bundle
 → independent read-only canonical target re-hash
 → exact count / byte / SHA-256 equivalence
 → non-secret receipts
+→ active=false
 ```
 
 The PostgreSQL driver is an optional extra and is lazy-loaded only by explicit operator
@@ -45,7 +48,9 @@ normal reads or writes.
 
 ## Reader Core bounded implementation
 
-RC-0 is the normative architecture contract. Four bounded implementation milestones are represented by the current Reader implementation line; each milestone carries its own exact CI evidence rather than rewriting the retained historical runtime checkpoint:
+RC-0 is the normative architecture contract. Five bounded implementation milestones are represented
+by the current Reader implementation line; each milestone carries its own exact CI evidence rather
+than rewriting the retained historical runtime checkpoint:
 
 ```text
 RC-1
@@ -78,23 +83,75 @@ RC-4
 → explicit negation + scope/exception qualifiers
 → primary + supporting replayable locators
 → count-only extraction telemetry
+
+RC-5
+→ valid registered RC-4 candidate IDs only
+→ one OPEN ReaderSession + one exact SourceVersion
+→ POSSIBLE_CONTRADICTION / TENSION
+→ EXCEPTION / QUALIFICATION
+→ exact two-sided candidate/pass/node linkage
+→ primary + supporting replayable provenance on both sides
+→ explicit non-empty rationale
+→ count-only relation telemetry
 ```
 
 Machine truth distinguishes these bounded layers from the larger Reader capability:
 
 ```text
-reader_core_rc1_skeleton             = true
-reader_core_rc2_structural_map       = true
-reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc1_skeleton               = true
+reader_core_rc2_structural_map         = true
+reader_core_rc3_multi_pass_mechanics   = true
 reader_core_rc4_proposition_extraction = true
-dedicated_reader_core                = false
+reader_core_rc5_relation_candidates    = true
+dedicated_reader_core                  = false
 ```
 
-RC-4 is deterministic candidate registration, **not** autonomous NLP/model extraction. A proposition may be created only from a `COMPLETED` RC-3 pass target whose recorded outcome and current matching coverage are `PROCESSED` or `REVISITED`. RC-4 preserves source-presentation distinctions for factual assertion, author opinion, hypothesis, conditional, example, quoted speech, reported position, definition and uncertain assertion. It also preserves source ownership, negation and qualifiers instead of silently turning reported or conditional text into an unqualified world fact.
+RC-4 is deterministic candidate registration, **not** autonomous NLP/model extraction. A proposition
+may be created only from a `COMPLETED` RC-3 pass target whose recorded outcome and current matching
+coverage are `PROCESSED` or `REVISITED`. RC-4 preserves source-presentation distinctions for factual
+assertion, author opinion, hypothesis, conditional, example, quoted speech, reported position,
+definition and uncertain assertion. It also preserves source ownership, negation and qualifiers.
 
-RC-4 candidates are implemented as source-linked `SegmentCard` artifacts with `EXTRACTED_PROPOSITION` fidelity. They are upstream Reader candidates only. RC-4 does **not** call `core.evidence.attach_evidence()`, attach evidence to a fact, create a Canon fact, mutate `truth_status`/ESM or assert evidence sufficiency. `EXTRACTED_PROPOSITION != verified fact`; `Reader candidate != admitted evidence`.
+RC-4 candidates are source-linked `SegmentCard` artifacts with `EXTRACTED_PROPOSITION` fidelity.
+They are upstream Reader candidates only. RC-4 does **not** call `core.evidence.attach_evidence()`,
+attach evidence to a fact, create a Canon fact, mutate `truth_status`/ESM or assert evidence
+sufficiency. `EXTRACTED_PROPOSITION != verified fact`; `Reader candidate != admitted evidence`.
 
-RC-1/RC-2/RC-3/RC-4 retain no source body and add no durable Reader storage schema, public API/CLI/background worker, parser/chunker/OCR/PDF-layout engine, LLM/provider integration, embeddings/ANN/vector DB or automatic cross-document reasoning. They have no method/runtime wiring that mutates `truth_status`/ESM, writes strict Canon, bypasses Guardian/TruthGate, resolves contradictions or creates planner/belief-update authority. `coverage != comprehension proof`; pass completion likewise does not prove comprehension. Structural position/order/prominence is metadata, not truth/confidence authority.
+RC-5 runtime lives in `core/reader_relations.py`. `ReaderRelationRegistry` is bound to one
+RC-4 `ReaderPropositionExtractor`, therefore one Reader session/source domain. It accepts only IDs
+already registered by that extractor and re-validates OPEN session state, candidate session ID,
+exact source version, supporting locator versions and candidate-card membership.
+
+`POSSIBLE_CONTRADICTION` and `TENSION` are symmetric candidate relations and use deterministic
+candidate-ID order. `EXCEPTION` and `QUALIFICATION` are directional: the right-hand candidate is
+registered as limiting/refining the left-hand candidate. Duplicate same-kind symmetric pairs fail
+closed rather than becoming corroboration.
+
+Every RC-5 relation preserves relation/session IDs, both exact RC-4 candidate IDs, both pass IDs,
+structural node IDs, primary/supporting source locators and explicit rationale. It has no truth,
+confidence, evidence-sufficiency, resolved or winner field.
+
+RC-5 is deterministic explicit registration, **not** raw-text semantic contradiction detection.
+It does not infer semantic equivalence or cross-document identity, use similarity as proof, call an
+LLM/provider, invoke contradiction resolution or choose a winner.
+
+RC-1/RC-2/RC-3/RC-4/RC-5 retain no source body and add no durable Reader storage schema, public
+API/CLI/background worker, parser/chunker/OCR/PDF-layout engine, LLM/provider integration,
+embeddings/ANN/vector DB or automatic cross-document reasoning. They have no method/runtime wiring
+that mutates `truth_status`/ESM, writes strict Canon, bypasses Guardian/TruthGate, promotes confidence,
+attaches fact evidence, resolves contradictions or creates planner/belief-update authority.
+
+```text
+coverage != comprehension proof
+pass completion != comprehension proof
+structure/order/prominence != epistemic authority
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+similarity != identity
+repetition != corroboration
+```
 
 ## Authority boundary
 
@@ -107,6 +164,7 @@ Reader artifact         = source-linked candidate/observation
 Reader structure        = document metadata
 Reader pass ledger      = reading-process audit state
 Reader proposition      = pre-admission source-linked candidate
+Reader relation         = pre-admission relation candidate
 migration/import        != TruthGate admission
 successful equivalence  != backend activation
 Reader coverage         != comprehension proof
@@ -114,9 +172,19 @@ Reader pass completion  != comprehension proof
 Reader structure        != epistemic authority
 EXTRACTED_PROPOSITION   != verified fact
 Reader candidate        != admitted evidence
+relation candidate      != admitted evidence
+contradiction candidate != confirmed contradiction
 ```
 
 Guardian, TruthGate, restrictions, TrustSnapshot and CanonicalView remain unchanged.
+
+## Localization truth
+
+English is the primary/source technical language. Russian root and Reader-dependent D1/D3/D4/D5
+surfaces are current against immutable English RC-5 source checkpoint
+`51c205fe048fd69d39fcd47b43e042a50de432bc`. Eight other Reader-dependent locale surfaces preserve
+rich translations as `REFRESH_NEEDED`; the tracked Reader/root debt is 64 documents. D2 and Quick
+Start remain current in all nine locales.
 
 ## Still absent
 
@@ -127,14 +195,16 @@ Guardian, TruthGate, restrictions, TrustSnapshot and CanonicalView remain unchan
 - production IdP/multi-tenancy and legal/security/GDPR certification;
 - automatic Reader parser/semantic chunker/OCR/PDF-layout or multimodal understanding;
 - dedicated autonomous/full Semantic Reading runtime;
-- automatic NLP/LLM proposition extraction or Reader provider integration;
-- embeddings, ANN/vector database or automatic cross-document proposition identity/reasoning engine;
+- automatic NLP/LLM proposition/contradiction extraction or Reader provider integration;
+- embeddings, ANN/vector database, semantic equivalence or automatic cross-document proposition identity/reasoning engine;
 - automatic evidence attachment to facts or admission of Reader candidates;
+- automatic contradiction resolution/winner selection;
 - planner/autonomous research/belief-update authority.
 
 ## Grant status
 
-The project is submitted and under review. **No award or budget change** is claimed. PR #337,
-Reader RC-0/RC-1/RC-2/RC-3 and any RC-4 work merged before an agreement are existing baseline and cannot
-be counted again as future funded delta. Future funding must begin with separately reviewed work
-beyond the verified pre-agreement baseline.
+The NLnet project is **submitted / under review / not awarded**. Approximate **€50,000** is planning
+only, not an approved budget or payment commitment. **Budget change: none.** PR #337 and Reader
+RC-0/RC-1/RC-2/RC-3/RC-4/RC-5, when merged before an agreement, are existing baseline and cannot be
+counted again as future funded delta. Future funding must begin with separately reviewed work beyond
+the actually merged pre-agreement baseline.

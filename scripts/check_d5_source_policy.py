@@ -1,4 +1,4 @@
-"""Resolve and validate the D5 repository documentation inventory."""
+"""Resolve and validate the D5 repository documentation inventory through Reader RC-5."""
 
 from __future__ import annotations
 
@@ -70,6 +70,8 @@ def main() -> int:
     errors: list[str] = []
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     policy = POLICY_PATH.read_text(encoding="utf-8")
+    expected_refresh_locales = [locale for locale in LOCALES if locale != "ru"]
+
     if manifest.get("phase") != "D5_SOURCE_INVENTORY":
         errors.append("D5 manifest: invalid phase")
     if manifest.get("repository_checkpoint") != "3de746e74be844c6fda55849c10faac5c3f0631a":
@@ -77,16 +79,15 @@ def main() -> int:
     if manifest.get("supported_locales") != list(LOCALES):
         errors.append("D5 manifest: supported locale set/order mismatch")
     if manifest.get("fully_current_locales") != ["ru"]:
-        errors.append("D5 manifest: Russian must be the only fully current detail locale after RC-4")
-    expected_refresh_locales = [locale for locale in LOCALES if locale != "ru"]
+        errors.append("D5 manifest: Russian must be the only fully current detail locale after RC-5")
     if manifest.get("refresh_needed_locales") != expected_refresh_locales:
         errors.append("D5 manifest: refresh-needed locale set/order mismatch")
     if manifest.get("root_readme_current_locales") != ["ru"]:
-        errors.append("D5 manifest: Russian must be the only RC-4-current localized root README")
+        errors.append("D5 manifest: Russian must be the only RC-5-current localized root README")
     if manifest.get("root_readme_refresh_needed_locales") != expected_refresh_locales:
         errors.append("D5 manifest: root README refresh-needed locale set/order mismatch")
-    if manifest.get("localized_d5_decision") != "RC4_RUSSIAN_ROOT_AND_DETAILS_CURRENT_EIGHT_ROOT_AND_READER_DETAILS_REFRESH_NEEDED":
-        errors.append("D5 manifest: RC-4 localization decision mismatch")
+    if manifest.get("localized_d5_decision") != "RC5_RUSSIAN_ROOT_AND_DETAILS_CURRENT_EIGHT_ROOT_AND_READER_DETAILS_REFRESH_NEEDED":
+        errors.append("D5 manifest: RC-5 localization decision mismatch")
     if set(manifest.get("allowed_states", [])) != ALLOWED:
         errors.append("D5 manifest: allowed state set mismatch")
     if manifest.get("default_state") != "ENGLISH_ONLY_BY_DESIGN":
@@ -111,6 +112,7 @@ def main() -> int:
         "reader_core_rc2_structural_map_claim",
         "reader_core_rc3_multi_pass_mechanics_claim",
         "reader_core_rc4_proposition_extraction_claim",
+        "reader_core_rc5_relation_candidates_claim",
     ):
         if manifest.get(key) is not True:
             errors.append(f"D5 manifest: missing bounded Reader claim {key}")
@@ -158,28 +160,33 @@ def main() -> int:
         "refresh_needed",
         "retired",
         "english_only_by_design",
-        "physical l3 != strict canon",
-        "retrieval score != evidence",
-        "model output != source truth",
-        "migration proof != claim proof",
-        "import success != activation",
-        "active=false",
+        "never permission to replace rich translations with short summaries",
         "reader_core_rc1_skeleton",
         "reader_core_rc2_structural_map",
         "reader_core_rc3_multi_pass_mechanics",
         "reader_core_rc4_proposition_extraction",
+        "reader_core_rc5_relation_candidates",
         "dedicated_reader_core",
-        "pass completion != comprehension proof",
-        "extracted_proposition != verified fact",
-        "reader candidate != admitted evidence",
+        "pre-admission",
+        "has no truth/canon/esm/planner authority",
+        "does not call `core.evidence.attach_evidence()`",
+        "extracted_proposition",
+        "reader candidate",
+        "relation candidate",
+        "contradiction candidate != confirmed contradiction",
+        "active=false",
         "submitted / under review / not awarded",
         "budget change is none",
+        "existing baseline, not future funded delta",
     ):
         if normalized(marker) not in policy_searchable:
             errors.append(f"D5 policy: missing marker {marker!r}")
 
     workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
-    for marker in ("Validate D5 source inventory policy", "python scripts/check_d5_source_policy.py"):
+    for marker in (
+        "Validate D5 source inventory policy",
+        "python scripts/check_d5_source_policy.py",
+    ):
         if marker not in workflow:
             errors.append(f"CI workflow: missing marker {marker!r}")
 
@@ -207,8 +214,8 @@ def main() -> int:
             print(f"  - {error}")
         return 1
     print(
-        "D5 source inventory is consistent: Russian root/detail CURRENT; "
-        f"RC-4 localized refresh debt={expected_refresh_count}"
+        "D5 source inventory consistent: Russian root/detail CURRENT; "
+        f"RC-5 localized refresh debt={expected_refresh_count}"
     )
     return 0
 

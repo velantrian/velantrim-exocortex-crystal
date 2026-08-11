@@ -103,23 +103,32 @@ claim must retain source/provenance and refusal conditions.
 `EXTRACTED_PROPOSITION` Reader candidates. It must not call `core.evidence.attach_evidence()` or
 write fact evidence. A source locator is provenance, not evidence sufficiency.
 
+**RC-5 boundary:** `core/reader_relations.py` registers only explicit relations between valid
+RC-4 candidates inside one OPEN Reader session and exact source version. Exact candidate IDs,
+primary/supporting provenance and rationale remain audit context, not evidence admission.
+
 ## 8. Contradictions and curator decisions
 
 **Start:** contradiction modules, `core/review.py`, `core/conflict_surfaces.py`,
 `docs/CONTRADICTION_POLICY.md`.
 
 Detection does not select a winner. `COEXIST`, `CONTEXTUALIZE` and `SUPERSEDE` require
-explicit authorized decisions. Curator leases remain process-local. RC-3 `CROSS_CHECK` and RC-4
-proposition extraction may expose conflict-relevant Reader state, but they cannot resolve a
-`ContradictionReport` or select a canonical winner.
+explicit authorized decisions. Curator leases remain process-local. RC-3 `CROSS_CHECK`, RC-4
+proposition extraction and RC-5 relation candidates may expose conflict-relevant Reader state,
+but they cannot resolve a `ContradictionReport` or select a canonical winner.
+
+```text
+POSSIBLE_CONTRADICTION != confirmed contradiction
+relation candidate     != admitted evidence
+```
 
 ## 9. Imports and review queues
 
 **Start:** import/session modules, review queue/session modules and their CLI/HTTP tests.
 
 Partial imports must remain distinguishable from admission. Unreviewed content cannot ground
-strict answers, and restriction/erasure state must propagate. RC-4 extracted propositions remain
-upstream of this normal ingest/review/evidence path.
+strict answers, and restriction/erasure state must propagate. RC-4 extracted propositions and
+RC-5 relation candidates remain upstream of this normal ingest/review/evidence path.
 
 ## 10. Public surfaces and runtime composition
 
@@ -127,8 +136,8 @@ upstream of this normal ingest/review/evidence path.
 `pyproject.toml`, `.github/workflows/ci.yml`.
 
 Public query and doctor surfaces are read-only. PostgreSQL migration commands are explicit
-operator operations and do not add an ordinary runtime adapter. Reader RC-1/RC-2/RC-3/RC-4 add
-no public API, CLI, background worker or ordinary runtime-composition wiring.
+operator operations and do not add an ordinary runtime adapter. Reader RC-1/RC-2/RC-3/RC-4/RC-5
+add no public API, CLI, background worker or ordinary runtime-composition wiring.
 
 ## 11. Evaluation and status evidence
 
@@ -138,8 +147,8 @@ workflows.
 
 Always bind claims to an exact commit, head and CI run. Microbenchmarks and integration jobs
 are not production SLOs or certification. Reader telemetry is count/state only; coverage, pass
-completion and extraction counts are not comprehension, truth, confidence or evidence-sufficiency
-scores.
+completion, extraction counts and relation counts are not comprehension, truth, confidence or
+evidence-sufficiency scores.
 
 ## 12. Long-document semantic reading
 
@@ -149,6 +158,7 @@ scores.
 - `core/reader_structure.py`, `tests/test_reader_structure.py` — RC-2;
 - `core/reader_passes.py`, `tests/test_reader_passes.py` — RC-3;
 - `core/reader_extraction.py`, `tests/test_reader_extraction.py` — RC-4;
+- `core/reader_relations.py`, `tests/test_reader_relations.py` — RC-5;
 - `docs/architecture/READER_CORE_ARCHITECTURE.md` — normative RC-0 contract;
 - `core/evidence.py`, `core/span_extract.py`, `docs/CONTRADICTION_POLICY.md` — downstream boundaries/context.
 
@@ -159,6 +169,7 @@ reader_core_rc1_skeleton = true
 reader_core_rc2_structural_map = true
 reader_core_rc3_multi_pass_mechanics = true
 reader_core_rc4_proposition_extraction = true
+reader_core_rc5_relation_candidates = true
 dedicated_reader_core = false
 ```
 
@@ -200,18 +211,45 @@ status.
 does not attach evidence, set evidence sufficiency, mutate truth/ESM/Canon, bypass Guardian/TruthGate,
 resolve contradictions or gain planner/belief-update authority.
 
+### RC-5 ownership
+
+RC-5 owns deterministic explicit relation registration over candidate IDs already registered by
+one RC-4 `ReaderPropositionExtractor`. `ReaderRelationRegistry` is bounded to one OPEN
+`ReaderSession` and one exact `SourceVersion` and re-validates candidate session/source/provenance
+membership fail closed.
+
+The intentionally small relation set is:
+
+- `POSSIBLE_CONTRADICTION` — symmetric suspicion only;
+- `TENSION` — symmetric tension without claiming contradiction;
+- `EXCEPTION` — directional, right candidate limits the left;
+- `QUALIFICATION` — directional, right candidate refines the left.
+
+Every relation preserves both exact candidate IDs, pass/node IDs, primary/supporting locators and
+an explicit non-empty rationale. Symmetric relations canonicalize candidate-ID pair order; duplicate
+same-kind symmetric pairs fail closed rather than becoming corroboration. Directional relations
+preserve direction.
+
+RC-5 has no truth/confidence/evidence-sufficiency/resolved/winner fields. It does not call
+`core.evidence.attach_evidence()`, write fact evidence, invoke contradiction resolution, mutate
+truth/ESM/Canon, bypass Guardian/TruthGate or gain planner/belief-update authority.
+
 ```text
 coverage != comprehension proof
 pass completion != comprehension proof
 structure/order/prominence != epistemic authority
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+similarity != identity
+repetition != corroboration
 ```
 
 **Current non-features:** no automatic parser/semantic chunker/OCR/PDF-layout/multimodal engine,
-no automatic NLP/LLM/provider Reader extraction, no embeddings/ANN/vector DB, no automatic
-cross-document proposition identity/reasoning, no durable Reader schema/migration and no dedicated/full
-autonomous Reader runtime.
+no automatic NLP/LLM/provider Reader extraction, no embeddings/ANN/vector DB, no automatic semantic
+equivalence or cross-document proposition identity/reasoning, no durable Reader schema/migration and
+no dedicated/full autonomous Reader runtime.
 
 ## 13. Documentation, grant and research governance
 
@@ -221,7 +259,7 @@ autonomous Reader runtime.
 GitHub `main` proves implementation. Notion preserves deeper rationale, grant framing and
 audit history. Issues #331 and #332 are merged baseline; exact-vs-ANN evaluation,
 cutover/fencing, rollback and PostgreSQL server lifecycle remain separate future phases.
-Automatic SQLite/PostgreSQL switching remains forbidden. Reader RC-0/RC-1/RC-2/RC-3 and RC-4, if
-merged before a grant agreement, are existing baseline and cannot be presented as awarded/funded
-delivery. The next Reader candidate after accepted RC-4 is separately authorized RC-5
-exceptions/contradiction candidates; do not start it implicitly.
+Automatic SQLite/PostgreSQL switching remains forbidden. Reader RC-0/RC-1/RC-2/RC-3/RC-4/RC-5,
+when merged before a grant agreement, are existing baseline and cannot be presented as
+awarded/funded delivery. No next Reader phase is implied: RC-6 or later work requires a separate
+bounded authorization after RC-5 completion evidence.

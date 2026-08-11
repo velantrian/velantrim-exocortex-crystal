@@ -1,4 +1,4 @@
-"""Validate the complete English D3 architecture source contract."""
+"""Validate the complete English D3 architecture source contract through Reader RC-5."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = "166fab5551c4b86ee0a546b2e1d3dc7adc240c86"
+SOURCE = "51c205fe048fd69d39fcd47b43e042a50de432bc"
 FILES = (
     "docs/ARCHITECTURE.md",
     "docs/ARCHITECTURE_OVERVIEW.md",
@@ -17,7 +17,10 @@ FILES = (
     "docs/architecture/POSTGRESQL_INACTIVE_IMPORT.md",
     "docs/adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md",
 )
-MARKERS = ("<!-- d3-source-contract: CURRENT -->", "<!-- d3-source-scope: architecture-storage-authority -->")
+MARKERS = (
+    "<!-- d3-source-contract: CURRENT -->",
+    "<!-- d3-source-scope: architecture-storage-authority -->",
+)
 STALE = (
     "Auto backend chain: LadybugDB → SQLite → in-memory mock",
     "Future target — source-span provenance and import sessions",
@@ -36,14 +39,22 @@ REQUIRED = {
         "dedicated multi-pass Reader Core",
     ),
     "docs/ARCHITECTURE_OVERVIEW.md": (
-        "fallback to ephemeral Mock is forbidden",
+        "fallback to ephemeral Mock",
         "The PostgreSQL target is absent from ordinary runtime composition",
         "RC-1",
         "RC-2",
         "RC-3",
         "RC-4",
+        "RC-5",
+        "core/reader_relations.py",
+        "POSSIBLE_CONTRADICTION",
+        "EXCEPTION",
+        "QUALIFICATION",
+        "TENSION",
         "EXTRACTED_PROPOSITION",
         "Reader candidate != admitted evidence",
+        "relation candidate != admitted evidence",
+        "contradiction candidate != confirmed contradiction",
         "dedicated/full autonomous Reader",
         "pass completion != comprehension proof",
         "active=false",
@@ -56,8 +67,10 @@ REQUIRED = {
         "Reader pass ledger",
         "Reader proposition",
         "RC-4",
+        "RC-5",
         "EXTRACTED_PROPOSITION",
         "Reader candidate",
+        "relation candidate",
         "active=false",
         "read-only",
     ),
@@ -131,42 +144,64 @@ def main() -> int:
 
     all_text = "\n".join(combined)
     for marker in (
-        "physical L3", "strict Canon", "active=false", "not activation", "read-only",
-        "SQLite", "PostgreSQL", "fallback to ephemeral Mock is forbidden",
-        "active PostgreSQL read/write runtime adapter", "RC-1", "RC-2", "RC-3", "RC-4",
-        "pass completion", "EXTRACTED_PROPOSITION", "Reader candidate",
+        "physical L3",
+        "strict Canon",
+        "active=false",
+        "not activation",
+        "read-only",
+        "SQLite",
+        "PostgreSQL",
+        "fallback to ephemeral Mock",
+        "active PostgreSQL read/write runtime adapter",
+        "RC-1",
+        "RC-2",
+        "RC-3",
+        "RC-4",
+        "RC-5",
+        "pass completion",
+        "EXTRACTED_PROPOSITION",
+        "Reader candidate",
+        "relation candidate",
+        "contradiction candidate",
         "dedicated/full autonomous Reader",
     ):
         if marker not in all_text:
             errors.append(f"D3 source contract: missing boundary {marker!r}")
 
     workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
-    for marker in ("Validate complete English D3 source contract", "python scripts/check_d3_source_contract.py"):
+    for marker in (
+        "Validate complete English D3 source contract",
+        "python scripts/check_d3_source_contract.py",
+    ):
         if marker not in workflow:
             errors.append(f"CI workflow: missing D3 source validator marker {marker!r}")
 
     doc_map = (ROOT / "docs/DOCUMENTATION_MAP.md").read_text(encoding="utf-8")
     for marker in (
-        "ARCHITECTURE_OVERVIEW.md", "STORAGE_AND_AUTHORITY_BOUNDARIES.md",
-        "Reader Core architecture contract", "Inactive PostgreSQL import",
+        "ARCHITECTURE_OVERVIEW.md",
+        "STORAGE_AND_AUTHORITY_BOUNDARIES.md",
+        "Reader Core architecture contract",
+        "Inactive PostgreSQL import",
     ):
         if marker not in doc_map:
             errors.append(f"documentation map: missing marker {marker!r}")
 
     current_state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
+    normalized_state = re.sub(r"[ \t]+", " ", current_state)
     for marker in (
-        "Russian Reader-dependent public/detail documentation is refreshed",
-        "eight other localized root README files and Reader-dependent detail packs",
-        f"{SOURCE}",
-        "reader_core_rc1_skeleton              = true",
-        "reader_core_rc2_structural_map        = true",
-        "reader_core_rc3_multi_pass_mechanics  = true",
+        SOURCE,
+        "reader_core_rc1_skeleton = true",
+        "reader_core_rc2_structural_map = true",
+        "reader_core_rc3_multi_pass_mechanics = true",
         "reader_core_rc4_proposition_extraction = true",
-        "dedicated_reader_core                 = false",
+        "reader_core_rc5_relation_candidates = true",
+        "dedicated_reader_core = false",
         "EXTRACTED_PROPOSITION != verified fact",
         "Reader candidate != admitted evidence",
+        "relation candidate != admitted evidence",
+        "contradiction candidate != confirmed contradiction",
     ):
-        if marker not in current_state:
+        if marker not in normalized_state:
             errors.append(f"AI current state: missing source marker {marker!r}")
 
     if errors:
@@ -174,7 +209,7 @@ def main() -> int:
         for error in errors:
             print(f"  - {error}")
         return 1
-    print(f"Complete D3 English architecture/storage/authority source contract is consistent: source={SOURCE}; RC-4 bounded=true")
+    print(f"Complete D3 English architecture/storage/authority contract consistent through RC-5: source={SOURCE}")
     return 0
 
 

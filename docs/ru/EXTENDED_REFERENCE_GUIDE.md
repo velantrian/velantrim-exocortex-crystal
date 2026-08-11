@@ -1,4 +1,4 @@
-<!-- translation-source: docs/EXTENDED_REFERENCE_POLICY.md@166fab5551c4b86ee0a546b2e1d3dc7adc240c86 -->
+<!-- translation-source: docs/EXTENDED_REFERENCE_POLICY.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- d5-locale: ru -->
 <!-- translation-status: CURRENT -->
 <!-- d5-boundary: physical-l3-not-strict-canon -->
@@ -10,48 +10,61 @@
 <!-- d5-reader: rc2-structural-map-implemented -->
 <!-- d5-reader: rc3-multi-pass-mechanics-implemented -->
 <!-- d5-reader: rc4-proposition-extraction-implemented -->
+<!-- d5-reader: rc5-relation-candidates-implemented -->
 <!-- d5-nonclaim: dedicated-reader-core-not-implemented -->
 <!-- d5-nonclaim: nlnet-not-awarded -->
 <!-- d5-nonclaim: security-legal-gdpr-not-certified -->
 <!-- d5-nonclaim: native-speaker-editorial-not-certified -->
 # Руководство по расширенным источникам
 
-Этот документ направляет к подробным английским источникам, не дублируя изменчивые implementation evidence, CI logs, ADR bodies, machine-readable status, legal mappings или grant evidence только ради видимости многоязычной полноты. Английский остаётся primary working/source/conflict-resolving language.
+Этот документ направляет к detailed English sources, не дублируя volatile implementation evidence, CI logs, ADR bodies, machine-readable status, legal mappings или grant evidence только ради apparent multilingual parity. English остаётся primary working/source/conflict-resolving language.
 
 ## Статусы документации
 
 | Статус | Значение |
 |---|---|
-| `CURRENT` | Поддерживаемая public/routing surface, reconciled с immutable source checkpoint. |
-| `REFRESH_NEEDED` | Surface, которая известным образом отстаёт от governing source; это всегда явный статус. |
-| `RETIRED` | Сохранённый исторический snapshot/handoff; не current authority, capability или grant evidence. |
-| `ENGLISH_ONLY_BY_DESIGN` | Подробный или изменчивый технический, security, test, CI, machine-readable, research, RFC, ADR или grant-evidence материал, намеренно поддерживаемый только на английском. |
+| `CURRENT` | Maintained public/routing surface, semantically reconciled с immutable source checkpoint. |
+| `REFRESH_NEEDED` | Rich surface, которая известно отстаёт от governing source; status всегда explicit. |
+| `RETIRED` | Preserved historical snapshot/handoff; не current authority/capability/grant evidence. |
+| `ENGLISH_ONLY_BY_DESIGN` | Detailed/volatile technical, security, test, CI, machine-readable, research, RFC, ADR или grant evidence intentionally maintained only in English. |
 
-Machine-readable inventory находится в [`../status/d5-inventory.json`](../status/d5-inventory.json). Не классифицированная documentation-like surface является validation failure.
+Machine-readable inventory находится в [`../status/d5-inventory.json`](../status/d5-inventory.json). Unclassified documentation-like surface = validation failure.
 
-После RC-4 русский root README и Reader-dependent detail pack имеют `CURRENT`. Восемь других localized root README плюс семь Reader-dependent detail document types на каждую из восьми локалей имеют `REFRESH_NEEDED`: всего 64 отслеживаемых translation debt documents. Их rich предыдущие переводы сохранены; сокращённые замены не считаются допустимым refresh.
+После RC-5 русский root README и Reader-dependent D1/D3/D4/D5 detail pack имеют `CURRENT` к `51c205fe048fd69d39fcd47b43e042a50de432bc`. Восемь других localized root README + семь Reader-dependent detail document types на каждую locale имеют `REFRESH_NEEDED`: **64 tracked debt documents**. Их rich предыдущие переводы сохраняются; сокращённые summary replacement не считаются допустимым refresh.
+
+D2 reviewer/safety docs и Quick Start остаются `CURRENT` во всех 9 locales, потому что RC-5 не меняет их governing source semantics.
 
 ## Reader Core boundary
 
-Текущая machine truth намеренно различает bounded реализованные слои и отсутствующую полную Reader capability:
+Current machine truth deliberately distinguishes bounded layers from absent full capability:
 
 ```text
-reader_core_rc1_skeleton = true
-reader_core_rc2_structural_map = true
-reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc1_skeleton               = true
+reader_core_rc2_structural_map         = true
+reader_core_rc3_multi_pass_mechanics   = true
 reader_core_rc4_proposition_extraction = true
-dedicated_reader_core = false
+reader_core_rc5_relation_candidates    = true
+dedicated_reader_core                  = false
 ```
 
-RC-1 реализует минимальный evidence-linked source/session skeleton. RC-2 реализует caller-supplied, source-version-bound Structural Document Map. RC-3 реализует deterministic explicit multi-pass mechanics: `ORIENTATION`, `BROAD_READ`, `FOCUSED_READ`, `CROSS_CHECK`, `TARGETED_REREAD`; declared structural targets; `ATTEMPTED` / `COMPLETED` / `INTERRUPTED` / `DEGRADED` ledger; explicit legal coverage outcomes и count-only telemetry.
+RC-1 реализует minimal evidence-linked source/session skeleton. RC-2 — caller-supplied source-version-bound Structural Document Map. RC-3 — deterministic explicit multi-pass mechanics (`ORIENTATION`, `BROAD_READ`, `FOCUSED_READ`, `CROSS_CHECK`, `TARGETED_REREAD`), declared targets, pass state ledger, explicit coverage outcomes и count-only telemetry.
 
-RC-4 реализует deterministic pre-admission proposition candidate registration из completed substantive RC-3 targets. Candidate требует pass state `COMPLETED`; recorded pass outcome и current matching coverage должны быть `PROCESSED` или `REVISITED`. Candidate остаётся source-linked `SegmentCard` с `EXTRACTED_PROPOSITION` fidelity, replayable primary/supporting locators, explicit source owner, proposition-presentation category, negation и qualifiers.
+RC-4 — deterministic pre-admission proposition candidate registration из completed substantive RC-3 targets. Candidate требует pass `COMPLETED`; recorded outcome/current matching coverage = `PROCESSED` либо `REVISITED`; uses `EXTRACTED_PROPOSITION`; preserves source owner, presentation category, negation/qualifiers и replayable provenance.
 
-Категории factual assertion, author opinion, hypothesis, conditional, example, quoted speech, reported position, definition и uncertain assertion описывают presentation источника, а не truth admission. `FACTUAL_ASSERTION` не означает, что Crystal проверил утверждение.
+RC-5 — deterministic pre-admission relation registry поверх candidates, реально registered одним RC-4 extractor, в одном OPEN ReaderSession и exact SourceVersion.
 
-RC-4 не является automatic NLP/LLM extraction. Он не вызывает `core.evidence.attach_evidence()`, не пишет fact `evidence_spans`, не устанавливает evidence sufficiency, не меняет `truth_status`/ESM и не выполняет TruthGate admission.
+```text
+POSSIBLE_CONTRADICTION = symmetric suspicion only
+TENSION                = symmetric tension only
+EXCEPTION              = directional exception relation
+QUALIFICATION          = directional refinement relation
+```
 
-RC-1/RC-2/RC-3/RC-4 не имеют truth/Canon/ESM/planner authority, не удерживают source body и не добавляют durable Reader storage schema, public Reader API/CLI/background worker, automatic parser/OCR, autonomous model-driven Reader, embeddings/ANN/vector database или automatic cross-document reasoning runtime.
+Relation keeps both exact RC-4 candidate IDs, pass/node IDs, primary/supporting source locators и explicit rationale. Symmetric pair order canonicalized; directional order preserved. Duplicate symmetric registration fail closed и не становится corroboration.
+
+RC-5 не является automatic NLP/LLM contradiction detection. Он не вызывает `core.evidence.attach_evidence()`, не writes fact `evidence_spans`, не устанавливает evidence sufficiency, не меняет `truth_status`/ESM, не performs TruthGate admission и не invokes contradiction-resolution workflow.
+
+RC-1..RC-5 не удерживают source body и не добавляют durable Reader DB, public Reader API/CLI/background worker, parser/OCR/layout, autonomous model-driven Reader, embeddings/ANN/vector database, semantic equivalence, cross-document identity/reasoning или planner/belief update.
 
 ```text
 coverage != comprehension proof
@@ -59,6 +72,10 @@ pass completion != comprehension proof
 structure/order/prominence != epistemic authority
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+similarity != identity
+repetition != corroboration
 ```
 
 ## Неизменные границы
@@ -75,21 +92,22 @@ Reader pass completion != comprehension proof
 Reader structure != epistemic authority
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
+contradiction candidate != confirmed contradiction
 ```
 
-SQLite остаётся ordinary active local-first profile. Mock остаётся явным development/CI backend. PostgreSQL/pgvector остаётся неактивной target с `active=false`. Dedicated/full autonomous Reader / Semantic Reading runtime и automatic NLP/model proposition extraction не реализованы.
+SQLite остаётся ordinary active local-first. PostgreSQL/pgvector остаётся inactive target `active=false`. Dedicated/full autonomous Reader, automatic contradiction resolution, semantic cross-document identity и active PostgreSQL runtime не реализованы.
 
 ## Грант и certification non-claims
 
-NLnet остаётся `submitted / under review / not awarded`. Приблизительно €50,000 — planning only, не approved budget и не payment commitment. Текущая grant-safe граница: **budget change: none**. Работа, смерженная до соглашения, включая RC-0/RC-1/RC-2/RC-3 и RC-4, если он merged pre-agreement, не может повторно считаться funded delta.
+NLnet остаётся `submitted / under review / not awarded`. Approx **€50,000** — planning only, не approved budget/payment commitment. Current grant-safe boundary: **budget change: none**. RC-0..RC-5 merged pre-agreement являются existing baseline и не могут повторно считаться funded delta.
 
 Не заявляются legal, GDPR, security или native-speaker editorial certification.
 
 ## Retired и English-only материалы
 
-`RETIRED` материалы сохраняются для attribution/audit history, но не доказывают implementation, test coverage, maturity, grant status, Canon membership или deployment readiness.
+`RETIRED` materials сохраняются для attribution/audit history, но не доказывают implementation, coverage, maturity, grant state, Canon membership или deployment readiness.
 
-`ENGLISH_ONLY_BY_DESIGN` применяется к подробным техническим и evidence-семействам, где перевод каждого изменчивого артефакта повысил бы риск stale claims. Для актуальной публичной ориентации используйте D1–D5 переводные поверхности, а для решения конфликтов — английские source contracts и merged code/CI.
+`ENGLISH_ONLY_BY_DESIGN` применяется к detailed volatile technical/evidence families, где translation каждого меняющегося artifact повышал бы stale-claim risk. Для public orientation используйте D1–D5 localized surfaces; conflict resolver — English source contracts + merged code/CI.
 
 ## Маршруты к authoritative источникам
 
@@ -106,4 +124,4 @@ NLnet остаётся `submitted / under review / not awarded`. Приблиз�
 - [GDPR technical mapping](../../GDPR.md)
 - [Archive routing](../archive/README.md)
 
-При расхождении приоритет имеют merged GitHub code, executable tests, exact CI, machine-readable manifests и governing English source.
+При расхождении приоритет: merged GitHub code, executable tests, exact CI, machine-readable manifests, governing English source.

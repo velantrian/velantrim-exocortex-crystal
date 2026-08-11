@@ -14,14 +14,15 @@
 **Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` — merged PR #337.  
 **Validated runtime head / CI:** `d7af7c80722274f9217bc5545d150f92e9363f37` / `31256316536` — 9/9 successful.  
 **PostgreSQL integration:** `31256316532` — successful against PostgreSQL 16 and pgvector 0.8.2.  
-**Reader foundation:** RC-1 evidence-linked skeleton, RC-2 caller-supplied Structural Document Map, RC-3 explicit deterministic multi-pass mechanics and RC-4 source-linked proposition extraction are implemented/tested bounded layers; the dedicated/full autonomous Semantic Reading runtime remains **not implemented**.  
+**Reader foundation:** RC-1 evidence-linked skeleton, RC-2 caller-supplied Structural Document Map, RC-3 explicit deterministic multi-pass mechanics, RC-4 source-linked proposition extraction, and RC-5 explicit same-session/same-version relation candidates are implemented/tested bounded layers; the dedicated/full autonomous Semantic Reading runtime remains **not implemented**.  
 **Exact public evidence:** [TEST_REPORT.md](./TEST_REPORT.md), [STATUS.md](./docs/STATUS.md) and the [machine-readable implementation manifest](./docs/status/implementation-manifest.json).
 
 > **Documentation language policy:** English is the primary working and source language,
-> not the only intended documentation language. Completed root README translations target
-> full visual and semantic parity. Other stable documents are translated progressively in
-> separate phases. See the [localization policy](./docs/LOCALIZATION_POLICY.md) and
-> [translation status ledger](./docs/TRANSLATION_STATUS.md).
+> not the only intended documentation language. Russian Reader-dependent root/detail surfaces
+> are current against the immutable RC-5 English source checkpoint recorded in
+> [TRANSLATION_STATUS.md](./docs/TRANSLATION_STATUS.md). Eight other Reader-dependent locale
+> surfaces preserve their rich translations as `REFRESH_NEEDED`; D2 and Quick Start remain
+> current across all nine supported locales.
 
 ---
 
@@ -46,6 +47,10 @@ Reader structure or coverage is not epistemic authority.
 Reader pass completion is not comprehension proof.
 EXTRACTED_PROPOSITION is not a verified fact.
 Reader candidate is not admitted evidence.
+relation candidate      != admitted evidence
+Contradiction candidate is not confirmed contradiction.
+Cross-document similarity is not identity.
+Repetition is not corroboration.
 ```
 
 ## 🧠 What Crystal provides
@@ -56,6 +61,7 @@ Reader candidate is not admitted evidence.
 - bounded Reader RC-2 caller-supplied structural document maps with explicit ambiguity;
 - bounded Reader RC-3 explicit multi-pass process mechanics with auditable coverage effects;
 - bounded Reader RC-4 source-linked `EXTRACTED_PROPOSITION` candidates with explicit attribution/category/negation/qualifiers;
+- bounded Reader RC-5 explicit `POSSIBLE_CONTRADICTION`, `TENSION`, `EXCEPTION` and `QUALIFICATION` relation candidates with exact two-sided provenance and rationale;
 - Guardian and TruthGate admission boundaries;
 - a multi-status physical L3 graph separated from strict Canon;
 - immutable deny-dominant `TrustSnapshot` read reconciliation;
@@ -71,14 +77,27 @@ Reader candidate is not admitted evidence.
 - verified SQLite backup/restore and bounded logical migration;
 - optional PostgreSQL/pgvector inactive import with independent exact-state equivalence.
 
-Reader RC-1/RC-2/RC-3/RC-4 retain no source body, add no public Reader API/CLI or durable Reader
+### RC-5 — exception / qualification / tension / contradiction candidates
+
+Reader RC-1/RC-2/RC-3/RC-4/RC-5 retain no source body, add no public Reader API/CLI or durable Reader
 storage schema, and have no truth/Canon/ESM/planner authority. RC-3 provides explicit deterministic
 pass mechanics; RC-4 validates caller-supplied proposition candidates against completed substantive
-Reader context. These layers do **not** provide an automatic parser, automatic NLP/LLM extraction,
-autonomous model-driven reader, embeddings, ANN/vector-database Reader stack or automatic
-cross-document reasoning. RC-4 does not call `core.evidence.attach_evidence()` or write fact evidence.
-`coverage != comprehension proof`; `pass completion != comprehension proof`;
-`EXTRACTED_PROPOSITION != verified fact`; `Reader candidate != admitted evidence`.
+Reader context; RC-5 registers explicit relations only between already-registered RC-4 candidates
+inside one OPEN ReaderSession and exact SourceVersion. These layers do **not** provide an automatic
+parser, automatic NLP/LLM extraction, autonomous model-driven reader, embeddings, ANN/vector-database
+Reader stack, semantic equivalence engine, automatic cross-document identity/reasoning or contradiction
+resolution. RC-4/RC-5 do not call `core.evidence.attach_evidence()` or write fact evidence.
+
+```text
+coverage != comprehension proof
+pass completion != comprehension proof
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+similarity != identity
+repetition != corroboration
+```
 
 ## 🏛️ Architecture in three views
 
@@ -97,6 +116,7 @@ cross-document reasoning. RC-4 does not call `core.evidence.attach_evidence()` o
 │   ├── RC-2 — caller-supplied Structural Document Map
 │   ├── RC-3 — explicit deterministic multi-pass mechanics
 │   ├── RC-4 — source-linked proposition extraction
+│   ├── RC-5 — explicit pre-admission relation candidates
 │   └── dedicated/full autonomous Reader — not implemented
 │
 ├── 🏛️ Memory model
@@ -206,7 +226,8 @@ cross-document reasoning. RC-4 does not call `core.evidence.attach_evidence()` o
 │   ├── core/reader_core.py — RC-1 source/session artifacts
 │   ├── core/reader_structure.py — RC-2 Structural Document Map
 │   ├── core/reader_passes.py — RC-3 explicit multi-pass mechanics
-│   └── core/reader_extraction.py — RC-4 source-linked proposition candidates
+│   ├── core/reader_extraction.py — RC-4 source-linked proposition candidates
+│   └── core/reader_relations.py — RC-5 explicit relation candidates
 │
 ├── 🧠 Memory surfaces
 │   ├── L0 — rebuildable working cache
@@ -268,6 +289,10 @@ Reader structure      != truth/confidence authority
 Reader pass complete  != comprehension proof
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate      != admitted evidence
+relation candidate    != admitted evidence
+contradiction candidate != confirmed contradiction
+similarity              != identity
+repetition              != corroboration
 ```
 
 TruthGate is an admission-policy gate, not an oracle that independently knows
@@ -282,6 +307,7 @@ status, ESM state, confidence shape and processing restrictions.
 | Reader RC-2 | version-bound structural map | order/prominence is metadata, not authority |
 | Reader RC-3 | explicit pass ledger over declared targets | pass completion is process state, not comprehension/truth |
 | Reader RC-4 | source-linked extracted proposition candidates | source presentation/candidate state, not verified fact or admitted evidence |
+| Reader RC-5 | typed relation candidates between valid RC-4 candidates | relation suspicion is not contradiction confirmation/resolution or evidence admission |
 | L0 | in-process working cache | fast and rebuildable |
 | L1 | SQLite/WAL operational memory | lifecycle, restrictions and pending work |
 | L2 | logical review boundary | not automatically strict Canon |
@@ -335,8 +361,9 @@ profiles, bundles, receipts, application logs, GitHub issues or Notion.
 | Find relevant material | primary strength | supported through retrieval adapters |
 | Separate user claim from verified fact | application-specific | explicit typed boundary |
 | Track lifecycle and contradictions | usually external logic | first-class states and reports |
-| Preserve version-bound reading/process artifacts | application-specific | RC-1/RC-2/RC-3/RC-4 bounded Reader foundation |
+| Preserve version-bound reading/process artifacts | application-specific | RC-1/RC-2/RC-3/RC-4/RC-5 bounded Reader foundation |
 | Preserve proposition attribution/qualifiers before admission | application-specific | RC-4 explicit source-presentation metadata |
+| Preserve explicit relation suspicion without resolving it | application-specific | RC-5 typed relation candidates with exact provenance |
 | Prevent generated text becoming its own source | not inherent | Ring Zero admission invariant |
 | Replay answer evidence | optional | TRACE and Receipt architecture |
 | Resolve contradictions accountably | application-specific | explicit authorized dispositions |
@@ -363,6 +390,10 @@ See [Read-Only Query Boundary](./docs/architecture/read-only-query-boundary.md).
 
 Normal approval fails closed while a contradiction is unresolved. A curator must
 choose an explicit disposition and provide an actor and reason.
+
+RC-5 does not change that authority surface. `POSSIBLE_CONTRADICTION` is only a
+Reader candidate relation; it never selects the true/false side and never chooses
+`COEXIST`, `CONTEXTUALIZE` or `SUPERSEDE`.
 
 ```bash
 python -m core.conflict_surfaces FACT_ID \
@@ -431,6 +462,7 @@ Reader RC-1: implemented/tested bounded evidence-linked skeleton
 Reader RC-2: implemented/tested bounded Structural Document Map
 Reader RC-3: implemented/tested bounded explicit multi-pass mechanics
 Reader RC-4: implemented/tested bounded source-linked proposition extraction
+Reader RC-5: implemented/tested bounded explicit relation candidates
 Dedicated/full autonomous Reader: not implemented
 ```
 
@@ -449,20 +481,23 @@ Crystal does not claim:
 - artificial consciousness, AGI or a “living digital personality”;
 - an active PostgreSQL runtime, automatic switching, cutover or rollback;
 - a completed dedicated/full autonomous Reader Core;
-- automatic Reader parsing, automatic NLP/LLM proposition extraction, embeddings/ANN/vector search, automatic cross-document reasoning or comprehension proof;
+- automatic Reader parsing, automatic NLP/LLM proposition/contradiction extraction, embeddings/ANN/vector search, semantic equivalence, automatic cross-document identity/reasoning or comprehension proof;
 - that RC-4 extracted candidates are verified facts or admitted evidence;
+- that RC-5 relation candidates are confirmed/resolved contradictions or admitted evidence;
 - Titan, Full Exo-Cortex, Mentaury or Native Kernel functionality as current runtime.
 
-The NLnet proposal remains **submitted / under review / not awarded**. Merged
-functionality is existing baseline and must not be counted again as future funded
-delivery.
+The NLnet proposal remains **submitted / under review / not awarded**. Approximate **€50,000**
+remains planning only, not an approved budget/payment commitment; budget change is none. Merged
+functionality, including RC-0 through RC-5 when merged pre-agreement, is existing baseline and must
+not be counted again as future funded delivery.
 
 ## 🌍 Translation program
 
-Translation is progressive. The target for every supported root language is a full
-README with equivalent semantic and visual coverage, followed by staged translation of
-Quick Start, Status, Reviewer Guide, architecture, safety and grant documents. A temporary
-short orientation file is not considered the final state.
+English is the primary source language. Russian Reader-dependent root and D1/D3/D4/D5 detail
+surfaces are fully refreshed against immutable English checkpoint
+`51c205fe048fd69d39fcd47b43e042a50de432bc`. Eight other locale root/Reader-detail surfaces retain
+their rich prior translations and are explicitly `REFRESH_NEEDED` (64 tracked documents). D2 and
+Quick Start remain current across all nine supported locales.
 
 See [LOCALIZATION_POLICY.md](./docs/LOCALIZATION_POLICY.md) and
 [TRANSLATION_STATUS.md](./docs/TRANSLATION_STATUS.md).

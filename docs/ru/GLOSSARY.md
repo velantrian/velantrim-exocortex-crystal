@@ -1,4 +1,4 @@
-<!-- translation-source: docs/GLOSSARY.md@166fab5551c4b86ee0a546b2e1d3dc7adc240c86 -->
+<!-- translation-source: docs/GLOSSARY.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
 <!-- d4-locale: ru -->
 <!-- d4-boundary: physical-l3-not-strict-canon -->
@@ -11,63 +11,69 @@
 <!-- d4-nonclaim: native-speaker-editorial-not-certified -->
 # Crystal — глоссарий и руководство по дисциплине claims
 
-**Дата статуса:** 10 августа 2026 года  
+**Дата статуса:** 11 августа 2026 года  
 **Назначение:** поддерживаемый русский D4 glossary.  
-**Authority:** merged implementation, executable tests, exact CI и подробные English contracts сильнее этой сводки.
+**Authority:** merged implementation, executable tests, exact CI и detailed English contracts сильнее этой сводки.
 
 ## Имена контрактов
 
-Programmatic identifiers остаются неизменными в code, schemas, CLI, APIs и переведённых документах.
+Programmatic identifiers остаются неизменными в code, schemas, CLI, APIs и translated docs.
 
 | Термин | Значение и граница |
 |---|---|
-| **claim** | Типизированное утверждение. Claim не становится автоматически verified fact. |
-| **admission** | Решение, позволяющее claim войти в более доверенное состояние или проекцию. |
-| **Guardian** | Structural, safety и policy checks до epistemic admission; не замена TruthGate. |
-| **TruthGate** | Контролируемая epistemic admission boundary; не универсальный detector истины. |
-| **physical L3** | Multi-status graph-oriented storage и retrieval state. Storage membership не означает strict Canon membership. |
-| **strict Canon** | Deny-dominant доверенная read projection, разрешённая текущими evidence и policy. |
+| **claim** | Typed assertion. Claim не становится автоматически verified fact. |
+| **admission** | Решение, позволяющее claim войти в более trusted state/projection. |
+| **Guardian** | Structural/safety/policy checks до epistemic admission; не replacement TruthGate. |
+| **TruthGate** | Controlled epistemic admission boundary; не universal truth detector. |
+| **physical L3** | Multi-status graph/storage state; storage membership не strict Canon membership. |
+| **strict Canon** | Deny-dominant trusted read projection, разрешённая current evidence/policy. |
 | **CanonicalView** | Fail-closed read projection для grounded responses. |
 | **TrustSnapshot** | Read-time trusted state view; не переписывает physical storage. |
-| **TRACE** | Machine-readable grounding path, связывающий answer с admitted claims и evidence. |
-| **Receipt** | Replayable, tamper-sensitive evidence операции или ответа. Migration receipt не является claim evidence. |
-| **provenance** | Источник, путь создания и lifecycle claim или artifact. |
-| **evidence span** | Source-linked passage, поддерживающий candidate или admitted claim. |
-| **source status** | Класс происхождения claim, например external source, user statement или model output. |
-| **epistemic state** | Типизированный статус, описывающий допустимое обращение с claim; не просто confidence score. |
+| **TRACE** | Machine-readable grounding path, связывающий answer с admitted claims/evidence. |
+| **Receipt** | Replayable, tamper-sensitive evidence операции/ответа; migration receipt не claim evidence. |
+| **provenance** | Источник, path создания и lifecycle claim/artifact. |
+| **evidence span** | Source-linked passage, поддерживающий candidate/admitted claim. |
+| **source status** | Origin class claim, например external source, user statement, model output. |
+| **epistemic state** | Typed status, определяющий допустимое обращение с claim; не просто confidence score. |
 | **grounding** | Связывание ответа с admitted claims, evidence и traceable sources. |
-| **FactsPack** | Bounded traceable context для ответа; не владелец authority. |
-| **read-only query** | Query contract, который не может менять facts, ESM, L3, outbox, episode links, embedder identity или candidate state. |
-| **fail-closed** | Refusal или bounded failure вместо скрытого admission при неопределённых evidence, policy или state. |
-| **storage profile** | Durable deployment identity для backend и non-secret locator; не epistemic authority. |
-| **migration bundle** | Deterministic portable operation artifact для approved datasets; не whole-system truth export. |
-| **exact equivalence** | Равенство counts, canonical bytes и hashes утверждённого dataset; не activation или retrieval acceptance. |
-| **active=false** | PostgreSQL target неактивна и не может обслуживать обычные runtime reads/writes. |
-| **baseline** | Работа, уже merged и независимо evidenced до funded agreement. |
-| **funded delta** | Новая измеримая работа поверх frozen baseline, принимаемая через public evidence. |
+| **FactsPack** | Bounded traceable context; не authority owner. |
+| **read-only query** | Query contract, не меняющий facts, ESM, L3, outbox, links, embedder identity или candidate state. |
+| **fail-closed** | Refusal/bounded failure вместо hidden admission при неопределённых evidence/policy/state. |
+| **storage profile** | Durable deployment identity backend + non-secret locator; не epistemic authority. |
+| **migration bundle** | Deterministic portable operation artifact approved datasets; не whole-system truth export. |
+| **exact equivalence** | Equality counts/canonical bytes/hashes approved dataset; не activation/retrieval acceptance. |
+| **active=false** | PostgreSQL target неактивна и не обслуживает ordinary runtime reads/writes. |
+| **baseline** | Работа, уже merged/evidenced до funded agreement. |
+| **funded delta** | New measurable work поверх frozen baseline, accepted via public evidence. |
 | **deliverable** | Bounded public artifact с explicit acceptance evidence. |
-| **local-first** | Данные и обычные операции по умолчанию остаются локальными; remote services опциональны. |
-| **provider independence** | Models/providers — заменяемые interfaces и не владеют truth authority. |
-| **restriction** | Технический предел использования или раскрытия stored material. |
-| **erasure** | Удаление через реализованный active-store lifecycle; независимые копии требуют отдельной обработки. |
-| **review queue** | Pending или blocked claims, ожидающие explicit curator action. |
-| **curator override** | Атрибутированное audited human decision; не скрытый bypass TruthGate. |
-| **Reader Core RC-1** | Реализованный/протестированный bounded evidence-linked source/session skeleton с source-version identity, locators, fidelity, coverage, bookmarks/open loops и stale/failure/privacy semantics; без truth/admission authority. |
-| **Reader Core RC-2** | Реализованный/протестированный caller-supplied Structural Document Map с version-bound hierarchy/order и explicit ambiguity; не automatic parser и не truth/confidence authority. |
-| **Reader Core RC-3** | Bounded deterministic multi-pass mechanics: explicit pass kinds, declared structural targets, attempted/completed/interrupted/degraded ledger и explicit RC-1 coverage outcomes; не autonomous reader и не comprehension authority. |
-| **Reader Core RC-4** | Bounded deterministic proposition registration из completed substantive RC-3 regions. Создаёт source-linked `EXTRACTED_PROPOSITION` candidates с attribution, category, negation и qualifiers; не automatic NLP/model extraction, fact evidence или truth admission. |
-| **EXTRACTED_PROPOSITION** | Нормализованная proposition, производная от replayable source locator(s). Это Reader candidate representation, не verified world fact и не admitted evidence. |
-| **source owner** | Speaker/author/entity, которому источник приписывает proposition. Attribution не устанавливает truth. |
-| **proposition presentation category** | Как источник подаёт proposition: factual assertion, opinion, hypothesis, conditional, example, quoted speech, reported position, definition или uncertain assertion. Категория описательная, не epistemic admission. |
-| **dedicated/full Reader Core** | Будущий autonomous Semantic Reading runtime за пределами bounded RC-1/RC-2/RC-3/RC-4; не реализован. |
-| **NLnet planning amount** | Приблизительно **€50,000** — только planning magnitude, не approved budget и не payment commitment. |
-| **budget change** | Текущий grant-safe статус: **budget change: none**. Изменение допустимо только по verified external grant communication. |
+| **local-first** | Data/ordinary operations local by default; remote services optional. |
+| **provider independence** | Models/providers replaceable interfaces и не truth authority. |
+| **restriction** | Technical boundary use/disclosure stored material. |
+| **erasure** | Deletion через implemented active-store lifecycle; independent copies требуют separate handling. |
+| **review queue** | Pending/blocked claims до explicit curator action. |
+| **curator override** | Attributed audited human decision; не hidden TruthGate bypass. |
+| **Reader Core RC-1** | Bounded evidence-linked source/session skeleton с exact source-version, locators, fidelity, coverage, bookmarks/open loops, stale/failure/privacy; no truth/admission authority. |
+| **Reader Core RC-2** | Caller-supplied Structural Document Map с version-bound hierarchy/order/ambiguity; no parser/truth authority. |
+| **Reader Core RC-3** | Deterministic explicit multi-pass mechanics: pass kinds, declared targets, pass ledger, explicit RC-1 coverage outcomes; no autonomous/comprehension authority. |
+| **Reader Core RC-4** | Deterministic proposition registration из completed substantive RC-3 regions; source-linked `EXTRACTED_PROPOSITION` candidates с attribution/category/negation/qualifiers; no automatic NLP/evidence admission. |
+| **Reader Core RC-5** | Deterministic same-session/same-exact-source-version relation registry поверх valid RC-4 candidates; no contradiction resolution/truth authority. |
+| **EXTRACTED_PROPOSITION** | Normalized source-linked Reader representation; не verified fact/admitted evidence. |
+| **source owner** | Speaker/author/entity attribution; attribution не truth. |
+| **proposition presentation category** | Как source presents proposition: factual assertion, opinion, hypothesis, conditional, example, quoted speech, reported position, definition, uncertain assertion; descriptive, not admission. |
+| **POSSIBLE_CONTRADICTION** | RC-5 symmetric suspicion, что two propositions могут conflict; не confirmed contradiction. |
+| **TENSION** | RC-5 symmetric tension relation без assertion confirmed contradiction. |
+| **EXCEPTION** | RC-5 directional relation: right candidate зарегистрирован как exception к left. |
+| **QUALIFICATION** | RC-5 directional relation: right candidate narrows/refines left. |
+| **relation rationale** | Explicit audit reason регистрации relation; не truth/evidence proof. |
+| **dedicated/full Reader Core** | Future autonomous Semantic Reading runtime beyond bounded RC-1..RC-5; `dedicated_reader_core=false`. |
+| **NLnet planning amount** | Approx **€50,000** planning magnitude, не approved budget/payment commitment. |
+| **budget change** | Current grant-safe state: **budget change: none**. |
 
 ## Термины, требующие осторожности
 
 ### «Truth» и «canonical graph»
 
-Не пишите, что каждый graph node является истиной. Предпочтительная формулировка:
+Не пишите, что every graph node является truth:
 
 ```text
 physical L3 stores typed multi-status records
@@ -76,50 +82,65 @@ strict Canon is the evidence- and policy-allowed read projection
 
 ### «Implemented», «tested», «current» и «planned»
 
-Используйте эти labels раздельно:
-
 - **implemented** — merged code exists;
 - **tested** — named executable evidence exists;
-- **current** — reconciled against an exact source checkpoint;
+- **current** — reconciled against exact source checkpoint;
 - **planned / research** — no runtime claim.
 
-Open PR, RFC, issue, prototype или Notion page не являются current runtime evidence.
+Open PR/RFC/issue/prototype/Notion page не являются current runtime evidence.
 
 ### «Reader Core implemented»
 
-Не сворачивайте текущие bounded milestones в claim о полной capability. Предпочтительная формулировка:
+Не сворачивайте bounded milestones в claim full capability:
 
 ```text
 RC-1 minimal evidence-linked skeleton     = implemented/tested
 RC-2 Structural Document Map              = implemented/tested
 RC-3 explicit multi-pass mechanics        = implemented/tested
-RC-4 source-linked proposition extraction = implemented/tested after exact CI/merge
-dedicated/full autonomous Reader runtime   = not implemented
-coverage                                   != comprehension proof
-pass completion                            != comprehension proof
-EXTRACTED_PROPOSITION                      != verified fact
-Reader candidate                           != admitted evidence
-structure/order/prominence                 != epistemic authority
+RC-4 source-linked proposition extraction = implemented/tested
+RC-5 explicit relation candidates         = implemented/tested only after exact CI/merge
+dedicated/full autonomous Reader runtime  = not implemented
+coverage                                  != comprehension proof
+pass completion                           != comprehension proof
+EXTRACTED_PROPOSITION                     != verified fact
+Reader candidate                          != admitted evidence
+contradiction candidate                    != confirmed contradiction
+similarity                                 != identity
 ```
 
-RC-3 означает process mechanics: один active pass, declared targets, explicit outcomes и fail-visible gaps. Pass completion не означает понимание, truth или evidence sufficiency.
+RC-3 означает process mechanics, не comprehension. RC-4 означает source-linked candidate registration, не verification. RC-5 означает explicit audited relation suspicion, не contradiction decision.
 
 ### «Factual assertion»
 
-В RC-4 `FACTUAL_ASSERTION` означает, что **источник подаёт** proposition как фактическую. Это не означает, что Crystal проверил proposition. Verification/admission остаются во внешнем evidence/Guardian/TruthGate path.
+В RC-4 `FACTUAL_ASSERTION` означает, что **источник подаёт** proposition как factual. Crystal verification/admission остаётся во внешнем evidence/Guardian/TruthGate path.
 
 ### «Evidence extraction»
 
-RC-4 extraction создаёт pre-admission Reader candidates. Он не вызывает `core.evidence.attach_evidence()` и не пишет `evidence_spans` для admitted fact.
+RC-4 extraction создаёт pre-admission Reader candidates. RC-5 relation registration остаётся над ними. Ни один не вызывает `core.evidence.attach_evidence()` и не пишет `evidence_spans` для admitted fact.
 
 ```text
 Reader extraction candidate != fact evidence attachment
+Reader relation candidate   != confirmed contradiction
 source locator               != evidence sufficiency
 ```
 
+### «Contradiction»
+
+RC-5 намеренно использует `POSSIBLE_CONTRADICTION`, а не confirmed/resolved contradiction. Он не выбирает false/true side, не вызывает `COEXIST`, `CONTEXTUALIZE`, `SUPERSEDE` и не создаёт winner.
+
+```text
+contradiction candidate != confirmed contradiction
+confirmed contradiction != resolved contradiction
+repetition              != corroboration
+```
+
+### «Similarity»
+
+Semantic/retrieval similarity не является identity proof. RC-5 не добавляет embeddings/ANN или semantic equivalence engine и не выполняет cross-document proposition identity.
+
 ### «GDPR compliant», «secure» и «hardened»
 
-Предпочтительная формулировка:
+Предпочтительные formulations:
 
 ```text
 GDPR-oriented technical controls
@@ -127,20 +148,21 @@ security-relevant checks
 hardened against documented threats
 ```
 
-Не заявляйте legal, GDPR или security certification без внешнего authoritative evidence.
+Не заявляйте legal/GDPR/security certification без external authoritative evidence.
 
 ### «Replay»
 
 ```text
 Receipt replay    = re-check existing evidence
-trajectory replay = repeat an execution path for evaluation
+trajectory replay = repeat execution path for evaluation
 Reader reread     = explicit source-linked pass over declared regions
 Reader provenance = exact locator path back to source version
+relation replay   = exact candidate IDs + both-side source provenance + rationale
 ```
 
 ### «Grant funded» или «awarded»
 
-Текущий публичный статус:
+Current public state:
 
 ```text
 submitted / under review / not awarded
@@ -148,25 +170,25 @@ approximate planning amount: €50,000
 budget change: none
 ```
 
-Сумма €50,000 — planning only, не approved budget и не payment commitment. Merged baseline work нельзя переименовывать в future funded delivery. Budget или award state может измениться только по verified external grant communication.
+€50,000 = planning only, not approved budget/payment commitment. RC-0..RC-5 merged pre-agreement cannot be renamed future funded delivery.
 
 ### «Default backend»
 
-SQLite — ordinary active local-first profile. Первый durable `auto` может выбрать optional LadybugDB, если он доступен, иначе SQLite, после чего deployment identity фиксируется. Explicit Mock — development/CI state. PostgreSQL/pgvector — неактивная `active=false` import/equivalence target, не ordinary runtime.
+SQLite — ordinary active local-first. PostgreSQL/pgvector — inactive `active=false` import/equivalence target, not ordinary runtime. Import/equivalence != activation.
 
 ## Правила перевода
 
-- Сохраняйте code identifiers и contract names без изменений.
-- Переводите объяснения, а не machine identifiers.
+- Сохраняйте code identifiers/contract names unchanged.
+- Переводите explanations, не machine identifiers.
 - Сохраняйте `physical L3 != strict Canon`.
-- Сохраняйте public-query read-only и explicit-ingest write separation.
+- Сохраняйте public-query read-only / explicit-ingest write separation.
 - Сохраняйте SQLite ordinary runtime и PostgreSQL `active=false`.
 - Сохраняйте `import/equivalence != activation`.
-- Сохраняйте различие RC-1/RC-2/RC-3/RC-4 bounded-implemented и dedicated/full-Reader-not-implemented.
-- Сохраняйте `coverage != comprehension proof`, `pass completion != comprehension proof`, `EXTRACTED_PROPOSITION != verified fact`, `Reader candidate != admitted evidence` и structure/order/prominence != epistemic authority.
-- Сохраняйте source owner/category/negation/qualifiers вместо схлопывания reported, conditional или uncertain source language.
-- Сохраняйте no-certification и no-award boundaries.
-- Не подразумевайте native-speaker editorial certification, если её не было.
+- Сохраняйте bounded RC-1..RC-5 vs dedicated/full Reader not implemented.
+- Сохраняйте `coverage != comprehension proof`, `pass completion != comprehension proof`, `EXTRACTED_PROPOSITION != verified fact`, `Reader candidate != admitted evidence`, `contradiction candidate != confirmed contradiction`, `similarity != identity`, `repetition != corroboration`.
+- Сохраняйте source owner/category/negation/qualifiers и RC-5 relation direction/rationale.
+- Сохраняйте no-certification/no-award boundaries.
+- Не подразумевайте native-speaker editorial certification.
 
 NLnet: `submitted / under review / not awarded`; `budget change: none`; award: not awarded.
 
@@ -174,7 +196,7 @@ NLnet: `submitted / under review / not awarded`; `budget change: none`; award: n
 
 - [Project, grant and governance summary](../PROJECT_GRANT_AND_GOVERNANCE.md)
 - [Полная архитектура](../ARCHITECTURE.md)
-- [Архитектурный контракт Reader Core](../architecture/READER_CORE_ARCHITECTURE.md)
+- [Reader Core architecture contract](../architecture/READER_CORE_ARCHITECTURE.md)
 - [Reader implementation status](../IMPLEMENTATION_STATUS.md)
 - [Grant scope](../GRANT_NLNET_SCOPE.md)
 - [Baseline/funded-delta matrix](../grants/baseline-funded-delta-matrix.md)
