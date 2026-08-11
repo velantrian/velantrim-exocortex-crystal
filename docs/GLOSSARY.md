@@ -44,7 +44,7 @@
 
 **`QUALIFICATION`** — RC-5 directional relation: right candidate narrows/refines left candidate.
 
-**Relation rationale** — explicit text recording why the caller registered an RC-5 relation. It is audit context, not truth proof.
+**relation rationale** — explicit text recording why the caller registered an RC-5 relation. It is audit context, not truth proof.
 
 **Dedicated/full Reader Core** — autonomous or comprehensive Semantic Reading capability. It remains not implemented; `dedicated_reader_core=false`.
 
