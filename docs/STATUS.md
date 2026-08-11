@@ -64,7 +64,7 @@ reader_core_rc5_relation_candidates   = true
 dedicated_reader_core                 = false
 ```
 
-RC-5 is deterministic **registration**, not automatic semantic contradiction detection. It accepts only proposition candidates already registered by one RC-4 `ReaderPropositionExtractor`, requires one OPEN `ReaderSession` and one exact `SourceVersion`, preserves both sides' candidate IDs and replayable provenance, requires a non-empty rationale, and fails closed when source/session context is stale or mismatched.
+RC-5 runtime lives in `core/reader_relations.py`. It is deterministic **registration**, not automatic semantic contradiction detection. It accepts only proposition candidates already registered by one RC-4 `ReaderPropositionExtractor`, requires one OPEN `ReaderSession` and one exact `SourceVersion`, preserves both sides' candidate IDs and replayable provenance, requires a non-empty rationale, and fails closed when source/session context is stale or mismatched.
 
 `POSSIBLE_CONTRADICTION` and `TENSION` are symmetric candidate relations and are stored in deterministic candidate-ID order. `EXCEPTION` and `QUALIFICATION` are directional and remain distinct from contradiction. Re-registering the same symmetric pair does not become corroboration.
 
