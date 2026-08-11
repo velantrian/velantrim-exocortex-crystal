@@ -47,7 +47,7 @@ Reader structure or coverage is not epistemic authority.
 Reader pass completion is not comprehension proof.
 EXTRACTED_PROPOSITION is not a verified fact.
 Reader candidate is not admitted evidence.
-Reader relation candidate is not admitted evidence.
+relation candidate      != admitted evidence
 Contradiction candidate is not confirmed contradiction.
 Cross-document similarity is not identity.
 Repetition is not corroboration.
@@ -76,6 +76,8 @@ Repetition is not corroboration.
 - deterministic evaluation, 100% line coverage and a Ring Zero mutation gate;
 - verified SQLite backup/restore and bounded logical migration;
 - optional PostgreSQL/pgvector inactive import with independent exact-state equivalence.
+
+### RC-5 — exception / qualification / tension / contradiction candidates
 
 Reader RC-1/RC-2/RC-3/RC-4/RC-5 retain no source body, add no public Reader API/CLI or durable Reader
 storage schema, and have no truth/Canon/ESM/planner authority. RC-3 provides explicit deterministic
