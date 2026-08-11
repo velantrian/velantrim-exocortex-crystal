@@ -2,7 +2,7 @@
   "schema_version": 1,
   "project": "Velantrim Exo-Cortex Crystal",
   "version": "0.3.0",
-  "status_date": "2026-08-10",
+  "status_date": "2026-08-11",
   "verified_runtime_checkpoint": {
     "commit": "bbd816c09dd39a02e6de6c1014438490572f40f6",
     "short": "bbd816c",
@@ -64,6 +64,7 @@
     "reader_core_rc2_structural_map": true,
     "reader_core_rc3_multi_pass_mechanics": true,
     "reader_core_rc4_proposition_extraction": true,
+    "reader_core_rc5_relation_candidates": true,
     "dedicated_reader_core": false
   },
   "reader_core_rc1": {
@@ -156,6 +157,40 @@
     "truth_or_canon_authority": false,
     "dedicated_full_reader_core": false
   },
+  "reader_core_rc5": {
+    "tracking_issue": 367,
+    "pull_request": 368,
+    "architecture_contract": "docs/architecture/READER_CORE_ARCHITECTURE.md",
+    "runtime_module": "core/reader_relations.py",
+    "test_module": "tests/test_reader_relations.py",
+    "scope": "same_session_same_source_version_pre_admission_relation_candidates",
+    "input_boundary": "registered_rc4_proposition_candidates_only",
+    "relation_kinds": ["POSSIBLE_CONTRADICTION", "EXCEPTION", "QUALIFICATION", "TENSION"],
+    "same_reader_session_required": true,
+    "same_source_version_required": true,
+    "within_document_only": true,
+    "exact_candidate_id_linkage": true,
+    "primary_and_supporting_provenance_preserved": true,
+    "explicit_rationale_required": true,
+    "symmetric_relation_order_canonicalized": true,
+    "directional_exception_and_qualification": true,
+    "count_only_telemetry": true,
+    "source_body_storage": false,
+    "automatic_semantic_equivalence": false,
+    "automatic_cross_document_reasoning": false,
+    "contradiction_resolution_authority": false,
+    "automatic_winner_selection": false,
+    "evidence_admission": false,
+    "fact_evidence_write": false,
+    "confidence_promotion": false,
+    "durable_storage_schema": false,
+    "public_api_or_cli": false,
+    "llm_or_provider_integration": false,
+    "embeddings_or_vector_database": false,
+    "planner_or_belief_update_authority": false,
+    "truth_or_canon_authority": false,
+    "dedicated_full_reader_core": false
+  },
   "storage_resource_limits": {
     "control_file_bytes": 1048576,
     "source_sqlite_bytes": 67108864,
@@ -220,11 +255,11 @@
     "awarded": false,
     "budget_changed": false,
     "baseline_issue": 333,
-    "rule": "Merged pre-agreement work, including issues 331/332 and Reader RC-0/RC-1/RC-2/RC-3/RC-4 when merged, cannot be counted again as funded delta"
+    "rule": "Merged pre-agreement work, including issues 331/332 and Reader RC-0/RC-1/RC-2/RC-3/RC-4/RC-5 when merged, cannot be counted again as funded delta"
   },
   "authority": {
     "runtime": "GitHub main",
-    "verification": "TEST_REPORT.md and this manifest",
+    "verification": "TEST_REPORT.md and this manifest plus exact Reader milestone CI",
     "strategy_and_history": "Notion Crystal pages"
   }
 }
