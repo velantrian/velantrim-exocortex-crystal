@@ -44,7 +44,9 @@ No Reader layer may mutate `truth_status`/ESM, write strict Canon, bypass Guardi
 
 RC-5 English source checkpoint: `51c205fe048fd69d39fcd47b43e042a50de432bc`.
 
-Russian Reader-dependent public/detail documentation is refreshed to that immutable checkpoint. The eight other localized root README files and Reader-dependent detail packs preserve rich translations as `REFRESH_NEEDED`. D2 and Quick Start remain current in all nine locales. Tracked Reader/root debt remains 64 documents.
+Russian Reader-dependent public/detail documentation is refreshed to that immutable checkpoint. The eight other localized root README files and Reader-dependent detail packs preserve rich translations as `REFRESH_NEEDED`. Tracked Reader/root debt remains 64 documents.
+
+D2 reviewer/safety translations remain current across all nine supported locales. Russian D1/D3/D4/D5 detail pack is current. The eight other locale detail packs require Reader refresh. Quick Start remains current across all nine locales.
 
 ## Grant truth
 

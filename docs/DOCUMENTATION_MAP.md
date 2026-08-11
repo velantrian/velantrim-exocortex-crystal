@@ -20,6 +20,15 @@ RC-1 exact source/session
 → normal admission remains separate
 ```
 
+## Reviewer / safety / privacy — D2
+
+D2 uses the stable English Reviewer Guide and safety/privacy/failure source contract. RC-5 changes Reader candidate semantics but does not change D2 reviewer/safety source semantics, so the existing nine-locale D2 translations remain current.
+
+- [Reviewer Guide](./REVIEWER_GUIDE.md)
+- [Safety, privacy and failures](./SAFETY_PRIVACY_AND_FAILURES.md)
+- [Privacy](../PRIVACY.md)
+- [Security](../SECURITY.md)
+
 ## Storage / authority
 
 - [Storage and authority boundaries](./STORAGE_AND_AUTHORITY_BOUNDARIES.md)
