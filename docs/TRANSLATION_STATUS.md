@@ -68,7 +68,7 @@ repetition != corroboration
 
 **D1 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
 
-Russian D1 Reader-dependent surfaces are current at the RC-7 refresh layer while preserving immutable D1 markers. Eight other supported locales are `REFRESH_NEEDED`. Quick Start is unchanged/current in all nine locales.
+D1 Reader-dependent detail translations are `CURRENT` in Russian at the RC-7 refresh layer while preserving immutable D1 source markers. Eight other supported locales are `REFRESH_NEEDED`. Quick Start is unchanged/current in all nine locales.
 
 ## D2 — reviewer/safety
 
