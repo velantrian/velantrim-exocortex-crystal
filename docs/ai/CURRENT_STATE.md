@@ -140,13 +140,13 @@ Frozen K=5 benchmark over the unchanged 20-case RC-8 corpus:
 - useful paired cases: 16;
 - hard-negative paired cases: 4;
 - Recall@5: **0.937500**;
-- Precision@5: **0.217391**;
+- Precision@5: **0.187500**;
 - MRR: **0.895833**;
 - paired hard-negative rate@5: **1.000000**;
 - cross-lingual paraphrase `rc8-004` is missed;
 - all four paired `SAME_TOPIC` / `MERELY_SIMILAR` hard negatives are surfaced in top-5.
 
-The corpus judges the known left/right pair only; these are retrieval metrics, not adjudication accuracy. The measured interpretation is `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`. It does not authorize embeddings, semantic/hybrid retrieval, ANN/vector DB, entity/claim identity, contradiction adjudication or Canon/evidence mutation.
+Precision@5 uses a fixed `positive paired queries × K` denominator over this synthetic benchmark and is not a fully judged corpus-wide semantic precision claim. The corpus judges the known left/right pair only; these are retrieval metrics, not adjudication accuracy. The measured interpretation is `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`. It does not authorize embeddings, semantic/hybrid retrieval, ANN/vector DB, entity/claim identity, contradiction adjudication or Canon/evidence mutation.
 
 ## Open backlog boundaries
 
