@@ -30,8 +30,7 @@ Russian root + Reader-dependent D1/D3/D4/D5 surfaces are `CURRENT` to
 preserve rich translations as `REFRESH_NEEDED`. D2 and Quick Start remain current across all
 nine supported locales where their source semantics are unchanged.
 
-For the immutable D1/D3/D4/D5 audit contract, eight other supported locales are
-`REFRESH_NEEDED`.
+For the immutable D1/D3/D4/D5 audit contract, eight other supported locales are `REFRESH_NEEDED`.
 
 **64 `REFRESH_NEEDED` localized detail documents** remain. D5 inventory: **273 total = 72
 CURRENT + 127 ENGLISH_ONLY_BY_DESIGN + 64 REFRESH_NEEDED + 10 RETIRED**.
@@ -120,9 +119,7 @@ repetition != corroboration
 
 **D1 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
 
-D1 Reader-dependent detail translations are `CURRENT` in Russian at the RC-7 refresh layer
-while preserving immutable D1 source markers. Eight other supported locales are
-`REFRESH_NEEDED`. Quick Start is unchanged/current in all nine locales.
+D1 Reader-dependent detail translations are `CURRENT` in Russian at the RC-7 refresh layer while preserving immutable D1 source markers; eight other supported locales are `REFRESH_NEEDED`. Quick Start is unchanged/current in all nine locales.
 
 The newly reconciled English root README contains post-RC-9 Reader/grant meaning that is outside
 this immutable D1 translation checkpoint and requires a later localization refresh for parity.
