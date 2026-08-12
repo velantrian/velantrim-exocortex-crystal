@@ -10,7 +10,10 @@
 **RC-7 post-merge CI:** `31572918731` — 9/9 successful  
 **Signed RC-8 merge / RC-9 audited start:** `main@bd85479e014c26ddebd0f4ae06385ce6625f5ab6` — PR #374  
 **RC-8 exact-head/post-merge CI:** `31581756932` / `31582325275` — successful  
-**Current bounded milestone:** RC-9 deterministic lexical candidate discovery, issue #375  
+**Signed RC-9 merge:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` — PR #376  
+**RC-9 exact validated head:** `1956cbd45e5a5b794852354ed2233bf1fb6e318f`  
+**RC-9 exact-head/post-merge CI:** `31593097846` / `31594027040` — 9/9 successful  
+**Current bounded milestone:** RC-10 retrieval reuse compatibility + comparison pre-registration, issue #377  
 **Grant status:** submitted / under review / not awarded  
 **Budget change:** none
 
@@ -104,7 +107,7 @@ RC-7 adds no automatic corpus discovery, semantic matching, entity resolution, d
 
 ## ✅ RC-8 — Post-RC-7 Candidate Discovery & Retrieval Architecture Decision
 
-Historical RC-8 gate label: **Next bounded Reader gate — post-RC-7 retrieval architecture decision**. That gate is completed; RC-9 is now the current bounded implementation milestone.
+Historical RC-8 gate label: **Next bounded Reader gate — post-RC-7 retrieval architecture decision**. That gate is completed; RC-9 is also now completed and RC-10 is the current architecture/evaluation milestone.
 
 Issue #373 / PR #374 completed.  
 Decision: `docs/architecture/READER_RC8_RETRIEVAL_DECISION.md`.  
@@ -162,9 +165,13 @@ The 20-case synthetic adversarial corpus covers exact variants, paraphrases, low
 
 RC-8 deliberately did not invent post-hoc semantic/vector thresholds and did not start implementation beyond the frozen decision/corpus.
 
-## 🚧 RC-9 — Deterministic Lexical Candidate Discovery Baseline + Benchmark Runner
+## ✅ RC-9 — Deterministic Lexical Candidate Discovery Baseline + Benchmark Runner
 
-Tracking issue: #375.  
+Issue #375 / PR #376 completed.  
+Signed merge: `f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`.  
+Exact validated head: `1956cbd45e5a5b794852354ed2233bf1fb6e318f`.  
+Exact-head CI `31593097846`: 9/9 successful.  
+Post-merge push CI `31594027040`: 9/9 successful.  
 Architecture/result: `docs/architecture/READER_RC9_LEXICAL_BASELINE.md`.  
 Runtime: `core/reader_lexical_discovery.py`.  
 Benchmark runner: `scripts/bench_reader_rc9_lexical.py`.  
@@ -207,19 +214,58 @@ LEXICAL_BASELINE_EXPOSES_MEASURED_GAP
 
 This is a measured retrieval result, **not** automatic authorization for embeddings, semantic/hybrid retrieval, ANN/vector DB or claim adjudication.
 
+## 🚧 RC-10 — Existing Retrieval Reuse Compatibility + Comparison Pre-Registration
+
+Tracking issue: #377.  
+Decision/preregistration contract: `docs/architecture/READER_RC10_RETRIEVAL_REUSE_PREREGISTRATION.md`.  
+Machine-readable preregistration: `eval/reader_rc10_retrieval_comparison_preregistration.json`.
+
+The pre-start audit found substantial retrieval machinery already exists in the **admitted-memory** authority domain: deterministic hashing/trigram embedders, optional SentenceTransformer, admitted vector retrieval, graph walk, bounded legacy lexical retrieval (#317 / PR #321), retrieval config and pure stdlib RRF.
+
+RC-10 therefore **does not build another retrieval stack**. It freezes a reuse matrix:
+
+```text
+core/rrf.py                         → future isolated comparison reuse candidate
+HashingEmbedder / TrigramHashing   → comparator signals only
+SentenceTransformerEmbedder        → future optional comparator only
+get_embedder("auto")               → forbidden for preregistered comparison
+core/pipeline.py                    → not a Reader pipeline
+core/query_pipeline.py              → not a Reader pipeline
+core/legacy_retrieval.py            → not a Reader backend
+SQLite FTS5                         → not implemented for Reader; future scaling option
+PostgreSQL/pgvector                 → inactive / not authorized
+```
+
+The future comparison gate is frozen before results are observed:
+
+- retain all 15 useful pairs already found by RC-9;
+- recover `rc8-004`, yielding 16/16 / Recall@5 1.0;
+- MRR >= 0.895833;
+- paired hard-negative hits <= 2/4;
+- zero authority violations;
+- exact backend/model identity, no `auto` mode;
+- zero query-time network calls and no external Reader source-text transmission;
+- deterministic lexical fallback required for any later runtime proposal.
+
+```text
+comparison pass != runtime authorization
+```
+
+RC-10 runs no semantic/hybrid comparator and adds no FTS/vector/runtime implementation.
+
 ## 🧩 Backlog remains separated
 
 - #165 — exact normalized ingest dedupe/migration; no near-duplicate/semantic matching.
 - #155 — downstream Epistemic Router / Evidence State RFC.
 - #214 — PII fixture / reproducible supply-chain hardening.
 
-They remain outside RC-9.
+They remain outside RC-10.
 
-## ⏭️ After RC-9 — explicit new authorization still required
+## ⏭️ After RC-10 — explicit new authorization still required
 
-After RC-9 is fully merged, verified, synchronized and closed, a later architecture milestone **may** consider whether measured gaps justify lexical scaling, a hybrid comparison or a semantic/vector comparison. Such a milestone must pre-register its success/failure thresholds and resource/privacy/reproducibility constraints before comparison results are observed.
+If RC-10 completes, a later milestone may execute an isolated comparator against the frozen RC-10 gate. Passing makes a comparator eligible only for a stronger/larger evaluation and architecture review. It does not authorize Reader runtime adoption.
 
-RC-10, semantic/hybrid retrieval, embeddings, FTS and vector indexing are **not started** by RC-9.
+No semantic/hybrid comparison, embeddings, FTS, ANN/vector indexing, PostgreSQL activation, automatic adjudication or broad localization is started automatically.
 
 ## ✅ Storage baseline remains unchanged
 
@@ -237,13 +283,13 @@ No automatic backend switching is introduced by Reader work.
 
 Russian root + Reader-dependent D1/D3/D4/D5 surfaces remain `CURRENT` to the immutable RC-7 English source checkpoint `ab3ad31c437647535030e371d58f456faf14017b`. Eight other Reader-dependent locale packs preserve rich `REFRESH_NEEDED` translations — 64 tracked documents. D2 and Quick Start remain current across all nine locales.
 
-RC-9 adds authoritative English architecture/implementation source material only; broad translation remains a separate milestone.
+RC-8 through RC-10 add authoritative English architecture/status source material only; broad translation remains a separate milestone. The root English README still presents an older RC-6/RC-7 checkpoint; RC-10 records that as public-documentation debt rather than hiding a broad localized refresh inside this architecture milestone.
 
 ## 🎓 Grant boundary
 
 NLnet remains submitted / under review / not awarded. Approximate €50,000 remains planning only, not an approved budget/payment commitment. Budget change: none.
 
-Anything merged before an agreement is existing baseline and cannot be counted again as future paid work. Reader RC-0 through RC-9 are existing pre-agreement baseline if merged before an agreement. RC-9 is not an awarded/funded-delivery claim.
+Anything merged before an agreement is existing baseline and cannot be counted again as future paid work. Reader RC-0 through RC-10 are existing pre-agreement baseline if merged before an agreement. RC-10 is not an awarded/funded-delivery claim.
 
 ```text
 verified existing baseline
@@ -263,4 +309,5 @@ independently verifiable public deliverable
 - [RC-7 cross-document contract note](./docs/architecture/READER_RC7_CROSS_DOCUMENT.md)
 - [RC-8 retrieval decision](./docs/architecture/READER_RC8_RETRIEVAL_DECISION.md)
 - [RC-9 lexical baseline](./docs/architecture/READER_RC9_LEXICAL_BASELINE.md)
+- [RC-10 reuse/preregistration](./docs/architecture/READER_RC10_RETRIEVAL_REUSE_PREREGISTRATION.md)
 - [Translation status](./docs/TRANSLATION_STATUS.md)

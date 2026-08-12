@@ -117,7 +117,7 @@ repetition across sources != corroboration
 
 ## 11. RC-8 post-RC-7 retrieval architecture decision
 
-Historical RC-8 contract label: **Post-RC-7 retrieval architecture decision (RC-8)**. That milestone is completed; RC-9 is the current bounded implementation baseline.
+Historical RC-8 contract label: **Post-RC-7 retrieval architecture decision (RC-8)**. That milestone is completed; RC-9 is also completed and RC-10 is the current bounded architecture/evaluation milestone.
 
 **Start:**
 
@@ -156,7 +156,7 @@ ranking != epistemic authority
 candidate discovery != candidate adjudication
 ```
 
-## 12. RC-9 deterministic lexical candidate discovery
+## 12. RC-9 deterministic lexical candidate discovery — COMPLETE
 
 **Start:**
 
@@ -167,7 +167,9 @@ candidate discovery != candidate adjudication
 - `tests/test_reader_rc9_status.py`;
 - `eval/reader_rc9_lexical_baseline.json`;
 - `docs/architecture/READER_RC9_LEXICAL_BASELINE.md`;
-- issue #375.
+- issue #375 / PR #376.
+
+Signed merge: `f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`; post-merge CI `31594027040` 9/9.
 
 RC-9 snapshots the public RC-4 proposition surface into retrieval-only records, applies conservative NFKC/case/whitespace normalization and stable tokenization, then performs deterministic in-memory BM25 ranking. Self matches are excluded; cross-document filtering is default; ties use stable source/session/candidate ordering.
 
@@ -193,7 +195,7 @@ Partial imports must remain distinguishable from admission. Unreviewed content c
 
 **Start:** `core/api.py`, `core/cli.py`, `core/doctor.py`, MCP modules, `Dockerfile`, `pyproject.toml`, `.github/workflows/ci.yml`.
 
-Reader RC-1 through RC-9 add no public Reader API, CLI, background worker or ordinary runtime-composition wiring. RC-9 adds no mandatory runtime dependency or persistent index.
+Reader RC-1 through RC-10 add no public Reader API, CLI, background worker or ordinary runtime-composition wiring. RC-10 adds no mandatory runtime dependency or persistent index.
 
 ## 16. Evaluation and status evidence
 
@@ -215,7 +217,8 @@ Always bind implementation claims to exact commit/head/CI. RC-9’s 20-case synt
 - `core/reader_lexical_discovery.py`, `tests/test_reader_lexical_discovery.py` — RC-9;
 - `docs/architecture/READER_CORE_ARCHITECTURE.md` — normative RC-0 contract;
 - `docs/architecture/READER_RC8_RETRIEVAL_DECISION.md` — post-RC-7 decision;
-- `docs/architecture/READER_RC9_LEXICAL_BASELINE.md` — RC-9 measured baseline.
+- `docs/architecture/READER_RC9_LEXICAL_BASELINE.md` — RC-9 measured baseline;
+- `docs/architecture/READER_RC10_RETRIEVAL_REUSE_PREREGISTRATION.md` — RC-10 reuse/preregistration contract.
 
 Machine implementation truth:
 
@@ -237,3 +240,32 @@ dedicated_reader_core = false
 **Start:** `AGENTS.md`, `docs/DOCUMENTATION_SYNC_PROTOCOL.md`, `docs/STATUS.md`, `docs/IMPLEMENTATION_STATUS.md`, `docs/GRANT_NLNET_SCOPE.md`, `ROADMAP.md`.
 
 GitHub `main` proves implementation. Notion preserves deeper rationale/strategy/history after exact post-merge evidence. NLnet remains `submitted / under review / not awarded`. RC-9 is a bounded pre-agreement lexical retrieval baseline, not funded semantic retrieval. Issues #155, #165 and #214 remain separate scopes.
+
+## 19. RC-10 existing retrieval reuse compatibility + comparison pre-registration — CURRENT
+
+**Start:**
+
+- `docs/architecture/READER_RC10_RETRIEVAL_REUSE_PREREGISTRATION.md`;
+- `eval/reader_rc10_retrieval_comparison_preregistration.json`;
+- `tests/test_reader_rc10_retrieval_preregistration.py`;
+- issue #377.
+
+RC-10 exists to prevent duplicate retrieval implementation. Its audit found that admitted-memory vector/hash/trigram/optional-SBERT retrieval, graph walk, bounded legacy lexical retrieval and pure RRF already exist, but belong to a different authority/data lifecycle.
+
+Disposition:
+
+- `core/rrf.py` — eligible only as a future isolated Reader comparison ordering helper;
+- deterministic hashing/trigram embedders — comparator signals only;
+- SentenceTransformer — future optional comparator only under separate pinned model/dependency/privacy authorization;
+- `get_embedder("auto")` — forbidden for a qualifying preregistered comparison;
+- `core/pipeline.py`, `core/query_pipeline.py`, `core/legacy_retrieval.py` — no direct PRE-ADMISSION Reader wiring;
+- SQLite FTS — no current Reader implementation found; future feature-detected scaling option;
+- PostgreSQL/pgvector — inactive `active=false`, not authorized.
+
+Future gate is frozen before results: recover `rc8-004`, retain all 15 RC-9 useful hits, Recall@5 1.0, MRR >=0.895833, paired hard-negative hits <=2/4, zero authority violations, exact backend identity and zero query-time network calls.
+
+```text
+comparison pass != runtime authorization
+```
+
+No semantic/hybrid comparison is executed in RC-10.

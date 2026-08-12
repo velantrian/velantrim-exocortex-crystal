@@ -2,6 +2,30 @@
 
 This compact log records material decisions, exact evidence, limitations and hand-offs. It is not a replacement for Git history, issues, pull requests, `CHANGELOG.md` or Notion. Earlier detailed entries remain available through Git history.
 
+## 2026-08-12 — Reader RC-10 existing retrieval reuse compatibility + preregistration (#377)
+
+- Live verified starting `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`, signature `verified=true` / `reason=valid`, open PRs 0 before the milestone.
+- Reverified RC-9 PR #376 merged from exact validated head `1956cbd45e5a5b794852354ed2233bf1fb6e318f`; exact-head CI `31593097846` and post-merge push CI `31594027040` were both 9/9 successful; issue #375 closed completed; the three existing Notion pages had been synchronized/read back after post-merge evidence.
+- Per operator request, performed a dedup/reuse audit before creating any new retrieval implementation.
+- Found substantial existing **admitted-memory** retrieval: `core/embedding.py` hashing/trigram/optional SentenceTransformer, admitted vector + graph-walk retrieval in `core/pipeline.py`, strict query composition in `core/query_pipeline.py`, bounded legacy lexical retrieval delivered by #317/PR #321, retrieval config and pure stdlib `core/rrf.py`.
+- Confirmed SQLite FTS/BM25 scaling is already documented in `docs/core/DEDUP_AND_SCALE.md` and RC-8, but repository search found no current Reader FTS5 virtual-table / `MATCH` runtime implementation.
+- Decision: do not build a second retrieval stack. RC-10 is architecture/evaluation only: reuse-compatibility matrix + machine-readable future comparison preregistration.
+- Reuse disposition: RRF may be a future isolated ordering helper; hashing/trigram are comparator signals only; SentenceTransformer is future optional comparator only; `get_embedder("auto")` is forbidden for a qualifying preregistered experiment; admitted-memory pipeline/query/legacy retrieval are not direct PRE-ADMISSION Reader pipelines.
+- Frozen future gate before results: retain 15 RC-9 useful hits, recover `rc8-004` to 16/16 / Recall@5 1.0, MRR >=0.895833, paired hard-negative hits <=2/4, zero authority violations, exact backend identity, zero query-time network calls and no external Reader source-text transmission.
+- Passing the gate means `ELIGIBLE_FOR_STRONGER_EVALUATION_AND_ARCHITECTURE_REVIEW_ONLY`, not runtime authorization.
+- Audit found truth drift: compact GitHub status surfaces still described RC-9 as current/in-progress, and root `README.md` still presented an older RC-6/RC-7-in-progress checkpoint. RC-10 reconciles compact current English status; root/localized README parity remains separate public/localization debt.
+- RC-10 adds no `core/**` runtime change, no FTS/vector schema, no model download/dependency, no semantic/hybrid run, no PostgreSQL activation and no #155/#165/#214 work.
+- Documentation impact: `GITHUB_AND_NOTION`; only the existing three Crystal pages may be synchronized, and only after guarded merge + signed main + green post-merge CI.
+
+## 2026-08-12 — Reader RC-9 deterministic lexical candidate discovery (#375 / PR #376) — final completion evidence
+
+- Starting main: `bd85479e014c26ddebd0f4ae06385ce6625f5ab6`, signature verified/valid.
+- Final validated PR head: `1956cbd45e5a5b794852354ed2233bf1fb6e318f`.
+- Guarded squash merge: `f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`, signature `verified=true`, reason `valid`.
+- Exact-head CI `31593097846`: 9/9 successful; post-merge push CI `31594027040`: 9/9 successful; Python 3.11 and 3.12 passed the 100% coverage gate.
+- Final K=5: Recall 0.937500, Precision 0.187500, MRR 0.895833, paired hard-negative rate 1.000000, 15/16 useful paired hits and 4/4 paired hard-negative hits.
+- Notion 3/3 synchronized and read back after green post-merge evidence; completion evidence posted to #375; issue closed completed.
+
 ## 2026-08-12 — Reader RC-9 deterministic lexical candidate discovery (#375)
 
 - Live verified starting `main@bd85479e014c26ddebd0f4ae06385ce6625f5ab6`, signature `verified=true` / `reason=valid`, open PRs 0 before the milestone.
