@@ -116,6 +116,8 @@ The immutable historical RC-5 English localization checkpoint remains `51c205fe0
 
 Russian Reader-dependent public/detail documentation is refreshed through the completed RC-7 localization phase. The eight other localized root README files and Reader-dependent detail packs preserve rich `REFRESH_NEEDED` translations. D2 reviewer/safety translations remain current across all nine supported locales. Quick Start remains current across all nine supported locales.
 
+For compatibility with the immutable D2 localization/source contract, the canonical status phrases remain: **Russian D1/D3/D4/D5 detail pack is current** and **eight other locale detail packs require Reader refresh**. These phrases describe the same current RC-7 localization truth below and do not roll Reader status back to RC-5.
+
 Current RC-7 localization truth is recorded in `docs/TRANSLATION_STATUS.md`: Russian root + Reader-dependent D1/D3/D4/D5 surfaces are `CURRENT` to the immutable RC-7 English source checkpoint `ab3ad31c437647535030e371d58f456faf14017b`; eight other Reader-dependent locale packs remain `REFRESH_NEEDED`; tracked Reader/root debt remains 64 documents.
 
 RC-8 adds English architecture/research source material only. Broad translation remains a separate documentation milestone and does not silently change the RC-7 localization freshness ledger.
