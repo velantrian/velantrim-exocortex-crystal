@@ -58,7 +58,9 @@ RC-6 adds no parser/chunker/OCR/PDF-layout/multimodal engine, LLM/provider/model
 
 The immutable RC-5 English localization checkpoint is `51c205fe048fd69d39fcd47b43e042a50de432bc`.
 
-Russian Reader-dependent public/detail documentation is refreshed and `CURRENT` **against that RC-5 checkpoint**. The eight other localized root README files and Reader-dependent detail packs remain rich `REFRESH_NEEDED` translations. D2 reviewer/safety translations and Quick Start remain current in all nine supported locales.
+Russian Reader-dependent public/detail documentation is refreshed and `CURRENT` **against that RC-5 checkpoint**. The Russian D1/D3/D4/D5 detail pack is current against the RC-5 checkpoint only; it must not be interpreted as already containing RC-6 semantics. D2 reviewer/safety translations remain current across all nine supported locales. Quick Start also remains current across all nine supported locales.
+
+The eight other localized root README files and Reader-dependent detail packs remain rich `REFRESH_NEEDED` translations; eight other locale detail packs require Reader refresh. Their existing translations are preserved rather than replaced by short summaries.
 
 The current English RC-6 public/machine source advances in a dedicated English checkpoint commit. Existing Russian files must not be interpreted as containing RC-6 semantics until the subsequent Russian refresh commit pins that exact new English SHA. At final RC-6 localization state, Russian root + D1/D3/D4/D5 Reader surfaces return to `CURRENT` against the immutable RC-6 checkpoint; eight other locale packs remain `REFRESH_NEEDED` and the tracked Reader/root debt remains 64 documents.
 
