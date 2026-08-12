@@ -27,62 +27,31 @@ def test_rc7_machine_truth_and_authority_firewall_are_documented():
     assert rc7["max_link_candidates"] == 4096
     assert rc7["different_document_identity_required"] is True
     assert rc7["relation_kinds"] == [
-        "SUPPORTS",
-        "CONTRADICTS",
-        "ELABORATES",
-        "REFERENCES",
-        "DEFINES",
-        "EXAMPLE_OF",
-        "PREREQUISITE_FOR",
-        "SAME_TOPIC",
-        "POSSIBLE_SAME_CLAIM",
+        "SUPPORTS", "CONTRADICTS", "ELABORATES", "REFERENCES", "DEFINES",
+        "EXAMPLE_OF", "PREREQUISITE_FOR", "SAME_TOPIC", "POSSIBLE_SAME_CLAIM",
     ]
-    assert rc7["symmetric_kinds"] == [
-        "CONTRADICTS",
-        "SAME_TOPIC",
-        "POSSIBLE_SAME_CLAIM",
-    ]
+    assert rc7["symmetric_kinds"] == ["CONTRADICTS", "SAME_TOPIC", "POSSIBLE_SAME_CLAIM"]
     for key in (
-        "directional_order_preserved",
-        "exact_two_sided_provenance",
-        "explicit_rationale_required",
-        "descriptive_inspection_basis_only",
-        "count_only_telemetry",
+        "directional_order_preserved", "exact_two_sided_provenance",
+        "explicit_rationale_required", "descriptive_inspection_basis_only", "count_only_telemetry",
     ):
         assert rc7[key] is True
     for key in (
-        "same_topic_implies_same_proposition",
-        "possible_same_claim_implies_identity",
-        "similarity_signal_proves_identity",
-        "automatic_semantic_matching",
-        "automatic_entity_resolution",
-        "automatic_corroboration",
-        "evidence_admission",
-        "fact_evidence_write",
-        "confidence_promotion",
-        "contradiction_resolution_authority",
-        "automatic_winner_selection",
-        "durable_storage_schema",
-        "public_api_or_cli",
-        "llm_or_provider_integration",
-        "parser_or_semantic_chunker",
-        "ocr_or_pdf_layout_reconstruction",
-        "embeddings_or_vector_database",
-        "planner_or_belief_update_authority",
-        "truth_or_canon_authority",
+        "same_topic_implies_same_proposition", "possible_same_claim_implies_identity",
+        "similarity_signal_proves_identity", "automatic_semantic_matching",
+        "automatic_entity_resolution", "automatic_corroboration", "evidence_admission",
+        "fact_evidence_write", "confidence_promotion", "contradiction_resolution_authority",
+        "automatic_winner_selection", "durable_storage_schema", "public_api_or_cli",
+        "llm_or_provider_integration", "parser_or_semantic_chunker",
+        "ocr_or_pdf_layout_reconstruction", "embeddings_or_vector_database",
+        "planner_or_belief_update_authority", "truth_or_canon_authority",
         "dedicated_full_reader_core",
     ):
         assert rc7[key] is False
 
-    machine_markers = (
-        "reader_core_rc7_cross_document_links",
-        "dedicated_reader_core",
-    )
+    machine_markers = ("reader_core_rc7_cross_document_links", "dedicated_reader_core")
     for path in (
-        "README.md",
-        "ROADMAP.md",
-        "docs/STATUS.md",
-        "docs/IMPLEMENTATION_STATUS.md",
+        "README.md", "ROADMAP.md", "docs/STATUS.md", "docs/IMPLEMENTATION_STATUS.md",
         "docs/ai/CURRENT_STATE.md",
     ):
         text = _text(path)
@@ -90,19 +59,12 @@ def test_rc7_machine_truth_and_authority_firewall_are_documented():
             assert marker in text, (path, marker)
 
     authority_markers = (
-        "cross-document link",
-        "same-topic",
-        "possible-same-claim",
-        "similarity signal",
+        "cross-document link", "same-topic", "possible-same-claim", "similarity signal",
         "repetition across sources",
     )
     for path in (
-        "README.md",
-        "ROADMAP.md",
-        "docs/STATUS.md",
-        "docs/IMPLEMENTATION_STATUS.md",
-        "docs/ai/CURRENT_STATE.md",
-        "docs/architecture/READER_RC7_CROSS_DOCUMENT.md",
+        "README.md", "ROADMAP.md", "docs/STATUS.md", "docs/IMPLEMENTATION_STATUS.md",
+        "docs/ai/CURRENT_STATE.md", "docs/architecture/READER_RC7_CROSS_DOCUMENT.md",
     ):
         text = _text(path)
         for marker in authority_markers:
@@ -111,10 +73,7 @@ def test_rc7_machine_truth_and_authority_firewall_are_documented():
 
 def test_rc7_merge_truth_is_reconciled_before_rc8_decision():
     for path in (
-        "ROADMAP.md",
-        "docs/STATUS.md",
-        "docs/IMPLEMENTATION_STATUS.md",
-        "docs/ai/CURRENT_STATE.md",
+        "ROADMAP.md", "docs/STATUS.md", "docs/IMPLEMENTATION_STATUS.md", "docs/ai/CURRENT_STATE.md",
     ):
         text = _text(path)
         assert "b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1" in text, path
@@ -132,19 +91,15 @@ def test_rc7_does_not_authorize_semantic_vector_retrieval():
     combined = "\n".join(
         _text(path)
         for path in (
-            "README.md",
-            "ROADMAP.md",
-            "docs/STATUS.md",
-            "docs/IMPLEMENTATION_STATUS.md",
-            "docs/ai/CURRENT_STATE.md",
-            "docs/architecture/READER_RC7_CROSS_DOCUMENT.md",
+            "README.md", "ROADMAP.md", "docs/STATUS.md", "docs/IMPLEMENTATION_STATUS.md",
+            "docs/ai/CURRENT_STATE.md", "docs/architecture/READER_RC7_CROSS_DOCUMENT.md",
             "docs/architecture/READER_RC8_RETRIEVAL_DECISION.md",
         )
     )
     for marker in (
         "no automatic semantic matching",
         "embeddings/ANN/vector",
-        "Semantic/vector retrieval remains deferred",
+        "Semantic/hybrid retrieval may be compared later",
         "submitted / under review / not awarded",
         "active=false",
     ):
