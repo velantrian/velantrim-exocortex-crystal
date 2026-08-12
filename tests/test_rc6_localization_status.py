@@ -90,7 +90,19 @@ def test_rc6_english_machine_truth_and_authority_firewall_are_documented():
     assert rc6["evidence_admission"] is False
     assert rc6["truth_or_canon_authority"] is False
 
-    for path in ("README.md", "docs/STATUS.md", "docs/IMPLEMENTATION_STATUS.md"):
+    # The public README summarizes RC-6 without carrying every historical audit marker.
+    readme = _text("README.md")
+    for marker in (
+        "reader_core_rc6_long_context_strategy",
+        "RC-6",
+        "caller-supplied `SUMMARY`",
+        "direct RC-4 leaf provenance",
+        "RC-7",
+    ):
+        assert marker in readme, ("README.md", marker)
+
+    # Detailed current-truth surfaces retain the exact RC-6 authority firewall.
+    for path in ("docs/STATUS.md", "docs/IMPLEMENTATION_STATUS.md"):
         text = _text(path)
         for marker in (
             "reader_core_rc6_long_context_strategy",
