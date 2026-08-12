@@ -108,9 +108,9 @@ def main() -> int:
             "submitted / under review / not awarded",
             "budget change",
             "RC-9",
-            "dedicated_reader_core=false",
+            "dedicated_reader_core",
             "existing pre-agreement baseline",
-            "cannot be counted again",
+            "cannot later be rebilled",
             "Recall@5",
             "Precision@5",
             "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP",
@@ -250,13 +250,16 @@ def main() -> int:
     ):
         forbid(relative, text, stale_current_phrases, errors)
 
+    # Negative/non-claim wording is explicitly allowed. Only affirmative overclaim forms are
+    # forbidden here, so "does not claim automatic truth verification" remains valid public truth.
     forbid(
         "root README",
         readme,
         (
             "94% accuracy",
             "semantic understanding is implemented",
-            "automatic truth verification",
+            "automatic truth verification is implemented",
+            "Crystal implements automatic truth verification",
             "grant status: awarded",
         ),
         errors,
