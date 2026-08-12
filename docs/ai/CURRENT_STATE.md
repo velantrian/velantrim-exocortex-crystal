@@ -91,7 +91,9 @@ RC-7 adds no parser/chunker/OCR/PDF-layout/multimodal engine, LLM/provider/model
 The immutable RC-5 English localization checkpoint is `51c205fe048fd69d39fcd47b43e042a50de432bc`.
 The unchanged D2 reviewer/safety/privacy/failure source checkpoint remains `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
 
-Russian Reader-dependent public/detail documentation is refreshed relative to the historical RC-5 program and was subsequently advanced to the immutable RC-6 English checkpoint `ed96a88369f841bdb2ffd79ca020acef174685fc`. The eight other localized root README files and Reader-dependent detail packs preserve rich `REFRESH_NEEDED` translations. D2 reviewer/safety translations and Quick Start remain current across all nine supported locales.
+Russian Reader-dependent public/detail documentation is refreshed relative to the historical RC-5 program and was subsequently advanced to the immutable RC-6 English checkpoint `ed96a88369f841bdb2ffd79ca020acef174685fc`. The eight other localized root README files and Reader-dependent detail packs preserve rich `REFRESH_NEEDED` translations. D2 reviewer/safety translations remain current across all nine supported locales. Quick Start remains current across all nine supported locales.
+
+For compatibility with the unchanged D2/D1 localization contract, the exact status wording remains: **D2 reviewer/safety translations remain current across all nine supported locales**. **Russian D1/D3/D4/D5 detail pack is current** at the last completed Reader localization checkpoint, while **eight other locale detail packs require Reader refresh** and retain their rich translations rather than being shortened.
 
 The current RC-7 English public/machine source advances in a dedicated English checkpoint commit. Existing Russian files must not be interpreted as containing RC-7 semantics until the subsequent Russian refresh commit pins that exact new English SHA. At final RC-7 localization state, Russian root + D1/D3/D4/D5 Reader surfaces return to `CURRENT` against the immutable RC-7 checkpoint; eight other locale packs remain `REFRESH_NEEDED` and the tracked Reader/root debt remains 64 documents.
 
