@@ -74,7 +74,11 @@ D1 Reader-dependent detail translations are `CURRENT` in Russian at the RC-7 ref
 
 **D2 source checkpoint:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`
 
-D2 reviewer/safety translations remain current across all nine supported locales. Reviewer Guide and Safety/Privacy/Failures remain `CURRENT` for all nine supported locales.
+D2 remains complete for all nine supported locales. D2 reviewer/safety translations remain current across all nine supported locales. Reviewer Guide and Safety/Privacy/Failures remain `CURRENT` for all nine supported locales.
+
+| D2 surface | Translation state |
+|---|---|
+| D2 reviewer/safety | all nine supported locales `CURRENT` |
 
 | Locale | Reviewer Guide | Safety/Privacy/Failures |
 |---|---|---|
