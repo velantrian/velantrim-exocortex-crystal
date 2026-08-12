@@ -44,12 +44,18 @@ def _cases():
 
 def test_rc8_decision_preserves_authority_and_storage_boundaries():
     text = DECISION.read_text(encoding="utf-8")
+    normalized_lines = {" ".join(line.split()) for line in text.splitlines()}
+
+    for invariant in (
+        "retrieval match != evidence",
+        "similarity != identity",
+        "repetition != corroboration",
+        "cross-document candidate != Canon relation",
+        "candidate discovery != candidate adjudication",
+    ):
+        assert invariant in normalized_lines
+
     for marker in (
-        "retrieval match             != evidence",
-        "similarity                  != identity",
-        "repetition                  != corroboration",
-        "cross-document candidate    != Canon relation",
-        "candidate discovery         != candidate adjudication",
         "dedicated_reader_core=false",
         "PostgreSQL/pgvector",
         "active=false",
