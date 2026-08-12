@@ -26,7 +26,9 @@ _TOKEN_RE = re.compile(
 
 
 def _required_text(value: str, field_name: str) -> str:
-    value = (value or "").strip()
+    if not isinstance(value, str):
+        raise ValueError(f"{field_name} must be a string")
+    value = value.strip()
     if not value:
         raise ValueError(f"{field_name} must be non-empty")
     return value
