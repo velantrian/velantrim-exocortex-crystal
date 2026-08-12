@@ -1,6 +1,6 @@
 # Implementation Status: Crystal vs Future Exo-Cortex Work
 
-**Status date:** 2026-08-11  
+**Status date:** 2026-08-12  
 **Verified runtime checkpoint:** `bbd816c` / PR #337  
 **Exact historical evidence:** [TEST_REPORT.md](../TEST_REPORT.md)  
 **Machine-readable status:** [status/implementation-manifest.json](./status/implementation-manifest.json)
@@ -25,6 +25,8 @@
 | Reader Core RC-3 explicit multi-pass mechanics | Implemented in bounded orchestration layer | `core/reader_passes.py`; explicit pass ledger and coverage effects over declared RC-2 targets; no autonomous/model authority |
 | Reader Core RC-4 proposition extraction | Implemented in bounded pre-admission layer | `core/reader_extraction.py`; completed substantive RC-3 regions → source-linked `EXTRACTED_PROPOSITION` candidates; no fact evidence or truth admission |
 | Reader Core RC-5 relation candidates | Implemented in bounded pre-admission layer | `core/reader_relations.py`; valid registered RC-4 candidates → same-session/same-version typed relations; no contradiction resolution or evidence admission |
+| Reader Core RC-6 long-context strategy | Implemented/tested on current RC-6 branch; final merge evidence pending | `core/reader_long_context.py`; deterministic bounded working sets + caller-supplied direct-provenance `SUMMARY` candidates |
+| Reader Core RC-7 cross-document reading | Not implemented / not authorized | separate future bounded milestone |
 | Dedicated/full Semantic Reading runtime | Not implemented | no automatic parser, autonomous NLP/model reader, semantic equivalence/cross-document engine or autonomous planner; `dedicated_reader_core=false` |
 
 ## Current storage sequence
@@ -61,9 +63,10 @@ exact-vs-ANN retrieval evaluation
 
 RC-0 remains the normative architecture contract. RC-1 adds the smallest evidence-linked
 source/session domain skeleton, RC-2 adds the structural-map layer, RC-3 adds deterministic
-explicit multi-pass mechanics, RC-4 adds bounded source-linked proposition extraction and RC-5
-adds bounded explicit relation registration without claiming automatic language understanding,
-semantic identity, contradiction resolution or epistemic admission:
+explicit multi-pass mechanics, RC-4 adds bounded source-linked proposition extraction, RC-5
+adds bounded explicit relation registration and RC-6 adds bounded long-context orchestration
+without claiming automatic language understanding, semantic identity, contradiction resolution or
+epistemic admission:
 
 ```text
 SourceVersion(document_id + source_uri + SHA-256)
@@ -115,6 +118,19 @@ registered RC-4 proposition candidates
    ├─ primary/supporting locators on both sides
    ├─ explicit non-empty rationale
    └─ count-only relation telemetry
+
+registered RC-4 proposition candidates
+→ ReaderLongContextStrategy
+   ├─ one OPEN ReaderSession + exact SourceVersion
+   ├─ revalidate completed pass / recovered RC-2 nodes / current coverage
+   ├─ structural order + candidate-ID tie-break
+   ├─ max_candidates_per_set <= 128
+   ├─ max_source_locators_per_set <= 512
+   ├─ candidate atomicity
+   ├─ optional RC-5 relation carry-through only when both endpoints are in-set
+   ├─ caller-supplied SourceFidelity.SUMMARY only
+   ├─ direct RC-4 leaf candidate IDs + replayable source locators retained
+   └─ count/resource telemetry only
 ```
 
 RC-4 is a validation/registration layer, not an automatic extractor. The caller supplies the
@@ -149,11 +165,26 @@ resolved or winner field. It does not call `core.evidence.attach_evidence()`, wr
 invoke contradiction resolution, mutate Canon/ESM, bypass Guardian/TruthGate, promote confidence or
 choose a winner.
 
-RC-1/RC-2/RC-3/RC-4/RC-5 retain no source body and add no durable Reader storage schema, public API,
+RC-6 is deterministic context orchestration rather than automatic comprehension. It revalidates all
+current direct leaf candidates before planning, orders them deterministically and partitions them by
+explicit artifact/provenance budgets. The budgets count candidate references and unique direct source
+locators; they are not a model-token or context-window guarantee. If one candidate cannot fit the
+locator budget, RC-6 fails closed rather than splitting its provenance.
+
+A matching RC-5 registry is optional. Existing relation IDs are carried only when both endpoints are
+inside the same working set; RC-6 neither invents a relation nor uses similarity/adjacency as proof.
+
+`register_summary()` accepts caller-supplied text only. The produced SegmentCard is always
+`SourceFidelity.SUMMARY`; RC-6 first compares the current direct leaf locators to the immutable
+working-set snapshot and then re-validates the leaf candidates. The summary retains direct RC-4
+candidate IDs, optional in-set RC-5 relation IDs and direct replayable source locators. It cannot
+become a summary-to-summary provenance dead-end.
+
+RC-1/RC-2/RC-3/RC-4/RC-5/RC-6 retain no source body and add no durable Reader storage schema, public API,
 CLI, background worker or mandatory dependency. They have no automatic parser/semantic chunker,
-OCR/PDF-layout or multimodal engine; no model/provider integration; no embedding, ANN/vector-database
-Reader stack; no semantic equivalence or automatic cross-document proposition identity/reasoning; and
-no planner/belief-update authority.
+OCR/PDF-layout or multimodal engine; no model/provider/automatic summarization integration; no
+embedding, ANN/vector-database Reader stack; no semantic equivalence or RC-7 cross-document
+proposition identity/reasoning; and no planner/belief-update authority.
 
 Machine truth distinguishes the bounded milestones from the larger capability:
 
@@ -163,12 +194,14 @@ reader_core_rc2_structural_map         = true
 reader_core_rc3_multi_pass_mechanics   = true
 reader_core_rc4_proposition_extraction = true
 reader_core_rc5_relation_candidates    = true
+reader_core_rc6_long_context_strategy  = true
 dedicated_reader_core                  = false
 ```
 
 Coverage telemetry reports touched/unresolved regions only; structural telemetry reports recovered
 or unresolved map nodes only; RC-3 telemetry reports pass counts/state only; RC-4 telemetry reports
-candidate/category counts only; RC-5 telemetry reports relation counts by kind only. None is a
+candidate/category counts only; RC-5 telemetry reports relation counts by kind only; RC-6 telemetry
+reports plan/working-set/candidate-reference/relation-reference/summary counts only. None is a
 comprehension, truth, confidence or evidence-sufficiency score. Changed source hashes remain version
 boundaries; all Reader artifacts remain anchored to the exact RC-1 `SourceVersion`.
 
@@ -177,16 +210,24 @@ EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
 relation candidate != admitted evidence
 contradiction candidate != confirmed contradiction
+working-set coverage != comprehension proof
+summary != source text
+summary != evidence
+summary != verified fact
+summary != Canon admission
 similarity != identity
 repetition != corroboration
 ```
 
 SQLite remains ordinary active local-first. PostgreSQL/pgvector remains an inactive target with
-`active=false`; RC-5 adds no storage migration or backend switching.
+`active=false`; RC-5 adds no storage migration or backend switching and RC-6 also adds no storage
+migration, Reader persistence or backend switching.
 
 NLnet remains submitted / under review / not awarded. Approximate €50,000 is planning only and budget
-change is none. RC-5 merged pre-agreement is existing baseline, not future funded delta.
+change is none. RC-5 merged pre-agreement is existing baseline, not future funded delta. If RC-6 merges
+pre-agreement, RC-6 also becomes existing baseline and cannot be counted again as future funded delta.
 
 Crystal does not claim an active PostgreSQL runtime backend, automatic migration, production
 multi-tenancy, universal truth, zero hallucinations, legal/security certification, consciousness,
-confirmed contradiction authority from Reader output or a dedicated/full autonomous Reader Core runtime.
+confirmed contradiction authority from Reader output, automatic summarization, RC-7 cross-document
+reading or a dedicated/full autonomous Reader Core runtime.
