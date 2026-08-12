@@ -2,6 +2,22 @@
 
 This compact log records material decisions, exact evidence, limitations and hand-offs. It is not a replacement for Git history, issues, pull requests, `CHANGELOG.md` or Notion. Earlier detailed entries remain available through Git history.
 
+## 2026-08-12 — Reader RC-8 post-RC-7 retrieval architecture decision (#373)
+
+- Live verified starting `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1`, signature `verified=true` / `reason=valid`, open PRs 0 before the milestone.
+- Reverified RC-7 PR #372 exact validated head `b1cf79594f702194b4dce66ac2ef2546d4154f15`, exact-head CI `31572324596` 9/9 and post-merge CI `31572918731` 9/9.
+- Live Notion read-back confirmed all three canonical Crystal pages already held RC-7 completion truth before RC-8 work began.
+- Audit found real post-RC-7 gaps: explicit RC-7 links require caller-selected pairs; no corpus candidate-discovery layer exists; no formal same-proposition/paraphrase/related/same-topic/possible-contradiction/merely-similar adjudication contract exists; no frozen Reader retrieval benchmark exists.
+- Audit also found existing admitted-memory retrieval (`core/embedding.py`, `core/legacy_retrieval.py`, `core/retrieval_config.py`, `core/query_pipeline.py`, `core/rrf.py`). These operate in a different authority domain from PRE-ADMISSION Reader artifacts and are not automatically reusable as Reader identity authority.
+- Backlog isolation was confirmed: #165 is exact normalized admitted-fact dedupe only and explicitly excludes semantic matching; #155 is downstream Epistemic Router/Evidence State RFC; #214 is PII/supply-chain hygiene.
+- Created issue #373 and branch `agent/reader-rc8-retrieval-architecture` from exact verified starting main.
+- Added `docs/architecture/READER_RC8_RETRIEVAL_DECISION.md`, a 20-case synthetic adversarial corpus at `eval/reader_rc8_retrieval_adversarial.jsonl`, and contract tests in `tests/test_reader_rc8_retrieval_architecture.py`.
+- Decision: do not authorize Reader embeddings/ANN/vector DB. A separately authorized future implementation should establish deterministic lexical candidate discovery + benchmark runner first; SQLite FTS is a candidate backend with feature detection/fallback; hybrid/neural/vector work requires a pre-registered measured comparison.
+- Authority firewall retained: `retrieval match != evidence`, `similarity != identity`, `repetition != corroboration`, `cross-document candidate != Canon relation`, `ranking != epistemic authority`, `candidate discovery != candidate adjudication`.
+- Reconciled stale post-RC-7 GitHub handoff/status surfaces (`CURRENT_STATE`, `STATUS`, `IMPLEMENTATION_STATUS`, `COMPONENT_MAP`, `KNOWN_RISKS`, `ROADMAP`) that still described RC-6 / RC-7-in-progress despite merged RC-7 machine/localization truth.
+- No `core/**`, dependency, storage composition, Guardian, TruthGate, Canon, PostgreSQL activation or Reader runtime retrieval change is in scope.
+- Impact classification: `GITHUB_AND_NOTION`; per project workflow, only post-merge authoritative RC-8 evidence may be synchronized to the three existing Notion pages. No new Notion page is permitted.
+
 ## 2026-08-12 — Reader Core RC-6 bounded long-context strategy (#369 / PR #370)
 
 - Live verified signed starting `main@af9e050e467adbf2f73a0a916a88a99918e46f38`, signature `verified=true` / `reason=valid`, open PRs 0 and exact post-RC-5 push CI `31546737038` 9/9.
