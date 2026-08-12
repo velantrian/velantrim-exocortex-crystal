@@ -7,13 +7,13 @@
 
 ### Проверяемая local-first память, evidence и decision-boundary инфраструктура
 
-`v0.3.0` · 🎯 100% line-coverage gate · 🧬 Ring Zero · ✅ 9 permanent CI jobs · ⚖️ AGPL-3.0
+`v0.3.0` · 🎯 **100% line-coverage gate** · 🧬 **Ring Zero mutation gate** · ✅ **9 permanent CI jobs** · 🐘 PostgreSQL/pgvector integration · ⚖️ AGPL-3.0
 
 Сохранённый runtime checkpoint: `bbd816c09dd39a02e6de6c1014438490572f40f6`.  
 Исторический runtime evidence: **2078 passed / 13 skipped / 0 failed**, **9756 statements / 100.00% line coverage**.  
 RC-6 English source: `ed96a88369f841bdb2ffd79ca020acef174685fc`.
 
-Crystal не является чат-ботом или «оракулом истины». Он удерживает границы между source, candidate, evidence, admission и trusted read projection.
+Crystal не чат-бот и не «оракул истины». Он удерживает provenance и authority boundaries так, чтобы source, model output, retrieval, Reader candidates, evidence и trusted read projection не смешивались автоматически.
 
 ```text
 source/document
@@ -28,7 +28,7 @@ source/document
 → physical L3 / TrustSnapshot / CanonicalView
 ```
 
-## 🎯 Ключевые различия
+## 🎯 Критические различия
 
 ```text
 physical L3             != strict Canon
@@ -49,14 +49,14 @@ similarity              != identity
 repetition              != corroboration
 ```
 
-## 📖 Reader Core
+## 📖 Reader Core RC-1 → RC-6
 
-| Stage | Реализованная bounded функция | Authority non-claim |
+| Stage | Реализованная bounded функция | Authority boundary |
 |---|---|---|
 | RC-1 | exact SourceVersion / SourceLocator / ReaderSession | source-linked state, не truth |
 | RC-2 | caller-supplied Structural Document Map | structure/order не confidence |
-| RC-3 | explicit deterministic multi-pass ledger | completion не comprehension |
-| RC-4 | source-linked proposition candidate | proposition не verified fact |
+| RC-3 | deterministic explicit multi-pass ledger | completion не comprehension |
+| RC-4 | source-linked EXTRACTED_PROPOSITION | candidate не verified fact/evidence |
 | RC-5 | typed relation candidates | suspicion не resolved contradiction |
 | RC-6 | bounded working sets + caller SUMMARY | context/synthesis не evidence/admission |
 
@@ -70,64 +70,69 @@ reader_core_rc6_long_context_strategy  = true
 dedicated_reader_core                  = false
 ```
 
-### RC-4
+### RC-4 — propositions
 
-RC-4 регистрирует caller-supplied normalized proposition только из `COMPLETED` RC-3 target с substantive `PROCESSED`/`REVISITED` coverage и exact RC-1/RC-2 provenance. `FACTUAL_ASSERTION` описывает presentation source, а не Crystal verification.
+RC-4 принимает caller-supplied normalized proposition только из `COMPLETED` RC-3 target с substantive `PROCESSED`/`REVISITED` outcome и matching current RC-1/RC-2 provenance. `FACTUAL_ASSERTION` описывает source presentation, не Crystal verification.
 
 ```text
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate      != admitted evidence
 ```
 
-### RC-5
+### RC-5 — relation candidates
 
-`core/reader_relations.py` принимает только IDs, уже зарегистрированные одним RC-4 extractor, и требует один OPEN ReaderSession + exact SourceVersion.
+`core/reader_relations.py` принимает только IDs, реально зарегистрированные одним RC-4 extractor, и требует один OPEN ReaderSession + exact SourceVersion.
 
-| Relation | Direction | Meaning |
+| Relation | Тип | Смысл |
 |---|---|---|
 | POSSIBLE_CONTRADICTION | symmetric | только suspicion |
 | TENSION | symmetric | tension без truth verdict |
 | EXCEPTION | directional | right ограничивает left |
 | QUALIFICATION | directional | right уточняет left |
 
-Relation сохраняет exact candidate/pass/node IDs, primary/supporting locators и explicit rationale. RC-5 не вызывает `core.evidence.attach_evidence()`, не пишет fact evidence, не меняет `truth_status`/ESM/Canon и не выбирает winner.
+Relation сохраняет обе стороны, exact candidate/pass/node IDs, primary/supporting SourceLocator и explicit rationale. RC-5 не вызывает `core.evidence.attach_evidence()`, не пишет fact evidence, не меняет `truth_status`/ESM/Canon и не выбирает winner.
 
-### RC-6
+```text
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+```
 
-`core/reader_long_context.py` решает long-context задачу архитектурно, без утверждения об infinite model context.
+### RC-6 — bounded long-context strategy
 
-Перед planning RC-6 revalidates:
+`core/reader_long_context.py` решает long-context задачу архитектурно, а не заявлением об infinite model context.
+
+Перед planning каждый direct RC-4 leaf проходит revalidation:
 
 | Проверка | Требование |
 |---|---|
-| session | OPEN |
+| session | OPEN ReaderSession |
 | source | exact SourceVersion |
 | fidelity | EXTRACTED_PROPOSITION |
-| card | registered identity |
+| card | registered SegmentCard identity |
 | pass | COMPLETED |
 | structure | RECOVERED |
 | coverage | PROCESSED / REVISITED |
-| provenance | exact replayable locators |
+| provenance | exact replayable locator |
 
-Детерминированный порядок:
+Порядок детерминирован:
 
 ```text
 RC-2 structural order
 → candidate_id lexical tie-break
 ```
 
-Явные resource budgets:
+Working-set budgets:
 
 ```text
 1 <= max_candidates_per_set <= 128
 1 <= max_source_locators_per_set <= 512
 ```
 
-Это **artifact/provenance budgets**, а не token/context-window guarantee. Candidate atomicity означает: candidate и все direct unique SourceLocator остаются в одном set. Oversized candidate → fail closed.
+Это **artifact/provenance budgets**, не model-token/context-window guarantee. Candidate atomicity требует держать один RC-4 candidate и все direct unique locators вместе. Если leaf один превышает declared locator budget, planning fail closed.
 
-Matching RC-5 registry — optional context. Existing relation ID carried только если оба endpoints находятся в одном working set; cross-set relation не копируется и не выводится автоматически.
+Matching RC-5 registry — optional context only. Existing relation ID переносится только когда **оба** endpoints уже находятся в одном set. Cross-set relation не копируется и не выводится заново.
 
-`SUMMARY` — только caller-supplied `SourceFidelity.SUMMARY`. Перед регистрацией current direct leaf provenance сравнивается с immutable working-set snapshot, затем leaves revalidate. Summary сохраняет direct RC-4 candidate IDs и replayable locators; summary-to-summary provenance-only chain запрещён.
+Caller может зарегистрировать `SourceFidelity.SUMMARY`. Перед registration immutable working-set leaf snapshot сравнивается с current direct RC-4 locators, затем leaves revalidate. Summary хранит direct candidate IDs и replayable source provenance. Другой summary не может быть единственным provenance path.
 
 ```text
 working-set coverage != comprehension proof
@@ -137,18 +142,21 @@ summary != verified fact
 summary != Canon admission
 ```
 
+RC-6 не генерирует summary автоматически и не получает truth/confidence/evidence-sufficiency/resolution/winner authority.
+
 ## 🏛️ Memory / authority
 
 | Surface | Role | Boundary |
 |---|---|---|
 | L0 | working cache | ephemeral |
-| L1 | operational SQLite | durable, не strict Canon автоматически |
-| L2 | pending/review | не admission |
-| L3 | physical multi-status graph | presence не trust |
-| Guardian | safety/structure | admission boundary |
+| L1 | SQLite operational state | durable, но не strict Canon автоматически |
+| L2 | pending/review | candidate state |
+| L3 | physical multi-status graph | storage presence не trust |
+| Guardian | structure/safety | admission boundary |
 | TruthGate | admission policy | не objective oracle |
 | TrustSnapshot | reconciliation | deny-dominant |
-| CanonicalView | trusted projection | grounding only |
+| CanonicalView | trusted projection | grounding surface |
+| TRACE / Receipt | audit/replay | evidence trail, не admission authority |
 
 ```text
 storage profile = deployment identity
@@ -157,9 +165,9 @@ physical L3 = multi-status storage
 strict Canon = trusted read projection
 ```
 
-## 🗄️ Storage
+## 🗄️ SQLite и PostgreSQL
 
-SQLite — ordinary active local-first. Проверенная portability line:
+SQLite остаётся ordinary active local-first. Проверенная portability chain:
 
 ```text
 SQLite backup
@@ -171,9 +179,17 @@ SQLite backup
 → active=false
 ```
 
-Successful import/equivalence не означает activation, cutover, rollback, dual-write, automatic backend switching или TruthGate admission.
+Successful import/equivalence не означает activation, automatic switching, cutover, rollback, dual-write, TruthGate admission или strict Canon membership.
 
-## 🔎 Public query
+| Storage claim | Current truth |
+|---|---|
+| SQLite ordinary active | yes |
+| PostgreSQL import/equivalence | bounded optional path |
+| PostgreSQL active runtime | no |
+| automatic SQLite/PostgreSQL switching | no |
+| Reader RC-6 storage schema | no |
+
+## 🔎 Public read-only query
 
 ```text
 HTTP /ask
@@ -181,42 +197,46 @@ CLI ask
 MCP search
 ```
 
-Public query surfaces read-only. Они не создают facts и не превращают retrieval/model output в strict Canon.
+Public query surfaces read-only. Они не создают facts, не выполняют ingest и не превращают retrieval/model output в trusted Canon.
 
-## ⚖️ Contradictions
+## ⚖️ Contradiction workflow
 
-RC-5 `POSSIBLE_CONTRADICTION` не подтверждает конфликт и не выбирает сторону. Existing audited workflow требует explicit authorized disposition (`COEXIST`, `CONTEXTUALIZE`, `SUPERSEDE`). RC-6 может только carry existing relation ID как context.
+RC-5 `POSSIBLE_CONTRADICTION` не подтверждает contradiction и не выбирает truth side. Existing audited workflow требует explicit authorized disposition: `COEXIST`, `CONTEXTUALIZE` или `SUPERSEDE`. RC-6 может лишь carry existing relation ID как context внутри set.
 
 ```text
 contradiction detection != winner selection
-relation candidate != admitted evidence
+Reader relation != resolved contradiction
 RC-6 SUMMARY != contradiction evidence
 ```
 
-## 🛡️ Safety / privacy / non-features
+## 🛡️ Safety, privacy и non-features
 
-RC-1..RC-6 не удерживают source body. Restriction/sensitivity наследуются exact source context.
+RC-1..RC-6 не удерживают source body. Derived artifacts inherit restriction/sensitivity exact source context.
 
-RC-6 не добавляет:
-
-| Не-функция | Статус |
+| Не-функция | RC-6 |
 |---|---|
 | automatic summarization | absent |
-| LLM/provider/model routing | absent |
+| NLP/LLM/provider/model routing | absent |
 | parser/chunker/OCR/PDF layout | absent |
 | embeddings/ANN/vector DB | absent |
-| RC-7 cross-document identity | not started |
-| Reader durable DB/API/CLI/worker | absent |
-| truth/Canon/ESM writer | absent |
+| semantic identity | absent |
+| RC-7 cross-document reading | not started |
+| Reader durable DB | absent |
+| Reader public API/CLI/worker | absent |
 | evidence admission | absent |
+| truth/ESM/Canon writer | absent |
 | contradiction winner | absent |
 | PostgreSQL activation | absent |
 
 ## 🌍 Localization
 
-Russian root + D1/D3/D4/D5 RC-6 semantics are `CURRENT` against `ed96a88369f841bdb2ffd79ca020acef174685fc`. Immutable RC-5 marker `51c205fe...` остаётся в metadata как audit history. D2 source remains `b7e6574dd7aefa2f32783ab79054fac6b3b4109f`; D2 and Quick Start are CURRENT in all 9 locales. Eight other Reader-dependent locale packs remain rich `REFRESH_NEEDED`: **64 documents**.
+Russian root + Reader-dependent D1/D3/D4/D5 RC-6 semantics are `CURRENT` against `ed96a88369f841bdb2ffd79ca020acef174685fc`. Immutable RC-5 source marker `51c205fe048fd69d39fcd47b43e042a50de432bc` сохранён как audit history.
 
-## 🎓 Grant
+D2 source остаётся `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`; D2 и Quick Start CURRENT across all 9 supported locales. Eight other Reader-dependent locale packs сохраняют rich translations как `REFRESH_NEEDED`: **64 documents**.
+
+## 🎓 Grant truth
+
+**NLnet: submitted / under review / not awarded.**
 
 ```text
 programme: NLnet NGI0 Commons Fund
@@ -226,7 +246,7 @@ award: not awarded
 budget change: none
 ```
 
-Приблизительно €50,000 — planning only, не approved budget/payment commitment. RC-0..RC-5 already existing pre-agreement baseline. Если RC-6 merged до agreement, он также становится existing baseline и не может повторно считаться future funded delta.
+Приблизительно €50,000 — planning only, не approved budget/payment commitment. RC-0..RC-5 — existing pre-agreement baseline. Если RC-6 merged до agreement, он тоже existing baseline и не может повторно считаться future funded delta.
 
 ## 🚧 Не заявляется
 
@@ -241,7 +261,7 @@ RC-7 cross-document reading           = not started
 legal/GDPR/security certification     = not claimed
 ```
 
-## 🚀 Быстрый старт
+## 🚀 Quick Start
 
 ```bash
 git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
@@ -267,4 +287,4 @@ pytest tests/ --cov=. --cov-fail-under=100
 | Localization policy | [docs/LOCALIZATION_POLICY.md](./docs/LOCALIZATION_POLICY.md) |
 | Translation status | [docs/TRANSLATION_STATUS.md](./docs/TRANSLATION_STATUS.md) |
 
-GitHub signed merged `main` + executable tests + exact CI = implementation truth. Notion синхронизируется только после successful exact post-merge CI.
+GitHub signed merged `main` + executable tests + exact CI = implementation truth. Notion синхронизируется только после exact post-merge CI.
