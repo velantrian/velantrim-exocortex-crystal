@@ -32,8 +32,7 @@ nine supported locales where their source semantics are unchanged.
 
 For the immutable D1/D3/D4/D5 audit contract, eight other supported locales are `REFRESH_NEEDED`.
 
-**64 `REFRESH_NEEDED` localized detail documents** remain. D5 inventory: **273 total = 72
-CURRENT + 127 ENGLISH_ONLY_BY_DESIGN + 64 REFRESH_NEEDED + 10 RETIRED**.
+**64 `REFRESH_NEEDED` localized detail documents** remain. D5 executable inventory: **279 total = 72 CURRENT + 133 ENGLISH_ONLY_BY_DESIGN + 64 REFRESH_NEEDED + 10 RETIRED**.
 
 ```text
 reader_core_rc1_skeleton = true
@@ -170,6 +169,8 @@ checkpoint until a dedicated translation refresh.
 ## D5 — extended reference documents
 
 **D5 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
+
+D5 retains **64 `REFRESH_NEEDED` localized documents** in the tracked Reader-dependent debt. The executable D5 inventory is **279 total = 72 CURRENT + 133 ENGLISH_ONLY_BY_DESIGN + 64 REFRESH_NEEDED + 10 RETIRED**.
 
 D5 Reader-dependent detail translations are `CURRENT` in Russian at the RC-7 refresh layer.
 Eight other supported locales are `REFRESH_NEEDED`. Detailed volatile evidence remains
