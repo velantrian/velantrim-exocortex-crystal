@@ -148,11 +148,13 @@ The paired `SAME_TOPIC` and `MERELY_SIMILAR` cases are hard negatives. This mapp
 
 ### Metric scope
 
-The RC-8 JSONL judges only each case's left/right pair. Therefore:
+The RC-8 JSONL judges only each case's intended left/right pair. Therefore:
 
 - Recall@K and MRR ask whether the known useful paired right side was surfaced;
-- Precision@K treats other returned corpus entries as synthetic benchmark decoys;
+- Precision@K uses a fixed `positive paired queries × K` denominator, treats non-paired right-side records as synthetic benchmark decoys, and does not let unfilled ranks inflate precision;
 - paired hard-negative rate asks whether the known `SAME_TOPIC` / `MERELY_SIMILAR` mate was surfaced.
+
+This is a bounded synthetic benchmark, not a complete all-pairs qrels set. Precision@K therefore describes this benchmark construction only; it must not be generalized into a corpus-wide semantic precision claim.
 
 These numbers are not adjudication accuracy and do not certify semantic equivalence.
 
@@ -165,7 +167,7 @@ At `K=5` over the 20-case frozen RC-8 corpus:
 | Useful paired cases | 16 |
 | Hard-negative paired cases | 4 |
 | Recall@5 | **0.937500** |
-| Precision@5 | **0.217391** |
+| Precision@5 | **0.187500** |
 | MRR | **0.895833** |
 | Paired hard-negative rate@5 | **1.000000** |
 | Positive paired hits | 15 / 16 |
@@ -235,7 +237,7 @@ RC-9 tests cover at least:
 - restricted/sensitivity propagation;
 - absence of authority-like result fields;
 - malformed/empty/duplicate benchmark fixtures;
-- metric calculation;
+- metric calculation, including fixed-denominator Precision@K;
 - hard-negative behavior;
 - frozen RC-8 corpus → committed snapshot reproducibility.
 
