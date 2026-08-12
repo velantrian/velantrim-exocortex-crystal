@@ -66,14 +66,6 @@ and strict read reconciliation retain epistemic authority.
 composition and cannot serve normal reads or writes. No cutover, rollback, dual-write,
 automatic switching or ANN acceptance is implemented.
 
-**Audit questions:**
-
-- Is Psycopg still optional and lazy-loaded?
-- Are versions, TLS, schema absence and target identity checked fail closed?
-- Can connection details or raw database failures leak into receipts/logs?
-- Is equivalence recomputed independently from canonical target rows?
-- Is inactive import being confused with activation or full-system migration?
-
 ## 5. Truth admission and safety
 
 **Start:** Guardian functions in `core/pipeline.py`, `core/truth_gate.py`, `core/immune.py`,
@@ -107,6 +99,10 @@ write fact evidence. A source locator is provenance, not evidence sufficiency.
 RC-4 candidates inside one OPEN Reader session and exact source version. Exact candidate IDs,
 primary/supporting provenance and rationale remain audit context, not evidence admission.
 
+**RC-6 boundary:** `core/reader_long_context.py` groups current valid RC-4 leaves into deterministic
+bounded working sets and may register caller-supplied `SUMMARY` artifacts with direct leaf provenance.
+Working-set fill and summary text are not evidence, truth or Canon admission.
+
 ## 8. Contradictions and curator decisions
 
 **Start:** contradiction modules, `core/review.py`, `core/conflict_surfaces.py`,
@@ -114,12 +110,14 @@ primary/supporting provenance and rationale remain audit context, not evidence a
 
 Detection does not select a winner. `COEXIST`, `CONTEXTUALIZE` and `SUPERSEDE` require
 explicit authorized decisions. Curator leases remain process-local. RC-3 `CROSS_CHECK`, RC-4
-proposition extraction and RC-5 relation candidates may expose conflict-relevant Reader state,
-but they cannot resolve a `ContradictionReport` or select a canonical winner.
+proposition extraction, RC-5 relation candidates and RC-6 working sets/summaries may expose
+conflict-relevant Reader state, but they cannot resolve a `ContradictionReport` or select a
+canonical winner.
 
 ```text
 POSSIBLE_CONTRADICTION != confirmed contradiction
 relation candidate     != admitted evidence
+summary                != evidence
 ```
 
 ## 9. Imports and review queues
@@ -127,8 +125,9 @@ relation candidate     != admitted evidence
 **Start:** import/session modules, review queue/session modules and their CLI/HTTP tests.
 
 Partial imports must remain distinguishable from admission. Unreviewed content cannot ground
-strict answers, and restriction/erasure state must propagate. RC-4 extracted propositions and
-RC-5 relation candidates remain upstream of this normal ingest/review/evidence path.
+strict answers, and restriction/erasure state must propagate. RC-4 extracted propositions,
+RC-5 relation candidates and RC-6 working-set/summary artifacts remain upstream of this normal
+ingest/review/evidence path.
 
 ## 10. Public surfaces and runtime composition
 
@@ -136,8 +135,8 @@ RC-5 relation candidates remain upstream of this normal ingest/review/evidence p
 `pyproject.toml`, `.github/workflows/ci.yml`.
 
 Public query and doctor surfaces are read-only. PostgreSQL migration commands are explicit
-operator operations and do not add an ordinary runtime adapter. Reader RC-1/RC-2/RC-3/RC-4/RC-5
-add no public API, CLI, background worker or ordinary runtime-composition wiring.
+operator operations and do not add an ordinary runtime adapter. Reader RC-1 through RC-6 add no
+public API, CLI, background worker or ordinary runtime-composition wiring.
 
 ## 11. Evaluation and status evidence
 
@@ -146,9 +145,9 @@ add no public API, CLI, background worker or ordinary runtime-composition wiring
 workflows.
 
 Always bind claims to an exact commit, head and CI run. Microbenchmarks and integration jobs
-are not production SLOs or certification. Reader telemetry is count/state only; coverage, pass
-completion, extraction counts and relation counts are not comprehension, truth, confidence or
-evidence-sufficiency scores.
+are not production SLOs or certification. Reader telemetry is counts/resource references only;
+coverage, pass completion, extraction counts, relation counts, working-set fill and summary counts
+are not comprehension, truth, confidence or evidence-sufficiency scores.
 
 ## 12. Long-document semantic reading
 
@@ -159,6 +158,7 @@ evidence-sufficiency scores.
 - `core/reader_passes.py`, `tests/test_reader_passes.py` — RC-3;
 - `core/reader_extraction.py`, `tests/test_reader_extraction.py` — RC-4;
 - `core/reader_relations.py`, `tests/test_reader_relations.py` — RC-5;
+- `core/reader_long_context.py`, `tests/test_reader_long_context.py` — RC-6;
 - `docs/architecture/READER_CORE_ARCHITECTURE.md` — normative RC-0 contract;
 - `core/evidence.py`, `core/span_extract.py`, `docs/CONTRADICTION_POLICY.md` — downstream boundaries/context.
 
@@ -170,13 +170,14 @@ reader_core_rc2_structural_map = true
 reader_core_rc3_multi_pass_mechanics = true
 reader_core_rc4_proposition_extraction = true
 reader_core_rc5_relation_candidates = true
+reader_core_rc6_long_context_strategy = true
 dedicated_reader_core = false
 ```
 
 ### RC-1 ownership
 
 RC-1 owns immutable source identity/version binding, replayable locators, `ReaderSession`,
-`SegmentCard`, five source-fidelity classes, explicit coverage states, bookmarks/open loops,
+`SegmentCard`, source-fidelity classes, explicit coverage states, bookmarks/open loops,
 fail-visible interruption/degradation, conservative stale invalidation and privacy metadata
 inheritance. It retains no source body.
 
@@ -201,11 +202,6 @@ candidate only when it is anchored to a `COMPLETED` RC-3 pass target with both r
 matching substantive coverage (`PROCESSED` or `REVISITED`). It preserves primary/supporting
 replayable locators, source owner, source-presentation category, explicit negation and qualifiers.
 Every candidate has `EXTRACTED_PROPOSITION` fidelity.
-
-Source-presentation categories include factual assertion, author opinion, hypothesis, conditional,
-example, quoted speech, reported position, definition and uncertain assertion. `FACTUAL_ASSERTION`
-means only that the **source presents** a statement as factual; it is not a Crystal verification
-status.
 
 **Critical authority boundary:** RC-4 has no `core.evidence` import and no fact evidence writer. It
 does not attach evidence, set evidence sufficiency, mutate truth/ESM/Canon, bypass Guardian/TruthGate,
@@ -234,6 +230,44 @@ RC-5 has no truth/confidence/evidence-sufficiency/resolved/winner fields. It doe
 `core.evidence.attach_evidence()`, write fact evidence, invoke contradiction resolution, mutate
 truth/ESM/Canon, bypass Guardian/TruthGate or gain planner/belief-update authority.
 
+### RC-6 ownership
+
+RC-6 owns bounded long-context orchestration over the **current registered RC-4 leaf candidates** of
+one existing extractor. `ReaderLongContextStrategy` requires one OPEN ReaderSession and exact
+SourceVersion, revalidates pass/structure/coverage/provenance, then orders candidates by RC-2
+structural order with a stable candidate-ID tie-break.
+
+Working-set resources are explicit Reader-artifact budgets:
+
+```text
+1 <= max_candidates_per_set <= 128
+1 <= max_source_locators_per_set <= 512
+```
+
+They are not model-token/context-window guarantees. Candidate atomicity keeps each RC-4 candidate
+with all of its direct unique replayable locators; a candidate that cannot fit the declared locator
+budget fails closed.
+
+A matching RC-5 registry is optional. Existing relation IDs are carried only when both endpoints are
+already in the same working set; cross-set relation IDs are not copied and no relation is inferred.
+
+`register_summary()` accepts caller-supplied text only and always produces a
+`SourceFidelity.SUMMARY` artifact. Before registration it compares current direct leaf provenance to
+the immutable working-set snapshot and revalidates those RC-4 leaves. The summary keeps direct
+candidate IDs and replayable source locators; another summary cannot be its only provenance path.
+
+```text
+working-set coverage != comprehension proof
+summary              != source text
+summary              != evidence
+summary              != verified fact
+summary              != Canon admission
+```
+
+RC-6 has no truth/confidence/evidence-sufficiency/resolution/winner fields, no evidence admission,
+no automatic summarization/model/provider/parser/OCR/embedding/ANN dependency, no RC-7 cross-document
+identity/reasoning, no Reader persistence/API/CLI/worker and no PostgreSQL activation.
+
 ```text
 coverage != comprehension proof
 pass completion != comprehension proof
@@ -247,9 +281,9 @@ repetition != corroboration
 ```
 
 **Current non-features:** no automatic parser/semantic chunker/OCR/PDF-layout/multimodal engine,
-no automatic NLP/LLM/provider Reader extraction, no embeddings/ANN/vector DB, no automatic semantic
-equivalence or cross-document proposition identity/reasoning, no durable Reader schema/migration and
-no dedicated/full autonomous Reader runtime.
+no automatic NLP/LLM/provider Reader extraction or summarization, no embeddings/ANN/vector DB, no
+automatic semantic equivalence or RC-7 cross-document proposition identity/reasoning, no durable
+Reader schema/migration and no dedicated/full autonomous Reader runtime.
 
 ## 13. Documentation, grant and research governance
 
@@ -259,7 +293,7 @@ no dedicated/full autonomous Reader runtime.
 GitHub `main` proves implementation. Notion preserves deeper rationale, grant framing and
 audit history. Issues #331 and #332 are merged baseline; exact-vs-ANN evaluation,
 cutover/fencing, rollback and PostgreSQL server lifecycle remain separate future phases.
-Automatic SQLite/PostgreSQL switching remains forbidden. Reader RC-0/RC-1/RC-2/RC-3/RC-4/RC-5,
-when merged before a grant agreement, are existing baseline and cannot be presented as
-awarded/funded delivery. No next Reader phase is implied: RC-6 or later work requires a separate
-bounded authorization after RC-5 completion evidence.
+Automatic SQLite/PostgreSQL switching remains forbidden. Reader RC-0 through RC-5 are existing
+pre-agreement baseline. RC-6 is the current separately authorized milestone; if it merges before a
+grant agreement it also becomes existing baseline. RC-7 is not started and requires a separate
+bounded authorization after RC-6 completion evidence.

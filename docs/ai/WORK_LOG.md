@@ -1,79 +1,40 @@
 # 🧾 Crystal AI Work Log
 
-This compact log records material decisions, exact evidence, limitations and hand-offs. It
-is not a replacement for Git history, issues, pull requests, `CHANGELOG.md` or Notion.
-Earlier detailed entries remain available through Git history.
+This compact log records material decisions, exact evidence, limitations and hand-offs. It is not a replacement for Git history, issues, pull requests, `CHANGELOG.md` or Notion. Earlier detailed entries remain available through Git history.
+
+## 2026-08-12 — Reader Core RC-6 bounded long-context strategy (#369 / PR #370)
+
+- Live verified signed starting `main@af9e050e467adbf2f73a0a916a88a99918e46f38`, signature `verified=true` / `reason=valid`, open PRs 0 and exact post-RC-5 push CI `31546737038` 9/9.
+- Live Notion read-back confirmed all three canonical Crystal pages still had RC-5 as top current truth before RC-6 work began.
+- `ROADMAP.md` establishes the next order as RC-6 long-context strategy → RC-7 cross-document reading; operator separately authorized continuation, so issue #369 scopes RC-6 only.
+- Branch `agent/reader-core-rc6-long-context` was created from exact starting main. Draft PR #370 was opened without `Closes #369` auto-close language so completion ordering can remain explicit.
+- Initial runtime commit `97b1befa2c0db830bace2781489a164e8cfeb2c7` added only `core/reader_long_context.py` and `tests/test_reader_long_context.py`.
+- Initial smoke CI `31548812403` exposed one test-design/provenance-order defect: 2148 tests passed, one failed, 13 skipped and one guard line was uncovered. The failure proved a deeper structural-provenance guard fired before the intended working-set snapshot-drift guard.
+- Fix commit `83516354e20c20751c1adda79f2b57592b10ab9c` moved immutable working-set leaf-provenance comparison before deep per-leaf revalidation in `register_summary()`. This preserves fail-closed behavior and makes summary snapshot drift explicit.
+- Corrected exact-head smoke CI `31549837676` is **9/9 successful** on `83516354e20c20751c1adda79f2b57592b10ab9c`, including Python 3.11/3.12, docs-status, Ring Zero, security, Ruff/code-quality, eval, JSONL integrity and Docker.
+- RC-6 design: deterministic RC-2 structural order + candidate-ID tie-break, rolling working sets bounded by candidate count and direct source-locator count, candidate atomicity, optional RC-5 relation carry-through only when both sides are in-set, and caller-supplied `SUMMARY` artifacts with direct RC-4 leaf provenance.
+- Authority boundary remains fail closed: no automatic summarization/model/provider/token-context claim, parser/OCR, embeddings/ANN, RC-7 cross-document reasoning, evidence admission, truth/Canon/ESM mutation, contradiction resolution, planner authority, Reader persistence/API/CLI/worker or PostgreSQL activation.
+- English public/machine truth is intentionally committed before Russian refresh so the immutable English source SHA can be recorded honestly. Existing Russian `CURRENT` markers remain RC-5 checkpoint history until the follow-up RC-6 Russian parity commit pins the new exact English source SHA.
+- Impact classification: `GITHUB_AND_NOTION`; Notion synchronization remains forbidden until guarded merge and exact post-merge push CI succeed.
+
+## 2026-08-11 — Reader Core RC-5 relation candidates (#367 / PR #368)
+
+- Guarded squash merge produced signed `main@af9e050e467adbf2f73a0a916a88a99918e46f38` with signature `verified=true`, reason `valid`.
+- Final validated PR head `b4e26c9be3671e5e8049add280289c6d5fe7c798`; exact-head CI `31546290347` 9/9; exact post-merge push CI `31546737038` 9/9.
+- Added bounded same-session/same-source-version `POSSIBLE_CONTRADICTION`, `TENSION`, `EXCEPTION`, `QUALIFICATION` relation candidates over registered RC-4 proposition candidates only.
+- Restored/hardened D1/D3/D4/D5 documentation validators so green CI could not be obtained by weakening inventory/link/stale-claim/storage/grant/authority checks.
+- Russian Reader-dependent root + D1/D3/D4/D5 surfaces were current at RC-5 checkpoint; eight other locale packs remained rich `REFRESH_NEEDED`, 64 tracked documents.
+- Notion 3/3 synchronized and read back only after post-merge CI. Completion evidence posted to #367; issue closed completed after correcting GitHub's earlier auto-close ordering.
 
 ## 2026-08-10 — Post-i18n truth/backlog reconciliation (#353)
 
-- Verified signed starting `main@f4556e8f9775d28d4a1b2c20a28962a95e55d33e`, PR #352
-  exact-head CI `31340722027` 9/9 and post-merge CI `31341125405` 9/9.
-- Confirmed D1–D5 current for `ar`, `de`, `es`, `fr`, `hi`, `it`, `ja`, `ru`, `zh-CN`;
-  final D5 inventory remains 136 CURRENT / 126 ENGLISH_ONLY_BY_DESIGN / 10 RETIRED /
-  0 REFRESH_NEEDED / 272 total; issue #341 is closed / completed.
-- Closed stale PR #245 as `MOVE_TO_SEPARATE_RESEARCH_TRACK`, #249 as
-  `MOVE_TO_SEPARATE_RESEARCH_TRACK`, #261 as `REQUIRES_OPERATOR_DECISION` and #262 as
-  `SUPERSEDED`. No stale branch was rebased or merged; no prototype, branding rename or
-  cross-project runtime integration was transferred.
-- Backlog triage: #155 `REQUIRES_REWRITE`, #165 and #214 `STILL_VALID`; #156, #157, #203,
-  #219 and Phase-0 #228 completed; #159 superseded; #211 out of Crystal scope; #215 expired.
-- Confirmed ROADMAP drift: it still described the delivered documentation baseline as D1–D4
-  even though CURRENT_STATE, TRANSLATION_STATUS, D5 manifests and CI already establish D1–D5.
-- First PR #354 head `d61e6d3ee71b35a54b3ec745dece4aabf3a05283` failed only the English
-  D4 source-contract step in CI `31361361724`: the D1–D5 ROADMAP wording had removed the
-  validator's historical literal `D1–D4 documentation work merged before an agreement`.
-  ROADMAP was corrected to preserve that D4 contract while separately recording D5 as
-  pre-agreement existing baseline; the validator itself was not weakened or bypassed.
-- Reconciliation changes are documentation/governance only. Runtime/API/dependencies,
-  SQLite behavior, PostgreSQL `active=false`, Reader Core `NOT_IMPLEMENTED` and NLnet
-  submitted/under-review/not-awarded status remain unchanged.
-- Impact classification: `GITHUB_AND_NOTION`; final Notion synchronization is allowed only
-  after exact-head CI, merge signature and post-merge CI are verified.
+- Verified signed starting `main@f4556e8f9775d28d4a1b2c20a28962a95e55d33e`, PR #352 exact-head CI `31340722027` 9/9 and post-merge CI `31341125405` 9/9.
+- Confirmed D1–D5 current at that checkpoint and triaged stale backlog/PR state without merging prototype or cross-project work.
 
 ## 2026-08-08 — PR #337 inactive PostgreSQL import/equivalence merged
 
-- Merge: `bbd816c09dd39a02e6de6c1014438490572f40f6`; validated head
-  `d7af7c80722274f9217bc5545d150f92e9363f37`.
-- Exact-head CI `31256316536`: 9/9; Python 3.11/3.12: 2078 passed / 13 skipped;
-  9756 statements / 100.00% coverage.
-- Real PostgreSQL/pgvector integration `31256316532`: successful against PostgreSQL 16,
-  pgvector 0.8.2 and Psycopg 3.3.4.
-- Implemented issue #332 phase 1 only: optional lazy driver, preflight, new inactive schema,
-  serializable import, independent exact re-hash and non-secret receipts.
-- Independent architecture/security review found no blocking issue; the ephemeral localhost
-  `trust` service was explicitly classified as test-only.
-- No runtime activation, cutover, rollback, dual-write, automatic switching, ANN acceptance,
-  Guardian, TruthGate or strict Canon change.
-- Impact classification: `GITHUB_AND_NOTION`.
-- Next: separate status-sync PR, then prepend one verified `CURRENT TRUTH` block to the three
-  canonical Crystal Notion pages while preserving older checkpoints as audit history.
-
-## 2026-08-08 — PR #335 bounded migration merged
-
-- Merge: `f03e24c85922d0bb46d6d9dfee98338972135908`; validated head
-  `17ce10ffe12da93be50434c73d08f05a70a5922b`; CI `31224184351` 9/9.
-- Evidence: 2059 passed / 12 skipped, 9361 statements, 100.00% coverage; benchmark
-  `31224005804` 2/2.
-- Implemented fixed cursor batches, disk-backed canonical edge sorting, same-descriptor
-  verification, disk-backed referential checks and failure cleanup.
-- Impact classification: `GITHUB_AND_NOTION`.
-
-## 2026-08-07 — Grant/status baseline synchronization (#333 / PR #334)
-
-- Reconciled public README, verification/status files, grant scope, M1–M9 matrix, roadmap,
-  security policy and AI context with PR #330.
-- The first branch head failed docs-status in CI `31214414769`; stale README/manifest markers
-  and incorrect frozen localization blob IDs were corrected before merge.
-- Premature Notion merge claims were corrected with top `CURRENT TRUTH` blocks while older
-  blocks were retained as audit history.
-- PR #334 remains historical grant/status context. Synchronization class:
-  `GITHUB_AND_NOTION`.
-
-## 2026-08-07 — Deterministic SQLite logical export merged (#329 / PR #330)
-
-- Merge: `c612c1f7de067b05ed7d01ad82d47a7bc39af23a`; validated head
-  `e70c31bf517039f0dd3f77f7bc4b6d3f03936736`; CI `31213056560` 9/9.
-- Added canonical JSONL export, independent fail-closed verification and explicit local-first
-  resource limits.
-- Migration evidence remained operational evidence only and could not activate another
-  backend or grant epistemic authority.
+- Merge: `bbd816c09dd39a02e6de6c1014438490572f40f6`; validated head `d7af7c80722274f9217bc5545d150f92e9363f37`.
+- Exact-head CI `31256316536`: 9/9; Python 3.11/3.12: 2078 passed / 13 skipped; 9756 statements / 100.00% coverage.
+- Real PostgreSQL/pgvector integration `31256316532`: successful against PostgreSQL 16, pgvector 0.8.2 and Psycopg 3.3.4.
+- Implemented issue #332 phase 1 only: optional lazy driver, preflight, new inactive schema, serializable import, independent exact re-hash and non-secret receipts.
+- No runtime activation, cutover, rollback, dual-write, automatic switching, ANN acceptance, Guardian, TruthGate or strict Canon change.

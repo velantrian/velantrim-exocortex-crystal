@@ -9,30 +9,25 @@
 <!-- d4-status: CURRENT -->
 <!-- d5-source: main@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- d5-status: CURRENT -->
-# 🇷🇺 Документация Crystal на русском
+<!-- rc6-localization-index-source: main@ed96a88369f841bdb2ffd79ca020acef174685fc -->
+<!-- rc6-status: CURRENT -->
+# 🇷🇺 Русская документация Crystal
 
-Английский остаётся первичным source/conflict resolver. Русский root README и Reader-зависимые D1/D3/D4/D5 документы полностью обновлены до Reader RC-5 и имеют `CURRENT`. D2 и Quick Start остаются `CURRENT`, потому что RC-5 не меняет их исходную семантику.
+RC-5 source markers выше сохранены как immutable D1–D5 audit evidence. Русский Reader-dependent пакет дополнительно полностью обновлён к RC-6 English checkpoint `main@ed96a88369f841bdb2ffd79ca020acef174685fc`.
 
-## D1 — вход и использование
-- [Быстрый старт](./QUICKSTART.md)
-- [Текущий статус](./STATUS.md)
-- [Граница реализации](./IMPLEMENTATION_STATUS.md)
+- D1: [Quick Start](./QUICKSTART.md), [Status](./STATUS.md), [Implementation Status](./IMPLEMENTATION_STATUS.md)
+- D2: [Reviewer Guide](./REVIEWER_GUIDE.md), [Safety/Privacy/Failures](./SAFETY_PRIVACY_AND_FAILURES.md) — source semantics unchanged
+- D3: [Architecture Overview](./ARCHITECTURE_OVERVIEW.md), [Storage/Authority](./STORAGE_AND_AUTHORITY_BOUNDARIES.md)
+- D4: [Grant Overview](./GRANT_OVERVIEW.md), [Glossary](./GLOSSARY.md)
+- D5: [Extended Reference Guide](./EXTENDED_REFERENCE_GUIDE.md)
 
-## D2 — проверка и безопасность
-- [Руководство ревьюера](./REVIEWER_GUIDE.md)
-- [Безопасность, приватность и отказы](./SAFETY_PRIVACY_AND_FAILURES.md)
+```text
+reader_core_rc6_long_context_strategy = true
+dedicated_reader_core = false
+working-set coverage != comprehension proof
+summary != evidence
+```
 
-## D3 — архитектура
-- [Обзор архитектуры](./ARCHITECTURE_OVERVIEW.md)
-- [Хранилище и границы authority](./STORAGE_AND_AUTHORITY_BOUNDARIES.md)
+SQLite ordinary active local-first; PostgreSQL `active=false`. NLnet `submitted / under review / not awarded`; ~€50,000 planning only; budget change none.
 
-## D4 — проект и грант
-- [Grant overview](./GRANT_OVERVIEW.md)
-- [Глоссарий](./GLOSSARY.md)
-
-## D5 — расширенная справка
-- [Extended Reference Guide](./EXTENDED_REFERENCE_GUIDE.md)
-
-RC-5 — bounded same-session/same-version PRE-ADMISSION relation candidate layer. `contradiction candidate != confirmed contradiction`; `similarity != identity`; `repetition != corroboration`. Dedicated/full autonomous Reader не реализован.
-
-Общие правила: [Localization policy](../LOCALIZATION_POLICY.md) · [Translation status](../TRANSLATION_STATUS.md).
+[Localization policy](../LOCALIZATION_POLICY.md) · [Translation status](../TRANSLATION_STATUS.md)

@@ -2,7 +2,7 @@
 <!-- d3-source-scope: architecture-storage-authority -->
 # Crystal Architecture Overview
 
-**Status date:** 2026-08-11  
+**Status date:** 2026-08-12  
 **Purpose:** stable, translation-oriented architecture entry point.  
 **Authority:** merged code, exact CI and the implementation manifest remain runtime truth.
 
@@ -21,6 +21,10 @@ RC-4 source-linked EXTRACTED_PROPOSITION candidates
         ↓
 RC-5 explicit same-session/same-version relation candidates
         ↓
+RC-6 bounded same-session/same-version long-context working sets
+        ↓
+optional caller-supplied SUMMARY with direct RC-4 leaf provenance
+        ↓
 normal ingest/review/evidence path
         ↓
 Guardian policy checks
@@ -34,9 +38,9 @@ deny-dominant strict Canon read projection
 read-only retrieval / answer / bounded refusal
 ```
 
-Reader artifacts, structural metadata, pass ledgers, extracted propositions and relation candidates
-remain upstream observations/process/candidate state. They do not own truth, evidence admission,
-contradiction resolution or planner authority.
+Reader artifacts, structural metadata, pass ledgers, extracted propositions, relation candidates,
+working sets and summaries remain upstream observations/process/candidate state. They do not own truth,
+evidence admission, contradiction resolution or planner authority.
 
 Crystal does not treat every stored node, retrieved result or model output as truth. Physical L3
 stores multiple statuses. Strict Canon is the trusted read projection produced by current policy and
@@ -51,6 +55,7 @@ evidence constraints.
 | Reader RC-3 | explicit pass attempts, declared targets and coverage outcomes | process audit, not comprehension or admission |
 | Reader RC-4 | source-linked extracted proposition candidates from completed substantive pass regions | source presentation/candidate state, not verified fact or admitted evidence |
 | Reader RC-5 | typed explicit relations between valid RC-4 candidates | candidate suspicion, not confirmed contradiction/winner/admission |
+| Reader RC-6 | deterministic rolling working sets and caller-supplied summaries over direct RC-4 leaves | bounded context/synthesis candidate, not comprehension/evidence/truth/Canon admission |
 | L0 | process-local working state | ephemeral, not durable truth |
 | L1 | SQLite operational memory | durable facts, ESM, evidence, audit, receipts, import/review and outbox state |
 | L2 | pending/review staging | candidate or quarantined claims before final admission |
@@ -60,9 +65,9 @@ evidence constraints.
 ## Read and write separation
 
 ```text
-ask / receipt / MCP inspection              → core.query_pipeline.query() → read-only
-explicit ingest                             → Guardian / TruthGate → admission-capable write
-Reader RC-1 / RC-2 / RC-3 / RC-4 / RC-5   → source/process/candidate state only → no admission side effects
+ask / receipt / MCP inspection                         → core.query_pipeline.query() → read-only
+explicit ingest                                        → Guardian / TruthGate → admission-capable write
+Reader RC-1 / RC-2 / RC-3 / RC-4 / RC-5 / RC-6      → source/process/candidate state only → no admission side effects
 ```
 
 A public query must not mutate facts, ESM, L3, outbox, episode links, embedding identity or unknown
@@ -95,7 +100,8 @@ SQLite backup / verify / inactive restore
 The PostgreSQL target is absent from ordinary runtime composition. Successful import or exact
 equivalence is operation evidence, not activation, backend selection, TruthGate admission, strict
 Canon membership, cutover, rollback, dual-write or production readiness. RC-5 adds no Reader schema
-migration and does not activate PostgreSQL.
+migration and does not activate PostgreSQL. RC-6 also adds no Reader persistence/schema migration and
+does not activate PostgreSQL.
 
 ## Source-grounded Reader foundation
 
@@ -138,18 +144,41 @@ identity, use similarity as proof, call an LLM/provider, invoke contradiction re
 winner. It has no truth/confidence/evidence-sufficiency/resolved/winner field and does not call
 `core.evidence.attach_evidence()`.
 
+RC-6 adds deterministic long-context orchestration in `core/reader_long_context.py` without assuming
+an infinite model context window. It accepts the current registered RC-4 candidates of one OPEN
+ReaderSession and exact SourceVersion, revalidates completed-pass / recovered-structure / current
+coverage provenance, sorts by RC-2 structural order with a stable candidate-ID tie-break, and packs
+candidates into rolling working sets under explicit candidate-count and unique direct-source-locator
+budgets. One candidate is atomic with all of its direct replayable locators; if it cannot fit the
+caller-declared locator budget, planning fails closed instead of splitting provenance.
+
+A matching RC-5 registry is optional context only. RC-6 carries an existing relation ID into a
+working set only when both relation endpoints are already members of that set. It neither synthesizes
+a cross-set relation nor infers relation identity from adjacency/similarity.
+
+RC-6 may register caller-supplied `SourceFidelity.SUMMARY` text for one existing working set. The
+summary artifact retains the exact direct RC-4 leaf candidate IDs and the deduplicated replayable
+source locators of that set. RC-6 rechecks the working-set provenance snapshot before accepting the
+summary, so a summary cannot become a provenance dead-end and cannot rely on another summary as its
+only support. RC-6 performs no automatic summarization.
+
 The dedicated/full autonomous Reader / Semantic Reading runtime remains future work. There is no
-automatic parser/semantic chunker, automatic NLP/LLM extraction, provider-driven reading agent,
-embeddings/ANN/vector DB, automatic semantic equivalence/cross-document reasoning engine or automatic
-belief update.
+automatic parser/semantic chunker, automatic NLP/LLM extraction or summarization, provider-driven
+reading agent, embeddings/ANN/vector DB, automatic semantic equivalence, RC-7 cross-document reading
+or automatic belief update.
 
 ```text
 coverage != comprehension proof
 pass completion != comprehension proof
+working-set coverage != comprehension proof
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
 relation candidate != admitted evidence
 contradiction candidate != confirmed contradiction
+summary != source text
+summary != evidence
+summary != verified fact
+summary != Canon admission
 similarity != identity
 repetition != corroboration
 ```
@@ -161,10 +190,11 @@ remote adapters, wider API exposure and migration targets require explicit opera
 Selected L1 field encryption is not universal encryption. Active-store erasure is not global erasure
 of backups, exports, remote systems or provider copies.
 
-Reader RC-1/RC-2/RC-3/RC-4/RC-5 retain no source body. Derived Reader artifacts, pass records,
-proposition candidates and relation candidates inherit source restriction/sensitivity metadata.
-Reader structure/order/prominence, pass completion, proposition extraction and relation registration
-cannot weaken privacy or epistemic policy.
+Reader RC-1/RC-2/RC-3/RC-4/RC-5/RC-6 retain no source body. Derived Reader artifacts, pass records,
+proposition candidates, relation candidates, working sets and summaries inherit source
+restriction/sensitivity metadata through the exact source version. Reader structure/order/prominence,
+pass completion, proposition extraction, relation registration, working-set fill or summary
+registration cannot weaken privacy or epistemic policy.
 
 ## Current non-claims
 
@@ -174,13 +204,14 @@ Crystal does not claim:
 - active PostgreSQL runtime or automatic backend switching;
 - cutover, rollback, dual-write or accepted ANN production profile;
 - production multi-tenancy or distributed exactly-once coordination;
-- a completed dedicated/full autonomous Reader Core or automatic document comprehension/extraction;
-- automatic semantic contradiction resolution or cross-document identity;
+- a completed dedicated/full autonomous Reader Core or automatic document comprehension/extraction/summarization;
+- RC-7 cross-document reading or automatic semantic contradiction resolution/cross-document identity;
 - security, legal or GDPR certification;
 - awarded NLnet funding.
 
 NLnet remains submitted / under review / not awarded; approximate €50,000 is planning only and budget
-change is none. RC-5 merged pre-agreement becomes existing baseline.
+change is none. RC-5 merged pre-agreement becomes existing baseline. If RC-6 merges before an
+agreement, RC-6 also becomes existing pre-agreement baseline rather than future funded delta.
 
 ## Detailed English contracts
 

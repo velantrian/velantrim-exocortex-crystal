@@ -1,12 +1,12 @@
 # Velantrim Crystal — Current Status
 
-**Status date:** 2026-08-11  
+**Status date:** 2026-08-12  
 **Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
 **Verified tree:** `f57e58a6f4d1954b649ba324996fcde42ac287b8`  
 **Validated implementation head:** `d7af7c80722274f9217bc5545d150f92e9363f37`  
 **Runtime PR / CI:** #337 / `31256316536`  
 **PostgreSQL integration CI:** `31256316532`  
-**Reader RC-5 tracking:** issue #367 / PR #368
+**Reader RC-6 tracking:** issue #369 / PR #370
 
 ## Verification
 
@@ -23,8 +23,10 @@ These counts remain the retained verified runtime checkpoint. Reader milestones 
 their own exact-head and post-merge CI evidence rather than rewriting that historical checkpoint.
 
 Exact historical evidence: [`TEST_REPORT.md`](../TEST_REPORT.md) and the
-[machine-readable manifest](./status/implementation-manifest.json). Reader RC-5 is accepted only
-with its own exact-head 9/9 CI and post-merge 9/9 CI recorded on PR #368 / issue #367 completion evidence.
+[machine-readable manifest](./status/implementation-manifest.json). Reader RC-5 was accepted with its
+own exact-head/post-merge evidence on PR #368 / issue #367. RC-6 is not final implementation truth
+until PR #370 reaches final exact-head 9/9 CI, guarded merge, verified merge signature and exact
+post-merge push CI.
 
 ## Current verified capability boundary
 
@@ -48,9 +50,8 @@ normal reads or writes.
 
 ## Reader Core bounded implementation
 
-RC-0 is the normative architecture contract. Five bounded implementation milestones are represented
-by the current Reader implementation line; each milestone carries its own exact CI evidence rather
-than rewriting the retained historical runtime checkpoint:
+RC-0 is the normative architecture contract. RC-1 through RC-5 are merged bounded milestones; RC-6
+is the current separately authorized bounded long-context milestone:
 
 ```text
 RC-1
@@ -93,6 +94,19 @@ RC-5
 → primary + supporting replayable provenance on both sides
 → explicit non-empty rationale
 → count-only relation telemetry
+
+RC-6
+→ current registered RC-4 candidate set only
+→ one OPEN ReaderSession + one exact SourceVersion
+→ revalidate completed pass / recovered structure / substantive current coverage
+→ RC-2 structural order + stable candidate-ID tie-break
+→ bounded rolling working sets
+→ max candidates + max unique direct source locators
+→ candidate atomicity; oversized candidate fails closed
+→ optional RC-5 relation ID only when both sides are in-set
+→ caller-supplied SourceFidelity.SUMMARY only
+→ direct RC-4 leaf candidate IDs + replayable source provenance retained
+→ count/resource telemetry only
 ```
 
 Machine truth distinguishes these bounded layers from the larger Reader capability:
@@ -103,6 +117,7 @@ reader_core_rc2_structural_map         = true
 reader_core_rc3_multi_pass_mechanics   = true
 reader_core_rc4_proposition_extraction = true
 reader_core_rc5_relation_candidates    = true
+reader_core_rc6_long_context_strategy  = true
 dedicated_reader_core                  = false
 ```
 
@@ -135,20 +150,42 @@ RC-5 is deterministic explicit registration, **not** raw-text semantic contradic
 It does not infer semantic equivalence or cross-document identity, use similarity as proof, call an
 LLM/provider, invoke contradiction resolution or choose a winner.
 
-RC-1/RC-2/RC-3/RC-4/RC-5 retain no source body and add no durable Reader storage schema, public
+RC-6 runtime lives in `core/reader_long_context.py`. `ReaderLongContextStrategy` is bound to one
+RC-4 extractor and can optionally accept a matching RC-5 registry. Planning revalidates each direct
+leaf candidate against the current OPEN session, exact source, completed pass, recovered RC-2 node,
+current `PROCESSED`/`REVISITED` coverage and registered SegmentCard identity. It then sorts by RC-2
+structural order with candidate-ID tie-break and greedily packs working sets under caller-declared
+candidate-count/source-locator budgets. One candidate and all direct unique locators are atomic.
+
+Existing RC-5 relation IDs are snapshot context only. A relation is carried into a working set only
+when both endpoints are already in that set. RC-6 never infers a cross-set relation, semantic identity
+or corroboration.
+
+`ReaderSummaryCandidate` is caller-supplied only and always uses `SourceFidelity.SUMMARY`. Before
+registration RC-6 compares current direct leaf locators with the immutable working-set snapshot and
+then re-validates the direct RC-4 leaves. The summary stores the direct candidate IDs and replayable
+source provenance; another summary cannot be its only provenance path. RC-6 does not generate summary
+text automatically.
+
+RC-1/RC-2/RC-3/RC-4/RC-5/RC-6 retain no source body and add no durable Reader storage schema, public
 API/CLI/background worker, parser/chunker/OCR/PDF-layout engine, LLM/provider integration,
-embeddings/ANN/vector DB or automatic cross-document reasoning. They have no method/runtime wiring
+embeddings/ANN/vector DB or automatic RC-7 cross-document reasoning. They have no method/runtime wiring
 that mutates `truth_status`/ESM, writes strict Canon, bypasses Guardian/TruthGate, promotes confidence,
 attaches fact evidence, resolves contradictions or creates planner/belief-update authority.
 
 ```text
 coverage != comprehension proof
 pass completion != comprehension proof
+working-set coverage != comprehension proof
 structure/order/prominence != epistemic authority
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
 relation candidate != admitted evidence
 contradiction candidate != confirmed contradiction
+summary != source text
+summary != evidence
+summary != verified fact
+summary != Canon admission
 similarity != identity
 repetition != corroboration
 ```
@@ -165,15 +202,14 @@ Reader structure        = document metadata
 Reader pass ledger      = reading-process audit state
 Reader proposition      = pre-admission source-linked candidate
 Reader relation         = pre-admission relation candidate
+Reader working set      = bounded provenance-preserving context snapshot
+Reader SUMMARY          = caller-supplied synthesis candidate
 migration/import        != TruthGate admission
 successful equivalence  != backend activation
 Reader coverage         != comprehension proof
 Reader pass completion  != comprehension proof
-Reader structure        != epistemic authority
-EXTRACTED_PROPOSITION   != verified fact
-Reader candidate        != admitted evidence
-relation candidate      != admitted evidence
-contradiction candidate != confirmed contradiction
+working-set coverage    != comprehension proof
+summary                 != evidence / verified fact / Canon admission
 ```
 
 Guardian, TruthGate, restrictions, TrustSnapshot and CanonicalView remain unchanged.
@@ -182,9 +218,12 @@ Guardian, TruthGate, restrictions, TrustSnapshot and CanonicalView remain unchan
 
 English is the primary/source technical language. Russian root and Reader-dependent D1/D3/D4/D5
 surfaces are current against immutable English RC-5 source checkpoint
-`51c205fe048fd69d39fcd47b43e042a50de432bc`. Eight other Reader-dependent locale surfaces preserve
-rich translations as `REFRESH_NEEDED`; the tracked Reader/root debt is 64 documents. D2 and Quick
-Start remain current in all nine locales.
+`51c205fe048fd69d39fcd47b43e042a50de432bc`; that RC-5 marker remains historical checkpoint truth.
+The current English RC-6 source checkpoint is committed separately before Russian RC-6 refresh, so
+existing Russian surfaces must not be interpreted as containing RC-6 semantics until the subsequent
+translation commit pins the new exact English SHA. Eight other Reader-dependent locale surfaces
+preserve rich translations as `REFRESH_NEEDED`; the tracked Reader/root debt remains 64 documents.
+D2 and Quick Start remain current in all nine locales because RC-6 does not change those contracts.
 
 ## Still absent
 
@@ -195,8 +234,8 @@ Start remain current in all nine locales.
 - production IdP/multi-tenancy and legal/security/GDPR certification;
 - automatic Reader parser/semantic chunker/OCR/PDF-layout or multimodal understanding;
 - dedicated autonomous/full Semantic Reading runtime;
-- automatic NLP/LLM proposition/contradiction extraction or Reader provider integration;
-- embeddings, ANN/vector database, semantic equivalence or automatic cross-document proposition identity/reasoning engine;
+- automatic NLP/LLM proposition/relation/summary generation or Reader provider integration;
+- embeddings, ANN/vector database, semantic equivalence or RC-7 cross-document proposition identity/reasoning engine;
 - automatic evidence attachment to facts or admission of Reader candidates;
 - automatic contradiction resolution/winner selection;
 - planner/autonomous research/belief-update authority.
@@ -206,5 +245,6 @@ Start remain current in all nine locales.
 The NLnet project is **submitted / under review / not awarded**. Approximate **€50,000** is planning
 only, not an approved budget or payment commitment. **Budget change: none.** PR #337 and Reader
 RC-0/RC-1/RC-2/RC-3/RC-4/RC-5, when merged before an agreement, are existing baseline and cannot be
-counted again as future funded delta. Future funding must begin with separately reviewed work beyond
-the actually merged pre-agreement baseline.
+counted again as future funded delta. If RC-6 merges before an agreement, RC-6 also becomes existing
+pre-agreement baseline. Future funding must begin with separately reviewed work beyond the actually
+merged pre-agreement baseline.

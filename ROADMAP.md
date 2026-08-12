@@ -10,7 +10,7 @@
 
 ## ✅ Delivered Reader baseline through RC-5
 
-RC-0 defines the normative Reader contract. RC-1 through RC-5 are bounded pre-admission layers:
+RC-0 defines the normative Reader contract. RC-1 through RC-5 are merged bounded pre-admission layers:
 
 ```text
 reader_core_rc1_skeleton               = true
@@ -18,7 +18,6 @@ reader_core_rc2_structural_map         = true
 reader_core_rc3_multi_pass_mechanics   = true
 reader_core_rc4_proposition_extraction = true
 reader_core_rc5_relation_candidates    = true
-dedicated_reader_core                  = false
 ```
 
 ### ✅ RC-1 — Minimal Evidence-Linked Reading Skeleton
@@ -59,11 +58,48 @@ similarity              != identity
 repetition              != corroboration
 ```
 
-No contradiction resolution, winner selection, evidence admission, truth/Canon/ESM mutation, confidence promotion, LLM/provider, parser/OCR, embeddings/ANN, public Reader API/worker, Reader DB migration or PostgreSQL activation was added.
+## 🚧 RC-6 — Bounded Long-Context Strategy — authorized / implementation in progress
 
-## ⏭️ Later Reader phases — separate authorization required
+Tracking issue: #369. Draft implementation PR: #370.
 
-RC-5 completion does not automatically authorize the next phase.
+RC-6 is intentionally model-neutral and remains inside one OPEN ReaderSession / exact SourceVersion. The bounded design is:
+
+```text
+registered RC-4 proposition candidates
+→ RC-2 structural order + stable candidate-ID tie-break
+→ bounded rolling working sets
+   ├─ max candidates per set
+   ├─ max direct source locators per set
+   ├─ candidate atomicity
+   └─ optional RC-5 relation carry-through only when both sides are in-set
+→ optional caller-supplied SUMMARY artifact
+   └─ direct RC-4 leaf IDs + replayable source provenance retained
+```
+
+Primary non-equalities:
+
+```text
+working-set coverage != comprehension proof
+summary              != source text
+summary              != evidence
+summary              != verified fact
+summary              != Canon admission
+```
+
+RC-6 does not add automatic summarization, LLM/provider/model routing, token-context claims, parser/OCR, embeddings/ANN/vector DB, evidence admission, contradiction resolution, truth/Canon/ESM mutation, planner authority, Reader persistence/API/CLI/worker or PostgreSQL activation.
+
+Machine truth after RC-6 implementation is represented as:
+
+```text
+reader_core_rc6_long_context_strategy = true
+dedicated_reader_core                 = false
+```
+
+Final implementation truth is not established until exact-head CI, guarded merge, verified merge signature and exact post-merge push CI all succeed.
+
+## ⏭️ RC-7 and later — separate authorization required
+
+RC-6 does not automatically authorize RC-7.
 
 ```text
 RC-6 long-context strategy
@@ -71,7 +107,7 @@ RC-6 long-context strategy
 → only then reassess semantic/vector retrieval needs
 ```
 
-Cross-document relation identity must not be smuggled into RC-5. Any later stage must preserve the Reader authority firewall and existing admission path.
+Cross-document relation identity must not be smuggled into RC-6. RC-7 must preserve exact cross-source provenance and treat similarity as a candidate signal rather than identity proof.
 
 ## ✅ Storage baseline remains unchanged
 
@@ -90,13 +126,13 @@ SQLite ordinary active local-first
 - PostgreSQL server lifecycle, least-privilege roles and observability;
 - no reachability-based automatic backend selection.
 
-## ✅ Localization position
+## 🌍 Localization position during RC-6
 
-English is source. Russian Reader-dependent public/detail documentation is current against the immutable RC-5 English checkpoint recorded in the translation ledger. Eight other Reader-dependent locales remain `REFRESH_NEEDED` with rich translations preserved. D2 and Quick Start remain current in all nine locales.
+English is source. RC-6 first advances the English public/machine surfaces and records an immutable source checkpoint. Russian Reader-dependent root + D1/D3/D4/D5 surfaces are then refreshed to that exact checkpoint. Eight other Reader-dependent locales remain rich `REFRESH_NEEDED` translations; D2 and Quick Start remain current across all nine locales because RC-6 does not change those contracts.
 
 ## Grant boundary
 
-Anything merged before a grant agreement is existing baseline and cannot be counted again as future paid work. Reader RC-0/RC-1/RC-2/RC-3/RC-4/RC-5, when merged pre-agreement, are therefore baseline.
+Anything merged before a grant agreement is existing baseline and cannot be counted again as future paid work. Reader RC-0 through RC-5 are already existing baseline. If RC-6 merges pre-agreement, RC-6 also becomes existing baseline.
 
 ```text
 verified existing baseline
@@ -106,7 +142,7 @@ new measurable funded delta
 independently verifiable public deliverable
 ```
 
-No award/budget change is claimed. Approximate €50,000 remains planning only. Potential funded delta after RC-5 must be genuinely new work beyond the merged baseline.
+No award/budget change is claimed. Approximate €50,000 remains planning only. Any potential funded Reader delta after a pre-agreement RC-6 merge must begin after RC-6.
 
 ## Related documents
 
