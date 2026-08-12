@@ -112,6 +112,12 @@ candidate discovery      != candidate adjudication
 
 RC-8 required the first separately authorized implementation to be a deterministic lexical candidate-discovery baseline + benchmark runner. Semantic/hybrid/vector retrieval remained deferred.
 
+Historical RC-8 compatibility marker retained for the executable documentation contract:
+
+```text
+retrieval policy current    = deterministic lexical baseline first; RC-9 implements and measures that baseline; semantic/vector remains deferred
+```
+
 ## RC-9 — deterministic lexical candidate-discovery baseline
 
 Tracking issue: #375. Architecture/result contract: `docs/architecture/READER_RC9_LEXICAL_BASELINE.md`. Frozen machine-readable result: `eval/reader_rc9_lexical_baseline.json`.
