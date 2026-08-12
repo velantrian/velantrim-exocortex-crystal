@@ -33,7 +33,7 @@ separate decision path.**
 
 ## 📌 Current implementation status
 
-**Current audited `main`:** `430e643a2a3759da793f700617a327d419439dde` — signed/verified merge history, latest push CI `31603785427` **9/9 successful**.  
+**Grant-truth reconciliation audit base (2026-08-12):** signed `main@430e643a2a3759da793f700617a327d419439dde`, push CI `31603785427` **9/9 successful**. This is the immutable starting checkpoint for the post-RC-9 presentation reconciliation, not a claim that the SHA remains repository HEAD.  
 **Current implemented Reader retrieval baseline:** **RC-9 deterministic lexical PRE-ADMISSION candidate discovery**, merged by PR #376 at signed `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`.  
 **RC-9 exact-head / post-merge CI:** `31593097846` / `31594027040` — **9/9 successful**.  
 **RC-10 note:** PR #378 subsequently merged a reuse-compatibility / comparison **preregistration contract only**. It executes no semantic/hybrid comparator and adds no Reader retrieval runtime.  
