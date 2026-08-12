@@ -11,6 +11,8 @@
 
 Russian root + Reader-dependent D1/D3/D4/D5 surfaces are `CURRENT` to `main@ab3ad31c437647535030e371d58f456faf14017b`. Eight other Reader-dependent locale packs preserve rich translations as `REFRESH_NEEDED`. D2 and Quick Start remain current across all nine supported locales.
 
+For the immutable D1/D3/D4/D5 audit contract, eight other supported locales are `REFRESH_NEEDED`.
+
 **64 `REFRESH_NEEDED` localized documents** remain. D5 inventory: **273 total = 72 CURRENT + 127 ENGLISH_ONLY_BY_DESIGN + 64 REFRESH_NEEDED + 10 RETIRED**.
 
 ```text
