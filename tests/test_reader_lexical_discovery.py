@@ -67,6 +67,10 @@ def test_record_contract_and_rc4_snapshot_surface():
         bad[name] = " "
         with pytest.raises(ValueError, match=name):
             ReaderLexicalRecord(**bad)
+    non_string = dict(kwargs)
+    non_string["session_id"] = 7
+    with pytest.raises(ValueError, match="session_id must be a string"):
+        ReaderLexicalRecord(**non_string)  # type: ignore[arg-type]
     bad_sha = dict(kwargs); bad_sha["source_sha256"] = "not-a-digest"
     with pytest.raises(ValueError, match="64-character"):
         ReaderLexicalRecord(**bad_sha)
