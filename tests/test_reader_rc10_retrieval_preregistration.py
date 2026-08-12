@@ -13,6 +13,10 @@ def _contract() -> dict:
     return json.loads(PREREG.read_text(encoding="utf-8"))
 
 
+def _text(path: str) -> str:
+    return (ROOT / path).read_text(encoding="utf-8")
+
+
 def test_rc10_freezes_exact_rc9_control_before_any_comparison() -> None:
     contract = _contract()
     assert contract["status"] == "PRE_REGISTERED_NO_COMPARISON_EXECUTED"
@@ -92,9 +96,29 @@ def test_rc10_preserves_authority_firewall_and_does_not_claim_runtime() -> None:
         "candidate discovery      != candidate adjudication",
         "comparison pass          != runtime authorization",
         "dedicated_reader_core=false",
-        "No comparison executed",
+        "NO COMPARISON EXECUTED",
     ):
-        if marker == "No comparison executed":
-            assert "NO COMPARISON EXECUTED" in text
-        else:
-            assert marker in text
+        assert marker in text
+
+
+def test_rc10_current_truth_reconciles_rc9_completion_without_new_machine_flag() -> None:
+    for path in (
+        "docs/STATUS.md",
+        "docs/IMPLEMENTATION_STATUS.md",
+        "docs/ai/CURRENT_STATE.md",
+        "ROADMAP.md",
+        "docs/ai/KNOWN_RISKS.md",
+        "docs/ai/COMPONENT_MAP.md",
+    ):
+        text = _text(path)
+        assert "f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61" in text, path
+        assert "31594027040" in text, path
+        assert "#377" in text, path
+        assert "comparison pass" in text and "runtime authorization" in text, path
+
+    manifest = json.loads(_text("docs/status/implementation-manifest.json"))
+    boundaries = manifest["implemented_boundaries"]
+    assert boundaries["reader_core_rc7_cross_document_links"] is True
+    assert boundaries["dedicated_reader_core"] is False
+    assert "reader_core_rc9_lexical_candidate_discovery" not in boundaries
+    assert "reader_core_rc10_retrieval_reuse_preregistration" not in boundaries
