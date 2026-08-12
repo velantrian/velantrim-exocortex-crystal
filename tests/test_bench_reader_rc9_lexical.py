@@ -61,11 +61,13 @@ def test_run_metrics_human_summary_and_empty_guard():
     result = bench.run_benchmark(cases, k=2)
     metrics = result["metrics"]
     assert metrics["recall_at_k"] == 0.5
+    assert metrics["precision_at_k"] == 0.25
     assert metrics["mrr"] > 0
     assert metrics["paired_hard_negative_rate_at_k"] == 1.0
     assert result["cases"][0]["relevance_intent"] == "USEFUL_CANDIDATE"
     assert result["cases"][1]["paired_candidate_rank"] is None
     assert result["cases"][2]["relevance_intent"] == "HARD_NEGATIVE"
+    assert "fixed K denominator" in result["metric_scope"]
     summary = bench.human_summary(result)
     assert "Recall@2" in summary and "ranking is candidate discovery only" in summary
     with pytest.raises(ValueError, match="must not be empty"):
@@ -92,7 +94,7 @@ def test_frozen_rc8_corpus_reproduces_committed_baseline_snapshot():
     metrics = result["metrics"]
     assert result["case_count"] == 20
     assert metrics["recall_at_k"] == 0.9375
-    assert metrics["precision_at_k"] == 0.217391
+    assert metrics["precision_at_k"] == 0.1875
     assert metrics["mrr"] == 0.895833
     assert metrics["paired_hard_negative_rate_at_k"] == 1.0
     by_id = {item["case_id"]: item for item in result["cases"]}
