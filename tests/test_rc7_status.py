@@ -74,14 +74,27 @@ def test_rc7_machine_truth_and_authority_firewall_are_documented():
     ):
         assert rc7[key] is False
 
-    markers = (
+    machine_markers = (
         "reader_core_rc7_cross_document_links",
+        "dedicated_reader_core",
+    )
+    for path in (
+        "README.md",
+        "ROADMAP.md",
+        "docs/STATUS.md",
+        "docs/IMPLEMENTATION_STATUS.md",
+        "docs/ai/CURRENT_STATE.md",
+    ):
+        text = _text(path)
+        for marker in machine_markers:
+            assert marker in text, (path, marker)
+
+    authority_markers = (
         "cross-document link",
         "same-topic",
         "possible-same-claim",
         "similarity signal",
         "repetition across sources",
-        "dedicated_reader_core",
     )
     for path in (
         "README.md",
@@ -92,7 +105,7 @@ def test_rc7_machine_truth_and_authority_firewall_are_documented():
         "docs/architecture/READER_RC7_CROSS_DOCUMENT.md",
     ):
         text = _text(path)
-        for marker in markers:
+        for marker in authority_markers:
             assert marker in text, (path, marker)
 
 
