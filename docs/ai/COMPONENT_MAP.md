@@ -117,6 +117,8 @@ repetition across sources != corroboration
 
 ## 11. RC-8 post-RC-7 retrieval architecture decision
 
+Historical RC-8 contract label: **Post-RC-7 retrieval architecture decision (RC-8)**. That milestone is completed; RC-9 is the current bounded implementation baseline.
+
 **Start:**
 
 - `docs/architecture/READER_RC8_RETRIEVAL_DECISION.md`;
