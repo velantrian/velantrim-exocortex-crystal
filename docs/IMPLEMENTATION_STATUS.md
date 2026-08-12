@@ -3,6 +3,7 @@
 **Status date:** 2026-08-12  
 **Retained runtime checkpoint:** `bbd816c` / PR #337  
 **Signed Reader baseline:** `main@1f5129d3276af28608b16e369fd38d21fe38c0d5` / PR #370  
+**RC-6 exact post-merge CI:** `31566408978` — 9/9 successful  
 **Machine-readable status:** [status/implementation-manifest.json](./status/implementation-manifest.json)
 
 | Component | Status | Current boundary |
