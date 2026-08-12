@@ -52,7 +52,7 @@ RC-1 → SourceVersion / SourceLocator / ReaderSession / fidelity / coverage
 RC-2 → caller-supplied version-bound Structural Document Map
 RC-3 → explicit deterministic multi-pass ledger and substantive outcomes
 RC-4 → source-linked EXTRACTED_PROPOSITION candidates
-RC-5 → same-session/same-version explicit relation candidates
+RC-5 → same-session/same-version explicit relation candidates (`core/reader_relations.py`)
 RC-6 → bounded long-context working sets + caller-supplied SUMMARY
 RC-7 → explicit cross-document candidate links with exact two-sided provenance
 RC-8 → discovery/identity/retrieval architecture decision
