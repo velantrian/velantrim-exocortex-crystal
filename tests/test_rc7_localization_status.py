@@ -44,6 +44,7 @@ def test_rc7_localization_manifest_is_bounded_and_honest():
     assert manifest["refresh_needed_locales"] == ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"]
     assert set(manifest["russian_current_documents"]) == set(RUSSIAN_DOCS)
     assert manifest["refresh_needed_document_count"] == 64
+    # Immutable RC-7 manifest records the inventory at that historical checkpoint.
     assert manifest["d5_inventory"] == {"total": 273, "current": 72, "english_only_by_design": 127, "refresh_needed": 64, "retired": 10}
     assert manifest["reader_core_rc6_long_context_strategy_claim"] is True
     assert manifest["reader_core_rc7_cross_document_links_claim"] is True
@@ -114,10 +115,13 @@ def test_rc7_russian_refresh_preserves_legacy_markers_and_rich_root():
 
 def test_translation_ledger_records_rc7_without_erasing_history():
     ledger = _text("docs/TRANSLATION_STATUS.md")
+    normalized = " ".join(ledger.split())
     assert f"Reader RC-7 immutable English source checkpoint:** `main@{SOURCE}`" in ledger
     assert f"Reader RC-6 immutable English source checkpoint:** `main@{RC6_SOURCE}`" in ledger
     assert "Reader RC-5 immutable English source checkpoint" in ledger
     assert "64 `REFRESH_NEEDED` localized documents" in ledger
-    assert "273 total = 72 CURRENT + 127 ENGLISH_ONLY_BY_DESIGN + 64 REFRESH_NEEDED + 10 RETIRED" in ledger
-    assert "D2 reviewer/safety translations remain current across all nine supported locales" in ledger
-    assert "RC-7 does not start semantic/vector retrieval" in ledger
+    # Current ledger may grow as new English-only reference material is added. It must report
+    # the executable current inventory without rewriting the immutable RC-7 manifest above.
+    assert "279 total = 72 CURRENT + 133 ENGLISH_ONLY_BY_DESIGN + 64 REFRESH_NEEDED + 10 RETIRED" in ledger
+    assert "D2 reviewer/safety translations remain current across all nine supported locales" in normalized
+    assert "does not claim later RC-8/RC-9 meaning" in normalized

@@ -2,21 +2,44 @@
 
 > 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
 
-### Verifiable, local-first memory, evidence and decision infrastructure for trustworthy AI systems
+### Verifiable, local-first memory, evidence and Reader infrastructure for trustworthy AI systems
 
 `v0.3.0` · 🎯 **100% line-coverage gate** · 🧬 **Ring Zero mutation gate** · ✅ **9 permanent CI jobs** · 🐍 **pure-standard-library default runtime** · ⚖️ **AGPL-3.0**
 
 > Crystal is not a chatbot and not an autonomous truth oracle. It keeps source identity,
-> evidence, epistemic state, review decisions and Reader artifacts separate so generated or
-> extracted material cannot silently acquire authority it has not earned.
+> retrieval candidates, evidence, epistemic state and Canon authority separate so material
+> cannot silently gain authority from relevance, repetition or model confidence.
 
-## 📌 Current authoritative Reader line
+## 💠 Why Crystal exists
 
-**Signed merged Reader baseline:** `main@1f5129d3276af28608b16e369fd38d21fe38c0d5` — RC-6 merged by PR #370; exact post-merge CI `31566408978` was 9/9 successful.  
-**RC-7 tracking:** issue #371 / draft PR #372. Runtime/test head `b75811e09323adbe2c74184ae0470dfb703fcf4c` passed smoke exact-head CI `31568205231` 9/9; final RC-7 implementation truth still requires the final exact-head CI, guarded merge, verified merge signature and exact post-merge push CI.  
-**Dedicated/full autonomous Reader: not implemented.**
+AI systems can retrieve plausible context without proving that the context is true, identical
+to another claim, corroborating, or safe to admit as evidence. Crystal provides local-first,
+source-aware infrastructure where provenance and authority boundaries remain inspectable.
 
-Machine truth on the RC-7 implementation line:
+```text
+source-linked material
+        ↓
+bounded Reader artifacts
+        ↓
+candidate discovery / review
+        ↓
+explicit evidence + admission boundary
+        ↓
+Guardian → TruthGate → strict read projection
+```
+
+The core design rule is simple: **discovery proposes what deserves inspection; authority is a
+separate decision path.**
+
+## 📌 Current implementation status
+
+**Current audited `main`:** `430e643a2a3759da793f700617a327d419439dde` — signed/verified merge history, latest push CI `31603785427` **9/9 successful**.  
+**Current implemented Reader retrieval baseline:** **RC-9 deterministic lexical PRE-ADMISSION candidate discovery**, merged by PR #376 at signed `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`.  
+**RC-9 exact-head / post-merge CI:** `31593097846` / `31594027040` — **9/9 successful**.  
+**RC-10 note:** PR #378 subsequently merged a reuse-compatibility / comparison **preregistration contract only**. It executes no semantic/hybrid comparator and adds no Reader retrieval runtime.  
+**Dedicated/full autonomous Reader:** **not implemented** (`dedicated_reader_core=false`).
+
+Machine implementation truth remains:
 
 ```text
 reader_core_rc1_skeleton               = true
@@ -29,196 +52,202 @@ reader_core_rc7_cross_document_links   = true
 dedicated_reader_core                  = false
 ```
 
-The last line matters: bounded Reader primitives are real, but Crystal does not claim an autonomous semantic reader.
+RC-8 is an architecture/research decision; RC-9 is the measured lexical implementation
+baseline. Neither creates a complete autonomous Reader machine flag.
 
-## 🧱 Non-equalities that define authority
+## 📖 Reader Core — RC-1 through RC-9
 
-```text
-physical L3             != strict Canon
-retrieval score         != evidence
-Reader structure        != epistemic authority
-pass completion         != comprehension proof
-working-set coverage != comprehension proof
-EXTRACTED_PROPOSITION   != verified fact
-Reader candidate        != admitted evidence
-relation candidate      != admitted evidence
-contradiction candidate != confirmed contradiction
-summary                 != source text
-summary                 != evidence
-summary                 != verified fact
-summary                 != Canon admission
-cross-document link     != Canon relation
-cross-document support  != admitted evidence
-same-topic              != same proposition
-possible-same-claim     != claim identity
-similarity signal       != identity proof
-repetition across sources != corroboration
-```
+| Milestone | Delivered boundary |
+|---|---|
+| **RC-1** | Exact `SourceVersion` / replayable `SourceLocator`, Reader sessions, fidelity, coverage and stale/privacy semantics |
+| **RC-2** | Caller-supplied, source-version-bound Structural Document Map; structure is metadata, not truth |
+| **RC-3** | Deterministic explicit multi-pass ledger: orientation, broad/focused read, cross-check and targeted reread |
+| **RC-4** | Source-linked caller-supplied `EXTRACTED_PROPOSITION` candidates with exact provenance |
+| **RC-5** | Same-session/same-version relation candidates: possible contradiction, tension, exception, qualification |
+| **RC-6** | Deterministic bounded long-context working sets + caller-supplied `SUMMARY` with direct RC-4 leaf provenance |
+| **RC-7** | Explicit cross-document candidate links with exact two-sided provenance |
+| **RC-8** | Retrieval architecture decision + frozen adversarial evaluation corpus; lexical baseline required before semantic/vector consideration |
+| **RC-9** | Offline stdlib-only deterministic in-memory BM25 candidate discovery + reproducible benchmark runner |
 
-## 📖 Reader Core — bounded implementation
+Detailed contracts: [Reader Core architecture](./docs/architecture/READER_CORE_ARCHITECTURE.md),
+[RC-7](./docs/architecture/READER_RC7_CROSS_DOCUMENT.md),
+[RC-8](./docs/architecture/READER_RC8_RETRIEVAL_DECISION.md), and
+[RC-9](./docs/architecture/READER_RC9_LEXICAL_BASELINE.md).
 
-RC-0 remains the normative architecture contract: [READER_CORE_ARCHITECTURE.md](./docs/architecture/READER_CORE_ARCHITECTURE.md).
+## 🔎 What RC-9 actually provides
 
-### RC-1 → RC-4
+RC-9 asks one bounded question:
 
-- **RC-1** — exact `SourceVersion`, replayable `SourceLocator`, Reader sessions, fidelity, coverage, bookmarks/open loops and privacy/stale semantics.
-- **RC-2** — caller-supplied, source-version-bound Structural Document Map; structural order is metadata, not truth.
-- **RC-3** — explicit deterministic `ORIENTATION`, `BROAD_READ`, `FOCUSED_READ`, `CROSS_CHECK`, `TARGETED_REREAD` mechanics with auditable outcomes.
-- **RC-4** — source-linked caller-supplied `EXTRACTED_PROPOSITION` candidates anchored to completed substantive RC-3 context; source presentation is preserved without verification authority.
+> Which already extracted Reader proposition candidates are **lexically worth inspecting together**?
 
-### RC-5 — exception / qualification / tension / contradiction candidates
-
-Runtime module: `core/reader_relations.py`.
-
-RC-5 registers explicit same-session / same-exact-source-version PRE-ADMISSION relation candidates over valid RC-4 candidates:
-
-- `POSSIBLE_CONTRADICTION`;
-- `TENSION`;
-- `EXCEPTION`;
-- `QUALIFICATION`.
-
-It preserves exact candidate IDs, pass/node IDs, replayable two-sided provenance and rationale. Symmetric relations canonicalize order; directional relations retain direction. It does not admit evidence or resolve a contradiction.
+It snapshots the public RC-4 proposition surface, applies conservative Unicode NFKC / case /
+whitespace normalization and stable tokenization, then ranks candidates with deterministic
+in-memory BM25.
 
 ```text
-relation candidate      != admitted evidence
-contradiction candidate != confirmed contradiction
-```
-
-### RC-6 — bounded long-context strategy
-
-Runtime module: `core/reader_long_context.py`.
-
-RC-6 is merged and tested. It revalidates current RC-4 leaves within one OPEN ReaderSession / exact SourceVersion, orders by RC-2 structure with candidate-ID tie-break, and packs deterministic working sets under explicit candidate and source-locator budgets. Candidate provenance is atomic; an oversized candidate fails closed.
-
-Caller-supplied `SourceFidelity.SUMMARY` artifacts preserve direct RC-4 leaf provenance. RC-5 relations are context only when both endpoints are already in the same working set. RC-6 adds no automatic summarization, model-token/context-window claim or epistemic authority.
-
-### RC-7 — bounded cross-document candidate links
-
-Runtime module: `core/reader_cross_document.py`. Detailed contract: [RC-7 cross-document note](./docs/architecture/READER_RC7_CROSS_DOCUMENT.md).
-
-RC-7 accepts explicit caller-supplied link candidates only between current registered RC-4 candidates from **different document identities**. It revalidates both Reader sessions, exact source versions, candidate registration, completed RC-3 pass state, recovered RC-2 structure and current substantive coverage before registering the link.
-
-Candidate vocabulary follows RC-0:
-
-```text
-SUPPORTS
-CONTRADICTS
-ELABORATES
-REFERENCES
-DEFINES
-EXAMPLE_OF
-PREREQUISITE_FOR
-SAME_TOPIC
-POSSIBLE_SAME_CLAIM
-```
-
-`CONTRADICTS`, `SAME_TOPIC` and `POSSIBLE_SAME_CLAIM` are symmetric candidates and canonicalize side order deterministically. Other kinds remain directional. Each link stores exact two-sided session/candidate/pass/node/source-version/locator provenance plus an explicit rationale. Optional inspection basis is descriptive metadata only; there is no numeric similarity score or identity field.
-
-RC-7 performs **no automatic semantic matching, entity resolution, claim deduplication, corroboration, contradiction resolution or evidence admission**.
-
-## 🏛️ Authority flow
-
-```text
-SourceVersion + SourceLocator
-        │
-        ▼
-RC-1 ReaderSession
-        │
-        ▼
-RC-2 Structural Map
-        │
-        ▼
-RC-3 explicit passes
-        │
-        ▼
 RC-4 proposition candidates
-   ┌────┼──────────────┐
-   ▼    ▼              ▼
- RC-5  RC-6           RC-7
-within- long-context  cross-document
-source  working sets  link candidates
-   │       │              │
-   └───────┴──────┬───────┘
-                  ▼
-      normal explicit evidence/review path
-                  ▼
-        Guardian → TruthGate → strict read projection
+        ↓
+Reader-safe lexical snapshot
+        ↓
+deterministic BM25 ranking
+        ↓
+top-K inspection candidates
+        ↓
+manual / downstream review
 ```
 
-Reader layers stay upstream of admission. None can call itself verified fact/evidence/Canon.
+RC-9 is **not semantic understanding**. It does not emit identity, truth, corroboration,
+contradiction, evidence-sufficiency or Canon verdicts; it auto-registers no RC-7 link.
 
-## 🗄️ Storage boundary
+## 🛡️ Authority firewall
 
 ```text
-SQLite
-└── ordinary active local-first runtime
-
-PostgreSQL 16 + pgvector
-└── optional inactive migration/equivalence target
-    └── active=false
+retrieval match          != evidence
+similarity               != identity
+repetition               != corroboration
+cross-document candidate != Canon relation
+ranking                  != epistemic authority
+candidate discovery      != candidate adjudication
+comparison pass          != runtime authorization
 ```
 
-Successful PostgreSQL import/equivalence is operation evidence, **not activation**. Automatic backend switching remains absent.
+These are architecture boundaries, not wording preferences. Reader candidate-discovery
+results remain PRE-ADMISSION inspection artifacts.
 
-## 🔎 Public query boundary
+## 🧪 RC-9 benchmark snapshot
 
-HTTP `/ask` and `/receipt`, CLI `ask` / `receipt`, and MCP search remain read-only query surfaces. They do not create facts, alter ESM state, write L3 or bypass Guardian/TruthGate.
+Frozen artifact: [`eval/reader_rc9_lexical_baseline.json`](./eval/reader_rc9_lexical_baseline.json).  
+Frozen input: 20 synthetic/adversarial paired cases from RC-8, `K=5`.
+
+| Metric | Frozen result |
+|---|---:|
+| Recall@5 | **0.937500** |
+| Precision@5 | **0.187500** |
+| MRR | **0.895833** |
+| Paired hard-negative rate@5 | **1.000000** |
+| Useful paired hits | **15 / 16** |
+| Paired hard-negative hits | **4 / 4** |
+
+Measured classification:
+
+```text
+LEXICAL_BASELINE_EXPOSES_MEASURED_GAP
+```
+
+### What the result proves — and what it does not
+
+The lexical baseline retrieves most known useful pairs in the frozen corpus, but misses the
+cross-lingual paraphrase `rc8-004`. All four paired `SAME_TOPIC` / `MERELY_SIMILAR` hard
+negatives also surface within top-5. High lexical overlap can therefore surface dangerous
+false-positive candidates, while cross-lingual or low-overlap meaning can be missed.
+
+This benchmark is deliberately small, synthetic and paired. Precision@5 uses the benchmark's
+fixed-K paired definition; it is **not corpus-wide semantic precision**. Recall@5 is **not
+accuracy**. MRR is **not correctness**. None of the metrics is adjudication authority.
+
+The result supports measurement-driven future research; it does **not** by itself authorize
+embeddings, semantic/hybrid retrieval, ANN/vector DB, entity resolution or automatic claim
+identity.
+
+## 🗄️ Local-first and retrieval domains
+
+Ordinary active storage remains local-first SQLite. PostgreSQL 16 + pgvector exists only as
+an **inactive import/equivalence target** with `active=false`; automatic backend switching is
+absent.
+
+Crystal also contains older/general **admitted-memory** retrieval infrastructure such as
+`core/embedding.py`, `core/query_pipeline.py`, `core/legacy_retrieval.py` and `core/rrf.py`.
+That is a different authority/data lifecycle from Reader PRE-ADMISSION RC-9 discovery.
+Existing vector-capable admitted-memory code is therefore not a claim that Reader semantic or
+vector retrieval is implemented.
+
+## ✅ Reviewer validation
+
+Python 3.11+ is required. The default runtime stays dependency-free; development tooling is
+installed through the existing `dev` extra.
+
+```bash
+git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
+cd velantrim-exocortex-crystal
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -e '.[dev]'
+python -m pytest -q
+python scripts/eval_gate.py --out-dir eval-artifacts
+```
+
+Reproduce the frozen RC-9 Reader retrieval result:
+
+```bash
+python scripts/bench_reader_rc9_lexical.py \
+  --corpus eval/reader_rc8_retrieval_adversarial.jsonl \
+  --k 5 \
+  --json-out /tmp/reader-rc9-lexical.json
+```
+
+The committed comparison target is
+[`eval/reader_rc9_lexical_baseline.json`](./eval/reader_rc9_lexical_baseline.json). For the
+maintained reviewer demo paths, see [DEMO.md](./DEMO.md) and
+[Reviewer Notes](./docs/REVIEWER_NOTES.md).
+
+## 🚫 Current limitations / non-claims
+
+Crystal does **not** claim:
+
+- semantic understanding or automatic semantic equivalence / claim identity;
+- automatic truth verification, corroboration or evidence admission from retrieval;
+- automatic contradiction resolution or winner selection;
+- semantic/hybrid/vector Reader runtime, ANN/FAISS/HNSW, Reader vector DB or Reader FTS index;
+- a completed dedicated/full autonomous Reader;
+- automatic Reader parser/OCR/PDF-layout/multimodal understanding;
+- active PostgreSQL runtime selection, pgvector Reader activation or automatic cutover;
+- universal objective-truth detection or zero hallucinations;
+- legal/GDPR/security certification or “fully secure” operation;
+- production-scale retrieval quality from the 20-case RC-9 benchmark.
+
+Known residual work remains explicit in [Known Risks](./docs/ai/KNOWN_RISKS.md), including
+#155 (Epistemic Router RFC), #165 (exact normalized-id migration/dedupe) and #214
+(PII/supply-chain hygiene). Those scopes are not implemented by RC-9.
+
+## 🎓 Grant / funding status
+
+NLnet remains **submitted / under review / not awarded**. Approximate **€50,000** is planning
+context only, not an approved budget or payment commitment.
+
+Anything merged before a funding agreement is **existing pre-agreement baseline** and cannot
+be counted again as future paid delivery. RC-1 through RC-9 are therefore existing baseline
+work. The merged RC-10 preregistration contract is also pre-agreement repository history; it
+is not funded delivery and does not create a new Reader runtime capability.
+
+See [NLnet scope](./docs/GRANT_NLNET_SCOPE.md) and the
+[baseline → funded delta matrix](./docs/grants/baseline-funded-delta-matrix.md).
 
 ## 🌍 Localization truth
 
-English is the primary source language. Russian Reader-dependent root + D1/D3/D4/D5 surfaces are currently `CURRENT` against the immutable RC-6 English checkpoint `ed96a88369f841bdb2ffd79ca020acef174685fc`. This RC-7 English source change must be committed first; a later Russian parity commit pins the exact RC-7 English source SHA. Eight other Reader-dependent locale packs preserve rich translations as `REFRESH_NEEDED` — 64 tracked documents. D2 and Quick Start remain current across all nine supported locales.
+English is the primary source language. The Reader-dependent localized documentation remains
+tracked separately in [Translation Status](./docs/TRANSLATION_STATUS.md). This English
+post-RC-9 reconciliation does **not** perform a broad translation refresh; localized surfaces
+must not be treated as newer than their recorded source checkpoint.
 
-See [Localization policy](./docs/LOCALIZATION_POLICY.md) and [Translation status](./docs/TRANSLATION_STATUS.md).
-
-## 🎓 Grant boundary
-
-NLnet remains **submitted / under review / not awarded**. Approximate **€50,000** is planning only, not an approved budget/payment commitment; **budget change: none**. RC-0 through RC-6 are existing pre-agreement baseline. If RC-7 merges before an agreement, RC-7 also becomes existing baseline and cannot be counted again as future funded delta.
-
-## 🚫 Still not claimed
-
-Crystal does not claim:
-
-- universal objective-truth detection or zero hallucinations;
-- legal/GDPR/security certification;
-- artificial consciousness or AGI;
-- active PostgreSQL runtime selection, automatic cutover/rollback or automatic backend switching;
-- automatic Reader parser/OCR/multimodal understanding;
-- automatic NLP/LLM/provider proposition, relation, summary or cross-document link generation;
-- embeddings/ANN/vector-database Reader retrieval or accepted semantic/vector thresholds;
-- semantic equivalence / claim identity from RC-7 candidate links;
-- automatic evidence admission, contradiction winner selection or planner/belief-update authority;
-- a completed dedicated/full autonomous Reader Core.
-
-## 📚 Evidence and navigation
+## 📚 Authoritative documentation
 
 - [Current status](./docs/STATUS.md)
 - [Implementation matrix](./docs/IMPLEMENTATION_STATUS.md)
 - [Machine-readable implementation manifest](./docs/status/implementation-manifest.json)
 - [Reader Core architecture contract](./docs/architecture/READER_CORE_ARCHITECTURE.md)
-- [RC-7 cross-document contract note](./docs/architecture/READER_RC7_CROSS_DOCUMENT.md)
-- [Architecture overview](./docs/ARCHITECTURE_OVERVIEW.md)
-- [Storage and authority boundaries](./docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md)
-- [Current AI context](./docs/ai/CURRENT_STATE.md)
+- [RC-8 retrieval decision](./docs/architecture/READER_RC8_RETRIEVAL_DECISION.md)
+- [RC-9 lexical baseline and benchmark interpretation](./docs/architecture/READER_RC9_LEXICAL_BASELINE.md)
 - [Known risks](./docs/ai/KNOWN_RISKS.md)
 - [NLnet scope](./docs/GRANT_NLNET_SCOPE.md)
 - [Roadmap](./ROADMAP.md)
 - [Translation status](./docs/TRANSLATION_STATUS.md)
 
-## ✅ Retained historical runtime evidence
+## ⏭️ Future work is evidence-gated
 
-The older PostgreSQL integration checkpoint remains historical evidence rather than the Reader milestone head:
+The next Reader implementation capability is **not implied by RC-9 metrics**. Any future
+semantic/hybrid comparator or runtime proposal requires its own bounded authorization,
+pre-registered evaluation, dependency/privacy/resource review and explicit authority review.
 
-```text
-Verified retained runtime checkpoint: bbd816c09dd39a02e6de6c1014438490572f40f6 (PR #337)
-Retained Python 3.11: 2078 passed / 13 skipped / 0 failed
-Retained Python 3.12: 2078 passed / 13 skipped / 0 failed
-Retained statements: 9756
-Retained coverage: 100.00%
-PostgreSQL integration CI: 31256316532
-Reader RC-6 signed merge: 1f5129d3276af28608b16e369fd38d21fe38c0d5
-Reader RC-6 post-merge CI: 31566408978 (9/9)
-RC-7 runtime smoke head: b75811e09323adbe2c74184ae0470dfb703fcf4c
-RC-7 runtime smoke CI: 31568205231 (9/9)
-```
-
-Final RC-7 implementation authority will be the signed merged `main` plus exact final-head and post-merge CI evidence, not this pre-merge README statement.
+Public presentation work must never manufacture a missing capability simply to make Crystal
+look more complete.

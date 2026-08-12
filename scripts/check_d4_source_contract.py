@@ -1,4 +1,4 @@
-"""Validate the English D4 project, grant, governance and glossary source contract through RC-5."""
+"""Validate English D4 project/grant/governance truth against the post-RC-9 baseline."""
 
 from __future__ import annotations
 
@@ -7,6 +7,8 @@ from pathlib import Path
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
+# Retained immutable D4 translation-source checkpoint. Current English grant truth may
+# advance independently; translated freshness is governed by TRANSLATION_STATUS.md.
 SOURCE = "51c205fe048fd69d39fcd47b43e042a50de432bc"
 SOURCE_FILES = (
     "docs/PROJECT_GRANT_AND_GOVERNANCE.md",
@@ -19,18 +21,11 @@ SOURCE_FILES = (
 SUPPORTING_FILES = (
     "docs/grants/baseline-funded-delta-matrix.md",
     "docs/grants/funding-use-plan.md",
+    "docs/grants/reviewer-qa.md",
 )
 MARKERS = (
     "<!-- d4-source-contract: CURRENT -->",
     "<!-- d4-source-scope: project-grant-governance-glossary -->",
-)
-STALE = (
-    "the l3 canonical graph is the single source of truth",
-    "default backends are dependency-free (`mock` l3",
-    "grant status: awarded",
-    "crystal is gdpr compliant",
-    "automatic backend switching is enabled",
-    "rc-1/rc-2 are funded delivery",
 )
 LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 
@@ -64,7 +59,14 @@ def require(relative: str, text: str, markers: tuple[str, ...], errors: list[str
     searchable = normalized(text)
     for marker in markers:
         if normalized(marker) not in searchable:
-            errors.append(f"{relative}: missing current marker {marker!r}")
+            errors.append(f"{relative}: missing current semantic marker {marker!r}")
+
+
+def forbid(relative: str, text: str, phrases: tuple[str, ...], errors: list[str]) -> None:
+    searchable = normalized(text)
+    for phrase in phrases:
+        if normalized(phrase) in searchable:
+            errors.append(f"{relative}: stale or unsupported current-state phrase {phrase!r}")
 
 
 def main() -> int:
@@ -77,9 +79,11 @@ def main() -> int:
             "budget change: none",
             "€50,000",
             "active=false",
-            "RC-5",
-            "dedicated/full autonomous",
-            "contradiction candidate != confirmed contradiction",
+            "RC-9",
+            "dedicated_reader_core=false",
+            "retrieval match",
+            "candidate discovery",
+            "candidate adjudication",
         ),
         "docs/GLOSSARY.md": (
             "physical L3",
@@ -94,38 +98,34 @@ def main() -> int:
             "Reader Core RC-5",
             "EXTRACTED_PROPOSITION",
             "source owner",
-            "proposition presentation category",
             "POSSIBLE_CONTRADICTION",
             "EXCEPTION",
             "QUALIFICATION",
             "TENSION",
-            "relation rationale",
             "dedicated/full Reader Core",
-            "native-speaker editorial certification",
         ),
         "docs/GRANT_NLNET_SCOPE.md": (
             "submitted / under review / not awarded",
             "budget change",
-            "RC-5",
-            "dedicated/full autonomous Reader",
-            "cannot be budgeted again",
-            "submitted proposal",
-            "awarded grant",
-            "Potential funded delta after RC-5",
+            "RC-9",
+            "dedicated_reader_core",
+            "existing pre-agreement baseline",
+            "cannot later be rebilled",
+            "Recall@5",
+            "Precision@5",
+            "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP",
+            "candidate discovery",
+            "candidate adjudication",
         ),
         "ROADMAP.md": (
             "submitted / under review / not awarded",
-            "budget change",
             "reader_core_rc1_skeleton",
-            "reader_core_rc2_structural_map",
-            "reader_core_rc3_multi_pass_mechanics",
-            "reader_core_rc4_proposition_extraction",
-            "reader_core_rc5_relation_candidates",
+            "reader_core_rc7_cross_document_links",
             "dedicated_reader_core",
-            "RC-5 — Exceptions / Contradiction Candidate Detection",
-            "contradiction candidate != confirmed contradiction",
-            "RC-6",
-            "RC-7",
+            "RC-9",
+            "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP",
+            "candidate discovery",
+            "candidate adjudication",
         ),
         "GOVERNANCE.md": (
             "physical l3 != strict canon",
@@ -137,7 +137,6 @@ def main() -> int:
         "CONTRIBUTING.md": (
             "physical l3 != strict canon",
             "sqlite | ordinary active local-first profile",
-            "mock | explicit ephemeral development and ci backend",
             "postgresql/pgvector | optional inactive import/equivalence target with `active=false`",
             "submitted / under review / not awarded",
             "anything merged before a funding agreement is existing baseline",
@@ -154,10 +153,6 @@ def main() -> int:
             if marker not in text:
                 errors.append(f"{relative}: missing marker {marker!r}")
         require(relative, text, required[relative], errors)
-        searchable = normalized(text)
-        for stale in STALE:
-            if normalized(stale) in searchable:
-                errors.append(f"{relative}: stale or unsupported claim {stale!r}")
         check_links(relative, text, errors)
 
     supporting: dict[str, str] = {}
@@ -178,13 +173,15 @@ def main() -> int:
             "cannot be counted again",
             "active=false",
             "Reader RC-1",
-            "Reader RC-2",
-            "Reader RC-3",
-            "Reader RC-4",
-            "Reader RC-5",
-            "reader_core_rc5_relation_candidates",
-            "contradiction candidate != confirmed contradiction",
-            "after RC-5",
+            "Reader RC-7",
+            "Reader RC-8",
+            "Reader RC-9",
+            "dedicated_reader_core",
+            "Recall@5",
+            "Precision@5",
+            "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP",
+            "candidate discovery",
+            "candidate adjudication",
         ),
         errors,
     )
@@ -192,12 +189,78 @@ def main() -> int:
         "funding use plan",
         supporting.get("docs/grants/funding-use-plan.md", ""),
         (
-            "submitted to nlnet for review",
-            "does not imply that funding has been awarded",
+            "submitted / under review / not awarded",
             "€50,000",
-            "does not represent an approved budget",
-            "the grant does not pay to recreate",
-            "features that are already implemented",
+            "not an approved budget",
+            "RC-9",
+            "cannot be paid for again",
+            "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP",
+        ),
+        errors,
+    )
+    require(
+        "reviewer Q&A",
+        supporting.get("docs/grants/reviewer-qa.md", ""),
+        (
+            "RC-9",
+            "Recall@5",
+            "Precision@5",
+            "not presented as “94% accuracy”",
+            "submitted / under review / not awarded",
+            "dedicated_reader_core=false",
+            "candidate discovery",
+            "candidate adjudication",
+        ),
+        errors,
+    )
+
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    require(
+        "root README",
+        readme,
+        (
+            "Current implemented Reader retrieval baseline",
+            "RC-9 deterministic lexical PRE-ADMISSION candidate discovery",
+            "Recall@5",
+            "Precision@5",
+            "MRR",
+            "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP",
+            "Reviewer validation",
+            "submitted / under review / not awarded",
+            "dedicated_reader_core=false",
+            "candidate discovery",
+            "candidate adjudication",
+        ),
+        errors,
+    )
+    check_links("README.md", readme, errors)
+
+    stale_current_phrases = (
+        "Potential funded delta after RC-5",
+        "RC-6 is currently being implemented",
+        "RC-7 tracking: issue #371; implementation draft: PR #372",
+        "final RC-7 merge/signature/post-merge CI evidence is pending",
+        "RC-7: planned cross-document",
+    )
+    for relative, text in (
+        ("README.md", readme),
+        ("docs/GRANT_NLNET_SCOPE.md", (ROOT / "docs/GRANT_NLNET_SCOPE.md").read_text(encoding="utf-8")),
+        ("docs/grants/baseline-funded-delta-matrix.md", supporting.get("docs/grants/baseline-funded-delta-matrix.md", "")),
+        ("docs/PROJECT_GRANT_AND_GOVERNANCE.md", (ROOT / "docs/PROJECT_GRANT_AND_GOVERNANCE.md").read_text(encoding="utf-8")),
+    ):
+        forbid(relative, text, stale_current_phrases, errors)
+
+    # Negative/non-claim wording is explicitly allowed. Only affirmative overclaim forms are
+    # forbidden here, so "does not claim automatic truth verification" remains valid public truth.
+    forbid(
+        "root README",
+        readme,
+        (
+            "94% accuracy",
+            "semantic understanding is implemented",
+            "automatic truth verification is implemented",
+            "Crystal implements automatic truth verification",
+            "grant status: awarded",
         ),
         errors,
     )
@@ -223,14 +286,10 @@ def main() -> int:
         (
             SOURCE,
             "reader_core_rc1_skeleton",
-            "reader_core_rc2_structural_map",
-            "reader_core_rc3_multi_pass_mechanics",
-            "reader_core_rc4_proposition_extraction",
-            "reader_core_rc5_relation_candidates",
+            "reader_core_rc7_cross_document_links",
             "dedicated_reader_core",
-            "EXTRACTED_PROPOSITION != verified fact",
-            "Reader candidate != admitted evidence",
-            "contradiction candidate != confirmed contradiction",
+            "RC-9",
+            "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP",
             "NLnet remains submitted / under review / not awarded",
         ),
         errors,
@@ -242,7 +301,6 @@ def main() -> int:
         ledger,
         (
             "## D4 — project, grant, governance and glossary",
-            "D4 Reader-dependent detail translations are `CURRENT` in Russian",
             "eight other supported locales are `REFRESH_NEEDED`",
             "## D5 — extended reference documents",
         ),
@@ -262,7 +320,11 @@ def main() -> int:
         for error in errors:
             print(f"  - {error}")
         return 1
-    print(f"English D4 project/grant/governance/glossary source contract consistent through RC-5: source={SOURCE}")
+
+    print(
+        "English D4 project/grant/governance truth consistent with post-RC-9 public baseline; "
+        f"retained translation source={SOURCE}"
+    )
     return 0
 
 

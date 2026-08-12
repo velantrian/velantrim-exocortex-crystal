@@ -7,11 +7,21 @@
 
 ## 1. Project position
 
-Velantrim Crystal is open-source, local-first memory, evidence and decision-boundary infrastructure for trustworthy AI systems. It is not Titan, AGI, consciousness, a universal truth engine or a complete autonomous personal ExoCortex.
+Velantrim Crystal is open-source, local-first memory, evidence and decision-boundary
+infrastructure for trustworthy AI systems. It is not Titan, AGI, consciousness, a universal
+truth engine or a complete autonomous personal ExoCortex.
 
-Reader Core RC-1 through RC-5 are merged bounded layers. RC-6 is the separately authorized bounded long-context milestone in issue #369 / PR #370. It adds deterministic same-session/same-version rolling working sets over valid RC-4 candidates plus caller-supplied provenance-preserving `SUMMARY` candidates. The dedicated/full autonomous Semantic Reading runtime remains not implemented.
+Reader Core RC-1 through RC-7 are merged bounded Reader/domain layers. RC-8 is a completed
+retrieval architecture/research decision. RC-9 is the completed deterministic lexical
+PRE-ADMISSION candidate-discovery implementation baseline with a reproducible benchmark.
+`dedicated_reader_core=false` remains the larger capability truth.
 
-## 2. Current retained baseline
+PR #378 later merged the RC-10 existing-retrieval reuse / future-comparison preregistration
+contract only. It executes no semantic/hybrid comparator and adds no Reader retrieval runtime.
+
+## 2. Current evidence checkpoints
+
+Retained storage/runtime compatibility evidence remains:
 
 ```text
 main@bbd816c09dd39a02e6de6c1014438490572f40f6
@@ -20,9 +30,19 @@ CI 31256316536
 PostgreSQL integration 31256316532
 ```
 
-Retained evidence: Python 3.11/3.12 `2078 passed / 13 skipped / 0 failed`, 9756 measured statements / 100.00% line coverage, 7/7 Ring Zero mutants, 9/9 permanent CI and 1/1 real PostgreSQL/pgvector integration. Later Reader milestones carry separate exact-head/post-merge CI evidence.
+Current Reader retrieval implementation evidence:
 
-## 3. Storage, Reader and authority boundaries
+```text
+RC-9 signed merge      f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61
+RC-9 PR                #376
+RC-9 exact-head CI     31593097846 (9/9)
+RC-9 post-merge CI     31594027040 (9/9)
+```
+
+The repository has later signed documentation/evaluation history. Exact current `main` and CI
+must always be read from live GitHub rather than inferred from this overview.
+
+## 3. Reader, retrieval and authority boundaries
 
 ```text
 physical L3             != strict Canon
@@ -39,15 +59,51 @@ summary                 != source text
 summary                 != evidence
 summary                 != verified fact
 summary                 != Canon admission
+cross-document candidate != Canon relation
+similarity               != identity
+ranking                  != epistemic authority
+candidate discovery      != candidate adjudication
+comparison pass          != runtime authorization
 ```
 
-PostgreSQL/pgvector remains an optional inactive migration/equivalence target with `active=false`. SQLite remains ordinary active local-first.
+RC-9 is an offline, stdlib-only, in-memory deterministic BM25 baseline over Reader proposition
+snapshots. It returns inspection candidates and retrieval/provenance metadata only. It does
+not write evidence, mutate ESM/Canon, auto-register RC-7 relations, decide identity or resolve
+contradictions.
 
-RC-5 cannot call `core.evidence.attach_evidence()`, write fact evidence, mutate `truth_status`/ESM, write strict Canon, bypass Guardian/TruthGate, promote confidence, assert evidence sufficiency, resolve contradiction or choose a winner. It adds no LLM/provider, parser/OCR, embeddings/ANN, cross-document semantic identity, planner, API/CLI/worker, durable Reader DB or PostgreSQL activation.
+Existing admitted-memory vector/query retrieval (`core/embedding.py`,
+`core/query_pipeline.py`, `core/legacy_retrieval.py`, `core/rrf.py` and related composition)
+is a different authority/data lifecycle. Its existence does not make Reader semantic/vector
+retrieval an implemented capability.
 
-RC-6 preserves that firewall. It imports only Reader layers, accepts one current RC-4 extractor / OPEN ReaderSession / exact SourceVersion, uses explicit candidate-count and source-locator budgets, keeps candidate provenance atomic, carries RC-5 relation IDs only when both sides are inside one working set, and accepts only caller-supplied `SourceFidelity.SUMMARY` text with direct RC-4 leaf provenance. It performs no automatic summarization, token-context claim, RC-7 cross-document reading, evidence admission, truth/confidence promotion, contradiction resolution or storage/backend mutation.
+## 4. Storage boundary
 
-## 4. Grant status
+SQLite remains ordinary active local-first storage. PostgreSQL/pgvector remains an optional
+inactive migration/equivalence target with `active=false`.
+
+Successful PostgreSQL import/equivalence is operational evidence, not activation or epistemic
+authority. Automatic backend switching remains absent.
+
+## 5. RC-9 measured baseline
+
+Frozen K=5 result over the 20-case synthetic/adversarial RC-8 paired corpus:
+
+| Metric | Result |
+|---|---:|
+| Recall@5 | 0.937500 |
+| Precision@5 | 0.187500 |
+| MRR | 0.895833 |
+| Paired hard-negative rate@5 | 1.000000 |
+| Useful paired hits | 15 / 16 |
+| Paired hard-negative hits | 4 / 4 |
+
+The cross-lingual paraphrase `rc8-004` is missed and all four paired hard negatives surface
+within top-5. Classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+
+These are retrieval metrics, not semantic/adjudication accuracy. They do not authorize
+embeddings, ANN/vector DB, semantic/hybrid runtime, claim identity or evidence admission.
+
+## 6. Grant status
 
 ```text
 programme: NLnet NGI0 Commons Fund
@@ -57,39 +113,51 @@ award: not awarded
 budget change: none
 ```
 
-The public funding plan discusses an **approximate €50,000 request**. It is planning/transparency, **not an approved budget or payment commitment**.
+The public funding plan discusses an **approximate €50,000 request**. It remains
+planning/transparency, **not an approved budget or payment commitment**.
 
-## 5. Baseline and funded-delta rule
+## 7. Baseline and funded-delta rule
 
-**Anything merged before a grant agreement is existing baseline** and cannot later be billed again as future delivery. This includes storage portability work, D1-D5 documentation, Reader RC-0/RC-1/RC-2/RC-3/RC-4/RC-5 and RC-6 if RC-6 merges pre-agreement.
+**Anything merged before a grant agreement is existing baseline** and cannot later be billed
+again as future delivery. RC-1 through RC-9 are therefore existing pre-agreement Reader
+baseline. PR #378's RC-10 preregistration is also existing pre-agreement architecture/evaluation
+history, not funded delivery and not a new Reader runtime capability.
 
 ```text
 existing verified baseline + new measurable funded delta
 = independently auditable public deliverable
 ```
 
-## 6. Grant-safe future work
+A possible future funded delta must be redefined against live `main` if/when an agreement is
+signed. It may not relabel already merged work as unpaid/future work or assume that RC-9's
+measured gap mandates semantic/vector technology.
 
-Only new evidence beyond the merged baseline can be funded delta, for example:
+## 8. Grant-safe future work
+
+Examples of genuinely new work that may be considered only if still absent and justified at
+agreement time include:
 
 - reproducible release/SBOM/audit evidence;
-- exact-vs-ANN evaluation;
-- explicit cutover/rollback/fencing proof;
-- PostgreSQL operational lifecycle;
-- reviewer-facing evidence inspection UX;
-- RC-6 only while it remains unmerged pre-agreement work;
-- after a pre-agreement RC-6 merge, separately authorized Reader work **after RC-6**;
-- later RC-7 cross-document reading with explicit identity/authority boundaries.
+- production-strength source-span/replay improvements;
+- larger evaluation fixtures and regression gates;
+- operational storage lifecycle/cutover/rollback proof;
+- reviewer-facing evidence tooling;
+- accessibility/localization work;
+- a separately authorized retrieval experiment under pre-registered gates if evidence still
+  warrants it.
 
-The grant does not fund recreation of already merged RC-5 work, and if RC-6 merges before an agreement it cannot later be counted again as funded delta.
+No future-funded work may redefine Reader candidates as evidence/Canon, similarity as identity,
+repetition as corroboration, or a benchmark/comparison pass as runtime authorization.
 
-## 7. Governance
+## 9. Governance
 
-Significant architectural or invariant changes begin in issues/RFCs. Merges require executable evidence and current docs. Maintainer authority cannot silently weaken Ring Zero, Guardian, TruthGate, read-only query, Reader authority firewall, storage continuity or privacy contracts.
+Significant architectural or invariant changes begin in issues/RFCs. Merges require executable
+evidence and current docs. Maintainer authority cannot silently weaken Ring Zero, Guardian,
+TruthGate, read-only query, Reader authority firewall, storage continuity or privacy contracts.
 
-RC-6 does not authorize RC-7. Cross-document reading remains a separate milestone that requires a new bounded authorization after RC-6 completion evidence.
+Grant-facing documentation may improve presentation, but it may not manufacture capabilities.
 
-## 8. Contribution rules
+## 10. Contribution rules
 
 Contributions must preserve:
 
@@ -101,20 +169,27 @@ Contributions must preserve:
 - `contradiction candidate != confirmed contradiction`;
 - `working-set coverage != comprehension proof`;
 - `summary != evidence` and `summary != verified fact`;
+- `retrieval match != evidence`;
+- `similarity != identity`;
+- `ranking != epistemic authority`;
 - read-only public query surfaces;
 - stdlib-only ordinary runtime with optional dependencies explicit;
 - exact grant/localization/status language.
 
-## 9. Current non-claims
+## 11. Current non-claims
 
-No grant award, approved budget, legal/GDPR/security certification, AGI/consciousness, active PostgreSQL runtime, automatic switching, accepted ANN profile, production multi-tenancy, dedicated/full autonomous Reader, automatic summarization, RC-7 cross-document reading or automatic semantic contradiction resolution is claimed.
+No grant award, approved budget, legal/GDPR/security certification, AGI/consciousness, active
+PostgreSQL runtime, automatic switching, dedicated/full autonomous Reader, semantic/hybrid/vector
+Reader runtime, automatic claim identity/corroboration, automatic contradiction resolution or
+automatic evidence admission is claimed.
 
-## 10. Authoritative sources
+## 12. Authoritative sources
 
 - [Grant scope](./GRANT_NLNET_SCOPE.md)
 - [Baseline-funded delta matrix](./grants/baseline-funded-delta-matrix.md)
 - [Funding use plan](./grants/funding-use-plan.md)
 - [Reader architecture contract](./architecture/READER_CORE_ARCHITECTURE.md)
+- [RC-9 lexical baseline](./architecture/READER_RC9_LEXICAL_BASELINE.md)
 - [Implementation status](./IMPLEMENTATION_STATUS.md)
 - [Roadmap](../ROADMAP.md)
 - [Governance](../GOVERNANCE.md)

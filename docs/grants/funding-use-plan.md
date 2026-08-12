@@ -7,186 +7,167 @@
 | Proposal framing | **Verifiable AI memory infrastructure for European use cases (GDPR-oriented)** |
 | Programme | NLnet **NGI0 Commons Fund** |
 | Requested amount | approx. **€50,000** |
-| Status | Submitted to NLnet for review |
+| Status | **Submitted / under review / not awarded** |
 
-> **This is a planning and transparency document.** It does not represent an
-> approved budget unless and until a grant agreement or Memorandum of Understanding
-> is signed with NLnet. The proposal has been submitted and is under review; this
-> does not imply that funding has been awarded. Private correspondence details
-> (internal application reference, review-timeline specifics) are intentionally
-> kept out of this public repository.
+> **Planning and transparency document.** This is not an approved budget, award or payment
+> commitment. Private correspondence details remain outside the public repository.
 
-For a first NGI0 Commons Fund proposal, **€50,000 is the upper boundary normally
-allowed by the programme**. Larger follow-up funding may become possible only after
-successful completion of earlier funded work and public delivery of the results;
-the programme's lifetime maximum for a single third party is €500,000. NLnet pays
-per **completed, independently verifiable milestone**, so every euro below is tied
-to a concrete deliverable that can be checked against the public repository.
+## Living-baseline rule
 
-## Milestone interpretation rule
-
-Crystal already has a substantial baseline. The grant does not pay to recreate
-features that are already implemented. Every milestone must therefore be read as:
+Crystal has continued to advance while the proposal is under review. Grant accounting must
+therefore be reconciled against live signed `main` at the time of any agreement.
 
 ```text
-BASELINE TODAY
-    +
-MEASURABLE FUNDED DELTA
-    =
+VERIFIED BASELINE AT AGREEMENT TIME
+        +
+NEW MEASURABLE FUNDED DELTA
+        =
 INDEPENDENTLY VERIFIABLE DELIVERABLE
 ```
 
-The canonical reviewer-facing definitions for all nine milestones are maintained in
-[Grant Baseline → Funded Delta → Acceptance Matrix](./baseline-funded-delta-matrix.md).
-If the repository baseline advances before a grant agreement is signed, that matrix
-must be updated so that funded work remains a real, testable delta.
+Anything merged before an agreement is existing pre-agreement work and **cannot be paid for
+again as future delivery**.
 
----
+As of 2026-08-12, the Reader baseline includes RC-1 through RC-9. RC-9 is the deterministic
+offline lexical PRE-ADMISSION candidate-discovery baseline and frozen benchmark. PR #378 also
+merged an RC-10 reuse/comparison preregistration contract, but no semantic/hybrid comparison or
+new Reader retrieval runtime was executed.
 
-## What the funding converts
+The canonical current split is maintained in
+[Grant Baseline → Funded Delta → Acceptance Matrix](./baseline-funded-delta-matrix.md). If
+repository truth advances again before an agreement, that matrix must be re-audited rather than
+reusing stale application-era wording.
 
-Velantrim already exists as a tested research-grade core: a fully passing test
-suite at 100% coverage (current audited baseline in `TEST_REPORT.md`), a standard-library runtime, a local L3 canonical graph, a type-aware
-TruthGate, replayable provenance receipts, GDPR-relevant controls and a read-only
-MCP server. See [REVIEWER_NOTES.md](../REVIEWER_NOTES.md) and
-[GRANT_NLNET_SCOPE.md](../GRANT_NLNET_SCOPE.md).
+## Current proof point: RC-9 is existing baseline, not funded delta
 
-The grant converts this **research-grade core into a reproducible, deployable
-open-source MVP**: something an external developer, institution or reviewer can
-run, query over an API, audit, and extend — not just a test suite.
+Frozen `K=5` result in `eval/reader_rc9_lexical_baseline.json`:
 
-The work plan below maps directly onto the five work packages already defined in
-[GRANT_NLNET_SCOPE.md](../GRANT_NLNET_SCOPE.md) (WP1–WP5), plus the deployment and
-accessibility work needed to make the core usable in practice. Exact baseline,
-funded-delta and acceptance evidence are defined separately so existing code is not
-mistaken for future paid work.
+| Metric | Result |
+|---|---:|
+| Recall@5 | 0.937500 |
+| Precision@5 | 0.187500 |
+| MRR | 0.895833 |
+| Paired hard-negative rate@5 | 1.000000 |
+| Useful paired hits | 15 / 16 |
+| Paired hard-negative hits | 4 / 4 |
 
----
+The cross-lingual pair `rc8-004` is missed and all four paired hard negatives surface in top-5.
+The result is classified `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
-## Milestone budget (deliverable-based)
+These are retrieval metrics on a small frozen synthetic/adversarial paired corpus. They are not
+accuracy, semantic equivalence, truth-verification or evidence-admission metrics, and they do
+not predetermine semantic/vector technology as the remedy.
 
-Each milestone is a self-contained deliverable with a verifiable output in the
-repository. The order reflects priority: if the awarded amount is smaller, the
-later milestones are deferred (see *Partial funding* below).
+## What funding should convert
 
-| # | Milestone / deliverable | Maps to | Amount |
-|---|---|---|---:|
-| M1 | **Local-first deployable prototype.** Stabilise the local pipeline, packaged install, reproducible setup, import/export, documented run path. | WP5 | €9,000 |
-| M2 | **FastAPI service layer (harden existing optional `.[api]` baseline).** Extend the existing optional API baseline — including token-guarded review endpoints and `/health` — into documented, tested ingest/retrieval/trace-evidence/health endpoints; local deployment instructions; tests. | WP-new (builds on `.[api]`) | €8,000 |
-| M3 | **Production-strength evidence spans + Receipt v2.** Span extraction during PDF/Markdown ingest, original-snippet retrieval, multi-source corroboration, receipt replay against stored spans. | WP1 | €8,000 |
-| M4 | **Evaluation harness as a CI quality gate.** Curated fixtures, grounding score, contradiction P/R, regression gates so quality cannot silently drop. | WP3 | €5,000 |
-| M5 | **Knowledge-base expansion.** Larger source-referenced, graph-ready fact corpus across scientific, practical, educational and civic domains; licence/provenance metadata. | WP2/WP4 | €7,000 |
-| M6 | **Knowledge adapters.** PDF/YAML/RDF-Wikidata import paths with licence and source-metadata handling, default runtime kept dependency-free. | WP4 | €5,000 |
-| M7 | **Multilingual access.** Localisation structure and interface/documentation support for major European languages and a path toward UN languages. | new | €4,000 |
-| M8 | **Model-independence evaluation.** Comparative evaluation across several LLMs to demonstrate that correctness comes from structured memory, not from any single proprietary model. | WP3 | €3,000 |
-| M9 | **Documentation, governance and onboarding.** Architecture diagram, demo walkthrough, contributor pathway, examples for reviewers and external users. | WP5 | €1,000 |
-| | **Total** | | **€50,000** |
+Crystal already has a tested local-first memory/evidence core and a bounded Reader foundation.
+A future grant should fund **new work that makes the public system more reproducible,
+deployable, reviewable and independently measurable**, not recreation of merged code.
 
-A limited part of the development and curation milestones (M1, M5, M9 in
-particular) may be delivered with **part-time contractor or assistant support**
-(documentation, data cleaning, localisation, issue triage, knowledge curation) to
-reduce the risk of a single-maintainer bottleneck. NLnet permits subcontracting;
-the deliverables remain the unit of payment.
+The exact deliverable wording below is therefore planning intent. Before any funded milestone
+starts, its acceptance contract must subtract capabilities already present on signed `main`.
 
-### Security hardening interpretation
+## Planning budget — deliverable envelopes
 
-The phrase “harden the service” is not treated as an untestable umbrella promise.
-M2 and the institutional part of WP2 use
-[EU Service Security Readiness](../security/eu-service-security-readiness.md) as a
-non-certification checklist for authorization, token lifecycle, secure deployment,
-continuity, operational auditability and maintenance evidence.
+| # | Milestone / deliverable envelope | Planning amount |
+|---|---|---:|
+| M1 | **Local-first deployable prototype hardening.** Reproducible setup, packaged run path, import/export and operator documentation beyond the then-current baseline. | €9,000 |
+| M2 | **Service-layer hardening.** Extend only the delta beyond any existing optional API into documented, capability-gated and tested reviewer/deployment surfaces. | €8,000 |
+| M3 | **Production-strength evidence spans + receipt replay.** New exact span/replay capabilities not already in baseline, with independent fixtures and failure tests. | €8,000 |
+| M4 | **Evaluation as a stronger CI quality gate.** Larger curated fixtures, frozen metrics and regression evidence beyond existing evaluation/RC-9 benchmark surfaces. | €5,000 |
+| M5 | **Knowledge-base expansion.** New source-referenced, licence/provenance-aware corpus work beyond existing shipped material. | €7,000 |
+| M6 | **Knowledge adapters.** New independently tested import adapters and source/licence handling that are absent at agreement time. | €5,000 |
+| M7 | **Multilingual access.** Translation/accessibility work against a frozen current English source checkpoint. | €4,000 |
+| M8 | **Model-independence / retrieval evaluation.** A separately authorized comparison study only where live evidence still justifies it; exact backend/model identity and privacy/resource gates required. | €3,000 |
+| M9 | **Documentation, governance and onboarding.** New reviewer/contributor/release evidence beyond the then-current public documentation baseline. | €1,000 |
+| | **Planning total** | **€50,000** |
 
----
+These amounts remain planning context only. They do not prove award, approval or entitlement,
+and they do not override a future signed milestone agreement.
 
-## Why model/API access is part of the budget (M8)
+### Existing-vs-new acceptance rule
 
-Velantrim is **not** intended to depend on any single AI model. Milestone M8
-funds comparative evaluation across multiple LLMs precisely to **prove
-model-independence**: that correct answers come from structured, source-linked
-memory rather than from one proprietary model's confidence.
+A milestone may retain the same public goal while its funded acceptance criteria shrink as the
+pre-agreement baseline advances. Example:
 
-External LLMs are treated as replaceable language interfaces. The truth layer
-remains structured memory, graph-ready data, source references, metadata and
-trace. This milestone is an evaluation deliverable (a comparison report), not a
-recurring subscription cost.
+```text
+if setup/documentation already exists before agreement:
+    existing setup/documentation = baseline
+    only demonstrably new hardening = funded delta
+```
 
----
+The same rule applies to Reader work. RC-1 through RC-9 cannot be rebilled. RC-10's merged
+preregistration cannot be rebilled as if it had not happened.
 
-## Partial funding plan
+## Retrieval / model-independence boundary
 
-If the awarded amount is lower than €50,000, the scope is reduced proportionally.
-Priority order:
+Crystal is not intended to depend on one proprietary model. Existing admitted-memory retrieval
+and optional model adapters are separate from PRE-ADMISSION Reader discovery.
 
-1. M1 — local-first deployable prototype;
-2. M3 — evidence spans and Receipt v2;
-3. M2 — hardened FastAPI interface (extends the `.[api]` baseline);
-4. M4 — evaluation as a CI gate;
-5. M9 — documentation and onboarding;
-6. M5 — a small but high-quality knowledge base;
-7. M7 — initial multilingual support;
-8. M6, M8 — adapters and broad model evaluation deferred to a later phase.
+Any future M8 comparison must preserve:
 
-Mobile applications, cloud synchronisation and specialised model training are
-**out of scope for this grant phase** and belong to potential future funding.
-New cognitive or neuromorphic research is also outside this budget. The current
-intrinsic-noise consolidation note is explicitly isolated in
-[`docs/research/INTRINSIC_NOISE_CONSOLIDATION_BOUNDARY.md`](../research/INTRINSIC_NOISE_CONSOLIDATION_BOUNDARY.md)
-and does not alter milestones, runtime or grant claims.
+```text
+retrieval match          != evidence
+similarity               != identity
+repetition               != corroboration
+ranking                  != epistemic authority
+candidate discovery      != candidate adjudication
+comparison pass          != runtime authorization
+```
 
----
+A comparison deliverable is an evaluation artifact, not permission to wire semantic/vector
+machinery into Reader runtime. Exact model/backend identity, privacy, offline/network behavior,
+resource cost and failure analysis must be recorded.
+
+## Partial funding
+
+If any eventual award is lower than the planning amount, scope should be reduced by removing or
+shrinking later deliverables rather than relabeling already implemented baseline work as paid
+work. Priority remains local-first reproducibility, evidence/replay quality, service hardening,
+evaluation and reviewer documentation before broader adapters/model comparison.
+
+Mobile applications, cloud synchronization, specialized model training and unrelated cognitive
+research remain outside this plan unless separately agreed.
 
 ## Responsible data and privacy position
 
-Velantrim is local-first and user-controlled by design. For any institutional or
-workplace adaptation, the following are non-negotiable:
+Velantrim is local-first and user-controlled by design. That is an engineering characteristic,
+not automatic legal compliance or a security certification.
 
-- users control their own memory data;
-- sensitive data is not silently uploaded to third-party systems;
-- institutional deployments require access control and explicit governance;
-- organisational or personal data is handled with consent, a legal basis and
-  transparency;
-- audit logs support accountability without exposing unnecessary personal data;
-- memory export and deletion are first-class features.
+Grant-facing deployments must preserve:
 
-This project supports **knowledge and workflow assistance with consent and
-GDPR-oriented governance (GDPR-relevant controls, not a legal certification)** —
-not employee surveillance. Any deployment in
-schools, research, public administration or healthcare-adjacent settings must be
-designed around privacy, consent, auditability and the right to erasure.
+- operator/user control over memory data;
+- no silent upload of sensitive data to third parties;
+- explicit access-control/governance requirements for institutional use;
+- consent/legal-basis/transparency responsibilities where applicable;
+- auditability without unnecessary personal-data exposure;
+- export, restriction and deletion controls;
+- documented dependency/supply-chain risks.
 
----
+Known PII/supply-chain hygiene remains a separate backlog under #214.
 
 ## Expected public benefit
 
-Velantrim contributes to the European digital commons by exploring a more
-transparent approach to AI memory. The benefit is infrastructure, not another
-chatbot:
+The intended contribution is open infrastructure rather than another chatbot:
 
-- auditable AI memory;
-- local-first knowledge systems;
-- source-grounded retrieval;
-- structured fact storage with provenance;
-- multilingual access;
-- offline knowledge resilience;
-- safer human–AI collaboration;
-- reduced dependence on opaque, cloud-only AI memory.
-
-The broader aim is to help people, organisations and institutions work with AI
-systems that remember through structured, inspectable, source-linked memory
-rather than opaque conversation history alone.
-
----
+- auditable local-first AI memory;
+- source/provenance-aware Reader artifacts;
+- explicit authority boundaries;
+- reproducible evaluation evidence;
+- inspectable retrieval limitations;
+- reduced dependence on opaque cloud-only memory.
 
 ## Honest-language commitment
 
-This plan deliberately avoids overclaiming. Velantrim **reduces unsupported
-factual promotion**, **requires traceable source metadata**, and **supports
-auditable memory operations**. It does **not** claim to eliminate hallucination
-entirely, nor to be a finished commercial platform. The deliverable of this grant
-phase is a credible, testable, documented open-source MVP — a foundation for
-future European funding, institutional pilots and public collaboration.
+Crystal aims to reduce unsupported factual promotion and preserve traceable source metadata. It
+does **not** claim zero hallucinations, universal truth detection, semantic understanding,
+automatic claim identity, automatic corroboration, autonomous evidence admission, full security,
+GDPR certification or a finished commercial platform.
+
+The strongest grant narrative is the measured one: implement a bounded baseline, benchmark it,
+publish both strengths and failures, then decide future work from evidence.
 
 ## GenAI disclosure
 
-This document was drafted with AI assistance and reviewed by the maintainer. All
-repository changes are traceable through commits, tests and source files.
+This document has been maintained with AI assistance and maintainer review. Repository changes,
+tests, benchmark artifacts and merge history remain publicly auditable.
