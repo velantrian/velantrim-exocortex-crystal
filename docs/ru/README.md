@@ -22,6 +22,8 @@
 - D3: [Architecture Overview](./ARCHITECTURE_OVERVIEW.md), [Storage/Authority](./STORAGE_AND_AUTHORITY_BOUNDARIES.md)
 - D4: [Grant Overview](./GRANT_OVERVIEW.md), [Glossary](./GLOSSARY.md)
 - D5: [Extended Reference Guide](./EXTENDED_REFERENCE_GUIDE.md)
+- [Localization policy](../LOCALIZATION_POLICY.md)
+- [Translation status](../TRANSLATION_STATUS.md)
 
 ```text
 reader_core_rc1_skeleton = true

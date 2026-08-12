@@ -44,7 +44,7 @@ working-set coverage    != comprehension proof
 EXTRACTED_PROPOSITION   != verified fact
 Reader candidate        != admitted evidence
 relation candidate      != admitted evidence
-contradiction candidate != confirmed contradiction
+contradiction candidate  != confirmed contradiction
 summary                 != source text
 summary                 != evidence
 summary                 != verified fact
@@ -97,7 +97,7 @@ Reader candidate      != admitted evidence
 
 ```text
 relation candidate != admitted evidence
-contradiction candidate != confirmed contradiction
+contradiction candidate  != confirmed contradiction
 ```
 
 ### RC-6 — bounded long-context strategy
@@ -236,7 +236,7 @@ Public query surfaces read-only: не создают facts, не выполня�
 RC-5 `POSSIBLE_CONTRADICTION` и RC-7 `CONTRADICTS` — candidate surfaces. Ни одна не подтверждает contradiction и не выбирает truth side. Existing audited workflow требует explicit authorized disposition: `COEXIST`, `CONTEXTUALIZE` или `SUPERSEDE`.
 
 ```text
-contradiction candidate != confirmed contradiction
+contradiction candidate  != confirmed contradiction
 cross-document contradiction candidate != confirmed contradiction
 Reader link != resolved contradiction
 ```
