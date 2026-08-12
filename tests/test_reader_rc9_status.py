@@ -42,7 +42,13 @@ def test_rc9_public_truth_documents_bounded_lexical_baseline():
 
 def test_rc9_preserves_rc8_history_and_does_not_authorize_next_mechanism():
     rc8 = _text("docs/architecture/READER_RC8_RETRIEVAL_DECISION.md")
-    assert "deterministic lexical Reader candidate discovery + benchmark runner" in rc8
+    for marker in (
+        "deterministic lexical",
+        "candidate-discovery baseline",
+        "benchmark runner",
+        "not started by RC-8",
+    ):
+        assert marker in rc8, marker
     rc9 = _text("docs/architecture/READER_RC9_LEXICAL_BASELINE.md")
     for marker in (
         "does **not** mean embeddings",
