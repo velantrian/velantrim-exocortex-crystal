@@ -38,7 +38,7 @@ SQLite backup → independent verification → inactive restore → bounded logi
 → PostgreSQL preflight → inactive transactional import → independent exact equivalence → active=false
 ```
 
-Successful import/equivalence не создаёт active PostgreSQL runtime adapter, automatic backend switching, cutover или admission authority. Public query surfaces read-only.
+Successful import/equivalence не создаёт active PostgreSQL runtime adapter, automatic backend switching, cutover или admission authority. Public query surfaces read-only; `core.query_pipeline.query()` остаётся read path и не получает Reader write/admission authority.
 
 RC-1 source/session, RC-2 structure, RC-3 pass ledger, RC-4 proposition, RC-5 relation, RC-6 working set/SUMMARY и RC-7 cross-document link — разные pre-admission artifacts.
 

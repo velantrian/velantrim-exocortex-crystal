@@ -96,7 +96,7 @@ D2 remains complete for all nine supported locales. D2 reviewer/safety translati
 
 **D3 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
 
-Russian D3 Reader-dependent detail translations are `CURRENT`; eight other supported locales are `REFRESH_NEEDED`. Russian carries RC-7 cross-document provenance/non-identity semantics plus RC-6 bounded working-set/SUMMARY semantics.
+D3 Reader-dependent detail translations are `CURRENT` in Russian at the RC-7 refresh layer. Eight other supported locales are `REFRESH_NEEDED`. Russian carries RC-7 cross-document provenance/non-identity semantics plus RC-6 bounded working-set/SUMMARY semantics.
 
 ## D4 — project, grant, governance and glossary
 
