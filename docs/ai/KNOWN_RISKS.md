@@ -58,6 +58,8 @@ Remaining Reader limits include:
 
 ## P1 — Similarity can create false identity pressure
 
+Historical RC-8 contract label: **Post-RC-7 discovery / identity risk**. RC-9 measures that risk; it does not close or convert it into authority.
+
 The most important retrieval risk remains epistemic category collapse:
 
 ```text
