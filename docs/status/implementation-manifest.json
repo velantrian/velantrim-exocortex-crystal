@@ -12,31 +12,9 @@
     "ci_run": 31256316536,
     "description": "Optional inactive PostgreSQL/pgvector import and independent exact-state equivalence for verified logical bundles"
   },
-  "tests": {
-    "python_versions": ["3.11", "3.12"],
-    "passed": 2078,
-    "skipped": 13,
-    "failed": 0,
-    "measured_statements": 9756,
-    "coverage_percent": 100.0
-  },
-  "ci": {
-    "job_count": 9,
-    "jobs": ["code-quality", "test (3.11)", "test (3.12)", "jsonl-integrity", "eval-gate", "security", "docker-build", "Ring Zero mutation gate", "docs-status"],
-    "all_successful": true
-  },
-  "postgresql_integration": {
-    "ci_run": 31256316532,
-    "job_count": 1,
-    "all_successful": true,
-    "postgresql_major": 16,
-    "postgresql_version_observed": "16.14",
-    "pgvector_version": "0.8.2",
-    "psycopg_version": "3.3.4",
-    "target_active": false,
-    "ann_indexes_present": false,
-    "test_service_only": true
-  },
+  "tests": {"python_versions": ["3.11", "3.12"], "passed": 2078, "skipped": 13, "failed": 0, "measured_statements": 9756, "coverage_percent": 100.0},
+  "ci": {"job_count": 9, "jobs": ["code-quality", "test (3.11)", "test (3.12)", "jsonl-integrity", "eval-gate", "security", "docker-build", "Ring Zero mutation gate", "docs-status"], "all_successful": true},
+  "postgresql_integration": {"ci_run": 31256316532, "job_count": 1, "all_successful": true, "postgresql_major": 16, "postgresql_version_observed": "16.14", "pgvector_version": "0.8.2", "psycopg_version": "3.3.4", "target_active": false, "ann_indexes_present": false, "test_service_only": true},
   "mutation_gate": {"declared_mutants": 7, "killed_mutants": 7, "scope": "targeted Ring Zero semantic mutations"},
   "implemented_boundaries": {
     "truth_policy_runtime_bypass_present": false,
@@ -66,6 +44,7 @@
     "reader_core_rc4_proposition_extraction": true,
     "reader_core_rc5_relation_candidates": true,
     "reader_core_rc6_long_context_strategy": true,
+    "reader_core_rc7_cross_document_links": true,
     "dedicated_reader_core": false
   },
   "reader_core_rc1": {
@@ -233,6 +212,46 @@
     "truth_or_canon_authority": false,
     "dedicated_full_reader_core": false
   },
+  "reader_core_rc7": {
+    "tracking_issue": 371,
+    "pull_request": 372,
+    "architecture_contract": "docs/architecture/READER_CORE_ARCHITECTURE.md",
+    "runtime_module": "core/reader_cross_document.py",
+    "test_module": "tests/test_reader_cross_document.py",
+    "scope": "explicit_cross_document_candidate_links_with_exact_two_sided_provenance",
+    "input_boundary": "current_registered_rc4_proposition_candidates_only",
+    "minimum_registered_sources": 2,
+    "max_registered_sources": 32,
+    "max_link_candidates": 4096,
+    "different_document_identity_required": true,
+    "relation_kinds": ["SUPPORTS", "CONTRADICTS", "ELABORATES", "REFERENCES", "DEFINES", "EXAMPLE_OF", "PREREQUISITE_FOR", "SAME_TOPIC", "POSSIBLE_SAME_CLAIM"],
+    "symmetric_kinds": ["CONTRADICTS", "SAME_TOPIC", "POSSIBLE_SAME_CLAIM"],
+    "directional_order_preserved": true,
+    "exact_two_sided_provenance": true,
+    "explicit_rationale_required": true,
+    "descriptive_inspection_basis_only": true,
+    "same_topic_implies_same_proposition": false,
+    "possible_same_claim_implies_identity": false,
+    "similarity_signal_proves_identity": false,
+    "automatic_semantic_matching": false,
+    "automatic_entity_resolution": false,
+    "automatic_corroboration": false,
+    "count_only_telemetry": true,
+    "evidence_admission": false,
+    "fact_evidence_write": false,
+    "confidence_promotion": false,
+    "contradiction_resolution_authority": false,
+    "automatic_winner_selection": false,
+    "durable_storage_schema": false,
+    "public_api_or_cli": false,
+    "llm_or_provider_integration": false,
+    "parser_or_semantic_chunker": false,
+    "ocr_or_pdf_layout_reconstruction": false,
+    "embeddings_or_vector_database": false,
+    "planner_or_belief_update_authority": false,
+    "truth_or_canon_authority": false,
+    "dedicated_full_reader_core": false
+  },
   "storage_resource_limits": {
     "control_file_bytes": 1048576,
     "source_sqlite_bytes": 67108864,
@@ -251,7 +270,7 @@
     "authoritative_language": "English",
     "working_language": "English",
     "language_model": "english_primary_source_multilingual_product_surface",
-    "localized_readmes": "russian_current_eight_refresh_needed_after_rc5_source_change",
+    "localized_readmes": "russian_current_at_rc6_eight_refresh_needed_during_rc7_english_source_stage",
     "translation_status_ledger": "docs/TRANSLATION_STATUS.md",
     "localization_policy": "docs/LOCALIZATION_POLICY.md",
     "localized_readme_source_checkpoint": "51c205fe048fd69d39fcd47b43e042a50de432bc",
@@ -281,11 +300,7 @@
     "awarded": false,
     "budget_changed": false,
     "baseline_issue": 333,
-    "rule": "Merged pre-agreement work, including issues 331/332 and Reader RC-0/RC-1/RC-2/RC-3/RC-4/RC-5 plus RC-6 when merged, cannot be counted again as funded delta"
+    "rule": "Merged pre-agreement work through Reader RC-6 is existing baseline; RC-7 also becomes existing baseline if merged before an agreement and cannot be counted again as funded delta"
   },
-  "authority": {
-    "runtime": "GitHub main",
-    "verification": "TEST_REPORT.md and this manifest plus exact Reader milestone CI",
-    "strategy_and_history": "Notion Crystal pages"
-  }
+  "authority": {"runtime": "GitHub main", "verification": "TEST_REPORT.md and this manifest plus exact Reader milestone CI", "strategy_and_history": "Notion Crystal pages"}
 }
