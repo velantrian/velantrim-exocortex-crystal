@@ -226,13 +226,13 @@
   "hard_negative_case_count": 4,
   "k": 5,
   "method": "reader_rc9_bm25_lexical_v1",
-  "metric_scope": "The RC-8 JSONL judges only each case's left/right pair. Recall/MRR track the paired useful candidate; precision treats other returned corpus entries as benchmark decoys. Hard-negative rate tracks only the paired SAME_TOPIC/MERELY_SIMILAR traps. Metrics are retrieval evidence, never epistemic adjudication.",
+  "metric_scope": "The RC-8 JSONL judges only each case's intended left/right pair. Recall/MRR track the paired useful candidate. Precision@K uses a fixed K denominator over positive queries, with all non-paired right-side records treated as synthetic benchmark decoys; unfilled ranks therefore do not inflate precision. Hard-negative rate tracks only the paired SAME_TOPIC/MERELY_SIMILAR traps. Metrics are retrieval evidence, never epistemic adjudication.",
   "metrics": {
     "hard_negative_hits": 4,
     "mrr": 0.895833,
     "paired_hard_negative_rate_at_k": 1.0,
     "positive_hits": 15,
-    "precision_at_k": 0.217391,
+    "precision_at_k": 0.1875,
     "recall_at_k": 0.9375,
     "returned_slots_for_positive_queries": 69
   },
