@@ -173,7 +173,7 @@ RC-9 snapshots the public RC-4 proposition surface into retrieval-only records, 
 
 `ReaderLexicalMatch` exposes only retrieval and provenance metadata: identifiers, lexical score, rank, method/version, matched terms and privacy metadata. It does not output RC-8 review classes or any identity/evidence/Canon verdict.
 
-Frozen K=5 result: Recall 0.937500; Precision 0.217391; MRR 0.895833; paired hard-negative rate 1.000000. The cross-lingual pair is missed and all four paired hard negatives are surfaced within top-5. Classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+Frozen K=5 result: Recall 0.937500; Precision 0.187500; MRR 0.895833; paired hard-negative rate 1.000000. Precision uses the fixed-K synthetic benchmark denominator documented in the RC-9 architecture note. The cross-lingual pair is missed and all four paired hard negatives are surfaced within top-5. Classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
 That classification does not authorize embeddings, semantic/hybrid retrieval, ANN/vector DB, entity/claim identity or adjudication.
 
