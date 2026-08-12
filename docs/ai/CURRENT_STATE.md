@@ -151,7 +151,7 @@ RC-10 freezes a future gate before results are observed: recover `rc8-004`, reta
 
 ## Localization truth
 
-The immutable historical D1/D3/D4/D5 source checkpoint `51c205fe048fd69d39fcd47b43e042a50de432bc` remains required by the executable phased localization contract. Russian Reader-dependent public/detail documentation is refreshed through RC-7. The **eight other localized root README files** and Reader-dependent detail packs remain `REFRESH_NEEDED`; tracked debt remains 64 documents. D2 and Quick Start remain current across all nine supported locales.
+The immutable historical D1/D3/D4/D5 source checkpoint `51c205fe048fd69d39fcd47b43e042a50de432bc` remains required by the executable phased localization contract. Russian Reader-dependent public/detail documentation is refreshed through RC-7. The eight other localized root README files and Reader-dependent detail packs remain `REFRESH_NEEDED`; tracked debt remains 64 documents. D2 and Quick Start remain current across all nine supported locales.
 
 RC-8/RC-9/RC-10 add English architecture/status meaning only. Broad localization is separate. The root English `README.md` still contains an older RC-6/RC-7 public checkpoint; RC-10 records this as public documentation drift rather than silently rewriting all localized README surfaces in an architecture milestone.
 
