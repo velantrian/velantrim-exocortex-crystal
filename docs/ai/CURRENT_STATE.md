@@ -158,6 +158,7 @@ Historical executable localization markers retained verbatim:
 - D2 reviewer/safety translations remain current across all nine supported locales.
 - Russian D1/D3/D4/D5 detail pack is current.
 - eight other locale detail packs require Reader refresh.
+- D2 translation source checkpoint: `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
 
 D2 and Quick Start remain current across all nine supported locales.
 
