@@ -173,6 +173,15 @@ RC-9 snapshots the public RC-4 proposition surface into retrieval-only records a
 
 It does not emit RC-8 review classes, automatically register RC-7 relations, write evidence, mutate ESM/TruthGate/Guardian/Canon, call semantic/vector retrieval, add a network dependency, add a Reader persistence schema or activate PostgreSQL/pgvector.
 
+```text
+retrieval match          != evidence
+similarity               != identity
+repetition               != corroboration
+cross-document candidate != Canon relation
+ranking                  != epistemic authority
+candidate discovery      != candidate adjudication
+```
+
 Frozen K=5 result:
 
 | Metric | Result |
