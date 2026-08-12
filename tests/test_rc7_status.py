@@ -71,7 +71,8 @@ def test_rc7_machine_truth_and_authority_firewall_are_documented():
             assert marker in text, (path, marker)
 
 
-def test_rc7_merge_truth_is_reconciled_before_rc8_decision():
+def test_rc7_merge_truth_remains_visible_after_later_reader_milestones():
+    """RC-7 evidence is historical truth, not a frozen current-roadmap headline."""
     for path in (
         "ROADMAP.md", "docs/STATUS.md", "docs/IMPLEMENTATION_STATUS.md", "docs/ai/CURRENT_STATE.md",
     ):
@@ -82,9 +83,12 @@ def test_rc7_merge_truth_is_reconciled_before_rc8_decision():
 
     state = _text("docs/ai/CURRENT_STATE.md")
     assert "RC-1 through RC-7 are merged bounded Reader layers" in state
+    assert "RC-9 — deterministic lexical candidate discovery: COMPLETE" in state
+
     roadmap = _text("ROADMAP.md")
-    assert "Delivered Reader baseline through RC-7" in roadmap
-    assert "RC-8 — Post-RC-7 Candidate Discovery & Retrieval Architecture Decision" in roadmap
+    assert "Delivered Reader implementation baseline" in roadmap
+    assert "RC-8 — retrieval architecture decision" in roadmap
+    assert "RC-9 — deterministic lexical candidate discovery + benchmark" in roadmap
 
 
 def test_rc7_does_not_authorize_semantic_vector_retrieval():
