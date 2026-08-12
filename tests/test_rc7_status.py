@@ -114,6 +114,7 @@ def test_rc7_does_not_authorize_semantic_vector_retrieval():
             "docs/architecture/READER_RC8_RETRIEVAL_DECISION.md",
         )
     ).lower()
+    normalized = " ".join(combined.split())
     for marker in (
         "no automatic semantic matching",
         "embeddings/ann/vector",
@@ -121,4 +122,4 @@ def test_rc7_does_not_authorize_semantic_vector_retrieval():
         "submitted / under review / not awarded",
         "active=false",
     ):
-        assert marker in combined
+        assert marker in normalized
