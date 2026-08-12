@@ -109,27 +109,26 @@ def test_rc7_machine_truth_and_authority_firewall_are_documented():
             assert marker in text, (path, marker)
 
 
-def test_rc6_merge_truth_is_reconciled_before_rc7_merge():
+def test_rc7_merge_truth_is_reconciled_before_rc8_decision():
     for path in (
-        "README.md",
         "ROADMAP.md",
         "docs/STATUS.md",
         "docs/IMPLEMENTATION_STATUS.md",
         "docs/ai/CURRENT_STATE.md",
     ):
         text = _text(path)
-        assert "1f5129d3276af28608b16e369fd38d21fe38c0d5" in text, path
-        assert "31566408978" in text, path
-        assert "reader_core_rc6_long_context_strategy" in text, path
+        assert "b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1" in text, path
+        assert "31572918731" in text, path
+        assert "reader_core_rc7_cross_document_links" in text, path
 
     state = _text("docs/ai/CURRENT_STATE.md")
-    assert "RC-1 through RC-6 are merged bounded Reader layers" in state
+    assert "RC-1 through RC-7 are merged bounded Reader layers" in state
     roadmap = _text("ROADMAP.md")
-    assert "Delivered Reader baseline through RC-6" in roadmap
-    assert "RC-7 — Bounded Cross-Document Candidate Links" in roadmap
+    assert "Delivered Reader baseline through RC-7" in roadmap
+    assert "RC-8 — Post-RC-7 Candidate Discovery & Retrieval Architecture Decision" in roadmap
 
 
-def test_rc7_does_not_start_semantic_vector_retrieval():
+def test_rc7_does_not_authorize_semantic_vector_retrieval():
     combined = "\n".join(
         _text(path)
         for path in (
@@ -139,12 +138,13 @@ def test_rc7_does_not_start_semantic_vector_retrieval():
             "docs/IMPLEMENTATION_STATUS.md",
             "docs/ai/CURRENT_STATE.md",
             "docs/architecture/READER_RC7_CROSS_DOCUMENT.md",
+            "docs/architecture/READER_RC8_RETRIEVAL_DECISION.md",
         )
     )
     for marker in (
         "no automatic semantic matching",
         "embeddings/ANN/vector",
-        "not started and not implied",
+        "Semantic/vector retrieval remains deferred",
         "submitted / under review / not awarded",
         "active=false",
     ):
