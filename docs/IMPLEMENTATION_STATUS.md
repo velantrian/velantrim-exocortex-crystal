@@ -2,9 +2,13 @@
 
 **Status date:** 2026-08-12  
 **Retained runtime checkpoint:** `bbd816c` / PR #337  
-**Signed Reader baseline at RC-8 audit start:** `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1` / PR #372  
+**Signed RC-7 Reader baseline:** `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1` / PR #372  
 **RC-7 exact-head CI:** `31572324596` — 9/9 successful  
 **RC-7 post-merge CI:** `31572918731` — 9/9 successful  
+**Signed RC-8 merge / RC-9 audited start:** `main@bd85479e014c26ddebd0f4ae06385ce6625f5ab6` / PR #374  
+**RC-8 exact validated head:** `a9a4e3b67c514c6c0eece58424c209e9693d3dd7`  
+**RC-8 exact-head/post-merge CI:** `31581756932` / `31582325275` — successful  
+**Current bounded milestone:** RC-9 / issue #375  
 **Machine-readable status:** [status/implementation-manifest.json](./status/implementation-manifest.json)
 
 | Component | Status | Current boundary |
@@ -25,7 +29,9 @@
 | Reader Core RC-5 relation candidates | Implemented/merged | `core/reader_relations.py` |
 | Reader Core RC-6 long-context strategy | Implemented/tested/merged | `core/reader_long_context.py` |
 | Reader Core RC-7 cross-document candidate links | Implemented/tested/merged | `core/reader_cross_document.py`; PR #372 |
-| Reader RC-8 retrieval architecture decision | Architecture/research only | no Reader discovery/vector runtime; issue #373 |
+| Reader RC-8 retrieval architecture decision | Completed architecture/research | no Reader discovery/vector runtime; PR #374 |
+| Reader RC-9 lexical candidate discovery | Bounded implementation | `core/reader_lexical_discovery.py`; issue #375; PRE-ADMISSION inspection only |
+| Reader semantic/hybrid/vector retrieval | Not implemented | separate future authorization/evidence required |
 | Dedicated/full Semantic Reading runtime | Not implemented | `dedicated_reader_core=false` |
 
 ## Reader implementation chain
@@ -38,12 +44,13 @@ SourceVersion + SourceLocator
 → RC-4 EXTRACTED_PROPOSITION candidates
    ├─ RC-5 same-source relation candidates
    ├─ RC-6 bounded working sets / caller-supplied SUMMARY
-   └─ RC-7 explicit cross-document candidate links
-→ normal evidence/review/admission path
+   ├─ RC-7 explicit cross-document candidate links
+   └─ RC-9 deterministic lexical candidate discovery → inspection only
+→ explicit downstream review/evidence/admission path
 → Guardian → TruthGate → strict Canon projection
 ```
 
-RC-8 does not insert a new runtime node into that chain. It defines how a future **candidate-discovery** layer must remain outside identity/evidence authority and how retrieval options must be evaluated before implementation.
+RC-8 defined how the candidate-discovery layer must remain outside identity/evidence authority and how retrieval options must be measured before any semantic/vector implementation.
 
 ### RC-4
 
@@ -119,7 +126,7 @@ The audit distinguishes two retrieval domains:
 
 ```text
 PRE-ADMISSION Reader artifacts
-  → future candidate discovery may propose pairs for inspection
+  → candidate discovery may propose pairs for inspection
   → no evidence / identity / Canon authority
 
 admitted L3 facts
@@ -149,7 +156,33 @@ ranking                  != epistemic authority
 candidate discovery      != candidate adjudication
 ```
 
-Decision: deterministic lexical/token discovery is the required first future benchmark baseline. SQLite FTS is a candidate local-first backend with capability detection/fallback. Hybrid and neural semantic retrieval are deferred until a separately authorized, pre-registered benchmark comparison demonstrates material value. ANN/vector DB and PostgreSQL/pgvector are not justified as Reader defaults in RC-8.
+Decision: deterministic lexical/token discovery is the required first benchmark baseline. SQLite FTS is a candidate local-first backend with capability detection/fallback. Hybrid and neural semantic retrieval remain deferred until a separately authorized, pre-registered benchmark comparison demonstrates material value. ANN/vector DB and PostgreSQL/pgvector are not Reader defaults.
+
+## RC-9 deterministic lexical candidate-discovery baseline
+
+Architecture/result: [READER_RC9_LEXICAL_BASELINE.md](./architecture/READER_RC9_LEXICAL_BASELINE.md).  
+Runtime: `core/reader_lexical_discovery.py`.  
+Benchmark runner: `../scripts/bench_reader_rc9_lexical.py`.  
+Frozen result: `../eval/reader_rc9_lexical_baseline.json`.
+
+RC-9 snapshots the public RC-4 proposition surface into a retrieval-only record and applies conservative Unicode NFKC normalization, casefolding, whitespace collapse and stable lexical tokenization. No stopword deletion, stemming, translation, synonym substitution, entity resolution, unit conversion or semantic rewrite is performed.
+
+`ReaderLexicalIndex` is in-memory and deterministic. It excludes self matches, defaults to cross-document candidates, applies BM25 scoring and uses source/session/candidate identity as a stable tie-break. `ReaderLexicalMatch` exposes only retrieval/provenance fields: query/candidate/source identifiers, `lexical_score`, rank, method/version, matched terms and privacy metadata.
+
+The implementation adds no network call, model/provider dependency, SQLite/PostgreSQL schema, public API/CLI/worker, RC-7 auto-registration, evidence write, Guardian/TruthGate/Canon mutation or semantic/vector machinery.
+
+Frozen K=5 result:
+
+| Metric | Result |
+|---|---:|
+| Recall@5 | 0.937500 |
+| Precision@5 | 0.187500 |
+| MRR | 0.895833 |
+| Paired hard-negative rate@5 | 1.000000 |
+| Useful paired hits | 15 / 16 |
+| Hard-negative paired hits | 4 / 4 |
+
+Precision@5 uses the fixed-K synthetic benchmark denominator defined in the RC-9 architecture note; it is not a claim of fully judged corpus-wide precision. The cross-lingual paraphrase is missed; all four paired `SAME_TOPIC` / `MERELY_SIMILAR` hard negatives are retrieved in top-5. The measured classification is `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`. This is retrieval evidence only and does not authorize embeddings/hybrid/ANN/vector DB or any automatic adjudication.
 
 ## Machine truth
 
@@ -164,7 +197,7 @@ reader_core_rc7_cross_document_links   = true
 dedicated_reader_core                  = false
 ```
 
-RC-8 is a decision artifact, not an additional runtime capability flag.
+RC-9 deliberately does not turn `dedicated_reader_core` true and does not add a machine flag that could be misread as a complete autonomous Reader runtime.
 
 ## Backlog isolation
 
@@ -172,11 +205,11 @@ RC-8 is a decision artifact, not an additional runtime capability flag.
 - #155: downstream Epistemic Router/Evidence State RFC.
 - #214: PII fixture and reproducible supply-chain hygiene.
 
-None is merged into RC-8.
+None is merged into RC-9.
 
-## Explicit non-features after RC-8
+## Explicit non-features after RC-9
 
-RC-1 through RC-8 still add no Reader durable corpus/index schema, public Reader API/CLI/background worker, automatic parser/chunker/OCR/PDF-layout/multimodal engine, automatic NLP/LLM/provider extraction, Reader embeddings/ANN/vector database, automatic semantic identity/entity resolution/deduplication, automatic corroboration, contradiction winner selection, planner/belief-update authority or evidence/Canon/ESM write path.
+RC-1 through RC-9 still add no automatic Reader parser/chunker/OCR/PDF-layout/multimodal engine, automatic NLP/LLM/provider extraction/summarization, semantic/hybrid/vector Reader retrieval, automatic semantic identity/entity resolution/deduplication, automatic corroboration, contradiction winner selection, planner/belief-update authority, evidence/Canon/ESM write path, durable Reader retrieval schema/index, public Reader retrieval API/CLI/background worker or dedicated/full autonomous Reader runtime.
 
 ## Storage sequence
 
@@ -196,8 +229,8 @@ Successful equivalence cannot activate a backend or change Guardian, TruthGate o
 
 Russian root + Reader-dependent D1/D3/D4/D5 surfaces are `CURRENT` at immutable RC-7 English source checkpoint `ab3ad31c437647535030e371d58f456faf14017b`. Eight other Reader-dependent locale packs remain rich `REFRESH_NEEDED` translations; 64 documents remain tracked debt. D2 and Quick Start remain current across all nine locales.
 
-RC-8 adds English architecture/research source only; broad localization remains separate.
+RC-9 adds English architecture/implementation source only; broad localization remains separate.
 
 ## Grant truth
 
-NLnet remains **submitted / under review / not awarded**. Approximate €50,000 is planning only; budget change is none. RC-0 through RC-7 are existing pre-agreement baseline when merged before an agreement. RC-8 is architecture/research only and is not an implemented semantic retrieval capability.
+NLnet remains **submitted / under review / not awarded**. Approximate €50,000 is planning only; budget change is none. RC-0 through RC-9 are existing pre-agreement baseline if merged before an agreement. RC-9 is not an awarded/funded-work claim.

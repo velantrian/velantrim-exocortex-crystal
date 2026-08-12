@@ -5,10 +5,12 @@
 > Only merged `main`, executable tests and exact CI are implementation truth.
 
 **Retained runtime baseline:** `main@bbd816c09dd39a02e6de6c1014438490572f40f6`  
-**Signed Reader baseline at RC-8 audit start:** `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1` — RC-7 merged via PR #372  
+**Signed RC-7 Reader baseline:** `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1` — PR #372  
 **RC-7 exact-head CI:** `31572324596` — 9/9 successful  
 **RC-7 post-merge CI:** `31572918731` — 9/9 successful  
-**Current bounded milestone:** RC-8 architecture/research decision, issue #373  
+**Signed RC-8 merge / RC-9 audited start:** `main@bd85479e014c26ddebd0f4ae06385ce6625f5ab6` — PR #374  
+**RC-8 exact-head/post-merge CI:** `31581756932` / `31582325275` — successful  
+**Current bounded milestone:** RC-9 deterministic lexical candidate discovery, issue #375  
 **Grant status:** submitted / under review / not awarded  
 **Budget change:** none
 
@@ -100,9 +102,11 @@ repetition across sources != corroboration
 
 RC-7 adds no automatic corpus discovery, semantic matching, entity resolution, dedupe, embeddings/ANN/vector DB, LLM/provider/parser/OCR, evidence admission, contradiction winner, truth/Canon/ESM mutation, planner authority, Reader persistence/API/CLI/worker or PostgreSQL activation.
 
-## 🔬 RC-8 — Post-RC-7 Candidate Discovery & Retrieval Architecture Decision
+## ✅ RC-8 — Post-RC-7 Candidate Discovery & Retrieval Architecture Decision
 
-Tracking issue: #373.  
+Historical RC-8 gate label: **Next bounded Reader gate — post-RC-7 retrieval architecture decision**. That gate is completed; RC-9 is now the current bounded implementation milestone.
+
+Issue #373 / PR #374 completed.  
 Decision: `docs/architecture/READER_RC8_RETRIEVAL_DECISION.md`.  
 Adversarial corpus: `eval/reader_rc8_retrieval_adversarial.jsonl`.
 
@@ -110,7 +114,7 @@ RC-8 is a bounded **architecture/research milestone**, not a runtime retrieval i
 
 ### Capability gap
 
-After RC-7, Crystal can represent a cross-document pair when the caller already knows which two propositions to compare. It cannot yet discover promising pairs efficiently across a large Reader corpus.
+After RC-7, Crystal can represent a cross-document pair when the caller already knows which two propositions to compare. It cannot discover promising pairs efficiently across a large Reader corpus.
 
 The audit also found that Reader needs a formal distinction among:
 
@@ -136,9 +140,9 @@ ranking                  != epistemic authority
 candidate discovery      != candidate adjudication
 ```
 
-The required first future implementation baseline, if separately authorized, is **deterministic lexical Reader candidate discovery + benchmark runner**.
+RC-8 required the first separately authorized Reader implementation to be **deterministic lexical candidate discovery + benchmark runner**.
 
-Option order for evidence:
+Option order for future evidence remained:
 
 ```text
 deterministic normalized/token baseline
@@ -150,15 +154,58 @@ measured hybrid comparison if needed
 measured semantic/vector comparison only if justified
 ```
 
-Neural embeddings, ANN/vector DB and semantic identity remain **deferred**. PostgreSQL/pgvector remains inactive `active=false` and is not a Reader default.
+Neural embeddings, ANN/vector DB and semantic identity remained **deferred**. PostgreSQL/pgvector remained inactive `active=false` and not a Reader default.
 
 ### Evaluation gate
 
 The 20-case synthetic adversarial corpus covers exact variants, paraphrases, low-lexical-overlap/cross-lingual cases, same-topic traps, negation, modality, quantifiers, time/version, attribution, exceptions, homonyms, boilerplate, numerical thresholds, units and jurisdiction/conditions.
 
-A later semantic/hybrid issue must pre-register numeric thresholds **before** running comparisons and show a material recall gain over the lexical baseline without unacceptable hard-negative, resource, reproducibility, privacy or authority cost.
+RC-8 deliberately did not invent post-hoc semantic/vector thresholds and did not start implementation beyond the frozen decision/corpus.
 
-RC-8 deliberately does not invent post-hoc thresholds and does not start the future implementation.
+## 🚧 RC-9 — Deterministic Lexical Candidate Discovery Baseline + Benchmark Runner
+
+Tracking issue: #375.  
+Architecture/result: `docs/architecture/READER_RC9_LEXICAL_BASELINE.md`.  
+Runtime: `core/reader_lexical_discovery.py`.  
+Benchmark runner: `scripts/bench_reader_rc9_lexical.py`.  
+Frozen result: `eval/reader_rc9_lexical_baseline.json`.
+
+RC-9 implements the first measured baseline authorized by RC-8:
+
+```text
+RC-4 proposition candidates
+        ↓
+conservative NFKC/case/whitespace normalization
+        ↓
+stable lexical tokens
+        ↓
+deterministic in-memory BM25
+        ↓
+top-K inspection candidates
+        ↓
+benchmark / downstream review
+```
+
+The baseline is stdlib-only and offline. It adds no storage schema, network call, semantic/vector runtime, PostgreSQL activation, automatic entity/claim identity, contradiction adjudication, evidence admission, Canon mutation or automatic RC-7 relation registration.
+
+Frozen K=5 benchmark:
+
+| Metric | Result |
+|---|---:|
+| Recall@5 | 0.937500 |
+| Precision@5 | 0.187500 |
+| MRR | 0.895833 |
+| Paired hard-negative rate@5 | 1.000000 |
+| Useful paired hits | 15 / 16 |
+| Hard-negative paired hits | 4 / 4 |
+
+Precision@5 uses the fixed `positive paired queries × K` denominator defined by the RC-9 bounded synthetic benchmark; it is not a fully judged corpus-wide semantic precision claim. The baseline misses the cross-lingual paraphrase and surfaces all four paired `SAME_TOPIC` / `MERELY_SIMILAR` hard negatives. It therefore records:
+
+```text
+LEXICAL_BASELINE_EXPOSES_MEASURED_GAP
+```
+
+This is a measured retrieval result, **not** automatic authorization for embeddings, semantic/hybrid retrieval, ANN/vector DB or claim adjudication.
 
 ## 🧩 Backlog remains separated
 
@@ -166,23 +213,13 @@ RC-8 deliberately does not invent post-hoc thresholds and does not start the fut
 - #155 — downstream Epistemic Router / Evidence State RFC.
 - #214 — PII fixture / reproducible supply-chain hardening.
 
-They may provide context but are not merged into RC-8.
+They remain outside RC-9.
 
-## ⏭️ After RC-8 — explicit authorization required
+## ⏭️ After RC-9 — explicit new authorization still required
 
-The only architecture-supported next Reader implementation candidate is a bounded deterministic lexical candidate-discovery baseline + benchmark runner. It must not start automatically.
+After RC-9 is fully merged, verified, synchronized and closed, a later architecture milestone **may** consider whether measured gaps justify lexical scaling, a hybrid comparison or a semantic/vector comparison. Such a milestone must pre-register its success/failure thresholds and resource/privacy/reproducibility constraints before comparison results are observed.
 
-After measured baseline evidence, a later decision may conclude:
-
-```text
-lexical sufficient
-        OR
-hybrid retrieval justified
-        OR
-semantic/vector retrieval justified
-```
-
-This preserves the sequencing rule: **define the problem and evidence standard before selecting the expensive mechanism**.
+RC-10, semantic/hybrid retrieval, embeddings, FTS and vector indexing are **not started** by RC-9.
 
 ## ✅ Storage baseline remains unchanged
 
@@ -200,13 +237,13 @@ No automatic backend switching is introduced by Reader work.
 
 Russian root + Reader-dependent D1/D3/D4/D5 surfaces remain `CURRENT` to the immutable RC-7 English source checkpoint `ab3ad31c437647535030e371d58f456faf14017b`. Eight other Reader-dependent locale packs preserve rich `REFRESH_NEEDED` translations — 64 tracked documents. D2 and Quick Start remain current across all nine locales.
 
-RC-8 adds English architecture/research source material; broad translation remains a separate milestone rather than being mixed into this architecture decision.
+RC-9 adds authoritative English architecture/implementation source material only; broad translation remains a separate milestone.
 
 ## 🎓 Grant boundary
 
 NLnet remains submitted / under review / not awarded. Approximate €50,000 remains planning only, not an approved budget/payment commitment. Budget change: none.
 
-Anything merged before an agreement is existing baseline and cannot be counted again as future paid work. Reader RC-0 through RC-7 are existing pre-agreement baseline when merged before an agreement. RC-8 is an architecture/research decision and does not create an implemented semantic retrieval deliverable.
+Anything merged before an agreement is existing baseline and cannot be counted again as future paid work. Reader RC-0 through RC-9 are existing pre-agreement baseline if merged before an agreement. RC-9 is not an awarded/funded-delivery claim.
 
 ```text
 verified existing baseline
@@ -225,4 +262,5 @@ independently verifiable public deliverable
 - [Reader architecture contract](./docs/architecture/READER_CORE_ARCHITECTURE.md)
 - [RC-7 cross-document contract note](./docs/architecture/READER_RC7_CROSS_DOCUMENT.md)
 - [RC-8 retrieval decision](./docs/architecture/READER_RC8_RETRIEVAL_DECISION.md)
+- [RC-9 lexical baseline](./docs/architecture/READER_RC9_LEXICAL_BASELINE.md)
 - [Translation status](./docs/TRANSLATION_STATUS.md)

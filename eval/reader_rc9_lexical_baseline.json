@@ -1,0 +1,248 @@
+{
+  "benchmark": "reader_rc9_lexical_baseline",
+  "case_count": 20,
+  "cases": [
+    {
+      "candidates_returned": 5,
+      "case_id": "rc8-001",
+      "expected_review_class": "SAME_PROPOSITION_CANDIDATE",
+      "matched_terms": ["earth", "orbits", "sun", "the"],
+      "paired_candidate_rank": 1,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 10.29113448722,
+      "relevance_intent": "USEFUL_CANDIDATE",
+      "stratum": "normalized_variant"
+    },
+    {
+      "candidates_returned": 2,
+      "case_id": "rc8-002",
+      "expected_review_class": "PARAPHRASE_CANDIDATE",
+      "matched_terms": ["at", "pressure", "standard", "water"],
+      "paired_candidate_rank": 1,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 10.485946297896,
+      "relevance_intent": "USEFUL_CANDIDATE",
+      "stratum": "close_paraphrase"
+    },
+    {
+      "candidates_returned": 5,
+      "case_id": "rc8-003",
+      "expected_review_class": "PARAPHRASE_CANDIDATE",
+      "matched_terms": ["the"],
+      "paired_candidate_rank": 3,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 0.589620830598,
+      "relevance_intent": "USEFUL_CANDIDATE",
+      "stratum": "low_lexical_overlap_paraphrase"
+    },
+    {
+      "candidates_returned": 5,
+      "case_id": "rc8-004",
+      "expected_review_class": "PARAPHRASE_CANDIDATE",
+      "matched_terms": [],
+      "paired_candidate_rank": null,
+      "paired_candidate_retrieved_at_k": false,
+      "paired_candidate_score": null,
+      "relevance_intent": "USEFUL_CANDIDATE",
+      "stratum": "cross_lingual_paraphrase"
+    },
+    {
+      "candidates_returned": 1,
+      "case_id": "rc8-005",
+      "expected_review_class": "SAME_TOPIC",
+      "matched_terms": ["has", "mars"],
+      "paired_candidate_rank": 1,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 5.217135157391,
+      "relevance_intent": "HARD_NEGATIVE",
+      "stratum": "same_topic_different_claim"
+    },
+    {
+      "candidates_returned": 1,
+      "case_id": "rc8-006",
+      "expected_review_class": "SAME_TOPIC",
+      "matched_terms": ["ada", "lovelace"],
+      "paired_candidate_rank": 1,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 6.056852887642,
+      "relevance_intent": "HARD_NEGATIVE",
+      "stratum": "same_entity_unrelated_predicate"
+    },
+    {
+      "candidates_returned": 5,
+      "case_id": "rc8-007",
+      "expected_review_class": "POSSIBLE_CONTRADICTION",
+      "matched_terms": ["in", "mortality", "the", "treatment", "trial"],
+      "paired_candidate_rank": 1,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 10.199438611704,
+      "relevance_intent": "USEFUL_CANDIDATE",
+      "stratum": "negation_flip"
+    },
+    {
+      "candidates_returned": 5,
+      "case_id": "rc8-008",
+      "expected_review_class": "RELATED_CLAIM",
+      "matched_terms": ["data", "device", "during", "failure", "loss", "power", "the"],
+      "paired_candidate_rank": 1,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 14.295768664478,
+      "relevance_intent": "USEFUL_CANDIDATE",
+      "stratum": "modality_change"
+    },
+    {
+      "candidates_returned": 5,
+      "case_id": "rc8-009",
+      "expected_review_class": "RELATED_CLAIM",
+      "matched_terms": ["completed", "participants", "survey", "the"],
+      "paired_candidate_rank": 1,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 10.136115985301,
+      "relevance_intent": "USEFUL_CANDIDATE",
+      "stratum": "quantifier_change"
+    },
+    {
+      "candidates_returned": 5,
+      "case_id": "rc8-010",
+      "expected_review_class": "RELATED_CLAIM",
+      "matched_terms": ["in", "python", "service", "the"],
+      "paired_candidate_rank": 1,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 8.181066899813,
+      "relevance_intent": "USEFUL_CANDIDATE",
+      "stratum": "temporal_change"
+    },
+    {
+      "candidates_returned": 5,
+      "case_id": "rc8-011",
+      "expected_review_class": "RELATED_CLAIM",
+      "matched_terms": ["city", "financially", "is", "stable", "the"],
+      "paired_candidate_rank": 1,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 11.141297899826,
+      "relevance_intent": "USEFUL_CANDIDATE",
+      "stratum": "attribution_trap"
+    },
+    {
+      "candidates_returned": 5,
+      "case_id": "rc8-012",
+      "expected_review_class": "RELATED_CLAIM",
+      "matched_terms": ["artificial", "author", "harms", "light", "sleep", "that", "the"],
+      "paired_candidate_rank": 1,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 16.867639410602,
+      "relevance_intent": "USEFUL_CANDIDATE",
+      "stratum": "quotation_endorsement_trap"
+    },
+    {
+      "candidates_returned": 1,
+      "case_id": "rc8-013",
+      "expected_review_class": "RELATED_CLAIM",
+      "matched_terms": ["fly"],
+      "paired_candidate_rank": 1,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 3.609367928603,
+      "relevance_intent": "USEFUL_CANDIDATE",
+      "stratum": "exception_vs_contradiction"
+    },
+    {
+      "candidates_returned": 2,
+      "case_id": "rc8-014",
+      "expected_review_class": "MERELY_SIMILAR",
+      "matched_terms": ["java"],
+      "paired_candidate_rank": 2,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 2.734958470799,
+      "relevance_intent": "HARD_NEGATIVE",
+      "stratum": "homonym_entity_collision"
+    },
+    {
+      "candidates_returned": 5,
+      "case_id": "rc8-015",
+      "expected_review_class": "MERELY_SIMILAR",
+      "matched_terms": ["about", "advice", "and", "constitute", "does", "for", "informational", "is", "not", "provided", "purposes", "report", "this"],
+      "paired_candidate_rank": 1,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 24.270785879116,
+      "relevance_intent": "HARD_NEGATIVE",
+      "stratum": "boilerplate_overlap"
+    },
+    {
+      "candidates_returned": 5,
+      "case_id": "rc8-016",
+      "expected_review_class": "POSSIBLE_CONTRADICTION",
+      "matched_terms": ["alarm", "c", "exceeds", "temperature", "the", "triggers", "when"],
+      "paired_candidate_rank": 1,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 15.808862209257,
+      "relevance_intent": "USEFUL_CANDIDATE",
+      "stratum": "numeric_threshold_change"
+    },
+    {
+      "candidates_returned": 5,
+      "case_id": "rc8-017",
+      "expected_review_class": "SAME_PROPOSITION_CANDIDATE",
+      "matched_terms": ["day", "is", "limit", "per", "the"],
+      "paired_candidate_rank": 1,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 10.563026727991,
+      "relevance_intent": "USEFUL_CANDIDATE",
+      "stratum": "unit_conversion_equivalent"
+    },
+    {
+      "candidates_returned": 5,
+      "case_id": "rc8-018",
+      "expected_review_class": "RELATED_CLAIM",
+      "matched_terms": ["30", "days", "deadline", "filing", "is", "procedure", "the", "under"],
+      "paired_candidate_rank": 1,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 17.412429175996,
+      "relevance_intent": "USEFUL_CANDIDATE",
+      "stratum": "jurisdiction_change"
+    },
+    {
+      "candidates_returned": 5,
+      "case_id": "rc8-019",
+      "expected_review_class": "RELATED_CLAIM",
+      "matched_terms": ["cache", "cleared", "is", "logs", "out", "the", "user", "when"],
+      "paired_candidate_rank": 1,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 14.399563233025,
+      "relevance_intent": "USEFUL_CANDIDATE",
+      "stratum": "conditional_scope"
+    },
+    {
+      "candidates_returned": 1,
+      "case_id": "rc8-020",
+      "expected_review_class": "RELATED_CLAIM",
+      "matched_terms": ["levels", "reservoir"],
+      "paired_candidate_rank": 1,
+      "paired_candidate_retrieved_at_k": true,
+      "paired_candidate_score": 4.986685015469,
+      "relevance_intent": "USEFUL_CANDIDATE",
+      "stratum": "related_causal_claims"
+    }
+  ],
+  "hard_negative_case_count": 4,
+  "k": 5,
+  "method": "reader_rc9_bm25_lexical_v1",
+  "metric_scope": "The RC-8 JSONL judges only each case's intended left/right pair. Recall/MRR track the paired useful candidate. Precision@K uses a fixed K denominator over positive queries, with all non-paired right-side records treated as synthetic benchmark decoys; unfilled ranks therefore do not inflate precision. Hard-negative rate tracks only the paired SAME_TOPIC/MERELY_SIMILAR traps. Metrics are retrieval evidence, never epistemic adjudication.",
+  "metrics": {
+    "hard_negative_hits": 4,
+    "mrr": 0.895833,
+    "paired_hard_negative_rate_at_k": 1.0,
+    "positive_hits": 15,
+    "precision_at_k": 0.1875,
+    "recall_at_k": 0.9375,
+    "returned_slots_for_positive_queries": 69
+  },
+  "positive_case_count": 16,
+  "work_bound": {
+    "index_records": 20,
+    "mandatory_third_party_dependencies": 0,
+    "max_record_comparisons": 400,
+    "network_calls": 0,
+    "queries": 20,
+    "storage": "in_memory"
+  }
+}

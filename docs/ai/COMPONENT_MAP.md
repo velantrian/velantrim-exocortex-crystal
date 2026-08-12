@@ -117,14 +117,16 @@ repetition across sources != corroboration
 
 ## 11. RC-8 post-RC-7 retrieval architecture decision
 
+Historical RC-8 contract label: **Post-RC-7 retrieval architecture decision (RC-8)**. That milestone is completed; RC-9 is the current bounded implementation baseline.
+
 **Start:**
 
 - `docs/architecture/READER_RC8_RETRIEVAL_DECISION.md`;
 - `eval/reader_rc8_retrieval_adversarial.jsonl`;
 - `tests/test_reader_rc8_retrieval_architecture.py`;
-- issue #373.
+- issue #373 / PR #374.
 
-RC-8 is architecture/research only. It identifies the missing capability as **candidate discovery across a Reader corpus**, not a vector database.
+RC-8 is a completed architecture/research milestone. It identifies the missing capability as **candidate discovery across a Reader corpus**, not a vector database.
 
 It separates:
 
@@ -143,7 +145,7 @@ Review classes defined by RC-8:
 - `POSSIBLE_CONTRADICTION`;
 - `MERELY_SIMILAR`.
 
-The required first future implementation baseline, if separately authorized, is deterministic lexical candidate discovery + a benchmark runner. SQLite FTS is a candidate local-first backend with capability detection/fallback. Hybrid/neural/vector/ANN work is deferred pending pre-registered measured evidence. PostgreSQL/pgvector remains inactive `active=false`.
+RC-8 required the first separately authorized implementation baseline to be deterministic lexical candidate discovery + a benchmark runner. Hybrid/neural/vector/ANN work remained deferred. PostgreSQL/pgvector remains inactive `active=false`.
 
 ```text
 retrieval match != evidence
@@ -154,31 +156,52 @@ ranking != epistemic authority
 candidate discovery != candidate adjudication
 ```
 
-## 12. Contradictions and curator decisions
+## 12. RC-9 deterministic lexical candidate discovery
+
+**Start:**
+
+- `core/reader_lexical_discovery.py`;
+- `scripts/bench_reader_rc9_lexical.py`;
+- `tests/test_reader_lexical_discovery.py`;
+- `tests/test_bench_reader_rc9_lexical.py`;
+- `tests/test_reader_rc9_status.py`;
+- `eval/reader_rc9_lexical_baseline.json`;
+- `docs/architecture/READER_RC9_LEXICAL_BASELINE.md`;
+- issue #375.
+
+RC-9 snapshots the public RC-4 proposition surface into retrieval-only records, applies conservative NFKC/case/whitespace normalization and stable tokenization, then performs deterministic in-memory BM25 ranking. Self matches are excluded; cross-document filtering is default; ties use stable source/session/candidate ordering.
+
+`ReaderLexicalMatch` exposes only retrieval and provenance metadata: identifiers, lexical score, rank, method/version, matched terms and privacy metadata. It does not output RC-8 review classes or any identity/evidence/Canon verdict.
+
+Frozen K=5 result: Recall 0.937500; Precision 0.187500; MRR 0.895833; paired hard-negative rate 1.000000. Precision uses the fixed-K synthetic benchmark denominator documented in the RC-9 architecture note. The cross-lingual pair is missed and all four paired hard negatives are surfaced within top-5. Classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+
+That classification does not authorize embeddings, semantic/hybrid retrieval, ANN/vector DB, entity/claim identity or adjudication.
+
+## 13. Contradictions and curator decisions
 
 **Start:** contradiction modules, `core/review.py`, `core/conflict_surfaces.py`, `docs/CONTRADICTION_POLICY.md`.
 
-Detection does not select a winner. `COEXIST`, `CONTEXTUALIZE` and `SUPERSEDE` require explicit authorized decisions. RC-5/RC-7 candidates and any future retrieval candidates may expose conflict-relevant state, but cannot resolve a `ContradictionReport` or select a canonical winner.
+Detection does not select a winner. `COEXIST`, `CONTEXTUALIZE` and `SUPERSEDE` require explicit authorized decisions. RC-5/RC-7 candidates and RC-9 retrieval candidates may expose conflict-relevant state, but cannot resolve a `ContradictionReport` or select a canonical winner.
 
-## 13. Imports and review queues
+## 14. Imports and review queues
 
 **Start:** import/session modules, review queue/session modules and their CLI/HTTP tests.
 
-Partial imports must remain distinguishable from admission. Unreviewed content cannot ground strict answers. Reader RC-4..RC-7 artifacts remain upstream of the normal ingest/review/evidence path.
+Partial imports must remain distinguishable from admission. Unreviewed content cannot ground strict answers. Reader RC-4..RC-9 artifacts remain upstream of the normal ingest/review/evidence path.
 
-## 14. Public surfaces and runtime composition
+## 15. Public surfaces and runtime composition
 
 **Start:** `core/api.py`, `core/cli.py`, `core/doctor.py`, MCP modules, `Dockerfile`, `pyproject.toml`, `.github/workflows/ci.yml`.
 
-Reader RC-1 through RC-7 add no public Reader API, CLI, background worker or ordinary runtime-composition wiring. RC-8 adds no runtime module at all.
+Reader RC-1 through RC-9 add no public Reader API, CLI, background worker or ordinary runtime-composition wiring. RC-9 adds no mandatory runtime dependency or persistent index.
 
-## 15. Evaluation and status evidence
+## 16. Evaluation and status evidence
 
 **Start:** `docs/EVAL.md`, `TEST_REPORT.md`, `docs/status/implementation-manifest.json`, evaluation fixtures, Ring Zero and benchmark workflows.
 
-Always bind implementation claims to exact commit/head/CI. RC-8’s synthetic adversarial corpus is a future evaluation contract, not retrieval-quality certification.
+Always bind implementation claims to exact commit/head/CI. RC-9’s 20-case synthetic result is a retrieval baseline, not production retrieval-quality or semantic-adjudication certification.
 
-## 16. Reader architecture chain
+## 17. Reader architecture chain
 
 **Start:**
 
@@ -189,8 +212,10 @@ Always bind implementation claims to exact commit/head/CI. RC-8’s synthetic ad
 - `core/reader_relations.py`, `tests/test_reader_relations.py` — RC-5;
 - `core/reader_long_context.py`, `tests/test_reader_long_context.py` — RC-6;
 - `core/reader_cross_document.py`, `tests/test_reader_cross_document.py` — RC-7;
+- `core/reader_lexical_discovery.py`, `tests/test_reader_lexical_discovery.py` — RC-9;
 - `docs/architecture/READER_CORE_ARCHITECTURE.md` — normative RC-0 contract;
-- `docs/architecture/READER_RC8_RETRIEVAL_DECISION.md` — post-RC-7 decision.
+- `docs/architecture/READER_RC8_RETRIEVAL_DECISION.md` — post-RC-7 decision;
+- `docs/architecture/READER_RC9_LEXICAL_BASELINE.md` — RC-9 measured baseline.
 
 Machine implementation truth:
 
@@ -205,10 +230,10 @@ reader_core_rc7_cross_document_links = true
 dedicated_reader_core = false
 ```
 
-**Current non-features:** no automatic Reader parser/semantic chunker/OCR/PDF-layout/multimodal engine, no automatic NLP/LLM/provider Reader extraction or summarization, no Reader candidate-discovery runtime, no Reader embeddings/ANN/vector DB, no automatic semantic equivalence/entity resolution, no durable Reader schema/migration and no dedicated/full autonomous Reader runtime.
+**Current non-features:** no automatic Reader parser/semantic chunker/OCR/PDF-layout/multimodal engine, no automatic NLP/LLM/provider Reader extraction or summarization, no semantic/hybrid/vector Reader retrieval, no automatic semantic equivalence/entity resolution, no durable Reader retrieval schema/migration and no dedicated/full autonomous Reader runtime.
 
-## 17. Documentation, grant and research governance
+## 18. Documentation, grant and research governance
 
 **Start:** `AGENTS.md`, `docs/DOCUMENTATION_SYNC_PROTOCOL.md`, `docs/STATUS.md`, `docs/IMPLEMENTATION_STATUS.md`, `docs/GRANT_NLNET_SCOPE.md`, `ROADMAP.md`.
 
-GitHub `main` proves implementation. Notion preserves deeper rationale/strategy/history. NLnet remains `submitted / under review / not awarded`. RC-8 is architecture/research only and does not create a new Reader runtime capability. Issues #155, #165 and #214 remain separate scopes.
+GitHub `main` proves implementation. Notion preserves deeper rationale/strategy/history after exact post-merge evidence. NLnet remains `submitted / under review / not awarded`. RC-9 is a bounded pre-agreement lexical retrieval baseline, not funded semantic retrieval. Issues #155, #165 and #214 remain separate scopes.

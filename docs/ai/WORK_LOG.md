@@ -2,6 +2,21 @@
 
 This compact log records material decisions, exact evidence, limitations and hand-offs. It is not a replacement for Git history, issues, pull requests, `CHANGELOG.md` or Notion. Earlier detailed entries remain available through Git history.
 
+## 2026-08-12 — Reader RC-9 deterministic lexical candidate discovery (#375)
+
+- Live verified starting `main@bd85479e014c26ddebd0f4ae06385ce6625f5ab6`, signature `verified=true` / `reason=valid`, open PRs 0 before the milestone.
+- Reverified RC-8 exact-head CI `31581756932` on `a9a4e3b67c514c6c0eece58424c209e9693d3dd7` and post-merge push CI `31582325275` on `bd85479e...` as successful.
+- Confirmed #155/#165/#214 remain separate backlog and existing embedding/legacy/query retrieval is admitted-memory authority, not PRE-ADMISSION Reader identity machinery.
+- Created issue #375 and branch `feat/reader-rc9-lexical-baseline` from the exact audited main.
+- Added stdlib-only `core/reader_lexical_discovery.py`: conservative NFKC/case/whitespace normalization, stable lexical tokens, deterministic in-memory BM25, cross-document default filtering, self-match exclusion, stable tie-breaks and structured inspection-only results.
+- Added `scripts/bench_reader_rc9_lexical.py` and frozen result `eval/reader_rc9_lexical_baseline.json` over the unchanged 20-case RC-8 corpus.
+- Independent metric review corrected the provisional Precision calculation from returned-slot precision to fixed-K Precision@K so unfilled ranks cannot inflate the score. Final K=5 baseline: Recall 0.937500, Precision 0.187500, MRR 0.895833, paired hard-negative rate 1.000000. Cross-lingual paraphrase is missed; all four paired SAME_TOPIC/MERELY_SIMILAR hard negatives are surfaced in top-5.
+- Precision@5 is scoped to the bounded synthetic benchmark (`positive paired queries × K` denominator with non-paired right records treated as synthetic decoys), not a fully judged corpus-wide semantic precision claim.
+- Classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`. This is not semantic/vector authorization; embeddings, hybrid retrieval, ANN/vector DB, PostgreSQL activation, automatic identity/adjudication/evidence admission remain out of scope.
+- Local isolated RC-9 tests reached 100% line coverage for the new module/runner; repository exact-head CI remains the authoritative full Python 3.11/3.12 validation.
+- Added `docs/architecture/READER_RC9_LEXICAL_BASELINE.md` and reconciled current English status/risk/roadmap/component surfaces without rewriting the RC-8 historical decision.
+- Documentation impact: `GITHUB_AND_NOTION`; the three existing Crystal Notion pages may be updated only after guarded merge, verified signed main and successful exact post-merge CI.
+
 ## 2026-08-12 — Reader RC-8 post-RC-7 retrieval architecture decision (#373)
 
 - Live verified starting `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1`, signature `verified=true` / `reason=valid`, open PRs 0 before the milestone.
