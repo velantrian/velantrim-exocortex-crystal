@@ -28,14 +28,14 @@ Do not load the whole repository before completing this orientation pass.
 5. STATUS + IMPLEMENTATION_STATUS
 6. architecture documents and accepted ADRs
 7. English README primary public source
-8. CURRENT full-parity localized root READMEs
-9. TRANSLATION_STATUS + locale indexes for detail-pack freshness
+8. localized root/detail docs at their recorded source checkpoints
+9. TRANSLATION_STATUS + locale indexes for freshness
 10. this AI context pack
 11. PRs, issues, roadmaps and research documents
 12. Notion strategy/history
 ```
 
-Translated public text never overrides current implementation evidence when they disagree.
+Translated public text never overrides current implementation evidence when it disagrees.
 
 ## GitHub-first continuity
 
@@ -65,20 +65,52 @@ Notion.
 - Contradiction detection does not choose a winner without an audited decision.
 - TRACE and Receipt are proof surfaces.
 - The default runtime remains pure standard library.
-- Reader RC-1 and RC-2 are bounded implemented foundations; `dedicated_reader_core=false` remains the full Reader boundary.
+- Reader RC-1 through RC-7 are bounded implemented layers.
+- RC-8 is a completed retrieval architecture/research decision.
+- RC-9 is the completed deterministic lexical PRE-ADMISSION candidate-discovery implementation baseline.
+- PR #378 adds RC-10 reuse/comparison preregistration only; it executes no semantic/hybrid comparator and adds no Reader runtime.
+- `dedicated_reader_core=false` remains the full Reader capability boundary.
+
+```text
+retrieval match          != evidence
+similarity               != identity
+repetition               != corroboration
+cross-document candidate != Canon relation
+ranking                  != epistemic authority
+candidate discovery      != candidate adjudication
+comparison pass          != runtime authorization
+```
+
+## RC-9 evidence orientation
+
+Authoritative result: `eval/reader_rc9_lexical_baseline.json` and
+`docs/architecture/READER_RC9_LEXICAL_BASELINE.md`.
+
+K=5 frozen paired benchmark: Recall@5 `0.937500`, Precision@5 `0.187500`, MRR
+`0.895833`, paired hard-negative rate@5 `1.000000`, useful hits `15/16`, hard-negative
+hits `4/4`. Cross-lingual `rc8-004` is missed. Classification:
+`LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+
+Do not restate Recall@5 as “accuracy”, Precision@5 as semantic precision, or the measured gap
+as automatic authorization for semantic/vector retrieval.
 
 ## Documentation and translation
 
 English is the primary working and source language. English-first means source-first, not
 English-only.
 
-PR #340 restored full visual and semantic root README presentations in all nine supported
-languages. The current Reader reconciliation keeps all nine localized root READMEs `CURRENT`.
+The post-RC-9 grant-presentation reconciliation advances the **English** root/grant-facing
+source. It intentionally does not perform a broad translation refresh. Localized documents
+therefore remain authoritative only to the source checkpoints recorded in
+`TRANSLATION_STATUS.md`; they must not be treated as newer than those checkpoints.
 
-The Russian D1/D3/D4/D5 detail pack is fully refreshed for Reader RC-1/RC-2. D2 and Quick Start remain `CURRENT` in all nine locale packs because Reader milestones did not alter those source semantics. The eight other locale detail packs retain their rich previous translations, but Reader-dependent D1/D3/D4/D5 documents are `REFRESH_NEEDED` until full semantic refresh. Do not replace those rich translations with compressed summaries merely to regain a `CURRENT` marker.
+The retained Reader-dependent localization position remains: Russian Reader-dependent
+D1/D3/D4/D5 detail surfaces are current to the immutable RC-7 English layer; eight other
+Reader-dependent locale packs remain `REFRESH_NEEDED` (64 tracked detail documents). D2 and
+Quick Start remain current where their source semantics did not change.
 
-Broad translation work belongs in a dedicated docs-only PR. A translation may never strengthen
-English capability, security, grant or authority claims.
+A later localization milestone may restore full parity with the new English public README, but
+this grant-truth milestone does not do that work.
 
 Follow [`../DOCUMENTATION_SYNC_PROTOCOL.md`](../DOCUMENTATION_SYNC_PROTOCOL.md),
 [`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md) and
