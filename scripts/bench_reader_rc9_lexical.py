@@ -152,11 +152,7 @@ def run_benchmark(cases: Iterable[BenchmarkCase], *, k: int = 5) -> dict[str, ob
         )
 
     recall_at_k = positive_hits / positive_count if positive_count else 0.0
-    precision_at_k = (
-        positive_hits / returned_slots_for_positive_queries
-        if returned_slots_for_positive_queries
-        else 0.0
-    )
+    precision_at_k = positive_hits / (positive_count * k) if positive_count else 0.0
     mrr = sum(reciprocal_ranks) / positive_count if positive_count else 0.0
     hard_negative_rate = hard_negative_hits / hard_negative_count if hard_negative_count else 0.0
     return {
@@ -184,10 +180,11 @@ def run_benchmark(cases: Iterable[BenchmarkCase], *, k: int = 5) -> dict[str, ob
             "returned_slots_for_positive_queries": returned_slots_for_positive_queries,
         },
         "metric_scope": (
-            "The RC-8 JSONL judges only each case's left/right pair. Recall/MRR track the paired "
-            "useful candidate; precision treats other returned corpus entries as benchmark decoys. "
-            "Hard-negative rate tracks only the paired SAME_TOPIC/MERELY_SIMILAR traps. Metrics are "
-            "retrieval evidence, never epistemic adjudication."
+            "The RC-8 JSONL judges only each case's intended left/right pair. Recall/MRR track the "
+            "paired useful candidate. Precision@K uses a fixed K denominator over positive queries, "
+            "with all non-paired right-side records treated as synthetic benchmark decoys; unfilled "
+            "ranks therefore do not inflate precision. Hard-negative rate tracks only the paired "
+            "SAME_TOPIC/MERELY_SIMILAR traps. Metrics are retrieval evidence, never epistemic adjudication."
         ),
         "cases": [asdict(result) for result in case_results],
     }
