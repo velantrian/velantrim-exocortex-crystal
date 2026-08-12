@@ -104,6 +104,8 @@ RC-7 adds no automatic corpus discovery, semantic matching, entity resolution, d
 
 ## ✅ RC-8 — Post-RC-7 Candidate Discovery & Retrieval Architecture Decision
 
+Historical RC-8 gate label: **Next bounded Reader gate — post-RC-7 retrieval architecture decision**. That gate is completed; RC-9 is now the current bounded implementation milestone.
+
 Issue #373 / PR #374 completed.  
 Decision: `docs/architecture/READER_RC8_RETRIEVAL_DECISION.md`.  
 Adversarial corpus: `eval/reader_rc8_retrieval_adversarial.jsonl`.
