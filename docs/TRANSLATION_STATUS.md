@@ -74,13 +74,13 @@ D2 remains complete for all nine supported locales. D2 reviewer/safety translati
 
 D3 Reader-dependent detail translations are `CURRENT` in Russian; eight other supported locales are `REFRESH_NEEDED`. Russian now also carries RC-6 bounded working-set and provenance-preserving SUMMARY semantics.
 
-## D4 — project/grant/governance/glossary
+## D4 — project, grant, governance and glossary
 
 **D4 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
 
 D4 Reader-dependent detail translations are `CURRENT` in Russian; eight other supported locales are `REFRESH_NEEDED`. Grant status remains `submitted / under review / not awarded`; approximate €50,000 is planning only; budget change none.
 
-## D5 — extended reference
+## D5 — extended reference documents
 
 **D5 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
 
