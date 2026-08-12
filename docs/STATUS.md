@@ -187,13 +187,13 @@ Frozen K=5 result:
 | Metric | Result |
 |---|---:|
 | Recall@5 | 0.937500 |
-| Precision@5 | 0.217391 |
+| Precision@5 | 0.187500 |
 | MRR | 0.895833 |
 | Paired hard-negative rate@5 | 1.000000 |
 | Useful paired hits | 15 / 16 |
 | Hard-negative paired hits | 4 / 4 |
 
-The baseline misses the cross-lingual paraphrase and surfaces all four paired `SAME_TOPIC` / `MERELY_SIMILAR` hard negatives within top-5. The measured architecture classification is `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+Precision@5 uses the fixed-K synthetic benchmark denominator documented in the RC-9 architecture note; it is not fully judged corpus-wide semantic precision. The baseline misses the cross-lingual paraphrase and surfaces all four paired `SAME_TOPIC` / `MERELY_SIMILAR` hard negatives within top-5. The measured architecture classification is `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
 That classification is retrieval evidence only. It does **not** authorize semantic/hybrid retrieval, embeddings, ANN/vector DB, identity inference or adjudication.
 
