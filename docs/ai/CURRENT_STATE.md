@@ -57,6 +57,7 @@ RC-6 adds no parser/chunker/OCR/PDF-layout/multimodal engine, LLM/provider/model
 ## Localization
 
 The immutable RC-5 English localization checkpoint is `51c205fe048fd69d39fcd47b43e042a50de432bc`.
+The unchanged D2 reviewer/safety/privacy/failure source checkpoint remains `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
 
 Russian Reader-dependent public/detail documentation is refreshed and `CURRENT` **against that RC-5 checkpoint**. The Russian D1/D3/D4/D5 detail pack is current against the RC-5 checkpoint only; it must not be interpreted as already containing RC-6 semantics. D2 reviewer/safety translations remain current across all nine supported locales. Quick Start also remains current across all nine supported locales.
 
