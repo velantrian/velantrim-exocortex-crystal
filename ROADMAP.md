@@ -193,13 +193,13 @@ Frozen K=5 benchmark:
 | Metric | Result |
 |---|---:|
 | Recall@5 | 0.937500 |
-| Precision@5 | 0.217391 |
+| Precision@5 | 0.187500 |
 | MRR | 0.895833 |
 | Paired hard-negative rate@5 | 1.000000 |
 | Useful paired hits | 15 / 16 |
 | Hard-negative paired hits | 4 / 4 |
 
-The baseline misses the cross-lingual paraphrase and surfaces all four paired `SAME_TOPIC` / `MERELY_SIMILAR` hard negatives. It therefore records:
+Precision@5 uses the fixed `positive paired queries × K` denominator defined by the RC-9 bounded synthetic benchmark; it is not a fully judged corpus-wide semantic precision claim. The baseline misses the cross-lingual paraphrase and surfaces all four paired `SAME_TOPIC` / `MERELY_SIMILAR` hard negatives. It therefore records:
 
 ```text
 LEXICAL_BASELINE_EXPOSES_MEASURED_GAP
