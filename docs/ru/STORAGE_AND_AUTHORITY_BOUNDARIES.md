@@ -22,6 +22,7 @@ RC-6 сохраняет exact SourceVersion и direct RC-4 provenance, испо�
 
 ```text
 RC-1 / RC-2 / RC-3 / RC-4 / RC-5 / RC-6
+pass completion != comprehension proof
 working-set coverage != comprehension proof
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
