@@ -21,6 +21,7 @@
 | Inactive PostgreSQL/pgvector import | Implemented/tested | target remains `active=false` |
 | Active PostgreSQL runtime adapter | Not implemented | absent from ordinary runtime composition |
 | Automatic SQLite/PostgreSQL switching | Forbidden | import/equivalence success is not selection |
+| Exact-vs-ANN retrieval evaluation | Not implemented | RC-10 preregisters a bounded future comparison gate; no evaluation is executed |
 | Reader Core RC-0 architecture | Documented | normative authority/validation contract |
 | Reader Core RC-1 skeleton | Implemented/merged | `core/reader_core.py` |
 | Reader Core RC-2 structural map | Implemented/merged | `core/reader_structure.py` |
