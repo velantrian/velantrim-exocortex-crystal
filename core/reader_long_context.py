@@ -390,13 +390,13 @@ class ReaderLongContextStrategy:
             raise ValueError("RC-6 plan is stale for the current Reader session/source version")
 
         candidates = tuple(self._extractor.get_candidate(cid) for cid in working_set.candidate_ids)
-        for candidate in candidates:
-            self._validate_candidate(candidate)
         locators = self._working_set_locators(candidates)
         if tuple(locator.replay_key for locator in locators) != tuple(
             locator.replay_key for locator in working_set.locators
         ):
             raise ValueError("working-set leaf provenance no longer matches current RC-4 candidates")
+        for candidate in candidates:
+            self._validate_candidate(candidate)
 
         card = SegmentCard(
             card_id=summary_id,
