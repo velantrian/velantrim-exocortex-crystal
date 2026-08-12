@@ -102,13 +102,13 @@ D3 Reader-dependent detail translations are `CURRENT` in Russian at the RC-7 ref
 
 **D4 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
 
-Russian D4 Reader-dependent detail translations are `CURRENT`; eight other supported locales are `REFRESH_NEEDED`. Grant remains `submitted / under review / not awarded`; approximate €50,000 planning only; budget change none.
+D4 Reader-dependent detail translations are `CURRENT` in Russian at the RC-7 refresh layer. Eight other supported locales are `REFRESH_NEEDED`. Grant remains `submitted / under review / not awarded`; approximate €50,000 planning only; budget change none.
 
 ## D5 — extended reference documents
 
 **D5 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
 
-Russian D5 Reader-dependent detail translation is `CURRENT`; eight other supported locales are `REFRESH_NEEDED`. Detailed volatile evidence remains `ENGLISH_ONLY_BY_DESIGN` where declared; retired material remains audit history.
+D5 Reader-dependent detail translations are `CURRENT` in Russian at the RC-7 refresh layer. Eight other supported locales are `REFRESH_NEEDED`. Detailed volatile evidence remains `ENGLISH_ONLY_BY_DESIGN` where declared; retired material remains audit history.
 
 ## Authority / storage / grant
 

@@ -14,7 +14,9 @@ award: not awarded
 budget change: none
 ```
 
-NLnet **submitted / under review / not awarded**. Приблизительно **€50,000** — planning only, не approved budget/payment commitment. Работа, merged до agreement, становится existing baseline и не может повторно считаться future funded delta. RC-0..RC-6 уже baseline; RC-7 тоже станет baseline, если merged pre-agreement.
+NLnet **submitted / under review / not awarded**. Приблизительно **€50,000** — planning only, не approved budget/payment commitment. Работа, merged до agreement, становится existing baseline и не может повторно считаться future funded delta. RC-0 through RC-6 уже baseline; RC-7 тоже станет baseline, если merged pre-agreement.
+
+Исторический Reader baseline явно включает `RC-1`, `RC-2`, `RC-3`, `RC-4` и `RC-5`; RC-6 уже merged, RC-7 остаётся текущим bounded PR milestone до финального merge evidence.
 
 ```text
 EXTRACTED_PROPOSITION != verified fact
