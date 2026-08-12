@@ -30,14 +30,18 @@ def test_rc9_public_truth_documents_bounded_lexical_baseline():
     assert "reader_rc9_bm25_lexical_v1" in _text(
         "docs/architecture/READER_RC9_LEXICAL_BASELINE.md"
     )
-    for path in (
-        "docs/STATUS.md",
-        "docs/IMPLEMENTATION_STATUS.md",
-        "docs/ai/CURRENT_STATE.md",
-    ):
+
+    # Detailed status surfaces pin the runtime module; the concise AI current-state surface
+    # may describe the same implemented baseline at capability level.
+    for path in ("docs/STATUS.md", "docs/IMPLEMENTATION_STATUS.md"):
         text = _text(path)
         assert "core/reader_lexical_discovery.py" in text, path
         assert "dedicated_reader_core" in text and "false" in text, path
+
+    state = _text("docs/ai/CURRENT_STATE.md")
+    assert "RC-9 — deterministic lexical candidate discovery: COMPLETE" in state
+    assert "deterministic lexical candidate-discovery implementation baseline" in state
+    assert "dedicated_reader_core" in state and "false" in state
 
 
 def test_rc9_preserves_rc8_history_and_does_not_authorize_next_mechanism():
