@@ -51,6 +51,7 @@ retrieval match          != evidence
 similarity               != identity
 repetition               != corroboration
 cross-document candidate != Canon relation
+cross-document link      != Canon relation
 ranking                  != epistemic authority
 candidate discovery      != candidate adjudication
 comparison pass          != runtime authorization
