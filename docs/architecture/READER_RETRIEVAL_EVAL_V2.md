@@ -40,9 +40,11 @@ evaluation-contract defects and they were corrected before any merge:
 1. provisional `c01/c02/...` IDs encoded qrel position and could influence deterministic RC-9
    tie-breaking;
 2. `v2-q04` incorrectly treated an incompatible refund-scope statement as a hard negative;
-3. provisional Precision@5 divided by returned candidates, allowing unfilled ranks to inflate it;
-4. the runner checked component hashes but not the composite surface identity;
-5. the machine gate omitted explicit index-identity and privacy-review requirements.
+3. `v2-q23` initially labelled an unconditional cache-clear rule as merely related instead of an
+   incompatible-scope contradiction candidate;
+4. provisional Precision@5 divided by returned candidates, allowing unfilled ranks to inflate it;
+5. the runner checked component hashes but not the composite surface identity;
+6. the machine gate omitted explicit index-identity and privacy-review requirements.
 
 Final candidate IDs are label-independent and content-derived:
 
@@ -54,9 +56,12 @@ Candidate rows are sorted by `(pool_id, candidate_id)`, not qrel class. The qrel
 evaluation metadata only and does not participate in retrieval identity.
 
 For `v2-q04`, the incompatible statement “Customers may request a refund at any time after
-delivery.” is now a `USEFUL_CANDIDATE` / `POSSIBLE_CONTRADICTION`. The same-topic hard negative
-is “The return label can be downloaded from the customer portal.” The required 2 useful /
-2 hard-negative / 2 neutral design remains intact.
+delivery.” is `USEFUL_CANDIDATE / POSSIBLE_CONTRADICTION`. For `v2-q23`, the unconditional
+statement “The cache is cleared whenever the user logs out.” is also
+`USEFUL_CANDIDATE / POSSIBLE_CONTRADICTION` relative to the secure-mode condition. These review
+class corrections do not change the useful/hard/neutral counts or RC-9 ranking metrics; they correct
+semantic consistency of the frozen qrels. The required 2 useful / 2 hard-negative / 2 neutral
+design remains intact.
 
 ## 3. Frozen surface identity
 
@@ -65,7 +70,7 @@ Machine-readable manifest: `eval/reader_retrieval_eval_v2_manifest.json`.
 Composite surface digest:
 
 ```text
-7af2b1247e1c1c2590b6b2c830dd605da646989856b6c29cee18aac3e1f785e8
+753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cdd
 ```
 
 The digest is SHA-256 over the ordered identities of:
@@ -74,7 +79,7 @@ The digest is SHA-256 over the ordered identities of:
 |---|---:|---|
 | queries | 24 | `13dc860a364949932b23ed006eedf9416c345e1b00718c1beaa276f49fb64f47` |
 | candidates | 144 | `86d4db3bfea311e855889d4b14ac33b1b01010a773763710e387a3823d77d108` |
-| qrels | 144 | `7d774e376a793b1cbc3e735b3f9cd81d01a1d05468019e917346bcfe27c40f86` |
+| qrels | 144 | `34f2a30a4b6f7cdb058537920781683819d88d908e95905c41569aef06e26a11` |
 
 Construction:
 
