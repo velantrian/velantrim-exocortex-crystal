@@ -22,7 +22,7 @@ dedicated_reader_core=false
 ```
 
 RC-5 relation candidates remain implemented in `core/reader_relations.py`.
-RC-9 lexical candidate discovery remains implemented in `core/reader_lexical_discovery.py`.
+Reader RC-9 lexical candidate discovery remains implemented in `core/reader_lexical_discovery.py`.
 Historical RC-9 K=5 evidence remains Recall@5 `0.937500`, Precision@5 `0.187500`, MRR `0.895833`, paired hard-negative rate@5 `1.000000`; classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
 ## Reader Retrieval Evaluation Surface v2
