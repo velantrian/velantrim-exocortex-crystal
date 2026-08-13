@@ -105,6 +105,7 @@
     "runner": "scripts/bench_reader_eval_v2_lexical.py"
   },
   "review_corrections_before_freeze": {
+    "cache_scope_conflict_judged_possible_contradiction": true,
     "candidate_ids_qrel_label_independent": true,
     "composite_surface_digest_verified_by_runner": true,
     "fixed_slot_precision_reported": true,
@@ -123,7 +124,7 @@
     "qrels": {
       "path": "eval/reader_retrieval_eval_v2_qrels.jsonl",
       "rows": 144,
-      "sha256": "7d774e376a793b1cbc3e735b3f9cd81d01a1d05468019e917346bcfe27c40f86"
+      "sha256": "34f2a30a4b6f7cdb058537920781683819d88d908e95905c41569aef06e26a11"
     },
     "queries": {
       "path": "eval/reader_retrieval_eval_v2_queries.jsonl",
@@ -134,7 +135,7 @@
   "surface_identity": {
     "algorithm": "sha256",
     "construction": "sha256('queries:<sha256>\\ncandidates:<sha256>\\nqrels:<sha256>\\n')",
-    "digest": "7af2b1247e1c1c2590b6b2c830dd605da646989856b6c29cee18aac3e1f785e8"
+    "digest": "753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cdd"
   },
   "surface_version": 2,
   "tracking_issue": 384
