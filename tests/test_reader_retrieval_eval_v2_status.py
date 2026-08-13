@@ -28,7 +28,7 @@ def test_eval_v2_manifest_surface_and_control_are_frozen():
     manifest = json.loads((ROOT / "eval/reader_retrieval_eval_v2_manifest.json").read_text(encoding="utf-8"))
     assert manifest["status"] == "FROZEN_RC9_CONTROL_REPRODUCED_NO_MODEL_COMPARATOR"
     assert manifest["tracking_issue"] == 384
-    assert manifest["surface_identity"]["digest"] == "7af2b1247e1c1c2590b6b2c830dd605da646989856b6c29cee18aac3e1f785e8"
+    assert manifest["surface_identity"]["digest"] == "753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cdd"
     assert manifest["design"]["query_count"] == 24
     assert manifest["design"]["primary_strata_count"] == 12
     assert manifest["design"]["queries_per_primary_stratum"] == 2
@@ -38,6 +38,8 @@ def test_eval_v2_manifest_surface_and_control_are_frozen():
     assert manifest["design"]["neutral_decoy_judgment_count"] == 48
     assert manifest["design"]["judgment_coverage"] == 1.0
     assert "qrel-label-independent" in manifest["design"]["candidate_ordering"]
+    assert manifest["review_corrections_before_freeze"]["refund_scope_conflict_judged_possible_contradiction"] is True
+    assert manifest["review_corrections_before_freeze"]["cache_scope_conflict_judged_possible_contradiction"] is True
     files = manifest["surface_files"]
     for key in ("queries", "candidates", "qrels"):
         assert _sha256(ROOT / files[key]["path"]) == files[key]["sha256"]
@@ -94,19 +96,31 @@ def test_refund_scope_conflict_is_useful_possible_contradiction():
     assert portal["review_class"] == "SAME_TOPIC"
 
 
+def test_cache_scope_conflict_is_useful_possible_contradiction():
+    qrels = [json.loads(line) for line in (ROOT / "eval/reader_retrieval_eval_v2_qrels.jsonl").read_text(encoding="utf-8").splitlines() if line]
+    candidates = {row["candidate_id"]: row for row in (json.loads(line) for line in (ROOT / "eval/reader_retrieval_eval_v2_candidates.jsonl").read_text(encoding="utf-8").splitlines() if line)}
+    q23 = [row for row in qrels if row["query_id"] == "v2-q23"]
+    conflict = next(row for row in q23 if candidates[row["candidate_id"]]["proposition"] == "The cache is cleared whenever the user logs out.")
+    conditional = next(row for row in q23 if candidates[row["candidate_id"]]["proposition"] == "If secure mode is enabled, logging out clears the cache.")
+    assert conflict == {"candidate_id": conflict["candidate_id"], "judgment": "USEFUL_CANDIDATE", "query_id": "v2-q23", "review_class": "POSSIBLE_CONTRADICTION"}
+    assert conditional["judgment"] == "USEFUL_CANDIDATE"
+    assert conditional["review_class"] == "SAME_PROPOSITION_CANDIDATE"
+
+
 def test_current_surfaces_describe_corrected_eval_v2_without_runtime_overclaim():
     required = {
         "ROADMAP.md": ("Reader Retrieval Evaluation Surface v2", "0.875000", "0.350000", "0.355932", "0.857639", "0.791667", "comparison pass != runtime authorization"),
         "docs/STATUS.md": ("Reader Retrieval Evaluation Surface v2", "LEXICAL_CONTROL_EXPOSES_MULTI_STRATUM_GAPS", "42 / 48", "candidate discovery != candidate adjudication", "active=false"),
         "docs/IMPLEMENTATION_STATUS.md": ("Reader Retrieval Evaluation Surface v2", "Reader RC-9 lexical candidate discovery", "dedicated_reader_core=false", "comparison pass != runtime authorization"),
         "docs/ai/CURRENT_STATE.md": ("51c205fe048fd69d39fcd47b43e042a50de432bc", "reader_core_rc7_cross_document_links", "eight other localized root README files", "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP", "LEXICAL_CONTROL_EXPOSES_MULTI_STRATUM_GAPS"),
-        "docs/architecture/READER_RETRIEVAL_EVAL_V2.md": ("144/144", "42 / 48", "38 / 48", "7af2b1247e1c1c2590b6b2c830dd605da646989856b6c29cee18aac3e1f785e8", "NO MODEL COMPARATOR EXECUTED"),
+        "docs/architecture/READER_RETRIEVAL_EVAL_V2.md": ("144/144", "42 / 48", "38 / 48", "753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cdd", "NO MODEL COMPARATOR EXECUTED"),
         "docs/ai/COMPONENT_MAP.md": ("Reader Retrieval Evaluation Surface v2", "scripts/bench_reader_eval_v2_lexical.py", "comparison pass != runtime authorization"),
         "docs/ai/WORK_LOG.md": ("Reader Retrieval Evaluation Surface v2 (#384 / PR #385)", "label-independent", "model-backed comparator"),
     }
     for relative, markers in required.items():
         text = (ROOT / relative).read_text(encoding="utf-8")
-        for marker in markers: assert marker in text
+        for marker in markers:
+            assert marker in text
     combined = "\n".join((ROOT / relative).read_text(encoding="utf-8") for relative in required)
     assert "semantic/hybrid/vector Reader runtime" in combined
     assert "model-backed comparator execution" in combined or "model-backed comparator" in combined
