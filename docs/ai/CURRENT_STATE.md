@@ -29,7 +29,7 @@ reader_core_rc7_cross_document_links   = true
 dedicated_reader_core                  = false
 ```
 
-RC-9 remains the implemented deterministic lexical PRE-ADMISSION candidate-discovery runtime.
+RC-9 remains the deterministic lexical candidate-discovery implementation baseline for PRE-ADMISSION inspection.
 Evaluation Surface v2 adds no new Reader runtime layer.
 
 Historical RC-9 classification remains `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
