@@ -9,6 +9,8 @@ GitHub merged `main`, executable tests and exact CI are authoritative.
 - signed `main@e824556f304143cdb8403f44a7b020a528e63291`
 - signature `verified=true`, reason `valid`
 - post-merge CI `31670811115` — 9/9
+- Issue #377 / PR #378 — RC-10 preregistration completed; no comparator executed.
+- Issue #382 / PR #383 — post-RC-10 reassessment completed; Evaluation Surface v2 selected as the next separately authorized milestone.
 
 ## Reader machine truth
 
@@ -25,7 +27,9 @@ dedicated_reader_core                  = false
 
 RC-1 through RC-7 are merged bounded Reader layers.
 RC-7 remains signed `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1`, post-merge CI `31572918731`.
+**RC-9 — deterministic lexical candidate discovery: COMPLETE.**
 RC-9 remains the deterministic lexical candidate-discovery implementation baseline in `core/reader_lexical_discovery.py`; signed `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`, post-merge CI `31594027040`.
+Historical RC-9 K=5 evidence remains Recall@5 `0.937500`, Precision@5 `0.187500`, MRR `0.895833`, useful hits `15 / 16`, and paired hard-negative rate@5 `1.000000`.
 Historical classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 RC-9 is empirical and intentionally modest.
 
@@ -65,6 +69,7 @@ surface sha256 = 753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cd
 ```
 
 Final RC-9 v2 control: useful hits `42 / 48`; Recall@5 `0.875000`; fixed-slot Precision@5 `0.350000`; judged precision-over-returned `0.355932`; MRR `0.857639`; hard-negative hits `38 / 48`; hard-negative rate@5 `0.791667`; any-useful-query `1.000000`; all-useful-query `0.750000`.
+Classification: `LEXICAL_CONTROL_EXPOSES_MULTI_STRATUM_GAPS`.
 
 Reviewed q04 refund-scope and q23 unconditional cache-scope pairs are useful `POSSIBLE_CONTRADICTION` candidates. Candidate IDs are content-derived and qrel-label-independent.
 
