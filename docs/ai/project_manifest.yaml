@@ -1,0 +1,9 @@
+schema: velantrim-documentation-manifest/1
+project: Velantrim Exo-Cortex Crystal
+human_start: README.md
+ai_start: docs/ai/README.md
+current_state: docs/ai/CURRENT_STATE.md
+machine_state: docs/status/implementation-manifest.json
+update_classes: [STRUCTURAL_CHANGE, STATE_CHANGE, EVIDENCE_ONLY]
+preserve_history: true
+resolve_live_head_from_github: true
