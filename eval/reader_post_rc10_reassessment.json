@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "milestone": "reader_post_rc10_evaluation_reassessment",
+  "status": "ARCHITECTURE_DECISION_NO_COMPARATOR_EXECUTED",
+  "tracking_issue": 382,
+  "audited_start_main": "59cf060629c25ddf0747ca46ea1fadf87fa86857",
+  "current_implemented_reader_retrieval_baseline": "reader_rc9_bm25_lexical_v1",
+  "rc10_preregistration_preserved": true,
+  "rc10_preregistration_path": "eval/reader_rc10_retrieval_comparison_preregistration.json",
+  "measured_findings": {
+    "rc9_recall_at_5": 0.9375,
+    "rc9_mrr": 0.895833,
+    "rc9_useful_paired_hits": 15,
+    "rc9_useful_paired_total": 16,
+    "rc9_paired_hard_negative_hits": 4,
+    "rc9_paired_hard_negative_total": 4,
+    "known_cross_lingual_miss_case_ids": ["rc8-004"],
+    "retrieval_quality_gap_measured": true,
+    "reader_scale_or_latency_blocker_measured": false
+  },
+  "option_disposition": {
+    "rc9_in_memory_bm25": "PRESERVE_AS_FROZEN_CONTROL_AND_FALLBACK",
+    "sqlite_fts5": "DEFER_UNTIL_MEASURED_SCALE_NEED",
+    "core.rrf": "FUTURE_COMPARISON_UTILITY_ONLY",
+    "core.embedding.HashingEmbedder": "COMPARATOR_CONTROL_SIGNAL_ONLY",
+    "core.embedding.TrigramHashingEmbedder": "COMPARATOR_CONTROL_SIGNAL_ONLY",
+    "core.embedding.SentenceTransformerEmbedder": "DO_NOT_EXECUTE_AS_QUALIFYING_READER_COMPARATOR_WITHOUT_SEPARATE_PINNED_AUTHORIZATION",
+    "new_pinned_multilingual_semantic_comparator": "FUTURE_SEPARATELY_AUTHORIZED_EXPERIMENT_ONLY",
+    "ann_vector_backend": "NOT_JUSTIFIED",
+    "postgresql_pgvector": "NOT_AUTHORIZED_FOR_READER",
+    "stronger_prefrozen_evaluation_surface": "SELECTED_NEXT_BOUNDED_MILESTONE"
+  },
+  "selected_next_milestone": {
+    "name": "reader_retrieval_evaluation_surface_v2",
+    "kind": "EVALUATION_RESEARCH_ONLY",
+    "started_by_this_decision": false,
+    "semantic_comparator_executed": false,
+    "model_dependency_added": false,
+    "runtime_change_authorized": false,
+    "purpose": "Freeze a stronger judged evaluation surface and reproduce the unchanged RC-9 control before any model-backed comparator result is observed.",
+    "must_preserve_rc8_and_rc10_history_unchanged": true,
+    "must_add_separate_versioned_corpus": true,
+    "must_include_multiple_cross_lingual_useful_and_hard_negative_cases": true,
+    "must_include_multiple_identity_scope_traps": true,
+    "must_use_judged_candidate_pools_or_qrels": true,
+    "must_freeze_metrics_and_acceptance_before_model_results": true,
+    "must_reproduce_rc9_control": true,
+    "model_backed_comparator_allowed_in_same_milestone": false
+  },
+  "future_comparator_admission": {
+    "requires_separate_authorization": true,
+    "must_pass_unchanged_rc10_screen": true,
+    "must_be_evaluated_on_stronger_surface_after_freeze": true,
+    "auto_backend_allowed": false,
+    "exact_model_or_backend_identity_required": true,
+    "query_time_network_calls_max": 0,
+    "external_reader_source_text_transmission_allowed": false,
+    "runtime_authorized_by_comparison_pass": false
+  },
+  "authority": {
+    "retrieval_match_is_evidence": false,
+    "similarity_is_identity": false,
+    "repetition_is_corroboration": false,
+    "cross_document_candidate_is_canon_relation": false,
+    "ranking_is_epistemic_authority": false,
+    "candidate_discovery_is_candidate_adjudication": false,
+    "comparison_pass_is_runtime_authorization": false
+  },
+  "storage_and_runtime": {
+    "sqlite_ordinary_active_local_first": true,
+    "reader_sqlite_fts_runtime": false,
+    "postgresql_pgvector_reader_active": false,
+    "semantic_reader_runtime": false,
+    "hybrid_reader_runtime": false,
+    "vector_reader_runtime": false,
+    "dedicated_reader_core": false
+  },
+  "grant": {
+    "nlnet_status": "submitted_under_review_not_awarded",
+    "approx_eur_50000_is_planning_only": true,
+    "this_decision_is_runtime_delivery": false
+  }
+}
