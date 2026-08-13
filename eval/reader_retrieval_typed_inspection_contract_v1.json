@@ -1,0 +1,153 @@
+{
+  "schema": "velantrim-reader-retrieval-typed-inspection-contract/1",
+  "name": "Reader Retrieval Typed Inspection Contract v1",
+  "status": "FROZEN_ARCHITECTURE_CONTRACT",
+  "starting_main": "d8bc98cb7643019b34ffacde2e87c3e81a5556ba",
+  "tracking_issue": 391,
+  "purpose": "Describe retrieval-side candidate relation suspicions and structural qualifier differences without accepting, rejecting, adjudicating, or admitting evidence.",
+  "relation_families": [
+    "EQUIVALENCE_SUSPECT",
+    "RELATED_SUSPECT",
+    "CONTRADICTION_SUSPECT",
+    "QUALIFICATION_SUSPECT",
+    "TOPIC_ONLY_SUSPECT",
+    "UNKNOWN"
+  ],
+  "qualifier_dimensions": [
+    "entity_binding",
+    "predicate_binding",
+    "argument_roles",
+    "polarity",
+    "modality_quantifier",
+    "temporal_version",
+    "jurisdiction",
+    "condition_direction",
+    "units_thresholds",
+    "attribution_causality"
+  ],
+  "qualifier_states": [
+    "MATCH",
+    "MISMATCH",
+    "UNKNOWN",
+    "NOT_APPLICABLE"
+  ],
+  "required_authority_flags": {
+    "identity_claimed": false,
+    "evidence_admitted": false,
+    "adjudication_performed": false,
+    "runtime_authorization": false
+  },
+  "decision_policy": {
+    "accept_reject_decision": false,
+    "reranking_decision": false,
+    "truth_score": false,
+    "identity_score": false,
+    "evidence_score": false
+  },
+  "runtime": {
+    "core_changes": false,
+    "model_required": false,
+    "network_required": false,
+    "new_dependencies": false
+  },
+  "rc5_compatibility": {
+    "existing_module": "core/reader_relations.py",
+    "replaces_rc5": false,
+    "auto_registers_rc5": false,
+    "relation_kind_mapping_authorized": false
+  },
+  "evaluation_policy": {
+    "prior_frozen_surfaces_are_explanatory_only": true,
+    "performance_qualification_authorized": false,
+    "future_discriminator_requires_new_experiment_identity": true,
+    "future_discriminator_requires_preregistration": true,
+    "future_discriminator_requires_fresh_validation_design": true
+  },
+  "representability_examples": [
+    {
+      "id": "synthetic-related-causal",
+      "relation_family": "RELATED_SUSPECT",
+      "qualifiers": {
+        "entity_binding": "MATCH",
+        "predicate_binding": "MISMATCH",
+        "argument_roles": "UNKNOWN",
+        "polarity": "MATCH",
+        "modality_quantifier": "NOT_APPLICABLE",
+        "temporal_version": "UNKNOWN",
+        "jurisdiction": "NOT_APPLICABLE",
+        "condition_direction": "NOT_APPLICABLE",
+        "units_thresholds": "NOT_APPLICABLE",
+        "attribution_causality": "MISMATCH"
+      }
+    },
+    {
+      "id": "synthetic-low-overlap-paraphrase",
+      "relation_family": "EQUIVALENCE_SUSPECT",
+      "qualifiers": {
+        "entity_binding": "MATCH",
+        "predicate_binding": "MATCH",
+        "argument_roles": "MATCH",
+        "polarity": "MATCH",
+        "modality_quantifier": "MATCH",
+        "temporal_version": "MATCH",
+        "jurisdiction": "NOT_APPLICABLE",
+        "condition_direction": "NOT_APPLICABLE",
+        "units_thresholds": "NOT_APPLICABLE",
+        "attribution_causality": "UNKNOWN"
+      }
+    },
+    {
+      "id": "synthetic-conditional-direction",
+      "relation_family": "QUALIFICATION_SUSPECT",
+      "qualifiers": {
+        "entity_binding": "MATCH",
+        "predicate_binding": "MATCH",
+        "argument_roles": "MATCH",
+        "polarity": "MATCH",
+        "modality_quantifier": "UNKNOWN",
+        "temporal_version": "NOT_APPLICABLE",
+        "jurisdiction": "NOT_APPLICABLE",
+        "condition_direction": "MISMATCH",
+        "units_thresholds": "NOT_APPLICABLE",
+        "attribution_causality": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "id": "synthetic-entity-collision",
+      "relation_family": "TOPIC_ONLY_SUSPECT",
+      "qualifiers": {
+        "entity_binding": "MISMATCH",
+        "predicate_binding": "UNKNOWN",
+        "argument_roles": "UNKNOWN",
+        "polarity": "UNKNOWN",
+        "modality_quantifier": "NOT_APPLICABLE",
+        "temporal_version": "NOT_APPLICABLE",
+        "jurisdiction": "NOT_APPLICABLE",
+        "condition_direction": "NOT_APPLICABLE",
+        "units_thresholds": "NOT_APPLICABLE",
+        "attribution_causality": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "id": "synthetic-polarity-mismatch",
+      "relation_family": "CONTRADICTION_SUSPECT",
+      "qualifiers": {
+        "entity_binding": "MATCH",
+        "predicate_binding": "MATCH",
+        "argument_roles": "MATCH",
+        "polarity": "MISMATCH",
+        "modality_quantifier": "UNKNOWN",
+        "temporal_version": "UNKNOWN",
+        "jurisdiction": "UNKNOWN",
+        "condition_direction": "UNKNOWN",
+        "units_thresholds": "UNKNOWN",
+        "attribution_causality": "UNKNOWN"
+      }
+    }
+  ],
+  "stop_gate": {
+    "max_relation_families": 6,
+    "max_qualifier_dimensions": 10,
+    "implicit_accept_reject_forbidden": true
+  }
+}
