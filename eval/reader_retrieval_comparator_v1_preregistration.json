@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "milestone": "reader_retrieval_comparator_v1",
+  "status": "PRE_REGISTERED_BEFORE_RESULT",
+  "tracking_issue": 386,
+  "audited_start_main": "f685a0b520530e67dd3fd02dd3ac75f5d4f0bd28",
+  "comparator": {
+    "mode": "multilingual_sentence_embedding_cosine_pool_ranking",
+    "backend": "sentence-transformers",
+    "package_version": "5.7.0",
+    "transformers_version": "5.14.1",
+    "model_name": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+    "model_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+    "model_safetensors_sha256": "eaa086f0ffee582aeb45b36e34cdd1fe2d6de2bef61f8a559a1bbc9bd955917b",
+    "device": "cpu",
+    "similarity": "cosine",
+    "k": 5,
+    "index": "NO_INDEX_EXACT_POOL_SCORING",
+    "auto_backend_selection": false
+  },
+  "execution_policy": {
+    "assets_preloaded_before_qualifying_run": true,
+    "model_download_during_qualifying_run": false,
+    "hf_hub_offline_required": true,
+    "transformers_offline_required": true,
+    "query_time_network_calls_max": 0,
+    "external_reader_source_text_transmission_allowed": false,
+    "privacy_review_required": true,
+    "repeatability_observation_required": true,
+    "resource_observation_required": true,
+    "exact_resolved_dependency_versions_recorded_in_result": true,
+    "threshold_changes_after_result_allowed": false
+  },
+  "frozen_evaluation": {
+    "historical_rc10_gate": "eval/reader_rc10_retrieval_comparison_preregistration.json",
+    "v2_gate": "eval/reader_retrieval_eval_v2_future_comparator_gate.json",
+    "v2_surface_sha256": "753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cdd",
+    "historical_artifacts_must_remain_unchanged": true
+  },
+  "authority": {
+    "retrieval_match_is_evidence": false,
+    "similarity_is_identity": false,
+    "repetition_is_corroboration": false,
+    "cross_document_candidate_is_canon_relation": false,
+    "ranking_is_epistemic_authority": false,
+    "candidate_discovery_is_candidate_adjudication": false,
+    "comparison_pass_is_runtime_authorization": false
+  },
+  "non_scope": {
+    "reader_runtime": false,
+    "semantic_runtime": false,
+    "hybrid_runtime": false,
+    "sqlite_fts": false,
+    "ann_vector_database": false,
+    "postgresql_pgvector_activation": false,
+    "canon_or_evidence_mutation": false,
+    "automatic_identity_or_adjudication": false,
+    "mandatory_runtime_dependency": false
+  },
+  "outcome_rule": "PASS only means ELIGIBLE_FOR_ARCHITECTURE_REVIEW_ONLY; FAIL is retained evidence and must not trigger post-result threshold edits."
+}
