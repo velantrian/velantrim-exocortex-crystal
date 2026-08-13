@@ -58,12 +58,13 @@ Issue #384 adds a separate fully judged surface rather than rewriting historical
 144/144 explicit qrels
 judgment coverage = 1.0
 K = 5
-surface sha256 = 7af2b1247e1c1c2590b6b2c830dd605da646989856b6c29cee18aac3e1f785e8
+surface sha256 = 753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cdd
 ```
 
 Candidate IDs are opaque, content-derived and qrel-label-independent; their order cannot encode
-useful/hard/neutral position. The reviewed refund-scope conflict is a useful
-`POSSIBLE_CONTRADICTION`, not a hard negative.
+useful/hard/neutral position. The reviewed refund-scope and unconditional cache-scope conflicts are
+both useful `POSSIBLE_CONTRADICTION` candidates. These review-class corrections preserve the
+2 useful / 2 hard-negative / 2 neutral design and do not change RC-9 retrieval metrics.
 
 Unchanged RC-9 on v2:
 
