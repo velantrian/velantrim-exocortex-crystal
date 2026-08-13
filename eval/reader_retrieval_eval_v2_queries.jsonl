@@ -1,0 +1,24 @@
+{"pool_id":"v2-q01-pool","primary_stratum":"cross_lingual_paraphrase","proposition":"The backup was cancelled after the checksum verification failed.","query_id":"v2-q01","secondary_strata":["en_ru","causal"]}
+{"pool_id":"v2-q02-pool","primary_stratum":"cross_lingual_paraphrase","proposition":"The sensor enters safe mode when the pressure limit is exceeded.","query_id":"v2-q02","secondary_strata":["en_de","conditional"]}
+{"pool_id":"v2-q03-pool","primary_stratum":"low_lexical_overlap_paraphrase","proposition":"The board delayed the launch because two safety tests were incomplete.","query_id":"v2-q03","secondary_strata":[]}
+{"pool_id":"v2-q04-pool","primary_stratum":"low_lexical_overlap_paraphrase","proposition":"Customers can request a refund only within fourteen days of delivery.","query_id":"v2-q04","secondary_strata":["temporal_scope"]}
+{"pool_id":"v2-q05-pool","primary_stratum":"negation_polarity","proposition":"The update does not delete locally stored notes.","query_id":"v2-q05","secondary_strata":[]}
+{"pool_id":"v2-q06-pool","primary_stratum":"negation_polarity","proposition":"The trial found no increase in serious adverse events.","query_id":"v2-q06","secondary_strata":[]}
+{"pool_id":"v2-q07-pool","primary_stratum":"modality_scope","proposition":"The patch may reduce memory use under heavy load.","query_id":"v2-q07","secondary_strata":[]}
+{"pool_id":"v2-q08-pool","primary_stratum":"modality_scope","proposition":"The policy should prevent automatic publication of draft reports.","query_id":"v2-q08","secondary_strata":[]}
+{"pool_id":"v2-q09-pool","primary_stratum":"quantifier_scope","proposition":"Every replica acknowledged the configuration change.","query_id":"v2-q09","secondary_strata":[]}
+{"pool_id":"v2-q10-pool","primary_stratum":"quantifier_scope","proposition":"At least three reviewers must approve the release.","query_id":"v2-q10","secondary_strata":[]}
+{"pool_id":"v2-q11-pool","primary_stratum":"temporal_version","proposition":"Version 4.2 accepted the legacy token format until March 2025.","query_id":"v2-q11","secondary_strata":[]}
+{"pool_id":"v2-q12-pool","primary_stratum":"temporal_version","proposition":"The 2026 protocol requires two signatures for withdrawals above €5,000.","query_id":"v2-q12","secondary_strata":["numeric_threshold"]}
+{"pool_id":"v2-q13-pool","primary_stratum":"jurisdiction_context","proposition":"The appeal period is thirty days under German procedure.","query_id":"v2-q13","secondary_strata":[]}
+{"pool_id":"v2-q14-pool","primary_stratum":"jurisdiction_context","proposition":"In Region A, drones above 250 grams require registration.","query_id":"v2-q14","secondary_strata":["units_thresholds"]}
+{"pool_id":"v2-q15-pool","primary_stratum":"attribution_quotation","proposition":"The audit report states that the reserve is sufficient.","query_id":"v2-q15","secondary_strata":[]}
+{"pool_id":"v2-q16-pool","primary_stratum":"attribution_quotation","proposition":"The researcher quoted a claim that the drug improves sleep.","query_id":"v2-q16","secondary_strata":[]}
+{"pool_id":"v2-q17-pool","primary_stratum":"units_thresholds","proposition":"The daily dose limit is 1.5 grams.","query_id":"v2-q17","secondary_strata":[]}
+{"pool_id":"v2-q18-pool","primary_stratum":"units_thresholds","proposition":"The alarm activates above 80 degrees Celsius.","query_id":"v2-q18","secondary_strata":[]}
+{"pool_id":"v2-q19-pool","primary_stratum":"homonym_entity_collision","proposition":"Mercury has almost no atmosphere.","query_id":"v2-q19","secondary_strata":[]}
+{"pool_id":"v2-q20-pool","primary_stratum":"homonym_entity_collision","proposition":"Python introduced structural pattern matching in version 3.10.","query_id":"v2-q20","secondary_strata":[]}
+{"pool_id":"v2-q21-pool","primary_stratum":"boilerplate_same_topic","proposition":"This notice is for information only and does not constitute legal advice about immigration.","query_id":"v2-q21","secondary_strata":[]}
+{"pool_id":"v2-q22-pool","primary_stratum":"boilerplate_same_topic","proposition":"The release notes describe a fix for corrupted index files.","query_id":"v2-q22","secondary_strata":[]}
+{"pool_id":"v2-q23-pool","primary_stratum":"conditional_exception","proposition":"The cache is cleared on logout only when secure mode is enabled.","query_id":"v2-q23","secondary_strata":[]}
+{"pool_id":"v2-q24-pool","primary_stratum":"conditional_exception","proposition":"Birds generally fly, but penguins are a flightless exception.","query_id":"v2-q24","secondary_strata":["exception_scope"]}

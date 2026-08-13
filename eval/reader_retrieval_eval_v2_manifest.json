@@ -1,0 +1,66 @@
+{
+  "authority": {
+    "candidate_discovery_is_candidate_adjudication": false,
+    "comparison_pass_is_runtime_authorization": false,
+    "cross_document_candidate_is_canon_relation": false,
+    "ranking_is_epistemic_authority": false,
+    "repetition_is_corroboration": false,
+    "retrieval_match_is_evidence": false,
+    "similarity_is_identity": false
+  },
+  "design": {
+    "candidates_per_query_pool": 6,
+    "hard_negative_judgment_count": 48,
+    "hard_negative_judgments_per_query": 2,
+    "identity_derivation": "document_id='eval-v2-doc-'+record_id; source_uri='synthetic://reader-eval-v2/'+record_id",
+    "judgment_coverage": 1.0,
+    "k": 5,
+    "neutral_decoy_judgment_count": 48,
+    "neutral_decoy_judgments_per_query": 2,
+    "pooling": "fixed fully judged six-candidate pool per query",
+    "primary_strata_count": 12,
+    "qrels_per_query_pool": 6,
+    "queries_per_primary_stratum": 2,
+    "query_count": 24,
+    "source_kind": "synthetic_adversarial",
+    "useful_judgment_count": 48,
+    "useful_judgments_per_query": 2
+  },
+  "execution_constraints": {"epistemic_authority_changed": false, "model_downloaded": false, "new_runtime_dependency_added": false, "rc9_core_changed": false, "reader_fts_or_vector_runtime_added": false, "semantic_or_hybrid_comparator_executed": false, "storage_schema_changed": false},
+  "future_comparator_preregistration": {"historical_rc10_gate_remains_required": true, "passing_is_runtime_authorization": false, "path": "eval/reader_retrieval_eval_v2_future_comparator_gate.json", "status": "PRE_REGISTERED_NO_MODEL_COMPARATOR_EXECUTED"},
+  "historical_artifacts_preserved": {
+    "rc10_preregistration": {"git_blob": "70758595c220820d456a2ea4db68589289995294", "path": "eval/reader_rc10_retrieval_comparison_preregistration.json"},
+    "rc8_corpus": {"git_blob": "4be317549d7a8eae9d69f9fa208d07d8855779a4", "path": "eval/reader_rc8_retrieval_adversarial.jsonl"},
+    "rc9_control": {"git_blob": "7ffbc86d713b7be89d393fe56c2d160b9dee98dc", "path": "eval/reader_rc9_lexical_baseline.json"}
+  },
+  "interpretation": "This frozen surface strengthens retrieval evaluation before model selection. RC-9 is reproduced unchanged as a control and exposes misses/hard-negative retrieval across multiple strata. The artifact does not measure semantic truth, proposition identity, evidence quality or runtime production performance.",
+  "metric_definitions": {
+    "all_useful_query_rate_at_k": "queries with both useful candidates retrieved / all queries",
+    "any_useful_query_rate_at_k": "queries with at least one useful candidate retrieved / all queries",
+    "hard_negative_hit_rate_at_k": "explicit hard-negative qrels retrieved / all explicit hard-negative qrels",
+    "judged_precision_at_k": "explicit useful qrels retrieved / actually returned candidates; every returned candidate is explicitly judged",
+    "judgment_coverage": "explicit qrels / candidate-query pool pairs; must equal 1.0",
+    "mrr": "mean reciprocal rank of the first explicit useful candidate per query",
+    "useful_recall_at_k": "explicit useful qrels retrieved / all explicit useful qrels"
+  },
+  "milestone": "reader_retrieval_evaluation_surface_v2",
+  "primary_strata": ["attribution_quotation", "boilerplate_same_topic", "conditional_exception", "cross_lingual_paraphrase", "homonym_entity_collision", "jurisdiction_context", "low_lexical_overlap_paraphrase", "modality_scope", "negation_polarity", "quantifier_scope", "temporal_version", "units_thresholds"],
+  "rc9_v2_control": {
+    "classification": "LEXICAL_CONTROL_EXPOSES_MULTI_STRATUM_GAPS",
+    "method": "reader_rc9_bm25_lexical_v1",
+    "metrics": {"all_useful_query_rate_at_k": 0.791667, "any_useful_query_rate_at_k": 1.0, "hard_negative_hit_rate_at_k": 0.791667, "hard_negative_hits": 38, "hard_negative_total": 48, "judged_precision_at_k": 0.364407, "mrr": 0.829861, "neutral_decoy_hits": 37, "returned_candidates": 118, "useful_hits": 43, "useful_recall_at_k": 0.895833, "useful_total": 48},
+    "result_path": "eval/reader_retrieval_eval_v2_rc9_control.json",
+    "runner": "scripts/bench_reader_eval_v2_lexical.py"
+  },
+  "schema_version": 1,
+  "starting_main": "e824556f304143cdb8403f44a7b020a528e63291",
+  "status": "FROZEN_RC9_CONTROL_REPRODUCED_NO_MODEL_COMPARATOR",
+  "surface_files": {
+    "candidates": {"path": "eval/reader_retrieval_eval_v2_candidates.jsonl", "rows": 144, "sha256": "78ceff678e687f3153d59e2bcd181550a4135374cdadc84b260eabf8d370fc43"},
+    "qrels": {"path": "eval/reader_retrieval_eval_v2_qrels.jsonl", "rows": 144, "sha256": "000c876d02451490e085f08e740772749f4029b63b4dd27b0a077a96f1c072cb"},
+    "queries": {"path": "eval/reader_retrieval_eval_v2_queries.jsonl", "rows": 24, "sha256": "13dc860a364949932b23ed006eedf9416c345e1b00718c1beaa276f49fb64f47"}
+  },
+  "surface_identity": {"algorithm": "sha256", "construction": "sha256('queries:<sha256>\\ncandidates:<sha256>\\nqrels:<sha256>\\n')", "digest": "c5c134c6be6536bc27c6ea641d479777eaf617bbecfbda7a230817df000034de"},
+  "surface_version": 2,
+  "tracking_issue": 384
+}
