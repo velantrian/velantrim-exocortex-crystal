@@ -35,6 +35,8 @@ Evaluation Surface v2 adds no new Reader runtime layer.
 Historical RC-9 classification remains `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 Historical K=5 RC-8 evidence remains Recall@5 `0.937500`, Precision@5 `0.187500`, MRR
 `0.895833`, useful paired hits 15/16 and hard-negative paired hits 4/4.
+RC-9 is empirical and intentionally modest: it is a bounded lexical retrieval baseline, not
+semantic understanding, adjudication accuracy, evidence admission or truth verification.
 
 ## Evaluation Surface v2 — final pre-result freeze
 
