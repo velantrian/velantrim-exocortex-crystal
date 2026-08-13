@@ -52,6 +52,10 @@ similarity               != identity
 repetition               != corroboration
 cross-document candidate != Canon relation
 cross-document link      != Canon relation
+same-topic               != same proposition
+possible-same-claim      != claim identity
+similarity signal        != identity proof
+repetition across sources != corroboration
 ranking                  != epistemic authority
 candidate discovery      != candidate adjudication
 comparison pass          != runtime authorization
@@ -71,8 +75,8 @@ RC-9 remains the deterministic control/fallback.
 ## 🧪 Reader Retrieval Evaluation Surface v2 — #384 / #385
 
 Historical RC-8/RC-9/RC-10 artifacts remain immutable. The final v2 freeze uses opaque,
-content-derived, **qrel-label-independent candidate IDs** and corrects the reviewed refund-scope
-conflict to `POSSIBLE_CONTRADICTION`.
+content-derived, **qrel-label-independent candidate IDs** and corrects reviewed scope conflicts to
+`POSSIBLE_CONTRADICTION`.
 
 Frozen design:
 
