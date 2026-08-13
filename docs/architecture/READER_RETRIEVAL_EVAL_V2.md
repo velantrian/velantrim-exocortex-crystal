@@ -136,13 +136,13 @@ Frozen K=5 v2 result:
 | Metric | Result |
 |---|---:|
 | Useful judgments | 48 |
-| Useful hits@5 | 43 |
+| Useful hits@5 | **43 / 48** |
 | Useful Recall@5 | **0.895833** |
 | Returned candidates | 118 |
 | Fully judged Precision@5 | **0.364407** |
 | MRR | **0.829861** |
 | Hard-negative judgments | 48 |
-| Hard-negative hits@5 | 38 |
+| Hard-negative hits@5 | **38 / 48** |
 | Hard-negative hit rate@5 | **0.791667** |
 | Any-useful-query rate@5 | **1.000000** |
 | All-useful-query rate@5 | **0.791667** |
