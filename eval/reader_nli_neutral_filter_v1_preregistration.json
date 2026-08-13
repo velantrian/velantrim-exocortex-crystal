@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "milestone": "reader_nli_neutral_filter_v1",
+  "status": "PRE_REGISTERED_BEFORE_RESULT",
+  "tracking_issue": 388,
+  "audited_start_main": "1ca31f92dfc0818a07b6a33560799c962b6e7d9f",
+  "semantic_source": {
+    "result": "eval/reader_retrieval_comparator_v1_result.json",
+    "model_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+    "k": 5,
+    "ranking_frozen": true
+  },
+  "nli": {
+    "model": "MoritzLaurer/multilingual-MiniLMv2-L6-mnli-xnli",
+    "revision": "0a71e92a985b6e1ad1828cf67ce9c459639c1dca",
+    "safetensors_sha256": "91b323ccf247ec1e3b5925d566230bae7c52de8147e6062b42e250089a3fc80b",
+    "id2label": {"0": "entailment", "1": "neutral", "2": "contradiction"},
+    "device": "cpu",
+    "rule": "filter only when both directional argmax labels are neutral",
+    "score_threshold": null,
+    "preserve_semantic_order": true
+  },
+  "dependencies": {
+    "path": "eval/reader_nli_neutral_filter_v1_requirements.txt",
+    "sha256": "9a2902d1b7d5b7ca5b5105be46d1a1151fddf683e0ed67b078a09c948b3f4bd9",
+    "package_count": 59,
+    "exact_match_required": true
+  },
+  "execution": {
+    "offline_env_required": true,
+    "network_namespace_isolation_required": true,
+    "query_time_network_calls_max": 0,
+    "external_source_text_transmission": false,
+    "repeatability_required": true
+  },
+  "gates": {
+    "historical": "eval/reader_rc10_retrieval_comparison_preregistration.json",
+    "v2": "eval/reader_retrieval_eval_v2_future_comparator_gate.json",
+    "v2_surface_sha256": "753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cdd",
+    "no_recall_loss": {
+      "useful_hits": 48,
+      "recall_at_5": 1.0,
+      "all_useful_query_rate_at_5": 1.0,
+      "mrr": 1.0,
+      "recovered_rc9_misses": 6
+    },
+    "threshold_changes_after_result": false
+  },
+  "authority": {
+    "nli_label_is_identity": false,
+    "nli_label_is_adjudication": false,
+    "filtering_is_epistemic_authority": false,
+    "pass_is_runtime_authorization": false
+  },
+  "runtime_changes_authorized": false,
+  "outcome_rule": "PASS requires historical gate, v2 gate, no-recall-loss overlay, zero authority violations and repeatability; PASS is architecture-review eligibility only."
+}
