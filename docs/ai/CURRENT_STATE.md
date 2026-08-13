@@ -1,24 +1,26 @@
 # Crystal AI Current State
 
-**Status date:** 2026-08-12
+**Status date:** 2026-08-13
 
 GitHub merged `main`, executable tests, exact CI and machine-readable implementation truth are
 authoritative. Notion is synchronized strategy/history only after successful exact post-merge
 evidence.
 
-## Live starting point for grant-presentation reconciliation
+## Live starting point for post-RC-10 reassessment
 
-- audited starting `main`: `430e643a2a3759da793f700617a327d419439dde`;
+- audited starting `main`: `59cf060629c25ddf0747ca46ea1fadf87fa86857`;
 - signature: `verified=true`, reason `valid`;
-- latest starting-main push CI `31603785427`: 9/9 successful;
-- open PRs before issue #379: 0;
-- current bounded documentation milestone: **post-RC-9 grant presentation truth reconciliation, issue #379**;
-- branch: `agent/post-rc9-grant-truth-reconciliation`;
-- scope: public/grant English truth + reproducibility + semantic docs guards only; no `core/**` runtime expansion.
+- exact starting-main push CI `31620098274`: 9/9 successful;
+- open PRs before issue #382: 0;
+- issue #379: closed / completed;
+- issue #377: closed / completed after the missing RC-10 completion-evidence bookkeeping step;
+- current bounded architecture milestone: **post-RC-10 evaluation adequacy / next-milestone decision, issue #382**;
+- branch: `agent/post-rc10-reader-evaluation-reassessment`;
+- scope: architecture/evaluation truth + status reconciliation only; no `core/**` runtime expansion.
 
-The starting main contains PR #378 (`430e643…`), which merged the RC-10 existing-retrieval
-reuse / future-comparison **preregistration contract only**. Issue #377 remains separate from
-#379. No semantic/hybrid comparator was executed and no new Reader retrieval runtime was added.
+The starting main contains PR #378, which merged the RC-10 existing-retrieval reuse /
+future-comparison **preregistration contract only**. No semantic/hybrid comparator was executed
+and no new Reader retrieval runtime was added. Closing #377 does not authorize execution.
 
 ## Current verified Reader implementation checkpoint
 
@@ -35,14 +37,15 @@ Historical compatibility evidence remains:
 - signed RC-7 Reader baseline: `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1`;
 - RC-7 post-merge CI `31572918731`: 9/9 successful;
 - signed RC-8 merge: `main@bd85479e014c26ddebd0f4ae06385ce6625f5ab6` / PR #374;
-- RC-8 exact-head / post-merge CI: `31581756932` / `31582325275` successful.
+- RC-8 exact-head / post-merge CI: `31581756932` / `31582325275` successful;
+- post-RC-9 grant reconciliation final checkpoint: `main@59cf060629c25ddf0747ca46ea1fadf87fa86857`, CI `31620098274` 9/9 successful.
 
 ## Runtime / storage truth
 
 - SQLite ordinary active local-first;
 - PostgreSQL/pgvector inactive target `active=false`;
 - normal PostgreSQL runtime adapter / automatic switching absent;
-- no Reader FTS schema, semantic/vector index, network service or new model dependency is added by #379;
+- no Reader FTS schema, semantic/vector index, network service or new model dependency is added by #382;
 - existing admitted-memory retrieval remains a separate authority/data lifecycle from Reader PRE-ADMISSION discovery.
 
 ## Reader implementation truth
@@ -62,6 +65,7 @@ RC-1 through RC-7 are merged bounded Reader layers. `dedicated_reader_core=false
 larger capability truth. RC-8 is a completed architecture/research decision; RC-9 is the
 completed deterministic lexical candidate-discovery implementation baseline. PR #378 adds a
 future-comparison preregistration contract only and does not create a complete Reader runtime.
+Issue #382 is architecture/evaluation only.
 
 Authority invariants:
 
@@ -132,13 +136,15 @@ Classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`. These are candidate-dis
 not semantic/adjudication/identity accuracy. The measured gap does not authorize embeddings,
 semantic/hybrid retrieval, ANN/vector DB or evidence/Canon promotion.
 
-## PR #378 / issue #377 — preregistration history, not Reader runtime
+## PR #378 / issue #377 — RC-10 preregistration COMPLETE, not Reader runtime
 
 Contract: `docs/architecture/READER_RC10_RETRIEVAL_REUSE_PREREGISTRATION.md`. Machine-readable
 preregistration: `eval/reader_rc10_retrieval_comparison_preregistration.json`.
 
 The dedup/reuse audit records what existing admitted-memory retrieval may or may not be reused in
 a future isolated comparison. It freezes future comparison gates before results are observed.
+Issue #377 is now closed / completed because PR #378's exact-head/post-merge/Notion evidence was
+already satisfied and only its final bookkeeping step was missing.
 
 ```text
 comparison pass != runtime authorization
@@ -147,27 +153,83 @@ comparison pass != runtime authorization
 No qualifying semantic/hybrid comparison has been executed. SQLite FTS remains unimplemented
 for Reader. PostgreSQL/pgvector remains inactive `active=false`.
 
-## Grant-presentation reconciliation under #379
+## Post-RC-9 grant-presentation reconciliation — COMPLETE
 
-The live audit found high-visibility truth drift despite current compact architecture/status
-evidence:
+Issue #379 / PR #380 / PR #381 reconciled high-visibility English public/grant surfaces against
+the signed RC-9 baseline. Final signed checkpoint is `59cf060629c25ddf0747ca46ea1fadf87fa86857`;
+exact push CI `31620098274` is 9/9 successful.
 
-- root `README.md` still presented RC-6 as authoritative and RC-7 as draft/in progress;
-- `docs/GRANT_NLNET_SCOPE.md` and `docs/grants/baseline-funded-delta-matrix.md` still treated
-  the baseline as ending at RC-5 / RC-6-in-progress;
-- `scripts/check_d4_source_contract.py` actively protected the stale RC-5 grant narrative;
-- adjacent reviewer/funding/orientation surfaces lacked the current RC-9 proof point.
+That milestone added no Reader runtime capability and is no longer the current action.
 
-Issue #379 reconciles those English public/grant surfaces against RC-9 and changes the D4
-semantic validator so stale RC-5/RC-7-draft current-state wording cannot silently return.
-It adds no runtime capability.
+## Post-RC-10 architecture reassessment — #382
+
+Durable decision: `docs/architecture/READER_POST_RC10_REASSESSMENT.md`. Machine-readable decision:
+`eval/reader_post_rc10_reassessment.json`.
+
+The key separation is:
+
+```text
+measured retrieval-quality gap != measured scaling gap
+```
+
+### Evidence
+
+RC-9 demonstrates two retrieval-quality limitations on the frozen RC-8 corpus:
+
+1. `rc8-004` EN/RU cross-lingual paraphrase is missed;
+2. all four paired hard negatives surface at K=5.
+
+No current Reader benchmark demonstrates a binding corpus-size, latency, memory or index-build
+problem. Therefore SQLite FTS, ANN/vector indexing or a server backend would optimize an
+unmeasured problem if selected now.
+
+### Existing utility assessment
+
+- `core/rrf.py`: reusable future rank-fusion utility only; ordering is not authority.
+- `HashingEmbedder`: deterministic lexical cosine control signal only.
+- `TrigramHashingEmbedder`: morphology/typo-tolerant character signal only; noise/scope risks remain.
+- `SentenceTransformerEmbedder`: future optional model-backed comparison class only; current
+  existence does not satisfy exact immutable model/dependency/privacy admission.
+- admitted-memory pipeline/query/legacy retrieval: no direct PRE-ADMISSION Reader wiring.
+- SQLite FTS: future scaling option only after a measured scale blocker.
+- PostgreSQL/pgvector: not authorized for Reader and remains inactive.
+
+### Selected next bounded milestone
+
+The smallest justified next milestone is **Reader Retrieval Evaluation Surface v2**.
+
+Its role is to freeze a stronger judged evaluation surface before model-backed comparator
+results are observed, preserve the historical RC-8 corpus and unchanged RC-10 screen, and
+reproduce RC-9 as the control. It should include multiple cases per material identity/scope trap,
+multiple cross-lingual useful and hard-negative cases, and judged candidate pools/qrels rather
+than relying only on one intended pair per synthetic case.
+
+**Evaluation Surface v2 is NOT STARTED by #382.** It requires a new bounded authorization after
+#382 completes. A model-backed comparator is forbidden in the same corpus-freeze milestone.
+
+Only after Evaluation Surface v2 is frozen may a separately authorized comparator execution be
+considered. A later comparator must still pass the unchanged RC-10 screen:
+
+- retain all 15 RC-9 useful hits;
+- recover `rc8-004` to 16/16 useful paired recall;
+- MRR >= `0.895833`;
+- paired hard-negative hits <= `2/4`;
+- zero authority violations;
+- exact backend/model/index identity;
+- no `auto` backend;
+- zero query-time network calls;
+- zero external Reader source-text transmission;
+- deterministic lexical fallback for any later runtime proposal.
+
+Even a pass remains eligibility for stronger evaluation/architecture review, not runtime
+authorization.
 
 ## Open backlog boundaries
 
 - **#165** remains exact normalized ingest dedupe/migration for admitted facts; it excludes near-duplicate / semantic matching.
 - **#155** remains downstream Epistemic Router / Evidence State RFC around FactsPack/TruthGate/Guardian.
 - **#214** remains PII-fixture/supply-chain hygiene.
-- **#377** remains separate RC-10 preregistration/completion bookkeeping; #379 does not execute its comparator or create a Reader runtime.
+- **#382** is the current architecture/evaluation decision; it does not execute a comparator or create Reader runtime.
 
 ## Localization truth
 
@@ -184,26 +246,27 @@ Historical executable localization markers retained:
 - eight other locale detail packs require Reader refresh.
 - D2 translation source checkpoint: `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
 
-The English root/grant presentation advances to post-RC-9 truth in #379. Broad translation is
-not part of this milestone; localized text must not be represented as newer than its recorded
-checkpoint.
+The English root/grant presentation advanced to post-RC-9 truth in completed #379. #382 adds
+English architecture/evaluation truth only. Broad translation is not part of this milestone;
+localized text must not be represented as newer than its recorded checkpoint.
 
 ## Grant truth
 
 NLnet remains `submitted / under review / not awarded`. Approximate €50,000 remains planning
 only; budget change none. RC-1 through RC-9 merged before an agreement are existing baseline and
-cannot be counted again as future funded delivery. PR #378's preregistration is also existing
-pre-agreement repository history, not funded Reader runtime.
+cannot be counted again as future funded delivery. PR #378's preregistration and #382's
+architecture decision are also existing pre-agreement repository history if merged before an
+agreement, not funded Reader runtime.
 
 ## Current action / STOP boundary
 
-Complete only issue #379:
+Complete only issue #382:
 
 ```text
-public/grant truth reconciliation
-→ docs/status validation
+post-RC-10 architecture/evaluation decision
+→ status truth reconciliation
 → PR exact-head CI
-→ independent semantic review
+→ evidence-grounded semantic review
 → guarded merge
 → signed main
 → exact post-merge CI
@@ -213,6 +276,6 @@ public/grant truth reconciliation
 → STOP
 ```
 
-Do **not** execute semantic/hybrid comparison, add embeddings/ANN/vector DB, implement Reader
-FTS, activate PostgreSQL/pgvector, perform automatic entity/claim identity, start broad
-localization, or absorb #155/#165/#214.
+Do **not** start Evaluation Surface v2, execute semantic/hybrid comparison, add embeddings/ANN/
+vector DB, implement Reader FTS, activate PostgreSQL/pgvector, perform automatic entity/claim
+identity, start broad localization, or absorb #155/#165/#214.
