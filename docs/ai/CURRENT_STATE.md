@@ -1,18 +1,99 @@
 # Crystal AI Current State
 
-**Status date:** 2026-08-13
+**Status date:** 2026-08-13  
+**Authoritative merged main at this reconciliation:** `1ca31f92dfc0818a07b6a33560799c962b6e7d9f`  
+**Merge signature:** verified / valid  
+**Rule:** re-resolve live GitHub before treating this dated checkpoint as evergreen truth.
 
-GitHub merged `main`, executable tests and exact CI are authoritative.
+GitHub merged `main`, executable tests and exact CI are authoritative for implementation truth.
 
-## Verified predecessor
+## Current Reader position
 
-- signed `main@e824556f304143cdb8403f44a7b020a528e63291`
-- signature `verified=true`, reason `valid`
-- post-merge CI `31670811115` — 9/9
-- Issue #377 / PR #378 — RC-10 preregistration completed; no comparator executed.
-- Issue #382 / PR #383 — post-RC-10 reassessment completed; Evaluation Surface v2 selected as the next separately authorized milestone.
+```text
+RC-1 through RC-7 bounded Reader layers   MERGED
+RC-9 lexical discovery baseline           COMPLETE
+Evaluation Surface v2                     COMPLETE / FROZEN
+Comparator v1                             COMPLETE / FROZEN GATE FAIL
+dedicated_reader_core                     false
+semantic/hybrid Reader runtime            NOT AUTHORIZED
+Reader FTS / ANN / vector DB               NOT AUTHORIZED
+PostgreSQL/pgvector Reader activation      NOT AUTHORIZED
+```
 
-## Reader machine truth
+## Comparator v1 — current merged evidence
+
+Tracking issue: `#386`  
+Merged result: PR `#387`  
+Frozen result artifact: `eval/reader_retrieval_comparator_v1_result.json`  
+Classification: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`
+
+The pinned offline multilingual sentence-embedding comparator used:
+
+```text
+model:     sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+revision:  e8f8c211226b894fcb81acc59f3b34ba3efd5f42
+device:    CPU
+similarity: cosine
+K:         5
+index:     NO_INDEX_EXACT_POOL_SCORING
+```
+
+Qualifying execution: GitHub Actions run `31728139139`.
+
+### Historical RC-10 screen
+
+```text
+useful hits:          16 / 16
+Recall@5:             1.000000
+MRR:                  1.000000
+hard-negative hits:    4 / 4
+hard-negative rate:    1.000000
+frozen gate:          FAIL
+```
+
+### Evaluation Surface v2
+
+RC-9 lexical control:
+
+```text
+useful hits:          42 / 48
+Recall@5:             0.875000
+MRR:                  0.857639
+hard-negative hits:   38 / 48
+hard-negative rate:    0.791667
+```
+
+Comparator v1:
+
+```text
+useful hits:          48 / 48
+Recall@5:             1.000000
+MRR:                  1.000000
+hard-negative hits:   41 / 48
+hard-negative rate:    0.854167
+```
+
+All six RC-9 v2 useful misses were recovered, but hard-negative discrimination did not improve and was worse in aggregate. Both frozen discrimination gates therefore failed. No threshold was changed after observing the result.
+
+## Authority firewall
+
+```text
+retrieval match          != evidence
+similarity               != identity
+repetition               != corroboration
+cross-document candidate != Canon relation
+ranking                  != epistemic authority
+candidate discovery      != candidate adjudication
+comparison pass          != runtime authorization
+```
+
+Comparator v1 is evaluation evidence only. It did not authorize Reader semantic/hybrid runtime, FTS, ANN/vector DB, PostgreSQL/pgvector activation, automatic identity/adjudication, evidence admission, Guardian/TruthGate mutation or Canon mutation.
+
+## Current open research surface
+
+At this reconciliation, PR `#389` is open and evaluates a separately preregistered NLI neutral-filter experiment. It is **not merged current truth** and its eventual result must not be inferred here before merge/closure evidence. Its changed files are separate from this AI documentation reconciliation.
+
+## Machine truth
 
 ```text
 reader_core_rc1_skeleton               = true
@@ -25,70 +106,12 @@ reader_core_rc7_cross_document_links   = true
 dedicated_reader_core                  = false
 ```
 
-RC-1 through RC-7 are merged bounded Reader layers.
-RC-7 remains signed `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1`, post-merge CI `31572918731`.
-**RC-9 — deterministic lexical candidate discovery: COMPLETE.**
-RC-9 remains the deterministic lexical candidate-discovery implementation baseline in `core/reader_lexical_discovery.py`; signed `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`, post-merge CI `31594027040`.
-Historical RC-9 K=5 evidence remains Recall@5 `0.937500`, Precision@5 `0.187500`, MRR `0.895833`, useful hits `15 / 16`, and paired hard-negative rate@5 `1.000000`.
-Historical classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
-RC-9 is empirical and intentionally modest.
+Machine-readable implementation truth remains in `docs/status/implementation-manifest.json`; evaluation result truth for Comparator v1 is in `eval/reader_retrieval_comparator_v1_result.json`.
 
-## Retained authority markers
+## Grant / backlog boundary
 
-```text
-EXTRACTED_PROPOSITION != verified fact
-Reader candidate != admitted evidence
-relation candidate != admitted evidence
-contradiction candidate != confirmed contradiction
-working-set coverage != comprehension proof
-summary != evidence
-cross-document link != Canon relation
-same-topic != same proposition
-possible-same-claim != claim identity
-similarity signal != identity proof
-repetition across sources != corroboration
-retrieval match != evidence
-similarity != identity
-ranking != epistemic authority
-candidate discovery != candidate adjudication
-comparison pass != runtime authorization
-```
+NLnet remains submitted / under review / not awarded. Approximate €50,000 remains planning context only. Issues `#155`, `#165` and `#214` remain separate scopes.
 
-## Reader Retrieval Evaluation Surface v2
+## Documentation rule
 
-Issue #384 / PR #385. Evaluation/research only.
-
-```text
-24 queries
-12 primary strata
-6 candidates/query
-144/144 explicit qrels
-judgment coverage = 1.0
-K = 5
-surface sha256 = 753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cdd
-```
-
-Final RC-9 v2 control: useful hits `42 / 48`; Recall@5 `0.875000`; fixed-slot Precision@5 `0.350000`; judged precision-over-returned `0.355932`; MRR `0.857639`; hard-negative hits `38 / 48`; hard-negative rate@5 `0.791667`; any-useful-query `1.000000`; all-useful-query `0.750000`.
-Classification: `LEXICAL_CONTROL_EXPOSES_MULTI_STRATUM_GAPS`.
-
-Reviewed q04 refund-scope and q23 unconditional cache-scope pairs are useful `POSSIBLE_CONTRADICTION` candidates. Candidate IDs are content-derived and qrel-label-independent.
-
-Model-backed comparator execution is NOT STARTED. Semantic/hybrid/vector Reader runtime is absent. Reader FTS and ANN/vector DB are absent. PostgreSQL/pgvector remains `active=false`.
-
-## Localization truth
-
-Immutable phased localization source checkpoint: `51c205fe048fd69d39fcd47b43e042a50de432bc`.
-D2 checkpoint: `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
-Russian Reader-dependent public/detail documentation is refreshed. Russian D1/D3/D4/D5 detail pack is current. D2 reviewer/safety translations remain current across all nine supported locales.
-The eight other localized root README files and Reader-dependent detail packs remain `REFRESH_NEEDED`; eight other locale detail packs require Reader refresh.
-Tracked Reader detail debt remains 64 documents.
-
-## Grant / backlog truth
-
-NLnet remains submitted / under review / not awarded.
-Approximate €50,000 remains planning only.
-Issues #155, #165 and #214 remain separate scopes.
-
-## Stop boundary
-
-After exact-head CI, review closure, guarded merge, signed post-merge CI, Notion 3/3 read-back and issue #384 completion evidence: **STOP**.
+Use `docs/ai/project_manifest.json` for machine navigation and `docs/ai/DOCUMENTATION_STANDARD.md` for human/AI maintenance semantics. `overview != current state != evidence != history`.
