@@ -134,12 +134,11 @@ identity and remain unchanged.
 ## Localization truth
 
 The immutable phased localization source checkpoint
-`51c205fe048fd69d39fcd47b43e042a50de432bc` remains historical evidence.
+`51c205fe048fd69d39fcd47b43e042a50de432bc` remains historical evidence. D2 retains its own
+translation checkpoint `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
 
-Russian Reader-dependent documentation remains the refreshed Reader locale. The **eight other
-localized root README files** and corresponding Reader-dependent packs remain `REFRESH_NEEDED`;
-tracked Reader detail debt remains 64 documents. Evaluation Surface v2 performs no broad
-localization refresh.
+Russian Reader-dependent public/detail documentation is refreshed. Russian D1/D3/D4/D5 detail pack is current.
+D2 reviewer/safety translations remain current across all nine supported locales. The eight other localized root README files and Reader-dependent detail packs remain `REFRESH_NEEDED`; in other words, eight other locale detail packs require Reader refresh. Tracked Reader detail debt remains 64 documents. Evaluation Surface v2 performs no broad localization refresh.
 
 ## Open backlog boundaries
 
