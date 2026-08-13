@@ -13,14 +13,14 @@ GitHub merged `main`, executable tests and exact CI are authoritative.
 ## Reader machine truth
 
 ```text
-reader_core_rc1_skeleton = true
-reader_core_rc2_structural_map = true
-reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc1_skeleton               = true
+reader_core_rc2_structural_map         = true
+reader_core_rc3_multi_pass_mechanics   = true
 reader_core_rc4_proposition_extraction = true
-reader_core_rc5_relation_candidates = true
-reader_core_rc6_long_context_strategy = true
-reader_core_rc7_cross_document_links = true
-dedicated_reader_core = false
+reader_core_rc5_relation_candidates    = true
+reader_core_rc6_long_context_strategy  = true
+reader_core_rc7_cross_document_links   = true
+dedicated_reader_core                  = false
 ```
 
 RC-7 remains signed `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1`, post-merge CI `31572918731`.
@@ -73,8 +73,8 @@ Model-backed comparator execution is NOT STARTED. Semantic/hybrid/vector Reader 
 
 Immutable phased localization source checkpoint: `51c205fe048fd69d39fcd47b43e042a50de432bc`.
 D2 checkpoint: `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
-Russian D1/D3/D4/D5 detail pack is current.
-The eight other localized root README files remain `REFRESH_NEEDED`; eight other locale detail packs require Reader refresh.
+Russian Reader-dependent public/detail documentation is refreshed. Russian D1/D3/D4/D5 detail pack is current.
+The eight other localized root README files and Reader-dependent detail packs remain `REFRESH_NEEDED`; eight other locale detail packs require Reader refresh.
 Tracked Reader detail debt remains 64 documents.
 
 ## Grant / backlog truth
