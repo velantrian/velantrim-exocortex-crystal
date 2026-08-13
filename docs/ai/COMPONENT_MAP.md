@@ -1,60 +1,16 @@
 # 🗺️ Crystal Component Map for Agents
 
-Use this map to choose the smallest relevant inspection surface. Paths are starting points, not substitutes for consumer and test discovery.
+Use this map to choose the smallest relevant inspection surface. GitHub merged `main`, executable tests and exact CI are implementation authority.
 
-## 1. Claims, epistemic lifecycle and physical L3
+## 1. Claims / admission / storage
 
-**Start:** `core/memory.py`, `core/l3_graph.py`, `core/truth_gate.py`, `docs/CLAIM_METADATA_GLOSSARY.md`.
+**Start:** `core/memory.py`, `core/l3_graph.py`, `core/truth_gate.py`, `core/pipeline.py`, `core/backend_profiles.py`.
 
-**Boundary:** storage presence does not equal strict Canon membership. Writes must preserve state, evidence, restrictions and the canonical admission path.
+SQLite remains the active ordinary local-first profile. PostgreSQL/pgvector remains an inactive `active=false` import/equivalence target. Backend availability must not silently select another store.
 
-## 2. Durable backend identity
+## 2. Read/query and admitted-memory retrieval
 
-**Start:** `core/backend_profiles.py`, `core/_registry.py`, `core/l3_graph.py`, `core/doctor.py`, `docs/architecture/DURABLE_STORAGE_PROFILE.md`.
-
-The versioned profile locks ordinary deployment identity. Backend availability, package installation, locator changes or profile deletion cannot silently select another store.
-
-## 3. SQLite lifecycle and logical portability
-
-**Start:** `core/storage_common.py`, `core/storage_backup.py`, `core/storage_restore.py`, `core/storage_lock.py`, `core/storage_migration.py`, `core/storage_ops.py`.
-
-```text
-SQLite backup → verify → inactive restore
-SQLite profile → bounded canonical bundle → independent verification
-```
-
-Migration evidence does not grant epistemic authority.
-
-## 4. PostgreSQL inactive migration target
-
-**Start:** `core/postgresql_migration.py`, `core/postgresql_migration_impl.py`, `core/storage_ops.py`, `docs/architecture/POSTGRESQL_INACTIVE_IMPORT.md`, `docs/architecture/POSTGRESQL_PGVECTOR_PROFILE_RFC.md`, PostgreSQL integration tests/workflow.
-
-Current verified target remains `active=false`, absent from ordinary runtime composition. No cutover, rollback, dual-write, automatic switching or ANN acceptance is implied.
-
-## 5. Truth admission and safety
-
-**Start:** Guardian functions in `core/pipeline.py`, `core/truth_gate.py`, `core/immune.py`, `core/api_ingest_policy.py`, `docs/IMMUNE_LAYER.md`, `docs/ARCHITECTURE.md`.
-
-A caller, model, retriever, storage profile, migration tool or Reader artifact must not mutate strict Canon outside the audited admission path.
-
-## 6. Strict read grounding
-
-**Start:** `core/canonical_view.py`, `core/trust_snapshot.py`, public handlers in `core/api.py`, `core/cli.py`, MCP surfaces, `core/query_pipeline.py`.
-
-Public query/search paths are read-only. Restrictions remain deny-dominant and physical L3 must not be presented as strict Canon.
-
-## 7. Admitted-memory retrieval
-
-**Start:**
-
-- `core/embedding.py` — hashing/trigram hashing and optional SentenceTransformer embedding abstraction;
-- `core/legacy_retrieval.py` — bounded lexical fallback for legacy/uninitialised L3 stores;
-- `core/retrieval_config.py` — bounded admitted-memory retrieval knobs;
-- `core/query_pipeline.py` — canonical read-only query path;
-- `core/rrf.py` — rank fusion helper;
-- `core/pipeline.py` — admitted-memory retrieval/grounding path.
-
-**Authority boundary:** these modules operate around admitted L3/query state. Retrieval rank, similarity and model output are not evidence or admission.
+**Start:** `core/canonical_view.py`, `core/trust_snapshot.py`, `core/query_pipeline.py`, `core/embedding.py`, `core/legacy_retrieval.py`, `core/rrf.py`.
 
 ```text
 retrieval rank != truth
@@ -62,14 +18,16 @@ similarity != identity
 ranking != epistemic authority
 ```
 
-Do not wire these modules directly into Reader identity simply because they already exist.
+These admitted-memory utilities are not automatic PRE-ADMISSION Reader identity authority.
 
-## 8. Reader proposition extraction and same-document relations
+## 3. Reader RC-1..RC-5
 
-**Start:** `core/reader_extraction.py`, `core/reader_relations.py`, corresponding tests.
-
-- RC-4 creates PRE-ADMISSION `EXTRACTED_PROPOSITION` candidates with replayable provenance.
-- RC-5 registers explicit relation candidates inside one OPEN Reader session / exact SourceVersion.
+**Start:**
+- `core/reader_core.py` / `tests/test_reader_core.py`;
+- `core/reader_structure.py` / `tests/test_reader_structure.py`;
+- `core/reader_passes.py` / `tests/test_reader_passes.py`;
+- `core/reader_extraction.py` / `tests/test_reader_extraction.py`;
+- `core/reader_relations.py` / `tests/test_reader_relations.py`.
 
 ```text
 EXTRACTED_PROPOSITION != verified fact
@@ -78,36 +36,15 @@ relation candidate != admitted evidence
 contradiction candidate != confirmed contradiction
 ```
 
-## 9. Reader long context
+## 4. Reader RC-6 / RC-7
 
-**Start:** `core/reader_long_context.py`, `tests/test_reader_long_context.py`.
+**Start:** `core/reader_long_context.py`, `core/reader_cross_document.py` and their tests.
 
-RC-6 groups current valid RC-4 leaves into deterministic bounded working sets and may register caller-supplied `SUMMARY` artifacts with direct leaf provenance.
+RC-7 signed merge `b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1`; post-merge CI `31572918731`.
 
 ```text
 working-set coverage != comprehension proof
-summary != source text
 summary != evidence
-summary != verified fact
-summary != Canon admission
-```
-
-## 10. Reader cross-document candidate links
-
-**Start:** `core/reader_cross_document.py`, `tests/test_reader_cross_document.py`.
-
-RC-7 is merged under PR #372. `ReaderCrossDocumentRegistry` accepts explicit caller-selected RC-4 candidates from different document identities, revalidates both provenance chains and records an explicit cross-document relation candidate.
-
-Relation vocabulary:
-
-```text
-SUPPORTS / CONTRADICTS / ELABORATES / REFERENCES / DEFINES
-EXAMPLE_OF / PREREQUISITE_FOR / SAME_TOPIC / POSSIBLE_SAME_CLAIM
-```
-
-Optional `LEXICAL_SIMILARITY_SIGNAL` or `SHARED_TOPIC_SIGNAL` metadata is descriptive only.
-
-```text
 cross-document link != Canon relation
 same-topic != same proposition
 possible-same-claim != claim identity
@@ -115,112 +52,61 @@ similarity signal != identity proof
 repetition across sources != corroboration
 ```
 
-## 11. RC-8 post-RC-7 retrieval architecture decision
+## 5. Reader RC-8 / RC-9 / RC-10
 
-Historical RC-8 contract label: **Post-RC-7 retrieval architecture decision (RC-8)**. That milestone is completed; RC-9 is also completed and RC-10 is the current bounded architecture/evaluation milestone.
+**RC-8:** `docs/architecture/READER_RC8_RETRIEVAL_DECISION.md`, `eval/reader_rc8_retrieval_adversarial.jsonl`.
+
+**RC-9:** `core/reader_lexical_discovery.py`, `scripts/bench_reader_rc9_lexical.py`, `eval/reader_rc9_lexical_baseline.json`, `docs/architecture/READER_RC9_LEXICAL_BASELINE.md`; signed merge `f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`, post-merge CI `31594027040`.
+
+Historical RC-9 classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+
+**RC-10:** `docs/architecture/READER_RC10_RETRIEVAL_REUSE_PREREGISTRATION.md`, `eval/reader_rc10_retrieval_comparison_preregistration.json`; PR #378 / issue #377 completed. No comparator executed.
+
+```text
+candidate discovery != candidate adjudication
+comparison pass != runtime authorization
+```
+
+## 6. Post-RC-10 reassessment
+
+**Start:** `docs/architecture/READER_POST_RC10_REASSESSMENT.md`, `eval/reader_post_rc10_reassessment.json`; issue #382 / PR #383.
+
+Decision: `measured retrieval-quality gap != measured scaling gap`; Evaluation Surface v2 selected as the next bounded evaluation milestone.
+
+## 7. Reader Retrieval Evaluation Surface v2 — CURRENT EVALUATION EVIDENCE
 
 **Start:**
 
-- `docs/architecture/READER_RC8_RETRIEVAL_DECISION.md`;
-- `eval/reader_rc8_retrieval_adversarial.jsonl`;
-- `tests/test_reader_rc8_retrieval_architecture.py`;
-- issue #373 / PR #374.
+- `docs/architecture/READER_RETRIEVAL_EVAL_V2.md`;
+- `scripts/bench_reader_eval_v2_lexical.py`;
+- `eval/reader_retrieval_eval_v2_queries.jsonl`;
+- `eval/reader_retrieval_eval_v2_candidates.jsonl`;
+- `eval/reader_retrieval_eval_v2_qrels.jsonl`;
+- `eval/reader_retrieval_eval_v2_manifest.json`;
+- `eval/reader_retrieval_eval_v2_rc9_control.json`;
+- `eval/reader_retrieval_eval_v2_future_comparator_gate.json`;
+- `tests/test_bench_reader_eval_v2_lexical.py`;
+- `tests/test_reader_retrieval_eval_v2_status.py`;
+- issue #384 / PR #385.
 
-RC-8 is a completed architecture/research milestone. It identifies the missing capability as **candidate discovery across a Reader corpus**, not a vector database.
+Final surface: 24 queries, 144 candidates/qrels, judgment coverage `1.0`, opaque content-derived qrel-label-independent candidate IDs, composite SHA-256 `753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cdd`.
 
-It separates:
+Reviewed scope conflicts in q04 and q23 are useful `POSSIBLE_CONTRADICTION` candidates. The final q23 review-class correction changes the qrels/surface hash but not the RC-9 ranking metrics.
 
-```text
-candidate discovery → proposes pairs worth inspection
-candidate adjudication → decides review class under explicit constraints
-admission/evidence → separate downstream authority path
-```
+Unchanged RC-9 final v2 control: 42/48 useful, Recall@5 `0.875000`, fixed-slot Precision@5 `0.350000`, judged precision-over-returned `0.355932`, MRR `0.857639`, 38/48 hard negatives.
 
-Review classes defined by RC-8:
-
-- `SAME_PROPOSITION_CANDIDATE`;
-- `PARAPHRASE_CANDIDATE`;
-- `RELATED_CLAIM`;
-- `SAME_TOPIC`;
-- `POSSIBLE_CONTRADICTION`;
-- `MERELY_SIMILAR`.
-
-RC-8 required the first separately authorized implementation baseline to be deterministic lexical candidate discovery + a benchmark runner. Hybrid/neural/vector/ANN work remained deferred. PostgreSQL/pgvector remains inactive `active=false`.
+The future gate is frozen before model-backed results and requires exact backend/model/dependency/index identity or explicit no-index, privacy review, no `auto`, zero query-time network calls and zero external Reader source-text transmission.
 
 ```text
 retrieval match != evidence
 similarity != identity
-repetition != corroboration
-cross-document candidate != Canon relation
-ranking != epistemic authority
 candidate discovery != candidate adjudication
+comparison pass != runtime authorization
 ```
 
-## 12. RC-9 deterministic lexical candidate discovery — COMPLETE
+No model-backed comparator execution and no semantic/hybrid/vector Reader runtime is added.
 
-**Start:**
-
-- `core/reader_lexical_discovery.py`;
-- `scripts/bench_reader_rc9_lexical.py`;
-- `tests/test_reader_lexical_discovery.py`;
-- `tests/test_bench_reader_rc9_lexical.py`;
-- `tests/test_reader_rc9_status.py`;
-- `eval/reader_rc9_lexical_baseline.json`;
-- `docs/architecture/READER_RC9_LEXICAL_BASELINE.md`;
-- issue #375 / PR #376.
-
-Signed merge: `f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`; post-merge CI `31594027040` 9/9.
-
-RC-9 snapshots the public RC-4 proposition surface into retrieval-only records, applies conservative NFKC/case/whitespace normalization and stable tokenization, then performs deterministic in-memory BM25 ranking. Self matches are excluded; cross-document filtering is default; ties use stable source/session/candidate ordering.
-
-`ReaderLexicalMatch` exposes only retrieval and provenance metadata: identifiers, lexical score, rank, method/version, matched terms and privacy metadata. It does not output RC-8 review classes or any identity/evidence/Canon verdict.
-
-Frozen K=5 result: Recall 0.937500; Precision 0.187500; MRR 0.895833; paired hard-negative rate 1.000000. Precision uses the fixed-K synthetic benchmark denominator documented in the RC-9 architecture note. The cross-lingual pair is missed and all four paired hard negatives are surfaced within top-5. Classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
-
-That classification does not authorize embeddings, semantic/hybrid retrieval, ANN/vector DB, entity/claim identity or adjudication.
-
-## 13. Contradictions and curator decisions
-
-**Start:** contradiction modules, `core/review.py`, `core/conflict_surfaces.py`, `docs/CONTRADICTION_POLICY.md`.
-
-Detection does not select a winner. `COEXIST`, `CONTEXTUALIZE` and `SUPERSEDE` require explicit authorized decisions. RC-5/RC-7 candidates and RC-9 retrieval candidates may expose conflict-relevant state, but cannot resolve a `ContradictionReport` or select a canonical winner.
-
-## 14. Imports and review queues
-
-**Start:** import/session modules, review queue/session modules and their CLI/HTTP tests.
-
-Partial imports must remain distinguishable from admission. Unreviewed content cannot ground strict answers. Reader RC-4..RC-9 artifacts remain upstream of the normal ingest/review/evidence path.
-
-## 15. Public surfaces and runtime composition
-
-**Start:** `core/api.py`, `core/cli.py`, `core/doctor.py`, MCP modules, `Dockerfile`, `pyproject.toml`, `.github/workflows/ci.yml`.
-
-Reader RC-1 through RC-10 add no public Reader API, CLI, background worker or ordinary runtime-composition wiring. RC-10 adds no mandatory runtime dependency or persistent index.
-
-## 16. Evaluation and status evidence
-
-**Start:** `docs/EVAL.md`, `TEST_REPORT.md`, `docs/status/implementation-manifest.json`, evaluation fixtures, Ring Zero and benchmark workflows.
-
-Always bind implementation claims to exact commit/head/CI. RC-9’s 20-case synthetic result is a retrieval baseline, not production retrieval-quality or semantic-adjudication certification.
-
-## 17. Reader architecture chain
-
-**Start:**
-
-- `core/reader_core.py`, `tests/test_reader_core.py` — RC-1;
-- `core/reader_structure.py`, `tests/test_reader_structure.py` — RC-2;
-- `core/reader_passes.py`, `tests/test_reader_passes.py` — RC-3;
-- `core/reader_extraction.py`, `tests/test_reader_extraction.py` — RC-4;
-- `core/reader_relations.py`, `tests/test_reader_relations.py` — RC-5;
-- `core/reader_long_context.py`, `tests/test_reader_long_context.py` — RC-6;
-- `core/reader_cross_document.py`, `tests/test_reader_cross_document.py` — RC-7;
-- `core/reader_lexical_discovery.py`, `tests/test_reader_lexical_discovery.py` — RC-9;
-- `docs/architecture/READER_CORE_ARCHITECTURE.md` — normative RC-0 contract;
-- `docs/architecture/READER_RC8_RETRIEVAL_DECISION.md` — post-RC-7 decision;
-- `docs/architecture/READER_RC9_LEXICAL_BASELINE.md` — RC-9 measured baseline;
-- `docs/architecture/READER_RC10_RETRIEVAL_REUSE_PREREGISTRATION.md` — RC-10 reuse/preregistration contract.
-
-Machine implementation truth:
+## 8. Machine Reader truth
 
 ```text
 reader_core_rc1_skeleton = true
@@ -233,39 +119,10 @@ reader_core_rc7_cross_document_links = true
 dedicated_reader_core = false
 ```
 
-**Current non-features:** no automatic Reader parser/semantic chunker/OCR/PDF-layout/multimodal engine, no automatic NLP/LLM/provider Reader extraction or summarization, no semantic/hybrid/vector Reader retrieval, no automatic semantic equivalence/entity resolution, no durable Reader retrieval schema/migration and no dedicated/full autonomous Reader runtime.
+No automatic Reader parser/OCR/multimodal engine, semantic/hybrid/vector Reader runtime, automatic semantic equivalence/entity resolution, durable Reader vector schema or dedicated/full autonomous Reader exists.
 
-## 18. Documentation, grant and research governance
+## 9. Documentation / grant governance
 
-**Start:** `AGENTS.md`, `docs/DOCUMENTATION_SYNC_PROTOCOL.md`, `docs/STATUS.md`, `docs/IMPLEMENTATION_STATUS.md`, `docs/GRANT_NLNET_SCOPE.md`, `ROADMAP.md`.
+**Start:** `AGENTS.md`, `docs/DOCUMENTATION_SYNC_PROTOCOL.md`, `docs/STATUS.md`, `docs/IMPLEMENTATION_STATUS.md`, `ROADMAP.md`, `docs/ai/WORK_LOG.md`.
 
-GitHub `main` proves implementation. Notion preserves deeper rationale/strategy/history after exact post-merge evidence. NLnet remains `submitted / under review / not awarded`. RC-9 is a bounded pre-agreement lexical retrieval baseline, not funded semantic retrieval. Issues #155, #165 and #214 remain separate scopes.
-
-## 19. RC-10 existing retrieval reuse compatibility + comparison pre-registration — CURRENT
-
-**Start:**
-
-- `docs/architecture/READER_RC10_RETRIEVAL_REUSE_PREREGISTRATION.md`;
-- `eval/reader_rc10_retrieval_comparison_preregistration.json`;
-- `tests/test_reader_rc10_retrieval_preregistration.py`;
-- issue #377.
-
-RC-10 exists to prevent duplicate retrieval implementation. Its audit found that admitted-memory vector/hash/trigram/optional-SBERT retrieval, graph walk, bounded legacy lexical retrieval and pure RRF already exist, but belong to a different authority/data lifecycle.
-
-Disposition:
-
-- `core/rrf.py` — eligible only as a future isolated Reader comparison ordering helper;
-- deterministic hashing/trigram embedders — comparator signals only;
-- SentenceTransformer — future optional comparator only under separate pinned model/dependency/privacy authorization;
-- `get_embedder("auto")` — forbidden for a qualifying preregistered comparison;
-- `core/pipeline.py`, `core/query_pipeline.py`, `core/legacy_retrieval.py` — no direct PRE-ADMISSION Reader wiring;
-- SQLite FTS — no current Reader implementation found; future feature-detected scaling option;
-- PostgreSQL/pgvector — inactive `active=false`, not authorized.
-
-Future gate is frozen before results: recover `rc8-004`, retain all 15 RC-9 useful hits, Recall@5 1.0, MRR >=0.895833, paired hard-negative hits <=2/4, zero authority violations, exact backend identity and zero query-time network calls.
-
-```text
-comparison pass != runtime authorization
-```
-
-No semantic/hybrid comparison is executed in RC-10.
+NLnet remains `submitted / under review / not awarded`. Issues #155, #165 and #214 remain separate scopes. Notion is synchronized only after exact post-merge evidence.

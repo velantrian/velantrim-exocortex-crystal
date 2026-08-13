@@ -1,95 +1,40 @@
 # 🧾 Crystal AI Work Log
 
-This compact log records material decisions, exact evidence, limitations and hand-offs. It is not a replacement for Git history, issues, pull requests, `CHANGELOG.md` or Notion. Earlier detailed entries remain available through Git history.
+This compact log records material decisions, exact evidence, limitations and hand-offs. It does not replace Git history, issues, pull requests, `CHANGELOG.md` or Notion.
 
-## 2026-08-12 — Reader RC-10 existing retrieval reuse compatibility + preregistration (#377)
+## 2026-08-13 — Reader Retrieval Evaluation Surface v2 (#384 / PR #385)
 
-- Live verified starting `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`, signature `verified=true` / `reason=valid`, open PRs 0 before the milestone.
-- Reverified RC-9 PR #376 merged from exact validated head `1956cbd45e5a5b794852354ed2233bf1fb6e318f`; exact-head CI `31593097846` and post-merge push CI `31594027040` were both 9/9 successful; issue #375 closed completed; the three existing Notion pages had been synchronized/read back after post-merge evidence.
-- Per operator request, performed a dedup/reuse audit before creating any new retrieval implementation.
-- Found substantial existing **admitted-memory** retrieval: `core/embedding.py` hashing/trigram/optional SentenceTransformer, admitted vector + graph-walk retrieval in `core/pipeline.py`, strict query composition in `core/query_pipeline.py`, bounded legacy lexical retrieval delivered by #317/PR #321, retrieval config and pure stdlib `core/rrf.py`.
-- Confirmed SQLite FTS/BM25 scaling is already documented in `docs/core/DEDUP_AND_SCALE.md` and RC-8, but repository search found no current Reader FTS5 virtual-table / `MATCH` runtime implementation.
-- Decision: do not build a second retrieval stack. RC-10 is architecture/evaluation only: reuse-compatibility matrix + machine-readable future comparison preregistration.
-- Reuse disposition: RRF may be a future isolated ordering helper; hashing/trigram are comparator signals only; SentenceTransformer is future optional comparator only; `get_embedder("auto")` is forbidden for a qualifying preregistered experiment; admitted-memory pipeline/query/legacy retrieval are not direct PRE-ADMISSION Reader pipelines.
-- Frozen future gate before results: retain 15 RC-9 useful hits, recover `rc8-004` to 16/16 / Recall@5 1.0, MRR >=0.895833, paired hard-negative hits <=2/4, zero authority violations, exact backend identity, zero query-time network calls and no external Reader source-text transmission.
-- Passing the gate means `ELIGIBLE_FOR_STRONGER_EVALUATION_AND_ARCHITECTURE_REVIEW_ONLY`, not runtime authorization.
-- Audit found truth drift: compact GitHub status surfaces still described RC-9 as current/in-progress, and root `README.md` still presented an older RC-6/RC-7-in-progress checkpoint. RC-10 reconciles compact current English status; root/localized README parity remains separate public/localization debt.
-- RC-10 adds no `core/**` runtime change, no FTS/vector schema, no model download/dependency, no semantic/hybrid run, no PostgreSQL activation and no #155/#165/#214 work.
-- Documentation impact: `GITHUB_AND_NOTION`; only the existing three Crystal pages may be synchronized, and only after guarded merge + signed main + green post-merge CI.
+- Live starting point: signed `main@e824556f304143cdb8403f44a7b020a528e63291`, signature `verified=true` / `reason=valid`, push CI `31670811115` 9/9.
+- Scope is evaluation/research only: no `core/**`, model dependency/download, semantic/hybrid comparator execution, FTS/ANN/vector runtime, PostgreSQL/pgvector activation or authority change.
+- Surface: 24 queries × 6 candidates; 12 primary strata ×2; 144/144 explicit qrels; exactly 2 useful + 2 hard-negative + 2 neutral judgments per query; K=5.
+- Codex review found material pre-freeze defects and they were corrected before merge: qrel-position leakage through candidate IDs; incompatible refund-scope and cache-scope review-class inconsistencies; Precision@5 rewarding unfilled ranks; unverified composite surface digest; missing index-identity/privacy requirements; stale agent/status compatibility markers.
+- Candidate identity is content-derived and **label-independent**: `v2-c- + first16(sha256(pool_id + NUL + proposition))`; candidate rows sort by `(pool_id, candidate_id)`, not qrel class.
+- `v2-q04` “refund at any time after delivery” is `USEFUL_CANDIDATE / POSSIBLE_CONTRADICTION`.
+- `v2-q23` “cache is cleared whenever the user logs out” is `USEFUL_CANDIDATE / POSSIBLE_CONTRADICTION` relative to the secure-mode condition. This second reclassification changes qrel/surface identity but not RC-9 ranking metrics.
+- Final surface SHA-256: `753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cdd`.
+- Component SHA-256: queries `13dc860a364949932b23ed006eedf9416c345e1b00718c1beaa276f49fb64f47`; candidates `86d4db3bfea311e855889d4b14ac33b1b01010a773763710e387a3823d77d108`; qrels `34f2a30a4b6f7cdb058537920781683819d88d908e95905c41569aef06e26a11`.
+- Unchanged RC-9 final v2 control at K=5: 42/48 useful; Recall `0.875000`; fixed-slot Precision `0.350000`; judged precision-over-returned `0.355932`; MRR `0.857639`; hard negatives 38/48 (`0.791667`); any-useful-query `1.000000`; all-useful-query `0.750000`.
+- Classification: `LEXICAL_CONTROL_EXPOSES_MULTI_STRATUM_GAPS`. These are retrieval measurements, not semantic truth, identity or evidence-admission accuracy.
+- Future comparator gate remains pre-result and additive to the unchanged historical RC-10 screen. It requires exact backend/model/dependency/index identity or explicit no-index, privacy review, no `auto`, no query-time network, no external source-text transmission, repeatability/resource observation and zero authority violations.
+- Passing both gates means only `ELIGIBLE_FOR_ARCHITECTURE_REVIEW_ONLY`; `comparison pass != runtime authorization`.
+- Historical RC-8/RC-9/RC-10 artifacts remain byte-identical. Documentation impact: `GITHUB_AND_NOTION`; only the three existing Crystal Notion pages may be synchronized after guarded merge + signed main + green exact post-merge CI.
+- Stop after #384 completion. A **model-backed comparator** is a separate future milestone.
 
-## 2026-08-12 — Reader RC-9 deterministic lexical candidate discovery (#375 / PR #376) — final completion evidence
+## 2026-08-13 — Post-RC-10 reassessment (#382 / PR #383)
 
-- Starting main: `bd85479e014c26ddebd0f4ae06385ce6625f5ab6`, signature verified/valid.
-- Final validated PR head: `1956cbd45e5a5b794852354ed2233bf1fb6e318f`.
-- Guarded squash merge: `f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`, signature `verified=true`, reason `valid`.
-- Exact-head CI `31593097846`: 9/9 successful; post-merge push CI `31594027040`: 9/9 successful; Python 3.11 and 3.12 passed the 100% coverage gate.
-- Final K=5: Recall 0.937500, Precision 0.187500, MRR 0.895833, paired hard-negative rate 1.000000, 15/16 useful paired hits and 4/4 paired hard-negative hits.
-- Notion 3/3 synchronized and read back after green post-merge evidence; completion evidence posted to #375; issue closed completed.
+- Guarded squash merge produced signed `main@e824556f304143cdb8403f44a7b020a528e63291`; post-merge CI `31670811115` was 9/9 successful.
+- Issue #377 was closed completed as stale RC-10 preregistration bookkeeping only.
+- Decision: `measured retrieval-quality gap != measured scaling gap`; FTS/ANN/server infrastructure was not justified as the next Reader mechanism.
+- Selected next bounded milestone: stronger pre-frozen Evaluation Surface v2 with unchanged RC-9 reproduction before any model-backed comparator result.
 
-## 2026-08-12 — Reader RC-9 deterministic lexical candidate discovery (#375)
+## 2026-08-12 — Reader RC-10 preregistration (#377 / PR #378)
 
-- Live verified starting `main@bd85479e014c26ddebd0f4ae06385ce6625f5ab6`, signature `verified=true` / `reason=valid`, open PRs 0 before the milestone.
-- Reverified RC-8 exact-head CI `31581756932` on `a9a4e3b67c514c6c0eece58424c209e9693d3dd7` and post-merge push CI `31582325275` on `bd85479e...` as successful.
-- Confirmed #155/#165/#214 remain separate backlog and existing embedding/legacy/query retrieval is admitted-memory authority, not PRE-ADMISSION Reader identity machinery.
-- Created issue #375 and branch `feat/reader-rc9-lexical-baseline` from the exact audited main.
-- Added stdlib-only `core/reader_lexical_discovery.py`: conservative NFKC/case/whitespace normalization, stable lexical tokens, deterministic in-memory BM25, cross-document default filtering, self-match exclusion, stable tie-breaks and structured inspection-only results.
-- Added `scripts/bench_reader_rc9_lexical.py` and frozen result `eval/reader_rc9_lexical_baseline.json` over the unchanged 20-case RC-8 corpus.
-- Independent metric review corrected the provisional Precision calculation from returned-slot precision to fixed-K Precision@K so unfilled ranks cannot inflate the score. Final K=5 baseline: Recall 0.937500, Precision 0.187500, MRR 0.895833, paired hard-negative rate 1.000000. Cross-lingual paraphrase is missed; all four paired SAME_TOPIC/MERELY_SIMILAR hard negatives are surfaced in top-5.
-- Precision@5 is scoped to the bounded synthetic benchmark (`positive paired queries × K` denominator with non-paired right records treated as synthetic decoys), not a fully judged corpus-wide semantic precision claim.
-- Classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`. This is not semantic/vector authorization; embeddings, hybrid retrieval, ANN/vector DB, PostgreSQL activation, automatic identity/adjudication/evidence admission remain out of scope.
-- Local isolated RC-9 tests reached 100% line coverage for the new module/runner; repository exact-head CI remains the authoritative full Python 3.11/3.12 validation.
-- Added `docs/architecture/READER_RC9_LEXICAL_BASELINE.md` and reconciled current English status/risk/roadmap/component surfaces without rewriting the RC-8 historical decision.
-- Documentation impact: `GITHUB_AND_NOTION`; the three existing Crystal Notion pages may be updated only after guarded merge, verified signed main and successful exact post-merge CI.
+RC-10 froze a future comparison gate before results and explicitly executed no semantic/hybrid comparator. Passing means stronger evaluation / architecture-review eligibility only.
 
-## 2026-08-12 — Reader RC-8 post-RC-7 retrieval architecture decision (#373)
+## 2026-08-12 — Reader RC-9 lexical discovery (#375 / PR #376)
 
-- Live verified starting `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1`, signature `verified=true` / `reason=valid`, open PRs 0 before the milestone.
-- Reverified RC-7 PR #372 exact validated head `b1cf79594f702194b4dce66ac2ef2546d4154f15`, exact-head CI `31572324596` 9/9 and post-merge CI `31572918731` 9/9.
-- Live Notion read-back confirmed all three canonical Crystal pages already held RC-7 completion truth before RC-8 work began.
-- Audit found real post-RC-7 gaps: explicit RC-7 links require caller-selected pairs; no corpus candidate-discovery layer exists; no formal same-proposition/paraphrase/related/same-topic/possible-contradiction/merely-similar adjudication contract exists; no frozen Reader retrieval benchmark exists.
-- Audit also found existing admitted-memory retrieval (`core/embedding.py`, `core/legacy_retrieval.py`, `core/retrieval_config.py`, `core/query_pipeline.py`, `core/rrf.py`). These operate in a different authority domain from PRE-ADMISSION Reader artifacts and are not automatically reusable as Reader identity authority.
-- Backlog isolation was confirmed: #165 is exact normalized admitted-fact dedupe only and explicitly excludes semantic matching; #155 is downstream Epistemic Router/Evidence State RFC; #214 is PII/supply-chain hygiene.
-- Created issue #373 and branch `agent/reader-rc8-retrieval-architecture` from exact verified starting main.
-- Added `docs/architecture/READER_RC8_RETRIEVAL_DECISION.md`, a 20-case synthetic adversarial corpus at `eval/reader_rc8_retrieval_adversarial.jsonl`, and contract tests in `tests/test_reader_rc8_retrieval_architecture.py`.
-- Decision: do not authorize Reader embeddings/ANN/vector DB. A separately authorized future implementation should establish deterministic lexical candidate discovery + benchmark runner first; SQLite FTS is a candidate backend with feature detection/fallback; hybrid/neural/vector work requires a pre-registered measured comparison.
-- Authority firewall retained: `retrieval match != evidence`, `similarity != identity`, `repetition != corroboration`, `cross-document candidate != Canon relation`, `ranking != epistemic authority`, `candidate discovery != candidate adjudication`.
-- Reconciled stale post-RC-7 GitHub handoff/status surfaces (`CURRENT_STATE`, `STATUS`, `IMPLEMENTATION_STATUS`, `COMPONENT_MAP`, `KNOWN_RISKS`, `ROADMAP`) that still described RC-6 / RC-7-in-progress despite merged RC-7 machine/localization truth.
-- No `core/**`, dependency, storage composition, Guardian, TruthGate, Canon, PostgreSQL activation or Reader runtime retrieval change is in scope.
-- Impact classification: `GITHUB_AND_NOTION`; per project workflow, only post-merge authoritative RC-8 evidence may be synchronized to the three existing Notion pages. No new Notion page is permitted.
+Signed merge `f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`; exact-head CI `31593097846` and post-merge CI `31594027040` were 9/9. Historical K=5 result: Recall `0.937500`, Precision `0.187500`, MRR `0.895833`, paired hard-negative rate `1.000000`, 15/16 useful hits and 4/4 hard-negative hits. Classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
-## 2026-08-12 — Reader Core RC-6 bounded long-context strategy (#369 / PR #370)
+## Historical retained evidence
 
-- Live verified signed starting `main@af9e050e467adbf2f73a0a916a88a99918e46f38`, signature `verified=true` / `reason=valid`, open PRs 0 and exact post-RC-5 push CI `31546737038` 9/9.
-- Live Notion read-back confirmed all three canonical Crystal pages still had RC-5 as top current truth before RC-6 work began.
-- `ROADMAP.md` establishes the next order as RC-6 long-context strategy → RC-7 cross-document reading; operator separately authorized continuation, so issue #369 scopes RC-6 only.
-- Branch `agent/reader-core-rc6-long-context` was created from exact starting main. Draft PR #370 was opened without `Closes #369` auto-close language so completion ordering can remain explicit.
-- Initial runtime commit `97b1befa2c0db830bace2781489a164e8cfeb2c7` added only `core/reader_long_context.py` and `tests/test_reader_long_context.py`.
-- Initial smoke CI `31548812403` exposed one test-design/provenance-order defect: 2148 tests passed, one failed, 13 skipped and one guard line was uncovered. The failure proved a deeper structural-provenance guard fired before the intended working-set snapshot-drift guard.
-- Fix commit `83516354e20c20751c1adda79f2b57592b10ab9c` moved immutable working-set leaf-provenance comparison before deep per-leaf revalidation in `register_summary()`. This preserves fail-closed behavior and makes summary snapshot drift explicit.
-- Corrected exact-head smoke CI `31549837676` is **9/9 successful** on `83516354e20c20751c1adda79f2b57592b10ab9c`, including Python 3.11/3.12, docs-status, Ring Zero, security, Ruff/code-quality, eval, JSONL integrity and Docker.
-- RC-6 design: deterministic RC-2 structural order + candidate-ID tie-break, rolling working sets bounded by candidate count and direct source-locator count, candidate atomicity, optional RC-5 relation carry-through only when both sides are in-set, and caller-supplied `SUMMARY` artifacts with direct RC-4 leaf provenance.
-- Authority boundary remains fail closed: no automatic summarization/model/provider/token-context claim, parser/OCR, embeddings/ANN, RC-7 cross-document reasoning, evidence admission, truth/Canon/ESM mutation, contradiction resolution, planner authority, Reader persistence/API/CLI/worker or PostgreSQL activation.
-- English public/machine truth is intentionally committed before Russian refresh so the immutable English source SHA can be recorded honestly. Existing Russian `CURRENT` markers remain RC-5 checkpoint history until the follow-up RC-6 Russian parity commit pins the new exact English source SHA.
-- Impact classification: `GITHUB_AND_NOTION`; Notion synchronization remains forbidden until guarded merge and exact post-merge push CI succeed.
-
-## 2026-08-11 — Reader Core RC-5 relation candidates (#367 / PR #368)
-
-- Guarded squash merge produced signed `main@af9e050e467adbf2f73a0a916a88a99918e46f38` with signature `verified=true`, reason `valid`.
-- Final validated PR head `b4e26c9be3671e5e8049add280289c6d5fe7c798`; exact-head CI `31546290347` 9/9; exact post-merge push CI `31546737038` 9/9.
-- Added bounded same-session/same-source-version `POSSIBLE_CONTRADICTION`, `TENSION`, `EXCEPTION`, `QUALIFICATION` relation candidates over registered RC-4 proposition candidates only.
-- Restored/hardened D1/D3/D4/D5 documentation validators so green CI could not be obtained by weakening inventory/link/stale-claim/storage/grant/authority checks.
-- Russian Reader-dependent root + D1/D3/D4/D5 surfaces were current at RC-5 checkpoint; eight other locale packs remained rich `REFRESH_NEEDED`, 64 tracked documents.
-- Notion 3/3 synchronized and read back only after post-merge CI. Completion evidence posted to #367; issue closed completed after correcting GitHub's earlier auto-close ordering.
-
-## 2026-08-10 — Post-i18n truth/backlog reconciliation (#353)
-
-- Verified signed starting `main@f4556e8f9775d28d4a1b2c20a28962a95e55d33e`, PR #352 exact-head CI `31340722027` 9/9 and post-merge CI `31341125405` 9/9.
-- Confirmed D1–D5 current at that checkpoint and triaged stale backlog/PR state without merging prototype or cross-project work.
-
-## 2026-08-08 — PR #337 inactive PostgreSQL import/equivalence merged
-
-- Merge: `bbd816c09dd39a02e6de6c1014438490572f40f6`; validated head `d7af7c80722274f9217bc5545d150f92e9363f37`.
-- Exact-head CI `31256316536`: 9/9; Python 3.11/3.12: 2078 passed / 13 skipped; 9756 statements / 100.00% coverage.
-- Real PostgreSQL/pgvector integration `31256316532`: successful against PostgreSQL 16, pgvector 0.8.2 and Psycopg 3.3.4.
-- Implemented issue #332 phase 1 only: optional lazy driver, preflight, new inactive schema, serializable import, independent exact re-hash and non-secret receipts.
-- No runtime activation, cutover, rollback, dual-write, automatic switching, ANN acceptance, Guardian, TruthGate or strict Canon change.
+Earlier RC-0..RC-8, storage, localization and grant-reconciliation entries remain available in Git history and their signed/CI evidence remains preserved in status and architecture records.
