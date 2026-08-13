@@ -13,7 +13,7 @@
 **Latest bounded evaluation milestone:** issue #384 / PR #385 — Reader Retrieval Evaluation Surface v2  
 **Grant status:** submitted / under review / not awarded
 
-## ✅ Delivered Reader baseline
+## ✅ Delivered Reader implementation baseline
 
 ```text
 reader_core_rc1_skeleton               = true
