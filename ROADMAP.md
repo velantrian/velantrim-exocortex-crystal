@@ -29,9 +29,10 @@ dedicated_reader_core                  = false
 - **RC-5 — relation candidates** — `core/reader_relations.py`; no admission/resolution authority.
 - **RC-6 — bounded long context** — deterministic working sets + caller-supplied summaries.
 - **RC-7 — bounded cross-document candidate links** — exact two-sided provenance; no automatic identity.
+- **RC-8 — retrieval architecture decision** — architecture/research complete.
 - **RC-9 — deterministic lexical candidate discovery + benchmark** — PRE-ADMISSION BM25 inspection baseline.
 
-RC-1 through RC-7 are bounded implemented Reader layers. RC-8 is a completed retrieval architecture decision. RC-10 is preregistration only and executed no comparator.
+RC-1 through RC-7 are bounded implemented Reader layers. RC-10 is preregistration only and executed no comparator.
 
 Historical RC-9 K=5 RC-8 evidence remains Recall@5 `0.937500`, Precision@5 `0.187500`, MRR `0.895833`, useful hits `15 / 16`, hard-negative hits `4 / 4`; classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
@@ -39,8 +40,8 @@ Historical RC-9 K=5 RC-8 evidence remains Recall@5 `0.937500`, Precision@5 `0.18
 
 ```text
 retrieval match != evidence
-similarity != identity
-repetition != corroboration
+similarity               != identity
+repetition               != corroboration
 cross-document candidate != Canon relation
 cross-document link != Canon relation
 same-topic != same proposition
