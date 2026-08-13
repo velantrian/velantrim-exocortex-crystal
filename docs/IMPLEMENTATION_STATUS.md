@@ -40,6 +40,7 @@ RC-1 source/session identity
 → future separately authorized comparator, if any
 ```
 
+RC-5 remains implemented in `core/reader_relations.py`.
 RC-9 remains implemented in `core/reader_lexical_discovery.py`.
 Historical RC-9 K=5 RC-8 benchmark remains Recall@5 `0.937500`, Precision@5 `0.187500`, MRR `0.895833`, paired hard-negative rate@5 `1.000000`; classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
