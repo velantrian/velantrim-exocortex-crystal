@@ -23,6 +23,7 @@ reader_core_rc7_cross_document_links   = true
 dedicated_reader_core                  = false
 ```
 
+RC-1 through RC-7 are merged bounded Reader layers.
 RC-7 remains signed `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1`, post-merge CI `31572918731`.
 RC-9 remains the deterministic lexical candidate-discovery implementation baseline in `core/reader_lexical_discovery.py`; signed `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`, post-merge CI `31594027040`.
 Historical classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
