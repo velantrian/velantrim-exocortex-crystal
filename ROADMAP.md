@@ -164,3 +164,16 @@ counted again as newly funded delivery.
 - [Post-RC-10 reassessment](./docs/architecture/READER_POST_RC10_REASSESSMENT.md)
 - [Reader Retrieval Evaluation Surface v2](./docs/architecture/READER_RETRIEVAL_EVAL_V2.md)
 - [Translation status](./docs/TRANSLATION_STATUS.md)
+
+## 🔒 Retained Reader compatibility / authority markers
+
+Historical Reader truth remains visible after Evaluation Surface v2:
+
+- **Delivered Reader implementation baseline** includes RC-1 through RC-7; `reader_core_rc7_cross_document_links = true` and `dedicated_reader_core = false`.
+- **RC-8 — retrieval architecture decision** remains completed architecture/research.
+- **RC-9 — deterministic lexical candidate discovery + benchmark** remains the implemented control at `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`; post-merge CI `31594027040`; RC-10 tracking `#377` is completed preregistration bookkeeping only.
+- RC-7 signed history remains `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1`, post-merge CI `31572918731`.
+- RC-7 authority vocabulary remains: `cross-document link != Canon relation`; `same-topic != same proposition`; `possible-same-claim != claim identity`; `similarity signal != identity proof`; `repetition across sources != corroboration`.
+- There is **no automatic semantic matching**. `embeddings/ANN/vector` Reader runtime is not implemented; **semantic/hybrid retrieval may be compared later** only under separate authorization.
+- PostgreSQL/pgvector remains `active=false`; NLnet remains submitted / under review / not awarded.
+- Issue `#382` selected Evaluation Surface v2; `comparison pass != runtime authorization`.

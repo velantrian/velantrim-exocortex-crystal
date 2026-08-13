@@ -152,6 +152,24 @@ NLnet remains **submitted / under review / not awarded**. Approximate €50,000 
 only. RC-1 through RC-9, PR #378, post-RC-10 reassessment and Evaluation Surface v2 are existing
 pre-agreement work if completed before any funding agreement.
 
+
+## Retained historical Reader compatibility markers
+
+RC-1 through RC-7 are merged bounded Reader layers. RC-7 remains signed `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1`, post-merge CI `31572918731`, with `reader_core_rc7_cross_document_links = true`.
+
+**RC-9 — deterministic lexical candidate discovery: COMPLETE.** The deterministic lexical candidate-discovery implementation baseline remains signed `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`, post-merge CI `31594027040`; issue `#377` is completed preregistration bookkeeping only.
+
+```text
+cross-document link != Canon relation
+same-topic != same proposition
+possible-same-claim != claim identity
+similarity signal != identity proof
+repetition across sources != corroboration
+comparison pass != runtime authorization
+```
+
+Issue `#382` completed the post-RC-10 reassessment and selected Evaluation Surface v2. There is no automatic semantic matching; `embeddings/ANN/vector` Reader runtime is absent, semantic/hybrid retrieval may be compared later only after separate authorization, PostgreSQL/pgvector remains `active=false`, and NLnet remains submitted / under review / not awarded.
+
 ## Stop boundary
 
 Issue #384 completes only after exact-head CI, semantic review, guarded merge, signed

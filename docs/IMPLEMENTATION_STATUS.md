@@ -187,3 +187,24 @@ runtime delivery.
 - #214 remains fixture/PII/supply-chain hygiene.
 
 After issue #384 completion, STOP before model-backed comparator execution.
+
+## Retained Reader machine truth and authority firewall
+
+```text
+reader_core_rc6_long_context_strategy  = true
+reader_core_rc7_cross_document_links   = true
+dedicated_reader_core                  = false
+working-set coverage != comprehension proof
+summary != evidence
+cross-document link != Canon relation
+same-topic != same proposition
+possible-same-claim != claim identity
+similarity signal != identity proof
+repetition across sources != corroboration
+candidate discovery != candidate adjudication
+comparison pass != runtime authorization
+```
+
+RC-7 historical checkpoint remains `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1`, post-merge CI `31572918731`. RC-9 remains `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`, implemented at `core/reader_lexical_discovery.py`, post-merge CI `31594027040`; issue `#377` is completed RC-10 preregistration bookkeeping. Historical RC-9 evidence remains `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`, Recall@5 `0.937500`, paired hard-negative rate@5 `1.000000`.
+
+Issue `#382` selected Evaluation Surface v2. There is no automatic semantic matching; `embeddings/ANN/vector` Reader runtime remains absent, semantic/hybrid retrieval may be compared later only with separate authorization, PostgreSQL/pgvector remains `active=false`, and NLnet remains submitted / under review / not awarded.

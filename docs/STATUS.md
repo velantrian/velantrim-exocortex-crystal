@@ -182,6 +182,30 @@ NLnet remains **submitted / under review / not awarded**. Approximate **€50,00
 context only. Budget change: none. RC-1 through RC-9, PR #378, the post-RC-10 reassessment and
 Evaluation Surface v2 are existing pre-agreement repository work if merged before an agreement.
 
+
+## Retained historical Reader truth markers
+
+The current status remains additive to the signed Reader history:
+
+```text
+reader_core_rc6_long_context_strategy  = true
+reader_core_rc7_cross_document_links   = true
+dedicated_reader_core                  = false
+working-set coverage != comprehension proof
+summary != evidence
+cross-document link != Canon relation
+same-topic != same proposition
+possible-same-claim != claim identity
+similarity signal != identity proof
+repetition across sources != corroboration
+candidate discovery != candidate adjudication
+comparison pass != runtime authorization
+```
+
+RC-7 remains signed `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1`, exact post-merge CI `31572918731`. RC-9 remains signed `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`, runtime module `core/reader_lexical_discovery.py`, exact post-merge CI `31594027040`; RC-10 issue `#377` is completed preregistration bookkeeping only. Historical RC-9 classification remains `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP` with Recall@5 `0.937500` and paired hard-negative rate@5 `1.000000`.
+
+Issue `#382` completed the reassessment and selected Evaluation Surface v2. There is no automatic semantic matching; `embeddings/ANN/vector` Reader runtime is absent and semantic/hybrid retrieval may be compared later only after separate authorization. PostgreSQL/pgvector remains `active=false`; NLnet remains submitted / under review / not awarded.
+
 ## Stop boundary
 
 After issue #384 receives exact-head CI, semantic review, guarded merge, signed exact post-merge
