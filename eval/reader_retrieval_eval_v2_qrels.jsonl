@@ -135,7 +135,7 @@
 {"candidate_id":"v2-c-7dd0f1454ab1266a","judgment":"USEFUL_CANDIDATE","query_id":"v2-q23","review_class":"SAME_PROPOSITION_CANDIDATE"}
 {"candidate_id":"v2-c-85c6f75b62f71330","judgment":"NEUTRAL_DECOY","query_id":"v2-q23","review_class":"NOT_APPLICABLE"}
 {"candidate_id":"v2-c-8766eea831e96fa0","judgment":"HARD_NEGATIVE","query_id":"v2-q23","review_class":"SAME_TOPIC"}
-{"candidate_id":"v2-c-9f035beae0b2f649","judgment":"USEFUL_CANDIDATE","query_id":"v2-q23","review_class":"RELATED_CLAIM"}
+{"candidate_id":"v2-c-9f035beae0b2f649","judgment":"USEFUL_CANDIDATE","query_id":"v2-q23","review_class":"POSSIBLE_CONTRADICTION"}
 {"candidate_id":"v2-c-146b800d0a317ba6","judgment":"HARD_NEGATIVE","query_id":"v2-q24","review_class":"SAME_TOPIC"}
 {"candidate_id":"v2-c-3a6ec38877ed8335","judgment":"USEFUL_CANDIDATE","query_id":"v2-q24","review_class":"SAME_PROPOSITION_CANDIDATE"}
 {"candidate_id":"v2-c-562e0c304e69ba28","judgment":"NEUTRAL_DECOY","query_id":"v2-q24","review_class":"NOT_APPLICABLE"}
