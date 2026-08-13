@@ -8,6 +8,7 @@
 **Signed RC-7 Reader baseline:** `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1` — PR #372; post-merge CI `31572918731`  
 **Signed RC-9 merge:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` — PR #376; post-merge CI `31594027040`  
 **RC-10 preregistration:** PR #378 / issue #377 completed  
+**Grant reconciliation:** issue #379 / PR #380 / PR #381 completed  
 **Post-RC-10 reassessment:** issue #382 / PR #383 completed at signed `main@e824556f304143cdb8403f44a7b020a528e63291`, CI `31670811115` 9/9  
 **Latest bounded evaluation milestone:** issue #384 / PR #385 — Reader Retrieval Evaluation Surface v2  
 **Grant status:** submitted / under review / not awarded
@@ -25,7 +26,12 @@ reader_core_rc7_cross_document_links   = true
 dedicated_reader_core                  = false
 ```
 
-RC-1 through RC-7 are bounded implemented Reader layers. RC-8 is a completed retrieval architecture decision. RC-9 is deterministic lexical PRE-ADMISSION candidate discovery. RC-10 is preregistration only and executed no comparator.
+- **RC-5 — relation candidates** — `core/reader_relations.py`; no admission/resolution authority.
+- **RC-6 — bounded long context** — deterministic working sets + caller-supplied summaries.
+- **RC-7 — bounded cross-document candidate links** — exact two-sided provenance; no automatic identity.
+- **RC-9 — deterministic lexical candidate discovery + benchmark** — PRE-ADMISSION BM25 inspection baseline.
+
+RC-1 through RC-7 are bounded implemented Reader layers. RC-8 is a completed retrieval architecture decision. RC-10 is preregistration only and executed no comparator.
 
 Historical RC-9 K=5 RC-8 evidence remains Recall@5 `0.937500`, Precision@5 `0.187500`, MRR `0.895833`, useful hits `15 / 16`, hard-negative hits `4 / 4`; classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
