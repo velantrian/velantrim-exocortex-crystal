@@ -5,17 +5,17 @@
 > Only merged `main`, executable tests and exact CI are implementation truth.
 
 **Retained runtime baseline:** `main@bbd816c09dd39a02e6de6c1014438490572f40f6`  
-**Signed RC-7 Reader baseline:** `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1` — PR #372  
+**Signed RC-7 Reader baseline:** `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1` — PR #372; post-merge CI `31572918731`  
 **Signed RC-8 merge:** `main@bd85479e014c26ddebd0f4ae06385ce6625f5ab6` — PR #374  
-**Signed RC-9 merge:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` — PR #376  
+**Signed RC-9 merge:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` — PR #376; post-merge CI `31594027040`  
 **RC-10 preregistration:** PR #378 / issue #377 completed  
 **Grant reconciliation:** issue #379 / PR #380 / PR #381 completed  
 **Post-RC-10 reassessment:** issue #382 / PR #383 completed at signed `main@e824556f304143cdb8403f44a7b020a528e63291`, CI `31670811115` 9/9  
-**Latest bounded evaluation milestone:** issue #384 — Reader Retrieval Evaluation Surface v2  
+**Latest bounded evaluation milestone:** issue #384 / PR #385 — Reader Retrieval Evaluation Surface v2  
 **Grant status:** submitted / under review / not awarded  
 **Budget change:** none
 
-## ✅ Delivered bounded Reader chain
+## ✅ Delivered Reader implementation baseline
 
 ```text
 reader_core_rc1_skeleton               = true
@@ -32,25 +32,17 @@ dedicated_reader_core                  = false
 - **RC-2** — caller-supplied Structural Document Map.
 - **RC-3** — deterministic multi-pass reading ledger.
 - **RC-4** — source-linked `EXTRACTED_PROPOSITION` candidates.
-- **RC-5 — relation candidates** — `POSSIBLE_CONTRADICTION`, `TENSION`, `EXCEPTION`, `QUALIFICATION`; no admission/resolution authority.
-- **RC-6 — bounded long context** — working sets + caller-supplied summary with direct leaf provenance.
-- **RC-7 — bounded cross-document candidate links** — explicit two-sided provenance; no automatic semantic identity.
-- **RC-8** — retrieval architecture decision.
+- **RC-5 — relation candidates** — `core/reader_relations.py`; no admission/resolution authority.
+- **RC-6 — bounded long context** — deterministic working sets + caller-supplied summaries.
+- **RC-7 — bounded cross-document candidate links** — exact two-sided provenance; no automatic identity.
+- **RC-8 — retrieval architecture decision** — architecture/research complete.
 - **RC-9 — deterministic lexical candidate discovery + benchmark** — PRE-ADMISSION BM25 inspection baseline.
 - **RC-10** — reuse/comparison preregistration only; no comparator execution.
 
-## ✅ RC-9 frozen historical baseline
+## ✅ RC-9 historical control
 
-At K=5 on the historical RC-8 fixture:
-
-| Metric | Result |
-|---|---:|
-| Recall@5 | 0.937500 |
-| Precision@5 | 0.187500 |
-| MRR | 0.895833 |
-| Paired hard-negative rate@5 | 1.000000 |
-| Useful paired hits | 15 / 16 |
-| Hard-negative paired hits | 4 / 4 |
+Frozen RC-8 K=5 result: Recall@5 `0.937500`; Precision@5 `0.187500`; MRR `0.895833`;
+paired hard-negative rate@5 `1.000000`; useful paired hits `15 / 16`; hard negatives `4 / 4`.
 
 Classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
@@ -72,73 +64,74 @@ Issue #382 / PR #383 established:
 measured retrieval-quality gap != measured scaling gap
 ```
 
-SQLite FTS, ANN/vector DB and server infrastructure were therefore not selected as the next
-Reader mechanism. RC-9 remains the deterministic control/fallback; RRF remains ordering only;
-hashing/trigram signals remain comparison controls.
+SQLite FTS, ANN/vector DB and server infrastructure were not selected as the next Reader mechanism.
+RC-9 remains the deterministic control/fallback.
 
-## 🧪 Reader Retrieval Evaluation Surface v2 — issue #384
+## 🧪 Reader Retrieval Evaluation Surface v2 — #384 / #385
 
-The v2 surface is a separate fully judged evaluation layer; historical RC-8/RC-9/RC-10 artifacts
-remain immutable.
+Historical RC-8/RC-9/RC-10 artifacts remain immutable. The final v2 freeze uses opaque,
+content-derived, **qrel-label-independent candidate IDs** and corrects the reviewed refund-scope
+conflict to `POSSIBLE_CONTRADICTION`.
 
 Frozen design:
 
-- 24 queries;
-- 12 primary strata × 2 queries;
-- 6 candidates per query;
-- 2 useful + 2 hard-negative + 2 neutral-decoy judgments per query;
-- 144/144 explicit qrels; judgment coverage `1.0`;
-- K=5;
-- multiple cross-lingual, low-overlap, negation, modality, quantifier, temporal/version,
-  jurisdiction, attribution, units/threshold, homonym, boilerplate and conditional traps.
+```text
+24 queries
+12 strata × 2 queries
+6 candidates/query
+2 useful + 2 hard-negative + 2 neutral/query
+144/144 explicit qrels
+judgment coverage = 1.0
+K = 5
+surface sha256 = 7af2b1247e1c1c2590b6b2c830dd605da646989856b6c29cee18aac3e1f785e8
+```
 
-Unchanged RC-9 control on v2:
+Unchanged RC-9 control on final v2:
 
 | Metric | Result |
 |---|---:|
-| Useful hits | 43 / 48 |
-| Useful Recall@5 | **0.895833** |
-| Fully judged Precision@5 | **0.364407** |
-| MRR | **0.829861** |
-| Hard-negative hits | 38 / 48 |
+| Useful hits | **42 / 48** |
+| Useful Recall@5 | **0.875000** |
+| Precision@5 — fixed K slots | **0.350000** |
+| Judged precision over returned | **0.355932** |
+| MRR | **0.857639** |
+| Hard-negative hits | **38 / 48** |
 | Hard-negative hit rate@5 | **0.791667** |
 | Any-useful-query rate@5 | **1.000000** |
-| All-useful-query rate@5 | **0.791667** |
+| All-useful-query rate@5 | **0.750000** |
 
 Classification: `LEXICAL_CONTROL_EXPOSES_MULTI_STRATUM_GAPS`.
 
-Durable evidence:
+The fixed-slot Precision@5 denominator prevents a comparator from improving precision merely by
+returning fewer than K candidates; the fully judged precision-over-returned diagnostic is reported
+separately.
 
-- `docs/architecture/READER_RETRIEVAL_EVAL_V2.md`;
-- `eval/reader_retrieval_eval_v2_manifest.json`;
-- `eval/reader_retrieval_eval_v2_rc9_control.json`;
-- `eval/reader_retrieval_eval_v2_future_comparator_gate.json`.
+## 🔒 Future comparator remains separate
 
-This milestone adds evaluation evidence only. It does **not** add semantic/hybrid/vector Reader
-runtime, a model, FTS, ANN, PostgreSQL/pgvector activation or epistemic authority.
+The unchanged historical RC-10 screen remains mandatory. The new pre-result v2 gate requires,
+among other conditions, retaining all 42 RC-9 v2 useful hits, recovering at least 4/6 misses,
+>=46/48 useful hits, Recall@5 >=0.958333, MRR >=0.857639, hard negatives <=24/48,
+per-stratum constraints, exact backend/model/dependency/index identity or explicit no-index,
+privacy review, no `auto`, zero query-time network calls, zero external Reader source-text
+transmission and zero authority violations.
 
-## ⏭️ Future comparator is still separate
+```text
+comparison pass != runtime authorization
+```
 
-A future comparator requires a new authorization. It must pass both:
+No model-backed comparator is executed by #384/#385.
 
-1. the unchanged historical RC-10 screen; and
-2. the pre-result v2 gate.
-
-Even a pass is only architecture-review eligibility.
-
-No model-backed comparator is executed by issue #384.
-
-## 🗄️ Storage
+## 🗄️ Storage truth
 
 ```text
 SQLite ordinary active local-first
-→ PostgreSQL/pgvector inactive import/equivalence target
-→ active=false
+PostgreSQL/pgvector inactive active=false
+Reader FTS not implemented
+Reader ANN/vector DB not implemented
+automatic backend switching absent
 ```
 
-Reader FTS is not implemented. Automatic backend switching is absent.
-
-## 🧩 Isolated backlog
+## 🧩 Backlog remains isolated
 
 - #155 — Epistemic Router / Evidence State RFC.
 - #165 — exact normalized admitted-fact migration/dedupe; no semantic matching.
@@ -146,10 +139,9 @@ Reader FTS is not implemented. Automatic backend switching is absent.
 
 ## 🌍 Localization
 
-Historical RC-7 localization checkpoint remains immutable. Russian Reader-dependent pack remains
-the current localized Reader pack; eight other Reader-dependent locale packs remain
-`REFRESH_NEEDED` (64 tracked detail documents). Evaluation Surface v2 does not perform a broad
-localization refresh.
+Historical Reader localization checkpoints remain immutable. Russian Reader-dependent pack remains
+current to its recorded source; eight other Reader-dependent locale packs remain
+`REFRESH_NEEDED` — 64 tracked detail documents. Evaluation Surface v2 performs no broad refresh.
 
 ## 🎓 Grant boundary
 
@@ -164,16 +156,3 @@ counted again as newly funded delivery.
 - [Post-RC-10 reassessment](./docs/architecture/READER_POST_RC10_REASSESSMENT.md)
 - [Reader Retrieval Evaluation Surface v2](./docs/architecture/READER_RETRIEVAL_EVAL_V2.md)
 - [Translation status](./docs/TRANSLATION_STATUS.md)
-
-## 🔒 Retained Reader compatibility / authority markers
-
-Historical Reader truth remains visible after Evaluation Surface v2:
-
-- **Delivered Reader implementation baseline** includes RC-1 through RC-7; `reader_core_rc7_cross_document_links = true` and `dedicated_reader_core = false`.
-- **RC-8 — retrieval architecture decision** remains completed architecture/research.
-- **RC-9 — deterministic lexical candidate discovery + benchmark** remains the implemented control at `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`; post-merge CI `31594027040`; RC-10 tracking `#377` is completed preregistration bookkeeping only.
-- RC-7 signed history remains `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1`, post-merge CI `31572918731`.
-- RC-7 authority vocabulary remains: `cross-document link != Canon relation`; `same-topic != same proposition`; `possible-same-claim != claim identity`; `similarity signal != identity proof`; `repetition across sources != corroboration`.
-- There is **no automatic semantic matching**. `embeddings/ANN/vector` Reader runtime is not implemented; **semantic/hybrid retrieval may be compared later** only under separate authorization.
-- PostgreSQL/pgvector remains `active=false`; NLnet remains submitted / under review / not awarded.
-- Issue `#382` selected Evaluation Surface v2; `comparison pass != runtime authorization`.

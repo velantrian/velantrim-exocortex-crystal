@@ -1,144 +1,144 @@
-{"candidate_id":"v2-q01-c01","pool_id":"v2-q01-pool","proposition":"Резервное копирование отменили после того, как проверка контрольной суммы завершилась ошибкой."}
-{"candidate_id":"v2-q01-c02","pool_id":"v2-q01-pool","proposition":"The checksum check failed, so the backup job was abandoned."}
-{"candidate_id":"v2-q01-c03","pool_id":"v2-q01-pool","proposition":"Резервное копирование завершилось успешно после проверки контрольной суммы."}
-{"candidate_id":"v2-q01-c04","pool_id":"v2-q01-pool","proposition":"The backup uses a checksum file stored beside the archive."}
-{"candidate_id":"v2-q01-c05","pool_id":"v2-q01-pool","proposition":"A train was cancelled because of a signal failure."}
-{"candidate_id":"v2-q01-c06","pool_id":"v2-q01-pool","proposition":"The checksum of the image is printed on the release page."}
-{"candidate_id":"v2-q02-c01","pool_id":"v2-q02-pool","proposition":"Der Sensor wechselt in den Sicherheitsmodus, wenn der Druckgrenzwert überschritten wird."}
-{"candidate_id":"v2-q02-c02","pool_id":"v2-q02-pool","proposition":"Exceeding the pressure threshold makes the sensor switch to safe mode."}
-{"candidate_id":"v2-q02-c03","pool_id":"v2-q02-pool","proposition":"Der Sensor verlässt den Sicherheitsmodus, sobald der Druck wieder normal ist."}
-{"candidate_id":"v2-q02-c04","pool_id":"v2-q02-pool","proposition":"The pressure sensor is calibrated once per year."}
-{"candidate_id":"v2-q02-c05","pool_id":"v2-q02-pool","proposition":"A payment enters review when a spending limit is exceeded."}
-{"candidate_id":"v2-q02-c06","pool_id":"v2-q02-pool","proposition":"The laboratory stores pressure logs for ninety days."}
-{"candidate_id":"v2-q03-c01","pool_id":"v2-q03-pool","proposition":"With two safety checks still unfinished, the directors pushed the release to a later date."}
-{"candidate_id":"v2-q03-c02","pool_id":"v2-q03-pool","proposition":"The release will not happen on schedule; the governing panel is waiting for the remaining safety checks."}
-{"candidate_id":"v2-q03-c03","pool_id":"v2-q03-pool","proposition":"The board approved the launch after every safety test passed."}
-{"candidate_id":"v2-q03-c04","pool_id":"v2-q03-pool","proposition":"Two directors joined the safety committee last year."}
-{"candidate_id":"v2-q03-c05","pool_id":"v2-q03-pool","proposition":"The orchestra postponed its concert because the hall was unavailable."}
-{"candidate_id":"v2-q03-c06","pool_id":"v2-q03-pool","proposition":"A launch vehicle completed a thermal-vacuum test."}
-{"candidate_id":"v2-q04-c01","pool_id":"v2-q04-pool","proposition":"Once two weeks have passed since the parcel arrived, the buyer loses the ordinary refund window."}
-{"candidate_id":"v2-q04-c02","pool_id":"v2-q04-pool","proposition":"The return period closes at the end of the second week after an order is received."}
-{"candidate_id":"v2-q04-c03","pool_id":"v2-q04-pool","proposition":"Customers may request a refund at any time after delivery."}
-{"candidate_id":"v2-q04-c04","pool_id":"v2-q04-pool","proposition":"Delivery normally takes fourteen days."}
-{"candidate_id":"v2-q04-c05","pool_id":"v2-q04-pool","proposition":"A warranty claim requires the serial number."}
-{"candidate_id":"v2-q04-c06","pool_id":"v2-q04-pool","proposition":"The parcel service offers weekend delivery."}
-{"candidate_id":"v2-q05-c01","pool_id":"v2-q05-pool","proposition":"The update leaves locally stored notes intact."}
-{"candidate_id":"v2-q05-c02","pool_id":"v2-q05-pool","proposition":"The update deletes locally stored notes."}
-{"candidate_id":"v2-q05-c03","pool_id":"v2-q05-pool","proposition":"The update can export locally stored notes to a file."}
-{"candidate_id":"v2-q05-c04","pool_id":"v2-q05-pool","proposition":"Local notes are encrypted with a device key."}
-{"candidate_id":"v2-q05-c05","pool_id":"v2-q05-pool","proposition":"The update removes obsolete cache files."}
-{"candidate_id":"v2-q05-c06","pool_id":"v2-q05-pool","proposition":"Remote notes are synchronized every hour."}
-{"candidate_id":"v2-q06-c01","pool_id":"v2-q06-pool","proposition":"Serious adverse events were not more frequent in the trial."}
-{"candidate_id":"v2-q06-c02","pool_id":"v2-q06-pool","proposition":"The trial found an increase in serious adverse events."}
-{"candidate_id":"v2-q06-c03","pool_id":"v2-q06-pool","proposition":"The trial enrolled participants with prior adverse events."}
-{"candidate_id":"v2-q06-c04","pool_id":"v2-q06-pool","proposition":"Mild adverse events were recorded separately."}
-{"candidate_id":"v2-q06-c05","pool_id":"v2-q06-pool","proposition":"The survey found no increase in commuting time."}
-{"candidate_id":"v2-q06-c06","pool_id":"v2-q06-pool","proposition":"Serious events require notification within 24 hours."}
-{"candidate_id":"v2-q07-c01","pool_id":"v2-q07-pool","proposition":"Under heavy load, the patch could lower memory consumption."}
-{"candidate_id":"v2-q07-c02","pool_id":"v2-q07-pool","proposition":"The patch reduces memory use under heavy load."}
-{"candidate_id":"v2-q07-c03","pool_id":"v2-q07-pool","proposition":"The patch changes the memory allocator used by the service."}
-{"candidate_id":"v2-q07-c04","pool_id":"v2-q07-pool","proposition":"Heavy load is defined as more than 500 concurrent requests."}
-{"candidate_id":"v2-q07-c05","pool_id":"v2-q07-pool","proposition":"The patch may reduce network latency on Wi-Fi."}
-{"candidate_id":"v2-q07-c06","pool_id":"v2-q07-pool","proposition":"Memory use is reported in mebibytes."}
-{"candidate_id":"v2-q08-c01","pool_id":"v2-q08-pool","proposition":"Draft reports ought not be published automatically under the policy."}
-{"candidate_id":"v2-q08-c02","pool_id":"v2-q08-pool","proposition":"The policy prevents automatic publication of draft reports."}
-{"candidate_id":"v2-q08-c03","pool_id":"v2-q08-pool","proposition":"The policy requires draft reports to include an owner."}
-{"candidate_id":"v2-q08-c04","pool_id":"v2-q08-pool","proposition":"Automatic publication is logged for audit purposes."}
-{"candidate_id":"v2-q08-c05","pool_id":"v2-q08-pool","proposition":"The policy should prevent accidental deletion of archives."}
-{"candidate_id":"v2-q08-c06","pool_id":"v2-q08-pool","proposition":"Final reports are published on the public website."}
-{"candidate_id":"v2-q09-c01","pool_id":"v2-q09-pool","proposition":"All replicas confirmed receipt of the configuration change."}
-{"candidate_id":"v2-q09-c02","pool_id":"v2-q09-pool","proposition":"Most replicas acknowledged the configuration change."}
-{"candidate_id":"v2-q09-c03","pool_id":"v2-q09-pool","proposition":"Each replica stores a copy of the configuration file."}
-{"candidate_id":"v2-q09-c04","pool_id":"v2-q09-pool","proposition":"The configuration change was approved by every administrator."}
-{"candidate_id":"v2-q09-c05","pool_id":"v2-q09-pool","proposition":"Every participant acknowledged the consent form."}
-{"candidate_id":"v2-q09-c06","pool_id":"v2-q09-pool","proposition":"The replica count changes during autoscaling."}
-{"candidate_id":"v2-q10-c01","pool_id":"v2-q10-pool","proposition":"The release needs approval from three or more reviewers."}
-{"candidate_id":"v2-q10-c02","pool_id":"v2-q10-pool","proposition":"Exactly three reviewers must approve the release."}
-{"candidate_id":"v2-q10-c03","pool_id":"v2-q10-pool","proposition":"Reviewers must record a reason when rejecting a release."}
-{"candidate_id":"v2-q10-c04","pool_id":"v2-q10-pool","proposition":"The release has three deployment stages."}
-{"candidate_id":"v2-q10-c05","pool_id":"v2-q10-pool","proposition":"At least three backups must be retained."}
-{"candidate_id":"v2-q10-c06","pool_id":"v2-q10-pool","proposition":"Approval notifications are sent by email."}
-{"candidate_id":"v2-q11-c01","pool_id":"v2-q11-pool","proposition":"Through March 2025, release 4.2 still accepted the old token format."}
-{"candidate_id":"v2-q11-c02","pool_id":"v2-q11-pool","proposition":"Version 4.3 rejected the legacy token format starting in April 2025."}
-{"candidate_id":"v2-q11-c03","pool_id":"v2-q11-pool","proposition":"Version 4.2 added a command for inspecting tokens."}
-{"candidate_id":"v2-q11-c04","pool_id":"v2-q11-pool","proposition":"The legacy token format uses a fixed prefix."}
-{"candidate_id":"v2-q11-c05","pool_id":"v2-q11-pool","proposition":"The old archive format was supported until March 2025."}
-{"candidate_id":"v2-q11-c06","pool_id":"v2-q11-pool","proposition":"Version 4.3 was released in April 2025."}
-{"candidate_id":"v2-q12-c01","pool_id":"v2-q12-pool","proposition":"Under the 2026 protocol, withdrawals over €5,000 need two signatures."}
-{"candidate_id":"v2-q12-c02","pool_id":"v2-q12-pool","proposition":"The 2024 protocol required one signature for withdrawals above €5,000."}
-{"candidate_id":"v2-q12-c03","pool_id":"v2-q12-pool","proposition":"The 2026 protocol defines how signatures are archived."}
-{"candidate_id":"v2-q12-c04","pool_id":"v2-q12-pool","proposition":"Withdrawals above €5,000 are reviewed monthly."}
-{"candidate_id":"v2-q12-c05","pool_id":"v2-q12-pool","proposition":"The 2026 budget allocates €5,000 for training."}
-{"candidate_id":"v2-q12-c06","pool_id":"v2-q12-pool","proposition":"Two signatures are required to publish the annual report."}
-{"candidate_id":"v2-q13-c01","pool_id":"v2-q13-pool","proposition":"German procedure gives a thirty-day period for an appeal."}
-{"candidate_id":"v2-q13-c02","pool_id":"v2-q13-pool","proposition":"The appeal period is thirty days under French procedure."}
-{"candidate_id":"v2-q13-c03","pool_id":"v2-q13-pool","proposition":"German procedure requires the appeal to identify the challenged decision."}
-{"candidate_id":"v2-q13-c04","pool_id":"v2-q13-pool","proposition":"The thirty-day period begins after formal service."}
-{"candidate_id":"v2-q13-c05","pool_id":"v2-q13-pool","proposition":"The warranty period is thirty days under the store policy."}
-{"candidate_id":"v2-q13-c06","pool_id":"v2-q13-pool","proposition":"French procedure allows electronic filing."}
-{"candidate_id":"v2-q14-c01","pool_id":"v2-q14-pool","proposition":"Region A requires registration for drones weighing more than 250 grams."}
-{"candidate_id":"v2-q14-c02","pool_id":"v2-q14-pool","proposition":"In Region B, drones above 250 grams require registration."}
-{"candidate_id":"v2-q14-c03","pool_id":"v2-q14-pool","proposition":"Region A requires a pilot identifier on registered drones."}
-{"candidate_id":"v2-q14-c04","pool_id":"v2-q14-pool","proposition":"A 250-gram drone is used for the training course."}
-{"candidate_id":"v2-q14-c05","pool_id":"v2-q14-pool","proposition":"Bicycles above 25 kilograms require a special rack."}
-{"candidate_id":"v2-q14-c06","pool_id":"v2-q14-pool","proposition":"Region B publishes registration statistics annually."}
-{"candidate_id":"v2-q15-c01","pool_id":"v2-q15-pool","proposition":"According to the audit report, the reserve is sufficient."}
-{"candidate_id":"v2-q15-c02","pool_id":"v2-q15-pool","proposition":"The reserve is sufficient."}
-{"candidate_id":"v2-q15-c03","pool_id":"v2-q15-pool","proposition":"The audit report explains how the reserve was calculated."}
-{"candidate_id":"v2-q15-c04","pool_id":"v2-q15-pool","proposition":"The reserve is deposited in two bank accounts."}
-{"candidate_id":"v2-q15-c05","pool_id":"v2-q15-pool","proposition":"The weather report states that rainfall is sufficient."}
-{"candidate_id":"v2-q15-c06","pool_id":"v2-q15-pool","proposition":"The audit report was published on Tuesday."}
-{"candidate_id":"v2-q16-c01","pool_id":"v2-q16-pool","proposition":"The researcher reproduced a statement saying the drug improves sleep."}
-{"candidate_id":"v2-q16-c02","pool_id":"v2-q16-pool","proposition":"The researcher concluded that the drug improves sleep."}
-{"candidate_id":"v2-q16-c03","pool_id":"v2-q16-pool","proposition":"The researcher quoted the dosage instructions for the drug."}
-{"candidate_id":"v2-q16-c04","pool_id":"v2-q16-pool","proposition":"The sleep study used a blinded outcome assessor."}
-{"candidate_id":"v2-q16-c05","pool_id":"v2-q16-pool","proposition":"The journalist quoted a claim about housing prices."}
-{"candidate_id":"v2-q16-c06","pool_id":"v2-q16-pool","proposition":"The drug label lists storage conditions."}
-{"candidate_id":"v2-q17-c01","pool_id":"v2-q17-pool","proposition":"The daily dose limit is 1500 milligrams."}
-{"candidate_id":"v2-q17-c02","pool_id":"v2-q17-pool","proposition":"The daily dose limit is 2 grams."}
-{"candidate_id":"v2-q17-c03","pool_id":"v2-q17-pool","proposition":"The dose is divided into three administrations per day."}
-{"candidate_id":"v2-q17-c04","pool_id":"v2-q17-pool","proposition":"The medicine is supplied in 500 milligram tablets."}
-{"candidate_id":"v2-q17-c05","pool_id":"v2-q17-pool","proposition":"The daily upload limit is 1.5 gigabytes."}
-{"candidate_id":"v2-q17-c06","pool_id":"v2-q17-pool","proposition":"A gram is one thousand milligrams."}
-{"candidate_id":"v2-q18-c01","pool_id":"v2-q18-pool","proposition":"The alarm activates when temperature exceeds 80 °C."}
-{"candidate_id":"v2-q18-c02","pool_id":"v2-q18-pool","proposition":"The alarm activates above 90 degrees Celsius."}
-{"candidate_id":"v2-q18-c03","pool_id":"v2-q18-pool","proposition":"The alarm can be silenced for 80 seconds."}
-{"candidate_id":"v2-q18-c04","pool_id":"v2-q18-pool","proposition":"The temperature sensor is calibrated at 20 °C."}
-{"candidate_id":"v2-q18-c05","pool_id":"v2-q18-pool","proposition":"A fan starts above 80 percent humidity."}
-{"candidate_id":"v2-q18-c06","pool_id":"v2-q18-pool","proposition":"The oven reaches 90 degrees Celsius during cleaning."}
-{"candidate_id":"v2-q19-c01","pool_id":"v2-q19-pool","proposition":"The planet Mercury has an extremely tenuous exosphere rather than a substantial atmosphere."}
-{"candidate_id":"v2-q19-c02","pool_id":"v2-q19-pool","proposition":"Mercury lacks a dense atmosphere."}
-{"candidate_id":"v2-q19-c03","pool_id":"v2-q19-pool","proposition":"Mercury exposure can damage the nervous system."}
-{"candidate_id":"v2-q19-c04","pool_id":"v2-q19-pool","proposition":"Mercury is used in some historical measuring instruments."}
-{"candidate_id":"v2-q19-c05","pool_id":"v2-q19-pool","proposition":"Mars has a thin carbon-dioxide atmosphere."}
-{"candidate_id":"v2-q19-c06","pool_id":"v2-q19-pool","proposition":"The atmosphere in the chamber is mostly nitrogen."}
-{"candidate_id":"v2-q20-c01","pool_id":"v2-q20-pool","proposition":"Python 3.10 added structural pattern matching."}
-{"candidate_id":"v2-q20-c02","pool_id":"v2-q20-pool","proposition":"Pattern matching became available in Python with the 3.10 release."}
-{"candidate_id":"v2-q20-c03","pool_id":"v2-q20-pool","proposition":"Python constrictors detect prey using chemical and thermal cues."}
-{"candidate_id":"v2-q20-c04","pool_id":"v2-q20-pool","proposition":"A python can remain motionless while waiting for prey."}
-{"candidate_id":"v2-q20-c05","pool_id":"v2-q20-pool","proposition":"Version 3.10 changed several standard-library modules."}
-{"candidate_id":"v2-q20-c06","pool_id":"v2-q20-pool","proposition":"Structural steel is inspected for surface defects."}
-{"candidate_id":"v2-q21-c01","pool_id":"v2-q21-pool","proposition":"This immigration notice is informational and is not legal advice."}
-{"candidate_id":"v2-q21-c02","pool_id":"v2-q21-pool","proposition":"The notice does not provide legal advice and is limited to general immigration information."}
-{"candidate_id":"v2-q21-c03","pool_id":"v2-q21-pool","proposition":"This notice is for information only and does not constitute medical advice about diabetes."}
-{"candidate_id":"v2-q21-c04","pool_id":"v2-q21-pool","proposition":"This notice is for information only and does not constitute investment advice about bonds."}
-{"candidate_id":"v2-q21-c05","pool_id":"v2-q21-pool","proposition":"Immigration applications require a completed form."}
-{"candidate_id":"v2-q21-c06","pool_id":"v2-q21-pool","proposition":"The legal department published a notice yesterday."}
-{"candidate_id":"v2-q22-c01","pool_id":"v2-q22-pool","proposition":"According to the release notes, corrupted index files are repaired by the update."}
-{"candidate_id":"v2-q22-c02","pool_id":"v2-q22-pool","proposition":"The release documentation says the update fixes index-file corruption."}
-{"candidate_id":"v2-q22-c03","pool_id":"v2-q22-pool","proposition":"The release notes describe a new theme for the user interface."}
-{"candidate_id":"v2-q22-c04","pool_id":"v2-q22-pool","proposition":"The index file contains one record per document."}
-{"candidate_id":"v2-q22-c05","pool_id":"v2-q22-pool","proposition":"The release notes for a music album list twelve tracks."}
-{"candidate_id":"v2-q22-c06","pool_id":"v2-q22-pool","proposition":"Corrupted image files are skipped during import."}
-{"candidate_id":"v2-q23-c01","pool_id":"v2-q23-pool","proposition":"If secure mode is enabled, logging out clears the cache."}
-{"candidate_id":"v2-q23-c02","pool_id":"v2-q23-pool","proposition":"The cache is cleared whenever the user logs out."}
-{"candidate_id":"v2-q23-c03","pool_id":"v2-q23-pool","proposition":"Secure mode encrypts cached records on disk."}
-{"candidate_id":"v2-q23-c04","pool_id":"v2-q23-pool","proposition":"Users can clear the cache manually from settings."}
-{"candidate_id":"v2-q23-c05","pool_id":"v2-q23-pool","proposition":"The session expires after thirty minutes of inactivity."}
-{"candidate_id":"v2-q23-c06","pool_id":"v2-q23-pool","proposition":"Logout events are written to the audit log."}
-{"candidate_id":"v2-q24-c01","pool_id":"v2-q24-pool","proposition":"Penguins are an exception to the general observation that birds can fly."}
-{"candidate_id":"v2-q24-c02","pool_id":"v2-q24-pool","proposition":"Penguins cannot fly."}
-{"candidate_id":"v2-q24-c03","pool_id":"v2-q24-pool","proposition":"Bird migration routes can span thousands of kilometres."}
-{"candidate_id":"v2-q24-c04","pool_id":"v2-q24-pool","proposition":"Penguins use their wings to swim."}
-{"candidate_id":"v2-q24-c05","pool_id":"v2-q24-pool","proposition":"Bats can fly although they are mammals."}
-{"candidate_id":"v2-q24-c06","pool_id":"v2-q24-pool","proposition":"Some fish glide above the water surface."}
+{"candidate_id":"v2-c-559ab27889b1ca24","pool_id":"v2-q01-pool","proposition":"The backup uses a checksum file stored beside the archive."}
+{"candidate_id":"v2-c-6ff01ce9e39ad839","pool_id":"v2-q01-pool","proposition":"The checksum of the image is printed on the release page."}
+{"candidate_id":"v2-c-bd1ddc619fe69bab","pool_id":"v2-q01-pool","proposition":"Резервное копирование завершилось успешно после проверки контрольной суммы."}
+{"candidate_id":"v2-c-e472acab71de2fa8","pool_id":"v2-q01-pool","proposition":"A train was cancelled because of a signal failure."}
+{"candidate_id":"v2-c-ea4d49c11eccb857","pool_id":"v2-q01-pool","proposition":"Резервное копирование отменили после того, как проверка контрольной суммы завершилась ошибкой."}
+{"candidate_id":"v2-c-ed04925901382d44","pool_id":"v2-q01-pool","proposition":"The checksum check failed, so the backup job was abandoned."}
+{"candidate_id":"v2-c-2bdc9e25394bc562","pool_id":"v2-q02-pool","proposition":"Der Sensor verlässt den Sicherheitsmodus, sobald der Druck wieder normal ist."}
+{"candidate_id":"v2-c-2dbbcb4d5fd9024b","pool_id":"v2-q02-pool","proposition":"Der Sensor wechselt in den Sicherheitsmodus, wenn der Druckgrenzwert überschritten wird."}
+{"candidate_id":"v2-c-363291d5dad6fade","pool_id":"v2-q02-pool","proposition":"A payment enters review when a spending limit is exceeded."}
+{"candidate_id":"v2-c-6238eb3c277ce69c","pool_id":"v2-q02-pool","proposition":"The laboratory stores pressure logs for ninety days."}
+{"candidate_id":"v2-c-687748c8d359e536","pool_id":"v2-q02-pool","proposition":"Exceeding the pressure threshold makes the sensor switch to safe mode."}
+{"candidate_id":"v2-c-e5b5c56470ed0b6f","pool_id":"v2-q02-pool","proposition":"The pressure sensor is calibrated once per year."}
+{"candidate_id":"v2-c-0a8ace12cae2f46b","pool_id":"v2-q03-pool","proposition":"The release will not happen on schedule; the governing panel is waiting for the remaining safety checks."}
+{"candidate_id":"v2-c-5ff9ccc731bb2a64","pool_id":"v2-q03-pool","proposition":"A launch vehicle completed a thermal-vacuum test."}
+{"candidate_id":"v2-c-d04c2b0c1384721f","pool_id":"v2-q03-pool","proposition":"The orchestra postponed its concert because the hall was unavailable."}
+{"candidate_id":"v2-c-dd6993af94bc2379","pool_id":"v2-q03-pool","proposition":"The board approved the launch after every safety test passed."}
+{"candidate_id":"v2-c-e1097af3da49f610","pool_id":"v2-q03-pool","proposition":"Two directors joined the safety committee last year."}
+{"candidate_id":"v2-c-faaabd3a6df0c13e","pool_id":"v2-q03-pool","proposition":"With two safety checks still unfinished, the directors pushed the release to a later date."}
+{"candidate_id":"v2-c-205e087d034e7b2f","pool_id":"v2-q04-pool","proposition":"The parcel service offers weekend delivery."}
+{"candidate_id":"v2-c-276b3efe332a9a8e","pool_id":"v2-q04-pool","proposition":"Once two weeks have passed since the parcel arrived, the buyer loses the ordinary refund window."}
+{"candidate_id":"v2-c-706d3baa58f9a358","pool_id":"v2-q04-pool","proposition":"Delivery normally takes fourteen days."}
+{"candidate_id":"v2-c-7efc3b8026322772","pool_id":"v2-q04-pool","proposition":"A warranty claim requires the serial number."}
+{"candidate_id":"v2-c-8555f4ed3364e931","pool_id":"v2-q04-pool","proposition":"The return label can be downloaded from the customer portal."}
+{"candidate_id":"v2-c-fd9dabe8fb8aaeac","pool_id":"v2-q04-pool","proposition":"Customers may request a refund at any time after delivery."}
+{"candidate_id":"v2-c-4c63e633b681c65d","pool_id":"v2-q05-pool","proposition":"The update deletes locally stored notes."}
+{"candidate_id":"v2-c-6c5651fad1cdb1c4","pool_id":"v2-q05-pool","proposition":"Remote notes are synchronized every hour."}
+{"candidate_id":"v2-c-9b60bbd86dc62e74","pool_id":"v2-q05-pool","proposition":"The update can export locally stored notes to a file."}
+{"candidate_id":"v2-c-9f522e96ecc9f7e8","pool_id":"v2-q05-pool","proposition":"Local notes are encrypted with a device key."}
+{"candidate_id":"v2-c-a50d5b6e5b1bfc40","pool_id":"v2-q05-pool","proposition":"The update leaves locally stored notes intact."}
+{"candidate_id":"v2-c-d34834be5662a683","pool_id":"v2-q05-pool","proposition":"The update removes obsolete cache files."}
+{"candidate_id":"v2-c-1e2681195c5c0e4e","pool_id":"v2-q06-pool","proposition":"Serious events require notification within 24 hours."}
+{"candidate_id":"v2-c-3574db8fa3c23eb5","pool_id":"v2-q06-pool","proposition":"Serious adverse events were not more frequent in the trial."}
+{"candidate_id":"v2-c-8b8dbbc47ffbc4e7","pool_id":"v2-q06-pool","proposition":"The survey found no increase in commuting time."}
+{"candidate_id":"v2-c-aae98ee42a5bdb01","pool_id":"v2-q06-pool","proposition":"The trial found an increase in serious adverse events."}
+{"candidate_id":"v2-c-d2a0f94723a60306","pool_id":"v2-q06-pool","proposition":"Mild adverse events were recorded separately."}
+{"candidate_id":"v2-c-e5d778ef463aef85","pool_id":"v2-q06-pool","proposition":"The trial enrolled participants with prior adverse events."}
+{"candidate_id":"v2-c-27a427098de390ea","pool_id":"v2-q07-pool","proposition":"Under heavy load, the patch could lower memory consumption."}
+{"candidate_id":"v2-c-3182d39644c2275c","pool_id":"v2-q07-pool","proposition":"The patch changes the memory allocator used by the service."}
+{"candidate_id":"v2-c-3e2a8abb7a3b5aab","pool_id":"v2-q07-pool","proposition":"The patch reduces memory use under heavy load."}
+{"candidate_id":"v2-c-5ad3e5b68812b444","pool_id":"v2-q07-pool","proposition":"Memory use is reported in mebibytes."}
+{"candidate_id":"v2-c-aa66477218564d35","pool_id":"v2-q07-pool","proposition":"Heavy load is defined as more than 500 concurrent requests."}
+{"candidate_id":"v2-c-fd31c2f6cdea8623","pool_id":"v2-q07-pool","proposition":"The patch may reduce network latency on Wi-Fi."}
+{"candidate_id":"v2-c-07d51fefb98f6942","pool_id":"v2-q08-pool","proposition":"The policy prevents automatic publication of draft reports."}
+{"candidate_id":"v2-c-1ed9d763f55897ed","pool_id":"v2-q08-pool","proposition":"Draft reports ought not be published automatically under the policy."}
+{"candidate_id":"v2-c-3e7a63f76d45b1b3","pool_id":"v2-q08-pool","proposition":"Automatic publication is logged for audit purposes."}
+{"candidate_id":"v2-c-5ebb71287a70c86c","pool_id":"v2-q08-pool","proposition":"The policy should prevent accidental deletion of archives."}
+{"candidate_id":"v2-c-6cafff34e564b226","pool_id":"v2-q08-pool","proposition":"The policy requires draft reports to include an owner."}
+{"candidate_id":"v2-c-a0604d90d8f45391","pool_id":"v2-q08-pool","proposition":"Final reports are published on the public website."}
+{"candidate_id":"v2-c-4d6d7dfa8a6ef3b5","pool_id":"v2-q09-pool","proposition":"Most replicas acknowledged the configuration change."}
+{"candidate_id":"v2-c-71f0810c7f4f9272","pool_id":"v2-q09-pool","proposition":"The configuration change was approved by every administrator."}
+{"candidate_id":"v2-c-a67e6f18a7d2a426","pool_id":"v2-q09-pool","proposition":"The replica count changes during autoscaling."}
+{"candidate_id":"v2-c-a93b451d141013a4","pool_id":"v2-q09-pool","proposition":"Every participant acknowledged the consent form."}
+{"candidate_id":"v2-c-ad8dc9e76ee0e953","pool_id":"v2-q09-pool","proposition":"Each replica stores a copy of the configuration file."}
+{"candidate_id":"v2-c-bd24e316a3f799aa","pool_id":"v2-q09-pool","proposition":"All replicas confirmed receipt of the configuration change."}
+{"candidate_id":"v2-c-0728765380bd2bf2","pool_id":"v2-q10-pool","proposition":"Approval notifications are sent by email."}
+{"candidate_id":"v2-c-28eb8356042128c3","pool_id":"v2-q10-pool","proposition":"At least three backups must be retained."}
+{"candidate_id":"v2-c-544e79da4a30c0ff","pool_id":"v2-q10-pool","proposition":"The release needs approval from three or more reviewers."}
+{"candidate_id":"v2-c-adc7854e799a4aeb","pool_id":"v2-q10-pool","proposition":"Exactly three reviewers must approve the release."}
+{"candidate_id":"v2-c-cb3b93ede7cfc352","pool_id":"v2-q10-pool","proposition":"Reviewers must record a reason when rejecting a release."}
+{"candidate_id":"v2-c-f7209f603b309a1d","pool_id":"v2-q10-pool","proposition":"The release has three deployment stages."}
+{"candidate_id":"v2-c-4759c13e7e0db547","pool_id":"v2-q11-pool","proposition":"Version 4.3 was released in April 2025."}
+{"candidate_id":"v2-c-6334f6f2a6811e23","pool_id":"v2-q11-pool","proposition":"The old archive format was supported until March 2025."}
+{"candidate_id":"v2-c-76c433b6c6a913ca","pool_id":"v2-q11-pool","proposition":"The legacy token format uses a fixed prefix."}
+{"candidate_id":"v2-c-bc61346cb4c81a5d","pool_id":"v2-q11-pool","proposition":"Through March 2025, release 4.2 still accepted the old token format."}
+{"candidate_id":"v2-c-d10e5c00efacbb06","pool_id":"v2-q11-pool","proposition":"Version 4.2 added a command for inspecting tokens."}
+{"candidate_id":"v2-c-fde6bb1a9a31b9c8","pool_id":"v2-q11-pool","proposition":"Version 4.3 rejected the legacy token format starting in April 2025."}
+{"candidate_id":"v2-c-038224758da03950","pool_id":"v2-q12-pool","proposition":"The 2026 protocol defines how signatures are archived."}
+{"candidate_id":"v2-c-1876b98d25140004","pool_id":"v2-q12-pool","proposition":"The 2024 protocol required one signature for withdrawals above €5,000."}
+{"candidate_id":"v2-c-b36819e7006827ce","pool_id":"v2-q12-pool","proposition":"Two signatures are required to publish the annual report."}
+{"candidate_id":"v2-c-df997f01214527e2","pool_id":"v2-q12-pool","proposition":"Withdrawals above €5,000 are reviewed monthly."}
+{"candidate_id":"v2-c-f32fa49942609a35","pool_id":"v2-q12-pool","proposition":"The 2026 budget allocates €5,000 for training."}
+{"candidate_id":"v2-c-fcee464774a83cb2","pool_id":"v2-q12-pool","proposition":"Under the 2026 protocol, withdrawals over €5,000 need two signatures."}
+{"candidate_id":"v2-c-1b1b0892bf1d64d1","pool_id":"v2-q13-pool","proposition":"German procedure requires the appeal to identify the challenged decision."}
+{"candidate_id":"v2-c-25e5cf5234d98951","pool_id":"v2-q13-pool","proposition":"French procedure allows electronic filing."}
+{"candidate_id":"v2-c-356c880bba459be3","pool_id":"v2-q13-pool","proposition":"German procedure gives a thirty-day period for an appeal."}
+{"candidate_id":"v2-c-70b9d7cad39a24fb","pool_id":"v2-q13-pool","proposition":"The thirty-day period begins after formal service."}
+{"candidate_id":"v2-c-8314740f49df3cc9","pool_id":"v2-q13-pool","proposition":"The warranty period is thirty days under the store policy."}
+{"candidate_id":"v2-c-c1723b7f60ac6e8c","pool_id":"v2-q13-pool","proposition":"The appeal period is thirty days under French procedure."}
+{"candidate_id":"v2-c-38233d9ff38fa470","pool_id":"v2-q14-pool","proposition":"Bicycles above 25 kilograms require a special rack."}
+{"candidate_id":"v2-c-5bdb145a475a6717","pool_id":"v2-q14-pool","proposition":"Region A requires registration for drones weighing more than 250 grams."}
+{"candidate_id":"v2-c-7d4f8e43a9570c7a","pool_id":"v2-q14-pool","proposition":"Region B publishes registration statistics annually."}
+{"candidate_id":"v2-c-90fb732e388230e8","pool_id":"v2-q14-pool","proposition":"In Region B, drones above 250 grams require registration."}
+{"candidate_id":"v2-c-b8efeac986193817","pool_id":"v2-q14-pool","proposition":"Region A requires a pilot identifier on registered drones."}
+{"candidate_id":"v2-c-d4a26e59e470d23b","pool_id":"v2-q14-pool","proposition":"A 250-gram drone is used for the training course."}
+{"candidate_id":"v2-c-14c921f5a8ecf857","pool_id":"v2-q15-pool","proposition":"The audit report was published on Tuesday."}
+{"candidate_id":"v2-c-714a1d5640288b91","pool_id":"v2-q15-pool","proposition":"The reserve is sufficient."}
+{"candidate_id":"v2-c-bebf783cf3b66a2d","pool_id":"v2-q15-pool","proposition":"The reserve is deposited in two bank accounts."}
+{"candidate_id":"v2-c-ca3a9e39517d451b","pool_id":"v2-q15-pool","proposition":"The weather report states that rainfall is sufficient."}
+{"candidate_id":"v2-c-f035d0652dabac43","pool_id":"v2-q15-pool","proposition":"The audit report explains how the reserve was calculated."}
+{"candidate_id":"v2-c-fc5612a2d7814706","pool_id":"v2-q15-pool","proposition":"According to the audit report, the reserve is sufficient."}
+{"candidate_id":"v2-c-0203723d0779185e","pool_id":"v2-q16-pool","proposition":"The drug label lists storage conditions."}
+{"candidate_id":"v2-c-102f8051f2baa0ab","pool_id":"v2-q16-pool","proposition":"The researcher concluded that the drug improves sleep."}
+{"candidate_id":"v2-c-17fa5bf969aa26f7","pool_id":"v2-q16-pool","proposition":"The journalist quoted a claim about housing prices."}
+{"candidate_id":"v2-c-1ab5926e483f8f2e","pool_id":"v2-q16-pool","proposition":"The researcher quoted the dosage instructions for the drug."}
+{"candidate_id":"v2-c-792caa8aaeab46b2","pool_id":"v2-q16-pool","proposition":"The researcher reproduced a statement saying the drug improves sleep."}
+{"candidate_id":"v2-c-82e75c3c213ad250","pool_id":"v2-q16-pool","proposition":"The sleep study used a blinded outcome assessor."}
+{"candidate_id":"v2-c-0c0c199311f5a6b5","pool_id":"v2-q17-pool","proposition":"The daily upload limit is 1.5 gigabytes."}
+{"candidate_id":"v2-c-85229d2f21f63537","pool_id":"v2-q17-pool","proposition":"The medicine is supplied in 500 milligram tablets."}
+{"candidate_id":"v2-c-8da12efcb5459588","pool_id":"v2-q17-pool","proposition":"The daily dose limit is 2 grams."}
+{"candidate_id":"v2-c-af12833f0b60cf62","pool_id":"v2-q17-pool","proposition":"The daily dose limit is 1500 milligrams."}
+{"candidate_id":"v2-c-c1b39b94b85e7292","pool_id":"v2-q17-pool","proposition":"A gram is one thousand milligrams."}
+{"candidate_id":"v2-c-f0cddc4d02b04f5e","pool_id":"v2-q17-pool","proposition":"The dose is divided into three administrations per day."}
+{"candidate_id":"v2-c-07fe286ea764b360","pool_id":"v2-q18-pool","proposition":"The alarm can be silenced for 80 seconds."}
+{"candidate_id":"v2-c-1669ec9eae5f745c","pool_id":"v2-q18-pool","proposition":"The temperature sensor is calibrated at 20 °C."}
+{"candidate_id":"v2-c-368bfe649782ef34","pool_id":"v2-q18-pool","proposition":"A fan starts above 80 percent humidity."}
+{"candidate_id":"v2-c-6c6cf165bd8485e8","pool_id":"v2-q18-pool","proposition":"The alarm activates when temperature exceeds 80 °C."}
+{"candidate_id":"v2-c-bfffb22ed74f5c3c","pool_id":"v2-q18-pool","proposition":"The alarm activates above 90 degrees Celsius."}
+{"candidate_id":"v2-c-fab480ecfad56d0c","pool_id":"v2-q18-pool","proposition":"The oven reaches 90 degrees Celsius during cleaning."}
+{"candidate_id":"v2-c-1196473654e3f09a","pool_id":"v2-q19-pool","proposition":"The atmosphere in the chamber is mostly nitrogen."}
+{"candidate_id":"v2-c-70690b406bdddf6f","pool_id":"v2-q19-pool","proposition":"The planet Mercury has an extremely tenuous exosphere rather than a substantial atmosphere."}
+{"candidate_id":"v2-c-9dabf4cee04733fb","pool_id":"v2-q19-pool","proposition":"Mercury exposure can damage the nervous system."}
+{"candidate_id":"v2-c-b878a166c507ce8b","pool_id":"v2-q19-pool","proposition":"Mars has a thin carbon-dioxide atmosphere."}
+{"candidate_id":"v2-c-cd1d1f1ecc21ce26","pool_id":"v2-q19-pool","proposition":"Mercury lacks a dense atmosphere."}
+{"candidate_id":"v2-c-de97215f283fe5fa","pool_id":"v2-q19-pool","proposition":"Mercury is used in some historical measuring instruments."}
+{"candidate_id":"v2-c-425835feb5c6948d","pool_id":"v2-q20-pool","proposition":"A python can remain motionless while waiting for prey."}
+{"candidate_id":"v2-c-4ffbee12d769391c","pool_id":"v2-q20-pool","proposition":"Python constrictors detect prey using chemical and thermal cues."}
+{"candidate_id":"v2-c-69ca8c244019d799","pool_id":"v2-q20-pool","proposition":"Structural steel is inspected for surface defects."}
+{"candidate_id":"v2-c-99d4ac20b70643b8","pool_id":"v2-q20-pool","proposition":"Version 3.10 changed several standard-library modules."}
+{"candidate_id":"v2-c-b45437dc7af750ae","pool_id":"v2-q20-pool","proposition":"Python 3.10 added structural pattern matching."}
+{"candidate_id":"v2-c-b85e1b133b277f65","pool_id":"v2-q20-pool","proposition":"Pattern matching became available in Python with the 3.10 release."}
+{"candidate_id":"v2-c-30b284f7817fc678","pool_id":"v2-q21-pool","proposition":"This immigration notice is informational and is not legal advice."}
+{"candidate_id":"v2-c-6b815131701ea410","pool_id":"v2-q21-pool","proposition":"The notice does not provide legal advice and is limited to general immigration information."}
+{"candidate_id":"v2-c-709cf97edc98355e","pool_id":"v2-q21-pool","proposition":"This notice is for information only and does not constitute medical advice about diabetes."}
+{"candidate_id":"v2-c-791c9c866c66a9c9","pool_id":"v2-q21-pool","proposition":"The legal department published a notice yesterday."}
+{"candidate_id":"v2-c-ad83476ddc60a52f","pool_id":"v2-q21-pool","proposition":"Immigration applications require a completed form."}
+{"candidate_id":"v2-c-c4058d7178f6dcfe","pool_id":"v2-q21-pool","proposition":"This notice is for information only and does not constitute investment advice about bonds."}
+{"candidate_id":"v2-c-20ac65745ea312c1","pool_id":"v2-q22-pool","proposition":"Corrupted image files are skipped during import."}
+{"candidate_id":"v2-c-33a2bceca3914a17","pool_id":"v2-q22-pool","proposition":"The release documentation says the update fixes index-file corruption."}
+{"candidate_id":"v2-c-5debb652df2bce6b","pool_id":"v2-q22-pool","proposition":"The release notes for a music album list twelve tracks."}
+{"candidate_id":"v2-c-61b4825f31c17657","pool_id":"v2-q22-pool","proposition":"The index file contains one record per document."}
+{"candidate_id":"v2-c-7980c28a97d3210a","pool_id":"v2-q22-pool","proposition":"According to the release notes, corrupted index files are repaired by the update."}
+{"candidate_id":"v2-c-b5c62b82a1646ccf","pool_id":"v2-q22-pool","proposition":"The release notes describe a new theme for the user interface."}
+{"candidate_id":"v2-c-6229f350f7c3a9bc","pool_id":"v2-q23-pool","proposition":"Logout events are written to the audit log."}
+{"candidate_id":"v2-c-759a5bf71603c24c","pool_id":"v2-q23-pool","proposition":"Secure mode encrypts cached records on disk."}
+{"candidate_id":"v2-c-7dd0f1454ab1266a","pool_id":"v2-q23-pool","proposition":"If secure mode is enabled, logging out clears the cache."}
+{"candidate_id":"v2-c-85c6f75b62f71330","pool_id":"v2-q23-pool","proposition":"The session expires after thirty minutes of inactivity."}
+{"candidate_id":"v2-c-8766eea831e96fa0","pool_id":"v2-q23-pool","proposition":"Users can clear the cache manually from settings."}
+{"candidate_id":"v2-c-9f035beae0b2f649","pool_id":"v2-q23-pool","proposition":"The cache is cleared whenever the user logs out."}
+{"candidate_id":"v2-c-146b800d0a317ba6","pool_id":"v2-q24-pool","proposition":"Bird migration routes can span thousands of kilometres."}
+{"candidate_id":"v2-c-3a6ec38877ed8335","pool_id":"v2-q24-pool","proposition":"Penguins are an exception to the general observation that birds can fly."}
+{"candidate_id":"v2-c-562e0c304e69ba28","pool_id":"v2-q24-pool","proposition":"Some fish glide above the water surface."}
+{"candidate_id":"v2-c-7a24780ef2bc6fc5","pool_id":"v2-q24-pool","proposition":"Penguins cannot fly."}
+{"candidate_id":"v2-c-90fec998833edf63","pool_id":"v2-q24-pool","proposition":"Penguins use their wings to swim."}
+{"candidate_id":"v2-c-ea4ea69ba70dadf0","pool_id":"v2-q24-pool","proposition":"Bats can fly although they are mammals."}

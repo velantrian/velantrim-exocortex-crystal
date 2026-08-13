@@ -24,6 +24,7 @@ USEFUL_CLASSES = frozenset(
 )
 HARD_NEGATIVE_CLASSES = frozenset({"SAME_TOPIC", "MERELY_SIMILAR"})
 JUDGMENT_KINDS = frozenset({"USEFUL_CANDIDATE", "HARD_NEGATIVE", "NEUTRAL_DECOY"})
+SURFACE_IDENTITY_CONSTRUCTION = "sha256('queries:<sha256>\\ncandidates:<sha256>\\nqrels:<sha256>\\n')"
 
 
 @dataclass(frozen=True)
@@ -99,6 +100,12 @@ def _require_fields(row: dict[str, object], required: frozenset[str], row_id: st
         raise ValueError(f"{row_id}: unexpected fields: {', '.join(sorted(extra))}")
 
 
+def opaque_candidate_id(pool_id: str, proposition: str) -> str:
+    """Derive a stable candidate id from content, never from the qrel class or row position."""
+    seed = f"{pool_id}\0{proposition}".encode("utf-8")
+    return "v2-c-" + hashlib.sha256(seed).hexdigest()[:16]
+
+
 def load_surface(query_path: Path, candidate_path: Path, qrel_path: Path) -> EvalSurface:
     query_rows = _read_jsonl(query_path)
     candidate_rows = _read_jsonl(candidate_path)
@@ -127,6 +134,7 @@ def load_surface(query_path: Path, candidate_path: Path, qrel_path: Path) -> Eva
 
     candidates: list[EvalCandidate] = []
     candidate_ids: set[str] = set()
+    previous_sort_key: tuple[str, str] | None = None
     for index, row in enumerate(candidate_rows, 1):
         row_id = f"candidate row {index}"
         _require_fields(row, CANDIDATE_FIELDS, row_id)
@@ -139,6 +147,12 @@ def load_surface(query_path: Path, candidate_path: Path, qrel_path: Path) -> Eva
             raise ValueError(f"duplicate candidate_id: {candidate.candidate_id}")
         if candidate.pool_id not in pools:
             raise ValueError(f"{candidate.candidate_id}: unknown pool_id: {candidate.pool_id}")
+        if candidate.candidate_id != opaque_candidate_id(candidate.pool_id, candidate.proposition):
+            raise ValueError(f"{candidate.candidate_id}: candidate_id must be content-derived and qrel-label-independent")
+        sort_key = (candidate.pool_id, candidate.candidate_id)
+        if previous_sort_key is not None and sort_key <= previous_sort_key:
+            raise ValueError("candidate rows must be strictly sorted by pool_id/candidate_id")
+        previous_sort_key = sort_key
         candidate_ids.add(candidate.candidate_id)
         candidates.append(candidate)
 
@@ -205,8 +219,14 @@ def validate_frozen_v2_contract(surface: EvalSurface) -> None:
             raise ValueError(f"{query.query_id}: pool must contain exactly six candidates")
         judgments = qrels_by_query[query.query_id]
         kinds = [judgment.judgment_kind for judgment in judgments]
-        if kinds.count("USEFUL_CANDIDATE") != 2 or kinds.count("HARD_NEGATIVE") != 2 or kinds.count("NEUTRAL_DECOY") != 2:
-            raise ValueError(f"{query.query_id}: qrels must contain 2 useful, 2 hard-negative and 2 neutral judgments")
+        if (
+            kinds.count("USEFUL_CANDIDATE") != 2
+            or kinds.count("HARD_NEGATIVE") != 2
+            or kinds.count("NEUTRAL_DECOY") != 2
+        ):
+            raise ValueError(
+                f"{query.query_id}: qrels must contain 2 useful, 2 hard-negative and 2 neutral judgments"
+            )
 
 
 def _record(identifier: str, proposition: str) -> ReaderLexicalRecord:
@@ -225,8 +245,11 @@ def run_rc9_control(surface: EvalSurface, *, k: int = DEFAULT_K) -> dict[str, ob
         raise ValueError("k must be a positive integer")
     candidates_by_pool: dict[str, list[EvalCandidate]] = {}
     judgments = {(item.query_id, item.candidate_id): item for item in surface.qrels}
+    judgments_by_query: dict[str, list[EvalJudgment]] = {}
     for candidate in surface.candidates:
         candidates_by_pool.setdefault(candidate.pool_id, []).append(candidate)
+    for judgment in surface.qrels:
+        judgments_by_query.setdefault(judgment.query_id, []).append(judgment)
 
     retained_useful_ids: list[str] = []
     missed_useful_ids: list[str] = []
@@ -238,14 +261,11 @@ def run_rc9_control(surface: EvalSurface, *, k: int = DEFAULT_K) -> dict[str, ob
     for query in surface.queries:
         pool = candidates_by_pool[query.pool_id]
         index = ReaderLexicalIndex(_record(item.candidate_id, item.proposition) for item in pool)
-        query_record = _record(query.query_id, query.proposition)
-        matches = index.discover(query_record, k=k)
-        useful_in_pool = sum(
-            judgment.judgment_kind == "USEFUL_CANDIDATE" for judgment in surface.qrels if judgment.query_id == query.query_id
-        )
-        hard_in_pool = sum(
-            judgment.judgment_kind == "HARD_NEGATIVE" for judgment in surface.qrels if judgment.query_id == query.query_id
-        )
+        matches = index.discover(_record(query.query_id, query.proposition), k=k)
+        query_judgments = judgments_by_query[query.query_id]
+        useful_in_pool = sum(item.judgment_kind == "USEFUL_CANDIDATE" for item in query_judgments)
+        hard_in_pool = sum(item.judgment_kind == "HARD_NEGATIVE" for item in query_judgments)
+
         useful_ranks: list[int] = []
         query_useful_hits = query_hard_hits = query_neutral_hits = 0
         for match in matches:
@@ -257,6 +277,7 @@ def run_rc9_control(surface: EvalSurface, *, k: int = DEFAULT_K) -> dict[str, ob
                 query_hard_hits += 1
             else:
                 query_neutral_hits += 1
+
         first_useful_rank = min(useful_ranks) if useful_ranks else None
         reciprocal_rank_sum += 1.0 / first_useful_rank if first_useful_rank else 0.0
         any_useful_queries += int(query_useful_hits > 0)
@@ -270,7 +291,14 @@ def run_rc9_control(surface: EvalSurface, *, k: int = DEFAULT_K) -> dict[str, ob
 
         acc = stratum_acc.setdefault(
             query.primary_stratum,
-            {"queries": 0, "useful_total": 0, "useful_hits": 0, "hard_negative_total": 0, "hard_negative_hits": 0, "returned": 0},
+            {
+                "queries": 0,
+                "useful_total": 0,
+                "useful_hits": 0,
+                "hard_negative_total": 0,
+                "hard_negative_hits": 0,
+                "returned": 0,
+            },
         )
         acc["queries"] += 1
         acc["useful_total"] += useful_in_pool
@@ -280,8 +308,8 @@ def run_rc9_control(surface: EvalSurface, *, k: int = DEFAULT_K) -> dict[str, ob
         acc["returned"] += len(matches)
 
         retrieved_ids = {match.candidate_id for match in matches}
-        for judgment in surface.qrels:
-            if judgment.query_id != query.query_id or judgment.judgment_kind != "USEFUL_CANDIDATE":
+        for judgment in query_judgments:
+            if judgment.judgment_kind != "USEFUL_CANDIDATE":
                 continue
             if judgment.candidate_id in retrieved_ids:
                 retained_useful_ids.append(judgment.candidate_id)
@@ -294,8 +322,13 @@ def run_rc9_control(surface: EvalSurface, *, k: int = DEFAULT_K) -> dict[str, ob
         stratum_metrics[stratum] = {
             **acc,
             "useful_recall_at_k": round(acc["useful_hits"] / acc["useful_total"], 6),
-            "hard_negative_hit_rate_at_k": round(acc["hard_negative_hits"] / acc["hard_negative_total"], 6),
-            "judged_precision_at_k": round(acc["useful_hits"] / acc["returned"], 6) if acc["returned"] else 0.0,
+            "precision_at_k": round(acc["useful_hits"] / (acc["queries"] * k), 6),
+            "judged_precision_over_returned": (
+                round(acc["useful_hits"] / acc["returned"], 6) if acc["returned"] else 0.0
+            ),
+            "hard_negative_hit_rate_at_k": round(
+                acc["hard_negative_hits"] / acc["hard_negative_total"], 6
+            ),
         }
 
     return {
@@ -311,8 +344,11 @@ def run_rc9_control(surface: EvalSurface, *, k: int = DEFAULT_K) -> dict[str, ob
             "useful_total": useful_total,
             "useful_hits": useful_hits,
             "useful_recall_at_k": round(useful_hits / useful_total, 6),
+            "precision_at_k": round(useful_hits / (query_count * k), 6),
             "returned_candidates": returned_total,
-            "judged_precision_at_k": round(useful_hits / returned_total, 6),
+            "judged_precision_over_returned": (
+                round(useful_hits / returned_total, 6) if returned_total else 0.0
+            ),
             "mrr": round(reciprocal_rank_sum / query_count, 6),
             "hard_negative_total": hard_total,
             "hard_negative_hits": hard_hits,
@@ -322,12 +358,21 @@ def run_rc9_control(surface: EvalSurface, *, k: int = DEFAULT_K) -> dict[str, ob
             "all_useful_query_rate_at_k": round(all_useful_queries / query_count, 6),
         },
         "strata": stratum_metrics,
-        "work_bound": {"query_pools": query_count, "index_records_total": len(surface.candidates), "max_record_comparisons": len(surface.candidates), "storage": "in_memory", "network_calls": 0, "mandatory_third_party_dependencies": 0},
+        "work_bound": {
+            "query_pools": query_count,
+            "index_records_total": len(surface.candidates),
+            "max_record_comparisons": len(surface.candidates),
+            "storage": "in_memory",
+            "network_calls": 0,
+            "mandatory_third_party_dependencies": 0,
+        },
         "metric_scope": (
-            "Every candidate in every six-candidate query pool is explicitly judged. Recall@K counts useful qrels; "
-            "judged Precision@K uses actually returned, explicitly judged candidates as its denominator; MRR uses "
-            "the first useful candidate; hard-negative rate counts explicitly labeled SAME_TOPIC/MERELY_SIMILAR "
-            "traps. These are retrieval measurements only, not identity, evidence, truth or Canon adjudication."
+            "Every candidate in every six-candidate query pool is explicitly judged. "
+            "Recall@K counts useful qrels. Precision@K uses the fixed query_count*K slot denominator "
+            "so unfilled ranks cannot improve it. Judged precision-over-returned is reported separately "
+            "as a fully judged diagnostic. MRR uses the first useful candidate; hard-negative rate counts "
+            "explicit SAME_TOPIC/MERELY_SIMILAR traps. These are retrieval measurements only, not identity, "
+            "evidence, truth or Canon adjudication."
         ),
         "retained_useful_candidate_ids": sorted(retained_useful_ids),
         "missed_useful_candidate_ids": sorted(missed_useful_ids),
@@ -338,17 +383,45 @@ def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def verify_manifest(manifest_path: Path, query_path: Path, candidate_path: Path, qrel_path: Path) -> dict[str, object]:
+def surface_identity_digest(hashes: dict[str, str]) -> str:
+    payload = (
+        f"queries:{hashes['queries']}\n"
+        f"candidates:{hashes['candidates']}\n"
+        f"qrels:{hashes['qrels']}\n"
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def verify_manifest(
+    manifest_path: Path,
+    query_path: Path,
+    candidate_path: Path,
+    qrel_path: Path,
+) -> dict[str, object]:
     payload = json.loads(manifest_path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise ValueError("manifest must be a JSON object")
     files = payload.get("surface_files")
     if not isinstance(files, dict):
         raise ValueError("manifest surface_files must be an object")
+
+    actual_hashes: dict[str, str] = {}
     for label, path in (("queries", query_path), ("candidates", candidate_path), ("qrels", qrel_path)):
         entry = files.get(label)
-        if not isinstance(entry, dict) or entry.get("sha256") != sha256_file(path):
+        digest = sha256_file(path)
+        if not isinstance(entry, dict) or entry.get("sha256") != digest:
             raise ValueError(f"manifest hash mismatch for {label}")
+        actual_hashes[label] = digest
+
+    identity = payload.get("surface_identity")
+    if not isinstance(identity, dict):
+        raise ValueError("manifest surface_identity must be an object")
+    if identity.get("algorithm") != "sha256":
+        raise ValueError("manifest surface identity algorithm must be sha256")
+    if identity.get("construction") != SURFACE_IDENTITY_CONSTRUCTION:
+        raise ValueError("manifest surface identity construction mismatch")
+    if identity.get("digest") != surface_identity_digest(actual_hashes):
+        raise ValueError("manifest composite surface identity mismatch")
     return payload
 
 
@@ -361,7 +434,8 @@ def human_summary(result: dict[str, object]) -> str:
             f"method: {result['method']}",
             f"queries/candidates/qrels: {result['query_count']}/{result['candidate_count']}/{result['qrel_count']}",
             f"Useful Recall@{result['k']}: {metrics['useful_recall_at_k']:.6f}",
-            f"Judged Precision@{result['k']}: {metrics['judged_precision_at_k']:.6f}",
+            f"Precision@{result['k']} (fixed slots): {metrics['precision_at_k']:.6f}",
+            f"Judged precision over returned: {metrics['judged_precision_over_returned']:.6f}",
             f"MRR: {metrics['mrr']:.6f}",
             f"Hard-negative hit rate@{result['k']}: {metrics['hard_negative_hit_rate_at_k']:.6f}",
             "Boundary: fully judged retrieval evidence only; comparison pass is not runtime authorization.",

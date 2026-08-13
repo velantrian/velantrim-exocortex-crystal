@@ -9,6 +9,8 @@
     "similarity_is_identity": false
   },
   "design": {
+    "candidate_identity": "v2-c- + first16(sha256(pool_id + NUL + proposition))",
+    "candidate_ordering": "candidate rows sorted by (pool_id, candidate_id); candidate identity/order is qrel-label-independent",
     "candidates_per_query_pool": 6,
     "hard_negative_judgment_count": 48,
     "hard_negative_judgments_per_query": 2,
@@ -26,41 +28,114 @@
     "useful_judgment_count": 48,
     "useful_judgments_per_query": 2
   },
-  "execution_constraints": {"epistemic_authority_changed": false, "model_downloaded": false, "new_runtime_dependency_added": false, "rc9_core_changed": false, "reader_fts_or_vector_runtime_added": false, "semantic_or_hybrid_comparator_executed": false, "storage_schema_changed": false},
-  "future_comparator_preregistration": {"historical_rc10_gate_remains_required": true, "passing_is_runtime_authorization": false, "path": "eval/reader_retrieval_eval_v2_future_comparator_gate.json", "status": "PRE_REGISTERED_NO_MODEL_COMPARATOR_EXECUTED"},
-  "historical_artifacts_preserved": {
-    "rc10_preregistration": {"git_blob": "70758595c220820d456a2ea4db68589289995294", "path": "eval/reader_rc10_retrieval_comparison_preregistration.json"},
-    "rc8_corpus": {"git_blob": "4be317549d7a8eae9d69f9fa208d07d8855779a4", "path": "eval/reader_rc8_retrieval_adversarial.jsonl"},
-    "rc9_control": {"git_blob": "7ffbc86d713b7be89d393fe56c2d160b9dee98dc", "path": "eval/reader_rc9_lexical_baseline.json"}
+  "execution_constraints": {
+    "epistemic_authority_changed": false,
+    "model_downloaded": false,
+    "new_runtime_dependency_added": false,
+    "rc9_core_changed": false,
+    "reader_fts_or_vector_runtime_added": false,
+    "semantic_or_hybrid_comparator_executed": false,
+    "storage_schema_changed": false
   },
-  "interpretation": "This frozen surface strengthens retrieval evaluation before model selection. RC-9 is reproduced unchanged as a control and exposes misses/hard-negative retrieval across multiple strata. The artifact does not measure semantic truth, proposition identity, evidence quality or runtime production performance.",
+  "future_comparator_preregistration": {
+    "historical_rc10_gate_remains_required": true,
+    "passing_is_runtime_authorization": false,
+    "path": "eval/reader_retrieval_eval_v2_future_comparator_gate.json",
+    "status": "PRE_REGISTERED_NO_MODEL_COMPARATOR_EXECUTED"
+  },
+  "historical_artifacts_preserved": {
+    "rc10_preregistration": {
+      "git_blob": "70758595c220820d456a2ea4db68589289995294",
+      "path": "eval/reader_rc10_retrieval_comparison_preregistration.json"
+    },
+    "rc8_corpus": {
+      "git_blob": "4be317549d7a8eae9d69f9fa208d07d8855779a4",
+      "path": "eval/reader_rc8_retrieval_adversarial.jsonl"
+    },
+    "rc9_control": {
+      "git_blob": "7ffbc86d713b7be89d393fe56c2d160b9dee98dc",
+      "path": "eval/reader_rc9_lexical_baseline.json"
+    }
+  },
+  "interpretation": "This frozen surface strengthens retrieval evaluation before model selection. RC-9 is reproduced unchanged as a control and exposes misses/hard-negative retrieval across multiple strata. It does not measure semantic truth, proposition identity, evidence quality or runtime production performance.",
   "metric_definitions": {
     "all_useful_query_rate_at_k": "queries with both useful candidates retrieved / all queries",
     "any_useful_query_rate_at_k": "queries with at least one useful candidate retrieved / all queries",
     "hard_negative_hit_rate_at_k": "explicit hard-negative qrels retrieved / all explicit hard-negative qrels",
-    "judged_precision_at_k": "explicit useful qrels retrieved / actually returned candidates; every returned candidate is explicitly judged",
+    "judged_precision_over_returned": "explicit useful qrels retrieved / actually returned candidates; every returned candidate is explicitly judged",
     "judgment_coverage": "explicit qrels / candidate-query pool pairs; must equal 1.0",
     "mrr": "mean reciprocal rank of the first explicit useful candidate per query",
+    "precision_at_k": "explicit useful qrels retrieved / (query_count * K); fixed-slot denominator so abstention cannot inflate Precision@K",
     "useful_recall_at_k": "explicit useful qrels retrieved / all explicit useful qrels"
   },
   "milestone": "reader_retrieval_evaluation_surface_v2",
-  "primary_strata": ["attribution_quotation", "boilerplate_same_topic", "conditional_exception", "cross_lingual_paraphrase", "homonym_entity_collision", "jurisdiction_context", "low_lexical_overlap_paraphrase", "modality_scope", "negation_polarity", "quantifier_scope", "temporal_version", "units_thresholds"],
+  "primary_strata": [
+    "attribution_quotation",
+    "boilerplate_same_topic",
+    "conditional_exception",
+    "cross_lingual_paraphrase",
+    "homonym_entity_collision",
+    "jurisdiction_context",
+    "low_lexical_overlap_paraphrase",
+    "modality_scope",
+    "negation_polarity",
+    "quantifier_scope",
+    "temporal_version",
+    "units_thresholds"
+  ],
   "rc9_v2_control": {
     "classification": "LEXICAL_CONTROL_EXPOSES_MULTI_STRATUM_GAPS",
     "method": "reader_rc9_bm25_lexical_v1",
-    "metrics": {"all_useful_query_rate_at_k": 0.791667, "any_useful_query_rate_at_k": 1.0, "hard_negative_hit_rate_at_k": 0.791667, "hard_negative_hits": 38, "hard_negative_total": 48, "judged_precision_at_k": 0.364407, "mrr": 0.829861, "neutral_decoy_hits": 37, "returned_candidates": 118, "useful_hits": 43, "useful_recall_at_k": 0.895833, "useful_total": 48},
+    "metrics": {
+      "all_useful_query_rate_at_k": 0.75,
+      "any_useful_query_rate_at_k": 1.0,
+      "hard_negative_hit_rate_at_k": 0.791667,
+      "hard_negative_hits": 38,
+      "hard_negative_total": 48,
+      "judged_precision_over_returned": 0.355932,
+      "mrr": 0.857639,
+      "neutral_decoy_hits": 38,
+      "precision_at_k": 0.35,
+      "returned_candidates": 118,
+      "useful_hits": 42,
+      "useful_recall_at_k": 0.875,
+      "useful_total": 48
+    },
     "result_path": "eval/reader_retrieval_eval_v2_rc9_control.json",
     "runner": "scripts/bench_reader_eval_v2_lexical.py"
   },
-  "schema_version": 1,
+  "review_corrections_before_freeze": {
+    "candidate_ids_qrel_label_independent": true,
+    "composite_surface_digest_verified_by_runner": true,
+    "fixed_slot_precision_reported": true,
+    "precision_over_returned_reported_separately": true,
+    "refund_scope_conflict_judged_possible_contradiction": true
+  },
+  "schema_version": 2,
   "starting_main": "e824556f304143cdb8403f44a7b020a528e63291",
   "status": "FROZEN_RC9_CONTROL_REPRODUCED_NO_MODEL_COMPARATOR",
   "surface_files": {
-    "candidates": {"path": "eval/reader_retrieval_eval_v2_candidates.jsonl", "rows": 144, "sha256": "78ceff678e687f3153d59e2bcd181550a4135374cdadc84b260eabf8d370fc43"},
-    "qrels": {"path": "eval/reader_retrieval_eval_v2_qrels.jsonl", "rows": 144, "sha256": "000c876d02451490e085f08e740772749f4029b63b4dd27b0a077a96f1c072cb"},
-    "queries": {"path": "eval/reader_retrieval_eval_v2_queries.jsonl", "rows": 24, "sha256": "13dc860a364949932b23ed006eedf9416c345e1b00718c1beaa276f49fb64f47"}
+    "candidates": {
+      "path": "eval/reader_retrieval_eval_v2_candidates.jsonl",
+      "rows": 144,
+      "sha256": "86d4db3bfea311e855889d4b14ac33b1b01010a773763710e387a3823d77d108"
+    },
+    "qrels": {
+      "path": "eval/reader_retrieval_eval_v2_qrels.jsonl",
+      "rows": 144,
+      "sha256": "7d774e376a793b1cbc3e735b3f9cd81d01a1d05468019e917346bcfe27c40f86"
+    },
+    "queries": {
+      "path": "eval/reader_retrieval_eval_v2_queries.jsonl",
+      "rows": 24,
+      "sha256": "13dc860a364949932b23ed006eedf9416c345e1b00718c1beaa276f49fb64f47"
+    }
   },
-  "surface_identity": {"algorithm": "sha256", "construction": "sha256('queries:<sha256>\\ncandidates:<sha256>\\nqrels:<sha256>\\n')", "digest": "c5c134c6be6536bc27c6ea641d479777eaf617bbecfbda7a230817df000034de"},
+  "surface_identity": {
+    "algorithm": "sha256",
+    "construction": "sha256('queries:<sha256>\\ncandidates:<sha256>\\nqrels:<sha256>\\n')",
+    "digest": "7af2b1247e1c1c2590b6b2c830dd605da646989856b6c29cee18aac3e1f785e8"
+  },
   "surface_version": 2,
   "tracking_issue": 384
 }

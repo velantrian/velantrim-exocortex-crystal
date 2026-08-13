@@ -2,17 +2,17 @@
 
 **Status date:** 2026-08-13  
 **Retained runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` / PR #337  
-**Signed RC-7 Reader baseline:** `b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1` / PR #372  
-**Signed RC-9 Reader merge:** `f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` / PR #376  
-**Post-RC-10 reassessment checkpoint:** signed `main@e824556f304143cdb8403f44a7b020a528e63291`, push CI `31670811115` — 9/9 successful  
-**Latest bounded evaluation milestone:** issue #384 — Reader Retrieval Evaluation Surface v2
+**Signed RC-7 Reader baseline:** `b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1` / PR #372; post-merge CI `31572918731`  
+**Signed RC-9 Reader merge:** `f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` / PR #376; post-merge CI `31594027040`  
+**Post-RC-10 reassessment checkpoint:** signed `main@e824556f304143cdb8403f44a7b020a528e63291`, push CI `31670811115` — 9/9  
+**Latest bounded evaluation milestone:** issue #384 / PR #385 — Reader Retrieval Evaluation Surface v2
 
 ## Current Reader position
 
 RC-0 is normative architecture. RC-1 through RC-7 are bounded implemented Reader/domain layers.
-RC-8 is a completed architecture decision. RC-9 is the implemented deterministic lexical
+RC-8 is a completed architecture/research decision. RC-9 is the implemented deterministic lexical
 PRE-ADMISSION retrieval baseline. PR #378 / issue #377 is completed preregistration only.
-Issue #382 / PR #383 completed the post-RC-10 reassessment. Issue #384 freezes stronger
+Issue #382 / PR #383 completed the post-RC-10 reassessment. Issue #384 / PR #385 freezes stronger
 evaluation evidence without adding Reader runtime.
 
 ```text
@@ -27,12 +27,11 @@ dedicated_reader_core                  = false
 ```
 
 RC-5 remains implemented in `core/reader_relations.py`.
+RC-9 remains implemented in `core/reader_lexical_discovery.py`.
 
 ## RC-9 deterministic lexical baseline — historical control
 
-The unchanged RC-9 method is `reader_rc9_bm25_lexical_v1`.
-
-Historical RC-8 K=5 result:
+Historical RC-8 K=5 evidence remains:
 
 | Metric | Result |
 |---|---:|
@@ -45,59 +44,61 @@ Historical RC-8 K=5 result:
 
 Classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
-These are retrieval measurements, not semantic/adjudication accuracy.
+## Evaluation Surface v2 — final frozen judged evidence
 
-## Evaluation Surface v2 — frozen judged evidence
-
-Issue #384 adds a separate surface rather than rewriting historical fixtures:
+Issue #384 adds a separate fully judged surface rather than rewriting historical fixtures:
 
 ```text
 24 queries
-× 6 candidates per query
-= 144 candidate-query judgments
+12 primary strata × 2
+6 candidates/query
+48 useful qrels
+48 hard-negative qrels
+48 neutral-decoy qrels
+144/144 explicit qrels
+judgment coverage = 1.0
+K = 5
+surface sha256 = 7af2b1247e1c1c2590b6b2c830dd605da646989856b6c29cee18aac3e1f785e8
 ```
 
-Each query has exactly:
+Candidate IDs are opaque, content-derived and qrel-label-independent; their order cannot encode
+useful/hard/neutral position. The reviewed refund-scope conflict is a useful
+`POSSIBLE_CONTRADICTION`, not a hard negative.
 
-- 2 `USEFUL_CANDIDATE`;
-- 2 `HARD_NEGATIVE`;
-- 2 `NEUTRAL_DECOY`.
-
-There are 12 primary strata with two queries each and judgment coverage is `1.0`.
-
-Unchanged RC-9 on v2 at K=5:
+Unchanged RC-9 on v2:
 
 | Metric | Result |
 |---|---:|
-| Useful hits | 43 / 48 |
-| Useful Recall@5 | **0.895833** |
-| Fully judged Precision@5 | **0.364407** |
-| MRR | **0.829861** |
-| Hard-negative hits | 38 / 48 |
+| Useful hits | **42 / 48** |
+| Useful Recall@5 | **0.875000** |
+| Precision@5 — fixed K slots | **0.350000** |
+| Judged precision over returned | **0.355932** |
+| MRR | **0.857639** |
+| Hard-negative hits | **38 / 48** |
 | Hard-negative hit rate@5 | **0.791667** |
 | Any-useful-query rate@5 | **1.000000** |
-| All-useful-query rate@5 | **0.791667** |
+| All-useful-query rate@5 | **0.750000** |
 
 Classification: `LEXICAL_CONTROL_EXPOSES_MULTI_STRATUM_GAPS`.
 
-The v2 result confirms that the measured problem is broader retrieval quality, not a demonstrated
-Reader scale blocker.
+The fixed-slot Precision@5 denominator is `24 × 5`; a method cannot improve it by abstaining.
+The precision-over-returned diagnostic is fully judged but reported separately.
 
 ## Frozen future gate
 
-The historical RC-10 screen remains unchanged. Evaluation Surface v2 adds a second pre-result
-gate for a **future separately authorized** comparator.
+The unchanged historical RC-10 screen remains independently mandatory. The v2 gate is frozen
+before any model-backed result and requires, among other conditions:
 
-The v2 gate requires, among other conditions:
-
-- retain all 43 useful candidates RC-9 already retrieves on v2;
-- recover at least 3 of the 5 RC-9 v2 useful misses;
+- retain all 42 useful candidates RC-9 already retrieves on v2;
+- recover at least 4 of 6 v2 useful misses;
 - useful hits >= 46/48 and Recall@5 >= 0.958333;
-- MRR >= 0.829861;
+- MRR >= 0.857639;
 - hard-negative hits <= 24/48;
 - per-stratum useful Recall@5 >= 0.75;
 - per-stratum hard-negative hit rate@5 <= 0.50;
 - exact backend/model/dependency identity;
+- exact index identity when indexed, or explicit no-index declaration;
+- privacy review;
 - no `auto` backend;
 - zero query-time network calls;
 - zero external Reader source-text transmission;
@@ -123,6 +124,7 @@ summary != verified fact
 summary != Canon admission
 cross-document link != Canon relation
 cross-document support != admitted evidence
+cross-document contradiction candidate != confirmed contradiction
 same-topic != same proposition
 possible-same-claim != claim identity
 similarity signal != identity proof
@@ -182,10 +184,7 @@ NLnet remains **submitted / under review / not awarded**. Approximate **€50,00
 context only. Budget change: none. RC-1 through RC-9, PR #378, the post-RC-10 reassessment and
 Evaluation Surface v2 are existing pre-agreement repository work if merged before an agreement.
 
-
 ## Retained historical Reader truth markers
-
-The current status remains additive to the signed Reader history:
 
 ```text
 reader_core_rc6_long_context_strategy  = true
@@ -202,15 +201,23 @@ candidate discovery != candidate adjudication
 comparison pass != runtime authorization
 ```
 
-RC-7 remains signed `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1`, exact post-merge CI `31572918731`. RC-9 remains signed `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`, runtime module `core/reader_lexical_discovery.py`, exact post-merge CI `31594027040`; RC-10 issue `#377` is completed preregistration bookkeeping only. Historical RC-9 classification remains `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP` with Recall@5 `0.937500` and paired hard-negative rate@5 `1.000000`.
+RC-7 remains signed `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1`, exact post-merge CI
+`31572918731`. RC-9 remains signed `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`,
+runtime module `core/reader_lexical_discovery.py`, exact post-merge CI `31594027040`; RC-10 issue
+`#377` is completed preregistration bookkeeping only. Historical RC-9 classification remains
+`LEXICAL_BASELINE_EXPOSES_MEASURED_GAP` with Recall@5 `0.937500` and paired hard-negative
+rate@5 `1.000000`.
 
-Issue `#382` completed the reassessment and selected Evaluation Surface v2. There is no automatic semantic matching; `embeddings/ANN/vector` Reader runtime is absent and semantic/hybrid retrieval may be compared later only after separate authorization. PostgreSQL/pgvector remains `active=false`; NLnet remains submitted / under review / not awarded.
+Issue `#382` completed the reassessment and selected Evaluation Surface v2. There is no automatic
+semantic matching; `embeddings/ANN/vector` Reader runtime is absent and semantic/hybrid retrieval
+may be compared later only after separate authorization. PostgreSQL/pgvector remains
+`active=false`; NLnet remains submitted / under review / not awarded.
 
 ## Stop boundary
 
 After issue #384 receives exact-head CI, semantic review, guarded merge, signed exact post-merge
 CI, Notion 3/3 synchronization/read-back, completion evidence and final live audit: **STOP**.
 
-Do not automatically execute a model-backed comparator, add semantic/hybrid/vector Reader
-runtime, add FTS/ANN, activate PostgreSQL/pgvector, mutate epistemic authority, implement
-#155/#165/#214 or perform broad localization.
+Do not automatically execute a model-backed comparator, add semantic/hybrid/vector Reader runtime,
+add FTS/ANN, activate PostgreSQL/pgvector, mutate epistemic authority, implement #155/#165/#214
+or perform broad localization.
