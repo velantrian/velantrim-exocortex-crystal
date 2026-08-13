@@ -9,8 +9,9 @@
 **Signed RC-8 merge:** `main@bd85479e014c26ddebd0f4ae06385ce6625f5ab6` — PR #374  
 **Signed RC-9 merge:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` — PR #376  
 **RC-9 exact-head/post-merge CI:** `31593097846` / `31594027040` — 9/9 successful  
-**Audited start after PR #378:** `main@430e643a2a3759da793f700617a327d419439dde`, CI `31603785427` — 9/9 successful  
-**Current bounded milestone:** issue #379 — post-RC-9 grant presentation truth reconciliation  
+**PR #378 / RC-10 preregistration merge:** `main@430e643a2a3759da793f700617a327d419439dde`; issue #377 is closed / completed  
+**Post-grant-reconciliation checkpoint:** signed `main@59cf060629c25ddf0747ca46ea1fadf87fa86857`, CI `31620098274` — 9/9 successful  
+**Current bounded milestone:** issue #382 — post-RC-10 evaluation adequacy / next-milestone architecture decision  
 **Grant status:** submitted / under review / not awarded  
 **Budget change:** none
 
@@ -141,10 +142,11 @@ This is measured retrieval evidence, not semantic/adjudication accuracy and not 
 for embeddings, semantic/hybrid retrieval, ANN/vector DB, entity/claim identity or evidence
 admission.
 
-## 📜 PR #378 — reuse/comparison preregistration only
+## ✅ PR #378 / issue #377 — RC-10 preregistration complete
 
 PR #378 merged the RC-10 existing-retrieval reuse compatibility and future-comparison
-preregistration contract. Tracking issue #377 remains separate.
+preregistration contract. Its tracking issue #377 is now closed / completed after the missing
+completion-evidence bookkeeping step was repaired.
 
 It records which existing admitted-memory helpers may be evaluated later and freezes a future
 comparison gate before results. It **does not execute** a semantic/hybrid comparator, implement
@@ -155,39 +157,58 @@ TruthGate/Guardian authority.
 comparison pass != runtime authorization
 ```
 
-## 🧾 Current bounded milestone — #379 grant presentation truth reconciliation
+## ✅ Post-RC-9 grant presentation reconciliation — complete
 
-This milestone is documentation-heavy. Its purpose is to make the public/grant first impression
-match the signed RC-9 implementation and benchmark truth.
+Issue #379 / PR #380 plus final-audit micro-fix PR #381 completed the public/grant truth
+reconciliation. Final signed checkpoint: `main@59cf060629c25ddf0747ca46ea1fadf87fa86857`;
+exact push CI `31620098274` was 9/9 successful.
 
-Scope:
+The reconciliation changed presentation/truth surfaces only. It added no Reader runtime,
+semantic/vector retrieval, FTS, storage activation or epistemic authority.
 
-- reconcile root English README;
-- reconcile NLnet scope and existing-vs-funded-delta matrix;
-- reconcile directly affected English grant/reviewer surfaces;
-- publish exact RC-9 metrics with their real names and limitations;
-- publish a simple reviewer reproduction path;
-- update docs-status semantics so stale RC-5/RC-7-draft current-state language cannot return;
-- preserve explicit localization debt rather than auto-translating it.
+## 🧭 Current bounded milestone — #382 post-RC-10 reassessment
 
-Out of scope: `core/**`, RC-10 comparator execution, semantic/hybrid/vector Reader runtime,
-embeddings, FTS, ANN, PostgreSQL/pgvector activation, #155, #165, #214 and broad localization.
+Durable decision: `docs/architecture/READER_POST_RC10_REASSESSMENT.md`. Machine-readable
+architecture decision: `eval/reader_post_rc10_reassessment.json`.
+
+The reassessment distinguishes the measured retrieval-quality problem from an unmeasured scale
+problem:
+
+```text
+measured retrieval-quality gap != measured scaling gap
+```
+
+Current evidence does not justify SQLite FTS/ANN/server infrastructure as the next Reader step.
+The existing hashing/trigram embedders remain comparison signals, and `core/rrf.py` remains a
+pure future ordering utility. A model-backed cross-lingual comparator is plausible as a later
+experiment but is not selected or executed here.
+
+The smallest justified next bounded milestone is **Reader Retrieval Evaluation Surface v2**:
+a stronger pre-frozen judged evaluation surface plus unchanged RC-9 control reproduction,
+created before any model-backed comparator result is observed.
+
+**Evaluation Surface v2 is NOT STARTED by #382.** It requires separate authorization after this
+architecture milestone completes.
 
 ## 🧩 Backlog remains separated
 
 - #165 — exact normalized ingest dedupe/migration; no near-duplicate/semantic matching.
 - #155 — downstream Epistemic Router / Evidence State RFC.
 - #214 — PII fixture / reproducible supply-chain hardening.
-- #377 — separate RC-10 preregistration/completion bookkeeping; #379 does not execute a comparator.
+- #382 — current architecture/evaluation decision only; no comparator execution/runtime.
 
 ## ⏭️ Future Reader work requires new authorization
 
-No next Reader implementation capability follows automatically from RC-9 or #379.
+No Reader implementation capability follows automatically from RC-9, PR #378 or #382.
 
-A future comparison may be considered only against a frozen gate and with exact backend/model
-identity, privacy/resource review and zero authority violations. Passing a comparison would make
-a candidate eligible for stronger evaluation/architecture review only; it would not authorize
-runtime adoption.
+The next selected research milestone, if separately authorized, is **Evaluation Surface v2**.
+It must preserve the existing RC-8 corpus and RC-10 thresholds unchanged, add a separate
+versioned stronger judged surface, and reproduce RC-9 as the control without running a
+model-backed comparator in the same corpus-freeze milestone.
+
+Only after that surface is frozen may a separately authorized comparator execution be
+considered. Any future comparator still must pass the unchanged RC-10 screen and then the
+stronger evaluation; a pass remains architecture-review eligibility only.
 
 No semantic/hybrid comparison, embeddings, FTS, ANN/vector indexing, PostgreSQL activation,
 automatic adjudication or broad localization starts automatically.
@@ -202,7 +223,7 @@ SQLite ordinary active local-first
 → active=false
 ```
 
-No automatic backend switching is introduced by Reader or grant-presentation work.
+No automatic backend switching is introduced by Reader architecture or grant-presentation work.
 
 ## 🌍 Localization position
 
@@ -211,9 +232,9 @@ checkpoint `ab3ad31c437647535030e371d58f456faf14017b`. Eight other Reader-depend
 remain rich `REFRESH_NEEDED` translations — 64 tracked detail documents. D2 and Quick Start
 remain current where source semantics did not change.
 
-Issue #379 advances the English root/grant presentation to post-RC-9 truth only. A dedicated
-later localization milestone is required for full parity with the new English first-impression
-source; this debt is not hidden by automatic translation here.
+The post-RC-9 grant reconciliation advanced the English root/grant presentation only. The #382
+architecture decision is English source material; broad localization remains a separate
+milestone and existing translation debt is not hidden.
 
 ## 🎓 Grant boundary
 
@@ -221,8 +242,9 @@ NLnet remains submitted / under review / not awarded. Approximate €50,000 rema
 not an approved budget/payment commitment. Budget change: none.
 
 RC-1 through RC-9 merged before any agreement are existing pre-agreement Reader baseline and
-cannot be counted again as future paid work. PR #378's preregistration is also existing
-pre-agreement repository history, not funded Reader runtime.
+cannot be counted again as future paid work. PR #378's preregistration and the #382 architecture
+decision are also existing pre-agreement repository history if merged before any funding
+agreement; neither is funded Reader runtime.
 
 ```text
 verified existing baseline
@@ -243,4 +265,5 @@ independently verifiable public deliverable
 - [RC-8 retrieval decision](./docs/architecture/READER_RC8_RETRIEVAL_DECISION.md)
 - [RC-9 lexical baseline](./docs/architecture/READER_RC9_LEXICAL_BASELINE.md)
 - [RC-10 preregistration contract](./docs/architecture/READER_RC10_RETRIEVAL_REUSE_PREREGISTRATION.md)
+- [Post-RC-10 reassessment](./docs/architecture/READER_POST_RC10_REASSESSMENT.md)
 - [Translation status](./docs/TRANSLATION_STATUS.md)
