@@ -105,7 +105,7 @@ RC-9 is **not semantic understanding**. It does not emit identity, truth, corrob
 contradiction, evidence-sufficiency or Canon verdicts; it auto-registers no RC-7 link.
 
 The retained RC-7 boundary also remains explicit: **no automatic semantic matching**. Reader
-cross-document candidates still provide no embeddings, no vector DB, and no adjudication.
+cross-document candidates still provide no embeddings/ANN/vector retrieval, no vector DB, and no adjudication.
 
 ## 🧪 What happened after RC-9
 
