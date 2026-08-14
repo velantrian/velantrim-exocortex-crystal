@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "tracking_issue": 214,
+  "review_scope": "committed_large_data_and_reader_evaluation_surfaces",
+  "review_status": "BOUNDED_REVIEW_COMPLETE",
+  "repository_wide_pii_clean_claim": false,
+  "confirmed_secret_or_pii_incident": false,
+  "history_rewrite_authorized": false,
+  "classifications": [
+    {
+      "paths": [
+        "eval/reader_rc8_retrieval_adversarial.jsonl",
+        "eval/reader_retrieval_eval_v2_queries.jsonl",
+        "eval/reader_retrieval_eval_v2_candidates.jsonl",
+        "eval/reader_retrieval_eval_v2_qrels.jsonl"
+      ],
+      "classification": "GENERATED_SYNTHETIC_BENCHMARK_DATA",
+      "provenance": "repository-authored Reader adversarial/evaluation surfaces",
+      "contains_runtime_user_data": false,
+      "review_result": "SYNTHETIC_CONTENT_CONFIRMED_FROM_CONTRACT_AND_SAMPLED_RECORDS",
+      "reuse_boundary": "evaluation_only_not_production_corpus"
+    },
+    {
+      "paths": [
+        "eval/reader_rc9_lexical_baseline.json",
+        "eval/reader_retrieval_comparator_v1_result.json",
+        "eval/reader_nli_neutral_filter_v1_result.json"
+      ],
+      "classification": "GENERATED_BENCHMARK_RESULT_DATA",
+      "provenance": "derived outputs from repository evaluation contracts",
+      "contains_runtime_user_data": false,
+      "review_result": "DERIVED_EVALUATION_OUTPUT",
+      "reuse_boundary": "evidence_record_not_training_or_user_corpus"
+    },
+    {
+      "paths": [
+        "eval/reader_rc10_retrieval_comparison_preregistration.json",
+        "eval/reader_retrieval_comparator_v1_preregistration.json",
+        "eval/reader_nli_neutral_filter_v1_preregistration.json",
+        "eval/reader_post_rc10_reassessment.json"
+      ],
+      "classification": "REPOSITORY_AUTHORED_EVALUATION_METADATA",
+      "provenance": "repository-authored preregistration/reassessment records",
+      "contains_runtime_user_data": false,
+      "review_result": "METADATA_NOT_USER_FIXTURE",
+      "reuse_boundary": "research_and_audit_record"
+    },
+    {
+      "paths": [
+        "docs/archive/Velantrim_V8_Crystal_Sprint1.jsonl",
+        "docs/archive/Velantrim_V8_Crystal_Sprint1_toc.md"
+      ],
+      "classification": "ARCHIVED_DESIGN_MATERIAL",
+      "provenance": "historical Sprint 1 design dump retained for provenance and audit continuity",
+      "contains_runtime_user_data": false,
+      "review_result": "HISTORICAL_ONLY_NOT_CANONICAL_NOT_PROVENANCE_CERTIFIED",
+      "reuse_boundary": "do_not_treat_as_current_implementation_or_verified_external_corpus"
+    }
+  ],
+  "review_notes": [
+    "No committed tests/fixtures directory exists at the reviewed checkpoint; ordinary test literals are not treated as an external fixture corpus by this bounded manifest.",
+    "The archive README explicitly marks the Sprint 1 dump as historical, non-canonical, and not provenance-checked; this manifest does not upgrade that status.",
+    "Gitleaks remains the committed-secret scanner in CI, but a passing scanner is not proof of repository-wide absence of PII or secrets.",
+    "If later review identifies real personal data, credentials, or unclear third-party licensing, handle that artifact specifically; do not infer authorization for git-history rewriting from this manifest."
+  ]
+}
