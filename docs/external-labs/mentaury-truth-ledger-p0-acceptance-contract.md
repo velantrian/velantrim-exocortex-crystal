@@ -1,27 +1,37 @@
 # 🧾 Mentaury Truth Ledger Core P0 — Acceptance Contract
 
-**Status:** `v0.1-acceptance-candidate / failed forensic audit`  
+**Status:** `HISTORICAL EXTERNAL-LABS CANDIDATE · v0.1-acceptance-candidate / failed forensic audit`  
 **Scope:** External Labs / research-only boundary  
-**Repository boundary:** This document is **not** a Crystal production-runtime claim.  
-**Acceptance rule:** `25/25` tests are required before P0 may be called accepted.
+**Repository boundary:** This document is **not** a Crystal production-runtime claim and is **not** the current Mentaury Soul architecture.  
+**Acceptance rule:** `25/25` tests were required by this historical candidate before its P0 could be called accepted.
+
+> **2026-08-14 reconciliation:** this file preserves an earlier Mentaury research contract for provenance. The current owner of Mentaury cognition / digital-individuality architecture is the independent [`velantrim-mentaury-soul`](https://github.com/velantrian/velantrim-mentaury-soul) project. The old `memory-centered cognitive sandbox` framing below is historical context, not current project identity or roadmap.
+
+```text
+HISTORICAL RESEARCH ≠ CURRENT SOUL ARCHITECTURE
+CRYSTAL EVIDENCE ≠ MENTAURY BELIEF / IDENTITY
+MENTAURY RESEARCH ≠ CRYSTAL CANON
+```
 
 ---
 
 ## Boundary
 
-This document records an external research contract for **Mentaury / Ментаурий**, a standalone memory-centered cognitive sandbox discussed as part of the wider Velantrim Exo-Cortex research map.
+This document records a **historical** external research contract for **Mentaury / Ментаурий**, which at the time was framed as a standalone memory-centered cognitive sandbox within the wider Velantrim Exo-Cortex research map.
+
+That framing has been superseded for current ownership: Mentaury Soul is now an independent cognition / digital-individuality research project. This document remains useful only as a forensic and architectural-history artifact for the specific Truth Ledger candidate described below.
 
 It does **not** change Crystal's production scope.
 
-Mentaury is:
+For the scope of this historical candidate:
 
-- an External Labs research direction;
-- not Crystal Canon;
-- not a fifth Crystal runtime layer;
-- not a living AI / consciousness claim;
-- not accepted P0 until the full acceptance gate passes.
+- the artifact was an External Labs research direction;
+- it was not Crystal Canon;
+- it was not a fifth Crystal runtime layer;
+- it made no living-AI / consciousness claim;
+- its P0 was not accepted until the full acceptance gate could pass.
 
-Crystal remains the verified memory discipline / Canon / TruthGate boundary. Mentaury may inform future research, but it must not be represented as implemented Crystal runtime until independently accepted.
+Crystal remains the verifiable-memory / evidence / Canon / TruthGate discipline. Current Mentaury cognition, identity continuity, character, inquiry and development semantics belong to Mentaury Soul. Any future Crystal ↔ Mentaury exchange requires a separate bounded interface; Crystal output does not automatically become Mentaury belief/identity, and Mentaury output does not automatically become Crystal evidence/Canon.
 
 ---
 
@@ -52,6 +62,8 @@ Short definitions:
 
 ## Accepted research canon
 
+The following numbered rules are preserved as the internal contract of this historical candidate; they do not define current Mentaury Soul authority.
+
 1. `ClaimRecord` does **not** store truth or admission state.
 2. Current admission state is derived from the latest valid `Receipt` by `receipt_seq` after chain verification.
 3. `ReceiptChain` is the only source of admission state.
@@ -64,7 +76,7 @@ Short definitions:
 
 ## Current audit status
 
-DeepSeek prototype status:
+Historical DeepSeek prototype status:
 
 ```text
 prototype draft / failed acceptance audit
@@ -78,7 +90,7 @@ Known failed facts from the forensic audit round:
 - append-only trigger test expected the wrong SQLite exception type;
 - some tampering tests were conceptual rather than real.
 
-Forbidden labels until full acceptance:
+Forbidden labels for this historical candidate until full acceptance:
 
 - `P0 accepted`;
 - `tamper-evident ledger`;
@@ -105,7 +117,7 @@ Status meaning: forensic core repaired; **still not P0 accepted**.
 
 Full `25/25` tests pass in a real pytest run.
 
-Status meaning: P0 may be accepted as `v0.1`.
+Status meaning: this historical candidate's P0 could be accepted as `v0.1`.
 
 Hard rule:
 
@@ -213,11 +225,11 @@ Forbidden test patterns:
 
 ---
 
-## Operator mandate
+## Historical operator mandate
 
 Do not fix beautifully. Fix verifiably.
 
-Rules:
+Rules preserved for this candidate:
 
 1. Do not reduce the test list.
 2. Do not change the constitution to fit convenient code.
@@ -225,7 +237,7 @@ Rules:
 4. Do not accept the writer's own code without independent audit.
 5. Keep P1/P2 frozen until `25/25`.
 
-Final acceptance report must include:
+A final acceptance report for this candidate would have required:
 
 - full pytest output;
 - passed / failed count;
@@ -235,10 +247,18 @@ Final acceptance report must include:
 
 ---
 
-## Final formula
+## Final historical formula
 
 ```text
-Документ стал законом.
-Код ещё должен выдержать суд.
+Документ стал исследовательским контрактом своего этапа.
+Код должен был выдержать суд.
 25/25 — или P0 не принят.
+```
+
+Current cross-project rule:
+
+```text
+historical acceptance candidate ≠ current Mentaury Soul architecture
+Crystal trust discipline ≠ Mentaury cognition owner
+cross-project reuse requires a separately admitted interface
 ```
