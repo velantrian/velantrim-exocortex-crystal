@@ -2,34 +2,149 @@
 
 **Status date:** 2026-08-15  
 **Primary/source language:** English  
-**Current Russian parity audit source:** `main@9666781d390e3276a111cb5ee1735f6606a76283`  
+**Active policy:** [LOCALIZATION_POLICY.md](./LOCALIZATION_POLICY.md)  
 **Current English human-first README source:** `main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883`  
-**Reader RC-7 immutable English source checkpoint:** `main@ab3ad31c437647535030e371d58f456faf14017b`  
-**Reader RC-7 checkpoint CI:** `31570690153` — 9/9 successful  
-**Reader RC-6 immutable English source checkpoint:** `main@ed96a88369f841bdb2ffd79ca020acef174685fc`  
-**Reader RC-5 immutable English source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
+**Current Russian parity audit source:** `main@9666781d390e3276a111cb5ee1735f6606a76283`  
+**Current German parity audit source:** `main@ad8cec8c868f64b6dfbdc3bf3087230f59c3861c`  
+**Latest locale refresh tracking:** Issue #412 — German Human-First Documentation Parity v1
+
+This ledger records translation freshness. Inline `CURRENT` markers are trace metadata; current technical truth still resolves through merged implementation, executable tests, exact CI, current English contracts and the machine-readable implementation manifest.
 
 ## Current localization truth
 
-Russian root + Reader-dependent D1/D3/D4/D5 surfaces are refreshed to current **post-RC-9 / post-NLI / RRTIC-v1** public architecture truth. Historical RC-5/RC-6/RC-7 markers remain immutable provenance and are not rewritten.
+German and Russian root/public Reader-dependent documentation are now refreshed to the same **post-RC-9 / post-NLI / RRTIC-v1** public architecture truth. German and Russian D1/D3/D4/D5 Reader-dependent detail surfaces are `CURRENT` under their recorded source/provenance contracts.
 
-Eight other Reader-dependent locale packs (`ar`, `de`, `es`, `fr`, `hi`, `it`, `ja`, `zh-CN`) are not changed by this Russian refresh and retain `REFRESH_NEEDED` where recorded.
+The seven other Reader-dependent locale packs remain `REFRESH_NEEDED` at their historical checkpoints:
 
-D2 reviewer/safety translations remain current across all nine supported locales. Quick Start remains current across all nine supported locales where source semantics are unchanged.
+```text
+ar · es · fr · hi · it · ja · zh-CN
+```
 
-## Current Russian parity surfaces
+D2 reviewer/safety surfaces and Quick Start remain `CURRENT` across all nine supported locales where their governing source semantics did not change. Issue #412 does not churn those stable documents.
 
-- `README.ru.md`
-- `docs/ru/README.md`
-- `docs/ru/STATUS.md`
-- `docs/ru/IMPLEMENTATION_STATUS.md`
-- `docs/ru/ARCHITECTURE_OVERVIEW.md`
-- `docs/ru/STORAGE_AND_AUTHORITY_BOUNDARIES.md`
-- `docs/ru/GRANT_OVERVIEW.md`
-- `docs/ru/GLOSSARY.md`
-- `docs/ru/EXTENDED_REFERENCE_GUIDE.md`
+## Historical phased checkpoints — immutable provenance
 
-They now represent RC-1…RC-7 bounded implemented layers, RC-8 completed architecture/research, RC-9 lexical PRE-ADMISSION discovery, Evaluation Surface v2, Comparator v1 FAIL, NLI neutral-filter v1 FAIL and RRTIC-v1 architecture-only truth.
+These checkpoints remain historical trace evidence and are **not** current repository HEAD declarations:
+
+- **D1/D3/D4/D5 phased source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
+- **D2 source checkpoint:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`
+- **Historical Russian RC-6 source:** `main@ed96a88369f841bdb2ffd79ca020acef174685fc`
+- **Historical Russian RC-7 source:** `main@ab3ad31c437647535030e371d58f456faf14017b`
+- **Historical German root source:** `main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2`
+- **Retained runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6`
+- **Retained historical runtime tests:** `2078 passed / 13 skipped / 0 failed`
+- **Retained historical measured statements:** `9756 statements / 100.00% line coverage`
+
+Historical compatibility literals remain visible so older evidence contracts continue to be auditable; they do not overwrite newer Reader architecture truth.
+
+## Root README status
+
+| Locale | Root README | Public parity state | Current/historical source meaning |
+|---|---|---|---|
+| German | `README.de.md` | `CURRENT` | current human-first parity audited from `main@ad8cec8…`; historical root source retained |
+| Russian | `README.ru.md` | `CURRENT` | current human-first parity audited from `main@9666781…`; RC-5/6/7 provenance retained |
+| Arabic | `README.ar.md` | `REFRESH_NEEDED` | rich historical translation; Reader semantics lag current English |
+| Spanish | `README.es.md` | `REFRESH_NEEDED` | rich historical translation; Reader semantics lag current English |
+| French | `README.fr.md` | `REFRESH_NEEDED` | rich historical translation; Reader semantics lag current English |
+| Hindi | `README.hi.md` | `REFRESH_NEEDED` | rich historical translation; Reader semantics lag current English |
+| Italian | `README.it.md` | `REFRESH_NEEDED` | rich historical translation; Reader semantics lag current English |
+| Japanese | `README.ja.md` | `REFRESH_NEEDED` | rich historical translation; Reader semantics lag current English |
+| Simplified Chinese | `README.zh-CN.md` | `REFRESH_NEEDED` | rich historical translation; Reader semantics lag current English |
+
+`CURRENT` means reviewed/refreshed against an explicit recorded source/parity checkpoint. It never means that a translation will remain automatically current after future English semantic changes.
+
+## D1 — entry / status / implementation
+
+**D1 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
+
+D1 Reader-dependent detail translations are `CURRENT` in German and Russian; seven other supported locales are `REFRESH_NEEDED`.
+
+Current German D1:
+
+- `docs/de/README.md` — current locale router;
+- `docs/de/QUICKSTART.md` — `CURRENT`, unchanged because source semantics did not change;
+- `docs/de/STATUS.md` — current post-RRTIC status;
+- `docs/de/IMPLEMENTATION_STATUS.md` — current post-RRTIC implementation boundary.
+
+Current Russian D1 remains unchanged by Issue #412.
+
+## D2 — reviewer / safety / privacy
+
+**D2 source checkpoint:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`
+
+All nine supported D2 locale packs remain `CURRENT` for their recorded source semantics. German `REVIEWER_GUIDE.md` and `SAFETY_PRIVACY_AND_FAILURES.md` were deliberately not rewritten by Issue #412.
+
+No native-speaker editorial certification is implied by `CURRENT`; CI validates objective contract markers, not independent human language certification.
+
+## D3 — architecture / storage / authority
+
+**D3 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
+
+D3 Reader-dependent detail translations are `CURRENT` in German and Russian; seven other supported locales are `REFRESH_NEEDED`.
+
+German D3 now preserves the current architecture chain:
+
+```text
+RC-1 → RC-2 → RC-3 → RC-4 → RC-5 → RC-6 → RC-7
+                                      ↓
+                         RC-9 lexical PRE-ADMISSION
+                                      ↓
+                     RRTIC-v1 architecture contract
+                                      ↓
+                           evidence/admission boundary
+                                      ↓
+                        Guardian → TruthGate → Canon
+```
+
+## D4 — project / grant / glossary
+
+**D4 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
+
+D4 Reader-dependent detail translations are `CURRENT` in German and Russian; seven other supported locales are `REFRESH_NEEDED`.
+
+Funding truth remains identical in every current locale:
+
+```text
+programme: NLnet NGI0 Commons Fund
+proposal: submitted
+review: in progress
+award: not awarded
+budget change: none
+```
+
+Approximately €50,000 remains planning/transparency context only.
+
+## D5 — extended reference corpus
+
+**D5 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
+
+D5 Reader-dependent detail translations are `CURRENT` in German and Russian; seven other supported locales are `REFRESH_NEEDED`.
+
+The executable D5 inventory now resolves **56 `REFRESH_NEEDED` localized documents**:
+
+```text
+7 refresh-needed root READMEs
++
+7 refresh-needed locale packs × 7 Reader-dependent detail files
+=
+56 REFRESH_NEEDED localized documents
+```
+
+Resolved inventory target after German parity:
+
+```text
+279 total
+80 CURRENT
+133 ENGLISH_ONLY_BY_DESIGN
+56 REFRESH_NEEDED
+10 RETIRED
+```
+
+The immutable D5 source-inventory repository checkpoint remains the signed PR #350 merge `3de746e74be844c6fda55849c10faac5c3f0631a`. German parity changes the freshness classification, not that historical checkpoint.
+
+## Reader RC-5 boundary — retained compatibility contract
+
+The phased source checkpoint originally froze a Reader RC-5 boundary. Current public truth has advanced through RC-6, RC-7, RC-9 and later research/evaluation, but the RC-5 contract remains an immutable implemented layer:
 
 ```text
 reader_core_rc1_skeleton = true
@@ -45,122 +160,53 @@ semantic_hybrid_reader_runtime = false
 rrtic_runtime_authorization = false
 ```
 
-## Immutable RC-7 localization history
-
-`docs/status/rc7-translation-manifest.json` remains immutable historical evidence. At that checkpoint Russian was `CURRENT` to `main@ab3ad31c437647535030e371d58f456faf14017b`, while eight other Reader-dependent locale packs were `REFRESH_NEEDED`.
-
-The immutable RC-7 layer remains bounded explicit cross-document candidate linking with exact two-sided provenance and no evidence/identity/Canon authority. It **does not claim later RC-8/RC-9 meaning** merely because later English or Russian surfaces advanced.
-
 ```text
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
 cross-document link != Canon relation
-same-topic != same proposition
-possible-same-claim != claim identity
-similarity signal != identity proof
-repetition across sources != corroboration
-```
-
-## Current English Reader truth now represented in Russian
-
-- RC-9 retained K=5 control: Recall@5 `0.937500`, Precision@5 `0.187500`, MRR `0.895833`, useful hits `15/16`, hard-negative hits `4/4`;
-- `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`;
-- Evaluation Surface v2 frozen evidence;
-- Comparator v1: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`;
-- NLI v1: `NLI_NEUTRAL_FILTER_GATE_FAILED`;
-- post-NLI relation-contract mismatch finding;
-- RRTIC-v1 frozen architecture-only typed inspection contract;
-- no semantic/hybrid Reader runtime, NLI runtime filter or RRTIC runtime provider authorization.
-
-```text
 retrieval match != evidence
 similarity != identity
 ranking != epistemic authority
 candidate discovery != candidate adjudication
+NLI label != proposition identity
+RRTIC suspicion != adjudicated relation
 evaluation pass != runtime authorization
 ```
 
-## Reader RC-6 boundary — preserved history
+## Post-RC-9 research truth that translations must preserve
 
-**Source checkpoint:** `main@ed96a88369f841bdb2ffd79ca020acef174685fc`
+RC-9 remains the implemented deterministic lexical PRE-ADMISSION candidate discovery baseline. Retained classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
-RC-6 remains bounded long-context working sets with direct RC-4 provenance and caller-supplied `SUMMARY`.
+Comparator v1 is frozen evaluation evidence with classification `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`; it did not authorize semantic Reader runtime.
 
-```text
-working-set coverage != comprehension proof
-summary != source text
-summary != evidence
-summary != verified fact
-summary != Canon admission
-```
+NLI neutral-filter v1 is frozen evaluation evidence with classification `NLI_NEUTRAL_FILTER_GATE_FAILED`; it did not authorize an NLI Reader runtime filter.
 
-## Reader RC-5 boundary — preserved history
+RRTIC-v1 is a frozen architecture contract for typed suspicion/qualifier inspection. It is not a model, filter, reranker, identity engine, evidence-admission authority or Canon writer.
 
-**Source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
-
-RC-5 relation candidates remain PRE-ADMISSION: `POSSIBLE_CONTRADICTION`, `EXCEPTION`, `QUALIFICATION`, `TENSION`.
+## Storage / grant / authority invariants
 
 ```text
-EXTRACTED_PROPOSITION != verified fact
-Reader candidate != admitted evidence
-contradiction candidate != confirmed contradiction
+SQLite ordinary local-first = ACTIVE
+PostgreSQL/pgvector import target = INACTIVE
+active=false
+physical L3 != strict Canon
+successful import != backend activation
 ```
 
-## D1 — entry/status/implementation
+NLnet remains **submitted / under review / not awarded**. Translation cannot turn planning context into an award, a failed evaluation into a runtime capability, or a retrieval candidate into Evidence/Canon authority.
 
-**D1 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
+## Remaining localization program
 
-D1 Reader-dependent detail translations are `CURRENT` in Russian against their retained historical checkpoint while current Russian surfaces additionally carry explicit post-RRTIC source markers. The eight other supported locales are `REFRESH_NEEDED`.
+After German closure, the remaining Reader-dependent parity backlog is:
 
-Russian Quick Start remains CURRENT because its source semantics are unchanged.
+1. French
+2. Spanish
+3. Italian
+4. Simplified Chinese
+5. Japanese
+6. Arabic
+7. Hindi
 
-## D2 — reviewer/safety
-
-**D2 source checkpoint:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`
-
-D2 remains complete for all nine supported locales. D2 reviewer/safety translations remain current across all nine supported locales.
-
-| D2 surface | Translation state |
-|---|---|
-| D2 reviewer/safety | all nine supported locales `CURRENT` |
-
-| Locale | Reviewer Guide | Safety/Privacy/Failures |
-|---|---|---|
-| Arabic | `CURRENT` | `CURRENT` |
-| German | `CURRENT` | `CURRENT` |
-| Spanish | `CURRENT` | `CURRENT` |
-| French | `CURRENT` | `CURRENT` |
-| Hindi | `CURRENT` | `CURRENT` |
-| Italian | `CURRENT` | `CURRENT` |
-| Japanese | `CURRENT` | `CURRENT` |
-| Russian | `CURRENT` | `CURRENT` |
-| Simplified Chinese | `CURRENT` | `CURRENT` |
-
-## D3 — architecture/storage/authority
-
-**D3 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
-
-D3 Reader-dependent detail translations are `CURRENT` in Russian while current-source markers advance the Russian narrative through RC-9/RRTIC. The eight other supported locales are `REFRESH_NEEDED`.
-
-## D4 — project, grant, governance and glossary
-
-**D4 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
-
-D4 Reader-dependent detail translations are `CURRENT` in Russian and now include current grant-safe RC-9/Comparator/NLI/RRTIC meaning. The eight other supported locales are `REFRESH_NEEDED`.
-
-NLnet remains **submitted / under review / not awarded**; approximately €50,000 planning only; budget change none.
-
-## D5 — extended reference documents
-
-**D5 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
-
-D5 Reader-dependent detail translations are `CURRENT` in Russian and the current Russian reference surface is refreshed. The eight other supported locales are `REFRESH_NEEDED`.
-
-**64 `REFRESH_NEEDED` localized documents** remain.  
-**64 `REFRESH_NEEDED` localized detail documents** remain.
-
-The executable D5 inventory remains **279 total = 72 CURRENT + 133 ENGLISH_ONLY_BY_DESIGN + 64 REFRESH_NEEDED + 10 RETIRED** until a separately authorized machine-ledger change.
-
-## Authority / storage / grant
-
-English merged `main`, executable tests and exact CI remain implementation authority. SQLite ordinary active local-first; PostgreSQL/pgvector inactive `active=false`.
-
-NLnet remains `submitted / under review / not awarded`; approximate €50,000 planning only. The Russian localization refresh changes presentation only: no Reader/EPIS runtime, model/provider/backend capability, evidence admission, Guardian/TruthGate authority or Canon mutation is added.
+This ledger does **not** authorize starting the next language automatically. Each locale requires a separate bounded issue/branch/PR, exact-head CI, guarded merge, post-merge CI and closure.
