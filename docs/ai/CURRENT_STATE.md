@@ -272,6 +272,10 @@ The **seven other localized root README files and Reader-dependent detail packs*
 
 German current parity audit base: `main@ad8cec8c868f64b6dfbdc3bf3087230f59c3861c`. Russian current parity audit source: `main@9666781d390e3276a111cb5ee1735f6606a76283`. Human-first English README source: `main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883`.
 
+### Retained Evaluation-Surface-v2 localization compatibility literal
+
+The exact phrase **`eight other localized root README files`** is retained here solely as historical compatibility evidence for the older Evaluation Surface v2 documentation contract, when Russian was the only refreshed locale. It is **not current localization truth** after German parity; the current count is seven, as stated above.
+
 A visually stronger old translation may be used as a layout reference only. It must not be treated as newer technical truth.
 
 ## Grant / residual backlog
