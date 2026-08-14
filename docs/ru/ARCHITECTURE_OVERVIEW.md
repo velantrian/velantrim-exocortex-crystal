@@ -15,25 +15,57 @@
 <!-- rc6-translation-source: docs/ARCHITECTURE_OVERVIEW.md@ed96a88369f841bdb2ffd79ca020acef174685fc -->
 <!-- rc7-translation-source: docs/ARCHITECTURE_OVERVIEW.md@ab3ad31c437647535030e371d58f456faf14017b -->
 <!-- rc7-status: CURRENT -->
-# 🇷🇺 Architecture Overview — Reader RC-7
+<!-- current-translation-source: docs/ARCHITECTURE_OVERVIEW.md@9666781d390e3276a111cb5ee1735f6606a76283 -->
+# 🇷🇺 Crystal — Architecture Overview
 
-Crystal разделяет storage, Reader process artifacts, evidence admission и trusted read projection.
+**Authority:** merged code, exact CI, `docs/ai/CURRENT_STATE.md` и implementation manifest остаются technical truth.
+
+## Архитектура
 
 ```text
-source → RC-1 exact source/session → RC-2 structure → RC-3 passes → RC-4 EXTRACTED_PROPOSITION
-├→ RC-5 within-source relation candidates
-├→ RC-6 long-context working sets/SUMMARY
-└→ RC-7 cross-document link candidates
-→ normal evidence/review path → Guardian → TruthGate → physical L3 / TrustSnapshot / CanonicalView
+exact source/document identity
+→ RC-1 source/session
+→ RC-2 structure
+→ RC-3 passes
+→ RC-4 EXTRACTED_PROPOSITION
+→ RC-5 relation candidates
+→ RC-6 bounded working sets / SUMMARY
+→ RC-7 explicit cross-document candidate links
+→ RC-9 lexical PRE-ADMISSION discovery
+→ RRTIC-v1 typed inspection contract (architecture only)
+→ evidence/admission boundary
+→ Guardian → TruthGate
+→ physical L3 → TrustSnapshot → CanonicalView
+→ strict Canon read projection
 ```
 
-`core.query_pipeline.query()` остаётся read path. Public query surfaces read-only. physical L3 не равен strict Canon.
+`core.query_pipeline.query()` остаётся public read-only path.
 
-RC-1 source/session, RC-2 caller-supplied structure, RC-3 explicit passes, RC-4 source-linked propositions, RC-5 relation candidates и RC-6 working sets уже bounded layers. RC-7 добавляет explicit caller-supplied links между current RC-4 candidates из разных document identities.
+## Reader capability map
+
+| Layer | State | Boundary |
+|---|---|---|
+| RC-1 | implemented | source/session identity |
+| RC-2 | implemented | structure, not truth |
+| RC-3 | implemented | explicit pass mechanics |
+| RC-4 | implemented | proposition candidate, not evidence |
+| RC-5 | implemented | relation suspicion |
+| RC-6 | implemented | bounded context + caller SUMMARY |
+| RC-7 | implemented | cross-document comparison candidates |
+| RC-8 | research complete | retrieval/evaluation decision |
+| RC-9 | implemented | deterministic BM25 candidate discovery |
+| Comparator v1 | frozen FAIL | no runtime authorization |
+| NLI v1 | frozen FAIL | no runtime authorization |
+| RRTIC-v1 | architecture only | no provider/filter/reranker |
+
+`dedicated_reader_core=false`; semantic/hybrid Reader runtime не implemented/authorized.
+
+## Retained RC-1…RC-7 compatibility boundary
 
 ```text
 coverage != comprehension proof
 pass completion != comprehension proof
+working-set coverage != comprehension proof
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
 relation candidate != admitted evidence
@@ -46,10 +78,42 @@ similarity signal != identity proof
 repetition across sources != corroboration
 ```
 
-RC-7 revalidates OPEN Reader sessions, exact SourceVersion/privacy, SegmentCard membership, completed RC-3 pass, substantive targets/outcomes, recovered RC-2 structure и current coverage. Supported kinds: `SUPPORTS`, `CONTRADICTS`, `ELABORATES`, `REFERENCES`, `DEFINES`, `EXAMPLE_OF`, `PREREQUISITE_FOR`, `SAME_TOPIC`, `POSSIBLE_SAME_CLAIM`.
+RC-5 сохраняет `POSSIBLE_CONTRADICTION`, `EXCEPTION`, `QUALIFICATION`, `TENSION` как PRE-ADMISSION relation candidates. RC-7 сохраняет explicit two-sided provenance и caller rationale; automatic semantic matching отсутствует.
 
-`CONTRADICTS`, `SAME_TOPIC`, `POSSIBLE_SAME_CLAIM` symmetric; другие kinds directional. Inspection basis descriptive only и не превращается в similarity/identity/confidence score.
+## Post-RC-9 evidence
 
-Reader artifacts pre-admission: никакой RC-1..RC-7 module не пишет strict Canon и не обходит Guardian/TruthGate. `dedicated_reader_core=false`; dedicated/full autonomous Reader не implemented.
+RC-9 measured lexical retrieval gap. Comparator v1 recovered useful recall but failed hard-negative discrimination. NLI neutral-filter v1 improved discrimination but failed useful-recall safety. Post-NLI reassessment classified the missing capability as a **relation-contract mismatch**.
 
-SQLite ordinary active local-first. PostgreSQL/pgvector `active=false`; import is not activation, automatic switching absent. NLnet submitted / under review / not awarded. Русская RC-7 parity = `main@ab3ad31c437647535030e371d58f456faf14017b`; остальные восемь Reader-dependent locale packs остаются `REFRESH_NEEDED`.
+RRTIC-v1 therefore freezes typed relation suspicion and ten qualifier dimensions. It does not perform model execution, filtering, reranking, evidence admission, contradiction adjudication or Canon mutation.
+
+```text
+retrieval match != evidence
+similarity != identity
+ranking != epistemic authority
+candidate discovery != candidate adjudication
+NLI label != proposition identity
+RRTIC suspicion != adjudicated relation
+qualifier mismatch != truth decision
+evaluation pass != runtime authorization
+```
+
+## Storage and authority
+
+| Surface | Role | Boundary |
+|---|---|---|
+| L0 | working cache | ephemeral |
+| L1 | SQLite operational state | durable operational memory |
+| L2 | pending/review | candidate staging |
+| physical L3 | multi-status graph | not strict Canon |
+| TrustSnapshot | reconciliation | deny-dominant |
+| CanonicalView | trusted read | policy-allowed projection |
+
+SQLite ordinary active local-first. PostgreSQL/pgvector remains inactive `active=false`; import/equivalence is not activation, cutover, rollback or admission authority.
+
+## Non-claims / grant
+
+No dedicated/full autonomous Reader, semantic/hybrid Reader runtime, Reader FTS/ANN/vector DB, NLI/CrossEncoder runtime, RRTIC runtime provider, automatic identity/evidence/adjudication/Canon mutation, active PostgreSQL runtime, security/legal/GDPR certification or awarded grant is claimed.
+
+NLnet **submitted / under review / not awarded**; ~€50,000 planning only.
+
+Historical RC-7 source: `main@ab3ad31c437647535030e371d58f456faf14017b`. Current Russian refresh source: `main@9666781d390e3276a111cb5ee1735f6606a76283`.

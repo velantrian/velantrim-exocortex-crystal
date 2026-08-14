@@ -15,47 +15,104 @@
 <!-- rc6-translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@ed96a88369f841bdb2ffd79ca020acef174685fc -->
 <!-- rc7-translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@ab3ad31c437647535030e371d58f456faf14017b -->
 <!-- rc7-status: CURRENT -->
+<!-- current-translation-source: main@9666781d390e3276a111cb5ee1735f6606a76283 -->
 # 🇷🇺 Storage и Authority Boundaries
 
-Crystal не делает storage presence эквивалентом доверия.
+Crystal не делает storage presence эквивалентом доверия и не позволяет retrieval/inspection обходить admission.
+
+## Surface identities
 
 ```text
-physical L3 != strict Canon
-migration success != activation
-retrieval score != evidence
-Reader artifact != admitted evidence
-cross-document link != Canon relation
+storage profile        = deployment identity
+physical L3            = multi-status graph state
+strict Canon           = trusted read projection
+migration bundle       = operation evidence
+retrieval score        = ranking signal
+Reader artifact        = source-linked candidate
+RC-9 retrieval result  = PRE-ADMISSION inspection candidate
+RRTIC diagnostic       = typed inspection metadata
 ```
 
-| Backend | Current role |
-|---|---|
-| SQLite | ordinary active local-first runtime |
-| Mock | explicit ephemeral dev/CI fallback |
-| PostgreSQL/pgvector | optional inactive import/equivalence target, `active=false` |
+`core.query_pipeline.query()` — read-only public query path. `HTTP /ask`, `CLI ask`, `MCP search` не выполняют Reader admission writes.
+
+## Retained Reader compatibility
 
 ```text
-SQLite backup → independent verification → inactive restore → bounded logical export
-→ PostgreSQL preflight → inactive transactional import → independent exact equivalence → active=false
+RC-1 source/session
+RC-2 structure
+RC-3 pass ledger
+RC-4 proposition
+RC-5 relation candidate
+RC-6 working set / SUMMARY
+RC-7 cross-document candidate
+RC-9 lexical candidate discovery
 ```
-
-Successful import/equivalence не создаёт active PostgreSQL runtime adapter, automatic backend switching, cutover или admission authority. Public query surfaces read-only; `core.query_pipeline.query()` остаётся read path и не получает Reader write/admission authority.
-
-RC-1 source/session, RC-2 structure, RC-3 pass ledger, RC-4 proposition, RC-5 relation, RC-6 working set/SUMMARY и RC-7 cross-document link — разные pre-admission artifacts.
 
 ```text
 coverage != comprehension proof
 pass completion != comprehension proof
+working-set coverage != comprehension proof
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
+relation candidate != admitted evidence
 contradiction candidate != confirmed contradiction
 summary != evidence
-cross-document support != admitted evidence
+cross-document link != Canon relation
 same-topic != same proposition
 possible-same-claim != claim identity
 similarity signal != identity proof
 repetition across sources != corroboration
 ```
 
-RC-7 хранит exact source/session/candidate/pass/node/locator provenance обеих сторон и требует different document identities. Link conservatively restricted, если restricted хотя бы одна сторона; sensitivities остаются metadata, не score.
+RC-9 returns deterministic lexical ranking/provenance metadata only. RRTIC-v1 adds architecture-level typed suspicion/qualifier vocabulary only.
 
-`dedicated_reader_core=false`; dedicated/full autonomous Reader не implemented. NLnet submitted / under review / not awarded. Русская RC-7 parity = `main@ab3ad31c437647535030e371d58f456faf14017b`.
+```text
+retrieval match != evidence
+ranking != epistemic authority
+candidate discovery != candidate adjudication
+NLI label != proposition identity
+RRTIC diagnostic != RC-5 registered relation
+RRTIC suspicion != adjudicated relation
+qualifier mismatch != truth decision
+evaluation pass != runtime authorization
+```
+
+## Memory / authority
+
+| Surface | Role | Boundary |
+|---|---|---|
+| L0 | working cache | ephemeral |
+| L1 | SQLite operational state | durable operational memory |
+| L2 | pending/review | candidate state |
+| physical L3 | multi-status graph | not strict Canon |
+| Guardian | structural/safety | admission boundary |
+| TruthGate | admission policy | not objective oracle |
+| TrustSnapshot | reconciliation | deny-dominant |
+| CanonicalView | read projection | trusted grounding surface |
+
+## SQLite / PostgreSQL
+
+```text
+SQLite active local-first
+→ backup / independent verification / inactive restore
+→ bounded logical export
+→ PostgreSQL 16 + pgvector inactive import
+→ independent exact equivalence
+→ active=false
+```
+
+Import/equivalence is operation evidence, **not activation**, automatic switching, cutover, rollback, dual-write, Reader vector runtime or admission authority.
+
+## Isolation rules
+
+Reader/retrieval/evaluation layers may not mutate truth status merely because a candidate ranked highly, turn an NLI label into proposition identity, choose a contradiction winner, admit evidence, bypass Guardian/TruthGate or write strict Canon.
+
+Comparator v1 and NLI neutral-filter v1 remain frozen failed evaluation evidence. `dedicated_reader_core=false`; `semantic_hybrid_reader_runtime=false`; `rrtic_runtime_authorization=false`.
+
+## Privacy / non-claims
+
+Source restriction/sensitivity context remains policy metadata; rank, working-set fill or RRTIC qualifier does not weaken privacy. No active PostgreSQL Reader runtime, automatic switching, semantic/hybrid Reader runtime, FTS/ANN/vector DB, RRTIC runtime provider, automatic evidence/identity/Canon authority, security/legal/GDPR certification or awarded funding is claimed.
+
+NLnet **submitted / under review / not awarded**; ~€50,000 planning only.
+
+Historical RC-7 source: `main@ab3ad31c437647535030e371d58f456faf14017b`. Current Russian refresh source: `main@9666781d390e3276a111cb5ee1735f6606a76283`.

@@ -18,9 +18,12 @@
 <!-- rc6-translation-source: docs/EXTENDED_REFERENCE_POLICY.md@ed96a88369f841bdb2ffd79ca020acef174685fc -->
 <!-- rc7-translation-source: docs/EXTENDED_REFERENCE_POLICY.md@ab3ad31c437647535030e371d58f456faf14017b -->
 <!-- rc7-status: CURRENT -->
-# 🇷🇺 Extended Reference Guide — Crystal / Reader RC-7
+<!-- current-translation-source: main@9666781d390e3276a111cb5ee1735f6606a76283 -->
+# 🇷🇺 Extended Reference Guide — Crystal
 
-Extended reviewer/reference boundary: provenance важнее удобного нарратива, новая Reader capability не получает authority автоматически.
+Extended reviewer/reference boundary: provenance и explicit authority важнее удобного нарратива; новая Reader/retrieval/evaluation capability не получает authority автоматически.
+
+## Core boundary
 
 ```text
 physical L3 != strict Canon
@@ -28,15 +31,54 @@ retrieval score != evidence
 model output != source truth
 migration proof != claim proof
 import != activation
+ranking != epistemic authority
+evaluation pass != runtime authorization
 ```
 
 SQLite ordinary active local-first; PostgreSQL/pgvector inactive `active=false`.
 
-RC-1 связывает source/session. RC-2 — caller-supplied structure. RC-3 — explicit passes. RC-4 — source-linked `EXTRACTED_PROPOSITION`. RC-5 — `POSSIBLE_CONTRADICTION`, `EXCEPTION`, `QUALIFICATION`, `TENSION`. RC-6 — bounded long-context working sets + caller SUMMARY. RC-7 — explicit cross-document link candidates с exact two-sided provenance.
+## Reader lineage
+
+```text
+RC-1 source/session
+RC-2 caller-supplied structure
+RC-3 explicit passes
+RC-4 EXTRACTED_PROPOSITION
+RC-5 relation candidates
+RC-6 working sets + SUMMARY
+RC-7 cross-document link candidates
+RC-8 architecture/research decision
+RC-9 lexical PRE-ADMISSION discovery
+```
+
+RC-5 relation vocabulary remains explicit:
+
+```text
+POSSIBLE_CONTRADICTION
+EXCEPTION
+QUALIFICATION
+TENSION
+```
+
+```text
+reader_core_rc1_skeleton = true
+reader_core_rc2_structural_map = true
+reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc4_proposition_extraction = true
+reader_core_rc5_relation_candidates = true
+reader_core_rc6_long_context_strategy = true
+reader_core_rc7_cross_document_links = true
+reader_rc9_lexical_candidate_discovery = true
+dedicated_reader_core = false
+semantic_hybrid_reader_runtime = false
+```
+
+## Retained provenance/authority contract
 
 ```text
 coverage != comprehension proof
 pass completion != comprehension proof
+working-set coverage != comprehension proof
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
 relation candidate != admitted evidence
@@ -49,29 +91,64 @@ similarity signal != identity proof
 repetition across sources != corroboration
 ```
 
-| Kind | Symmetry | Boundary |
-|---|---|---|
-| SUPPORTS | directional | comparison candidate, not admitted evidence |
-| CONTRADICTS | symmetric | candidate, not confirmed contradiction |
-| ELABORATES | directional | elaboration candidate |
-| REFERENCES | directional | reference candidate |
-| DEFINES | directional | definition candidate |
-| EXAMPLE_OF | directional | example candidate |
-| PREREQUISITE_FOR | directional | prerequisite candidate |
-| SAME_TOPIC | symmetric | same topic, not same proposition |
-| POSSIBLE_SAME_CLAIM | symmetric | inspection hypothesis, not identity |
+RC-7 requires different document identity, current RC-4 candidates and exact two-sided source/session/pass/node/locator provenance. Inspection basis remains descriptive, not a numeric truth/identity score.
 
-RC-7 требует different `document_id`, current registered RC-4 candidates, OPEN ReaderSession, exact SourceVersion/privacy, registered SegmentCard, completed RC-3 pass, substantive target outcome, recovered RC-2 node и current substantive coverage. Exact session/candidate/pass/node/source/locator provenance и non-empty rationale обязательны.
+## RC-9 retrieval evidence
 
-Optional inspection basis descriptive only; numeric similarity/confidence/identity field отсутствует. RC-7 не выполняет automatic semantic matching, entity resolution, dedupe, corroboration, embeddings/ANN/vector DB, LLM/provider/parser/OCR, evidence admission, truth/ESM/Canon mutation, contradiction winner selection, planner authority, Reader persistence/API/CLI/worker или PostgreSQL activation. `dedicated_reader_core=false`.
+RC-9 — deterministic offline in-memory BM25 baseline. Historical K=5 control: Recall@5 `0.937500`, Precision@5 `0.187500`, MRR `0.895833`, useful hits `15/16`, hard negatives `4/4`; classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+
+Evaluation Surface v2 exposes multi-stratum lexical gaps. These benchmark results are retrieval evidence, not truth/evidence/identity accuracy.
+
+## Comparator / NLI
+
+Comparator v1 recovered semantic recall but failed proposition-level hard-negative discrimination: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`.
+
+NLI neutral-filter v1 reduced hard-negative leakage but lost useful recall: `NLI_NEUTRAL_FILTER_GATE_FAILED`.
 
 ```text
-Reader candidate/link → explicit evidence/review process (если отдельно инициирован)
-→ Guardian → TruthGate → physical L3 / TrustSnapshot / strict Canon projection
+NLI label != proposition identity
+NLI contradiction != contradiction adjudication
+filtering != epistemic authority
 ```
 
-NLnet **submitted / under review / not awarded**. Приблизительно **€50,000** planning only; **budget change: none**. Pre-agreement merged work — existing baseline.
+Both remain frozen evaluation evidence, not runtime components.
 
-Русская D5/Reader поверхность `CURRENT` against `main@ab3ad31c437647535030e371d58f456faf14017b`. Historical RC-5/RC-6 markers сохраняются; восемь других supported locales остаются `REFRESH_NEEDED`, 64 docs. Rich translations нельзя заменять short summaries ради статуса.
+## RRTIC-v1
 
-Security/legal/GDPR certification и native-speaker editorial certification не заявляются.
+Post-NLI reassessment classified the missing capability as relation-contract mismatch. RRTIC-v1 freezes suspicion-only relation families and structural qualifier dimensions, with states `MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE`.
+
+```text
+RRTIC suspicion != adjudicated relation
+RRTIC diagnostic != RC-5 registered relation
+qualifier mismatch != truth decision
+rrtic_runtime_authorization = false
+```
+
+RRTIC-v1 performs no model execution, filtering, reranking, identity decision, evidence admission, contradiction adjudication or Canon mutation.
+
+## Authority path
+
+```text
+Reader / RC-9 / RRTIC inspection
+→ explicit evidence/review process if separately initiated
+→ Guardian
+→ TruthGate
+→ physical L3 / TrustSnapshot
+→ CanonicalView / strict Canon projection
+```
+
+```text
+retrieval match != evidence
+similarity != identity
+candidate discovery != candidate adjudication
+```
+
+## Grant / non-claims / localization
+
+NLnet **submitted / under review / not awarded**. Approximately **€50,000** planning only; **budget change: none**.
+
+No security/legal/GDPR certification, native-speaker editorial certification, AGI/consciousness, universal truth, active PostgreSQL runtime, semantic/hybrid/vector Reader runtime, completed dedicated/full Reader, automatic identity/corroboration/adjudication/evidence admission is claimed.
+
+Eight non-Russian Reader-dependent locale packs remain `REFRESH_NEEDED`; this Russian refresh does not change them.
+
+Historical Russian RC-7 source: `main@ab3ad31c437647535030e371d58f456faf14017b`. Current Russian refresh source: `main@9666781d390e3276a111cb5ee1735f6606a76283`.
