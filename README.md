@@ -104,6 +104,9 @@ manual / downstream review
 RC-9 is **not semantic understanding**. It does not emit identity, truth, corroboration,
 contradiction, evidence-sufficiency or Canon verdicts; it auto-registers no RC-7 link.
 
+The retained RC-7 boundary also remains explicit: **no automatic semantic matching**. Reader
+cross-document candidates still provide no embeddings, no vector DB, and no adjudication.
+
 ## 🧪 What happened after RC-9
 
 The post-RC-9 research chain is deliberately preserved, including negative results:
