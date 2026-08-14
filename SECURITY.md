@@ -86,11 +86,35 @@ local-first evidence, not a production SLO or arbitrary-scale proof.
 Operators must protect database, profile, bundle, receipt and temporary paths, monitor
 resources and use encrypted storage where sensitive data requires it.
 
-## Supply chain and deployment
+## Supply chain and verification reproducibility
 
 The default runtime remains pure standard library. Optional dependencies require isolated
-extras and version bounds. Remaining work includes immutable action pins, reviewed
-constraints, checksums/SBOM and scheduled maintenance.
+extras and version bounds.
+
+The committed GitHub Actions workflows pin every third-party `uses:` reference to a reviewed
+40-character commit SHA while retaining a human-readable release comment. The security job
+also installs Bandit and pip-audit from exact versions in
+[`.github/requirements-security.txt`](./.github/requirements-security.txt). This makes the
+verification implementation materially more reproducible for a recorded repository SHA; it
+does **not** make dependency vulnerability databases immutable and does not constitute
+supply-chain certification.
+
+Updates are not abandoned: [`.github/dependabot.yml`](./.github/dependabot.yml) requests weekly
+reviewable proposals for GitHub Actions and the dedicated `.github` Python security-tool
+surface. Update PRs still require ordinary CI/review/merge discipline; there is no auto-merge
+or automatic trust promotion.
+
+The bounded committed-data review is recorded in
+[`docs/security/FIXTURE_DATA_MANIFEST.json`](./docs/security/FIXTURE_DATA_MANIFEST.json). It
+classifies the Reader evaluation datasets/results and historical Sprint 1 dump by provenance
+and role. The manifest deliberately does **not** claim that the entire repository is free of
+PII, secrets, licensing risk or other sensitive material. A confirmed incident, if one is ever
+found, requires artifact-specific response; git-history rewriting is not authorized by this
+hardening work.
+
+Remaining broader supply-chain work may include reviewed hashes for additional package
+artifacts, an SBOM, and stronger end-to-end dependency locking where justified. A green
+Bandit/pip-audit/Gitleaks run is evidence for that run, not a security or legal certification.
 
 Before network exposure, require TLS, authenticated access, least privilege, protected
 storage, restore drills, secret rotation, resource monitoring and independent review.

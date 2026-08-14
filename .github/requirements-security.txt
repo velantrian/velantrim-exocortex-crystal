@@ -1,0 +1,5 @@
+# Exact versions used by the reproducible security verification job.
+# Updates are proposed explicitly by Dependabot; verification checkpoints keep
+# the tool implementation stable for a recorded repository SHA.
+bandit==1.9.4
+pip-audit==2.10.1

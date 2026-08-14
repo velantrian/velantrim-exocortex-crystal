@@ -1,21 +1,24 @@
 # ⚠️ Crystal Known Risks and Open Boundaries
 
-**Status date:** 2026-08-12  
+**Status date:** 2026-08-14  
 **Verified retained runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
-**Signed RC-9 merge:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` / PR #376  
-**RC-9 post-merge CI:** `31594027040` — 9/9 successful  
-**Audited start after PR #378:** `main@430e643a2a3759da793f700617a327d419439dde`, CI `31603785427` — 9/9 successful  
-**Current bounded milestone:** issue #379 — post-RC-9 grant presentation truth reconciliation
+**Current repository checkpoint before #214 merge:** `main@e89f0f864af33369861697fa56627a6ddb196e2e`  
+**Current bounded milestone:** issue #214 — supply-chain and verification reproducibility
 
 This register is an orientation layer. GitHub `main`, executable tests, exact CI, current issues
 and accepted architecture contracts remain authoritative.
+
+Historical Reader compatibility anchor retained for executable preregistration contracts:
+RC-9 signed merge `f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`, post-merge CI `31594027040`,
+and RC-10 preregistration/completion bookkeeping issue `#377`. These are historical evidence
+markers only; `comparison pass != runtime authorization` and none is the current repository HEAD.
 
 ## P1 — PostgreSQL is an inactive migration target, not active runtime
 
 - target remains `active=false` and absent from normal runtime composition;
 - no cutover, rollback, dual-write, automatic switching or distributed exactly-once behavior exists;
 - endpoint/package/profile changes must never silently select another store;
-- no Reader decision, RC-9 implementation, PR #378 preregistration or issue #379 docs work activates PostgreSQL/pgvector.
+- no Reader decision, RC-9 implementation, later Reader evaluation, EPIS-001 architecture work or #214 security hardening activates PostgreSQL/pgvector.
 
 ## P1 — Server lifecycle and operational security remain incomplete
 
@@ -37,21 +40,30 @@ throughput proof, production SLO or arbitrary-payload guarantee.
 - network policy, credential rotation and distributed fencing remain deployment responsibilities;
 - no distributed exactly-once guarantee.
 
-## P1 — Supply-chain hardening is incomplete
+## P1 — Supply-chain hardening is bounded, not certified
 
-- default runtime remains pure standard library;
-- Psycopg is an optional extra;
-- immutable action pinning, reviewed constraints/checksums, SBOM and scheduled update policy remain future work under #214;
-- a green dependency audit is not supply-chain certification.
+Issue #214 hardens the reproducibility of the repository verification chain without changing
+runtime behavior:
 
-Issue #379 adds no dependency, package, network service or model download.
+- committed GitHub Action `uses:` references are pinned to reviewed immutable commit SHAs;
+- Bandit and pip-audit verification-tool versions are exact in `.github/requirements-security.txt`;
+- weekly Dependabot proposals provide an explicit reviewable update path for GitHub Actions and
+  the dedicated `.github` Python security-tool surface;
+- `docs/security/FIXTURE_DATA_MANIFEST.json` classifies the reviewed Reader evaluation data and
+  historical Sprint 1 archive conservatively;
+- the manifest explicitly refuses a repository-wide PII-clean claim and records no confirmed
+  secret/PII incident in the bounded reviewed scope.
+
+This does **not** establish supply-chain, security, privacy or GDPR certification. Broader work
+such as SBOM generation, package-artifact hashes and stronger end-to-end dependency locking may
+remain future work if justified. A green dependency/secret scan is evidence for that run only.
 
 ## P1 — Reader remains bounded, not autonomous
 
-RC-1 through RC-7 are merged bounded runtime/domain layers. RC-8 is a completed architecture/
-research decision. RC-9 is the completed PRE-ADMISSION lexical candidate-discovery
-implementation baseline. PR #378 adds only retrieval-reuse compatibility plus a preregistered
-future comparison gate. `dedicated_reader_core=false` remains the larger capability truth.
+RC-1 through RC-7 are merged bounded runtime/domain layers. RC-8 through the later comparator,
+NLI and RRTIC milestones are bounded research/evaluation/architecture work. EPIS-001 is a
+frozen architecture-only evidence-state contract. `dedicated_reader_core=false` remains the
+larger capability truth.
 
 Remaining Reader limits include:
 
@@ -61,7 +73,8 @@ Remaining Reader limits include:
 - no semantic/hybrid/vector Reader runtime;
 - no automatic entity resolution or claim identity;
 - no public Reader API/CLI/background worker;
-- no automatic evidence admission, contradiction resolution or planner/belief authority.
+- no automatic evidence admission, contradiction resolution or planner/belief authority;
+- no EPIS-001 runtime implementation or authorization.
 
 ## P1 — Similarity can create false identity pressure
 
@@ -93,15 +106,15 @@ identity/evidence/adjudication fields remain absent.
 The frozen RC-9 baseline reaches Recall@5 `0.937500` over 16 useful paired cases and MRR
 `0.895833`. It misses the cross-lingual paraphrase completely. Useful paired hits are 15/16.
 
-This produces `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`. It does not authorize semantic/vector
-work. PR #378 freezes future comparison requirements before any result is observed; no
-qualifying semantic/hybrid comparison has been executed.
+This produces `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`. Later frozen comparator/NLI evidence does
+not authorize semantic/vector runtime work; RRTIC-v1 remains an architecture inspection
+contract rather than a runtime backend decision.
 
 ## P1 — Hard-negative pressure is explicit
 
 RC-9 paired hard-negative rate@5 is `1.000000`: all 4/4 known paired hard negatives are
-surfaced. This is not hidden by the grant presentation. Any later comparison must treat reduced
-hard-negative pressure as an explicit objective rather than optimizing recall alone.
+surfaced. This is not hidden by the grant presentation. Later comparator/NLI evaluations remain
+frozen evidence and do not themselves authorize a Reader runtime mechanism.
 
 ## P1 — Existing retrieval machinery is not automatically Reader-safe
 
@@ -118,13 +131,12 @@ Closed #317 / merged PR #321 already implemented a bounded legacy lexical fallba
 memory stores. Reimplementing or wiring that stack directly under a Reader name would create
 duplicate semantics and authority confusion.
 
-PR #378 therefore records reuse disposition without executing a comparator:
+The later Reader research line preserves the same authority separation:
 
 - admitted-memory pipeline/query/legacy retrieval must not be wired directly into PRE-ADMISSION Reader;
-- `HashingEmbedder` / `TrigramHashingEmbedder` are comparator signals only;
-- optional `SentenceTransformerEmbedder` is a future comparator only under separate pinned dependency/model/privacy authorization;
-- `get_embedder("auto")` is forbidden for a qualifying preregistered Reader comparison;
-- pure `core/rrf.py` may be reused only as ordering with explicit Reader candidate identity and no authority promotion.
+- embedding comparators are evaluation signals only unless a separate runtime milestone authorizes otherwise;
+- automatic backend/model selection is forbidden for qualifying frozen comparisons;
+- pure ordering utilities may not promote candidates into evidence or Canon authority.
 
 ## P1 — Semantic/vector retrieval remains unauthorized for Reader
 
@@ -132,9 +144,10 @@ Neural embeddings may improve paraphrase/cross-lingual recall, but introduce mod
 footprint, version drift, privacy/network questions, hard negatives, ranking instability and
 index lifecycle complexity.
 
-No semantic/hybrid comparison, ANN acceptance, vector DB or semantic Reader runtime exists.
-Passing a future comparison gate would mean only eligibility for stronger evaluation and
-architecture review, not runtime authorization.
+Frozen comparator/NLI results and RRTIC-v1 do not authorize ANN/vector storage, semantic Reader
+runtime, PostgreSQL/pgvector activation, automatic identity/adjudication, or evidence admission.
+Passing an evaluation gate would mean only eligibility for stronger evaluation and architecture
+review, not runtime authorization.
 
 ## P1 — SQLite FTS needs capability handling if later selected
 
@@ -155,48 +168,41 @@ RC-9 metrics:
 - paired hard-negative rate@5 `1.000000`.
 
 These are retrieval metrics, not “94% accuracy”, semantic precision, claim-identity accuracy,
-truth accuracy, contradiction accuracy or evidence-admission correctness. A stronger/larger
-evaluation surface remains required before any semantic Reader runtime adoption could be
-considered.
+truth accuracy, contradiction accuracy or evidence-admission correctness. Later v2/comparator/
+NLI evaluation surfaces are likewise bounded research evidence rather than production
+certification.
 
 ## P1 — In-memory O(corpus) RC-9 baseline is not a scale claim
 
-RC-9 intentionally uses a bounded in-memory O(corpus) scorer. The frozen benchmark has 20 index
-records and 20 queries (at most 400 record comparisons). This is a baseline measurement, not a
-production-scale indexing or latency/SLO claim.
+RC-9 intentionally uses a bounded in-memory O(corpus) scorer. Its frozen benchmark is a baseline
+measurement, not a production-scale indexing or latency/SLO claim.
 
-## P1 — Exact-vs-ANN / semantic comparison remains unexecuted
+## P1 — Exact-vs-ANN / semantic runtime remains unselected
 
-The repository has historical exact/vector retrieval mechanisms in admitted-memory paths, but
-no qualifying Reader exact-vs-ANN or semantic/hybrid comparison has been executed. PR #378 only
-freezes future comparison requirements.
+The repository has historical exact/vector retrieval mechanisms in admitted-memory paths and
+frozen semantic comparator evidence in the Reader research line. None of that is a qualifying
+Reader ANN/vector runtime authorization.
 
-## P1 — Grant/public claim drift requires executable protection
+## P1 — Public/grant claim drift requires executable protection
 
-The post-RC-9 live audit found the root English README and primary grant baseline documents
-still presenting RC-6/RC-7-in-progress or RC-5/RC-6-in-progress truth. It also found
-`scripts/check_d4_source_contract.py` actively requiring stale RC-5 grant markers.
-
-Issue #379 addresses this by reconciling the English public/grant surfaces and changing the D4
-semantic validator so stale baseline language cannot silently return. Until #379 merges and
-post-merge CI is green, the starting main remains the authoritative public state.
+Public/grant surfaces have been reconciled through later documentation milestones, and AI/static
+lifecycle surfaces now route volatile repository state back to live GitHub instead of treating a
+historical SHA as current. That protection must remain intact as new evidence-only milestones
+such as #214 land.
 
 ## P2 — Localization debt remains explicit
 
-Russian Reader-dependent D1/D3/D4/D5 surfaces remain tied to immutable RC-7 checkpoint
-`ab3ad31c437647535030e371d58f456faf14017b`. Eight other Reader-dependent locale packs remain
-`REFRESH_NEEDED`, totaling 64 tracked detail documents.
-
-Issue #379 advances the English root/grant presentation to post-RC-9 truth but deliberately does
-not perform broad translation. Localized surfaces must not be represented as current to the new
-English first-impression source until a dedicated localization refresh.
+Localized Reader-dependent detail surfaces have their own tracked freshness contracts. Security
+hardening under #214 does not authorize a broad localization refresh or change Reader semantics.
 
 ## Open backlog isolation
 
 - **#165**: exact normalized ingest dedupe/migration, not near-duplicate or semantic matching.
-- **#155**: Epistemic Router/Evidence State RFC downstream of FactsPack.
-- **#214**: fixture/PII/supply-chain hygiene.
-- **#377**: separate RC-10 preregistration/completion bookkeeping; #379 does not execute its future comparator.
+- **#214**: current bounded fixture/data and supply-chain verification reproducibility milestone;
+  it closes only after exact-head CI, review gate, guarded merge, post-merge CI, Notion read-back
+  and completion evidence.
+- **#155**: CLOSED/completed as EPIS-001 architecture contract only; EPIS runtime remains
+  `NOT IMPLEMENTED / NOT AUTHORIZED` and is not reopened by #214.
 
 ## Claim and legal boundaries
 
@@ -204,11 +210,16 @@ English first-impression source until a dedicated localization refresh.
 - migration bundles/receipts are operational evidence, not claim evidence;
 - retrieval quality cannot override evidence/trust policy;
 - local-first/offline does not itself prove security or GDPR compliance;
+- immutable workflow pins improve reproducibility but do not prove supply-chain security;
 - no universal truth, zero hallucinations, AGI, consciousness or production certification is claimed;
 - NLnet remains `submitted / under review / not awarded`; approximate €50,000 planning only.
 
 ## Next actions
 
-1. Complete only issue #379: public/grant reconciliation → exact-head CI → independent semantic review → guarded merge → signed main → exact post-merge CI → Notion sync/read-back → completion evidence → close → final live audit → STOP.
-2. Do **not** automatically execute semantic/hybrid comparison, implement FTS, embeddings, ANN/vector DB, localization refresh, #155, #165 or #214 after #379.
-3. Keep #377 and all technical backlog separate unless a future live audit plus explicit authorization changes that boundary.
+1. Complete only issue #214: bounded hardening → exact-head CI → review gate → guarded merge →
+   signed main → exact post-merge CI → Notion 3/3 sync/read-back → completion evidence → close →
+   final live audit → STOP.
+2. Do **not** automatically implement #165, EPIS-001 runtime, Reader semantic/hybrid/vector
+   runtime, FTS, ANN/vector DB, model/provider wiring or storage/backend activation after #214.
+3. Treat future action/tool/dependency updates as reviewable proposals, never automatic trust
+   promotion.
