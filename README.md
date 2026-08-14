@@ -236,7 +236,7 @@ reader_core_rc7_cross_document_links = true
 dedicated_reader_core                = false
 ```
 
-These values are reviewer-facing compatibility and evidence anchors. They describe a bounded synthetic retrieval benchmark and implementation boundary — **not semantic accuracy, epistemic correctness or production-scale quality**.
+These values are reviewer-facing compatibility and evidence anchors. They describe a bounded synthetic retrieval benchmark and implementation boundary — **not a measure of semantic correctness, epistemic validity or production-scale quality**.
 
 ---
 
