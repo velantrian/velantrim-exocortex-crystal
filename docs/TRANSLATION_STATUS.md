@@ -37,6 +37,19 @@ These checkpoints remain historical trace evidence and are **not** current repos
 
 Historical compatibility literals remain visible so older evidence contracts continue to be auditable; they do not overwrite newer Reader architecture truth.
 
+### Retained RC-5 / RC-6 / RC-7 compatibility snapshot
+
+The following exact literals describe immutable historical localization checkpoints. They are retained for executable provenance compatibility and **must not be read as the current German/Russian freshness inventory**:
+
+- **Reader RC-7 immutable English source checkpoint:** `main@ab3ad31c437647535030e371d58f456faf14017b`
+- **Reader RC-7 checkpoint CI:** `31570690153` — 9/9 successful
+- **Reader RC-6 immutable English source checkpoint:** `main@ed96a88369f841bdb2ffd79ca020acef174685fc`
+- **Reader RC-5 immutable English source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
+
+At the historical RC-7 checkpoint there were **64 `REFRESH_NEEDED` localized documents** and the executable inventory read **279 total = 72 CURRENT + 133 ENGLISH_ONLY_BY_DESIGN + 64 REFRESH_NEEDED + 10 RETIRED**. That snapshot is immutable evidence; the current post-German inventory is recorded later in this ledger.
+
+The immutable RC-7 localization layer **does not claim later RC-8/RC-9 meaning** merely because current English, Russian or German presentation surfaces have advanced.
+
 ## Root README status
 
 | Locale | Root README | Public parity state | Current/historical source meaning |
