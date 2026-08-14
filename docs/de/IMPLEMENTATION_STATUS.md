@@ -1,61 +1,151 @@
-<!-- translation-source: docs/IMPLEMENTATION_STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- translation-source: docs/IMPLEMENTATION_STATUS.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
+<!-- historical-translation-source: docs/IMPLEMENTATION_STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- current-translation-source: docs/IMPLEMENTATION_STATUS.md@ad8cec8c868f64b6dfbdc3bf3087230f59c3861c -->
 <!-- d1-locale: de -->
 <!-- d1-boundary: public-ask-read-only -->
 <!-- d1-boundary: postgresql-active=false -->
 <!-- d1-nonclaim: import-is-not-activation -->
 <!-- d1-nonclaim: nlnet-not-awarded -->
-# Implementierungsstatus: Crystal und zukünftige Exo-Cortex-Arbeit
+# 🇩🇪 Crystal — Implementierungsstatus
 
-**Statusdatum:** 2026-08-08  
-**Runtime-Checkpoint:** `bbd816c` / PR #337  
-**Nachweise:** [TEST_REPORT.md](../../TEST_REPORT.md)  
-**Maschinenlesbarer Status:** [implementation-manifest.json](../status/implementation-manifest.json)
+**Eingefrorener Architecture-Checkpoint:** `main@76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` / PR #392; post-merge CI `31771677028` — 9/9 SUCCESS.  
+**Signed RC-9 implementation baseline:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` / PR #376; post-merge CI `31594027040`.  
+**Letzte abgeschlossene model-backed Evaluation:** NLI neutral-filter v1 / PR #389 — frozen gate FAIL.  
+**Aktueller frozen Architecture Contract:** RRTIC-v1 / Issue #391 / PR #392 — keine Runtime-Autorisierung.  
+**German parity audit base:** `main@ad8cec8c868f64b6dfbdc3bf3087230f59c3861c`.
 
-| Komponente | Status | Aktuelle Grenze |
+## Tatsächlich implementierte Reader Capabilities
+
+```text
+reader_core_rc1_skeleton               = true
+reader_core_rc2_structural_map         = true
+reader_core_rc3_multi_pass_mechanics   = true
+reader_core_rc4_proposition_extraction = true
+reader_core_rc5_relation_candidates    = true
+reader_core_rc6_long_context_strategy  = true
+reader_core_rc7_cross_document_links   = true
+reader_rc9_lexical_candidate_discovery = true
+dedicated_reader_core                  = false
+semantic_hybrid_reader_runtime         = false
+rrtic_runtime_authorization            = false
+```
+
+| Capability | Status | Primäre Implementierung / Bedeutung |
 |---|---|---|
-| Guardian / TruthGate / strikte Leseprojektion | Implementiert | Speicher und Migration können Autorität nicht umgehen |
-| HTTP/CLI/MCP-Abfragen | Implementiert | gewöhnliche Abfragen verändern Canon nicht |
-| SQLite Backup/Verify/inaktives Restore | Implementiert und getestet | Restore bleibt inaktiv und ist nie Zulassung |
-| Begrenzter SQLite-Logikexport | Implementiert und getestet | kanonisches backend-neutrales Bundle |
-| Optionale PostgreSQL-Abhängigkeit und Preflight | Implementiert und getestet | explizites Extra, lazy load, unterstützte Versionen |
-| Inaktiver PostgreSQL/pgvector-Import | Implementiert und getestet | nur neues inaktives Schema; keine normalen Reads/Writes |
-| Exakte Zielzustandsäquivalenz | Implementiert und getestet | unabhängiger schreibgeschützter Re-Hash |
-| Aktiver PostgreSQL-Runtime-Adapter | Nicht implementiert | Ziel nicht in normaler Runtime registriert |
-| Automatisches SQLite/PostgreSQL-Switching | Verboten | Verfügbarkeit und Importerfolg sind keine Auswahl |
-| Exact-vs-ANN-Retrieval-Evaluation | Nicht implementiert | spätere separat geprüfte Phase |
-| Cutover / Rollback / Dual-Write | Nicht implementiert | nur spätere explizite Phasen |
-| PostgreSQL-Server-Lifecycle | Nicht implementiert | Backup/Restore/Upgrade/Pooling bleiben Zukunft |
-| Reader Core / Semantic Reading Layer | Nicht implementiert | mögliche Schicht vor normaler Zulassung |
+| RC-1 source/session skeleton | **IMPLEMENTED** | `core/reader_core.py` |
+| RC-2 structural map | **IMPLEMENTED** | `core/reader_structure.py` |
+| RC-3 multi-pass mechanics | **IMPLEMENTED** | `core/reader_passes.py` |
+| RC-4 proposition extraction | **IMPLEMENTED** | `core/reader_extraction.py` |
+| RC-5 relation candidates | **IMPLEMENTED** | `core/reader_relations.py` |
+| RC-6 bounded long-context strategy | **IMPLEMENTED** | `core/reader_long_context.py` |
+| RC-7 explicit cross-document candidate links | **IMPLEMENTED** | `core/reader_cross_document.py` |
+| RC-9 lexical candidate discovery | **IMPLEMENTED** | `core/reader_lexical_discovery.py` |
+| Dedicated/full autonomous Reader | **NOT IMPLEMENTED** | `dedicated_reader_core=false` |
+| Semantic/hybrid Reader runtime | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
+| Reader FTS / ANN / vector DB | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
+| NLI runtime filter / CrossEncoder reranker | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
+| RRTIC runtime provider | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
 
-## Aktuelle Speichersequenz
+## Research / Evaluation Evidence — keine Implementierung
+
+| Evidence / Contract | Result | Runtime-Bedeutung |
+|---|---|---|
+| RC-8 retrieval decision | architecture/research complete | deterministic lexical baseline selected first |
+| Evaluation Surface v2 | frozen judged surface | no runtime added |
+| Comparator v1 | `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED` | semantic comparator rejected as runtime authorization |
+| NLI neutral-filter v1 | `NLI_NEUTRAL_FILTER_GATE_FAILED` | filter rejected as Reader retrieval stage |
+| RRTIC-v1 | frozen typed inspection architecture contract | no model/filter/reranker/provider added |
+
+## RC-9 retained evidence
+
+- Recall@5 `0.937500`;
+- Precision@5 `0.187500`;
+- MRR `0.895833`;
+- paired hard-negative rate@5 `1.000000`;
+- useful hits `15/16`;
+- hard-negative hits `4/4`;
+- classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+
+Das sind Retrieval-Messungen, keine semantic/adjudication accuracy.
+
+## Evaluation Surface v2
+
+Frozen surface: 24 queries, 12 primary strata ×2, 6 candidates/query, 144/144 explicit qrels, judgment coverage `1.0`, K=5, SHA-256 `753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cdd`.
+
+RC-9 v2 control:
+
+- useful hits **42 / 48**;
+- Recall@5 **0.875000**;
+- fixed-slot Precision@5 **0.350000**;
+- judged precision-over-returned **0.355932**;
+- MRR **0.857639**;
+- hard-negative hits **38 / 48**;
+- hard-negative rate@5 **0.791667**.
+
+## Comparator v1
+
+Der Comparator erreichte `48/48` useful v2 candidates mit Recall@5 `1.0` und MRR `1.0`, brachte aber `41/48` hard negatives an die Oberfläche. Der historische RC-10 screen brachte `4/4` hard negatives an die Oberfläche.
+
+Classification: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`.
+
+Ein semantic/hybrid Reader runtime wurde nicht autorisiert.
+
+## NLI neutral-filter v1
+
+Der preregistrierte Filter senkte v2 hard-negative hits auf `18/48`, senkte aber useful hits auf `46/48`; historical useful hits sanken auf `15/16`. No-recall-loss overlay und frozen gates FAIL.
+
+Classification: `NLI_NEUTRAL_FILTER_GATE_FAILED`.
+
+## RRTIC-v1 Contract
+
+RRTIC-v1 adressiert den post-NLI **relation-contract mismatch**. Der Vertrag friert sechs suspicion-only relation families und zehn strukturelle qualifier dimensions ein, damit ein zukünftiger Discriminator gegen einen expliziten Relation-/Qualifier-Vertrag und nicht nur gegen einen scalar similarity score evaluiert wird.
 
 ```text
-SQLite lifecycle
-→ backup / independent verify / inactive restore
+EQUIVALENCE_SUSPECT
+RELATED_SUSPECT
+CONTRADICTION_SUSPECT
+QUALIFICATION_SUSPECT
+TOPIC_ONLY_SUSPECT
+UNKNOWN
 
-logical portability
-→ bounded canonical bundle
-→ PostgreSQL preflight
-→ inactive transactional import
-→ independent exact-state equivalence
-→ non-secret receipts
+MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE
 ```
 
-Issues #331 und #332 wurden durch PR #335 und #337 umgesetzt. PostgreSQL-Unterstützung
-bleibt ein optionaler Operatorpfad mit `active=false`. Erfolgreiche Äquivalenz kann
-weder ein Backend aktivieren noch Guardian, TruthGate oder den strikten Canon ändern.
+RRTIC-v1 ist kein Filter, kein Reranker, kein model execution, keine identity engine, keine evidence admission, keine contradiction adjudication, keine Canon mutation und registriert RC-5 relations nicht automatisch.
 
-## Zukünftige Arbeit
+## Retained Authority Firewall
 
 ```text
-exact-vs-ANN retrieval evaluation
-→ explicit cutover and source/target fencing
-→ rollback proof and expiry policy
-→ PostgreSQL backup/restore/upgrade lifecycle
-→ multi-process concurrency and production observability
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+working-set coverage != comprehension proof
+summary != evidence
+cross-document link != Canon relation
+same-topic != same proposition
+possible-same-claim != claim identity
+similarity signal != identity proof
+repetition across sources != corroboration
+retrieval match != evidence
+similarity != identity
+NLI label != proposition identity
+RRTIC suspicion != adjudicated relation
+qualifier mismatch != truth decision
+ranking != epistemic authority
+candidate discovery != candidate adjudication
+evaluation pass != runtime authorization
 ```
 
-Crystal behauptet keinen aktiven PostgreSQL-Runtime-Backend, keine automatische
-Migration, kein produktives Multi-Tenancy, keine universelle Wahrheit, keine
-Null-Halluzinationen, keine Rechts-/Sicherheitszertifizierung und kein Bewusstsein.
+PostgreSQL/pgvector bleibt `active=false`. SQLite bleibt ordinary active local-first.
+
+## Localization / Grant
+
+Die deutsche D1/D3/D4/D5-Dokumentation wird in Issue #412 gegen `main@ad8cec8c868f64b6dfbdc3bf3087230f59c3861c` aktualisiert. Historische Source-Marker bleiben Provenienz. Die sieben übrigen nicht-russischen und nicht-deutschen locale packs werden in diesem Milestone nicht aktualisiert.
+
+NLnet bleibt **submitted / under review / not awarded**. Ungefähr €50,000 sind planning only.
+
+## Stop Boundary
+
+Localization parity erzeugt keine neue Capability und autorisiert keinen nächsten model/discriminator/runtime milestone.
