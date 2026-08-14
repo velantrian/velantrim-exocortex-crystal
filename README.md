@@ -21,7 +21,7 @@ source-linked material
         ↓
 bounded Reader artifacts
         ↓
-candidate discovery / review
+candidate discovery / typed inspection
         ↓
 explicit evidence + admission boundary
         ↓
@@ -33,10 +33,10 @@ separate decision path.**
 
 ## 📌 Current implementation status
 
-**Grant-truth reconciliation audit base (2026-08-12):** signed `main@430e643a2a3759da793f700617a327d419439dde`, push CI `31603785427` **9/9 successful**. This is the immutable starting checkpoint for the post-RC-9 presentation reconciliation, not a claim that the SHA remains repository HEAD.  
+**Current signed architecture checkpoint:** `main@76a9493b8ba64b832472ef9bfc1f1c23ebe6654e`, signature `verified=true`, reason `valid`; PR #392 merged Reader Retrieval Typed Inspection Contract v1 (RRTIC-v1). Post-merge CI `31771677028`: **9/9 successful**.  
 **Current implemented Reader retrieval baseline:** **RC-9 deterministic lexical PRE-ADMISSION candidate discovery**, merged by PR #376 at signed `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`.  
-**RC-9 exact-head / post-merge CI:** `31593097846` / `31594027040` — **9/9 successful**.  
-**RC-10 note:** PR #378 subsequently merged a reuse-compatibility / comparison **preregistration contract only**. It executes no semantic/hybrid comparator and adds no Reader retrieval runtime.  
+**Latest frozen model-backed evaluation:** NLI neutral-filter v1, PR #389, classification `NLI_NEUTRAL_FILTER_GATE_FAILED`; `runtime_authorization=false`.  
+**Current architecture/research contract:** **RRTIC-v1**, model-free and diagnostic-only. It adds no runtime provider, model, filter, reranker, evidence admission, identity decision or Canon authority.  
 **Dedicated/full autonomous Reader:** **not implemented** (`dedicated_reader_core=false`).
 
 Machine implementation truth remains:
@@ -49,11 +49,15 @@ reader_core_rc4_proposition_extraction = true
 reader_core_rc5_relation_candidates    = true
 reader_core_rc6_long_context_strategy  = true
 reader_core_rc7_cross_document_links   = true
+reader_rc9_lexical_candidate_discovery = true
 dedicated_reader_core                  = false
+semantic_hybrid_reader_runtime         = false
+rrtic_runtime_authorization            = false
 ```
 
 RC-8 is an architecture/research decision; RC-9 is the measured lexical implementation
-baseline. Neither creates a complete autonomous Reader machine flag.
+baseline. Comparator v1 and NLI v1 are frozen evaluation evidence. RRTIC-v1 is a frozen
+inspection contract. None creates a complete autonomous Reader machine flag.
 
 ## 📖 Reader Core — RC-1 through RC-9
 
@@ -71,8 +75,9 @@ baseline. Neither creates a complete autonomous Reader machine flag.
 
 Detailed contracts: [Reader Core architecture](./docs/architecture/READER_CORE_ARCHITECTURE.md),
 [RC-7](./docs/architecture/READER_RC7_CROSS_DOCUMENT.md),
-[RC-8](./docs/architecture/READER_RC8_RETRIEVAL_DECISION.md), and
-[RC-9](./docs/architecture/READER_RC9_LEXICAL_BASELINE.md).
+[RC-8](./docs/architecture/READER_RC8_RETRIEVAL_DECISION.md),
+[RC-9](./docs/architecture/READER_RC9_LEXICAL_BASELINE.md), and
+[RRTIC-v1](./docs/architecture/READER_RETRIEVAL_TYPED_INSPECTION_CONTRACT_V1.md).
 
 ## 🔎 What RC-9 actually provides
 
@@ -99,20 +104,99 @@ manual / downstream review
 RC-9 is **not semantic understanding**. It does not emit identity, truth, corroboration,
 contradiction, evidence-sufficiency or Canon verdicts; it auto-registers no RC-7 link.
 
+## 🧪 What happened after RC-9
+
+The post-RC-9 research chain is deliberately preserved, including negative results:
+
+```text
+RC-9 lexical baseline
+        ↓
+Comparator v1
+  multilingual semantic similarity
+  recall recovered
+  proposition discrimination gate FAIL
+        ↓
+NLI neutral-filter v1
+  discrimination improved
+  useful-recall safety gate FAIL
+        ↓
+architecture reassessment
+  RELATION-CONTRACT MISMATCH
+        ↓
+RRTIC-v1
+  typed inspection contract only
+  no runtime authorization
+```
+
+### Comparator v1 — evaluation only
+
+The pinned multilingual sentence-embedding comparator recovered all useful candidates on the
+frozen Evaluation Surface v2 (`48/48`, Recall@5 `1.0`, MRR `1.0`) but also surfaced `41/48`
+hard negatives. Classification: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`.
+This result did **not** authorize a semantic Reader backend.
+
+### NLI neutral-filter v1 — evaluation only
+
+The preregistered bidirectional neutral-neutral NLI filter reduced v2 hard-negative hits to
+`18/48`, but useful hits regressed to `46/48` and the frozen no-recall-loss overlay failed.
+Classification: `NLI_NEUTRAL_FILTER_GATE_FAILED`. The signal is diagnostically useful; the
+frozen filter is not admissible as a Reader retrieval stage.
+
+### RRTIC-v1 — architecture contract, not runtime
+
+RRTIC-v1 freezes a model-free typed inspection envelope after the post-NLI reassessment found
+that the missing capability is better described as **relation-contract preservation + structural
+qualifier discrimination**, not simply “use a larger similarity model”.
+
+Frozen suspicion-only relation families:
+
+```text
+EQUIVALENCE_SUSPECT
+RELATED_SUSPECT
+CONTRADICTION_SUSPECT
+QUALIFICATION_SUSPECT
+TOPIC_ONLY_SUSPECT
+UNKNOWN
+```
+
+Frozen qualifier dimensions:
+
+```text
+entity_binding
+predicate_binding
+argument_roles
+polarity
+modality_quantifier
+temporal_version
+jurisdiction
+condition_direction
+units_thresholds
+attribution_causality
+```
+
+Each qualifier is `MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE`.
+
+RRTIC-v1 has **no accept/reject decision, no scalar truth score, no reranking, no model
+execution and no runtime provider**. It does not replace or mutate RC-5 relation semantics.
+
 ## 🛡️ Authority firewall
 
 ```text
 retrieval match          != evidence
 similarity               != identity
+NLI label                != proposition identity
+NLI contradiction        != contradiction adjudication
+RRTIC suspicion          != adjudicated relation
+qualifier mismatch       != truth decision
 repetition               != corroboration
 cross-document candidate != Canon relation
 ranking                  != epistemic authority
 candidate discovery      != candidate adjudication
-comparison pass          != runtime authorization
+evaluation pass          != runtime authorization
 ```
 
-These are architecture boundaries, not wording preferences. Reader candidate-discovery
-results remain PRE-ADMISSION inspection artifacts.
+These are architecture boundaries, not wording preferences. Reader candidate-discovery and
+inspection results remain PRE-ADMISSION artifacts.
 
 ## 🧪 RC-9 benchmark snapshot
 
@@ -134,20 +218,10 @@ Measured classification:
 LEXICAL_BASELINE_EXPOSES_MEASURED_GAP
 ```
 
-### What the result proves — and what it does not
-
 The lexical baseline retrieves most known useful pairs in the frozen corpus, but misses the
 cross-lingual paraphrase `rc8-004`. All four paired `SAME_TOPIC` / `MERELY_SIMILAR` hard
-negatives also surface within top-5. High lexical overlap can therefore surface dangerous
-false-positive candidates, while cross-lingual or low-overlap meaning can be missed.
-
-This benchmark is deliberately small, synthetic and paired. Precision@5 uses the benchmark's
-fixed-K paired definition; it is **not corpus-wide semantic precision**. Recall@5 is **not
-accuracy**. MRR is **not correctness**. None of the metrics is adjudication authority.
-
-The result supports measurement-driven future research; it does **not** by itself authorize
-embeddings, semantic/hybrid retrieval, ANN/vector DB, entity resolution or automatic claim
-identity.
+negatives also surface within top-5. This benchmark is deliberately small, synthetic and paired.
+Recall@5 is not accuracy, MRR is not correctness, and no metric is adjudication authority.
 
 ## 🗄️ Local-first and retrieval domains
 
@@ -165,6 +239,10 @@ vector retrieval is implemented.
 
 Python 3.11+ is required. The default runtime stays dependency-free; development tooling is
 installed through the existing `dev` extra.
+
+Current post-RRTIC `main` validation: CI `31771677028` — **9/9 successful**. The Python 3.11
+matrix job collected 2244 tests and completed with **2231 passed / 13 skipped / 0 failed** at
+**100% measured line coverage**.
 
 ```bash
 git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
@@ -189,7 +267,7 @@ python scripts/bench_reader_rc9_lexical.py \
 The committed comparison target is
 [`eval/reader_rc9_lexical_baseline.json`](./eval/reader_rc9_lexical_baseline.json). For the
 maintained reviewer demo paths, see [DEMO.md](./DEMO.md) and
-[Reviewer Notes](./docs/REVIEWER_NOTES.md).
+[Reviewer Guide](./docs/REVIEWER_GUIDE.md).
 
 ## 🚫 Current limitations / non-claims
 
@@ -199,16 +277,17 @@ Crystal does **not** claim:
 - automatic truth verification, corroboration or evidence admission from retrieval;
 - automatic contradiction resolution or winner selection;
 - semantic/hybrid/vector Reader runtime, ANN/FAISS/HNSW, Reader vector DB or Reader FTS index;
+- an NLI runtime filter, CrossEncoder reranker or RRTIC runtime provider;
 - a completed dedicated/full autonomous Reader;
 - automatic Reader parser/OCR/PDF-layout/multimodal understanding;
 - active PostgreSQL runtime selection, pgvector Reader activation or automatic cutover;
 - universal objective-truth detection or zero hallucinations;
 - legal/GDPR/security certification or “fully secure” operation;
-- production-scale retrieval quality from the 20-case RC-9 benchmark.
+- production-scale retrieval quality from the frozen synthetic evaluation surfaces.
 
 Known residual work remains explicit in [Known Risks](./docs/ai/KNOWN_RISKS.md), including
 #155 (Epistemic Router RFC), #165 (exact normalized-id migration/dedupe) and #214
-(PII/supply-chain hygiene). Those scopes are not implemented by RC-9.
+(PII/supply-chain hygiene). Those scopes are not implemented by RRTIC-v1.
 
 ## 🎓 Grant / funding status
 
@@ -216,9 +295,9 @@ NLnet remains **submitted / under review / not awarded**. Approximate **€50,00
 context only, not an approved budget or payment commitment.
 
 Anything merged before a funding agreement is **existing pre-agreement baseline** and cannot
-be counted again as future paid delivery. RC-1 through RC-9 are therefore existing baseline
-work. The merged RC-10 preregistration contract is also pre-agreement repository history; it
-is not funded delivery and does not create a new Reader runtime capability.
+be counted again as future paid delivery. RC-1 through RC-9, Comparator v1, NLI v1 and
+RRTIC-v1 are existing pre-agreement repository/research history; none may later be relabeled as
+a newly funded runtime delivery.
 
 See [NLnet scope](./docs/GRANT_NLNET_SCOPE.md) and the
 [baseline → funded delta matrix](./docs/grants/baseline-funded-delta-matrix.md).
@@ -227,17 +306,22 @@ See [NLnet scope](./docs/GRANT_NLNET_SCOPE.md) and the
 
 English is the primary source language. The Reader-dependent localized documentation remains
 tracked separately in [Translation Status](./docs/TRANSLATION_STATUS.md). This English
-post-RC-9 reconciliation does **not** perform a broad translation refresh; localized surfaces
+post-RRTIC reconciliation does **not** perform a broad translation refresh; localized surfaces
 must not be treated as newer than their recorded source checkpoint.
 
 ## 📚 Authoritative documentation
 
 - [Current status](./docs/STATUS.md)
 - [Implementation matrix](./docs/IMPLEMENTATION_STATUS.md)
+- [Architecture overview](./docs/ARCHITECTURE_OVERVIEW.md)
 - [Machine-readable implementation manifest](./docs/status/implementation-manifest.json)
 - [Reader Core architecture contract](./docs/architecture/READER_CORE_ARCHITECTURE.md)
 - [RC-8 retrieval decision](./docs/architecture/READER_RC8_RETRIEVAL_DECISION.md)
-- [RC-9 lexical baseline and benchmark interpretation](./docs/architecture/READER_RC9_LEXICAL_BASELINE.md)
+- [RC-9 lexical baseline](./docs/architecture/READER_RC9_LEXICAL_BASELINE.md)
+- [Comparator v1 result](./eval/reader_retrieval_comparator_v1_result.json)
+- [NLI neutral-filter v1 result](./eval/reader_nli_neutral_filter_v1_result.json)
+- [RRTIC-v1 typed inspection contract](./docs/architecture/READER_RETRIEVAL_TYPED_INSPECTION_CONTRACT_V1.md)
+- [AI current state](./docs/ai/CURRENT_STATE.md)
 - [Known risks](./docs/ai/KNOWN_RISKS.md)
 - [NLnet scope](./docs/GRANT_NLNET_SCOPE.md)
 - [Roadmap](./ROADMAP.md)
@@ -245,9 +329,10 @@ must not be treated as newer than their recorded source checkpoint.
 
 ## ⏭️ Future work is evidence-gated
 
-The next Reader implementation capability is **not implied by RC-9 metrics**. Any future
-semantic/hybrid comparator or runtime proposal requires its own bounded authorization,
-pre-registered evaluation, dependency/privacy/resource review and explicit authority review.
+No next Reader model or runtime capability is authorized by RRTIC-v1. Any future discriminator,
+semantic/hybrid mechanism or runtime proposal requires a separate bounded milestone, a new
+experiment identity/preregistration where applicable, fresh validation design, and explicit
+privacy/resource/authority review.
 
 Public presentation work must never manufacture a missing capability simply to make Crystal
 look more complete.
