@@ -13,17 +13,46 @@
 <!-- rc6-status: CURRENT -->
 <!-- rc7-localization-index-source: main@ab3ad31c437647535030e371d58f456faf14017b -->
 <!-- rc7-status: CURRENT -->
+<!-- current-russian-parity-source: main@9666781d390e3276a111cb5ee1735f6606a76283 -->
+<!-- current-english-readme-source: main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883 -->
 # 🇷🇺 Русская документация Crystal
 
-Исторические D1–D5 и RC-6 source markers сохранены как immutable audit evidence. Текущий русский Reader-dependent пакет `CURRENT` к RC-7 English checkpoint `main@ab3ad31c437647535030e371d58f456faf14017b`.
+Русский public/localized пакет обновлён с исторической RC-7 parity до текущей **post-RC-9 / post-NLI / RRTIC-v1 human-facing truth**. English остаётся primary source и conflict resolver; machine/evidence truth всегда разрешается из live GitHub, `docs/ai/**`, implementation manifest, exact tests и CI.
 
-- D1: [Quick Start](./QUICKSTART.md), [Status](./STATUS.md), [Implementation Status](./IMPLEMENTATION_STATUS.md)
-- D2: [Reviewer Guide](./REVIEWER_GUIDE.md), [Safety/Privacy/Failures](./SAFETY_PRIVACY_AND_FAILURES.md)
-- D3: [Architecture Overview](./ARCHITECTURE_OVERVIEW.md), [Storage/Authority](./STORAGE_AND_AUTHORITY_BOUNDARIES.md)
-- D4: [Grant Overview](./GRANT_OVERVIEW.md), [Glossary](./GLOSSARY.md)
-- D5: [Extended Reference Guide](./EXTENDED_REFERENCE_GUIDE.md)
-- [Localization policy](../LOCALIZATION_POLICY.md)
-- [Translation status](../TRANSLATION_STATUS.md)
+## 🧭 С чего начать
+
+```text
+👤 Человек
+README.ru.md
+   ↓
+docs/ru/README.md
+   ↓
+ARCHITECTURE_OVERVIEW.md
+   ↓
+STATUS.md + IMPLEMENTATION_STATUS.md
+
+🤖 AI / automated auditor
+docs/ai/README.md
+   ↓
+AGENTS.md
+   ↓
+docs/status/implementation-manifest.json
+   ↓
+English authoritative status/contracts/tests/CI
+```
+
+## 📊 Текущая Reader truth
+
+```text
+RC-1…RC-7            = implemented bounded layers
+RC-8                  = completed architecture/research decision
+RC-9                  = implemented lexical PRE-ADMISSION discovery
+Comparator v1         = frozen evaluation / gate FAIL
+NLI neutral-filter v1 = frozen evaluation / gate FAIL
+RRTIC-v1              = frozen architecture contract only
+semantic runtime      = not authorized
+dedicated Reader      = not implemented
+```
 
 ```text
 reader_core_rc1_skeleton = true
@@ -33,10 +62,42 @@ reader_core_rc4_proposition_extraction = true
 reader_core_rc5_relation_candidates = true
 reader_core_rc6_long_context_strategy = true
 reader_core_rc7_cross_document_links = true
+reader_rc9_lexical_candidate_discovery = true
 dedicated_reader_core = false
+semantic_hybrid_reader_runtime = false
+rrtic_runtime_authorization = false
 ```
 
-RC-7 = explicit cross-document candidate links между current RC-4 propositions из разных `document_id`, exact two-sided provenance + rationale, без automatic semantic matching/identity/dedupe/evidence admission.
+## 📚 Русские surfaces
+
+| Группа | Документ | Статус после этого refresh |
+|---|---|---|
+| Root | [README.ru.md](../../README.ru.md) | current human-first presentation |
+| D1 | [Quick Start](./QUICKSTART.md) | CURRENT, source semantics unchanged |
+| D1 | [Status](./STATUS.md) | current post-RRTIC parity |
+| D1 | [Implementation Status](./IMPLEMENTATION_STATUS.md) | current post-RRTIC parity |
+| D2 | [Reviewer Guide](./REVIEWER_GUIDE.md) | CURRENT, unchanged D2 source |
+| D2 | [Safety/Privacy/Failures](./SAFETY_PRIVACY_AND_FAILURES.md) | CURRENT, unchanged D2 source |
+| D3 | [Architecture Overview](./ARCHITECTURE_OVERVIEW.md) | current post-RRTIC parity |
+| D3 | [Storage/Authority](./STORAGE_AND_AUTHORITY_BOUNDARIES.md) | current authority/storage parity |
+| D4 | [Grant Overview](./GRANT_OVERVIEW.md) | current grant-safe parity |
+| D4 | [Glossary](./GLOSSARY.md) | current Reader/RRTIC terminology |
+| D5 | [Extended Reference Guide](./EXTENDED_REFERENCE_GUIDE.md) | current reviewer/reference parity |
+
+## 🛡️ Authority firewall
+
+```text
+retrieval match != evidence
+similarity != identity
+ranking != epistemic authority
+candidate discovery != candidate adjudication
+NLI label != proposition identity
+RRTIC suspicion != adjudicated relation
+evaluation pass != runtime authorization
+physical L3 != strict Canon
+```
+
+Исторические RC-7 compatibility literals сохраняются:
 
 ```text
 cross-document link != Canon relation
@@ -46,4 +107,12 @@ similarity signal != identity proof
 repetition across sources != corroboration
 ```
 
-SQLite ordinary active local-first; PostgreSQL `active=false`. NLnet `submitted / under review / not awarded`; ~€50,000 planning only; budget change none. Eight other Reader-dependent locale packs сохраняют rich `REFRESH_NEEDED` translations; D2 и Quick Start остаются CURRENT across all nine supported locales.
+SQLite остаётся ordinary active local-first. PostgreSQL/pgvector Reader остаётся inactive `active=false`. NLnet — **submitted / under review / not awarded**; ~€50,000 planning only.
+
+## 📎 Исторические localization checkpoints
+
+RC-5 source marker `51c205fe048fd69d39fcd47b43e042a50de432bc`, RC-6 `ed96a88369f841bdb2ffd79ca020acef174685fc` и RC-7 `ab3ad31c437647535030e371d58f456faf14017b` сохраняются как immutable audit evidence. Они больше не означают, что русский public package останавливается на RC-7.
+
+Текущий Russian parity refresh проверен против repository truth `main@9666781d390e3276a111cb5ee1735f6606a76283`; human-first English README source — `main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883`.
+
+Восемь других Reader-dependent locale packs **не обновлены этим milestone** и остаются `REFRESH_NEEDED` там, где это указано в [Translation Status](../TRANSLATION_STATUS.md).
