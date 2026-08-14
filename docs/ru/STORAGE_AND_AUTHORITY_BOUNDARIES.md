@@ -15,47 +15,139 @@
 <!-- rc6-translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@ed96a88369f841bdb2ffd79ca020acef174685fc -->
 <!-- rc7-translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@ab3ad31c437647535030e371d58f456faf14017b -->
 <!-- rc7-status: CURRENT -->
+<!-- current-translation-source: main@9666781d390e3276a111cb5ee1735f6606a76283 -->
 # 🇷🇺 Storage и Authority Boundaries
 
-Crystal не делает storage presence эквивалентом доверия.
+Crystal намеренно не делает storage presence эквивалентом доверия и не даёт retrieval/inspection слоям право обходить admission.
+
+## 1. Разные identities
 
 ```text
-physical L3 != strict Canon
-migration success != activation
-retrieval score != evidence
-Reader artifact != admitted evidence
-cross-document link != Canon relation
+storage profile        = deployment identity
+physical L3            = multi-status graph state
+strict Canon           = trusted read projection
+migration bundle       = operation evidence
+retrieval score        = ranking signal
+model output           = generated text
+Reader artifact        = source-linked observation/candidate
+RC-9 retrieval result  = PRE-ADMISSION inspection candidate
+RRTIC diagnostic       = typed inspection metadata
 ```
+
+Ни один объект автоматически не означает другой.
+
+## 2. Physical L3 vs strict Canon
+
+```text
+stored in L3            != trusted answer material
+retrieved               != admitted
+high score              != evidence
+frequent copy           != independent corroboration
+EXTRACTED_PROPOSITION   != verified fact
+Reader candidate        != admitted evidence
+relation candidate      != admitted evidence
+contradiction candidate != confirmed contradiction
+summary                 != evidence
+RRTIC suspicion         != adjudicated relation
+qualifier mismatch      != truth decision
+```
+
+## 3. Read/write separation
+
+Public `HTTP /ask`, `CLI ask` и `MCP search` используют read-only query pipeline. Explicit ingest остаётся admission-capable через Guardian/TruthGate. Reader RC-1…RC-7, RC-9 retrieval и RRTIC inspection находятся upstream и сами admission не выполняют.
+
+## 4. SQLite lifecycle и PostgreSQL target
 
 | Backend | Current role |
 |---|---|
 | SQLite | ordinary active local-first runtime |
-| Mock | explicit ephemeral dev/CI fallback |
-| PostgreSQL/pgvector | optional inactive import/equivalence target, `active=false` |
+| Mock | explicit ephemeral development/test state |
+| PostgreSQL/pgvector | optional inactive migration/import/equivalence target, `active=false` |
 
 ```text
-SQLite backup → independent verification → inactive restore → bounded logical export
-→ PostgreSQL preflight → inactive transactional import → independent exact equivalence → active=false
+active SQLite store
+→ backup / independent verification / inactive restore
+→ bounded logical export
+→ PostgreSQL 16 + pgvector inactive import
+→ independent exact-state equivalence
+→ active=false
 ```
 
-Successful import/equivalence не создаёт active PostgreSQL runtime adapter, automatic backend switching, cutover или admission authority. Public query surfaces read-only; `core.query_pipeline.query()` остаётся read path и не получает Reader write/admission authority.
+Successful import/equivalence не создаёт active PostgreSQL runtime adapter, automatic switching, cutover, rollback, dual-write, Reader vector runtime или admission authority.
 
-RC-1 source/session, RC-2 structure, RC-3 pass ledger, RC-4 proposition, RC-5 relation, RC-6 working set/SUMMARY и RC-7 cross-document link — разные pre-admission artifacts.
+## 5. Reader source/version и retrieval boundary
+
+RC-1 связывает Reader artifacts с exact `SourceVersion`. RC-2 structure, RC-3 passes, RC-4 propositions, RC-5 relations, RC-6 working sets/SUMMARY и RC-7 cross-document links остаются внутри explicit provenance boundaries.
+
+RC-9 добавляет deterministic offline BM25 PRE-ADMISSION candidate discovery поверх frozen Reader proposition snapshot. Он возвращает ranking/provenance metadata и inspection candidates, но не evidence/identity/Canon verdict.
 
 ```text
-coverage != comprehension proof
-pass completion != comprehension proof
-EXTRACTED_PROPOSITION != verified fact
-Reader candidate != admitted evidence
-contradiction candidate != confirmed contradiction
-summary != evidence
-cross-document support != admitted evidence
+retrieval match != evidence
+ranking != epistemic authority
+candidate discovery != candidate adjudication
+```
+
+RRTIC-v1 добавляет только architecture-level typed suspicion/qualifier vocabulary для future inspection. Runtime provider отсутствует.
+
+```text
+RRTIC diagnostic != RC-5 registered relation
+RRTIC suspicion != adjudicated relation
+qualifier mismatch != truth decision
+```
+
+## 6. Authority isolation
+
+Reader/retrieval/evaluation layers не должны:
+
+- вызывать evidence admission как следствие similarity/ranking;
+- менять `truth_status` или ESM;
+- записывать strict Canon;
+- ослаблять Guardian/TruthGate;
+- выбирать contradiction winner;
+- превращать NLI/model label в proposition identity;
+- превращать benchmark pass в runtime authorization.
+
+Comparator v1 и NLI neutral-filter v1 — frozen failed evaluation evidence, а не runtime components.
+
+```text
+NLI label != proposition identity
+NLI contradiction != contradiction adjudication
+evaluation pass != runtime authorization
+```
+
+## 7. Privacy boundary
+
+Credentials/credential-bearing DSNs не должны попадать в profiles, bundles, receipts, logs, issues или Notion. Reader artifacts наследуют source restriction/sensitivity context; ranking, working-set fill или typed inspection не могут ослабить privacy policy.
+
+## 8. Authority table
+
+| Event | Что доказывает | Чего не доказывает |
+|---|---|---|
+| Reader artifact exists | bounded source-linked observation | truth/admission/comprehension |
+| RC-4 candidate exists | proposition anchored to eligible Reader context | verified fact/admitted evidence |
+| RC-5 relation exists | explicit auditable relation suspicion | confirmed contradiction/winner/Canon |
+| RC-6 working set exists | deterministic grouping under explicit budgets | comprehension/evidence/admission |
+| RC-7 link exists | explicit two-sided cross-document comparison candidate | identity/corroboration/Canon relation |
+| RC-9 retrieval result exists | deterministic lexical candidate ranking | evidence sufficiency/identity |
+| RRTIC diagnostic exists | typed suspicion + qualifier inspection vocabulary | adjudicated relation/truth decision |
+| record stored in L3 | physical persistence | strict Canon membership |
+| PostgreSQL import succeeds | transactional import | runtime activation |
+| exact equivalence receipt | approved dataset equality | production readiness/cutover |
+
+## 9. Historical RC-7 compatibility literals
+
+```text
+cross-document link != Canon relation
 same-topic != same proposition
 possible-same-claim != claim identity
 similarity signal != identity proof
 repetition across sources != corroboration
 ```
 
-RC-7 хранит exact source/session/candidate/pass/node/locator provenance обеих сторон и требует different document identities. Link conservatively restricted, если restricted хотя бы одна сторона; sensitivities остаются metadata, не score.
+## 10. Current non-claims
 
-`dedicated_reader_core=false`; dedicated/full autonomous Reader не implemented. NLnet submitted / under review / not awarded. Русская RC-7 parity = `main@ab3ad31c437647535030e371d58f456faf14017b`.
+Crystal не заявляет active PostgreSQL runtime, automatic switching/cutover/rollback/dual-write, accepted ANN production profile, production multi-tenancy, distributed exactly-once coordination, dedicated/full autonomous Reader, semantic/hybrid Reader runtime, Reader FTS/ANN/vector DB, NLI/CrossEncoder runtime filter, RRTIC runtime provider, automatic semantic contradiction resolution, security/legal/GDPR certification или awarded NLnet funding.
+
+`dedicated_reader_core=false`; `semantic_hybrid_reader_runtime=false`; PostgreSQL/pgvector `active=false`. NLnet — **submitted / under review / not awarded**; ~€50,000 planning only.
+
+Historical RC-7 source: `main@ab3ad31c437647535030e371d58f456faf14017b`. Current Russian refresh source: `main@9666781d390e3276a111cb5ee1735f6606a76283`.
