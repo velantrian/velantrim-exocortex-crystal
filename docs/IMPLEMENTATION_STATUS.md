@@ -2,6 +2,7 @@
 
 **Status date:** 2026-08-14  
 **Current signed architecture checkpoint:** `main@76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` / PR #392; post-merge CI `31771677028` — 9/9 SUCCESS  
+**Historical RC-7 Reader baseline:** `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1` / PR #372; post-merge CI `31572918731` — retained immutable cross-document Reader provenance  
 **Signed RC-9 Reader implementation baseline:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` / PR #376; post-merge CI `31594027040`; retained RC-10 architecture decision #377  
 **Post-RC-10 architecture reassessment:** Issue #382 / PR #383 — selected Evaluation Surface v2 before any further comparator execution  
 **Latest completed model-backed evaluation:** NLI neutral-filter v1 / PR #389 — frozen gate FAIL  
