@@ -1,4 +1,4 @@
-"""Validate mixed D5 extended-reference translation freshness after RC-5."""
+"""Validate mixed D5 extended-reference translation freshness after German parity refresh."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from urllib.parse import unquote
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = "51c205fe048fd69d39fcd47b43e042a50de432bc"
 LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
-CURRENT_LOCALES = ("ru",)
+CURRENT_LOCALES = ("de", "ru")
 REFRESH_LOCALES = tuple(locale for locale in LOCALES if locale not in CURRENT_LOCALES)
 GUIDE = "EXTENDED_REFERENCE_GUIDE.md"
 READER_MARKERS = (
@@ -48,11 +48,12 @@ def main() -> int:
     manifest = json.loads(
         (ROOT / "docs/status/d5-translation-manifest.json").read_text(encoding="utf-8")
     )
-    current = {"ru": f"docs/ru/{GUIDE}"}
+    current = {locale: f"docs/{locale}/{GUIDE}" for locale in CURRENT_LOCALES}
     refresh = {locale: f"docs/{locale}/{GUIDE}" for locale in REFRESH_LOCALES}
     checks = (
         (manifest.get("phase") == "D5_TRANSLATIONS", "phase"),
         (manifest.get("tracking_issue") == 341, "tracking issue"),
+        (manifest.get("latest_refresh_issue") == 412, "latest refresh issue"),
         (manifest.get("source_document") == "docs/EXTENDED_REFERENCE_POLICY.md", "source document"),
         (manifest.get("english_source_checkpoint") == SOURCE, "source checkpoint"),
         (manifest.get("current_locales") == list(CURRENT_LOCALES), "current locales"),
@@ -118,9 +119,8 @@ def main() -> int:
             ):
                 if marker not in text:
                     errors.append(f"{relative}: missing current D5 marker {marker!r}")
-        else:
-            if f"translation-source: docs/EXTENDED_REFERENCE_POLICY.md@{SOURCE}" in text:
-                errors.append(f"{relative}: refresh-needed translation falsely pins current source")
+        elif f"translation-source: docs/EXTENDED_REFERENCE_POLICY.md@{SOURCE}" in text:
+            errors.append(f"{relative}: refresh-needed translation falsely pins current source")
         check_links(relative, text, errors)
 
         index_relative = f"docs/{locale}/README.md"
@@ -133,9 +133,9 @@ def main() -> int:
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
     for marker in (
         f"D5 source checkpoint:** `main@{SOURCE}`",
-        "D5 Reader-dependent detail translations are `CURRENT` in Russian",
-        "eight other supported locales are `REFRESH_NEEDED`",
-        "64 `REFRESH_NEEDED` localized documents",
+        "D5 Reader-dependent detail translations are `CURRENT` in German and Russian",
+        "seven other supported locales are `REFRESH_NEEDED`",
+        "56 `REFRESH_NEEDED` localized documents",
     ):
         if marker not in ledger:
             errors.append(f"translation ledger: missing D5 marker {marker!r}")
@@ -145,7 +145,7 @@ def main() -> int:
         for error in errors:
             print(f"  - {error}")
         return 1
-    print("D5 translation status consistent: Russian CURRENT at RC-5; 8 locales REFRESH_NEEDED")
+    print("D5 translation status consistent: German + Russian CURRENT; 7 locales REFRESH_NEEDED")
     return 0
 
 

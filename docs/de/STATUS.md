@@ -1,76 +1,107 @@
-<!-- translation-source: docs/STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- translation-source: docs/STATUS.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
+<!-- historical-translation-source: docs/STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- current-translation-source: docs/STATUS.md@ad8cec8c868f64b6dfbdc3bf3087230f59c3861c -->
 <!-- d1-locale: de -->
 <!-- d1-boundary: public-ask-read-only -->
 <!-- d1-boundary: postgresql-active=false -->
 <!-- d1-nonclaim: import-is-not-activation -->
 <!-- d1-nonclaim: nlnet-not-awarded -->
-# Velantrim Crystal — aktueller Status
+# 🇩🇪 Crystal — aktueller Status
 
-**Statusdatum:** 2026-08-08  
-**Verifizierter Runtime-Checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
-**Verifizierter Tree:** `f57e58a6f4d1954b649ba324996fcde42ac287b8`  
-**Validierter Implementierungs-Head:** `d7af7c80722274f9217bc5545d150f92e9363f37`  
-**Runtime-PR / CI:** #337 / `31256316536`  
-**PostgreSQL-Integrations-CI:** `31256316532`
+**Statusdatum:** 2026-08-15  
+**Aktueller eingefrorener Architecture-Checkpoint:** `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` — Reader Retrieval Typed Inspection Contract v1 / PR #392  
+**RRTIC exact-head CI:** `31754798549` — 9/9 SUCCESS  
+**RRTIC post-merge CI:** `31771677028` — 9/9 SUCCESS  
+**German parity audit base:** `main@ad8cec8c868f64b6dfbdc3bf3087230f59c3861c`.
 
-## Verifikation
-
-- Python 3.11: **2078 passed / 13 skipped / 0 failed**;
-- Python 3.12: **2078 passed / 13 skipped / 0 failed**;
-- **9756 statements / 100.00% line coverage**;
-- `core/postgresql_migration.py`: **44/44 statements**;
-- `core/postgresql_migration_impl.py`: **336/336 statements**;
-- **7/7** deklarierte Ring-Zero-Mutanten beendet;
-- **9/9** permanente CI-Jobs erfolgreich;
-- **1/1** reale PostgreSQL/pgvector-Integration erfolgreich.
-
-Exakte Nachweise: [TEST_REPORT.md](../../TEST_REPORT.md) und das
-[maschinenlesbare Manifest](../status/implementation-manifest.json).
-
-## Aktuelle verifizierte Fähigkeitsgrenze
-
-Crystal behält die Local-first-SQLite-Basis und implementiert Phase 1 von Issue #332:
+> 📎 Die folgenden Runtime-Zahlen sind retained historical compatibility evidence, nicht der aktuelle Repository-Teststand.
 
 ```text
-verified completed logical bundle
-→ PostgreSQL 16 / pgvector 0.8.2 preflight
-→ new inactive target schema
-→ serializable import
-→ independent read-only canonical target re-hash
-→ exact count / byte / SHA-256 equivalence
-→ non-secret receipts
+bbd816c09dd39a02e6de6c1014438490572f40f6
+2078 passed / 13 skipped / 0 failed
+9756 statements / 100.00% line coverage
 ```
 
-Der PostgreSQL-Treiber ist ein optionales Extra und wird nur durch explizite
-Operatorbefehle lazy geladen. Die Standardinstallation bleibt reine Standardbibliothek.
-Das importierte Ziel wird nicht in die gewöhnliche Runtime-Komposition aufgenommen,
-bleibt `active=false` und kann keine normalen Lese- oder Schreibvorgänge bedienen.
-
-## Autoritätsgrenze
+## Current Reader position
 
 ```text
-storage profile         = deployment identity
-migration bundle        = operation evidence
-physical L3             = multi-status storage
-strict Canon            = trusted read projection
-migration/import        != TruthGate admission
-successful equivalence  != backend activation
+reader_core_rc1_skeleton = true
+reader_core_rc2_structural_map = true
+reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc4_proposition_extraction = true
+reader_core_rc5_relation_candidates = true
+reader_core_rc6_long_context_strategy = true
+reader_core_rc7_cross_document_links = true
+reader_rc9_lexical_candidate_discovery = true
+dedicated_reader_core = false
+semantic_hybrid_reader_runtime = false
+rrtic_runtime_authorization = false
 ```
 
-Guardian, TruthGate, Restrictions, TrustSnapshot und CanonicalView bleiben unverändert.
+RC-1…RC-7 sind implementierte bounded Reader layers. RC-8 ist eine abgeschlossene Architektur-/Research-Entscheidung. RC-9 ist implementierte deterministische lexikalische PRE-ADMISSION discovery. Comparator v1 und NLI neutral-filter v1 sind abgeschlossene, eingefrorene Evaluierungen mit failed gates. RRTIC-v1 ist ein eingefrorener typed-inspection Architekturvertrag ohne Runtime-Provider.
 
-## Noch nicht vorhanden
+## Evidence chain
 
-- aktive PostgreSQL-Lese-/Schreibauswahl;
-- Exact-vs-ANN-Evaluation und akzeptierte ANN-Schwellen;
-- Aktivierung, Cutover, Source/Target-Fencing, Rollback oder Dual-Write;
-- PostgreSQL-Backup/Restore/Upgrade-Lifecycle, produktives Pooling und verteiltes Fencing;
-- produktives IdP/Multi-Tenancy oder rechtliche, Sicherheits- bzw. DSGVO-Zertifizierung;
-- dedizierter verifizierter Reader Core.
+```text
+RC-9 lexical discovery
+        ↓
+Evaluation Surface v2
+        ↓
+Comparator v1
+recall recovered · discrimination FAIL
+        ↓
+NLI neutral-filter v1
+discrimination improved · recall-safety FAIL
+        ↓
+post-NLI reassessment
+relation-contract mismatch
+        ↓
+RRTIC-v1
+architecture contract only
+```
 
-## Förderstatus
+Erhaltener RC-9 K=5 control: Recall@5 `0.937500`, Precision@5 `0.187500`, MRR `0.895833`, useful hits `15/16`, hard-negative hits `4/4`; classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
-Das Projekt ist eingereicht und wird geprüft. **Es wird weder eine Bewilligung noch
-eine Budgetänderung behauptet.** PR #337 und Issue #332 sind bereits gemergte Basis
-und dürfen nicht erneut als zukünftiger Förderumfang gezählt werden.
+Comparator-v1 classification: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`. NLI-v1 classification: `NLI_NEUTRAL_FILTER_GATE_FAILED`.
+
+## RRTIC-v1
+
+RRTIC-v1 definiert suspicion-only relation families `EQUIVALENCE_SUSPECT`, `RELATED_SUSPECT`, `CONTRADICTION_SUSPECT`, `QUALIFICATION_SUSPECT`, `TOPIC_ONLY_SUSPECT`, `UNKNOWN` und qualifier states `MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE`.
+
+Der Vertrag führt kein model execution, filtering, reranking, identity decision, evidence admission, contradiction adjudication oder Canon mutation aus.
+
+## Authority boundaries
+
+```text
+coverage != comprehension proof
+pass completion != comprehension proof
+working-set coverage != comprehension proof
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+summary != evidence
+cross-document link != Canon relation
+same-topic != same proposition
+possible-same-claim != claim identity
+similarity signal != identity proof
+repetition across sources != corroboration
+retrieval match != evidence
+similarity != identity
+ranking != epistemic authority
+candidate discovery != candidate adjudication
+NLI label != proposition identity
+RRTIC suspicion != adjudicated relation
+evaluation pass != runtime authorization
+```
+
+Guardian, TruthGate, TrustSnapshot und CanonicalView bleiben getrennte Authority-/Read-Surfaces. Public `HTTP /ask`, `CLI ask` und `MCP search` bleiben read-only.
+
+## Storage / grant / localization
+
+SQLite bleibt ordinary active local-first. PostgreSQL/pgvector bleibt inaktiv `active=false`; automatic backend switching ist nicht vorhanden.
+
+NLnet bleibt **submitted / under review / not awarded**; ungefähr €50,000 sind planning only; budget change none.
+
+Die deutsche current parity ist gegen `main@ad8cec8c868f64b6dfbdc3bf3087230f59c3861c` geprüft. Der ältere Source-Marker `a497b7d3cfbe59ca75b11d7449d5a728455b3130` bleibt historische Provenienz. Current repository lifecycle state muss weiterhin aus live GitHub aufgelöst werden.

@@ -1,6 +1,6 @@
 # 🤖 Crystal AI Current State
 
-**Status date:** 2026-08-14  
+**Status date:** 2026-08-15  
 **Document role:** compact technical state snapshot; live GitHub + tests + exact CI override this file if repository state has advanced.  
 **Repository HEAD:** `RESOLVE_LIVE_GITHUB`.  
 **Repository lifecycle provenance:** `RESOLVE_LIVE_GITHUB` for current main, exact CI, latest closure, open PRs/issues and active milestone.  
@@ -266,9 +266,15 @@ Physical L3 is not automatically strict Canon. Successful import/equivalence doe
 Immutable phased localization source checkpoint: `51c205fe048fd69d39fcd47b43e042a50de432bc`.  
 D2 translation checkpoint: `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
 
-Russian Reader-dependent public/detail documentation is refreshed under the recorded phased contract. Russian D1/D3/D4/D5 detail pack is current. D2 reviewer/safety translations remain current across all nine supported locales.
+German and Russian Reader-dependent public/detail documentation is refreshed under recorded parity/source contracts. German and Russian D1/D3/D4/D5 detail packs are current. D2 reviewer/safety translations remain current across all nine supported locales.
 
-The **eight other localized root README files and Reader-dependent detail packs** remain `REFRESH_NEEDED` at their recorded source checkpoints; eight other locale detail packs require Reader refresh.
+The **seven other localized root README files and Reader-dependent detail packs** remain `REFRESH_NEEDED` at their recorded source checkpoints; seven other locale detail packs require Reader refresh.
+
+German current parity audit base: `main@ad8cec8c868f64b6dfbdc3bf3087230f59c3861c`. Russian current parity audit source: `main@9666781d390e3276a111cb5ee1735f6606a76283`. Human-first English README source: `main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883`.
+
+### Retained Evaluation-Surface-v2 localization compatibility literal
+
+The exact phrase **`eight other localized root README files`** is retained here solely as historical compatibility evidence for the older Evaluation Surface v2 documentation contract, when Russian was the only refreshed locale. It is **not current localization truth** after German parity; the current count is seven, as stated above.
 
 A visually stronger old translation may be used as a layout reference only. It must not be treated as newer technical truth.
 
