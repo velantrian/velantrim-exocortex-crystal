@@ -47,8 +47,8 @@ jobs:
     env:
       VELANTRIM_POSTGRES_TEST_DSN: postgresql://crystal@127.0.0.1:5432/crystal
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-python@93fcc9f14c09f30d72f233fe314036105a179f5c # v5
         with:
           python-version: "3.11"
       - name: Install test and optional PostgreSQL dependencies
