@@ -66,7 +66,9 @@ Mindmap показывает смысловые области; он не озн
                                             │                ↓
               may surface                   │       🛡 Guardian → TruthGate
               may compare                   │                ↓
-              may inspect                   │            🏛 Canon
+              may inspect                   │       TrustSnapshot → CanonicalView
+                                            │                ↓
+                                            │            🏛 strict Canon
                                             │                ↓
                                             │       💬 answer / refusal
 
@@ -92,6 +94,8 @@ Retrieval score, model label или typed suspicion помогают inspection,
 │   ├── L1 — operational SQLite
 │   ├── L2 — pending/review
 │   ├── L3 — physical multi-status graph
+│   ├── TrustSnapshot — deny-dominant reconciliation surface
+│   ├── CanonicalView — trusted read projection
 │   ├── SQLite — ordinary active local-first path
 │   └── PostgreSQL/pgvector — inactive equivalence/import target, active=false
 │
