@@ -1,77 +1,153 @@
-# Crystal Verification Report
+# 🧪 Velantrim Crystal — Test & Verification Report
 
-**Status date:** 2026-08-08  
-**Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
-**Verified tree:** `f57e58a6f4d1954b649ba324996fcde42ac287b8`  
-**Validated implementation head:** `d7af7c80722274f9217bc5545d150f92e9363f37`  
-**Pull request:** #337  
-**Exact-head CI:** `31256316536`  
-**PostgreSQL integration CI:** `31256316532`
+**Status date:** 2026-08-14  
+**Current signed architecture checkpoint:** `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` — `verified=true`, reason `valid`  
+**Architecture milestone:** Reader Retrieval Typed Inspection Contract v1 / PR #392  
+**Exact validated RRTIC PR head:** `a39dc1b624254c99d1955fc77d916488d76f76c0`  
+**RRTIC exact-head CI:** `31754798549` — **9/9 SUCCESS**  
+**RRTIC post-merge CI:** `31771677028` — **9/9 SUCCESS**  
+**Repository-head rule:** resolve live GitHub for the newest docs-only merge SHA; this report keeps architecture/runtime verification checkpoints distinct from later documentation reconciliation.
 
-This is evidence for the tested repository state. It is not a production, legal, security,
-grant-award or institution-scale certification.
+## RRTIC architecture checkpoint verification
 
-## Result
-
-| Gate | Result |
-|---|---:|
-| Python 3.11 | 2078 passed / 13 skipped / 0 failed |
-| Python 3.12 | 2078 passed / 13 skipped / 0 failed |
-| Measured statements | 9756 |
-| Line coverage | 100.00% |
-| `core/postgresql_migration.py` | 44 / 44 statements |
-| `core/postgresql_migration_impl.py` | 336 / 336 statements |
-| Ring Zero declared mutants | 7/7 killed |
-| Permanent CI jobs | 9/9 successful |
-| Real PostgreSQL/pgvector integration | 1/1 successful |
-
-## Runtime delta verified in PR #337
-
-- explicit `[postgresql]` optional extra and lazy Psycopg loading;
-- PostgreSQL 16, pgvector 0.8.2 and Psycopg 3.3.x preflight;
-- TLS-required production path with an explicit local-test-only plaintext override;
-- new allowlisted `velantrim_inactive_*` target schema;
-- serializable transactional import from a verified completed logical bundle;
-- target control state constrained to `active=false`;
-- independent read-only canonical target re-hash;
-- exact record-count, canonical-byte-count and SHA-256 equivalence per dataset;
-- endpoint-bound, non-secret receipts and redacted database failures;
-- no ANN indexes, runtime registration, activation, cutover, rollback or dual-write.
-
-## Real integration evidence
-
-Run `31256316532` used the ephemeral `pgvector/pgvector:0.8.2-pg16` service and verified:
-
-- real import and a separate verification pass;
-- PostgreSQL 16.14, pgvector 0.8.2 and Psycopg 3.3.4;
-- `state=VERIFIED` and `active=false`;
-- exact canonical equality for nodes, vectors, edges, entities, mentions and metadata;
-- absence of HNSW/IVFFlat indexes;
-- absence of credential-bearing material in receipts.
-
-The workflow uses a passwordless localhost test service. This is test-only configuration,
-not deployment guidance.
-
-## Authority boundary
+The RRTIC-v1 post-merge push workflow completed all nine permanent CI jobs successfully:
 
 ```text
-physical L3 state       != strict Canon
-logical bundle          != claim evidence
-successful import       != backend activation
-exact state equivalence != ordinary runtime availability
-integration success     != production certification
+code-quality                  SUCCESS
+Python 3.11                   SUCCESS
+Python 3.12                   SUCCESS
+jsonl-integrity               SUCCESS
+eval-gate                     SUCCESS
+security                      SUCCESS
+docker-build                  SUCCESS
+Ring Zero mutation gate       SUCCESS
+docs-status                   SUCCESS
 ```
 
-Issue #332 is implemented by PR #337 only for inactive import and exact equivalence of the
-approved bundle datasets. Exact-vs-ANN evaluation, cutover/fencing, rollback, server
-backup/restore/upgrade lifecycle and active PostgreSQL runtime selection remain absent.
+Python 3.11 exact RRTIC post-merge result:
 
-## Reproduction
+```text
+2244 collected
+2231 passed
+13 skipped
+0 failed
+11997 measured statements
+0 missed statements
+100.00% measured line coverage
+```
+
+Python 3.12 also completed successfully under the same exact RRTIC post-merge workflow. This report does not invent an independent count where the workflow conclusion is the evidence being cited.
+
+## What this verification means
+
+The cited architecture checkpoint verifies the repository state after RRTIC-v1 was frozen and merged. RRTIC-v1 itself is an architecture/research contract plus structural evidence tests; it is **not** a new Reader runtime provider. The separate post-RRTIC documentation reconciliation is validated by its own PR exact-head and post-merge CI and does not redefine these architecture/runtime numbers.
+
+```text
+RRTIC-v1 frozen contract        VERIFIED
+runtime_authorization           false
+semantic/hybrid Reader runtime  NOT AUTHORIZED
+NLI runtime filter              NOT AUTHORIZED
+Reader FTS / ANN / vector DB    NOT AUTHORIZED
+PostgreSQL/pgvector Reader      active=false
+```
+
+The current Reader implementation baseline remains bounded RC-1…RC-7 plus RC-9 deterministic lexical PRE-ADMISSION candidate discovery. Comparator v1 and NLI neutral-filter v1 remain frozen evaluation evidence with failed gates.
+
+## Retained storage-runtime verification checkpoint — PR #337
+
+The earlier storage/runtime compatibility checkpoint remains immutable evidence rather than being rewritten as current-head validation:
+
+```text
+signed runtime checkpoint: bbd816c09dd39a02e6de6c1014438490572f40f6
+validated PR head:          d7af7c80722274f9217bc5545d150f92e9363f37
+exact-head CI:              31256316536
+PostgreSQL integration CI:  31256316532
+```
+
+Historical exact-head Python result at that checkpoint:
+
+```text
+2078 passed
+13 skipped
+0 failed
+9756 measured statements
+100.00% measured line coverage
+```
+
+PostgreSQL 16 + pgvector verification at that checkpoint established inactive import/equivalence only. It did not establish active PostgreSQL runtime, automatic backend switching, cutover, dual-write or Reader vector runtime.
+
+## Reader evaluation evidence retained
+
+### RC-9 lexical baseline
+
+```text
+Recall@5:                  0.937500
+Precision@5:               0.187500
+MRR:                       0.895833
+Useful hits:               15 / 16
+Paired hard-negative hits:  4 / 4
+classification:            LEXICAL_BASELINE_EXPOSES_MEASURED_GAP
+```
+
+### Evaluation Surface v2
+
+Frozen surface SHA-256:
+`753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cdd`
+
+RC-9 control: useful `42/48`, Recall@5 `0.875000`, MRR `0.857639`, hard negatives `38/48`.
+
+### Comparator v1
+
+Comparator v1 recovered `48/48` useful v2 candidates but surfaced `41/48` hard negatives.
+Classification: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`.
+
+### NLI neutral-filter v1
+
+NLI v1 reduced v2 hard-negative hits to `18/48`, but useful hits regressed to `46/48`; frozen recall-safety/admission gates failed.
+Classification: `NLI_NEUTRAL_FILTER_GATE_FAILED`.
+
+These measurements are retrieval/evaluation evidence only. They are not truth accuracy, proposition-identity accuracy or runtime authorization.
+
+## Authority verification boundary
+
+```text
+retrieval match          != evidence
+similarity               != identity
+NLI label                != proposition identity
+NLI contradiction        != contradiction adjudication
+RRTIC suspicion          != adjudicated relation
+qualifier mismatch       != truth decision
+candidate discovery      != candidate adjudication
+evaluation pass          != runtime authorization
+```
+
+## Reproduce locally
 
 ```bash
-pip install -e '.[dev,postgresql]'
-pytest tests/ --cov=. --cov-fail-under=100
+python -m pip install -e '.[dev]'
+pytest tests/
+python scripts/eval_gate.py --out-dir eval-artifacts
 ```
 
-A real PostgreSQL 16 server with pgvector 0.8.2 is required for the dedicated integration
-test.
+Reproduce the frozen RC-9 lexical benchmark:
+
+```bash
+python scripts/bench_reader_rc9_lexical.py \
+  --corpus eval/reader_rc8_retrieval_adversarial.jsonl \
+  --k 5 \
+  --json-out /tmp/reader-rc9-lexical.json
+```
+
+## Current non-claims
+
+This verification does not claim:
+
+- a dedicated/full autonomous Reader;
+- semantic/hybrid Reader runtime;
+- an NLI/CrossEncoder/RRTIC runtime provider;
+- automatic proposition identity, contradiction adjudication or evidence admission;
+- Reader FTS/ANN/vector DB or active PostgreSQL/pgvector;
+- security/legal/GDPR certification;
+- awarded NLnet funding.
+
+NLnet remains **submitted / under review / not awarded**; approximate €50,000 is planning context only.
