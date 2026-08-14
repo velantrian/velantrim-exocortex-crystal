@@ -48,8 +48,9 @@ def test_readme_is_human_first_and_routes_ai_agents_explicitly() -> None:
     ):
         assert marker in readme, marker
 
-    # Keep the landing page bounded; detailed evidence belongs elsewhere.
-    assert len(readme.splitlines()) < 300
+    # Keep the landing page bounded. Diagrams and tables use extra source lines,
+    # while detailed evidence still belongs in STATUS / TEST_REPORT / eval docs.
+    assert len(readme.splitlines()) < 360
 
 
 def test_deep_overview_is_human_explanation_not_machine_authority() -> None:
