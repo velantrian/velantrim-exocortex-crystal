@@ -2,6 +2,18 @@
 
 This compact log records material decisions, exact evidence, limitations and hand-offs. It does not replace Git history, issues, pull requests, `CHANGELOG.md` or Notion.
 
+## 2026-08-14 — Mentaury External Labs boundary reconciliation · DRAFT
+
+- Live starting point: signed `main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883`, signature `verified=true` / `reason=valid`.
+- Scope is documentation/research-boundary reconciliation only: no `core/**`, Canon, TruthGate, Guardian, schema, runtime wiring, grant deliverable, capability or production-authority change.
+- Finding: Crystal's ecosystem map was safe but described Mentaury mainly as identity research; the External Labs Truth Ledger artifact and private External Labs history still used the older `Standalone Memory-Centered Cognitive Sandbox` framing as if it were current.
+- Decision: current Mentaury cognition / digital-individuality ownership belongs to the independent `velantrim-mentaury-soul` project. Crystal retains only its evidence/trust boundary and historical research provenance.
+- Public boundary: `Crystal evidence / claims / Receipts ≠ Mentaury belief / identity / M3`; `Mentaury research result ≠ Crystal Canon / evidence / runtime authority`; `shared vocabulary ≠ shared architecture`.
+- Historical External Labs contracts are preserved, not deleted. The old Truth Ledger P0 candidate is explicitly marked historical and remains a failed/unaccepted candidate unless its own historical acceptance gate is independently satisfied.
+- Any future Crystal ↔ Mentaury adapter requires separate ownership, interface contract, privacy/consent/erasure review, deterministic tests, read-only/shadow evaluation, rollback and explicit approval.
+- Documentation impact: `GITHUB_AND_NOTION`. Notion targets synchronized in this work cycle: `📚Velantrim External Labs🔬` and `📜 Velantrim & Mentaury — Detailed Worklog / Architecture Narrative 🧠🔬`.
+- GitHub candidate branch: `agent/reconcile-mentaury-external-labs-boundary`; exact PR/head and CI evidence must be recorded before merge. No green-CI or merge claim is made in this entry yet.
+
 ## 2026-08-13 — Reader Retrieval Evaluation Surface v2 (#384 / PR #385)
 
 - Live starting point: signed `main@e824556f304143cdb8403f44a7b020a528e63291`, signature `verified=true` / `reason=valid`, push CI `31670811115` 9/9.
