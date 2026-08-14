@@ -1,65 +1,116 @@
-<!-- translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@208f1c772ee3a112cb803d2413c120bef23adb05 -->
+<!-- translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
+<!-- historical-translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@208f1c772ee3a112cb803d2413c120bef23adb05 -->
+<!-- current-translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@ad8cec8c868f64b6dfbdc3bf3087230f59c3861c -->
 <!-- d3-locale: de -->
 <!-- d3-boundary: physical-l3-not-strict-canon -->
 <!-- d3-boundary: public-query-read-only -->
 <!-- d3-boundary: postgresql-active=false -->
 <!-- d3-nonclaim: import-is-not-activation -->
-<!-- d3-nonclaim: reader-core-not-implemented -->
 <!-- d3-nonclaim: nlnet-not-awarded -->
-# Speicher- und Autoritätsgrenzen
+<!-- d3-reader: rc1-skeleton-implemented -->
+<!-- d3-reader: rc2-structural-map-implemented -->
+<!-- d3-reader: rc3-multi-pass-mechanics-implemented -->
+<!-- d3-reader: rc4-proposition-extraction-implemented -->
+<!-- d3-reader: rc5-relation-candidates-implemented -->
+<!-- d3-nonclaim: dedicated-reader-core-not-implemented -->
+# 🇩🇪 Storage- und Authority-Grenzen
 
-## Getrennte Identitäten
+Crystal setzt Storage Presence nicht mit Vertrauen gleich und erlaubt Retrieval/Inspection nicht, Admission zu umgehen.
+
+## Surface identities
 
 ```text
-storage profile = Deployment-Identität
-physical L3 = graphischer Multi-Status-Zustand
-strict Canon = vertrauenswürdige Leseprojektion
-migration bundle = Nachweis der Operationsintegrität
-retrieval score = Ranking-Signal
-model output = generierter Text
+storage profile        = deployment identity
+physical L3            = multi-status graph state
+strict Canon           = trusted read projection
+migration bundle       = operation evidence
+retrieval score        = ranking signal
+Reader artifact        = source-linked candidate
+RC-9 retrieval result  = PRE-ADMISSION inspection candidate
+RRTIC diagnostic       = typed inspection metadata
 ```
 
-Keine dieser Identitäten verleiht automatisch die Autorität einer anderen.
+`core.query_pipeline.query()` ist der read-only public query path. `HTTP /ask`, `CLI ask` und `MCP search` führen keine Reader-Admission-Writes aus.
 
-## Dauerhaftes Profil
+## Erhaltene Reader-Kompatibilität
 
-SQLite ist das gewöhnliche aktive local-first Profil. Ein erstes dauerhaftes `auto` kann optional LadybugDB oder SQLite auswählen und Backend plus nicht-geheime Locator-Identität sperren. Spätere Konflikte schlagen fail-closed fehl. Mock bleibt nur expliziter Entwicklungs-/CI-Zustand.
+```text
+RC-1 source/session
+RC-2 structure
+RC-3 pass ledger
+RC-4 proposition
+RC-5 relation candidate
+RC-6 working set / SUMMARY
+RC-7 cross-document candidate
+RC-9 lexical candidate discovery
+```
 
-## physical L3 und strict Canon
+```text
+coverage != comprehension proof
+pass completion != comprehension proof
+working-set coverage != comprehension proof
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+summary != evidence
+cross-document link != Canon relation
+same-topic != same proposition
+possible-same-claim != claim identity
+similarity signal != identity proof
+repetition across sources != corroboration
+```
 
-physical L3 kann VERIFIED, USER_CLAIMED, UNVERIFIED, HYPOTHESIS, SUBJECTIVE, contested, superseded oder restricted enthalten. strict Canon ist eine deny-dominante Projektion aus aktueller Evidenz und Policy. Speicherung, Retrieval oder hoher Score reichen nicht aus.
+RC-9 liefert nur deterministisches lexikalisches Ranking und Provenienz-Metadaten. RRTIC-v1 fügt nur architecture-level typed suspicion / qualifier vocabulary hinzu.
 
-## Lesen und Schreiben
+```text
+retrieval match != evidence
+ranking != epistemic authority
+candidate discovery != candidate adjudication
+NLI label != proposition identity
+RRTIC diagnostic != RC-5 registered relation
+RRTIC suspicion != adjudicated relation
+qualifier mismatch != truth decision
+evaluation pass != runtime authorization
+```
 
-Öffentliche Abfragen laufen read-only über `core.query_pipeline.query()`. Explizites `ingest` ist der aufnahmefähige Schreibweg; danach erzwingen Guardian und TruthGate Struktur- und Erkenntnisgrenzen.
+## Memory / Authority
 
-## SQLite-Lebenszyklus und Migration
-
-Implementiert sind Backup, unabhängige Verifikation, inactive restore, begrenzter deterministischer logical export und Bundle-Verifikation. Die zugelassenen physical-L3-Datensätze können in ein neues inaktives PostgreSQL-Schema importiert und exakt verglichen werden; das Ziel bleibt `active=false`.
-
-Das ist keine Vollsystemmigration von L1, Audit/Outbox, Verschlüsselungsmetadaten, Konfiguration oder unabhängigen Kopien. Es gibt keine aktive PostgreSQL-Runtime, keine ANN-Abnahme, kein automatisches Switching, cutover, fencing, rollback oder dual-write.
-
-## Geheimnisse und Kopien
-
-Passwörter, Tokens, private Schlüssel und credential-haltige DSNs dürfen nicht in Profile, Bundles, Receipts, Logs, GitHub oder Notion gelangen. Backups, Exporte und Migrationen erzeugen weitere Kopien; Löschung im aktiven Store löscht sie nicht automatisch. Selektive L1-Feldverschlüsselung ist keine universelle Verschlüsselung.
-
-## Operationsbelege
-
-| Ereignis | Belegt | Belegt nicht |
+| Surface | Rolle | Grenze |
 |---|---|---|
-| Datensatz in L3 | physische Persistenz | strict-Canon-Mitgliedschaft |
-| Retrieval-Ergebnis | Kandidatenrelevanz | ausreichende Evidenz |
-| verifiziertes Backup | Backup-Integrität | Wahrheit einer Behauptung |
-| erfolgreicher Import | Importintegrität | activation oder Runtime-Auswahl |
-| exact equivalence | Gleichheit zugelassener Datensätze | Produktionsreife oder cutover |
+| L0 | working cache | ephemeral |
+| L1 | SQLite operational state | durable operational memory |
+| L2 | pending/review | candidate state |
+| physical L3 | multi-status graph | not strict Canon |
+| Guardian | structural/safety | admission boundary |
+| TruthGate | admission policy | not objective oracle |
+| TrustSnapshot | reconciliation | deny-dominant |
+| CanonicalView | read projection | trusted grounding surface |
 
-Der dedizierte Reader Core ist nicht implementiert; NLnet bleibt submitted / under review / not awarded.
+## SQLite / PostgreSQL
 
-## Detaillierte englische Verträge
+```text
+SQLite active local-first
+→ backup / independent verification / inactive restore
+→ bounded logical export
+→ PostgreSQL 16 + pgvector inactive import
+→ independent exact equivalence
+→ active=false
+```
 
-- [Vollständige Architektur](../ARCHITECTURE.md)
-- [Dauerhaftes Speicherprofil](../architecture/DURABLE_STORAGE_PROFILE.md)
-- [Migrationsvertrag](../architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md)
-- [Inaktiver PostgreSQL-Import](../architecture/POSTGRESQL_INACTIVE_IMPORT.md)
-- [ADR-021](../adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md)
+Import/Equivalence ist operation evidence, **keine Activation**, kein automatic switching, cutover, rollback, dual-write, Reader vector runtime und keine admission authority.
+
+## Isolation rules
+
+Reader-, retrieval- und evaluation layers dürfen keinen Truth-Status verändern, nur weil ein Candidate hoch gerankt ist; ein NLI label nicht in proposition identity umwandeln; keinen contradiction winner wählen; keine Evidence admitten; Guardian/TruthGate nicht umgehen und strict Canon nicht schreiben.
+
+Comparator v1 und NLI neutral-filter v1 bleiben eingefrorene failed evaluation evidence. `dedicated_reader_core=false`; `semantic_hybrid_reader_runtime=false`; `rrtic_runtime_authorization=false`.
+
+## Privacy / Non-claims
+
+Source restriction/sensitivity context bleibt Policy-Metadatum; Rank, Working-Set-Füllung oder RRTIC qualifier schwächen Privacy nicht. Es wird keine aktive PostgreSQL Reader runtime, kein automatic switching, kein semantic/hybrid Reader runtime, keine FTS/ANN/vector DB, kein RRTIC runtime provider, keine automatic evidence/identity/Canon authority, keine security/legal/GDPR certification und kein awarded funding behauptet.
+
+NLnet bleibt **submitted / under review / not awarded**; ungefähr €50,000 sind planning only.
+
+Historischer deutscher Source: `main@208f1c772ee3a112cb803d2413c120bef23adb05`. Current German refresh audit source: `main@ad8cec8c868f64b6dfbdc3bf3087230f59c3861c`.
