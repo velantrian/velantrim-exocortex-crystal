@@ -82,19 +82,50 @@ def test_ai_entrypoint_is_machine_first_router() -> None:
         "## 1. Required read order",
         "implementation-manifest.json",
         "## 2. Source-of-truth hierarchy",
-        "## 3. Current bounded truth at this documentation milestone",
+        "## 3. Current bounded truth after documentation closure",
+        "repository_main_at_last_audit: 4628e6fe231103a57c86df8b157b87b8b6b183f2",
         "current_architecture_checkpoint: 76a9493b8ba64b832472ef9bfc1f1c23ebe6654e",
-        "current_docs_tracking_issue: 395",
+        "latest_completed_docs_issue: 395",
+        "latest_completed_docs_pr: 396",
+        "latest_completed_docs_status: CLOSED_COMPLETED",
+        "active_milestone: none",
+        "next_milestone_selected: false",
         "## 5. Permanent authority invariants",
         "## 6. Forbidden inferences",
         "historical_sha_is_live_head: true",
         "grant_submission_is_grant_award: true",
+        "closed_milestone_is_active_work: true",
+        "residual_issue_is_auto_selected: true",
         "## 8. Documentation interface architecture",
         "## 11. Current stop boundary",
     ):
         assert marker in ai, marker
 
     assert "No model, discriminator, reranker, Reader backend" in ai
+    assert "current_docs_tracking_issue: 395" not in ai
+
+
+def test_ai_current_state_marks_closed_docs_milestone_inactive() -> None:
+    state = _text("docs/ai/CURRENT_STATE.md")
+
+    for marker in (
+        "Repository main at last completed docs audit",
+        "4628e6fe231103a57c86df8b157b87b8b6b183f2",
+        "Issue `#395` CLOSED/completed; PR `#396` MERGED",
+        "**Active milestone:** `NONE`",
+        "**Next milestone selected:** `false`",
+        "#395 = CLOSED / completed",
+        "#396 = MERGED",
+        "active_milestone = NONE",
+        "next_milestone_selected = false",
+    ):
+        assert marker in state, marker
+
+    for stale_marker in (
+        "Complete #395",
+        "Current bounded docs milestone: Issue `#395`",
+    ):
+        assert stale_marker not in state, stale_marker
 
 
 def test_documentation_map_exposes_four_interfaces() -> None:
