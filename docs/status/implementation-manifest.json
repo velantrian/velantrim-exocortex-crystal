@@ -65,7 +65,6 @@
     "reader_core_rc5_relation_candidates": true,
     "reader_core_rc6_long_context_strategy": true,
     "reader_core_rc7_cross_document_links": true,
-    "reader_rc9_lexical_candidate_discovery": true,
     "semantic_hybrid_reader_runtime": false,
     "nli_reader_runtime_filter": false,
     "rrtic_runtime_provider": false,
