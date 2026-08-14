@@ -1,13 +1,12 @@
 # Implementation Status: Crystal vs Future Exo-Cortex Work
 
-**Status date:** 2026-08-13  
-**Signed RC-7 Reader baseline:** `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1` / PR #372; post-merge CI `31572918731`  
-**Signed RC-9 Reader baseline:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` / PR #376; post-merge CI `31594027040`  
-**RC-10 preregistration:** issue #377 / PR #378 completed; no comparator execution  
-**Post-RC-10 reassessment:** issue #382 / PR #383 completed at signed `main@e824556f304143cdb8403f44a7b020a528e63291`; CI `31670811115` — 9/9  
-**Current bounded evaluation:** issue #384 / PR #385 — Reader Retrieval Evaluation Surface v2
+**Status date:** 2026-08-14  
+**Current signed architecture checkpoint:** `main@76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` / PR #392; post-merge CI `31771677028` — 9/9 SUCCESS  
+**Signed RC-9 Reader implementation baseline:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` / PR #376; post-merge CI `31594027040`  
+**Latest completed model-backed evaluation:** NLI neutral-filter v1 / PR #389 — frozen gate FAIL  
+**Current frozen architecture contract:** RRTIC-v1 / Issue #391 / PR #392 — no runtime authorization
 
-## Reader implementation truth
+## Implemented Reader capability truth
 
 ```text
 reader_core_rc1_skeleton               = true
@@ -17,15 +16,56 @@ reader_core_rc4_proposition_extraction = true
 reader_core_rc5_relation_candidates    = true
 reader_core_rc6_long_context_strategy  = true
 reader_core_rc7_cross_document_links   = true
+reader_rc9_lexical_candidate_discovery = true
 dedicated_reader_core                  = false
 dedicated_reader_core=false
 ```
 
-RC-5 relation candidates remain implemented in `core/reader_relations.py`.
-Reader RC-9 lexical candidate discovery remains implemented in `core/reader_lexical_discovery.py`.
-Historical RC-9 K=5 evidence remains Recall@5 `0.937500`, Precision@5 `0.187500`, MRR `0.895833`, paired hard-negative rate@5 `1.000000`; classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+Implemented Reader runtime/domain components:
 
-## Reader Retrieval Evaluation Surface v2
+| Capability | Status | Primary implementation |
+|---|---|---|
+| RC-1 source/session skeleton | **IMPLEMENTED** | `core/reader_core.py` |
+| RC-2 structural map | **IMPLEMENTED** | `core/reader_structure.py` |
+| RC-3 multi-pass mechanics | **IMPLEMENTED** | `core/reader_passes.py` |
+| RC-4 proposition extraction contract/runtime | **IMPLEMENTED** | `core/reader_extraction.py` |
+| RC-5 relation candidates | **IMPLEMENTED** | `core/reader_relations.py` |
+| RC-6 bounded long-context strategy | **IMPLEMENTED** | `core/reader_long_context.py` |
+| RC-7 explicit cross-document candidate links | **IMPLEMENTED** | `core/reader_cross_document.py` |
+| Reader RC-9 lexical candidate discovery | **IMPLEMENTED** | `core/reader_lexical_discovery.py` |
+| Dedicated/full autonomous Reader | **NOT IMPLEMENTED** | `dedicated_reader_core=false` |
+| Semantic/hybrid Reader runtime | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
+| Reader FTS / ANN / vector DB | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
+| NLI runtime filter / CrossEncoder reranker | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
+| RRTIC runtime provider | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
+
+## Research/evaluation evidence is not implementation
+
+The following repository milestones are real, completed work, but they are **not runtime features**:
+
+| Evidence / contract | Result | Runtime meaning |
+|---|---|---|
+| RC-8 retrieval decision | architecture/research complete | selected deterministic lexical baseline first |
+| Reader Retrieval Evaluation Surface v2 | frozen judged evaluation surface | no runtime added |
+| Comparator v1 | `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED` | semantic comparator rejected as runtime authorization |
+| NLI neutral-filter v1 | `NLI_NEUTRAL_FILTER_GATE_FAILED` | filter rejected as Reader retrieval stage |
+| RRTIC-v1 | frozen typed inspection architecture contract | no model/filter/reranker/provider added |
+
+## RC-9 retained implementation evidence
+
+Historical RC-9 K=5 evidence remains:
+
+- Recall@5 `0.937500`;
+- Precision@5 `0.187500`;
+- MRR `0.895833`;
+- paired hard-negative rate@5 `1.000000`;
+- useful hits `15/16`;
+- hard-negative hits `4/4`;
+- classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+
+These are retrieval measurements, not semantic/adjudication accuracy.
+
+## Reader Retrieval Evaluation Surface v2 — retained frozen surface
 
 Final frozen v2 surface: 24 queries, 12 primary strata ×2, 6 candidates/query, 144/144 explicit qrels, judgment coverage `1.0`, K=5, composite SHA-256 `753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cdd`.
 
@@ -37,12 +77,42 @@ Final unchanged RC-9 v2 control:
 - judged precision-over-returned **0.355932**;
 - MRR **0.857639**;
 - hard-negative hits **38 / 48**;
-- hard-negative rate@5 **0.791667**;
-- any-useful-query **1.000000**;
-- all-useful-query **0.750000**.
+- hard-negative rate@5 **0.791667**.
 
 Classification: `LEXICAL_CONTROL_EXPOSES_MULTI_STRATUM_GAPS`.
-Reviewed q04 refund-scope and q23 cache-scope conflicts are useful `POSSIBLE_CONTRADICTION` candidates. Candidate IDs are content-derived and qrel-label-independent.
+
+## Comparator v1 result
+
+Comparator v1 recovered `48/48` useful v2 candidates with Recall@5 `1.0` and MRR `1.0`, but also surfaced `41/48` hard negatives. Its historical RC-10 screen surfaced `4/4` hard negatives.
+
+Classification: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`.
+
+No semantic/hybrid Reader runtime was authorized.
+
+## NLI neutral-filter v1 result
+
+The preregistered NLI neutral filter reduced v2 hard-negative hits to `18/48`, but useful hits regressed to `46/48`; historical useful hits regressed to `15/16`. The no-recall-loss overlay and frozen gates failed.
+
+Classification: `NLI_NEUTRAL_FILTER_GATE_FAILED`.
+
+## RRTIC-v1 contract
+
+RRTIC-v1 responds to the post-NLI **relation-contract mismatch** finding. It freezes six suspicion-only relation families and ten structural qualifier dimensions so a future discriminator can be evaluated against an explicit relation/qualifier contract rather than one scalar similarity score.
+
+```text
+relation families:
+EQUIVALENCE_SUSPECT
+RELATED_SUSPECT
+CONTRADICTION_SUSPECT
+QUALIFICATION_SUSPECT
+TOPIC_ONLY_SUSPECT
+UNKNOWN
+
+qualifier states:
+MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE
+```
+
+RRTIC-v1 does not filter, rerank, execute a model, establish identity, admit evidence, adjudicate contradictions, mutate Canon or auto-register RC-5 relations.
 
 ## Retained Reader authority firewall
 
@@ -60,15 +130,29 @@ similarity signal != identity proof
 repetition across sources != corroboration
 retrieval match != evidence
 similarity != identity
+NLI label != proposition identity
+RRTIC suspicion != adjudicated relation
+qualifier mismatch != truth decision
 ranking != epistemic authority
 candidate discovery != candidate adjudication
 comparison pass != runtime authorization
+evaluation pass != runtime authorization
 ```
 
-The historical RC-10 screen remains required. The v2 gate is frozen before any model-backed result. Passing remains `ELIGIBLE_FOR_ARCHITECTURE_REVIEW_ONLY`; comparison pass is not runtime authorization.
+PostgreSQL/pgvector remains `active=false`. SQLite ordinary local-first remains active.
 
-Model-backed comparator execution is NOT STARTED. Semantic/hybrid/vector Reader runtime, Reader FTS and ANN/vector DB remain absent. PostgreSQL/pgvector remains `active=false`.
+## Current verification
 
-Historical RC-8 corpus, RC-9 baseline and RC-10 preregistration remain byte-pinned. Russian D1/D3/D4/D5 Reader documentation retains its historical localization checkpoint; eight other locale detail packs remain `REFRESH_NEEDED` — 64 documents. NLnet remains **submitted / under review / not awarded**. Approximate €50,000 remains planning only. Issues #155, #165 and #214 remain separate scopes.
+Post-RRTIC CI `31771677028`: **9/9 SUCCESS**. Python 3.11: **2231 passed / 13 skipped / 0 failed**, 100% measured line coverage.
 
-After issue #384 completion: **STOP before model-backed comparator execution**.
+## Localization / grant / backlog
+
+Russian D1/D3/D4/D5 Reader documentation retains its historical localization checkpoint; eight other locale detail packs remain `REFRESH_NEEDED` — 64 documents. English post-RC-9 research/architecture truth does not silently advance translation parity.
+
+NLnet remains **submitted / under review / not awarded**. Approximate €50,000 remains planning only.
+
+Issues #155, #165 and #214 remain separate scopes and are not implemented by this workstream.
+
+## Stop boundary
+
+RRTIC-v1 is closed. No next model/discriminator/runtime milestone is implied. Any future mechanism requires separate authorization and fresh validation design.
