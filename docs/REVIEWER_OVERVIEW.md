@@ -1,154 +1,160 @@
 # Velantrim Exo-Cortex Crystal — Reviewer Overview
 
 > **Secondary reviewer document.** The canonical reviewer entry point is
-> [docs/REVIEWER_GUIDE.md](./REVIEWER_GUIDE.md). This overview is supplementary
-> (ADRs, failure modes, metrics) and historical context.
+> [REVIEWER_GUIDE.md](./REVIEWER_GUIDE.md). For exact current state, see
+> [STATUS.md](./STATUS.md), [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md)
+> and [TEST_REPORT.md](../TEST_REPORT.md).
 
-*Local-first, traceable AI memory infrastructure for source-grounded, auditable
-AI systems.*
+**Current signed architecture checkpoint:** `main@76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` / PR #392  
+**Post-merge CI:** `31771677028` — **9/9 SUCCESS**  
+**Grant status:** NLnet **submitted / under review / not awarded**
 
-> Audience: external reviewers, NLnet-style grant reviewers, university
-> collaborators, trustworthy-AI and digital-sovereignty programs. For the
-> canonical implemented-vs-RFC-vs-vision map, see
-> [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md); for the audited test
-> baseline, see [TEST_REPORT.md](../TEST_REPORT.md).
-> **Start hands-on:** [REVIEWER_DEMO.md](./REVIEWER_DEMO.md) — a 10-minute
-> demo of the full trust loop (ingest → evidence → receipt → tamper check →
-> eval gate).
+## 1. Executive summary
 
-## 1. Executive Summary
+Crystal is open-source, local-first memory, evidence and Reader infrastructure designed to keep **candidate discovery, provenance, evidence, epistemic admission, strict Canon and presentation separate**.
 
-Velantrim Exo-Cortex Crystal is an open-source (AGPL), local-first AI memory
-infrastructure that separates truth from speech. It stores typed claims with
-explicit source and truth status, constructs traceable evidence paths, and
-enforces architectural boundaries to prevent unsupported factual claims from
-entering the verified canon. The LLM is used as a speech and synthesis layer,
-not as a source of truth.
+Its core reviewer question is not “does the model sound correct?” but:
 
-**Velantrim does not make the LLM truthful. It restricts what the LLM may
-confidently say.** The system is designed to reduce unsupported factual
-promotion by enforcing evidence, traceability, and boundary checks.
+> **What artifact produced this candidate, what source/provenance does it preserve, and which component is actually authorized to turn it into evidence or Canon?**
 
-Crystal is a verifiable substrate, not a chatbot, AGI claim, or autonomous
-agent.
+Crystal is not a chatbot, AGI claim or autonomous truth oracle.
 
-## 2. Problem
-
-Modern AI systems often conflate fluent speech with verified truth. LLM output
-can be persuasive without evidence. Many memory systems store and retrieve
-context but do not enforce epistemic boundaries: a remembered statement carries
-no machine-readable record of where it came from, whether it was user-reported,
-model-generated or externally sourced, and whether it can be audited, restricted
-or erased. These systems can be hard to audit in high-stakes domains such as
-education, science, law, medicine, and public-sector knowledge workflows.
-
-## 3. Solution
-
-Crystal is a local-first AI memory infrastructure that separates truth from
-speech:
+## 2. Architecture in one view
 
 ```text
-Typed Claims → FactsPack → Guardian → TruthGate → TRACE / Receipt → LLM Speech Layer
+Source / document
+      ↓
+Reader RC-1…RC-7 bounded artifacts
+      ↓
+RC-9 lexical PRE-ADMISSION discovery
+      ↓
+RRTIC-v1 typed inspection contract
+      ↓
+explicit evidence / admission boundary
+      ↓
+Guardian → TruthGate
+      ↓
+physical L3 → strict Canon read projection
+      ↓
+read-only answer / trace / bounded refusal
 ```
 
-- The LLM is speech/synthesis only; it may phrase an answer but never becomes
-  the source of truth.
-- **Canon is the VERIFIED + TRACE-valid memory, not the whole graph.** The
-  physical memory/graph may contain hypotheses, user claims, and subjective
-  states — each labelled as such and never silently upgraded.
-- Confident factual answers require evidence and TRACE; without sufficient
-  grounding the system abstains or downgrades confidence.
-- **Velantrim blocks unsupported factual promotion into VERIFIED canon unless
-  evidence and TRACE are present.**
+RRTIC-v1 is **not a new runtime stage**. The diagram shows the conceptual contract boundary; no RRTIC provider/model/filter is installed.
 
-## 4. Core invariants
+## 3. What is actually implemented
 
-| Invariant | Meaning |
-|---|---|
-| Speech ≠ Truth | Generated text is not canon |
-| LLM_OUTPUT ≠ VERIFIED | LLM output cannot become verified without independent evidence |
-| Canon = VERIFIED + TRACE-valid memory | Canon is filtered memory, not the raw graph |
-| TRACE required for confidence | Confident factual claims must be auditable |
-| Human curator remains final authority | The system does not autonomously rewrite values or canon; overrides are explicit, attributed and audited |
-
-## 5. Current implementation status
-
-Statuses follow [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md)
-(Implemented = code + tests in this repository).
-
-| Area | Status | Notes |
+| Area | Status | Reviewer meaning |
 |---|---|---|
-| Typed claims (`claim_type` / `source_status` / `truth_status` separation) | Implemented | Canonical enums in `core/memory.py` and `schemas/`; `FACT` is a human-facing alias only — the machine truth status is `VERIFIED` (T2 alignment) |
-| TruthGate | Implemented | `core/truth_gate.py` — type-aware, the only automatic entry into L3 canon; behaviour-pinned by tests |
-| FactsPack | Partial | Grounding pack used by the answer path; explicit conflict policy is a future RFC |
-| TRACE / Receipt | Implemented | Trace chains + sealed, replayable receipts identified by content digest (no separate receipt_id); strict-provenance replay |
-| Guardian / Ring Zero | Partial (baseline) + docs | Boundary function runs before the gate; formal contract document is future work; Ring Zero invariants documented in [ARCHITECTURE.md](./ARCHITECTURE.md) |
-| Local-first storage | Implemented | SQLite/WAL working memory; dependency-free SQLite default for the canonical graph; pluggable graph-backend direction (see IMPLEMENTATION_STATUS for backend roles) |
-| GDPR-oriented design goals | Partial | Local-first storage, erasure/restriction, tamper-evident audit, PII redaction as design targets — explicitly **not** a certification claim |
-| CI / tests / eval gate | Implemented | CI jobs: tests (3.11/3.12), eval gate, security, JSONL integrity. Latest reported baseline: see [TEST_REPORT.md](../TEST_REPORT.md) (exact counts live there and in the README badge only); 100% coverage gate preserved, eval gate passed |
-| P0 / P0.1 documentation honesty cleanup | Completed | Implementation-status map, canon semantics, overclaim wording removed (PR #103, #105) |
-| T2 schema alignment | Completed | KB/schema vocabulary aligned with runtime reality (PR #106) |
-| Harness Replay / Meta-Optimization | RFC only | [RFC_HARNESS_REPLAY_OPTIMIZATION.md](./RFC_HARNESS_REPLAY_OPTIMIZATION.md) — documentation only, no runtime |
+| Typed claims / source / truth status | **Implemented** | machine-readable epistemic categories remain separate |
+| TruthGate | **Implemented** | automatic epistemic admission boundary |
+| Guardian / Ring Zero | **Implemented bounded baseline** | structural/safety constraints and mutation gate |
+| TRACE / Receipt | **Implemented** | replayable/auditable proof surfaces |
+| Local-first SQLite storage | **Implemented / active** | ordinary active profile |
+| PostgreSQL/pgvector | **Inactive import/equivalence target** | `active=false`; not normal runtime |
+| Reader RC-1…RC-7 | **Implemented bounded layers** | source/session/structure/pass/proposition/relation/context/cross-document candidate artifacts |
+| Reader RC-9 | **Implemented** | deterministic stdlib BM25 candidate discovery |
+| Dedicated/full autonomous Reader | **Not implemented** | `dedicated_reader_core=false` |
+| Semantic/hybrid Reader runtime | **Not authorized** | no semantic backend, ANN/vector Reader DB or automatic identity |
+| RRTIC-v1 | **Frozen architecture contract** | diagnostic schema only; no runtime provider |
 
-## 6. Research context
+## 4. Reader evidence chain reviewers should understand
 
-Velantrim is informed by a long tradition of work on memory, human-computer
-augmentation, and trustworthy knowledge systems. Vannevar Bush's Memex
-introduced the idea of associative knowledge trails; Licklider and Engelbart
-framed computers as tools for augmenting human intellect rather than replacing
-judgment. In Crystal, these ideas are translated into a verifiable
-architecture: TRACE formalizes evidence paths, TruthGate separates unsupported
-claims from verified canon, and the LLM remains a speech layer rather than a
-source of truth. These references are architectural inspirations, not claims
-that Crystal is brain-like, conscious, or biologically accurate.
+### RC-9 — deterministic lexical baseline
 
-## 7. Roadmap
+Historical RC-9 K=5 result:
 
-| Step | Scope | Status |
-|---|---|---|
-| P0 | Architecture honesty / implementation status | Completed |
-| P0.1 | Overclaim cleanup / grant-safe wording | Completed |
-| T2 | KB schema alignment | Completed (PR #106 merged) |
-| T3 | Eval corpus expansion | Completed |
-| T4 | Reproducible MVP packaging | Completed |
-| T5 | Reviewer demo package | Completed |
-| T6+ | Larger traceable KB and research tracks | Research |
-| Follow-up | Research Inspirations document (non-normative context, not implementation status) | Planned follow-up |
+- Recall@5 `0.937500`;
+- Precision@5 `0.187500`;
+- MRR `0.895833`;
+- useful hits `15/16`;
+- paired hard-negative hits `4/4`;
+- classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
-## 8. Grant and university value
+This is retrieval evidence, not semantic accuracy.
 
-The project is positioned as infrastructure for scientific knowledge
-management, education technology, agent evaluation, and digital sovereignty
-programs — not as artificial consciousness or zero-hallucination chat.
+### Evaluation Surface v2
 
-Concretely relevant to: digital sovereignty (local-first, no mandatory cloud),
-trustworthy AI (verification boundary, controlled factual promotion), AI safety
-(non-bypassable invariants, human-curated canon), reproducible evaluation
-(CI-gated eval harness, replayable receipts), knowledge-graph research (typed,
-source-tracked claims), GDPR-oriented auditability, and education/research
-demonstrators.
+The later fully judged surface froze 24 queries, 144/144 qrels and a qrel-label-independent candidate identity. RC-9 control on this surface produced useful hits `42/48`, Recall@5 `0.875000`, MRR `0.857639` and hard negatives `38/48`.
 
-## 9. What Crystal is not
+### Comparator v1 — frozen FAIL
 
-- Not a chatbot.
-- Not an AGI claim.
-- Not artificial consciousness.
-- Not a guarantee of perfect truth.
-- Not a replacement for expert judgment.
-- Not a self-improving autonomous agent.
-- Not a brain-like or biologically conscious system.
+A pinned multilingual semantic comparator recovered `48/48` useful candidates, but surfaced `41/48` hard negatives.
 
-## 10. Research-grade future (not current runtime)
+```text
+SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED
+```
 
-All items below are future / research roadmap / not current runtime: a
-10k–100k traceable-facts demonstrator, ProfSearch, Causal Spine, Essence
-Distiller, Harness Replay runtime and ReplayBench (RFC only today), the
-FactsPack Conflict Policy, and a Meta-Cognitive Monitor as a future research
-umbrella over evaluation and boundary-monitoring concepts (see
-[EVALUATION_METRICS.md](./EVALUATION_METRICS.md)). Research inspirations
-(memory science, human-computer augmentation, cybernetics, knowledge graphs,
-trustworthy-AI research) are tracked as non-normative context — intellectual
-foundations and architectural patterns, never implementation claims (see
-ADR-006 in [ADR.md](./ADR.md)). Biological analogies in project materials are
-used only as architectural inspiration patterns, not as claims that the system
-is brain-like, conscious, or biologically accurate.
+### NLI neutral-filter v1 — frozen FAIL
+
+Bidirectional NLI filtering reduced hard negatives to `18/48`, but useful candidates regressed to `46/48`, so the frozen no-recall-loss/admissibility gate failed.
+
+```text
+NLI_NEUTRAL_FILTER_GATE_FAILED
+```
+
+### RRTIC-v1 — contract-first architecture response
+
+The post-NLI reassessment classified the problem as a **relation-contract mismatch**. RRTIC-v1 freezes six suspicion-only relation families and ten qualifier dimensions so future work must describe *how* propositions relate rather than collapse everything to one relevance score.
+
+RRTIC-v1 does not filter, rerank, execute a model, establish identity, admit evidence, adjudicate contradictions, mutate Canon or replace RC-5.
+
+## 5. Authority firewall
+
+```text
+retrieval match          != evidence
+similarity               != identity
+NLI label                != proposition identity
+NLI contradiction        != contradiction adjudication
+RRTIC suspicion          != adjudicated relation
+qualifier mismatch       != truth decision
+repetition               != corroboration
+cross-document candidate != Canon relation
+ranking                  != epistemic authority
+candidate discovery      != candidate adjudication
+evaluation pass          != runtime authorization
+```
+
+This boundary is the most important architectural property to review.
+
+## 6. Current validation
+
+Post-RRTIC workflow `31771677028` completed **9/9 SUCCESS**. The Python 3.11 matrix job collected 2244 tests and completed **2231 passed / 13 skipped / 0 failed** with **100% measured line coverage**.
+
+Reviewer commands:
+
+```bash
+git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
+cd velantrim-exocortex-crystal
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -e '.[dev]'
+pytest tests/
+python scripts/eval_gate.py --out-dir eval-artifacts
+```
+
+## 7. Current non-claims
+
+Crystal does not claim:
+
+- universal truth, zero hallucinations, AGI or consciousness;
+- a complete autonomous Reader;
+- semantic/hybrid Reader runtime;
+- automatic proposition identity or contradiction winner selection;
+- evidence admission from similarity/NLI/RRTIC diagnostics;
+- Reader FTS/ANN/vector DB or active PostgreSQL/pgvector;
+- security/legal/GDPR certification;
+- awarded NLnet funding.
+
+## 8. Grant and research boundary
+
+NLnet remains **submitted / under review / not awarded**. Approximate €50,000 is planning context only. Work completed before any funding agreement—including RC-1…RC-9, Comparator v1, NLI v1 and RRTIC-v1—remains existing pre-agreement baseline/research history and cannot later be relabeled as newly funded delivery.
+
+## 9. Recommended reviewer path
+
+1. [README](../README.md) — first-impression project truth.
+2. [Implementation status](./IMPLEMENTATION_STATUS.md) — implemented vs research vs absent.
+3. [Architecture overview](./ARCHITECTURE_OVERVIEW.md) — authority and Reader boundaries.
+4. [RRTIC-v1 contract](./architecture/READER_RETRIEVAL_TYPED_INSPECTION_CONTRACT_V1.md) — current architecture decision.
+5. [Reviewer demo](./REVIEWER_DEMO.md) — hands-on trust loop.
+6. [Test report](../TEST_REPORT.md) — exact current validation evidence.
