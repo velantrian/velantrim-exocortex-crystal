@@ -15,30 +15,81 @@
 <!-- rc6-translation-source: docs/ARCHITECTURE_OVERVIEW.md@ed96a88369f841bdb2ffd79ca020acef174685fc -->
 <!-- rc7-translation-source: docs/ARCHITECTURE_OVERVIEW.md@ab3ad31c437647535030e371d58f456faf14017b -->
 <!-- rc7-status: CURRENT -->
-# 🇷🇺 Architecture Overview — Reader RC-7
+<!-- current-translation-source: docs/ARCHITECTURE_OVERVIEW.md@9666781d390e3276a111cb5ee1735f6606a76283 -->
+# 🇷🇺 Crystal — Architecture Overview
 
-Crystal разделяет storage, Reader process artifacts, evidence admission и trusted read projection.
+**Назначение:** текущая русская architecture entry point.  
+**Authority:** merged code, exact CI, `docs/ai/CURRENT_STATE.md` и implementation manifest остаются technical truth.
+
+## Архитектура одним взглядом
 
 ```text
-source → RC-1 exact source/session → RC-2 structure → RC-3 passes → RC-4 EXTRACTED_PROPOSITION
-├→ RC-5 within-source relation candidates
-├→ RC-6 long-context working sets/SUMMARY
-└→ RC-7 cross-document link candidates
-→ normal evidence/review path → Guardian → TruthGate → physical L3 / TrustSnapshot / CanonicalView
+exact source/document identity
+        ↓
+Reader RC-1…RC-4
+source/session/structure/pass/proposition artifacts
+        ↓
+RC-5 same-document relation candidates
+        ↓
+RC-6 bounded long-context working sets
+        ↓
+RC-7 explicit cross-document candidate links
+        ↓
+RC-9 deterministic lexical PRE-ADMISSION discovery
+        ↓
+RRTIC-v1 typed inspection contract
+(architecture only; not a runtime stage)
+        ↓
+explicit evidence / admission boundary
+        ↓
+Guardian → TruthGate
+        ↓
+physical L3 multi-status storage
+        ↓
+strict Canon read projection
+        ↓
+read-only retrieval / answer / bounded refusal
 ```
 
-`core.query_pipeline.query()` остаётся read path. Public query surfaces read-only. physical L3 не равен strict Canon.
-
-RC-1 source/session, RC-2 caller-supplied structure, RC-3 explicit passes, RC-4 source-linked propositions, RC-5 relation candidates и RC-6 working sets уже bounded layers. RC-7 добавляет explicit caller-supplied links между current RC-4 candidates из разных document identities.
+Главный invariant:
 
 ```text
-coverage != comprehension proof
-pass completion != comprehension proof
+discovery != evidence
+inspection != adjudication
+similarity != identity
+runtime capability != architecture research
+```
+
+## Reader capability map
+
+| Layer | Current state | Boundary |
+|---|---|---|
+| RC-1 | implemented | exact SourceVersion / SourceLocator / ReaderSession foundation |
+| RC-2 | implemented | caller-supplied structural map; structure metadata, not truth |
+| RC-3 | implemented | deterministic explicit multi-pass mechanics; completion != comprehension proof |
+| RC-4 | implemented | source-linked `EXTRACTED_PROPOSITION`; candidate != admitted evidence |
+| RC-5 | implemented | same-session/same-version relation candidates |
+| RC-6 | implemented | bounded working sets + caller-supplied SUMMARY; summary != evidence |
+| RC-7 | implemented | explicit cross-document candidate links with exact two-sided provenance |
+| RC-8 | architecture/research | retrieval decision and adversarial evaluation contract |
+| RC-9 | implemented | deterministic offline BM25 PRE-ADMISSION candidate discovery |
+| Comparator v1 | frozen evaluation | semantic recall recovered; discrimination gate failed |
+| NLI neutral-filter v1 | frozen evaluation | discrimination improved; useful-recall safety gate failed |
+| RRTIC-v1 | frozen architecture contract | typed suspicion + qualifier diagnostics; no runtime authorization |
+
+`dedicated_reader_core=false` остаётся larger capability truth.
+
+## RC-5 / RC-7 relation boundary
+
+RC-5 сохраняет explicit pre-admission relations внутри одного ReaderSession / exact SourceVersion: `POSSIBLE_CONTRADICTION`, `EXCEPTION`, `QUALIFICATION`, `TENSION`. RRTIC-v1 не заменяет и не auto-register RC-5 relations.
+
+RC-7 сохраняет explicit cross-document candidate links с exact two-sided provenance и caller rationale. Это comparison surface, а не identity/evidence authority.
+
+```text
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
 relation candidate != admitted evidence
 contradiction candidate != confirmed contradiction
-summary != evidence
 cross-document link != Canon relation
 same-topic != same proposition
 possible-same-claim != claim identity
@@ -46,10 +97,86 @@ similarity signal != identity proof
 repetition across sources != corroboration
 ```
 
-RC-7 revalidates OPEN Reader sessions, exact SourceVersion/privacy, SegmentCard membership, completed RC-3 pass, substantive targets/outcomes, recovered RC-2 structure и current coverage. Supported kinds: `SUPPORTS`, `CONTRADICTS`, `ELABORATES`, `REFERENCES`, `DEFINES`, `EXAMPLE_OF`, `PREREQUISITE_FOR`, `SAME_TOPIC`, `POSSIBLE_SAME_CLAIM`.
+## Post-RC-9 evaluation → RRTIC-v1
 
-`CONTRADICTS`, `SAME_TOPIC`, `POSSIBLE_SAME_CLAIM` symmetric; другие kinds directional. Inspection basis descriptive only и не превращается в similarity/identity/confidence score.
+RC-9 показал полезный lexical baseline, но measured cross-lingual/hard-negative gap. Comparator v1 восстановил recall на Evaluation Surface v2, но failed hard-negative discrimination. Preregistered bidirectional NLI neutral filter уменьшил leakage, но потерял useful recall и failed frozen gates.
 
-Reader artifacts pre-admission: никакой RC-1..RC-7 module не пишет strict Canon и не обходит Guardian/TruthGate. `dedicated_reader_core=false`; dedicated/full autonomous Reader не implemented.
+Post-NLI reassessment классифицировал missing capability как **relation-contract mismatch**: перед будущим discriminator нужен typed relation suspicion + explicit structural qualifier differences.
 
-SQLite ordinary active local-first. PostgreSQL/pgvector `active=false`; import is not activation, automatic switching absent. NLnet submitted / under review / not awarded. Русская RC-7 parity = `main@ab3ad31c437647535030e371d58f456faf14017b`; остальные восемь Reader-dependent locale packs остаются `REFRESH_NEEDED`.
+RRTIC-v1 relation families:
+
+```text
+EQUIVALENCE_SUSPECT
+RELATED_SUSPECT
+CONTRADICTION_SUSPECT
+QUALIFICATION_SUSPECT
+TOPIC_ONLY_SUSPECT
+UNKNOWN
+```
+
+Qualifier dimensions:
+
+```text
+entity_binding
+predicate_binding
+argument_roles
+polarity
+modality_quantifier
+temporal_version
+jurisdiction
+condition_direction
+units_thresholds
+attribution_causality
+```
+
+State: `MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE`.
+
+RRTIC-v1 не имеет scalar truth/confidence score, accept/reject rule, reranking, model execution, evidence admission, contradiction adjudication, Canon mutation или runtime provider.
+
+```text
+RRTIC suspicion    != adjudicated relation
+qualifier mismatch != truth decision
+NLI label          != proposition identity
+NLI contradiction  != contradiction adjudication
+evaluation pass    != runtime authorization
+```
+
+## Memory и authority layers
+
+| Layer | Role | Authority boundary |
+|---|---|---|
+| Reader PRE-ADMISSION | source-linked process/proposition/relation/discovery/inspection candidates | no truth/evidence/Canon authority |
+| L0 | process-local working state | ephemeral |
+| L1 | SQLite operational memory | durable operational state |
+| L2 | pending/review staging | candidate/quarantined before final admission |
+| physical L3 | graph-oriented multi-status storage | physical storage, not strict Canon |
+| strict Canon | `TrustSnapshot` / `CanonicalView` | deny-dominant trusted read projection |
+
+Public query через `core.query_pipeline.query()` read-only. Query не должен мутировать facts, ESM, L3, outbox, episode links, embedding identity или unknown candidates. При недостаточном strict grounding ожидается bounded refusal.
+
+## Storage / PostgreSQL boundary
+
+SQLite — ordinary active local-first profile. PostgreSQL 16 + pgvector остаётся inactive migration/equivalence target.
+
+```text
+SQLite backup / verify / inactive restore
+→ bounded deterministic logical export
+→ PostgreSQL 16 + pgvector preflight
+→ inactive target schema
+→ serializable import
+→ independent read-only re-hash
+→ exact equivalence receipt
+→ active=false
+```
+
+Import/equivalence — operation evidence, **не activation**, backend selection, TruthGate admission, strict Canon membership, cutover, rollback или dual-write. Reader RC-1…RC-9 и RRTIC-v1 не авторизуют PostgreSQL Reader activation.
+
+## Current non-claims
+
+Crystal не заявляет AGI/consciousness, universal truth/zero hallucinations, active PostgreSQL runtime, automatic switching, production multi-tenancy, completed dedicated/full Reader, automatic parser/OCR, semantic/hybrid Reader runtime, Reader FTS/ANN/vector DB, NLI/CrossEncoder runtime filter, RRTIC runtime provider, automatic identity/adjudication/evidence admission/Canon mutation, security/legal/GDPR certification или awarded NLnet funding.
+
+NLnet остаётся **submitted / under review / not awarded**; ~€50,000 — planning context only.
+
+## Localization provenance
+
+Historical Russian RC-7 parity source: `main@ab3ad31c437647535030e371d58f456faf14017b`. Current Russian refresh source: `main@9666781d390e3276a111cb5ee1735f6606a76283`. Исторические markers сохранены и не переписываются задним числом.
