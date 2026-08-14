@@ -262,16 +262,15 @@ Physical L3 is not automatically strict Canon. Successful import/equivalence doe
 
 Immutable phased localization source checkpoint: `51c205fe048fd69d39fcd47b43e042a50de432bc`.
 
-Russian Reader-dependent public/detail documentation is refreshed under the recorded phased contract. The **eight other localized root README files and Reader-dependent detail packs** remain `REFRESH_NEEDED` at their recorded source checkpoints.
+Russian Reader-dependent public/detail documentation is refreshed under the recorded phased contract. Russian D1/D3/D4/D5 detail pack is current. D2 reviewer/safety translations remain current across all nine supported locales.
+
+The **eight other localized root README files and Reader-dependent detail packs** remain `REFRESH_NEEDED` at their recorded source checkpoints; eight other locale detail packs require Reader refresh.
 
 A visually stronger old translation may be used as a layout reference only. It must not be treated as newer technical truth.
 
 ## Grant / residual backlog
 
-```text
-NLnet: submitted / under review / not awarded
-~€50k: planning context only
-```
+NLnet remains submitted / under review / not awarded. Approximate €50,000 remains planning context only.
 
 Separate residual issues:
 
