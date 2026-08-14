@@ -17,12 +17,12 @@
 <!-- current-english-readme-source: main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883 -->
 # 🇷🇺 Русская документация Crystal
 
-Русский public/localized пакет обновлён с исторической RC-7 parity до текущей **post-RC-9 / post-NLI / RRTIC-v1 human-facing truth**. English остаётся primary source и conflict resolver; machine/evidence truth всегда разрешается из live GitHub, `docs/ai/**`, implementation manifest, exact tests и CI.
+Русский public/localized пакет обновлён с исторической RC-7 parity до текущей **post-RC-9 / post-NLI / RRTIC-v1** public architecture truth. English остаётся primary source и conflict resolver; machine/evidence truth разрешается из live GitHub, `docs/ai/**`, implementation manifest, exact tests и CI.
 
-## 🧭 С чего начать
+## 🧭 Маршрутизация
 
 ```text
-👤 Человек
+👤 Human
 README.ru.md
    ↓
 docs/ru/README.md
@@ -38,10 +38,10 @@ AGENTS.md
    ↓
 docs/status/implementation-manifest.json
    ↓
-English authoritative status/contracts/tests/CI
+English authoritative contracts / tests / exact CI
 ```
 
-## 📊 Текущая Reader truth
+## 📊 Current Reader truth
 
 ```text
 RC-1…RC-7            = implemented bounded layers
@@ -70,21 +70,21 @@ rrtic_runtime_authorization = false
 
 ## 📚 Русские surfaces
 
-| Группа | Документ | Статус после этого refresh |
+| Группа | Документ | Статус |
 |---|---|---|
 | Root | [README.ru.md](../../README.ru.md) | current human-first presentation |
-| D1 | [Quick Start](./QUICKSTART.md) | CURRENT, source semantics unchanged |
+| D1 | [Quick Start](./QUICKSTART.md) | CURRENT; source semantics unchanged |
 | D1 | [Status](./STATUS.md) | current post-RRTIC parity |
 | D1 | [Implementation Status](./IMPLEMENTATION_STATUS.md) | current post-RRTIC parity |
-| D2 | [Reviewer Guide](./REVIEWER_GUIDE.md) | CURRENT, unchanged D2 source |
-| D2 | [Safety/Privacy/Failures](./SAFETY_PRIVACY_AND_FAILURES.md) | CURRENT, unchanged D2 source |
+| D2 | [Reviewer Guide](./REVIEWER_GUIDE.md) | CURRENT; unchanged D2 source |
+| D2 | [Safety/Privacy/Failures](./SAFETY_PRIVACY_AND_FAILURES.md) | CURRENT; unchanged D2 source |
 | D3 | [Architecture Overview](./ARCHITECTURE_OVERVIEW.md) | current post-RRTIC parity |
 | D3 | [Storage/Authority](./STORAGE_AND_AUTHORITY_BOUNDARIES.md) | current authority/storage parity |
 | D4 | [Grant Overview](./GRANT_OVERVIEW.md) | current grant-safe parity |
 | D4 | [Glossary](./GLOSSARY.md) | current Reader/RRTIC terminology |
 | D5 | [Extended Reference Guide](./EXTENDED_REFERENCE_GUIDE.md) | current reviewer/reference parity |
 
-## 🛡️ Authority firewall
+## 🛡 Authority firewall
 
 ```text
 retrieval match != evidence
@@ -97,7 +97,7 @@ evaluation pass != runtime authorization
 physical L3 != strict Canon
 ```
 
-Исторические RC-7 compatibility literals сохраняются:
+Historical RC-7 compatibility literals remain:
 
 ```text
 cross-document link != Canon relation
@@ -107,12 +107,19 @@ similarity signal != identity proof
 repetition across sources != corroboration
 ```
 
-SQLite остаётся ordinary active local-first. PostgreSQL/pgvector Reader остаётся inactive `active=false`. NLnet — **submitted / under review / not awarded**; ~€50,000 planning only.
+SQLite ordinary active local-first. PostgreSQL/pgvector Reader inactive `active=false`. NLnet **submitted / under review / not awarded**; ~€50,000 planning only.
 
-## 📎 Исторические localization checkpoints
+## 📎 Localization provenance
 
-RC-5 source marker `51c205fe048fd69d39fcd47b43e042a50de432bc`, RC-6 `ed96a88369f841bdb2ffd79ca020acef174685fc` и RC-7 `ab3ad31c437647535030e371d58f456faf14017b` сохраняются как immutable audit evidence. Они больше не означают, что русский public package останавливается на RC-7.
+RC-5 source `51c205fe048fd69d39fcd47b43e042a50de432bc`, RC-6 `ed96a88369f841bdb2ffd79ca020acef174685fc` и RC-7 `ab3ad31c437647535030e371d58f456faf14017b` сохраняются как immutable audit evidence. Они больше не означают, что текущий русский package останавливается на RC-7.
 
-Текущий Russian parity refresh проверен против repository truth `main@9666781d390e3276a111cb5ee1735f6606a76283`; human-first English README source — `main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883`.
+Current Russian parity refresh audit source: `main@9666781d390e3276a111cb5ee1735f6606a76283`. Human-first English README source: `main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883`.
 
-Восемь других Reader-dependent locale packs **не обновлены этим milestone** и остаются `REFRESH_NEEDED` там, где это указано в [Translation Status](../TRANSLATION_STATUS.md).
+Восемь других Reader-dependent locale packs не обновлены этим milestone и остаются `REFRESH_NEEDED` там, где это записано ledger.
+
+## 🌍 Localization navigation
+
+- [Localization policy](../LOCALIZATION_POLICY.md)
+- [Translation status](../TRANSLATION_STATUS.md)
+
+Эти два документа определяют source checkpoint semantics и не позволяют историческому `CURRENT` автоматически означать parity с более новым English source.
