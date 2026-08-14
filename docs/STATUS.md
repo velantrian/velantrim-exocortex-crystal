@@ -1,11 +1,12 @@
 # Velantrim Crystal — Current Status
 
 **Status date:** 2026-08-14  
-**Authoritative signed `main`:** `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e`, `verified=true`, reason `valid`  
+**Current signed architecture checkpoint:** `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e`, `verified=true`, reason `valid`  
 **Current architecture milestone:** Reader Retrieval Typed Inspection Contract v1 — Issue #391 / PR #392 — complete  
-**Exact-head CI:** `31754798549` — 9/9 SUCCESS  
-**Post-merge CI:** `31771677028` — 9/9 SUCCESS  
-**Retained storage-runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` / PR #337
+**RRTIC exact-head CI:** `31754798549` — 9/9 SUCCESS  
+**RRTIC post-merge CI:** `31771677028` — 9/9 SUCCESS  
+**Retained storage-runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` / PR #337  
+**Repository-head rule:** resolve live GitHub before treating any docs-only merge SHA as the current repository HEAD.
 
 ## Current Reader position
 
@@ -183,9 +184,9 @@ SQLite ordinary active local-first
 
 Reader SQLite FTS is not implemented. No Reader ANN/vector DB is introduced. Automatic backend switching remains absent.
 
-## Current validation
+## Current validation baseline
 
-Post-RRTIC `main` CI `31771677028` completed **9/9 SUCCESS**. Python 3.11 collected 2244 tests and completed **2231 passed / 13 skipped / 0 failed** at **100% measured line coverage**.
+The RRTIC architecture checkpoint push CI `31771677028` completed **9/9 SUCCESS**. Python 3.11 collected 2244 tests and completed **2231 passed / 13 skipped / 0 failed** at **100% measured line coverage**. Later docs-only reconciliation has its own exact-head/post-merge CI and does not redefine the RRTIC architecture checkpoint.
 
 ## Backlog boundaries
 
