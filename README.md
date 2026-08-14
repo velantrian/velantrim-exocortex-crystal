@@ -2,7 +2,7 @@
 
 > 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
 
-## 💠 Evidence-first memory infrastructure where retrieval never silently becomes truth
+## 💠 Memory and evidence infrastructure that keeps retrieval separate from truth
 
 Crystal is a **local-first research and implementation line for auditable AI memory**. It separates discovery, provenance, evidence admission, epistemic authority, trusted canonical state and presentation so that finding relevant material does not automatically make that material true.
 
@@ -219,6 +219,8 @@ RRTIC-v1
 contract-first · no runtime authorization
 ```
 
+The current Reader architecture includes the **Reader Retrieval Typed Inspection Contract v1 (RRTIC-v1)** as a bounded, model-free inspection contract. It does **not** authorize a semantic/NLI runtime provider, automatic adjudication, evidence admission or Canon writes.
+
 RRTIC-v1 freezes typed relation suspicion and structural qualifier vocabulary. It does **not** provide a model, reranker, truth score, accept/reject policy or runtime authorization.
 
 EPIS-001 is likewise a frozen architecture-only evidence-state observability contract. It does not create an Epistemic Router runtime or new evidence/Canon authority.
@@ -340,6 +342,7 @@ These immutable anchors are preserved for audit compatibility. They are **histor
 - Current signed **Reader architecture checkpoint:** `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` — RRTIC-v1 / PR #392. Later documentation or security merges do not redefine that architecture checkpoint.
 - Historical signed **RC-9 merge:** `f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`.
 - Historical RC-9 post-merge CI: `31594027040`.
+- RC6 compatibility marker: `reader_core_rc6_long_context_strategy`.
 - Retained RC-9 classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 - Retained NLI evaluation classification: `NLI_NEUTRAL_FILTER_GATE_FAILED`.
 - Larger Reader truth remains: `dedicated_reader_core=false`, `semantic_hybrid_reader_runtime=false`, `rrtic_runtime_authorization=false`.
