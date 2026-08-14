@@ -108,7 +108,7 @@ contradiction candidate != confirmed contradiction
 
 **D1 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
 
-D1 Reader-dependent detail translations are `CURRENT` in Russian against their retained historical checkpoint while the current Russian surfaces additionally carry explicit post-RRTIC source markers. The eight other supported locales are `REFRESH_NEEDED`.
+D1 Reader-dependent detail translations are `CURRENT` in Russian against their retained historical checkpoint while current Russian surfaces additionally carry explicit post-RRTIC source markers. The eight other supported locales are `REFRESH_NEEDED`.
 
 Russian Quick Start remains CURRENT because its source semantics are unchanged.
 
@@ -116,7 +116,11 @@ Russian Quick Start remains CURRENT because its source semantics are unchanged.
 
 **D2 source checkpoint:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`
 
-D2 reviewer/safety translations remain current across all nine supported locales.
+D2 remains complete for all nine supported locales. D2 reviewer/safety translations remain current across all nine supported locales.
+
+| D2 surface | Translation state |
+|---|---|
+| D2 reviewer/safety | all nine supported locales `CURRENT` |
 
 | Locale | Reviewer Guide | Safety/Privacy/Failures |
 |---|---|---|
