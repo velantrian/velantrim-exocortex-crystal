@@ -91,7 +91,7 @@
     "architecture_contract": "docs/architecture/READER_CORE_ARCHITECTURE.md",
     "runtime_module": "core/reader_structure.py",
     "test_module": "tests/test_reader_structure.py",
-    "scope": "source_version_bound_caller_supplied_structural_document_map",
+    "scope": "source_version_bound_structural_document_map",
     "caller_supplied_structure": true,
     "source_body_storage": false,
     "parser_or_semantic_chunker": false,
