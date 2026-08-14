@@ -95,7 +95,7 @@ A retrieval score, model label or typed suspicion may help inspection. None of t
 │
 ├── 📖 Reader
 │   ├── RC-1…RC-7 bounded implemented layers
-│   ├── RC-9 deterministic lexical PRE-ADMISSION discovery
+│   ├── RC-9 deterministic lexical PRE-ADMISSION candidate discovery
 │   └── RRTIC-v1 typed inspection contract — architecture only
 │
 ├── 🧾 Evidence & provenance
@@ -224,6 +224,19 @@ RRTIC-v1 freezes typed relation suspicion and structural qualifier vocabulary. I
 EPIS-001 is likewise a frozen architecture-only evidence-state observability contract. It does not create an Epistemic Router runtime or new evidence/Canon authority.
 
 Current backlog and repository lifecycle state are intentionally **not hard-coded here**. Resolve them from live GitHub and the current status surfaces rather than treating a stable landing page as an operational ledger.
+
+### ✅ Reviewer validation
+
+**Current implemented Reader retrieval baseline:** **RC-9 deterministic lexical PRE-ADMISSION candidate discovery**.
+
+The retained frozen RC-9 control records **Recall@5 `0.937500`**, **Precision@5 `0.187500`** and **MRR `0.895833`**, with classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+
+```text
+reader_core_rc7_cross_document_links = true
+dedicated_reader_core                = false
+```
+
+These values are reviewer-facing compatibility and evidence anchors. They describe a bounded synthetic retrieval benchmark and implementation boundary — **not semantic accuracy, epistemic correctness or production-scale quality**.
 
 ---
 
