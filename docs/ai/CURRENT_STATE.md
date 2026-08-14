@@ -1,8 +1,8 @@
 # Crystal AI Current State
 
 **Status date:** 2026-08-14  
-**Authoritative merged main at this reconciliation:** `567ff95305cc4b0333d67ae8a54329db4748fae8`  
-**Merge signature:** `verified=true`, reason `valid`  
+**Audited pre-RRTIC base:** `d8bc98cb7643019b34ffacde2e87c3e81a5556ba`  
+**Base signature:** `verified=true`, reason `valid`  
 **Rule:** re-resolve live GitHub and the three existing authoritative Notion pages before treating this dated checkpoint as evergreen truth.
 
 GitHub merged `main`, executable tests and exact CI are authoritative for implementation truth. Notion is a synchronized documentation surface, not a substitute for repository evidence.
@@ -15,6 +15,7 @@ RC-9 lexical discovery baseline           COMPLETE
 Evaluation Surface v2                     COMPLETE / FROZEN
 Comparator v1                             COMPLETE / FROZEN GATE FAIL
 NLI neutral-filter v1                     COMPLETE / FROZEN GATE FAIL
+RRTIC-v1 typed inspection contract        FROZEN CONTRACT / PR #392
 dedicated_reader_core                     false
 semantic/hybrid Reader runtime            NOT AUTHORIZED
 NLI Reader runtime filter                 NOT AUTHORIZED
@@ -22,7 +23,58 @@ Reader FTS / ANN / vector DB               NOT AUTHORIZED
 PostgreSQL/pgvector Reader activation      NOT AUTHORIZED
 ```
 
-The latest completed milestone is **Reader NLI Neutral-Filter Evaluation v1** (Issue `#388`, merged PR `#389`). It was bounded, preregistered, offline, reproducible, CPU-only evaluation research. It did not add a Reader backend or runtime stage.
+The latest completed evaluation milestone remains **Reader NLI Neutral-Filter Evaluation v1** (Issue `#388`, merged PR `#389`). It was bounded, preregistered, offline, reproducible, CPU-only evaluation research. It did not add a Reader backend or runtime stage.
+
+The current architecture milestone is **Reader Retrieval Typed Inspection Contract v1 (RRTIC-v1)**, tracked by Issue `#391` and PR `#392`. RRTIC-v1 freezes a model-free retrieval-side inspection envelope with six suspicion-only relation families and ten qualifier dimensions. It does not filter, rerank, infer identity, admit evidence, adjudicate contradictions, register RC-5 relations automatically, or authorize runtime work.
+
+## RRTIC-v1 — current architecture contract
+
+Artifacts:
+
+```text
+docs/architecture/READER_RETRIEVAL_TYPED_INSPECTION_CONTRACT_V1.md
+eval/reader_retrieval_typed_inspection_contract_v1.json
+tests/test_reader_retrieval_typed_inspection_contract_v1.py
+```
+
+Frozen relation families:
+
+```text
+EQUIVALENCE_SUSPECT
+RELATED_SUSPECT
+CONTRADICTION_SUSPECT
+QUALIFICATION_SUSPECT
+TOPIC_ONLY_SUSPECT
+UNKNOWN
+```
+
+Frozen qualifier dimensions:
+
+```text
+entity_binding
+predicate_binding
+argument_roles
+polarity
+modality_quantifier
+temporal_version
+jurisdiction
+condition_direction
+units_thresholds
+attribution_causality
+```
+
+Each qualifier is limited to `MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE`.
+
+Authority flags remain:
+
+```text
+identity_claimed=false
+evidence_admitted=false
+adjudication_performed=false
+runtime_authorization=false
+```
+
+RRTIC diagnostic `!=` RC-5 registered relation `!=` adjudicated contradiction `!=` admitted evidence. Prior frozen RC-8/v2/NLI cases are explanatory provenance only; RRTIC-v1 makes no new performance claim. Any future discriminator requires a new experiment identity, preregistration and fresh validation design.
 
 ## Latest frozen evidence — NLI neutral-filter v1
 
@@ -176,13 +228,15 @@ retrieval match != evidence
 similarity != identity
 NLI label != proposition identity
 NLI contradiction != contradiction adjudication
+RRTIC suspicion != adjudicated relation
+qualifier mismatch != truth decision
 ranking != epistemic authority
 candidate discovery != candidate adjudication
 comparison pass != runtime authorization
 evaluation pass != runtime authorization
 ```
 
-Comparator/NLI research is evaluation evidence only. It does not authorize semantic/hybrid Reader runtime, an NLI runtime filter, FTS, ANN/vector DB, PostgreSQL/pgvector activation, automatic proposition identity, automatic contradiction adjudication, evidence admission, Guardian/TruthGate bypass or Canon mutation.
+Comparator/NLI/RRTIC research does not authorize semantic/hybrid Reader runtime, an NLI runtime filter, RRTIC runtime provider, FTS, ANN/vector DB, PostgreSQL/pgvector activation, automatic proposition identity, automatic contradiction adjudication, evidence admission, Guardian/TruthGate bypass or Canon mutation.
 
 ## Localization truth
 
@@ -196,7 +250,7 @@ Tracked Reader detail debt remains 64 documents.
 
 NLnet remains `submitted / under review / not awarded`.
 Approximate €50,000 remains planning context only, not awarded funding.
-Open residual issues `#155`, `#165` and `#214` remain separate scopes and must not be auto-started by this documentation workstream.
+Open residual issues `#155`, `#165` and `#214` remain separate scopes and must not be auto-started by this architecture workstream.
 
 ## Documentation contract
 
@@ -226,4 +280,4 @@ HISTORICAL CHECKPOINTS
 
 The NLI neutral-filter v1 milestone is closed. Do not tune its frozen rule on the same evaluation surface and call that unbiased validation. Any different rule/model/threshold is a new experiment identity requiring a new preregistration and validation design.
 
-Current next action after documentation reconciliation: **fresh post-NLI architecture reassessment**. Select exactly one bounded next milestone or an explicit STOP. Do not automatically start issues `#155`, `#165`, `#214`, another model, or Reader runtime work.
+Current bounded action is to validate and close **RRTIC-v1 (#391 / PR #392)**. After that closure, STOP. No discriminator/model/runtime implementation is authorized by this contract, and issues `#155`, `#165`, `#214` remain separate backlog items.
