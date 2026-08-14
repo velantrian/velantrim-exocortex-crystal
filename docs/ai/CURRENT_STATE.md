@@ -2,13 +2,13 @@
 
 **Status date:** 2026-08-14  
 **Document role:** compact technical state snapshot; live GitHub + tests + exact CI override this file if repository state has advanced.  
-**Repository main at last completed docs audit:** `4628e6fe231103a57c86df8b157b87b8b6b183f2`  
+**Repository HEAD:** `RESOLVE_LIVE_GITHUB`.  
+**Repository lifecycle provenance:** `RESOLVE_LIVE_GITHUB` for current main, exact CI, latest closure, open PRs/issues and active milestone.  
 **Current architecture checkpoint:** `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` — RRTIC-v1 / PR #392.  
-**Latest completed documentation closure:** Issue `#395` CLOSED/completed; PR `#396` MERGED.  
-**Active milestone:** `NONE`.  
-**Next milestone selected:** `false`.
+**Active milestone:** `RESOLVE_LIVE_GITHUB`.  
+**Next milestone selected:** `RESOLVE_LIVE_GITHUB`.
 
-Do not treat a historical SHA as current HEAD. Do not treat this document as a substitute for `docs/status/implementation-manifest.json`. A closed milestone must not be represented as active work.
+Do not treat a historical SHA as current HEAD. Do not treat this document as a substitute for `docs/status/implementation-manifest.json`. Do not hard-code a latest repository/docs closure here as an indefinitely-current invariant; resolve volatile lifecycle state from live GitHub before acting.
 
 ## Current Reader position
 
@@ -284,11 +284,11 @@ Separate residual issues:
 #214 PII fixture + supply-chain hygiene
 ```
 
-They are not auto-started by Reader or documentation closure.
+They are not auto-started by Reader or documentation work.
 
-## Documentation architecture v1 — completed closure
+## Documentation interface lifecycle
 
-Latest completed docs milestone: Issue `#395` — **Human / AI / Machine / Evidence Documentation Architecture v1**; PR `#396` merged.
+The maintained interface remains:
 
 ```text
 👤 README + docs/OVERVIEW.md
@@ -301,17 +301,19 @@ Latest completed docs milestone: Issue `#395` — **Human / AI / Machine / Evide
 overview != current state != machine truth != evidence != history
 ```
 
-The documentation architecture may reorganize explanation and navigation. It does not authorize any Reader runtime, model, storage backend activation or epistemic-authority change.
-
-Lifecycle truth after closure:
+Volatile repository lifecycle facts are deliberately **not** persisted here as “latest/current” constants. Resolve them before work:
 
 ```text
-#395 = CLOSED / completed
-#396 = MERGED
-active_milestone = NONE
-next_milestone_selected = false
+repository HEAD + exact CI       → RESOLVE_LIVE_GITHUB
+latest completed PR/issue        → RESOLVE_LIVE_GITHUB
+open PRs/issues                  → RESOLVE_LIVE_GITHUB
+active milestone / next selected → RESOLVE_LIVE_GITHUB
 ```
+
+Synchronized Notion may preserve checkpoint provenance, but live GitHub remains authoritative and can supersede it.
 
 ## Stop boundary
 
-The #395/#396 documentation milestone is closed. No next model, discriminator, reranker, Reader backend or residual issue is automatically authorized. Before any new bounded work, re-resolve live GitHub/Notion, perform a fresh architecture reassessment, select exactly one scope, and preserve the authority firewall.
+This file does not authorize or select the next workstream. Before any new bounded work, resolve live GitHub/Notion, perform a fresh architecture reassessment, select exactly one scope, and preserve the authority firewall.
+
+No next model, discriminator, reranker, Reader backend, storage activation, authority expansion or residual issue is automatically authorized by a historical closure or by this static snapshot.
