@@ -213,6 +213,8 @@ contract-first / no runtime authorization
 
 **Current implemented Reader retrieval baseline:** **RC-9 deterministic lexical PRE-ADMISSION candidate discovery**. The retained frozen RC-9 control records Recall@5 `0.937500`, Precision@5 `0.187500`, MRR `0.895833`, with classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
+Historical signed RC-9 merge: `f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`; post-merge CI `31594027040`. This provenance anchor is retained for audit compatibility and is not a claim that the historical SHA is current repository HEAD.
+
 Those metrics describe a bounded synthetic retrieval benchmark, not semantic accuracy or epistemic correctness. Detailed immutable evidence lives in [TEST_REPORT](./TEST_REPORT.md), [`eval/**`](./eval/) and the Reader architecture documents.
 
 ---
