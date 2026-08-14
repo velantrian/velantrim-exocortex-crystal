@@ -4,161 +4,158 @@
 
 ## 💠 Memory and evidence infrastructure that keeps retrieval separate from truth
 
-Crystal is a **local-first, evidence-first Exo-Cortex research and implementation line** for AI systems that need durable memory, provenance, explicit epistemic boundaries and auditable decisions.
+Crystal is a **local-first research and implementation line for auditable AI memory**. It separates discovery, provenance, evidence admission, epistemic authority, trusted canonical state and presentation so that finding relevant material does not automatically make that material true.
 
-The central idea is simple: finding something relevant must never silently make it true. A Reader can discover material, compare candidates and expose structural differences, while **evidence admission, contradiction adjudication and Canon authority remain separate decisions**.
-
-> 💬 **For a human reader:** start here and follow the diagrams. You should understand the project in a few minutes without reading CI logs or historical SHAs.
+> 👤 **New to Crystal?** Read this page first. It is the human landing page.
 >
-> 🤖 **AI / agents / automated auditors:** do not infer current project state from this human overview. Start with **[Special for AI →](./docs/ai/README.md)**.
+> 🤖 **AI / agents / automated auditors:** start with **[Special for AI →](./docs/ai/README.md)**. Do not reconstruct current repository state from this narrative README.
 >
-> 📖 **Want the deeper human explanation?** Open **[Deep System Overview →](./docs/OVERVIEW.md)**.
+> 📚 **Want the deeper architecture?** Continue to **[Deep System Overview →](./docs/OVERVIEW.md)**.
 
-`v0.3.0` · 🎯 **100% line-coverage gate** · 🧬 **Ring Zero mutation gate** · ✅ **9 permanent CI jobs** · 🐍 **pure-standard-library default runtime** · ⚖️ **AGPL-3.0**
+`v0.3.0` · 🎯 **100% line-coverage gate** · 🧬 **Ring Zero mutation gate** · ✅ **9 permanent CI jobs** · 🐍 **standard-library-first default runtime** · ⚖️ **AGPL-3.0**
 
----
+## 👋 What Crystal is — and why it exists
 
-## 🎯 Why Crystal exists
+Retrieval systems are good at answering:
 
-Many AI and RAG systems are very good at finding plausible context. That is useful, but relevance alone does not prove that two claims are identical, that a source is admissible evidence, that a contradiction is resolved, or that a statement belongs in trusted memory.
+> “What looks relevant?”
 
-Crystal treats these as different layers:
+Crystal is built around the harder follow-up questions:
 
-```text
-🔎 discovery       → “worth inspecting”
-🧾 provenance      → “where did this come from?”
-🛡️ evidence gate   → “may this support a claim?”
-⚖️ adjudication    → “what does the conflict mean?”
-🏛️ Canon           → “what is authorized trusted state?”
-💬 presentation    → “what may be answered?”
+- Where did this information come from?
+- Does it support the same proposition, or only a related one?
+- Is it admissible evidence?
+- Has a contradiction actually been adjudicated?
+- What is allowed to enter trusted memory?
+- What may the system safely present as grounded?
+
+The central rule is deliberately conservative:
+
+> **Discovery may propose what deserves inspection. Authority is a separate decision path.**
+
+## 🧠 Mental model
+
+```mermaid
+mindmap
+  root((💠 Crystal))
+    🔎 Discovery
+      sources
+      Reader
+      candidate retrieval
+    🧾 Evidence
+      provenance
+      support
+      admission
+    🛡 Authority
+      Guardian
+      TruthGate
+    🏛 Canon
+      authorized local state
+    💬 Presentation
+      grounded answer
+      bounded refusal
+    🔬 Research
+      evaluation
+      falsification
+      architecture
 ```
 
-The design rule is:
-
-> **Discovery proposes what deserves inspection; authority is a separate decision path.**
-
----
+This map answers **what conceptual domains exist**. The important distinction is not “retrieval versus no retrieval.” It is **candidate discovery versus epistemic authorization**.
 
 ## 🗺️ Architecture in one view
 
+### ⚙️ Authority flow
+
 ```text
-📥 Source / document
-       │
-       ▼
-📖 Reader RC-1…RC-7
-source identity · structure · passes · propositions · explicit links
-       │
-       ▼
-🔎 RC-9 lexical PRE-ADMISSION discovery
-“which extracted propositions are worth inspecting together?”
-       │
-       ▼
-🧬 RRTIC-v1 typed inspection contract
-relation suspicion + structural qualifier differences
-architecture contract only — no runtime provider
-       │
-       ▼
-🧾 explicit evidence / admission boundary
-       │
-       ▼
-🛡️ Guardian → TruthGate
-       │
-       ▼
-🏛️ physical L3 → strict Canon projection
-       │
-       ▼
-💬 grounded answer / bounded refusal
-       │
-       ▼
-🧾 TRACE + Receipt
+                 DISCOVERY SIDE                         AUTHORITY SIDE
+
+📥 source → 📖 Reader → 🔎 candidates       │       🧾 evidence boundary
+                                            │                ↓
+              may surface                   │       🛡 Guardian → TruthGate
+              may compare                   │                ↓
+              may inspect                   │            🏛 Canon
+                                            │                ↓
+                                            │       💬 answer / refusal
+
+                 proposal                    │          authorization
 ```
 
----
+A retrieval score, model label or typed suspicion may help inspection. None of them owns the right to mutate trusted state.
 
 ## 🌳 Project tree
 
 ```text
 💠 Crystal
+│
 ├── 📖 Reader
 │   ├── RC-1…RC-7 bounded implemented layers
-│   ├── RC-9 deterministic lexical discovery
-│   └── RRTIC-v1 typed inspection contract
+│   ├── RC-9 deterministic lexical PRE-ADMISSION candidate discovery
+│   └── RRTIC-v1 typed inspection contract — architecture only
+│
 ├── 🧾 Evidence & provenance
-├── 🛡️ Guardian / TruthGate
-├── 🏛️ Memory / Canon
-│   ├── SQLite — ordinary active local-first
-│   └── PostgreSQL/pgvector — inactive target, active=false
+│
+├── 🛡 Guardian / TruthGate
+│
+├── 🏛 Memory / Canon
+│   ├── SQLite — ordinary active local-first path
+│   └── PostgreSQL/pgvector — inactive equivalence/import target
+│
 ├── 💬 Read-only query / presentation
-├── 🧪 Evaluations
+│
+├── 🧪 Evaluation
 │   ├── RC-9 lexical baseline
 │   ├── Comparator v1 — frozen gate FAIL
 │   └── NLI neutral-filter v1 — frozen gate FAIL
+│
 ├── 🤖 AI documentation interface
 ├── ⚙ Machine-readable implementation truth
-└── 🎓 Grant / public truth surfaces
+└── 🔬 Evidence / history surfaces
 ```
 
----
+This tree answers **how the system is decomposed**, rather than repeating the conceptual relationships above.
+
+## 🔄 Architecture topology
+
+```mermaid
+flowchart LR
+    S["📥 Sources"] --> R["📖 Reader"]
+    R --> D["🔎 Candidate discovery"]
+    R --> P["🧾 Provenance"]
+    D --> I["🧬 Typed inspection"]
+    P --> E["🧾 Evidence boundary"]
+    I --> E
+    E --> G["🛡 Guardian / TruthGate"]
+    G --> C["🏛 Canon"]
+    C --> Q["💬 Grounded presentation"]
+    X["🔬 Tests · evaluation · evidence"] -. constrain .-> D
+    X -. constrain .-> G
+```
+
+The topology is intentionally asymmetric: discovery can generate candidates, but trusted-state transitions remain behind explicit authority boundaries.
 
 ## 📊 What exists today
 
-| Area | State | What that means |
+| Area | State | Meaning |
 |---|---|---|
 | 📖 Reader RC-1…RC-7 | ✅ **Implemented** | bounded source, structure, pass, proposition, relation, long-context and explicit cross-document layers |
 | 🔎 Reader RC-9 | ✅ **Implemented** | deterministic offline BM25 PRE-ADMISSION candidate discovery |
 | 🧪 Comparator v1 | 🧊 **Frozen evaluation** | semantic recall recovered; discrimination gate failed |
 | 🧪 NLI neutral-filter v1 | 🧊 **Frozen evaluation** | discrimination improved; recall-safety gate failed |
-| 🧬 RRTIC-v1 | 📐 **Frozen architecture contract** | typed relation suspicion + 10 qualifier dimensions; no runtime provider |
-| 🏛️ SQLite | ✅ **Active local-first** | ordinary active storage/runtime path |
-| 🗄 PostgreSQL/pgvector | ⛔ **Inactive** | import/equivalence target only, `active=false` |
-| 🧠 Semantic/hybrid Reader runtime | ❌ **Not authorized** | no Reader FTS/ANN/vector backend, NLI runtime filter or RRTIC runtime provider |
-| 🤖 Dedicated/full autonomous Reader | ❌ **Not implemented** | `dedicated_reader_core=false` |
+| 🧬 RRTIC-v1 | 📐 **Frozen architecture contract** | typed relation suspicion + structural qualifier inspection; no runtime provider |
+| 🏛 SQLite | ✅ **Active local-first** | ordinary active storage/runtime path |
+| 🗄 PostgreSQL/pgvector | ⛔ **Inactive** | import/equivalence target only; `active=false`; no Reader activation |
+| 🧠 Semantic/hybrid Reader runtime | ❌ **Not authorized** | no Reader FTS/ANN/vector backend or NLI/RRTIC runtime stage |
+| 🤖 Dedicated/full autonomous Reader | ❌ **Not implemented** | bounded Reader layers exist; no full autonomous Reader core |
 
-### ⚙ Compact machine truth
+For exact implementation flags and current verification evidence, use [Implementation Status](./docs/IMPLEMENTATION_STATUS.md), [Current Status](./docs/STATUS.md), [TEST_REPORT](./TEST_REPORT.md) and the [machine-readable implementation manifest](./docs/status/implementation-manifest.json).
 
-```text
-reader_core_rc1_skeleton               = true
-reader_core_rc2_structural_map         = true
-reader_core_rc3_multi_pass_mechanics   = true
-reader_core_rc4_proposition_extraction = true
-reader_core_rc5_relation_candidates    = true
-reader_core_rc6_long_context_strategy  = true
-reader_core_rc7_cross_document_links   = true
-reader_rc9_lexical_candidate_discovery = true
-dedicated_reader_core                  = false
-semantic_hybrid_reader_runtime         = false
-rrtic_runtime_authorization            = false
-```
+### 🧭 RC-6 compatibility note
 
-### 🧭 RC-6 long-context note
-
-**RC-6** builds bounded working sets while preserving **direct RC-4 leaf provenance**. Any summary is only a **caller-supplied `SUMMARY`**; working-set coverage is not comprehension proof, and a summary is not evidence. **RC-7** remains the explicit cross-document candidate layer above that boundary.
-
-For exact current state and evidence, use [STATUS](./docs/STATUS.md), [Implementation Status](./docs/IMPLEMENTATION_STATUS.md), [TEST_REPORT](./TEST_REPORT.md) and the [implementation manifest](./docs/status/implementation-manifest.json).
-
----
-
-## 🧬 RRTIC-v1 — architecture contract, not runtime
-
-The current Reader architecture contract is **Reader Retrieval Typed Inspection Contract v1 (RRTIC-v1)**.
-
-After RC-9, a multilingual semantic comparator recovered the measured recall gap but failed proposition-level hard-negative discrimination. A later bidirectional NLI neutral filter improved discrimination but lost useful recall. The architecture reassessment therefore identified the missing capability as a **relation-contract mismatch**, not simply “use a stronger similarity model.”
-
-RRTIC-v1 freezes:
-
-- **6 suspicion-only relation families** — `EQUIVALENCE_SUSPECT`, `RELATED_SUSPECT`, `CONTRADICTION_SUSPECT`, `QUALIFICATION_SUSPECT`, `TOPIC_ONLY_SUSPECT`, `UNKNOWN`;
-- **10 qualifier dimensions** — entity, predicate, argument roles, polarity, modality/quantifier, temporal/version, jurisdiction, condition direction, units/thresholds, attribution/causality;
-- qualifier states `MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE`.
-
-It has **no accept/reject policy, no scalar truth score, no reranking, no model execution and no runtime authorization**. Classification from the latest frozen model-backed evaluation remains `NLI_NEUTRAL_FILTER_GATE_FAILED`.
-
-Current signed architecture checkpoint: `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` (PR #392). Later docs-only repository commits do not redefine that architecture checkpoint.
-
----
+**RC-6** builds bounded working sets while preserving **direct RC-4 leaf provenance**. Any summary is only a **caller-supplied `SUMMARY`**; working-set coverage is not comprehension proof, and **RC-7** remains the explicit cross-document candidate layer above that boundary.
 
 ## 🛡️ Authority firewall
 
-These are architectural invariants, not wording preferences:
+These are architecture invariants, not marketing language:
 
 ```text
 retrieval match          != evidence
@@ -172,58 +169,89 @@ NLI contradiction        != contradiction adjudication
 RRTIC suspicion          != adjudicated relation
 qualifier mismatch       != truth decision
 evaluation pass          != runtime authorization
+physical L3              != strict Canon
 ```
 
-The retained RC-7 boundary remains **no automatic semantic matching**. Reader cross-document candidates provide no automatic entity resolution, no adjudication, and no Reader embeddings/ANN/vector runtime or vector DB.
-
----
+The retained RC-7 boundary remains **no automatic semantic matching**: cross-document candidates provide no automatic identity, evidence admission, contradiction adjudication or Canon promotion from retrieval.
 
 ## 🧠 How Crystal differs from common memory/retrieval patterns
 
-This is an **architectural emphasis comparison, not a claim of universal superiority**.
+This is an **architectural positioning matrix, not a leaderboard**. Different systems may solve different layers of the same larger problem.
 
-| Approach | Primary strength | Crystal’s different emphasis |
+| Approach | Primary emphasis | Crystal’s different emphasis |
 |---|---|---|
-| 📦 Classic vector RAG | retrieve relevant chunks | relevance must remain separate from evidence, identity and Canon authority |
-| 🧠 Agent memory systems | preserve useful agent/user context | Crystal focuses on provenance, admission boundaries and auditable trusted-state transitions |
-| 🕸️ Graph / temporal-memory systems | structured relationships and evolving context | Crystal treats discovered relations as candidates until explicit authority boundaries are satisfied |
-| 💠 Crystal | evidence-first memory + Reader boundaries | local-first truth-state separation, deny-safe authority and explicit research/runtime distinction |
+| 📦 Classic vector RAG | retrieve relevant context for generation | relevance remains separate from evidence, identity and Canon authority |
+| 🧠 Agent memory systems | preserve useful agent/user context | provenance, admission boundaries and auditable trusted-state transitions |
+| 🕸 Graph / temporal-memory systems | represent relationships and evolving context | discovered relations remain candidates until explicit authority requirements are satisfied |
+| 💠 Crystal | evidence-first local memory + Reader boundaries | local-first trusted-state separation, deny-safe authority and explicit research/runtime distinction |
 
-Named systems such as Letta/MemGPT and Graphiti solve overlapping but different problems. The deeper overview contains a dated, source-linked comparison so this README does not turn changing external products into permanent project truth.
+Named external systems evolve. Dated, source-linked comparison context lives in the [Deep System Overview](./docs/OVERVIEW.md); this README intentionally avoids turning changing third-party products into permanent project truth.
 
----
+## 🔬 Current research boundary
 
-## 🧪 Evidence chain — short version
+The post-RC-9 evidence chain is useful precisely because failed gates are preserved instead of marketed away:
 
 ```text
 RC-9 lexical baseline
         ↓
 Comparator v1
-semantic recall recovered
-hard-negative discrimination FAIL
+recall recovered · hard-negative discrimination FAIL
         ↓
 NLI neutral-filter v1
-hard-negative leakage reduced
-useful-recall safety FAIL
+leakage reduced · useful-recall safety FAIL
         ↓
 architecture reassessment
-RELATION-CONTRACT MISMATCH
+relation-contract mismatch
         ↓
 RRTIC-v1
-contract-first / no runtime authorization
+contract-first · no runtime authorization
 ```
+
+### 🧬 RRTIC-v1 — architecture contract, not runtime
+
+The current Reader architecture includes the **Reader Retrieval Typed Inspection Contract v1 (RRTIC-v1)** as a bounded, model-free inspection contract. It does **not** authorize a semantic/NLI runtime provider, automatic adjudication, evidence admission or Canon writes.
+
+RRTIC-v1 freezes typed relation suspicion and structural qualifier vocabulary. It does **not** provide a model, reranker, truth score, accept/reject policy or runtime authorization.
+
+EPIS-001 is likewise a frozen architecture-only evidence-state observability contract. It does not create an Epistemic Router runtime or new evidence/Canon authority.
+
+Current backlog and repository lifecycle state are intentionally **not hard-coded here**. Resolve them from live GitHub and the current status surfaces rather than treating a stable landing page as an operational ledger.
 
 ### ✅ Reviewer validation
 
-**Current implemented Reader retrieval baseline:** **RC-9 deterministic lexical PRE-ADMISSION candidate discovery**. The retained frozen RC-9 control records Recall@5 `0.937500`, Precision@5 `0.187500`, MRR `0.895833`, with classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+**Current implemented Reader retrieval baseline:** **RC-9 deterministic lexical PRE-ADMISSION candidate discovery**.
 
-Historical signed RC-9 merge: `f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`; post-merge CI `31594027040`. This provenance anchor is retained for audit compatibility and is not a claim that the historical SHA is current repository HEAD.
+The retained frozen RC-9 control records **Recall@5 `0.937500`**, **Precision@5 `0.187500`** and **MRR `0.895833`**, with classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
-Those metrics describe a bounded synthetic retrieval benchmark, not semantic accuracy or epistemic correctness. Detailed immutable evidence lives in [TEST_REPORT](./TEST_REPORT.md), [`eval/**`](./eval/) and the Reader architecture documents.
+```text
+reader_core_rc6_long_context_strategy  = true
+reader_core_rc7_cross_document_links   = true
+reader_rc9_lexical_candidate_discovery = true
+dedicated_reader_core                  = false
+semantic_hybrid_reader_runtime         = false
+rrtic_runtime_authorization            = false
+```
 
----
+These values are reviewer-facing compatibility and evidence anchors. They describe a bounded synthetic retrieval benchmark and implementation boundary — **not a measure of semantic correctness, epistemic validity or production-scale quality**.
 
-## 🚀 Quick start
+## 🚫 What Crystal does **not** claim
+
+Crystal does **not** claim:
+
+- universal truth detection or zero hallucinations;
+- automatic semantic equivalence or proposition identity;
+- automatic corroboration, evidence admission or contradiction winner selection from retrieval;
+- a semantic/hybrid/vector Reader runtime, Reader FTS, ANN/FAISS/HNSW or Reader vector database;
+- an NLI runtime filter, CrossEncoder reranker or RRTIC runtime provider;
+- an implemented EPIS/Epistemic Router runtime;
+- a completed dedicated/full autonomous Reader;
+- active PostgreSQL/pgvector Reader selection or automatic backend cutover;
+- production-scale retrieval quality from bounded synthetic evaluation surfaces;
+- legal, GDPR, security or supply-chain certification.
+
+**Funding truth:** NLnet remains **submitted / under review / not awarded**. Approximate **€50,000** is planning context only, not an approved budget, grant award or payment commitment.
+
+## 🛠 Quickstart
 
 ```bash
 git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
@@ -236,64 +264,84 @@ python -m pytest -q
 python scripts/eval_gate.py --out-dir eval-artifacts
 ```
 
-The default runtime stays dependency-free / standard-library-first. Optional integrations expand the trust or dependency boundary and are not implied by the default setup.
-
----
-
-## 🚫 What Crystal does **not** claim
-
-Crystal does not claim:
-
-- semantic understanding or automatic semantic equivalence / claim identity;
-- automatic truth verification, corroboration or evidence admission from retrieval;
-- automatic contradiction resolution or winner selection;
-- semantic/hybrid/vector Reader runtime, Reader FTS, ANN/FAISS/HNSW or Reader vector DB;
-- an NLI runtime filter, CrossEncoder reranker or RRTIC runtime provider;
-- a completed dedicated/full autonomous Reader;
-- automatic Reader parser/OCR/PDF-layout/multimodal understanding;
-- active PostgreSQL runtime selection, pgvector Reader activation or automatic cutover;
-- universal objective-truth detection, zero hallucinations, legal/GDPR/security certification, or “fully secure” operation;
-- production-scale retrieval quality from the frozen synthetic evaluation surfaces.
-
-NLnet remains **submitted / under review / not awarded**. Approximate **€50,000** is planning context only, not an approved budget or payment commitment.
-
-Residual issues #155, #165 and #214 remain separate scopes and are not implemented by this documentation work.
-
----
+The default runtime remains standard-library-first. Optional integrations expand the dependency or trust boundary and are not implied by the default setup.
 
 ## 📚 Where to read next
 
-### 👤 Human path
+### 👤 Human
 
-1. **[Deep System Overview](./docs/OVERVIEW.md)** — concepts, visual model, examples and careful external comparison.
-2. **[Architecture Overview](./docs/ARCHITECTURE_OVERVIEW.md)** — tighter technical architecture map.
-3. **[Full Architecture](./docs/ARCHITECTURE.md)** — detailed contracts.
-4. **[Reviewer Guide](./docs/REVIEWER_GUIDE.md)** — validation and review procedure.
+```text
+README.md
+   ↓
+docs/OVERVIEW.md
+   ↓
+docs/ARCHITECTURE_OVERVIEW.md
+   ↓
+docs/ARCHITECTURE.md
+   ↓
+research / evidence as needed
+```
 
-### 🤖 AI / agent path
+### 🤖 AI / agents / automated auditors
 
-1. **[Special for AI](./docs/ai/README.md)** — exact reading order and forbidden inferences.
-2. **[AI Current State](./docs/ai/CURRENT_STATE.md)** — detailed technical state/evidence snapshot.
-3. **[Machine-readable implementation manifest](./docs/status/implementation-manifest.json)**.
+```text
+docs/ai/README.md
+   ↓
+AGENTS.md
+   ↓
+docs/status/implementation-manifest.json
+   ↓
+docs/STATUS.md + docs/IMPLEMENTATION_STATUS.md
+   ↓
+task-specific contracts / tests / exact CI
+```
 
-### 🧾 Evidence / state path
+### 🔬 Validation / due diligence
 
-- [Current Status](./docs/STATUS.md)
-- [Implementation Status](./docs/IMPLEMENTATION_STATUS.md)
-- [TEST_REPORT](./TEST_REPORT.md)
-- [Roadmap](./ROADMAP.md)
-- [Documentation Map](./docs/DOCUMENTATION_MAP.md)
-- [Translation Status](./docs/TRANSLATION_STATUS.md)
+```text
+TEST_REPORT.md
+   ↓
+docs/STATUS.md
+   ↓
+eval/** + architecture contracts
+   ↓
+exact GitHub commit / CI evidence
+```
 
----
+### 📚 Key documents
 
-## 🌍 Localization truth
+- [Deep System Overview](./docs/OVERVIEW.md) — human architecture and research narrative
+- [Architecture Overview](./docs/ARCHITECTURE_OVERVIEW.md) — compact technical architecture map
+- [Full Architecture](./docs/ARCHITECTURE.md) — detailed contracts
+- [Special for AI](./docs/ai/README.md) — deterministic agent entrypoint
+- [Machine-readable implementation manifest](./docs/status/implementation-manifest.json) — exact capability/authorization fields
+- [Current Status](./docs/STATUS.md) — current implementation/evidence state
+- [TEST_REPORT](./TEST_REPORT.md) — verification evidence
+- [Reviewer Guide](./docs/REVIEWER_GUIDE.md) — validation procedure
+- [Roadmap](./ROADMAP.md) — future evidence-gated direction
 
-English is the primary source language. Localized README/detail surfaces remain tied to the exact source checkpoints recorded in [Translation Status](./docs/TRANSLATION_STATUS.md); a visually useful older translation must not be mistaken for newer implementation truth.
+<details>
+<summary>📎 Historical compatibility / provenance anchors</summary>
 
-The Spanish README is intentionally useful as a historical human-layout reference, but its recorded source checkpoint is older than the current RRTIC-era English source.
+These immutable anchors are preserved for audit compatibility. They are **historical evidence, not current repository HEAD**.
 
----
+- Current signed **Reader architecture checkpoint:** `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` — RRTIC-v1 / PR #392. Later documentation or security merges do not redefine that architecture checkpoint.
+- Historical signed **RC-9 merge:** `f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`.
+- Historical RC-9 post-merge CI: `31594027040`.
+- RC6 compatibility marker: `reader_core_rc6_long_context_strategy`.
+- Retained RC-9 classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+- Retained NLI evaluation classification: `NLI_NEUTRAL_FILTER_GATE_FAILED`.
+- Larger Reader truth remains: `dedicated_reader_core=false`, `semantic_hybrid_reader_runtime=false`, `rrtic_runtime_authorization=false`.
+
+For live repository HEAD, open PRs/issues and latest CI, resolve GitHub directly rather than this block.
+
+</details>
+
+## 🌍 Localization
+
+English is the primary source language. Localized README/detail surfaces are tied to the source checkpoints recorded in [Translation Status](./docs/TRANSLATION_STATUS.md). A useful older translation must not be mistaken for newer English implementation truth.
+
+This English presentation update does not imply localization parity or modify any non-English document.
 
 ## 🤝 Contributing and license
 
