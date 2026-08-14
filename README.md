@@ -14,8 +14,6 @@ Crystal is a **local-first research and implementation line for auditable AI mem
 
 `v0.3.0` · 🎯 **100% line-coverage gate** · 🧬 **Ring Zero mutation gate** · ✅ **9 permanent CI jobs** · 🐍 **standard-library-first default runtime** · ⚖️ **AGPL-3.0**
 
----
-
 ## 👋 What Crystal is — and why it exists
 
 Retrieval systems are good at answering:
@@ -34,8 +32,6 @@ Crystal is built around the harder follow-up questions:
 The central rule is deliberately conservative:
 
 > **Discovery may propose what deserves inspection. Authority is a separate decision path.**
-
----
 
 ## 🧠 Mental model
 
@@ -66,9 +62,9 @@ mindmap
 
 This map answers **what conceptual domains exist**. The important distinction is not “retrieval versus no retrieval.” It is **candidate discovery versus epistemic authorization**.
 
----
+## 🗺️ Architecture in one view
 
-## ⚙️ Authority flow
+### ⚙️ Authority flow
 
 ```text
                  DISCOVERY SIDE                         AUTHORITY SIDE
@@ -86,9 +82,7 @@ This map answers **what conceptual domains exist**. The important distinction is
 
 A retrieval score, model label or typed suspicion may help inspection. None of them owns the right to mutate trusted state.
 
----
-
-## 🌳 System decomposition
+## 🌳 Project tree
 
 ```text
 💠 Crystal
@@ -120,8 +114,6 @@ A retrieval score, model label or typed suspicion may help inspection. None of t
 
 This tree answers **how the system is decomposed**, rather than repeating the conceptual relationships above.
 
----
-
 ## 🔄 Architecture topology
 
 ```mermaid
@@ -141,8 +133,6 @@ flowchart LR
 
 The topology is intentionally asymmetric: discovery can generate candidates, but trusted-state transitions remain behind explicit authority boundaries.
 
----
-
 ## 📊 What exists today
 
 | Area | State | Meaning |
@@ -153,13 +143,15 @@ The topology is intentionally asymmetric: discovery can generate candidates, but
 | 🧪 NLI neutral-filter v1 | 🧊 **Frozen evaluation** | discrimination improved; recall-safety gate failed |
 | 🧬 RRTIC-v1 | 📐 **Frozen architecture contract** | typed relation suspicion + structural qualifier inspection; no runtime provider |
 | 🏛 SQLite | ✅ **Active local-first** | ordinary active storage/runtime path |
-| 🗄 PostgreSQL/pgvector | ⛔ **Inactive** | import/equivalence target only; no Reader activation |
+| 🗄 PostgreSQL/pgvector | ⛔ **Inactive** | import/equivalence target only; `active=false`; no Reader activation |
 | 🧠 Semantic/hybrid Reader runtime | ❌ **Not authorized** | no Reader FTS/ANN/vector backend or NLI/RRTIC runtime stage |
 | 🤖 Dedicated/full autonomous Reader | ❌ **Not implemented** | bounded Reader layers exist; no full autonomous Reader core |
 
 For exact implementation flags and current verification evidence, use [Implementation Status](./docs/IMPLEMENTATION_STATUS.md), [Current Status](./docs/STATUS.md), [TEST_REPORT](./TEST_REPORT.md) and the [machine-readable implementation manifest](./docs/status/implementation-manifest.json).
 
----
+### 🧭 RC-6 compatibility note
+
+**RC-6** builds bounded working sets while preserving **direct RC-4 leaf provenance**. Any summary is only a **caller-supplied `SUMMARY`**; working-set coverage is not comprehension proof, and **RC-7** remains the explicit cross-document candidate layer above that boundary.
 
 ## 🛡️ Authority firewall
 
@@ -180,11 +172,9 @@ evaluation pass          != runtime authorization
 physical L3              != strict Canon
 ```
 
-The retained Reader boundary is **no automatic semantic identity, evidence admission, contradiction adjudication or Canon promotion from retrieval**.
+The retained RC-7 boundary remains **no automatic semantic matching**: cross-document candidates provide no automatic identity, evidence admission, contradiction adjudication or Canon promotion from retrieval.
 
----
-
-## 🆚 Where Crystal sits
+## 🧠 How Crystal differs from common memory/retrieval patterns
 
 This is an **architectural positioning matrix, not a leaderboard**. Different systems may solve different layers of the same larger problem.
 
@@ -196,8 +186,6 @@ This is an **architectural positioning matrix, not a leaderboard**. Different sy
 | 💠 Crystal | evidence-first local memory + Reader boundaries | local-first trusted-state separation, deny-safe authority and explicit research/runtime distinction |
 
 Named external systems evolve. Dated, source-linked comparison context lives in the [Deep System Overview](./docs/OVERVIEW.md); this README intentionally avoids turning changing third-party products into permanent project truth.
-
----
 
 ## 🔬 Current research boundary
 
@@ -219,6 +207,8 @@ RRTIC-v1
 contract-first · no runtime authorization
 ```
 
+### 🧬 RRTIC-v1 — architecture contract, not runtime
+
 The current Reader architecture includes the **Reader Retrieval Typed Inspection Contract v1 (RRTIC-v1)** as a bounded, model-free inspection contract. It does **not** authorize a semantic/NLI runtime provider, automatic adjudication, evidence admission or Canon writes.
 
 RRTIC-v1 freezes typed relation suspicion and structural qualifier vocabulary. It does **not** provide a model, reranker, truth score, accept/reject policy or runtime authorization.
@@ -234,15 +224,17 @@ Current backlog and repository lifecycle state are intentionally **not hard-code
 The retained frozen RC-9 control records **Recall@5 `0.937500`**, **Precision@5 `0.187500`** and **MRR `0.895833`**, with classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
 ```text
-reader_core_rc7_cross_document_links = true
-dedicated_reader_core                = false
+reader_core_rc6_long_context_strategy  = true
+reader_core_rc7_cross_document_links   = true
+reader_rc9_lexical_candidate_discovery = true
+dedicated_reader_core                  = false
+semantic_hybrid_reader_runtime         = false
+rrtic_runtime_authorization            = false
 ```
 
 These values are reviewer-facing compatibility and evidence anchors. They describe a bounded synthetic retrieval benchmark and implementation boundary — **not a measure of semantic correctness, epistemic validity or production-scale quality**.
 
----
-
-## 🚫 What Crystal does not claim
+## 🚫 What Crystal does **not** claim
 
 Crystal does **not** claim:
 
@@ -259,8 +251,6 @@ Crystal does **not** claim:
 
 **Funding truth:** NLnet remains **submitted / under review / not awarded**. Approximate **€50,000** is planning context only, not an approved budget, grant award or payment commitment.
 
----
-
 ## 🛠 Quickstart
 
 ```bash
@@ -276,9 +266,7 @@ python scripts/eval_gate.py --out-dir eval-artifacts
 
 The default runtime remains standard-library-first. Optional integrations expand the dependency or trust boundary and are not implied by the default setup.
 
----
-
-## 🧭 Reading paths
+## 📚 Where to read next
 
 ### 👤 Human
 
@@ -332,8 +320,6 @@ exact GitHub commit / CI evidence
 - [Reviewer Guide](./docs/REVIEWER_GUIDE.md) — validation procedure
 - [Roadmap](./ROADMAP.md) — future evidence-gated direction
 
----
-
 <details>
 <summary>📎 Historical compatibility / provenance anchors</summary>
 
@@ -351,15 +337,11 @@ For live repository HEAD, open PRs/issues and latest CI, resolve GitHub directly
 
 </details>
 
----
-
 ## 🌍 Localization
 
 English is the primary source language. Localized README/detail surfaces are tied to the source checkpoints recorded in [Translation Status](./docs/TRANSLATION_STATUS.md). A useful older translation must not be mistaken for newer English implementation truth.
 
 This English presentation update does not imply localization parity or modify any non-English document.
-
----
 
 ## 🤝 Contributing and license
 
