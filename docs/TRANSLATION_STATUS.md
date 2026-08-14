@@ -72,7 +72,7 @@ Current Russian D1 remains unchanged by Issue #412.
 
 **D2 source checkpoint:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`
 
-All nine supported D2 locale packs remain `CURRENT` for their recorded source semantics. German `REVIEWER_GUIDE.md` and `SAFETY_PRIVACY_AND_FAILURES.md` were deliberately not rewritten by Issue #412.
+All nine supported D2 locale packs remain `CURRENT` for their recorded source semantics. D2 reviewer/safety translations remain current across all nine supported locales. German `REVIEWER_GUIDE.md` and `SAFETY_PRIVACY_AND_FAILURES.md` were deliberately not rewritten by Issue #412.
 
 No native-speaker editorial certification is implied by `CURRENT`; CI validates objective contract markers, not independent human language certification.
 
