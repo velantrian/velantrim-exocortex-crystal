@@ -39,23 +39,32 @@ The central rule is deliberately conservative:
 
 ## 🧠 Mental model
 
-```text
-💠 Crystal
-├── 🔎 Discovery
-│   └── sources · Reader · candidate retrieval
-├── 🧾 Evidence
-│   └── provenance · support · admission
-├── 🛡 Authority
-│   └── Guardian · TruthGate · explicit decisions
-├── 🏛 Canon
-│   └── authorized local trusted state
-├── 💬 Presentation
-│   └── grounded answer · bounded refusal
-└── 🔬 Research
-    └── adversarial evaluation · falsification · architecture
+```mermaid
+mindmap
+  root((💠 Crystal))
+    🔎 Discovery
+      sources
+      Reader
+      candidate retrieval
+    🧾 Evidence
+      provenance
+      support
+      admission
+    🛡 Authority
+      Guardian
+      TruthGate
+    🏛 Canon
+      authorized local state
+    💬 Presentation
+      grounded answer
+      bounded refusal
+    🔬 Research
+      evaluation
+      falsification
+      architecture
 ```
 
-The important distinction is not “retrieval versus no retrieval.” It is **candidate discovery versus epistemic authorization**.
+This map answers **what conceptual domains exist**. The important distinction is not “retrieval versus no retrieval.” It is **candidate discovery versus epistemic authorization**.
 
 ---
 
@@ -108,6 +117,8 @@ A retrieval score, model label or typed suspicion may help inspection. None of t
 ├── ⚙ Machine-readable implementation truth
 └── 🔬 Evidence / history surfaces
 ```
+
+This tree answers **how the system is decomposed**, rather than repeating the conceptual relationships above.
 
 ---
 
