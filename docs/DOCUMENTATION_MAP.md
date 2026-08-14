@@ -116,7 +116,9 @@ evaluation pass          != runtime authorization
 
 ---
 
-## 🛡 Reviewer / safety / privacy
+## 🛡 Reviewer / safety / privacy — D2
+
+D2 uses the stable English Reviewer Guide and safety/privacy/failure source contract. This documentation-architecture milestone does not change D2 reviewer procedure semantics, so existing D2 translation status remains governed by its recorded contract rather than by the new human README layout.
 
 - [Reviewer Guide](./REVIEWER_GUIDE.md)
 - [Reviewer Overview](./REVIEWER_OVERVIEW.md)
@@ -139,7 +141,7 @@ Ordinary storage truth remains local-first SQLite. PostgreSQL/pgvector is not an
 
 ---
 
-## 🎓 Grant / governance
+## 🎓 Grant / governance — D4
 
 Grant truth remains **submitted / under review / not awarded**; approximate €50,000 remains planning context only.
 
@@ -153,7 +155,7 @@ Existing pre-agreement work must not be relabeled as newly funded delivery.
 
 ---
 
-## 🌍 Localization
+## 🌍 Localization / reference — D5
 
 - [Localization policy](./LOCALIZATION_POLICY.md)
 - [Translation status](./TRANSLATION_STATUS.md)
