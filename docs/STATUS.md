@@ -5,6 +5,7 @@
 **Current architecture milestone:** Reader Retrieval Typed Inspection Contract v1 — Issue #391 / PR #392 — complete  
 **RRTIC exact-head CI:** `31754798549` — 9/9 SUCCESS  
 **RRTIC post-merge CI:** `31771677028` — 9/9 SUCCESS  
+**Historical RC-7 merged baseline:** `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1` — PR #372; retained as immutable cross-document Reader provenance.  
 **Historical signed RC-9 implementation baseline:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` — PR #376; post-merge CI `31594027040`; retained RC-10 architecture decision #377  
 **Historical post-RC-10 reassessment:** Issue #382 selected an **orchestration-only** evaluation path; it authorized no new retrieval runtime and is retained as provenance, not as the current next action.  
 **Retained storage-runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` / PR #337  
