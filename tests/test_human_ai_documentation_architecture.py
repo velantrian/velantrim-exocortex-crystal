@@ -28,7 +28,6 @@ def test_readme_is_human_first_and_routes_ai_agents_explicitly() -> None:
     ):
         assert marker in readme, marker
 
-    # Human-first must not delete the machine/frozen-documentation contract.
     for marker in (
         "Reader Retrieval Typed Inspection Contract v1",
         "RRTIC-v1 — architecture contract, not runtime",
@@ -48,8 +47,8 @@ def test_readme_is_human_first_and_routes_ai_agents_explicitly() -> None:
     ):
         assert marker in readme, marker
 
-    # Keep the landing page bounded. Diagrams and tables use extra source lines,
-    # while detailed evidence still belongs in STATUS / TEST_REPORT / eval docs.
+    # ASCII diagrams and tables consume source lines, but the landing page still remains
+    # bounded; detailed evidence belongs in STATUS / TEST_REPORT / eval documents.
     assert len(readme.splitlines()) < 360
 
 
@@ -66,12 +65,11 @@ def test_deep_overview_is_human_explanation_not_machine_authority() -> None:
         "## 🧱 Human / AI / Machine / Evidence documentation architecture",
         "## 🆚 Crystal, Letta/MemGPT and Graphiti",
         "architectural emphasis, not overall product quality",
-        "does not establish benchmark superiority",
+        "do not establish benchmark superiority",
+        "[Special for AI](./ai/README.md)",
     ):
         assert marker in overview, marker
 
-    assert "docs/ai/README.md" not in overview  # use relative human-facing links instead
-    assert "Special for AI" in overview
     assert "submitted / under review / not awarded" in overview
 
 
@@ -80,7 +78,7 @@ def test_ai_entrypoint_is_machine_first_router() -> None:
 
     for marker in (
         "# 🤖 Crystal — Special for AI / Agent Entry Point",
-        "Document role: machine/agent router",
+        "machine/agent router, not a human landing page",
         "## 1. Required read order",
         "implementation-manifest.json",
         "## 2. Source-of-truth hierarchy",
