@@ -2,10 +2,13 @@
 
 **Status date:** 2026-08-14  
 **Document role:** compact technical state snapshot; live GitHub + tests + exact CI override this file if repository state has advanced.  
-**Current docs-only repository main at milestone start:** `58a137fe96cb92b121d4f75b97990ecaf3f962a3`  
-**Current architecture checkpoint:** `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` — RRTIC-v1 / PR #392.
+**Repository main at last completed docs audit:** `4628e6fe231103a57c86df8b157b87b8b6b183f2`  
+**Current architecture checkpoint:** `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` — RRTIC-v1 / PR #392.  
+**Latest completed documentation closure:** Issue `#395` CLOSED/completed; PR `#396` MERGED.  
+**Active milestone:** `NONE`.  
+**Next milestone selected:** `false`.
 
-Do not treat a historical SHA as current HEAD. Do not treat this document as a substitute for `docs/status/implementation-manifest.json`.
+Do not treat a historical SHA as current HEAD. Do not treat this document as a substitute for `docs/status/implementation-manifest.json`. A closed milestone must not be represented as active work.
 
 ## Current Reader position
 
@@ -281,11 +284,11 @@ Separate residual issues:
 #214 PII fixture + supply-chain hygiene
 ```
 
-They are not auto-started by Reader or documentation work.
+They are not auto-started by Reader or documentation closure.
 
-## Documentation architecture v1
+## Documentation architecture v1 — completed closure
 
-Current bounded docs milestone: Issue `#395` — **Human / AI / Machine Documentation Architecture v1**.
+Latest completed docs milestone: Issue `#395` — **Human / AI / Machine / Evidence Documentation Architecture v1**; PR `#396` merged.
 
 ```text
 👤 README + docs/OVERVIEW.md
@@ -298,10 +301,17 @@ Current bounded docs milestone: Issue `#395` — **Human / AI / Machine Document
 overview != current state != machine truth != evidence != history
 ```
 
-The documentation milestone may reorganize explanation and navigation. It does not authorize any Reader runtime, model, storage backend activation or epistemic-authority change.
+The documentation architecture may reorganize explanation and navigation. It does not authorize any Reader runtime, model, storage backend activation or epistemic-authority change.
+
+Lifecycle truth after closure:
+
+```text
+#395 = CLOSED / completed
+#396 = MERGED
+active_milestone = NONE
+next_milestone_selected = false
+```
 
 ## Stop boundary
 
-Complete #395 through docs/tests → exact-head CI → review gate → guarded merge → post-merge CI → authorized Notion 3/3 reconciliation/read-back if affected → STOP.
-
-No next model, discriminator, reranker, Reader backend or residual issue is authorized by this documentation milestone.
+The #395/#396 documentation milestone is closed. No next model, discriminator, reranker, Reader backend or residual issue is automatically authorized. Before any new bounded work, re-resolve live GitHub/Notion, perform a fresh architecture reassessment, select exactly one scope, and preserve the authority firewall.
