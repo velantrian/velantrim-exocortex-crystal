@@ -81,7 +81,15 @@ def test_machine_manifest_distinguishes_current_architecture_from_historical_run
 
     boundaries = manifest["implemented_boundaries"]
     assert boundaries["reader_core_rc7_cross_document_links"] is True
-    assert boundaries["reader_rc9_lexical_candidate_discovery"] is True
+    # RC-9 is a separately documented implemented component. The frozen RC-10
+    # machine contract intentionally does not extend the legacy boundary-flag set.
+    assert "reader_rc9_lexical_candidate_discovery" not in boundaries
+    rc9 = manifest["reader_rc9_lexical_candidate_discovery"]
+    assert rc9["status"] == "IMPLEMENTED"
+    assert rc9["pre_admission_only"] is True
+    assert rc9["identity_authority"] is False
+    assert rc9["evidence_admission"] is False
+    assert rc9["canon_authority"] is False
     assert boundaries["semantic_hybrid_reader_runtime"] is False
     assert boundaries["nli_reader_runtime_filter"] is False
     assert boundaries["rrtic_runtime_provider"] is False
