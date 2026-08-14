@@ -43,10 +43,16 @@ authority_order:
 
 Notion is synchronized documentation, not a substitute for repository evidence. Localized text never overrides current implementation evidence.
 
-## 3. Current bounded truth after documentation closure
+## 3. Durable truth + live provenance resolution
+
+This static router intentionally does **not** freeze volatile repository lifecycle facts such as the current `main` SHA, latest CI run, latest completed docs PR/issue, or active milestone. Those values become stale as soon as a later merge lands.
 
 ```yaml
-repository_main_at_last_audit: 4628e6fe231103a57c86df8b157b87b8b6b183f2
+repository_head: RESOLVE_LIVE_GITHUB
+repository_ci: RESOLVE_LIVE_GITHUB
+documentation_lifecycle: RESOLVE_LIVE_GITHUB
+active_milestone: RESOLVE_LIVE_GITHUB
+next_milestone: RESOLVE_LIVE_GITHUB
 current_architecture_checkpoint: 76a9493b8ba64b832472ef9bfc1f1c23ebe6654e
 architecture_contract: RRTIC-v1
 architecture_contract_status: FROZEN_ARCHITECTURE_CONTRACT
@@ -59,15 +65,21 @@ sqlite_ordinary_local_first: active
 postgresql_pgvector_reader: inactive
 postgresql_pgvector_active: false
 grant_status: submitted_under_review_not_awarded
-latest_completed_docs_issue: 395
-latest_completed_docs_pr: 396
-latest_completed_docs_status: CLOSED_COMPLETED
-documentation_architecture: HUMAN_AI_MACHINE_EVIDENCE_DOCUMENTATION_ARCHITECTURE_V1
-active_milestone: none
-next_milestone_selected: false
 ```
 
-Issue #395 and PR #396 are the latest completed documentation-architecture closure. They must **not** be represented as an active workstream. No residual issue, Reader mechanism, model, backend or runtime milestone becomes active merely because the previous documentation milestone is closed.
+Resolution rule:
+
+```text
+current repository/lifecycle claim
+        ↓
+resolve live GitHub main + PRs/issues + exact CI
+        ↓
+compare machine/status surfaces
+        ↓
+use synchronized Notion only as secondary checkpoint/history
+```
+
+Do not add a new hard-coded “latest completed docs issue/PR” or “repository main at last audit” field to this router. Immutable historical evidence belongs in the relevant PR/issue, CI/checkpoint record, status/evaluation history, or synchronized Notion checkpoint.
 
 ## 4. Reader capability map
 
@@ -125,6 +137,7 @@ RC-7 retains **no automatic semantic matching**. Reader discovery/inspection doe
 ```yaml
 never_infer:
   historical_sha_is_live_head: true
+  static_ai_snapshot_is_live_repository_provenance: true
   architecture_contract_is_runtime_provider: true
   retrieval_match_is_evidence: true
   similarity_is_identity: true
@@ -190,7 +203,7 @@ EVIDENCE_ONLY:
   required: update evidence/checkpoints; do not mechanically rewrite still-correct conceptual visuals
 ```
 
-A lifecycle closure such as `active → closed` is a `STATE_CHANGE` when leaving the old active label in an AI current-state surface would materially misdirect the next agent.
+A lifecycle closure such as `active → closed` is a `STATE_CHANGE` when leaving an old active label in an AI current-state surface would materially misdirect the next agent. Volatile lifecycle evidence itself must be resolved live rather than encoded as an indefinitely-current static field.
 
 ## 9. Localization rules
 
@@ -215,23 +228,22 @@ Residual issues are separate scopes:
 #214 PII fixture + supply-chain hygiene
 ```
 
-Do not auto-start them from documentation closure.
+Do not auto-start them from documentation closure or from this router.
 
 ## 11. Current stop boundary
 
-The latest completed documentation workstream is **Issue #395 / PR #396**:
+This static AI router does not select or persist the current workstream. Before any new bounded work:
 
 ```text
-Human / AI / Machine / Evidence Documentation Architecture v1
+resolve live GitHub main + exact CI
         ↓
-#395 CLOSED / completed
-#396 MERGED
+resolve open PRs/issues and lifecycle state
         ↓
-active_milestone = none
-next_milestone_selected = false
+compare authorized Notion checkpoints
         ↓
-fresh live verification + architecture reassessment
-before any new bounded milestone
+fresh architecture reassessment
+        ↓
+select exactly one bounded scope
 ```
 
-No model, discriminator, reranker, Reader backend, storage backend activation, authority expansion or residual issue implementation is authorized by the closure of #395/#396.
+No model, discriminator, reranker, Reader backend, storage backend activation, authority expansion or residual issue implementation is authorized by this document. A historical closure, a stale snapshot, or the absence of open PRs is not authorization to start the next backlog item.
