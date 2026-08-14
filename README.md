@@ -209,7 +209,11 @@ RRTIC-v1
 contract-first / no runtime authorization
 ```
 
-The detailed numbers and immutable artifacts live in [TEST_REPORT](./TEST_REPORT.md), [`eval/**`](./eval/) and the Reader architecture documents.
+### ✅ Reviewer validation
+
+**Current implemented Reader retrieval baseline:** **RC-9 deterministic lexical PRE-ADMISSION candidate discovery**. The retained frozen RC-9 control records Recall@5 `0.937500`, Precision@5 `0.187500`, MRR `0.895833`, with classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+
+Those metrics describe a bounded synthetic retrieval benchmark, not semantic accuracy or epistemic correctness. Detailed immutable evidence lives in [TEST_REPORT](./TEST_REPORT.md), [`eval/**`](./eval/) and the Reader architecture documents.
 
 ---
 
