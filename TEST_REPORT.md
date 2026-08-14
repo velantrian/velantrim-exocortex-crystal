@@ -1,15 +1,16 @@
 # 🧪 Velantrim Crystal — Test & Verification Report
 
 **Status date:** 2026-08-14  
-**Current signed `main`:** `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` — `verified=true`, reason `valid`  
-**Current architecture milestone:** Reader Retrieval Typed Inspection Contract v1 / PR #392  
-**Exact validated PR head:** `a39dc1b624254c99d1955fc77d916488d76f76c0`  
-**Exact-head CI:** `31754798549` — **9/9 SUCCESS**  
-**Post-merge CI:** `31771677028` — **9/9 SUCCESS**
+**Current signed architecture checkpoint:** `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` — `verified=true`, reason `valid`  
+**Architecture milestone:** Reader Retrieval Typed Inspection Contract v1 / PR #392  
+**Exact validated RRTIC PR head:** `a39dc1b624254c99d1955fc77d916488d76f76c0`  
+**RRTIC exact-head CI:** `31754798549` — **9/9 SUCCESS**  
+**RRTIC post-merge CI:** `31771677028` — **9/9 SUCCESS**  
+**Repository-head rule:** resolve live GitHub for the newest docs-only merge SHA; this report keeps architecture/runtime verification checkpoints distinct from later documentation reconciliation.
 
-## Current main verification
+## RRTIC architecture checkpoint verification
 
-The post-RRTIC push workflow completed all nine permanent CI jobs successfully:
+The RRTIC-v1 post-merge push workflow completed all nine permanent CI jobs successfully:
 
 ```text
 code-quality                  SUCCESS
@@ -23,7 +24,7 @@ Ring Zero mutation gate       SUCCESS
 docs-status                   SUCCESS
 ```
 
-Python 3.11 exact post-merge result:
+Python 3.11 exact RRTIC post-merge result:
 
 ```text
 2244 collected
@@ -35,11 +36,11 @@ Python 3.11 exact post-merge result:
 100.00% measured line coverage
 ```
 
-Python 3.12 also completed successfully under the same exact post-merge workflow. This report does not invent an independent count where the workflow conclusion is the evidence being cited.
+Python 3.12 also completed successfully under the same exact RRTIC post-merge workflow. This report does not invent an independent count where the workflow conclusion is the evidence being cited.
 
 ## What this verification means
 
-The current CI verifies the repository state after RRTIC-v1 was frozen and merged. RRTIC-v1 itself is an architecture/research contract plus structural evidence tests; it is **not** a new Reader runtime provider.
+The cited architecture checkpoint verifies the repository state after RRTIC-v1 was frozen and merged. RRTIC-v1 itself is an architecture/research contract plus structural evidence tests; it is **not** a new Reader runtime provider. The separate post-RRTIC documentation reconciliation is validated by its own PR exact-head and post-merge CI and does not redefine these architecture/runtime numbers.
 
 ```text
 RRTIC-v1 frozen contract        VERIFIED
