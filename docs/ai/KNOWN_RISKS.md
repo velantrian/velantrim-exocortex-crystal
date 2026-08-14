@@ -8,6 +8,11 @@
 This register is an orientation layer. GitHub `main`, executable tests, exact CI, current issues
 and accepted architecture contracts remain authoritative.
 
+Historical Reader compatibility anchor retained for executable preregistration contracts:
+RC-9 signed merge `f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`, post-merge CI `31594027040`,
+and RC-10 preregistration/completion bookkeeping issue `#377`. These are historical evidence
+markers only; `comparison pass != runtime authorization` and none is the current repository HEAD.
+
 ## P1 — PostgreSQL is an inactive migration target, not active runtime
 
 - target remains `active=false` and absent from normal runtime composition;
