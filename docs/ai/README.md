@@ -43,10 +43,10 @@ authority_order:
 
 Notion is synchronized documentation, not a substitute for repository evidence. Localized text never overrides current implementation evidence.
 
-## 3. Current bounded truth at this documentation milestone
+## 3. Current bounded truth after documentation closure
 
 ```yaml
-repository_main_at_milestone_start: 58a137fe96cb92b121d4f75b97990ecaf3f962a3
+repository_main_at_last_audit: 4628e6fe231103a57c86df8b157b87b8b6b183f2
 current_architecture_checkpoint: 76a9493b8ba64b832472ef9bfc1f1c23ebe6654e
 architecture_contract: RRTIC-v1
 architecture_contract_status: FROZEN_ARCHITECTURE_CONTRACT
@@ -59,11 +59,15 @@ sqlite_ordinary_local_first: active
 postgresql_pgvector_reader: inactive
 postgresql_pgvector_active: false
 grant_status: submitted_under_review_not_awarded
-current_docs_tracking_issue: 395
-current_docs_scope: HUMAN_AI_MACHINE_DOCUMENTATION_ARCHITECTURE_V1
+latest_completed_docs_issue: 395
+latest_completed_docs_pr: 396
+latest_completed_docs_status: CLOSED_COMPLETED
+documentation_architecture: HUMAN_AI_MACHINE_EVIDENCE_DOCUMENTATION_ARCHITECTURE_V1
+active_milestone: none
+next_milestone_selected: false
 ```
 
-The branch/PR created for Issue #395 is **documentation architecture only**. It must not be interpreted as a Reader runtime milestone.
+Issue #395 and PR #396 are the latest completed documentation-architecture closure. They must **not** be represented as an active workstream. No residual issue, Reader mechanism, model, backend or runtime milestone becomes active merely because the previous documentation milestone is closed.
 
 ## 4. Reader capability map
 
@@ -133,6 +137,8 @@ never_infer:
   localized_current_marker_means_latest_english_parity: true
   grant_submission_is_grant_award: true
   zero_review_threads_is_independent_approval: true
+  closed_milestone_is_active_work: true
+  residual_issue_is_auto_selected: true
 ```
 
 ## 7. Machine flags vs explanatory prose
@@ -184,13 +190,15 @@ EVIDENCE_ONLY:
   required: update evidence/checkpoints; do not mechanically rewrite still-correct conceptual visuals
 ```
 
+A lifecycle closure such as `active → closed` is a `STATE_CHANGE` when leaving the old active label in an AI current-state surface would materially misdirect the next agent.
+
 ## 9. Localization rules
 
 English is the primary source language. Source-first does not mean English-only.
 
 Localized root/detail documents remain valid only to the checkpoints recorded in `TRANSLATION_STATUS.md`. A visually strong older localized README may be used as a **layout reference**, but its technical claims must not be copied into current English truth without repository verification.
 
-The Human/AI documentation architecture milestone does not perform a broad localization refresh and must not manufacture translation parity.
+The Human/AI documentation architecture milestone did not perform a broad localization refresh and did not manufacture translation parity.
 
 ## 10. Grant and backlog boundaries
 
@@ -207,28 +215,23 @@ Residual issues are separate scopes:
 #214 PII fixture + supply-chain hygiene
 ```
 
-Do not auto-start them from this docs milestone.
+Do not auto-start them from documentation closure.
 
 ## 11. Current stop boundary
 
-Issue **#395** is the only newly authorized bounded workstream represented by this entry point:
+The latest completed documentation workstream is **Issue #395 / PR #396**:
 
 ```text
-Human / AI / Machine Documentation Architecture v1
+Human / AI / Machine / Evidence Documentation Architecture v1
         ↓
-docs + documentation regression tests only
+#395 CLOSED / completed
+#396 MERGED
         ↓
-exact-head CI
+active_milestone = none
+next_milestone_selected = false
         ↓
-review gate
-        ↓
-guarded merge
-        ↓
-post-merge CI
-        ↓
-Notion 3/3 reconciliation if affected
-        ↓
-STOP
+fresh live verification + architecture reassessment
+before any new bounded milestone
 ```
 
-No model, discriminator, reranker, Reader backend, storage backend activation, authority expansion or residual issue implementation is authorized by #395.
+No model, discriminator, reranker, Reader backend, storage backend activation, authority expansion or residual issue implementation is authorized by the closure of #395/#396.
