@@ -29,28 +29,7 @@ D2 reviewer/safety translations remain current across all nine supported locales
 - `docs/ru/GLOSSARY.md`
 - `docs/ru/EXTENDED_REFERENCE_GUIDE.md`
 
-They now represent:
-
-```text
-RC-1…RC-7 bounded implemented layers
-RC-8 completed architecture/research decision
-RC-9 implemented deterministic lexical PRE-ADMISSION discovery
-Evaluation Surface v2 frozen evidence
-Comparator v1 frozen gate FAIL
-NLI neutral-filter v1 frozen gate FAIL
-RRTIC-v1 frozen architecture contract only
-semantic_hybrid_reader_runtime=false
-rrtic_runtime_authorization=false
-dedicated_reader_core=false
-```
-
-The Russian root also follows the current English human-first grammar: human entry, AI/deep-overview routing, conceptual map, authority flow, system tree, topology, reality check, research boundary, non-claims, quickstart and provenance anchors.
-
-## Immutable RC-7 localization history
-
-`docs/status/rc7-translation-manifest.json` remains immutable historical evidence. At that checkpoint Russian was `CURRENT` to `main@ab3ad31c437647535030e371d58f456faf14017b`, while eight other Reader-dependent locale packs were `REFRESH_NEEDED`.
-
-The immutable RC-7 layer remains bounded explicit cross-document candidate linking with exact two-sided provenance and no evidence/identity/Canon authority. It **does not claim later RC-8/RC-9 meaning** merely because later English or Russian surfaces advanced.
+They now represent RC-1…RC-7 bounded implemented layers, RC-8 completed architecture/research, RC-9 lexical PRE-ADMISSION discovery, Evaluation Surface v2, Comparator v1 FAIL, NLI neutral-filter v1 FAIL and RRTIC-v1 architecture-only truth.
 
 ```text
 reader_core_rc1_skeleton = true
@@ -60,7 +39,19 @@ reader_core_rc4_proposition_extraction = true
 reader_core_rc5_relation_candidates = true
 reader_core_rc6_long_context_strategy = true
 reader_core_rc7_cross_document_links = true
+reader_rc9_lexical_candidate_discovery = true
 dedicated_reader_core = false
+semantic_hybrid_reader_runtime = false
+rrtic_runtime_authorization = false
+```
+
+## Immutable RC-7 localization history
+
+`docs/status/rc7-translation-manifest.json` remains immutable historical evidence. At that checkpoint Russian was `CURRENT` to `main@ab3ad31c437647535030e371d58f456faf14017b`, while eight other Reader-dependent locale packs were `REFRESH_NEEDED`.
+
+The immutable RC-7 layer remains bounded explicit cross-document candidate linking with exact two-sided provenance and no evidence/identity/Canon authority. It **does not claim later RC-8/RC-9 meaning** merely because later English or Russian surfaces advanced.
+
+```text
 cross-document link != Canon relation
 same-topic != same proposition
 possible-same-claim != claim identity
@@ -70,32 +61,28 @@ repetition across sources != corroboration
 
 ## Current English Reader truth now represented in Russian
 
-- RC-8 completed retrieval architecture/research decision;
-- RC-9 completed offline stdlib-only deterministic lexical PRE-ADMISSION discovery;
-- retained RC-9 K=5 control: Recall@5 `0.937500`, Precision@5 `0.187500`, MRR `0.895833`, useful hits `15/16`, hard-negative hits `4/4`;
-- classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`;
+- RC-9 retained K=5 control: Recall@5 `0.937500`, Precision@5 `0.187500`, MRR `0.895833`, useful hits `15/16`, hard-negative hits `4/4`;
+- `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`;
 - Evaluation Surface v2 frozen evidence;
 - Comparator v1: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`;
 - NLI v1: `NLI_NEUTRAL_FILTER_GATE_FAILED`;
 - post-NLI relation-contract mismatch finding;
-- RRTIC-v1 architecture-only typed inspection contract;
+- RRTIC-v1 frozen architecture-only typed inspection contract;
 - no semantic/hybrid Reader runtime, NLI runtime filter or RRTIC runtime provider authorization.
 
 ```text
-retrieval match          != evidence
-similarity               != identity
-repetition               != corroboration
-cross-document candidate != Canon relation
-ranking                  != epistemic authority
-candidate discovery      != candidate adjudication
-evaluation pass          != runtime authorization
+retrieval match != evidence
+similarity != identity
+ranking != epistemic authority
+candidate discovery != candidate adjudication
+evaluation pass != runtime authorization
 ```
 
 ## Reader RC-6 boundary — preserved history
 
 **Source checkpoint:** `main@ed96a88369f841bdb2ffd79ca020acef174685fc`
 
-RC-6 remains bounded long-context working sets over current registered RC-4 leaves, direct RC-4 provenance and caller-supplied `SUMMARY`.
+RC-6 remains bounded long-context working sets with direct RC-4 provenance and caller-supplied `SUMMARY`.
 
 ```text
 working-set coverage != comprehension proof
@@ -115,19 +102,21 @@ RC-5 relation candidates remain PRE-ADMISSION: `POSSIBLE_CONTRADICTION`, `EXCEPT
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
 contradiction candidate != confirmed contradiction
-similarity != identity
-repetition != corroboration
 ```
 
 ## D1 — entry/status/implementation
 
-Russian D1 status/implementation surfaces are refreshed to current post-RRTIC public truth. Russian Quick Start remains CURRENT because its source semantics are unchanged. Eight other Reader-dependent D1 packs remain `REFRESH_NEEDED` where recorded.
+**D1 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
+
+D1 Reader-dependent detail translations are `CURRENT` in Russian against their retained historical checkpoint while the current Russian surfaces additionally carry explicit post-RRTIC source markers. The eight other supported locales are `REFRESH_NEEDED`.
+
+Russian Quick Start remains CURRENT because its source semantics are unchanged.
 
 ## D2 — reviewer/safety
 
 **D2 source checkpoint:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`
 
-D2 remains complete for all nine supported locales. D2 reviewer/safety translations remain current across all nine supported locales for their unchanged source semantics.
+D2 reviewer/safety translations remain current across all nine supported locales.
 
 | Locale | Reviewer Guide | Safety/Privacy/Failures |
 |---|---|---|
@@ -143,24 +132,31 @@ D2 remains complete for all nine supported locales. D2 reviewer/safety translati
 
 ## D3 — architecture/storage/authority
 
-Russian D3 is refreshed through RC-9 evaluation/RRTIC public architecture truth while preserving RC-5/6/7 provenance. Eight other D3 locale packs remain `REFRESH_NEEDED`.
+**D3 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
+
+D3 Reader-dependent detail translations are `CURRENT` in Russian while current-source markers advance the Russian narrative through RC-9/RRTIC. The eight other supported locales are `REFRESH_NEEDED`.
 
 ## D4 — project, grant, governance and glossary
 
-Russian D4 now represents current grant-safe baseline truth through RC-9/Comparator/NLI/RRTIC. NLnet remains **submitted / under review / not awarded**; approximately €50,000 planning only; budget change none. Eight other D4 packs remain `REFRESH_NEEDED`.
+**D4 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
+
+D4 Reader-dependent detail translations are `CURRENT` in Russian and now include current grant-safe RC-9/Comparator/NLI/RRTIC meaning. The eight other supported locales are `REFRESH_NEEDED`.
+
+NLnet remains **submitted / under review / not awarded**; approximately €50,000 planning only; budget change none.
 
 ## D5 — extended reference documents
 
-Russian Reader-dependent D5 is refreshed. Eight other Reader-dependent locale packs retain the existing tracked debt.
+**D5 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
 
+D5 Reader-dependent detail translations are `CURRENT` in Russian and the current Russian reference surface is refreshed. The eight other supported locales are `REFRESH_NEEDED`.
+
+**64 `REFRESH_NEEDED` localized documents** remain.  
 **64 `REFRESH_NEEDED` localized detail documents** remain.
 
-The executable D5 inventory remains **279 total = 72 CURRENT + 133 ENGLISH_ONLY_BY_DESIGN + 64 REFRESH_NEEDED + 10 RETIRED** until a separately authorized inventory change updates the machine ledger.
-
-Detailed volatile evidence may remain `ENGLISH_ONLY_BY_DESIGN`; retired material remains audit history.
+The executable D5 inventory remains **279 total = 72 CURRENT + 133 ENGLISH_ONLY_BY_DESIGN + 64 REFRESH_NEEDED + 10 RETIRED** until a separately authorized machine-ledger change.
 
 ## Authority / storage / grant
 
-English merged `main`, executable tests and exact CI remain implementation authority. SQLite ordinary active local-first; PostgreSQL/pgvector inactive `active=false`. NLnet remains `submitted / under review / not awarded`; approximate €50,000 planning only.
+English merged `main`, executable tests and exact CI remain implementation authority. SQLite ordinary active local-first; PostgreSQL/pgvector inactive `active=false`.
 
-The Russian localization refresh changes presentation only. It adds no Reader/EPIS runtime, model/provider/backend capability, evidence admission, Guardian/TruthGate authority or Canon mutation.
+NLnet remains `submitted / under review / not awarded`; approximate €50,000 planning only. The Russian localization refresh changes presentation only: no Reader/EPIS runtime, model/provider/backend capability, evidence admission, Guardian/TruthGate authority or Canon mutation is added.
