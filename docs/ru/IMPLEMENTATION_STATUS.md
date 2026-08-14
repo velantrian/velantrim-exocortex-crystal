@@ -3,73 +3,146 @@
 <!-- rc6-translation-source: docs/IMPLEMENTATION_STATUS.md@ed96a88369f841bdb2ffd79ca020acef174685fc -->
 <!-- rc7-translation-source: docs/IMPLEMENTATION_STATUS.md@ab3ad31c437647535030e371d58f456faf14017b -->
 <!-- rc7-status: CURRENT -->
+<!-- current-translation-source: docs/IMPLEMENTATION_STATUS.md@9666781d390e3276a111cb5ee1735f6606a76283 -->
 # 🇷🇺 Crystal — Implementation Status
 
-**Signed Reader baseline:** `main@1f5129d3276af28608b16e369fd38d21fe38c0d5` — RC-6 merged; exact post-merge CI `31566408978` 9/9.  
-**RC-7 implementation:** issue #371 / PR #372; English source `ab3ad31c437647535030e371d58f456faf14017b`; checkpoint CI `31570690153` 9/9.
+**Текущий signed architecture checkpoint:** `main@76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` / PR #392; post-merge CI `31771677028` — 9/9 SUCCESS.  
+**Historical RC-7 localization source:** `main@ab3ad31c437647535030e371d58f456faf14017b`.  
+**Signed RC-9 implementation baseline:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` / PR #376; post-merge CI `31594027040`.  
+**Latest completed model-backed evaluation:** NLI neutral-filter v1 / PR #389 — frozen gate FAIL.  
+**Current frozen architecture contract:** RRTIC-v1 / Issue #391 / PR #392 — no runtime authorization.
 
-| Компонент | Статус | Boundary |
-|---|---|---|
-| RC-1 | implemented/merged | source/session skeleton |
-| RC-2 | implemented/merged | caller-supplied structural map |
-| RC-3 | implemented/merged | deterministic multi-pass mechanics |
-| RC-4 | implemented/merged | `EXTRACTED_PROPOSITION` candidates |
-| RC-5 | implemented/merged | typed same-source relation candidates |
-| RC-6 | implemented/tested/merged | bounded working sets + caller SUMMARY |
-| RC-7 | implemented/tested on PR branch; final merge evidence pending | explicit cross-document candidate links |
-| Dedicated/full Reader | not implemented | `dedicated_reader_core=false` |
+## Реально implemented Reader capabilities
 
 ```text
-reader_core_rc1_skeleton = true
-reader_core_rc2_structural_map = true
-reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc1_skeleton               = true
+reader_core_rc2_structural_map         = true
+reader_core_rc3_multi_pass_mechanics   = true
 reader_core_rc4_proposition_extraction = true
-reader_core_rc5_relation_candidates = true
-reader_core_rc6_long_context_strategy = true
-reader_core_rc7_cross_document_links = true
-dedicated_reader_core = false
+reader_core_rc5_relation_candidates    = true
+reader_core_rc6_long_context_strategy  = true
+reader_core_rc7_cross_document_links   = true
+reader_rc9_lexical_candidate_discovery = true
+dedicated_reader_core                  = false
+semantic_hybrid_reader_runtime         = false
+rrtic_runtime_authorization            = false
 ```
 
-RC-4: `EXTRACTED_PROPOSITION != verified fact`; `Reader candidate != admitted evidence`. RC-5: `POSSIBLE_CONTRADICTION`, `TENSION`, `EXCEPTION`, `QUALIFICATION`; `relation candidate != admitted evidence`; `contradiction candidate != confirmed contradiction`.
+| Capability | Status | Primary implementation / meaning |
+|---|---|---|
+| RC-1 source/session skeleton | **IMPLEMENTED** | `core/reader_core.py` |
+| RC-2 structural map | **IMPLEMENTED** | `core/reader_structure.py` |
+| RC-3 multi-pass mechanics | **IMPLEMENTED** | `core/reader_passes.py` |
+| RC-4 proposition extraction | **IMPLEMENTED** | `core/reader_extraction.py` |
+| RC-5 relation candidates | **IMPLEMENTED** | `core/reader_relations.py` |
+| RC-6 bounded long-context strategy | **IMPLEMENTED** | `core/reader_long_context.py` |
+| RC-7 explicit cross-document candidate links | **IMPLEMENTED** | `core/reader_cross_document.py` |
+| RC-9 lexical candidate discovery | **IMPLEMENTED** | `core/reader_lexical_discovery.py` |
+| Dedicated/full autonomous Reader | **NOT IMPLEMENTED** | `dedicated_reader_core=false` |
+| Semantic/hybrid Reader runtime | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
+| Reader FTS / ANN / vector DB | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
+| NLI runtime filter / CrossEncoder reranker | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
+| RRTIC runtime provider | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
 
-RC-6 `core/reader_long_context.py`: structural order + candidate-ID tie-break, max 128 candidates / 512 locators, candidate atomicity, direct RC-4 provenance, caller `SUMMARY` only.
+## Research/evaluation evidence — не implementation
+
+| Evidence / contract | Result | Runtime meaning |
+|---|---|---|
+| RC-8 retrieval decision | architecture/research complete | deterministic lexical baseline selected first |
+| Evaluation Surface v2 | frozen judged surface | no runtime added |
+| Comparator v1 | `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED` | semantic comparator rejected as runtime authorization |
+| NLI neutral-filter v1 | `NLI_NEUTRAL_FILTER_GATE_FAILED` | filter rejected as Reader retrieval stage |
+| RRTIC-v1 | frozen typed inspection architecture contract | no model/filter/reranker/provider added |
+
+## RC-9 retained evidence
+
+- Recall@5 `0.937500`;
+- Precision@5 `0.187500`;
+- MRR `0.895833`;
+- paired hard-negative rate@5 `1.000000`;
+- useful hits `15/16`;
+- hard-negative hits `4/4`;
+- classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+
+Это retrieval measurements, не semantic/adjudication accuracy.
+
+## Evaluation Surface v2
+
+Frozen surface: 24 queries, 12 primary strata ×2, 6 candidates/query, 144/144 explicit qrels, judgment coverage `1.0`, K=5, SHA-256 `753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cdd`.
+
+RC-9 v2 control:
+
+- useful hits **42 / 48**;
+- Recall@5 **0.875000**;
+- fixed-slot Precision@5 **0.350000**;
+- judged precision-over-returned **0.355932**;
+- MRR **0.857639**;
+- hard-negative hits **38 / 48**;
+- hard-negative rate@5 **0.791667**.
+
+## Comparator v1
+
+Comparator recovered `48/48` useful v2 candidates with Recall@5 `1.0` and MRR `1.0`, но surfaced `41/48` hard negatives. Historical RC-10 screen surfaced `4/4` hard negatives.
+
+Classification: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`.
+
+Semantic/hybrid Reader runtime не был authorized.
+
+## NLI neutral-filter v1
+
+Preregistered filter снизил v2 hard-negative hits до `18/48`, но useful hits снизились до `46/48`; historical useful hits — до `15/16`. No-recall-loss overlay и frozen gates FAIL.
+
+Classification: `NLI_NEUTRAL_FILTER_GATE_FAILED`.
+
+## RRTIC-v1 contract
+
+RRTIC-v1 отвечает на post-NLI **relation-contract mismatch**. Он фиксирует six suspicion-only relation families и ten structural qualifier dimensions, чтобы будущий discriminator оценивался против explicit relation/qualifier contract, а не одного scalar similarity score.
 
 ```text
+EQUIVALENCE_SUSPECT
+RELATED_SUSPECT
+CONTRADICTION_SUSPECT
+QUALIFICATION_SUSPECT
+TOPIC_ONLY_SUSPECT
+UNKNOWN
+
+MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE
+```
+
+RRTIC-v1 не filter, не rerank, не model execution, не identity engine, не evidence admission, не contradiction adjudication, не Canon mutation и не auto-register RC-5 relations.
+
+## Retained authority firewall
+
+```text
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
 working-set coverage != comprehension proof
-summary != source text
 summary != evidence
-summary != verified fact
-summary != Canon admission
-```
-
-RC-7 `core/reader_cross_document.py` / `tests/test_reader_cross_document.py`: 2..32 explicit `ReaderPropositionExtractor`, max 4096 links, different sessions/documents, current registered RC-4 leaves only. Revalidates exact SourceVersion/privacy, SegmentCard, completed pass, target/outcome, recovered structure and current substantive coverage.
-
-```text
-SUPPORTS
-CONTRADICTS
-ELABORATES
-REFERENCES
-DEFINES
-EXAMPLE_OF
-PREREQUISITE_FOR
-SAME_TOPIC
-POSSIBLE_SAME_CLAIM
-```
-
-Symmetric kinds: `CONTRADICTS`, `SAME_TOPIC`, `POSSIBLE_SAME_CLAIM`. Directional kinds сохраняют left/right. Exact session/candidate/pass/node/source/primary+supporting locator provenance сохраняется обеих сторон; duplicate semantic candidate fail closed.
-
-Inspection basis (`EXPLICIT_SOURCE_REFERENCE`, `CALLER_COMPARISON`, `LEXICAL_SIMILARITY_SIGNAL`, `SHARED_TOPIC_SIGNAL`, `OTHER`) descriptive only, не score.
-
-```text
 cross-document link != Canon relation
-cross-document support != admitted evidence
-cross-document contradiction candidate != confirmed contradiction
 same-topic != same proposition
 possible-same-claim != claim identity
 similarity signal != identity proof
 repetition across sources != corroboration
+retrieval match != evidence
+similarity != identity
+NLI label != proposition identity
+RRTIC suspicion != adjudicated relation
+qualifier mismatch != truth decision
+ranking != epistemic authority
+candidate discovery != candidate adjudication
+evaluation pass != runtime authorization
 ```
 
-RC-7 не делает automatic semantic matching/entity resolution/dedupe, automatic corroboration, embeddings/ANN/vector DB, LLM/provider/parser/OCR, evidence admission, truth/ESM/Canon mutation, contradiction resolution/winner selection, planner authority, Reader DB/API/CLI/worker или PostgreSQL activation.
+PostgreSQL/pgvector остаётся `active=false`. SQLite ordinary local-first остаётся active.
 
-SQLite ordinary active local-first; PostgreSQL/pgvector `active=false`. NLnet **submitted / under review / not awarded**; ~€50,000 planning only; budget change none. Pre-agreement merged work — existing baseline.
+## Localization / grant
+
+Русская D1/D3/D4/D5 documentation обновляется в Issue #410 к current repository truth `main@9666781d390e3276a111cb5ee1735f6606a76283`; historical RC-7 source остаётся immutable provenance. Остальные восемь locale packs этим milestone не изменяются.
+
+NLnet остаётся **submitted / under review / not awarded**. Приблизительно €50,000 — planning only.
+
+## Stop boundary
+
+Localization parity не создаёт новых capabilities и не подразумевает следующий model/discriminator/runtime milestone.
