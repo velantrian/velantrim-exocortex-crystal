@@ -2,7 +2,7 @@
   "schema_version": 1,
   "project": "Velantrim Exo-Cortex Crystal",
   "version": "0.3.0",
-  "status_date": "2026-08-14",
+  "status_date": "2026-08-15",
   "current_architecture_checkpoint": {
     "commit": "76a9493b8ba64b832472ef9bfc1f1c23ebe6654e",
     "short": "76a9493b",
@@ -91,7 +91,7 @@
     "architecture_contract": "docs/architecture/READER_CORE_ARCHITECTURE.md",
     "runtime_module": "core/reader_structure.py",
     "test_module": "tests/test_reader_structure.py",
-    "scope": "source_version_bound_structural_document_map",
+    "scope": "source_version_bound_caller_supplied_structural_document_map",
     "caller_supplied_structure": true,
     "source_body_storage": false,
     "parser_or_semantic_chunker": false,
@@ -339,26 +339,32 @@
     "authoritative_language": "English",
     "working_language": "English",
     "language_model": "english_primary_source_multilingual_product_surface",
-    "localized_readmes": "russian_current_at_frozen_reader_localization_checkpoint_eight_refresh_needed",
+    "localized_readmes": "german_and_russian_current_post_rrtic_seven_refresh_needed",
     "translation_status_ledger": "docs/TRANSLATION_STATUS.md",
     "localization_policy": "docs/LOCALIZATION_POLICY.md",
     "localized_readme_source_checkpoint": "51c205fe048fd69d39fcd47b43e042a50de432bc",
+    "english_human_first_readme_source": "3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883",
+    "german_parity_audit_base": "ad8cec8c868f64b6dfbdc3bf3087230f59c3861c",
     "supported_localized_readme_count": 9,
-    "full_parity_current_locales": ["ru"],
-    "full_parity_refresh_needed_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"],
+    "full_parity_current_locales": ["de", "ru"],
+    "full_parity_refresh_needed_locales": ["ar", "es", "fr", "hi", "it", "ja", "zh-CN"],
     "orientation_only_locales": [],
     "broader_document_translation": "phased_by_language_or_document_family",
     "full_corpus_translation_required_in_single_pr": false,
     "translation_tracking_issue": 341,
+    "latest_translation_refresh_issue": 412,
     "d1_source_checkpoint": "51c205fe048fd69d39fcd47b43e042a50de432bc",
-    "d1_current_locales": ["ru"],
-    "d1_refresh_needed_locales": ["ar", "de", "es", "fr", "hi", "it", "ja", "zh-CN"],
-    "d1_current_documents": {"ru": ["docs/ru/README.md", "docs/ru/QUICKSTART.md", "docs/ru/STATUS.md", "docs/ru/IMPLEMENTATION_STATUS.md"]},
+    "d1_current_locales": ["de", "ru"],
+    "d1_refresh_needed_locales": ["ar", "es", "fr", "hi", "it", "ja", "zh-CN"],
+    "d1_current_documents": {
+      "de": ["docs/de/README.md", "docs/de/QUICKSTART.md", "docs/de/STATUS.md", "docs/de/IMPLEMENTATION_STATUS.md"],
+      "ru": ["docs/ru/README.md", "docs/ru/QUICKSTART.md", "docs/ru/STATUS.md", "docs/ru/IMPLEMENTATION_STATUS.md"]
+    },
     "d1_unchanged_current_documents": {
-      "ar": ["docs/ar/QUICKSTART.md"], "de": ["docs/de/QUICKSTART.md"], "es": ["docs/es/QUICKSTART.md"], "fr": ["docs/fr/QUICKSTART.md"], "hi": ["docs/hi/QUICKSTART.md"], "it": ["docs/it/QUICKSTART.md"], "ja": ["docs/ja/QUICKSTART.md"], "zh-CN": ["docs/zh-CN/QUICKSTART.md"]
+      "ar": ["docs/ar/QUICKSTART.md"], "es": ["docs/es/QUICKSTART.md"], "fr": ["docs/fr/QUICKSTART.md"], "hi": ["docs/hi/QUICKSTART.md"], "it": ["docs/it/QUICKSTART.md"], "ja": ["docs/ja/QUICKSTART.md"], "zh-CN": ["docs/zh-CN/QUICKSTART.md"]
     },
     "d1_refresh_needed_documents": {
-      "ar": ["docs/ar/STATUS.md", "docs/ar/IMPLEMENTATION_STATUS.md"], "de": ["docs/de/STATUS.md", "docs/de/IMPLEMENTATION_STATUS.md"], "es": ["docs/es/STATUS.md", "docs/es/IMPLEMENTATION_STATUS.md"], "fr": ["docs/fr/STATUS.md", "docs/fr/IMPLEMENTATION_STATUS.md"], "hi": ["docs/hi/STATUS.md", "docs/hi/IMPLEMENTATION_STATUS.md"], "it": ["docs/it/STATUS.md", "docs/it/IMPLEMENTATION_STATUS.md"], "ja": ["docs/ja/STATUS.md", "docs/ja/IMPLEMENTATION_STATUS.md"], "zh-CN": ["docs/zh-CN/STATUS.md", "docs/zh-CN/IMPLEMENTATION_STATUS.md"]
+      "ar": ["docs/ar/STATUS.md", "docs/ar/IMPLEMENTATION_STATUS.md"], "es": ["docs/es/STATUS.md", "docs/es/IMPLEMENTATION_STATUS.md"], "fr": ["docs/fr/STATUS.md", "docs/fr/IMPLEMENTATION_STATUS.md"], "hi": ["docs/hi/STATUS.md", "docs/hi/IMPLEMENTATION_STATUS.md"], "it": ["docs/it/STATUS.md", "docs/it/IMPLEMENTATION_STATUS.md"], "ja": ["docs/ja/STATUS.md", "docs/ja/IMPLEMENTATION_STATUS.md"], "zh-CN": ["docs/zh-CN/STATUS.md", "docs/zh-CN/IMPLEMENTATION_STATUS.md"]
     },
     "d1_pending_locales": []
   },
