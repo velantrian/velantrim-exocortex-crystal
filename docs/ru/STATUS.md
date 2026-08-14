@@ -8,34 +8,38 @@
 
 **Дата статуса:** 2026-08-15  
 **Текущий signed architecture checkpoint:** `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e`, `verified=true`, reason `valid`  
-**Текущий architecture milestone:** Reader Retrieval Typed Inspection Contract v1 — Issue #391 / PR #392 — complete  
+**Current architecture milestone:** Reader Retrieval Typed Inspection Contract v1 — Issue #391 / PR #392 — complete  
 **RRTIC exact-head CI:** `31754798549` — 9/9 SUCCESS  
 **RRTIC post-merge CI:** `31771677028` — 9/9 SUCCESS  
-**Historical RC-7 localization source:** `main@ab3ad31c437647535030e371d58f456faf14017b` — сохраняется как immutable provenance.  
-**Historical signed RC-9 implementation baseline:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` — PR #376; post-merge CI `31594027040`.  
-**Repository-head rule:** перед операционными действиями всегда разрешать live GitHub; docs-only SHA не следует автоматически считать текущим HEAD.
+**Historical RC-7 localization source:** `main@ab3ad31c437647535030e371d58f456faf14017b`.
 
-## Текущая Reader position
-
-RC-1…RC-7 — bounded implemented Reader/domain layers. RC-8 — завершённое architecture/research решение. RC-9 — implemented deterministic lexical PRE-ADMISSION retrieval baseline. Comparator v1 и NLI neutral-filter v1 — completed frozen evaluations с failed admission gates. RRTIC-v1 — текущий frozen architecture contract для typed inspection; runtime stage он не добавляет.
+> 📎 Retained runtime evidence ниже — historical compatibility evidence, а не текущий repository test count.
 
 ```text
-reader_core_rc1_skeleton               = true
-reader_core_rc2_structural_map         = true
-reader_core_rc3_multi_pass_mechanics   = true
-reader_core_rc4_proposition_extraction = true
-reader_core_rc5_relation_candidates    = true
-reader_core_rc6_long_context_strategy  = true
-reader_core_rc7_cross_document_links   = true
-reader_rc9_lexical_candidate_discovery = true
-dedicated_reader_core                  = false
-semantic_hybrid_reader_runtime         = false
-rrtic_runtime_authorization            = false
+bbd816c09dd39a02e6de6c1014438490572f40f6
+2078 passed / 13 skipped / 0 failed
+9756 statements / 100.00% line coverage
 ```
 
-RC-5 остаётся implemented в `core/reader_relations.py`. RC-9 остаётся implemented в `core/reader_lexical_discovery.py`.
+## Current Reader position
 
-## Reader evidence chain
+```text
+reader_core_rc1_skeleton = true
+reader_core_rc2_structural_map = true
+reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc4_proposition_extraction = true
+reader_core_rc5_relation_candidates = true
+reader_core_rc6_long_context_strategy = true
+reader_core_rc7_cross_document_links = true
+reader_rc9_lexical_candidate_discovery = true
+dedicated_reader_core = false
+semantic_hybrid_reader_runtime = false
+rrtic_runtime_authorization = false
+```
+
+RC-1…RC-7 — implemented bounded Reader layers. RC-8 — completed retrieval architecture/research decision. RC-9 — implemented deterministic lexical PRE-ADMISSION discovery. Comparator v1 и NLI neutral-filter v1 — completed frozen evaluations с failed gates. RRTIC-v1 — frozen typed-inspection architecture contract без runtime provider.
+
+## Evidence chain
 
 ```text
 RC-9 lexical discovery
@@ -43,120 +47,39 @@ RC-9 lexical discovery
 Evaluation Surface v2
         ↓
 Comparator v1
-  recall recovered
-  hard-negative discrimination FAIL
+recall recovered · discrimination FAIL
         ↓
 NLI neutral-filter v1
-  discrimination improved
-  useful-recall safety FAIL
+discrimination improved · recall-safety FAIL
         ↓
 post-NLI reassessment
-  RELATION-CONTRACT MISMATCH
+relation-contract mismatch
         ↓
 RRTIC-v1
-  typed inspection contract only
-  runtime_authorization=false
+architecture contract only
 ```
 
-## RC-9 deterministic lexical baseline — retained control
+Retained RC-9 historical K=5 control: Recall@5 `0.937500`, Precision@5 `0.187500`, MRR `0.895833`, useful hits `15/16`, hard-negative hits `4/4`; classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
-| Metric | Result |
-|---|---:|
-| Recall@5 | 0.937500 |
-| Precision@5 | 0.187500 |
-| MRR | 0.895833 |
-| Paired hard-negative rate@5 | 1.000000 |
-| Useful hits | 15 / 16 |
-| Hard-negative hits | 4 / 4 |
+Comparator v1 classification: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`. NLI v1 classification: `NLI_NEUTRAL_FILTER_GATE_FAILED`.
 
-Classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+## RRTIC-v1
 
-Эти значения — retrieval measurements, а не semantic/adjudication accuracy.
+RRTIC-v1 фиксирует suspicion-only relation families `EQUIVALENCE_SUSPECT`, `RELATED_SUSPECT`, `CONTRADICTION_SUSPECT`, `QUALIFICATION_SUSPECT`, `TOPIC_ONLY_SUSPECT`, `UNKNOWN` и qualifier states `MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE`.
 
-## Evaluation Surface v2 — frozen evidence
-
-Surface остаётся frozen: 24 queries, 12 primary strata, 6 candidates/query, 144/144 explicit qrels, K=5, composite SHA-256 `753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cdd`.
-
-RC-9 control на v2:
-
-| Metric | Result |
-|---|---:|
-| Useful hits | **42 / 48** |
-| Useful Recall@5 | **0.875000** |
-| Precision@5 — fixed K slots | **0.350000** |
-| Judged precision over returned | **0.355932** |
-| MRR | **0.857639** |
-| Hard-negative hits | **38 / 48** |
-| Hard-negative hit rate@5 | **0.791667** |
-
-Classification: `LEXICAL_CONTROL_EXPOSES_MULTI_STRATUM_GAPS`.
-
-## Comparator v1 — frozen gate FAIL
-
-Pinned multilingual semantic similarity восстановил все useful v2 candidates (`48/48`, Recall@5 `1.0`, MRR `1.0`), но surfaced `41/48` hard negatives.
-
-Classification: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`.
-
-Comparator является research evidence, не Reader backend.
-
-## NLI neutral-filter v1 — frozen gate FAIL
-
-Preregistered bidirectional neutral-neutral filter снизил v2 hard negatives с `41/48` до `18/48`, но useful candidates регрессировали до `46/48`; historical useful hits — до `15/16`. Frozen no-recall-loss overlay и admission gate поэтому FAIL.
-
-Classification: `NLI_NEUTRAL_FILTER_GATE_FAILED`.
-
-```text
-NLI label         != proposition identity
-NLI contradiction != contradiction adjudication
-filtering          != epistemic authority
-```
-
-## RRTIC-v1 — frozen architecture contract
-
-RRTIC-v1 фиксирует retrieval-side diagnostic envelope после того, как post-NLI reassessment классифицировал missing capability как relation-contract mismatch.
-
-Relation families:
-
-```text
-EQUIVALENCE_SUSPECT
-RELATED_SUSPECT
-CONTRADICTION_SUSPECT
-QUALIFICATION_SUSPECT
-TOPIC_ONLY_SUSPECT
-UNKNOWN
-```
-
-Qualifier dimensions:
-
-```text
-entity_binding
-predicate_binding
-argument_roles
-polarity
-modality_quantifier
-temporal_version
-jurisdiction
-condition_direction
-units_thresholds
-attribution_causality
-```
-
-State: `MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE`.
-
-RRTIC-v1 не имеет accept/reject policy, scalar truth/confidence score, reranking, model execution, runtime provider, identity decision, evidence admission, contradiction adjudication или Canon mutation.
+Он не выполняет model execution, filtering, reranking, identity decision, evidence admission, contradiction adjudication или Canon mutation.
 
 ## Authority boundaries
 
 ```text
+coverage != comprehension proof
+pass completion != comprehension proof
+working-set coverage != comprehension proof
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
 relation candidate != admitted evidence
 contradiction candidate != confirmed contradiction
-working-set coverage != comprehension proof
-summary != source text
 summary != evidence
-summary != verified fact
-summary != Canon admission
 cross-document link != Canon relation
 same-topic != same proposition
 possible-same-claim != claim identity
@@ -166,31 +89,17 @@ retrieval match != evidence
 similarity != identity
 ranking != epistemic authority
 candidate discovery != candidate adjudication
+NLI label != proposition identity
+RRTIC suspicion != adjudicated relation
 evaluation pass != runtime authorization
 ```
 
-Guardian, TruthGate, TrustSnapshot и CanonicalView не изменены. Public `HTTP /ask`, `CLI ask` и `MCP search` остаются read-only admitted-memory query surfaces, а не Reader evaluation/inspection authority interfaces.
+Guardian, TruthGate, TrustSnapshot и CanonicalView остаются отдельными authority/read surfaces. Public `HTTP /ask`, `CLI ask`, `MCP search` read-only.
 
-## Storage truth
+## Storage / grant / localization
 
-```text
-SQLite ordinary active local-first
-→ backup / verify / inactive restore
-→ bounded logical export
-→ PostgreSQL 16 + pgvector inactive import/equivalence
-→ active=false
-```
+SQLite ordinary active local-first. PostgreSQL/pgvector inactive `active=false`; automatic backend switching отсутствует.
 
-Reader SQLite FTS не implemented. Reader ANN/vector DB не введён. Automatic backend switching отсутствует.
+NLnet **submitted / under review / not awarded**; ~€50,000 planning only; budget change none.
 
-## Localization truth
-
-Русская public/Reader-dependent D1/D3/D4/D5 поверхность обновляется в Issue #410 против current repository truth `main@9666781d390e3276a111cb5ee1735f6606a76283`; historical RC-5/6/7 source markers сохранены. Восемь других Reader-dependent locale packs этим milestone не меняются и остаются `REFRESH_NEEDED` там, где это зафиксировано ledger.
-
-## Grant status
-
-NLnet остаётся **submitted / under review / not awarded**. Приблизительно **€50,000** — planning context only. Budget change: none.
-
-## Stop boundary
-
-RRTIC-v1 закрыт. Этот localization refresh не авторизует discriminator/model/runtime implementation, semantic/hybrid/vector Reader runtime, FTS/ANN, PostgreSQL activation, EPIS runtime или изменение epistemic authority.
+Русская current parity refresh привязана к `main@9666781d390e3276a111cb5ee1735f6606a76283`, а historical RC-5/6/7 markers остаются immutable provenance. Остальные восемь locale packs этим milestone не меняются.
