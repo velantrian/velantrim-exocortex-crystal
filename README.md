@@ -130,6 +130,10 @@ semantic_hybrid_reader_runtime         = false
 rrtic_runtime_authorization            = false
 ```
 
+### 🧭 RC-6 long-context note
+
+**RC-6** builds bounded working sets while preserving **direct RC-4 leaf provenance**. Any summary is only a **caller-supplied `SUMMARY`**; working-set coverage is not comprehension proof, and a summary is not evidence. **RC-7** remains the explicit cross-document candidate layer above that boundary.
+
 For exact current state and evidence, use [STATUS](./docs/STATUS.md), [Implementation Status](./docs/IMPLEMENTATION_STATUS.md), [TEST_REPORT](./TEST_REPORT.md) and the [implementation manifest](./docs/status/implementation-manifest.json).
 
 ---
