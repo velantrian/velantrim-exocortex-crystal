@@ -21,17 +21,19 @@ NLnet остаётся **submitted / under review / not awarded**. Прибли�
 
 ## 🧬 Existing baseline
 
-Любая работа, merged до grant agreement, является existing baseline и не может повторно считаться future funded delta.
+```text
+RC-1 = bounded source/session skeleton
+RC-2 = bounded structural map
+RC-3 = bounded pass mechanics
+RC-4 = bounded proposition candidates
+RC-5 = bounded relation candidates
+RC-6 = bounded long-context working sets
+RC-7 = explicit cross-document candidates
+RC-8 = completed architecture/research decision
+RC-9 = implemented lexical PRE-ADMISSION discovery
+```
 
-Текущая existing Reader/research history включает:
-
-- RC-1…RC-7 bounded implemented Reader layers;
-- RC-8 completed retrieval architecture/research decision;
-- RC-9 deterministic lexical PRE-ADMISSION candidate discovery implementation;
-- Evaluation Surface v2 frozen evidence;
-- Comparator v1 completed/frozen gate FAIL;
-- NLI neutral-filter v1 completed/frozen gate FAIL;
-- RRTIC-v1 frozen architecture contract only.
+Comparator v1, NLI neutral-filter v1 и RRTIC-v1 также являются existing pre-agreement research/architecture history. Они не могут позже быть relabeled как newly funded runtime delivery.
 
 ```text
 reader_rc9_lexical_candidate_discovery = true
@@ -40,44 +42,28 @@ semantic_hybrid_reader_runtime = false
 rrtic_runtime_authorization = false
 ```
 
-## 🔬 Evidence does not become capability
+## Evidence / authority boundary
 
-RC-9 остаётся offline deterministic lexical baseline. Его frozen K=5 historical result:
+Retained RC-9 historical control: Recall@5 `0.937500`, Precision@5 `0.187500`, MRR `0.895833`, useful hits `15/16`, hard-negative hits `4/4`; classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
-| Metric | Result |
-|---|---:|
-| Recall@5 | 0.937500 |
-| Precision@5 | 0.187500 |
-| MRR | 0.895833 |
-| Useful hits | 15/16 |
-| Hard-negative hits | 4/4 |
-
-Classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
-
-Comparator v1 восстановил useful recall, но failed hard-negative discrimination. NLI neutral-filter v1 уменьшил leakage, но failed useful-recall safety. Ни один результат не авторизует Reader semantic/hybrid runtime.
-
-```text
-retrieval match != evidence
-similarity != identity
-ranking != epistemic authority
-candidate discovery != candidate adjudication
-evaluation pass != runtime authorization
-```
-
-RRTIC-v1 фиксирует typed inspection vocabulary после relation-contract mismatch reassessment, но не даёт model/provider, reranking, identity/adjudication, evidence admission или Canon authority.
-
-## 🛡️ Grant-safe authority boundary
+Comparator v1 recovered useful recall but failed hard-negative discrimination. NLI neutral-filter v1 improved discrimination but failed useful-recall safety. RRTIC-v1 freezes a typed inspection contract after relation-contract mismatch reassessment.
 
 ```text
 physical L3 != strict Canon
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+retrieval match != evidence
+similarity != identity
+ranking != epistemic authority
+candidate discovery != candidate adjudication
 NLI label != proposition identity
 RRTIC suspicion != adjudicated relation
 qualifier mismatch != truth decision
+evaluation pass != runtime authorization
 ```
 
-Historical RC-7 compatibility literals:
+Historical RC-7 compatibility remains:
 
 ```text
 cross-document link != Canon relation
@@ -87,18 +73,18 @@ similarity signal != identity proof
 repetition across sources != corroboration
 ```
 
-SQLite ordinary active local-first. PostgreSQL/pgvector остаётся inactive `active=false`; import/equivalence не является activation или funded runtime delivery.
+SQLite ordinary active local-first. PostgreSQL/pgvector remains inactive `active=false`; import/equivalence does not mean activation or funded runtime delivery.
 
-## 📈 Что может быть future funded delta
+## Future funded delta
 
-Только работа, которая на момент agreement действительно отсутствует и отдельно определена/измерима. Возможные категории могут включать reproducible release/audit evidence, source-span/replay improvements, larger evaluation fixtures, operational storage lifecycle proof, reviewer-facing evidence tooling, accessibility/localization или отдельно authorized retrieval experiment под preregistered gates.
+Only work genuinely absent at agreement time and separately measurable may become future funded delta. Possible categories can include reproducible release/audit evidence, source-span/replay improvements, larger evaluation fixtures, operational storage lifecycle proof, reviewer-facing evidence tooling, accessibility/localization, or separately authorized retrieval experiments under preregistered gates.
 
-Нельзя relabel уже merged RC-1…RC-9 / Comparator / NLI / RRTIC history как новую funded delivery.
+Already merged RC-1…RC-9 / Comparator / NLI / RRTIC history cannot be budgeted twice.
 
-## 🏛 Governance
+## Governance
 
-Significant architecture/invariant changes начинаются с issue/RFC и требуют executable evidence, актуальных docs и exact CI. Presentation может становиться лучше, но не может создавать capabilities, authority или funding state.
+Significant architecture/invariant changes begin with issue/RFC and require executable evidence, current docs and exact CI. Presentation may improve clarity, but cannot create capability, authority or funding state.
 
-## 🌍 Localization provenance
+## Localization provenance
 
-Historical Russian RC-7 source: `main@ab3ad31c437647535030e371d58f456faf14017b`. Current Russian refresh source: `main@9666781d390e3276a111cb5ee1735f6606a76283`. Остальные восемь languages не обновляются Issue #410.
+Historical Russian RC-7 source: `main@ab3ad31c437647535030e371d58f456faf14017b`. Current Russian refresh source: `main@9666781d390e3276a111cb5ee1735f6606a76283`. Other eight languages are not updated by Issue #410.
