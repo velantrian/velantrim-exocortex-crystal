@@ -122,10 +122,9 @@ def test_grant_and_localization_boundaries_remain_unchanged() -> None:
     assert docs["localized_readme_source_checkpoint"] == (
         "51c205fe048fd69d39fcd47b43e042a50de432bc"
     )
-    assert docs["full_parity_current_locales"] == ["de", "fr", "ru"]
+    assert docs["full_parity_current_locales"] == ["de", "es", "fr", "ru"]
     assert docs["full_parity_refresh_needed_locales"] == [
         "ar",
-        "es",
         "hi",
         "it",
         "ja",
