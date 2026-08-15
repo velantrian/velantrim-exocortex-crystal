@@ -14,6 +14,8 @@ manifest = json.loads((root / "docs/status/implementation-manifest.json").read_t
 errors: list[str] = []
 runtime_commit = "bbd816c09dd39a02e6de6c1014438490572f40f6"
 source_checkpoint = "51c205fe048fd69d39fcd47b43e042a50de432bc"
+arabic_historical_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
+arabic_parity_base = "9e048c21fb929f7d299e3af0ef03d76c1df899d6"
 german_historical_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
 german_parity_base = "ad8cec8c868f64b6dfbdc3bf3087230f59c3861c"
 french_historical_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
@@ -27,7 +29,7 @@ simplified_chinese_parity_base = "5e6301f0eaee1a6c85d8543be89dc2e606dc05a8"
 japanese_historical_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
 japanese_parity_base = "5903e90f3e0f2884f4ba257a71808d19fc439ebc"
 locales = ["ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN"]
-current_locales = ["de", "es", "fr", "it", "ja", "ru", "zh-CN"]
+current_locales = ["ar", "de", "es", "fr", "it", "ja", "ru", "zh-CN"]
 refresh_locales = [locale for locale in locales if locale not in current_locales]
 
 
@@ -133,7 +135,8 @@ expect(docs.get("full_parity_refresh_needed_locales"), refresh_locales, "root re
 expect(docs.get("d1_source_checkpoint"), source_checkpoint, "D1 source")
 expect(docs.get("d1_current_locales"), current_locales, "D1 current locales")
 expect(docs.get("d1_refresh_needed_locales"), refresh_locales, "D1 refresh locales")
-expect(docs.get("latest_translation_refresh_issue"), 423, "latest translation refresh issue")
+expect(docs.get("latest_translation_refresh_issue"), 425, "latest translation refresh issue")
+expect(docs.get("arabic_parity_audit_base"), arabic_parity_base, "Arabic parity audit base")
 expect(docs.get("german_parity_audit_base"), german_parity_base, "German parity audit base")
 expect(docs.get("french_parity_audit_base"), french_parity_base, "French parity audit base")
 expect(docs.get("spanish_parity_audit_base"), spanish_parity_base, "Spanish parity audit base")
@@ -187,6 +190,16 @@ for locale in locales:
         ):
             if marker not in text:
                 errors.append(f"{relative}: missing retained localization marker {marker!r}")
+    elif locale == "ar":
+        for marker in (
+            f"localization-source: main@{arabic_historical_source}",
+            "localization-status: CURRENT",
+            f"current-localization-source: main@{arabic_parity_base}",
+            "reader_core_rc5_relation_candidates    = true",
+            "contradiction candidate  != confirmed contradiction",
+        ):
+            if marker not in text:
+                errors.append(f"{relative}: missing Arabic current/provenance marker {marker!r}")
     elif locale == "de":
         for marker in (
             f"localization-source: main@{german_historical_source}",
@@ -350,16 +363,16 @@ required = {
     "docs/TRANSLATION_STATUS.md": (
         source_checkpoint,
         "Reader RC-5 boundary",
-        "16 `REFRESH_NEEDED` localized documents",
-        "German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian",
+        "8 `REFRESH_NEEDED` localized documents",
+        "Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian",
         "RC-9",
         "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP",
     ),
     "docs/ai/CURRENT_STATE.md": (
         source_checkpoint,
         "reader_core_rc7_cross_document_links",
-        "two other localized root README files",
-        "German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed",
+        "one other localized root README file",
+        "Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed",
         "RC-9",
         "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP",
     ),
@@ -399,6 +412,7 @@ link_pattern = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 link_surfaces = [
     "README.md",
     "README.ru.md",
+    "README.ar.md",
     "README.de.md",
     "README.fr.md",
     "README.es.md",
@@ -435,6 +449,6 @@ if errors:
     raise SystemExit(1)
 print(
     "Documentation status consistent: Reader RC-1..RC-7 bounded=true, RC-9 lexical baseline current, "
-    "dedicated=false; English grant truth post-RC-9; German + French + Spanish + Italian + Japanese + Simplified Chinese + Russian localization current"
+    "dedicated=false; English grant truth post-RC-9; Arabic + German + French + Spanish + Italian + Japanese + Simplified Chinese + Russian localization current"
 )
 PY

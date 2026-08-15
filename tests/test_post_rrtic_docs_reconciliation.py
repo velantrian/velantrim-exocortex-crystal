@@ -123,6 +123,7 @@ def test_grant_and_localization_boundaries_remain_unchanged() -> None:
         "51c205fe048fd69d39fcd47b43e042a50de432bc"
     )
     assert docs["full_parity_current_locales"] == [
+        "ar",
         "de",
         "es",
         "fr",
@@ -132,6 +133,5 @@ def test_grant_and_localization_boundaries_remain_unchanged() -> None:
         "zh-CN",
     ]
     assert docs["full_parity_refresh_needed_locales"] == [
-        "ar",
         "hi",
     ]

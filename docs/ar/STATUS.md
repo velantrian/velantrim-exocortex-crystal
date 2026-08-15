@@ -1,4 +1,4 @@
-<!-- translation-source: docs/STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- translation-source: docs/STATUS.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
 <!-- d1-locale: ar -->
 <!-- d1-boundary: public-ask-read-only -->
@@ -7,69 +7,85 @@
 <!-- d1-nonclaim: nlnet-not-awarded -->
 # Velantrim Crystal — الحالة الحالية
 
-**التاريخ:** 2026-08-08  
-**نقطة التشغيل المتحقق منها:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
-**الشجرة المتحقق منها:** `f57e58a6f4d1954b649ba324996fcde42ac287b8`  
-**رأس التنفيذ المتحقق:** `d7af7c80722274f9217bc5545d150f92e9363f37`  
-**PR / CI:** #337 / `31256316536`  
-**CI لتكامل PostgreSQL:** `31256316532`
+**حالة العرض:** Human-First / post-RC-9 / post-NLI / RRTIC-v1  
+**دليل التشغيل التاريخي المحتفظ به:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
+**الحقيقة الآلية:** [implementation manifest](../status/implementation-manifest.json)  
+**الدليل التاريخي:** [TEST_REPORT.md](../../TEST_REPORT.md)
 
-## التحقق
-
-- Python 3.11: **2078 passed / 13 skipped / 0 failed**؛
-- Python 3.12: **2078 passed / 13 skipped / 0 failed**؛
-- **9756 statements / 100.00% line coverage**؛
-- `core/postgresql_migration.py`: **44/44 statements**؛
-- `core/postgresql_migration_impl.py`: **336/336 statements**؛
-- إنهاء **7/7** من طفرات Ring Zero؛
-- نجاح **9/9** من وظائف CI الدائمة؛
-- نجاح **1/1** من تكامل PostgreSQL/pgvector الحقيقي.
-
-الأدلة الدقيقة: [TEST_REPORT.md](../../TEST_REPORT.md) و
-[البيان القابل للقراءة آلياً](../status/implementation-manifest.json).
-
-## حد القدرات المتحقق منه
-
-يحافظ Crystal على أساس SQLite المحلي وينفذ المرحلة الأولى من issue #332:
+## 📖 Reader الحالي
 
 ```text
-verified completed logical bundle
-→ PostgreSQL 16 / pgvector 0.8.2 preflight
-→ new inactive target schema
-→ serializable import
-→ independent read-only canonical target re-hash
-→ exact count / byte / SHA-256 equivalence
-→ non-secret receipts
+reader_core_rc1_skeleton = true
+reader_core_rc2_structural_map = true
+reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc4_proposition_extraction = true
+reader_core_rc5_relation_candidates = true
+reader_core_rc6_long_context_strategy = true
+reader_core_rc7_cross_document_links = true
+dedicated_reader_core = false
 ```
 
-برنامج تشغيل PostgreSQL إضافة اختيارية تُحمّل كسولاً فقط عبر أوامر مشغل صريحة.
-يبقى التثبيت الافتراضي معتمداً على المكتبة القياسية. لا تسجل الوجهة المستوردة في
-التكوين التشغيلي العادي، وتبقى `active=false` ولا تخدم قراءات أو كتابات عادية.
+RC-1…RC-7 هي طبقات bounded implemented. RC-9 هو deterministic lexical PRE-ADMISSION candidate discovery. Comparator v1 وNLI neutral-filter v1 نتائج تقييم frozen وليستا runtime stages. RRTIC-v1 عقد architecture/inspection فقط، من دون runtime provider authorization.
 
-## حد السلطة
+## 🛡️ حد السلطة
 
 ```text
-storage profile         = deployment identity
-migration bundle        = operation evidence
-physical L3             = multi-status storage
-strict Canon            = trusted read projection
-migration/import        != TruthGate admission
-successful equivalence  != backend activation
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+coverage != comprehension proof
+pass completion != comprehension proof
+candidate discovery != candidate adjudication
 ```
 
-لا تتغير Guardian وTruthGate وrestrictions وTrustSnapshot وCanonicalView.
+لا يملك Reader أو retrieval أو similarity أو NLI أو RRTIC حق تجاوز Guardian أو TruthGate أو evidence admission أو Canon.
 
-## غير موجود بعد
+## 🔐 الاستعلام العام
 
-- تشغيل PostgreSQL نشط للقراءة والكتابة؛
-- تقييم exact-vs-ANN وحدود ANN المقبولة؛
-- activation أو cutover أو fencing أو rollback أو dual-write؛
-- دورة backup/restore/upgrade وpooling إنتاجي وfencing موزع؛
-- IdP/multi-tenancy إنتاجي أو اعتماد قانوني أو أمني أو GDPR؛
-- Reader Core متحقق ومخصص.
+```text
+HTTP /ask
+CLI ask
+MCP search
+    ↓
+core.query_pipeline.query()
+    ↓
+strict read-only canonical projection
+```
 
-## حالة المنحة
+هذه الواجهات read-only ولا تكتب facts أو physical L3 أو Canon.
 
-المشروع مقدم وقيد المراجعة. **لا يُدّعى الحصول على المنحة أو تغيير الميزانية.**
-أصبح PR #337 وissue #332 جزءاً من الأساس المدمج ولا يجوز احتسابهما مرة أخرى كعمل
-مستقبلي ممول.
+## 🗄️ التخزين
+
+```text
+SQLite ordinary local-first          ACTIVE
+PostgreSQL/pgvector import target     INACTIVE
+PostgreSQL Reader activation          NOT AUTHORIZED
+active=false
+```
+
+نجاح import أو equivalence لا يعني activation أو cutover أو switching أو dual-write.
+
+## 🧪 دليل runtime التاريخي
+
+يبقى هذا الدليل مثبتاً عند checkpoint التاريخي ولا يُقدّم باعتباره عدد اختبارات آخر milestone:
+
+```text
+2078 passed / 13 skipped / 0 failed
+9756 statements / 100.00% line coverage
+7/7 Ring Zero mutants killed
+9/9 permanent CI jobs
+```
+
+## 💶 المنحة
+
+NLnet NGI0 Commons Fund: **submitted / under review / not awarded**. نحو €50,000 planning context فقط، budget change: none. لا يوجد grant-award claim ولا legal/security/GDPR certification claim.
+
+## 🚫 غير مصرح به حالياً
+
+- dedicated/full Reader Core؛
+- semantic/hybrid Reader runtime؛
+- NLI runtime filter؛
+- RRTIC runtime provider؛
+- embeddings/ANN/vector Reader stack؛
+- active PostgreSQL normal runtime؛
+- automatic contradiction adjudication أو automatic winner selection.
