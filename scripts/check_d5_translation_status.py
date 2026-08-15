@@ -74,7 +74,8 @@ def main() -> int:
         (manifest.get("active_postgresql_runtime_claim") is False, "PostgreSQL claim"),
     )
     for ok, label in checks:
-        if not ok: errors.append(f"D5 manifest: invalid {label}")
+        if not ok:
+            errors.append(f"D5 manifest: invalid {label}")
 
     for locale in LOCALES:
         expected_status = "CURRENT" if locale in CURRENT_LOCALES else "REFRESH_NEEDED"
@@ -91,28 +92,46 @@ def main() -> int:
             "d5-nonclaim: nlnet-not-awarded",
             "d5-nonclaim: security-legal-gdpr-not-certified",
             "d5-nonclaim: native-speaker-editorial-not-certified",
-            "physical L3", "strict Canon", "active=false",
+            "physical L3",
+            "strict Canon",
+            "active=false",
         ):
-            if marker not in text: errors.append(f"{relative}: missing marker {marker!r}")
+            if marker not in text:
+                errors.append(f"{relative}: missing marker {marker!r}")
         if locale in CURRENT_LOCALES:
             for marker in (
                 f"translation-source: docs/EXTENDED_REFERENCE_POLICY.md@{SOURCE}",
-                "translation-status: CURRENT", *READER_MARKERS,
-                "POSSIBLE_CONTRADICTION", "EXCEPTION", "QUALIFICATION", "TENSION",
-                "submitted / under review / not awarded", "€50,000", "budget change: none",
-                "REFRESH_NEEDED", "coverage != comprehension proof", "pass completion != comprehension proof",
-                "EXTRACTED_PROPOSITION != verified fact", "Reader candidate != admitted evidence",
+                "translation-status: CURRENT",
+                *READER_MARKERS,
+                "POSSIBLE_CONTRADICTION",
+                "EXCEPTION",
+                "QUALIFICATION",
+                "TENSION",
+                "submitted / under review / not awarded",
+                "€50,000",
+                "budget change: none",
+                "REFRESH_NEEDED",
+                "coverage != comprehension proof",
+                "pass completion != comprehension proof",
+                "EXTRACTED_PROPOSITION != verified fact",
+                "Reader candidate != admitted evidence",
                 "contradiction candidate != confirmed contradiction",
             ):
-                if marker not in text: errors.append(f"{relative}: missing current D5 marker {marker!r}")
+                if marker not in text:
+                    errors.append(f"{relative}: missing current D5 marker {marker!r}")
         elif f"translation-source: docs/EXTENDED_REFERENCE_POLICY.md@{SOURCE}" in text:
             errors.append(f"{relative}: refresh-needed translation falsely pins current source")
         check_links(relative, text, errors)
 
         index_relative = f"docs/{locale}/README.md"
         index = (ROOT / index_relative).read_text(encoding="utf-8")
-        for marker in (f"d5-source: main@{SOURCE}", f"d5-status: {expected_status}", GUIDE):
-            if marker not in index: errors.append(f"{index_relative}: missing marker {marker!r}")
+        for marker in (
+            f"d5-source: main@{SOURCE}",
+            f"d5-status: {expected_status}",
+            GUIDE,
+        ):
+            if marker not in index:
+                errors.append(f"{index_relative}: missing marker {marker!r}")
         check_links(index_relative, index, errors)
 
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
@@ -122,13 +141,17 @@ def main() -> int:
         "two other supported locales are `REFRESH_NEEDED`",
         "16 `REFRESH_NEEDED` localized documents",
     ):
-        if marker not in ledger: errors.append(f"translation ledger: missing D5 marker {marker!r}")
+        if marker not in ledger:
+            errors.append(f"translation ledger: missing D5 marker {marker!r}")
 
     if errors:
         print("D5 translation validation failed:")
-        for error in errors: print(f"  - {error}")
+        for error in errors:
+            print(f"  - {error}")
         return 1
-    print("D5 translation status consistent: German + French + Spanish + Italian + Japanese + Simplified Chinese + Russian CURRENT; 2 locales REFRESH_NEEDED")
+    print(
+        "D5 translation status consistent: German + French + Spanish + Italian + Japanese + Simplified Chinese + Russian CURRENT; 2 locales REFRESH_NEEDED"
+    )
     return 0
 
 
