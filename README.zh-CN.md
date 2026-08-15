@@ -1,241 +1,451 @@
+<!-- localization-source: main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
+<!-- localization-status: CURRENT -->
+<!-- current-localization-source: main@5e6301f0eaee1a6c85d8543be89dc2e606dc05a8 -->
+<!-- current-english-readme-source: main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883 -->
 # 🔱 Velantrim ExoCortex — Crystal
 
 > 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 **简体中文** · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
 
-<!-- localization-source: main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
-<!-- localization-status: CURRENT -->
+## 💠 将“发现相关内容”与“判定为真”严格分离的本地优先记忆与证据基础设施
 
-### 面向可信 AI 系统的、可验证的 local-first 内存、证据与决策基础设施
+Crystal 是一条面向**可审计 AI 记忆**的 local-first 研究与实现路线。它把 discovery、provenance、Evidence Admission、epistemic authority、可信 Canon 状态与 presentation 分开，因此“找到了相关材料”不会自动变成“该材料已被系统判定为真”。
 
-`v0.3.0` · 🧪 **2078 passed / 13 skipped / 0 failed** · 🎯 **9756 statements / 100.00% line coverage** · 🧬 **7/7 Ring Zero mutants killed** · ✅ **9 CI jobs** · 🐍 默认 stdlib-only runtime · ⚖️ **AGPL-3.0**
+> 👤 **第一次了解 Crystal？** 先读本页。这是 human-first 的公开入口。
+>
+> 🤖 **AI / agents / automated auditors：** 从 **[Special for AI →](./docs/ai/README.md)** 开始。不要仅从叙述型 README 推断仓库的实时状态。
+>
+> 📚 **需要深入理解架构？** 继续阅读 **[Deep System Overview →](./docs/OVERVIEW.md)**，再进入下方的详细技术文档。
 
-> Crystal 不是 chatbot，也不是自主“真理预言机”。它是 memory/evidence/decision boundary，用于记录 claim 的来源、epistemic state、grounding 资格以及对矛盾的显式可审计决策。
+`v0.3.0` · 🎯 **100% line-coverage gate** · 🧬 **Ring Zero mutation gate** · ✅ **9 permanent CI jobs** · 🐍 **standard-library-first default runtime** · ⚖️ **AGPL-3.0**
 
-**Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` — PR #337。  
-**Reader foundation:** RC-1 evidence-linked skeleton 和 RC-2 caller-supplied Structural Document Map 已实现并测试；dedicated multi-pass Reader 尚未实现。  
-**Grant:** `submitted / under review / not awarded`。  
-**Evidence:** [TEST_REPORT.md](./TEST_REPORT.md)、[STATUS.md](./docs/STATUS.md)、[implementation manifest](./docs/status/implementation-manifest.json)。
+## 👋 Crystal 是什么，为什么存在
 
-> 出现冲突时英文是主源。本 README 是完整公开展示，不是简短 orientation。参见 [docs/LOCALIZATION_POLICY.md](./docs/LOCALIZATION_POLICY.md) 与 [docs/TRANSLATION_STATUS.md](./docs/TRANSLATION_STATUS.md)。
+传统 retrieval 系统主要回答：“什么看起来相关？” Crystal 进一步追问：信息来自哪里？它支持的是同一 proposition，还是仅仅相关？它是否具备 admitted evidence 的资格？contradiction 是否真的完成了 adjudication？哪些内容可以进入可信记忆？系统又可以把什么安全地呈现为 grounded answer？
 
----
+> **Discovery 可以提出“什么值得检查”；Authority 必须走独立的决策路径。**
 
-## 🎯 为什么需要 Crystal
+## 🧠 心智模型
 
-许多 AI/RAG 系统把文档、用户陈述、model output、假设和 memory 混在一起。流畅文字可能因此获得 evidence 无法支撑的 authority。
-
-```text
-fluent claim        != trusted fact
-physical L3         != strict Canon
-retrieval score     != evidence
-model output        != independent source truth
-migration receipt   != claim evidence
-import success      != backend activation
-Reader coverage     != comprehension proof
-Reader structure    != truth/confidence authority
+```mermaid
+mindmap
+  root((💠 Crystal))
+    🔎 Discovery
+      sources
+      Reader
+      candidate retrieval
+    🧾 Evidence
+      provenance
+      support
+      admission
+    🛡 Authority
+      Guardian
+      TruthGate
+    🏛 Canon
+      authorized local state
+    💬 Presentation
+      grounded answer
+      bounded refusal
+    🔬 Research
+      evaluation
+      falsification
+      architecture
 ```
 
-## 🧠 Crystal 已提供什么
+这张图描述的是概念领域，而不是 authority inheritance。最关键的区别不是“有没有 retrieval”，而是 **candidate discovery 与 epistemic authorization 是两条不同的路径**。
 
-- typed claims 与明确的 epistemic lifecycle；
-- source identity、evidence spans 与 provenance；
-- Guardian 与 TruthGate admission boundaries；
-- 与 strict Canon 分离的 multi-status physical L3；
-- deny-dominant TrustSnapshot 与 CanonicalView；
-- read-only HTTP /ask、CLI ask、MCP search；
-- TRACE 与 replayable tamper-evident Receipts；
-- review queue/session 与 ContradictionReport；
-- 显式 COEXIST / CONTEXTUALIZE / SUPERSEDE 决策；
-- scoped curator capabilities 与 process-local leases；
-- SQLite lifecycle 与 bounded logical migration；
-- `active=false` 的 optional PostgreSQL/pgvector inactive import；
-- RC-1：source/version/session、SegmentCard、fidelity、coverage、bookmarks/open loops、stale/failure/privacy；
-- RC-2：带 RECOVERED / AMBIGUOUS / UNSUPPORTED 的 version-bound caller-supplied structure。
+## 🗺️ 一张图看懂架构
 
-RC-1/RC-2 不保存 source body，不新增 Reader API/CLI/worker 或 durable Reader schema，也没有 Canon/ESM/planner authority。不存在 automatic parser/OCR、Reader LLM/provider orchestration、embeddings/ANN/vector DB 或 multi-pass/cross-document runtime。
-
-## 🏛️ 三种架构视图
-
-### 🧠 Mind map
+### ⚙️ Authority flow
 
 ```text
-🧠 Crystal
-├── 📖 Reader foundation
-│   ├── RC-1 evidence-linked skeleton
-│   ├── RC-2 Structural Document Map
-│   └── dedicated multi-pass Reader — NOT IMPLEMENTED
-├── 🏛️ Memory
+                 DISCOVERY SIDE                         AUTHORITY SIDE
+
+📥 source → 📖 Reader → 🔎 candidates       │       🧾 evidence boundary
+                                            │                ↓
+              may surface                   │       🛡 Guardian → TruthGate
+              may compare                   │                ↓
+              may inspect                   │       TrustSnapshot → CanonicalView
+                                            │                ↓
+                                            │            🏛 strict Canon
+                                            │                ↓
+                                            │       💬 answer / refusal
+
+                 proposal                    │          authorization
+```
+
+retrieval score、model label 或 typed suspicion 可以帮助检查，但它们都没有修改 trusted state 的权限。
+
+## 🌳 系统树
+
+```text
+💠 Crystal
+│
+├── 📖 Reader
+│   ├── RC-1…RC-7 bounded implemented layers
+│   ├── RC-9 deterministic lexical PRE-ADMISSION candidate discovery
+│   └── RRTIC-v1 typed inspection contract — architecture only
+│
+├── 🧾 Evidence & provenance
+│
+├── 🛡 Guardian / TruthGate
+│
+├── 🏛 Memory / Canon
 │   ├── L0 — working cache
-│   ├── L1 — operational SQLite/WAL
+│   ├── L1 — operational SQLite
 │   ├── L2 — pending/review
-│   └── L3 — physical multi-status graph
-├── 🛡️ Trust
-│   ├── Guardian
-│   ├── TruthGate
-│   ├── TrustSnapshot
-│   └── CanonicalView
-└── 🗄️ Storage
-    ├── SQLite — active local-first
-    └── PostgreSQL/pgvector — inactive active=false
+│   ├── L3 — physical multi-status graph
+│   ├── TrustSnapshot — deny-dominant reconciliation surface
+│   ├── CanonicalView — strict trusted read-time projection
+│   ├── SQLite — ordinary active local-first path
+│   └── PostgreSQL/pgvector — inactive equivalence/import target, active=false
+│
+├── 💬 Read-only HTTP /ask · CLI ask · MCP search
+│
+├── 🧪 Evaluation
+│   ├── RC-9 lexical baseline
+│   ├── Comparator v1 — frozen gate FAIL
+│   └── NLI neutral-filter v1 — frozen gate FAIL
+│
+├── 🤖 AI documentation interface
+├── ⚙ Machine-readable implementation truth
+└── 🔬 Evidence / history surfaces
 ```
 
-### 🏗️ 信息流
+`physical L3 != strict Canon`：进入物理 L3 并不意味着该内容已经获得 strict trusted read 的资格。
 
-```text
-Source / document
-      ↓
-RC-1 Reader artifacts
-      ↓
-RC-2 structural metadata
-      ↓
-explicit ingest / review
-      ↓
-Guardian → TruthGate
-      ↓
-L1 + physical L3
-      ↓
-TrustSnapshot → CanonicalView STRICT
-      ↓
-Grounded answer / bounded refusal
-      ↓
-TRACE + Receipt
+## 🔄 Architecture topology
+
+```mermaid
+flowchart LR
+    S["📥 Sources"] --> R["📖 Reader"]
+    R --> D["🔎 Candidate discovery"]
+    R --> P["🧾 Provenance"]
+    D --> I["🧬 Typed inspection"]
+    P --> E["🧾 Evidence boundary"]
+    I --> E
+    E --> G["🛡 Guardian / TruthGate"]
+    G --> C["🏛 Canon"]
+    C --> Q["💬 Grounded presentation"]
+    X["🔬 Tests · evaluation · evidence"] -. constrain .-> D
+    X -. constrain .-> G
 ```
 
-### 🌳 模块树
+拓扑故意是不对称的：discovery 可以产生 candidate，但 trusted-state transition 始终位于显式 authority boundary 之后。
 
-```text
-🌳 core
-├── reader_core.py       # RC-1
-├── reader_structure.py  # RC-2
-├── evidence.py
-├── truth_gate.py
-├── pipeline.py
-├── query_pipeline.py
-└── storage/...
-```
+## 📊 今天真正存在的能力
 
-## 🧱 Memory 与 authority surfaces
-
-| Surface | Role | Boundary |
+| Surface | 状态 | 含义 |
 |---|---|---|
-| Reader RC-1 | source-linked artifacts | candidate ≠ truth |
-| Reader RC-2 | structural map | order ≠ authority |
-| L0 | working cache | ephemeral |
-| L1 | operational state | durable |
-| L2 | review/pending | 无 automatic admission |
-| L3 | physical graph | multi-status |
-| TrustSnapshot | reconciliation | deny-dominant |
-| CanonicalView | grounding | policy-allowed only |
-| TRACE / Receipt | audit/replay | evidence, not truth generator |
-| ContradictionReport | conflict object | 无 automatic winner |
+| 📖 Reader RC-1…RC-7 | ✅ **Implemented** | bounded source / structure / pass / proposition / relation / long-context / cross-document layers |
+| 🔎 Reader RC-9 | ✅ **Implemented** | deterministic offline BM25 **PRE-ADMISSION** candidate discovery |
+| 🧪 Comparator v1 | 🧊 **Frozen evaluation** | semantic recall recovered；discrimination gate **FAIL** |
+| 🧪 NLI neutral-filter v1 | 🧊 **Frozen evaluation** | discrimination improved；recall-safety gate **FAIL** |
+| 🧬 RRTIC-v1 | 📐 **Frozen architecture contract** | typed relation suspicion + qualifier inspection；没有 runtime provider |
+| 🏛 SQLite | ✅ **Active local-first** | ordinary active storage/runtime path |
+| 🗄 PostgreSQL/pgvector | ⛔ **Inactive** | import/equivalence target only；`active=false` |
+| 🧠 Semantic/hybrid Reader runtime | ❌ **Not authorized** | 没有 Reader FTS/ANN/vector backend，也没有 NLI/RRTIC runtime stage |
+| 🤖 Dedicated/full autonomous Reader | ❌ **Not implemented** | bounded Reader layers 已存在，但 `dedicated_reader_core=false` |
 
-## 🗄️ SQLite 与 PostgreSQL/pgvector
+精确 machine truth 请查看 [Implementation Status](./docs/IMPLEMENTATION_STATUS.md)、[Current Status](./docs/STATUS.md)、[TEST_REPORT](./TEST_REPORT.md) 与 [machine-readable implementation manifest](./docs/status/implementation-manifest.json)。
+
+## 🧭 RC-6 / RC-7 — 保留的边界
 
 ```text
-SQLite
-└── ordinary active local-first runtime
-    ├── reads/writes
-    ├── backup/restore
-    └── bounded logical export
-
-PostgreSQL 16 + pgvector
-└── optional inactive target
-    ├── explicit optional dependency
-    ├── SERIALIZABLE import
-    ├── exact target re-hash
-    └── active=false
+RC-4 direct proposition leaves
+        ↓
+RC-6 bounded working sets
+        ↓
+caller-supplied SUMMARY only
+        ↓
+RC-7 explicit cross-document candidates
 ```
 
-Import success 不等于 activation、cutover、rollback、dual-write、automatic switching、ANN acceptance 或 TruthGate admission。普通 PostgreSQL runtime adapter 未激活。
+```text
+working-set coverage != comprehension proof
+summary != source text
+summary != evidence
+summary != verified fact
+summary != Canon admission
+```
 
-## 🔎 Crystal 与 Classic RAG
+RC-7 仍然是显式 cross-document candidate layer，**不提供 automatic semantic matching**。
 
-| Question | Classic RAG | Crystal |
+## 🛡 Authority Firewall
+
+这些不是营销措辞，而是架构不变量：
+
+```text
+retrieval match          != evidence
+similarity               != identity
+repetition               != corroboration
+cross-document candidate != Canon relation
+ranking                  != epistemic authority
+candidate discovery      != candidate adjudication
+Reader candidate         != admitted evidence
+relation candidate       != admitted evidence
+contradiction candidate  != confirmed contradiction
+cross-document link      != Canon relation
+NLI label                != proposition identity
+NLI contradiction        != contradiction adjudication
+RRTIC suspicion          != adjudicated relation
+qualifier mismatch       != truth decision
+evaluation pass          != runtime authorization
+physical L3              != strict Canon
+```
+
+历史兼容词汇同样保留：
+
+```text
+cross-document support != admitted evidence
+same-topic != same proposition
+possible-same-claim != claim identity
+similarity signal != identity proof
+repetition across sources != corroboration
+```
+
+一句话概括：**Discovery ≠ Authority**。
+
+## 🧠 与常见 memory / retrieval 架构的区别
+
+这是一张架构定位表，不是排行榜。
+
+| Approach | 主要关注点 | Crystal 额外强调 |
 |---|---|---|
-| 查找相关材料 | 核心能力 | adapters |
-| Claim vs trusted fact | app-specific | typed boundary |
-| Provenance | 不固定 | first-class |
-| Reader structure/coverage | chunk-centric | RC-1/RC-2 foundation |
-| 阻止 model self-source | 非内建 | Ring Zero |
-| Contradictions | 外部逻辑 | explicit dispositions |
-| Evidence replay | optional | TRACE / Receipt |
-| 必须 cloud/model | 不一定 | default runtime 不需要 |
+| 📦 Classic vector RAG | 为生成找到相关上下文 | relevance 与 Evidence / Identity / Canon authority 分离 |
+| 🧠 Agent memory | 保存对 agent/user 有用的上下文 | provenance、admission boundary、可审计 trusted-state transition |
+| 🕸 Graph / temporal memory | 表示关系和演化上下文 | discovered relation 仍是 candidate，直到满足 authority 条件 |
+| 💠 Crystal | evidence-first local memory + Reader boundaries | discovery / evidence / authority / presentation 的严格分层 |
 
-## 🛡️ Read-only query boundary
+外部系统会持续变化，因此带日期、带来源的比较材料放在 [Deep System Overview](./docs/OVERVIEW.md)；本 README 不把第三方产品的变化写成永久 project truth。
 
-```text
-HTTP /ask
-CLI ask
-MCP search
-     ↓
-core.query_pipeline.query()
-     ↓
-strict read-only canonical projection
-```
+## 🔬 当前 research boundary
 
-这些 surfaces 不创建 facts、不改变 ESM、不写入 L3。Explicit ingest 是独立 write path。
-
-## ⚖️ Contradiction decisions
+post-RC-9 的研究链条之所以有价值，正是因为 failed gates 被保留下来，而不是被重新包装成 capability：
 
 ```text
-unresolved contradiction
+RC-9 lexical baseline
         ↓
-ContradictionReport
+Comparator v1
+recall recovered · hard-negative discrimination FAIL
         ↓
-scoped curator + capability + lease
+NLI neutral-filter v1
+leakage reduced · useful-recall safety FAIL
         ↓
-COEXIST / CONTEXTUALIZE / SUPERSEDE
+architecture reassessment
+relation-contract mismatch
         ↓
-audited canonical write path
+RRTIC-v1
+contract-first · no runtime authorization
 ```
 
-## 🚀 快速开始
+### 🧬 RRTIC-v1 — architecture contract，不是 runtime
+
+**Reader Retrieval Typed Inspection Contract v1 (RRTIC-v1)** 是 bounded、model-free 的 inspection contract。它不是 semantic/NLI runtime provider，不执行 automatic adjudication，不执行 Evidence Admission，也不写入 Canon。
+
+关系 suspicion vocabulary：
+
+```text
+EQUIVALENCE_SUSPECT
+RELATED_SUSPECT
+CONTRADICTION_SUSPECT
+QUALIFICATION_SUSPECT
+TOPIC_ONLY_SUSPECT
+UNKNOWN
+```
+
+qualifier dimensions：
+
+```text
+entity_binding
+predicate_binding
+argument_roles
+polarity
+modality_quantifier
+temporal_version
+jurisdiction
+condition_direction
+units_thresholds
+attribution_causality
+```
+
+Qualifier state：`MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE`。
+
+RRTIC-v1 不提供 model、reranker、scalar truth/confidence score、Accept/Reject policy、Evidence Admission、Contradiction Adjudication、Canon writes 或 runtime authorization。
+
+EPIS-001 同样只是 frozen architecture-only evidence-state observability contract；它没有创建 Epistemic Router runtime，也没有新增 evidence/Canon authority。
+
+## ✅ Reviewer-facing verification
+
+当前 implemented Reader retrieval baseline：**RC-9 deterministic lexical PRE-ADMISSION candidate discovery**。
+
+保留的 RC-9 control K=5：
+
+| Metric | Result |
+|---|---:|
+| Recall@5 | `0.937500` |
+| Precision@5 | `0.187500` |
+| MRR | `0.895833` |
+| Useful hits | `15/16` |
+| Hard-negative hits | `4/4` |
+
+Classification：`LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`。
+
+```text
+reader_core_rc1_skeleton               = true
+reader_core_rc2_structural_map         = true
+reader_core_rc3_multi_pass_mechanics   = true
+reader_core_rc4_proposition_extraction = true
+reader_core_rc5_relation_candidates    = true
+reader_core_rc6_long_context_strategy  = true
+reader_core_rc7_cross_document_links   = true
+reader_rc9_lexical_candidate_discovery = true
+dedicated_reader_core                  = false
+semantic_hybrid_reader_runtime         = false
+rrtic_runtime_authorization            = false
+nli_reader_runtime_filter              = false
+```
+
+这些是 bounded retrieval evidence 与 compatibility anchors，不是 semantic correctness、epistemic validity 或 production-scale quality 的证明。
+
+## 🧩 Authority components
+
+```text
+Guardian      = structural integrity / structural policy boundary
+TruthGate     = L3 admission authority
+TrustSnapshot = deny-dominant reconciliation surface
+CanonicalView = strict trusted read-time projection
+TRACE         = provenance / replay evidence, not truth proof
+```
+
+Guardian 不是 truth oracle。任何 retrieval score、embedding model、NLI label 或 RRTIC suspicion 都不能取代这些角色。
+
+## 🗄 Storage truth
+
+```text
+SQLite ordinary local-first = ACTIVE
+PostgreSQL/pgvector import target = INACTIVE
+active=false
+physical L3 != strict Canon
+successful import != backend activation
+```
+
+PostgreSQL/pgvector 仍是 inactive import/equivalence surface。successful import 不等于 activation、cutover、rollback、dual-write、Reader backend selection 或 TruthGate admission。
+
+## 🚫 Crystal 不声称什么
+
+Crystal **不声称**：
+
+- universal truth detection 或 zero hallucinations；
+- automatic semantic equivalence / proposition identity；
+- 从 retrieval 自动得到 corroboration、Evidence Admission 或 contradiction winner；
+- semantic/hybrid/vector Reader runtime、Reader FTS、ANN/FAISS/HNSW 或 Reader vector DB；
+- NLI runtime filter、CrossEncoder reranker 或 RRTIC runtime provider；
+- 已实现的 EPIS / Epistemic Router runtime；
+- completed dedicated/full autonomous Reader；
+- active PostgreSQL/pgvector Reader selection 或 automatic backend cutover；
+- 从 bounded synthetic evaluation 推导 production-scale retrieval quality；
+- legal、GDPR、security 或 supply-chain certification。
+
+**Funding truth：** NLnet NGI0 Commons Fund proposal 仍是 **submitted / under review / not awarded**。约 **€50,000** 仅是 planning/transparency context，不是 approved budget、grant award 或 payment commitment。
+
+## 🛠 Quickstart
 
 ```bash
 git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
 python -m venv .venv
 source .venv/bin/activate
+python -m pip install --upgrade pip
 pip install -e '.[dev]'
-pytest tests/ --cov=. --cov-fail-under=100
+python -m pytest -q
+python scripts/eval_gate.py --out-dir eval-artifacts
 ```
 
-可选 PostgreSQL：`pip install -e '.[postgresql]'`。
+默认 runtime 仍是 standard-library-first。Optional integrations 会扩大 dependency/trust boundary，不能从默认 setup 自动推断它们已启用。
 
-## ✅ 已验证 baseline
+## 📚 从哪里继续阅读
+
+### 👤 Human
 
 ```text
-Runtime checkpoint: bbd816c09dd39a02e6de6c1014438490572f40f6
-Python 3.11/3.12: 2078 passed / 13 skipped / 0 failed
-Statements: 9756
-Coverage: 100.00%
-CI: 9/9
-Ring Zero: 7/7
-reader_core_rc1_skeleton = true
-reader_core_rc2_structural_map = true
-dedicated_reader_core = false
-PostgreSQL target: active=false
+README.zh-CN.md
+   ↓
+docs/OVERVIEW.md
+   ↓
+docs/zh-CN/ARCHITECTURE_OVERVIEW.md
+   ↓
+docs/ARCHITECTURE.md
+   ↓
+research / evidence as needed
 ```
 
-## 🚧 Non-claims
+### 🤖 AI / agents / automated auditors
 
-Crystal 不声称 universal truth、zero hallucinations、AGI/consciousness、legal/GDPR/security certification、production multi-tenancy、distributed exactly-once、active PostgreSQL runtime、automatic switching/cutover/rollback/dual-write、automatic Reader parsing、embeddings/ANN/vector Reader stack 或 completed dedicated multi-pass Reader Core。
+```text
+docs/ai/README.md
+   ↓
+AGENTS.md
+   ↓
+docs/status/implementation-manifest.json
+   ↓
+docs/STATUS.md + docs/IMPLEMENTATION_STATUS.md
+   ↓
+task-specific contracts / tests / exact CI
+```
 
-NLnet 仍为 **submitted / under review / not awarded**；约 €50,000 仅为 planning，budget change none。协议前 merged 的工作属于 baseline。
+### 🔬 Validation / due diligence
 
-## 📚 导航
+```text
+TEST_REPORT.md
+   ↓
+docs/STATUS.md
+   ↓
+eval/** + architecture contracts
+   ↓
+exact GitHub commit / CI evidence
+```
 
-- [Documentation map](./docs/DOCUMENTATION_MAP.md)
-- [Quick Start](./docs/QUICKSTART.md)
-- [Status](./docs/STATUS.md)
-- [Implementation Status](./docs/IMPLEMENTATION_STATUS.md)
-- [Reader architecture](./docs/architecture/READER_CORE_ARCHITECTURE.md)
+### 📚 关键文档
+
+- [Deep System Overview](./docs/OVERVIEW.md) — human architecture 与 research narrative
+- [Simplified Chinese documentation](./docs/zh-CN/README.md) — 简体中文详细文档入口
+- [Architecture Overview](./docs/zh-CN/ARCHITECTURE_OVERVIEW.md) — 中文紧凑架构图
+- [Full Architecture](./docs/ARCHITECTURE.md) — 详细英文 contracts
+- [Special for AI](./docs/ai/README.md) — deterministic agent entrypoint
+- [Machine-readable implementation manifest](./docs/status/implementation-manifest.json) — capability / authorization machine truth
+- [Current Status](./docs/zh-CN/STATUS.md) — 当前中文实现状态
+- [TEST_REPORT](./TEST_REPORT.md) — verification evidence
+- [Reviewer Guide](./docs/zh-CN/REVIEWER_GUIDE.md) — 中文验证流程
 - [Localization policy](./docs/LOCALIZATION_POLICY.md)
 - [Translation status](./docs/TRANSLATION_STATUS.md)
-- [Security](./SECURITY.md)
-- [Governance](./GOVERNANCE.md)
-- [Contributing](./CONTRIBUTING.md)
 
-## 🤝 贡献与许可
+<details>
+<summary>📎 Historical compatibility / provenance anchors</summary>
 
-修改必须保持 authority boundaries、tests/coverage 与精确 claims。参见 [CONTRIBUTING.md](./CONTRIBUTING.md)。License: [AGPL-3.0](./LICENSE)。
+这些 immutable anchors 用于审计兼容；它们是**历史证据，不是当前 repository HEAD**。
+
+- Reader architecture checkpoint：`76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` — RRTIC-v1 / PR #392。
+- Historical signed RC-9 merge：`f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`。
+- Historical RC-9 post-merge CI：`31594027040`。
+- Retained runtime checkpoint：`bbd816c09dd39a02e6de6c1014438490572f40f6`。
+- Retained historical runtime tests：`2078 passed / 13 skipped / 0 failed`。
+- Retained historical measured statements：`9756 statements / 100.00% line coverage`。
+- RC6 compatibility marker：`reader_core_rc6_long_context_strategy`。
+- Retained RC-9 classification：`LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`。
+- Retained Comparator classification：`SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`。
+- Retained NLI classification：`NLI_NEUTRAL_FILTER_GATE_FAILED`。
+- Larger Reader truth：`dedicated_reader_core=false`、`semantic_hybrid_reader_runtime=false`、`rrtic_runtime_authorization=false`、`nli_reader_runtime_filter=false`。
+
+实时 repository HEAD、open PR/issues 与最新 CI 必须直接从 GitHub 解析，而不是从本历史块推断。
+
+</details>
+
+## 🌍 Localization
+
+English 是 primary source language。Localized README/detail surfaces 与 [Translation Status](./docs/TRANSLATION_STATUS.md) 中记录的 source/parity checkpoints 绑定。`CURRENT` 表示 technical parity/freshness，不代表 native-speaker editorial certification。
+
+## 🤝 Contributing 与 license
+
+所有变更都必须保持 authority boundaries、executable tests、coverage gates 与 truthful public claims。参见 [CONTRIBUTING](./CONTRIBUTING.md)、[Governance](./GOVERNANCE.md) 与 [Security](./SECURITY.md)。
+
+License：[AGPL-3.0](./LICENSE)。
