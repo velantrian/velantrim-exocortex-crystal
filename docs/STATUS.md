@@ -1,6 +1,6 @@
 # Velantrim Crystal — Current Status
 
-**Status date:** 2026-08-14  
+**Status date:** 2026-08-15  
 **Current signed architecture checkpoint:** `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e`, `verified=true`, reason `valid`  
 **Current architecture milestone:** Reader Retrieval Typed Inspection Contract v1 — Issue #391 / PR #392 — complete  
 **RRTIC exact-head CI:** `31754798549` — 9/9 SUCCESS  
@@ -195,13 +195,13 @@ The RRTIC architecture checkpoint push CI `31771677028` completed **9/9 SUCCESS*
 
 - #165: exact normalized admitted-fact dedupe/migration only; no semantic matching.
 - #155: downstream Epistemic Router / Evidence State RFC.
-- #214: fixture/PII/supply-chain hygiene.
+- #214: **COMPLETED / CLOSED on 2026-08-14** — residual fixture/PII review and reproducible supply-chain pinning were reconciled in their own completed scope; this is no longer an open backlog item.
 
-These remain separate open scopes and were not started by RRTIC-v1 or this documentation reconciliation.
+Issues #155 and #165 remain separate open scopes and are not implemented by RRTIC-v1 or this status reconciliation. The completed #214 history remains evidence, not a current Reader milestone.
 
 ## Localization truth
 
-Russian Reader-dependent D1/D3/D4/D5 surfaces retain their immutable historical checkpoint. Eight other Reader-dependent locale packs remain `REFRESH_NEEDED`, with 64 tracked detail documents. Post-RC-9 Comparator/NLI/RRTIC English truth is not automatically propagated into localized files.
+Localization state is tracked separately in `docs/TRANSLATION_STATUS.md`; a locale's checkpoint marker must not be used as current English architecture authority. Post-RC-9 Comparator/NLI/RRTIC meaning is propagated only by explicit localization work.
 
 ## Grant status
 
@@ -209,4 +209,4 @@ NLnet remains **submitted / under review / not awarded**. Approximate **€50,00
 
 ## Stop boundary
 
-RRTIC-v1 is closed. No discriminator/model/runtime implementation is authorized by this contract. Do not automatically add semantic/hybrid/vector Reader runtime, FTS/ANN, activate PostgreSQL/pgvector, mutate epistemic authority, implement #155/#165/#214 or perform broad localization.
+RRTIC-v1 is closed. No discriminator/model/runtime implementation is authorized by this contract. Do not automatically add semantic/hybrid/vector Reader runtime, FTS/ANN, activate PostgreSQL/pgvector, mutate epistemic authority or implement #155/#165. Completed #214 does not authorize unrelated runtime or security claims.
