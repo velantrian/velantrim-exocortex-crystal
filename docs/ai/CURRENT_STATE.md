@@ -266,11 +266,11 @@ Physical L3 is not automatically strict Canon. Successful import/equivalence doe
 Immutable phased localization source checkpoint: `51c205fe048fd69d39fcd47b43e042a50de432bc`.  
 D2 translation checkpoint: `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
 
-Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed under recorded parity/source contracts. Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian D1/D3/D4/D5 detail packs are current. D2 reviewer/safety translations remain current across all nine supported locales.
+Arabic, German, French, Spanish, Hindi, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed under recorded parity/source contracts. All nine supported D1/D3/D4/D5 detail packs are current. D2 reviewer/safety translations remain current across all nine supported locales.
 
-The **one other localized root README file and Reader-dependent detail pack** remains `REFRESH_NEEDED` at its recorded source checkpoint; one other locale detail pack requires Reader refresh.
+No localized root README or Reader-dependent detail pack remains `REFRESH_NEEDED` in the current localization state.
 
-Arabic current parity audit base: `main@9e048c21fb929f7d299e3af0ef03d76c1df899d6`. German current parity audit base: `main@ad8cec8c868f64b6dfbdc3bf3087230f59c3861c`. French current parity audit base: `main@7d03cce2c89f7a4c3fda85742eb358e6b49961f2`. Spanish current parity audit base: `main@bbe6b0d3d90d80b3c669ddab5fc56aa1bfe419eb`. Italian current parity audit base: `main@e436577dc5ada4692e8fe399da861a44f800e2f1`. Japanese current parity audit base: `main@5903e90f3e0f2884f4ba257a71808d19fc439ebc`. Simplified Chinese current parity audit base: `main@5e6301f0eaee1a6c85d8543be89dc2e606dc05a8`. Russian current parity audit source: `main@9666781d390e3276a111cb5ee1735f6606a76283`. Human-first English README source: `main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883`.
+Arabic current parity audit base: `main@9e048c21fb929f7d299e3af0ef03d76c1df899d6`. German current parity audit base: `main@ad8cec8c868f64b6dfbdc3bf3087230f59c3861c`. French current parity audit base: `main@7d03cce2c89f7a4c3fda85742eb358e6b49961f2`. Spanish current parity audit base: `main@bbe6b0d3d90d80b3c669ddab5fc56aa1bfe419eb`. Hindi current parity audit base: `main@e1df11219ee4fc3b9c175b05c7569e568cf6f512`. Italian current parity audit base: `main@e436577dc5ada4692e8fe399da861a44f800e2f1`. Japanese current parity audit base: `main@5903e90f3e0f2884f4ba257a71808d19fc439ebc`. Simplified Chinese current parity audit base: `main@5e6301f0eaee1a6c85d8543be89dc2e606dc05a8`. Russian current parity audit source: `main@9666781d390e3276a111cb5ee1735f6606a76283`. Human-first English README source: `main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883`.
 
 ### Retained post-German localization compatibility literal
 
@@ -290,15 +290,19 @@ The exact phrases **`German, French, Spanish, Italian and Russian Reader-depende
 
 ### Retained post-Simplified-Chinese localization compatibility literal
 
-The exact phrases **`German, French, Spanish, Italian, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed`** and **`three other localized root README files and Reader-dependent detail packs`** are retained here solely as historical compatibility evidence for the closed Simplified Chinese parity checkpoint. This sentence is retained as immutable post-Simplified-Chinese compatibility evidence only; it is **not current localization truth** after later parity refreshes. The current state is Arabic + German + French + Spanish + Italian + Japanese + Simplified Chinese + Russian with one remaining locale pack, as stated above.
+The exact phrases **`German, French, Spanish, Italian, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed`** and **`three other localized root README files and Reader-dependent detail packs`** are retained here solely as historical compatibility evidence for the closed Simplified Chinese parity checkpoint. This sentence is retained as immutable post-Simplified-Chinese compatibility evidence only; it is **not current localization truth** after later parity refreshes.
 
 ### Retained post-Japanese localization compatibility literal
 
-The exact phrases **`German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed`** and **`two other localized root README files and Reader-dependent detail packs`** are retained here solely as historical compatibility evidence for the closed Japanese parity checkpoint. This sentence is retained as immutable post-Japanese compatibility evidence only; it is **not current localization truth** after Arabic parity.
+The exact phrases **`German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed`** and **`two other localized root README files and Reader-dependent detail packs`** are retained here solely as historical compatibility evidence for the closed Japanese parity checkpoint. This sentence is retained as immutable post-Japanese compatibility evidence only; it is **not current localization truth** after later parity refreshes.
+
+### Retained post-Arabic localization compatibility literal
+
+The exact phrases **`Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed`** and **`one other localized root README file and Reader-dependent detail pack`** are retained here solely as historical compatibility evidence for the closed Arabic parity checkpoint. This sentence is retained as immutable post-Arabic compatibility evidence only; it is **not current localization truth** after Hindi parity.
 
 ### Retained Evaluation-Surface-v2 localization compatibility literal
 
-The exact phrase **`eight other localized root README files`** is retained here solely as historical compatibility evidence for the older Evaluation Surface v2 documentation contract, when Russian was the only refreshed locale. It is **not current localization truth** after later parity milestones; the current count is one, as stated above.
+The exact phrase **`eight other localized root README files`** is retained here solely as historical compatibility evidence for the older Evaluation Surface v2 documentation contract, when Russian was the only refreshed locale. It is **not current localization truth** after later parity milestones; the current refresh-needed count is zero.
 
 A visually stronger old translation may be used as a layout reference only. It must not be treated as newer technical truth.
 
@@ -344,6 +348,6 @@ Synchronized Notion may preserve checkpoint provenance, but live GitHub remains 
 
 ## Stop boundary
 
-This file does not authorize or select the next workstream. Before any new bounded work, resolve live GitHub/Notion, perform a fresh architecture reassessment, select exactly one scope, and preserve the authority firewall.
+This file does not authorize or select the next workstream. The nine-locale documentation parity program being complete does not authorize runtime, model, storage or authority expansion. Before any new bounded work, resolve live GitHub/Notion, perform a fresh architecture reassessment, select exactly one scope, and preserve the authority firewall.
 
 No next model, discriminator, reranker, Reader backend, storage activation, authority expansion or residual issue is automatically authorized by a historical closure or by this static snapshot.
