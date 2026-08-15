@@ -64,6 +64,16 @@ def test_predict_legacy_cross_variant_duplicate_without_writing_index():
     assert table is None
 
 
+def test_predict_short_id_collision_is_blocked_not_raised():
+    target = "I prefer dry-run collision target"
+    target_id = _fact_id(target)
+    assert ingest("I prefer a dry-run decoy", fact_id=target_id)["accepted"] is True
+
+    res = imports.predict_claim(target)
+    assert res["verdict"] == "blocked"
+    assert res["reason"].startswith("Identity: normalized auto-id collision")
+
+
 def test_predict_conflict_against_canon():
     ingest("Water boils at 100 degrees Celsius")
     res = imports.predict_claim("Water boils at 50 degrees Celsius")
@@ -133,7 +143,7 @@ def test_duplicate_import_session_does_not_own_preexisting_fact(tmp_path):
     Regression for: ingest_claims() recorded every accepted fact_id in
     `fact_ids`, including duplicate hits of pre-existing facts, so
     _record_session() enrolled a fact into a session that never created it —
-    a later erase_session()/restrict_session() on that session then deleted a
+    a later erase_session()/restrict_session() on this batch then deleted a
     fact owned by an unrelated import.
     """
     p = tmp_path / "c.txt"
