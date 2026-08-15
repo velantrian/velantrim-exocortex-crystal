@@ -1,21 +1,155 @@
-<!-- translation-source: docs/EXTENDED_REFERENCE_POLICY.md@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9 -->
-<!-- d5-locale: es -->
+<!-- translation-source: docs/EXTENDED_REFERENCE_POLICY.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
+<!-- historical-translation-source: docs/EXTENDED_REFERENCE_POLICY.md@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9 -->
+<!-- current-translation-source: docs/EXTENDED_REFERENCE_POLICY.md@bbe6b0d3d90d80b3c669ddab5fc56aa1bfe419eb -->
+<!-- d5-locale: es -->
 <!-- d5-boundary: physical-l3-not-strict-canon -->
 <!-- d5-boundary: retrieval-score-not-evidence -->
 <!-- d5-boundary: model-output-not-source-truth -->
 <!-- d5-boundary: migration-proof-not-claim-proof -->
 <!-- d5-nonclaim: import-is-not-activation -->
-<!-- d5-nonclaim: reader-core-not-implemented -->
 <!-- d5-nonclaim: nlnet-not-awarded -->
 <!-- d5-nonclaim: security-legal-gdpr-not-certified -->
 <!-- d5-nonclaim: native-speaker-editorial-not-certified -->
-# Guía de referencias ampliadas
+<!-- d5-reader: rc1-skeleton-implemented -->
+<!-- d5-reader: rc2-structural-map-implemented -->
+<!-- d5-reader: rc3-multi-pass-mechanics-implemented -->
+<!-- d5-reader: rc4-proposition-extraction-implemented -->
+<!-- d5-reader: rc5-relation-candidates-implemented -->
+<!-- d5-nonclaim: dedicated-reader-core-not-implemented -->
+# 🇪🇸 Extended Reference Guide — Crystal
 
-Esta guía dirige a las fuentes inglesas detalladas sin duplicar evidencia volátil. `CURRENT` indica contenido mantenido, `RETIRED` historia no autoritativa y `ENGLISH_ONLY_BY_DESIGN` material técnico, legal o de auditoría que permanece en inglés.
+Esta superficie reviewer/reference sitúa provenance y Authority explícita por encima de una narración práctica: una nueva Reader/retrieval/evaluation capability nunca recibe automáticamente autoridad epistémica.
 
-Límites: physical L3 != strict Canon; retrieval score != evidence; model output != source truth; migration proof != claim proof; import success != activation. SQLite es el perfil local-first activo ordinario, Mock sirve para desarrollo/CI y PostgreSQL/pgvector permanece inactivo con `active=false`. Reader Core no está implementado.
+## Core boundary
 
-NLnet: submitted / under review / not awarded. Aproximadamente €50,000 es planificación, no presupuesto aprobado ni compromiso de pago; budget change: none; la baseline fusionada antes del acuerdo no vuelve a ser funded delta. Sin legal/GDPR/security ni native-speaker editorial certification.
+```text
+physical L3 != strict Canon
+retrieval score != evidence
+model output != source truth
+migration proof != claim proof
+import != activation
+ranking != epistemic authority
+evaluation pass != runtime authorization
+```
 
-Rutas: [política](../EXTENDED_REFERENCE_POLICY.md), [mapa](../DOCUMENTATION_MAP.md), [estado](../STATUS.md), [arquitectura](../ARCHITECTURE.md), [ADR](../ADR.md), [seguridad](../../SECURITY.md), [privacidad](../../PRIVACY.md), [GDPR](../../GDPR.md), [archivo](../archive/README.md).
+SQLite sigue ordinary active local-first; PostgreSQL/pgvector sigue inactivo `active=false`.
+
+## Reader lineage
+
+```text
+RC-1 source/session
+RC-2 caller-supplied structure
+RC-3 explicit passes
+RC-4 EXTRACTED_PROPOSITION
+RC-5 relation candidates
+RC-6 working sets + SUMMARY
+RC-7 cross-document link candidates
+RC-8 architecture/research decision
+RC-9 lexical PRE-ADMISSION discovery
+```
+
+El vocabulario RC-5 sigue explícito:
+
+```text
+POSSIBLE_CONTRADICTION
+EXCEPTION
+QUALIFICATION
+TENSION
+```
+
+```text
+reader_core_rc1_skeleton = true
+reader_core_rc2_structural_map = true
+reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc4_proposition_extraction = true
+reader_core_rc5_relation_candidates = true
+reader_core_rc6_long_context_strategy = true
+reader_core_rc7_cross_document_links = true
+reader_rc9_lexical_candidate_discovery = true
+dedicated_reader_core = false
+semantic_hybrid_reader_runtime = false
+nli_reader_runtime_filter = false
+```
+
+## Retained provenance / authority contract
+
+```text
+coverage != comprehension proof
+pass completion != comprehension proof
+working-set coverage != comprehension proof
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+summary != evidence
+cross-document link != Canon relation
+same-topic != same proposition
+possible-same-claim != claim identity
+similarity signal != identity proof
+repetition across sources != corroboration
+```
+
+RC-7 exige diferentes document identities, current RC-4 candidates y exact two-sided source/session/pass/node/locator provenance. Inspection basis sigue siendo descriptivo y no es numeric Truth/Identity score.
+
+## RC-9 Retrieval Evidence
+
+RC-9 es una deterministic offline in-memory BM25 baseline. Control K=5 conservado: Recall@5 `0.937500`, Precision@5 `0.187500`, MRR `0.895833`, useful hits `15/16`, hard negatives `4/4`; classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+
+Evaluation Surface v2 muestra multi-stratum lexical gaps. Estos benchmark results son Retrieval Evidence, no Truth/Evidence/Identity accuracy.
+
+## Comparator / NLI
+
+Comparator v1 restauró semantic recall pero falló proposition-level hard-negative discrimination: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`.
+
+NLI neutral-filter v1 redujo hard-negative leakage pero perdió useful recall: `NLI_NEUTRAL_FILTER_GATE_FAILED`.
+
+```text
+NLI label != proposition identity
+NLI contradiction != contradiction adjudication
+filtering != epistemic authority
+```
+
+Ambos siguen siendo frozen Evaluation Evidence y no runtime components.
+
+## RRTIC-v1
+
+El post-NLI reassessment clasificó la capability ausente como relation-contract mismatch. RRTIC-v1 congela suspicion-only relation families y structural qualifier dimensions con states `MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE`.
+
+```text
+RRTIC suspicion != adjudicated relation
+RRTIC diagnostic != RC-5 registered relation
+qualifier mismatch != truth decision
+rrtic_runtime_authorization = false
+```
+
+RRTIC-v1 no ejecuta model execution, filtering, reranking, identity decision, evidence admission, contradiction adjudication ni Canon mutation.
+
+## Authority path
+
+```text
+Reader / RC-9 / RRTIC inspection
+→ explicit evidence/review process if separately initiated
+→ Guardian
+→ TruthGate
+→ physical L3 / TrustSnapshot
+→ CanonicalView / strict Canon projection
+```
+
+```text
+retrieval match != evidence
+similarity != identity
+candidate discovery != candidate adjudication
+```
+
+## Grant / Non-claims / Localization
+
+NLnet sigue **submitted / under review / not awarded**. Aproximadamente **€50,000** es planning only; **budget change: none**.
+
+No se reivindican security/legal/GDPR certification, native-speaker editorial certification, AGI/consciousness, universal truth, active PostgreSQL runtime, semantic/hybrid/vector Reader runtime, completed dedicated/full Reader ni automatic identity/corroboration/adjudication/evidence admission.
+
+Después de este Spanish milestone, cinco Reader-dependent locale packs permanecen `REFRESH_NEEDED`; German, French, Spanish y Russian son los current localized detail packs. Este documento no modifica ningún otro idioma.
+
+Historical Spanish D5 source: `d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9`. Current Spanish refresh audit source: `main@bbe6b0d3d90d80b3c669ddab5fc56aa1bfe419eb`.
+
+Routes: [Policy](../EXTENDED_REFERENCE_POLICY.md), [Map](../DOCUMENTATION_MAP.md), [Status](../STATUS.md), [Architecture](../ARCHITECTURE.md), [ADR](../ADR.md), [Security](../../SECURITY.md), [Privacy](../../PRIVACY.md), [GDPR](../../GDPR.md), [Archive](../archive/README.md).
