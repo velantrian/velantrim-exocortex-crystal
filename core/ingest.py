@@ -14,7 +14,7 @@ import hashlib
 import re
 from typing import Dict, Any, Optional
 
-from core.memory import store_fact, get_fact, transition_esm
+from core.memory import store_fact, get_fact, transition_esm, ClaimIdentityError
 from core.l3_graph import get_l3_graph
 from core.embedding import assert_compatible_embedder
 from core.queue import get_outbox_queue
@@ -107,11 +107,17 @@ def _resolve_auto_fact(
     """Resolve the fact id used by the auto-id ingest path.
 
     Resolution order is fail-safe and compatibility preserving:
-      1. the current normalized id wins if a row already exists;
+      1. the current normalized id wins only when its stored claim is exactly
+         equal under the same normalization contract;
       2. otherwise the derived normalized legacy index may select an existing
          Validated ``ing:*`` row with exact normalized equality;
       3. finally the historical raw-text id fallback preserves byte-identical
          pre-normalization pending/validated rows.
+
+    The 12-hex ids are index keys, not equality proof. If either the current
+    normalized id or the historical raw id is already occupied by a different
+    claim, fail closed with ``ClaimIdentityError`` instead of rewriting or
+    misclassifying the incoming claim as a duplicate.
 
     The index never creates identity by similarity and never merges historical
     rows. ``persist_index=False`` is used by dry-run prediction so it performs
@@ -120,6 +126,11 @@ def _resolve_auto_fact(
     fid = _fact_id(utterance)
     prior = get_fact(fid)
     if prior is not None:
+        if _normalize(prior.get("claim", "")) != _normalize(utterance):
+            raise ClaimIdentityError(
+                f"normalized auto-id collision for '{fid}'; stored claim does "
+                "not match the incoming exact-normalized identity"
+            )
         return fid, prior
 
     indexed = resolve_validated_normalized_fact(
@@ -134,6 +145,11 @@ def _resolve_auto_fact(
     if legacy != fid:
         prior = get_fact(legacy)
         if prior is not None:
+            if prior.get("claim", "") != utterance:
+                raise ClaimIdentityError(
+                    f"legacy raw auto-id collision for '{legacy}'; stored claim "
+                    "is not byte-identical to the incoming claim"
+                )
             return legacy, prior
 
     return fid, None
