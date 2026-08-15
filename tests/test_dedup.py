@@ -77,6 +77,31 @@ def test_legacy_raw_id_fact_is_reused_not_duplicated():
     assert get_fact(norm) is None                    # no second node created
 
 
+def test_pending_legacy_exact_text_still_uses_raw_id_fallback():
+    text = "I Prefer Pending Legacy"
+    legacy = _legacy_fact_id(text)
+    normalized_id = _fact_id(text)
+    assert legacy != normalized_id
+
+    store_fact({
+        "fact_id": legacy,
+        "claim": text,
+        "source": "legacy",
+        "confidence": 0.6,
+        "epistemic_state": "Observed",
+        "claim_type": "PREFERENCE",
+        "source_status": "USER_REPORTED",
+    })
+
+    # The normalized compatibility index intentionally ignores non-Validated
+    # rows, but the old byte-identical raw-id fallback must remain available.
+    res = ingest(text, claim_type="PREFERENCE")
+    assert res["accepted"] is True
+    assert not res.get("duplicate")
+    assert res["fact"]["fact_id"] == legacy
+    assert get_fact(normalized_id) is None
+
+
 def test_legacy_case_whitespace_variant_resolves_through_normalized_index():
     original = "Neon Glows   Orange-Red"
     legacy = _legacy_fact_id(original)
@@ -114,7 +139,9 @@ def test_existing_normalized_id_wins_over_older_legacy_collision():
     assert old_legacy != normalized_id
 
     ingest("I Prefer   Tea", fact_id=old_legacy)
-    current = ingest(claim)  # creates the current normalized-id row
+    # Simulate a database that already contains a post-normalization row as well
+    # as the older legacy collision. Auto resolution must prefer the current id.
+    current = ingest(claim, fact_id=normalized_id)
     assert current["accepted"] is True
     assert current["fact"]["fact_id"] == normalized_id
 
@@ -214,6 +241,19 @@ def test_full_erasure_removes_derived_normalized_mapping():
             (legacy,),
         ).fetchone()[0] == 0
     assert get_fact(normalized_id) is None
+
+
+def test_erasure_without_index_does_not_create_compatibility_table():
+    res = ingest("I prefer isolated erasure", fact_id="custom:erase")
+    assert res["accepted"] is True
+    assert erase_fact("custom:erase", reason="test")["erased_now"] is True
+
+    with memory._db() as conn:
+        table = conn.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' "
+            "AND name = 'normalized_ingest_index'"
+        ).fetchone()
+    assert table is None
 
 
 # ─── record_occurrence unit behaviour ─────────────────────────────────────────
