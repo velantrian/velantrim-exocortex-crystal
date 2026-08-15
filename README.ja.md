@@ -338,6 +338,8 @@ award: not awarded
 budget change: none
 ```
 
+Historical/public compatibility literal: `submitted / under review / not awarded`。
+
 約 **€50,000** は planning / transparency context にすぎません。approved budget、award、payment commitment ではありません。failed evaluation を grant narrative によって runtime capability に変換することもありません。
 
 ## 📎 Historical runtime evidence
