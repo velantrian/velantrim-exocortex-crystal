@@ -104,7 +104,7 @@ def test_processing_restricted_legacy_row_is_not_a_compatibility_target():
     assert res["accepted"] is True
     assert not res.get("duplicate")
     assert res["fact"]["fact_id"] == normalized
-    assert memory.get_fact(legacy)["restricted"] is True
+    assert memory.get_fact(legacy)["restricted"] == 1
 
 
 def test_current_normalized_short_id_collision_fails_closed():
