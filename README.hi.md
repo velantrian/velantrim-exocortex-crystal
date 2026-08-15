@@ -140,6 +140,12 @@ nli_reader_runtime_filter              = false
 rrtic_runtime_authorization            = false
 ```
 
+Canonical compatibility literal:
+
+```text
+reader_core_rc5_relation_candidates = true
+```
+
 Important proposition boundary:
 
 ```text
@@ -241,6 +247,7 @@ proposal: submitted
 review: in progress / under review
 award: not awarded
 budget change: none
+status: submitted / under review / not awarded
 ```
 
 लगभग €50,000 केवल planning/transparency context है; approved budget या payment commitment नहीं। Agreement से पहले merged work existing baseline है।
