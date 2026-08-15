@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional, Iterable
 
 from core import memory, knowledge, immune, contradiction
 from core.path_safety import resolve_safe_path
-from core.ingest import classify_claim, _fact_id
+from core.ingest import classify_claim, _resolve_auto_fact
 from core.pipeline import guardian, truth_gate
 from core.reconcile import find_conflicts
 from core.compliance import restrict_processing
@@ -51,11 +51,14 @@ def predict_claim(
     if claim_type is not None:
         ct = claim_type
     ss = source_status or classified
-    fid = _fact_id(claim)
+
+    # Resolve the same exact-normalized identity target as live ingest, but keep
+    # the compatibility index strictly read-only in preview mode. Dry-run must
+    # never create/backfill the derived index merely by predicting an import.
+    fid, prior = _resolve_auto_fact(claim, persist_index=False)
 
     # Already-Validated exact duplicate → the live path records an occurrence
     # (frequency only; no reinforce, no confidence change) — see ingest dedup.
-    prior = memory.get_fact(fid)
     if prior is not None and prior.get("epistemic_state") == "Validated":
         return {"claim": claim, "verdict": "duplicate", "fact_id": fid,
                 "claim_type": ct}
