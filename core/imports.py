@@ -22,6 +22,7 @@ from typing import Any, Dict, List, Optional, Iterable
 from core import memory, knowledge, immune, contradiction
 from core.path_safety import resolve_safe_path
 from core.ingest import classify_claim, _resolve_auto_fact
+from core.memory import ClaimIdentityError
 from core.pipeline import guardian, truth_gate
 from core.reconcile import find_conflicts
 from core.compliance import restrict_processing
@@ -55,7 +56,13 @@ def predict_claim(
     # Resolve the same exact-normalized identity target as live ingest, but keep
     # the compatibility index strictly read-only in preview mode. Dry-run must
     # never create/backfill the derived index merely by predicting an import.
-    fid, prior = _resolve_auto_fact(claim, persist_index=False)
+    # A structural short-id collision is represented as a blocked prediction
+    # instead of escaping the documented dry-run verdict contract.
+    try:
+        fid, prior = _resolve_auto_fact(claim, persist_index=False)
+    except ClaimIdentityError as exc:
+        return {"claim": claim, "verdict": "blocked",
+                "reason": f"Identity: {exc}"}
 
     # Already-Validated exact duplicate → the live path records an occurrence
     # (frequency only; no reinforce, no confidence change) — see ingest dedup.
