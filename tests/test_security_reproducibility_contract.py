@@ -16,7 +16,7 @@ WORKFLOWS = (
 EXPECTED_ACTION_REFS = {
     "actions/checkout": "34e114876b0b11c390a56381ad16ebd13914f8d5",
     "actions/setup-python": "a26af69be951a213d495a4c3e4e4022e16d87065",
-    "actions/upload-artifact": "ea165f8d65b6e75b540449e92b4886f43607fa02",
+    "actions/upload-artifact": "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
     "gitleaks/gitleaks-action": "e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e",
 }
 USE_RE = re.compile(r"^\s*-?\s*uses:\s*([^@\s]+)@([0-9a-f]{40})(?:\s+#\s+.+)?$")
