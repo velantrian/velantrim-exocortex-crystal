@@ -81,7 +81,8 @@ def resolve_validated_normalized_fact(
     When persistence is enabled, legacy/current ``ing:*`` rows are lazily
     backfilled into a compact SQLite lookup table and stale entries are refreshed
     from the encrypted-at-rest claim. When disabled (dry-run), the same matching
-    and ordering are computed read-only so prediction never writes an index.
+    and ordering are computed read-only so prediction never writes the derived
+    index.
 
     Existing collisions are intentionally preserved. The oldest ``created_at``
     row wins, with ``fact_id`` as a deterministic tie-breaker; no node is merged,
@@ -107,10 +108,22 @@ def resolve_validated_normalized_fact(
     return memory.call_with_lock_retry(_resolve)
 
 
-def remove_fact(fact_id: str) -> None:
-    """Remove a derived mapping during full erasure; safe and idempotent."""
+def remove_fact(fact_id: str) -> bool:
+    """Remove one derived mapping during full erasure.
+
+    The compatibility table is optional/lazy. Erasing a fact that never used the
+    index must not create the table merely to delete from it. Returns whether a
+    mapping actually existed; callers must not treat that derived-cache detail as
+    proof that personal/canonical data existed.
+    """
     with memory._db() as conn:
-        _ensure_index(conn)
-        conn.execute(
+        table = conn.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' "
+            "AND name = 'normalized_ingest_index'"
+        ).fetchone()
+        if table is None:
+            return False
+        cur = conn.execute(
             "DELETE FROM normalized_ingest_index WHERE fact_id = ?", (fact_id,)
         )
+        return cur.rowcount == 1
