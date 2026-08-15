@@ -1,4 +1,4 @@
-"""Validate mixed D1 localization freshness after Simplified Chinese parity refresh."""
+"""Validate mixed D1 localization freshness after Japanese parity refresh."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from urllib.parse import unquote
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = "51c205fe048fd69d39fcd47b43e042a50de432bc"
 LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
-CURRENT_LOCALES = ("de", "es", "fr", "it", "ru", "zh-CN")
+CURRENT_LOCALES = ("de", "es", "fr", "it", "ja", "ru", "zh-CN")
 REFRESH_LOCALES = tuple(locale for locale in LOCALES if locale not in CURRENT_LOCALES)
 READER_MARKERS = (
     "reader_core_rc1_skeleton = true",
@@ -72,7 +72,7 @@ def main() -> int:
     }
     for ok, label in (
         (documentation.get("translation_tracking_issue") == 341, "tracking issue"),
-        (documentation.get("latest_translation_refresh_issue") == 421, "latest refresh issue"),
+        (documentation.get("latest_translation_refresh_issue") == 423, "latest refresh issue"),
         (documentation.get("d1_source_checkpoint") == SOURCE, "source checkpoint"),
         (documentation.get("d1_current_locales") == list(CURRENT_LOCALES), "current locales"),
         (documentation.get("d1_refresh_needed_locales") == list(REFRESH_LOCALES), "refresh locales"),
@@ -132,16 +132,16 @@ def main() -> int:
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
     for marker in (
         f"D1 source checkpoint:** `main@{SOURCE}`",
-        "D1 Reader-dependent detail translations are `CURRENT` in German, French, Spanish, Italian, Simplified Chinese and Russian",
-        "three other supported locales are `REFRESH_NEEDED`",
+        "D1 Reader-dependent detail translations are `CURRENT` in German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian",
+        "two other supported locales are `REFRESH_NEEDED`",
     ):
         if marker not in ledger:
             errors.append(f"translation ledger: missing D1 marker {marker!r}")
 
     state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
     for marker in (
-        "German, French, Spanish, Italian, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed",
-        "three other localized root README files and Reader-dependent detail packs",
+        "German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed",
+        "two other localized root README files and Reader-dependent detail packs",
         "reader_core_rc5_relation_candidates    = true",
     ):
         if marker not in state:
@@ -152,7 +152,7 @@ def main() -> int:
         for error in errors:
             print(f"  - {error}")
         return 1
-    print("D1 translation status consistent: German + French + Spanish + Italian + Simplified Chinese + Russian CURRENT; 3 locales REFRESH_NEEDED")
+    print("D1 translation status consistent: German + French + Spanish + Italian + Japanese + Simplified Chinese + Russian CURRENT; 2 locales REFRESH_NEEDED")
     return 0
 
 
