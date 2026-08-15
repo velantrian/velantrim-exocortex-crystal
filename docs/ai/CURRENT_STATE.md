@@ -8,7 +8,7 @@
 **Active milestone:** `RESOLVE_LIVE_GITHUB`.  
 **Next milestone selected:** `RESOLVE_LIVE_GITHUB`.
 
-Do not treat a historical SHA as current HEAD. Do not treat this document as a substitute for `docs/status/implementation-manifest.json`. Do not hard-code a latest repository/docs closure here as an indefinitely-current invariant; resolve volatile lifecycle state from live GitHub before acting.
+Do not treat a historical SHA as current HEAD. Do not treat this document as a substitute for `docs/status/implementation-manifest.json`. Resolve volatile lifecycle state from live GitHub before acting.
 
 ## Current Reader position
 
@@ -40,9 +40,7 @@ reader_core_rc7_cross_document_links   = true
 dedicated_reader_core                  = false
 ```
 
-RC-1 through RC-7 are merged bounded Reader layers.
-**RC-9 — deterministic lexical candidate discovery: COMPLETE.**
-RC-9 remains the deterministic lexical candidate-discovery implementation baseline.
+RC-1 through RC-7 are merged bounded Reader layers. **RC-9 — deterministic lexical candidate discovery: COMPLETE.** RC-9 remains the deterministic lexical candidate-discovery implementation baseline.
 
 ## Current architecture contract — RRTIC-v1
 
@@ -72,13 +70,7 @@ units_thresholds
 attribution_causality
 ```
 
-Qualifier states are limited to:
-
-```text
-MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE
-```
-
-Authority flags remain false:
+Qualifier states are limited to `MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE`.
 
 ```text
 identity_claimed=false
@@ -120,8 +112,6 @@ Historical signed RC-9 merge: `f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61`
 Post-merge CI: `31594027040`  
 Historical result classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
 
-Historical paired K=5 control:
-
 ```text
 useful hits:               15 / 16
 Recall@5:                  0.937500
@@ -137,8 +127,6 @@ RC-9 provides deterministic lexical PRE-ADMISSION discovery, not semantic identi
 Historical signed RC-7 merge: `b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1`  
 Post-merge CI: `31572918731`.
 
-RC-7 authority vocabulary remains explicit:
-
 ```text
 cross-document link != Canon relation
 same-topic != same proposition
@@ -147,25 +135,9 @@ similarity signal != identity proof
 repetition across sources != corroboration
 ```
 
-RC-7 retains **no automatic semantic matching** and does not authorize embeddings/ANN/vector Reader runtime.
-
-### RC-10 preregistration history
-
-Issue `#377` / PR #378 froze the comparison screen before comparator execution.
-
-```text
-comparison pass != runtime authorization
-```
-
-Later evaluation results do not rewrite that historical preregistration.
-
-### Post-RC-10 reassessment
-
-Issue `#382` selected **Reader Retrieval Evaluation Surface v2** as the next bounded evaluation/research milestone at that historical checkpoint. It did not execute a comparator and did not authorize runtime change.
+RC-7 retains no automatic semantic matching and does not authorize embeddings/ANN/vector Reader runtime.
 
 ### Evaluation Surface v2
-
-Frozen surface:
 
 ```text
 24 queries
@@ -177,24 +149,11 @@ K = 5
 surface sha256 = 753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cdd
 ```
 
-RC-9 v2 control:
-
-```text
-useful hits:                    42 / 48
-Recall@5:                       0.875000
-fixed-slot Precision@5:         0.350000
-judged precision-over-returned: 0.355932
-MRR:                            0.857639
-hard-negative hits:             38 / 48
-hard-negative rate:             0.791667
-classification:                 LEXICAL_CONTROL_EXPOSES_MULTI_STRATUM_GAPS
-```
+RC-9 v2 control classification: `LEXICAL_CONTROL_EXPOSES_MULTI_STRATUM_GAPS`.
 
 ### Comparator v1
 
 Frozen classification: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`.
-
-Evaluation Surface v2:
 
 ```text
 useful hits:          48 / 48
@@ -204,13 +163,9 @@ hard-negative hits:   41 / 48
 hard-negative rate:   0.854167
 ```
 
-The comparator recovered all six measured RC-9 useful misses but did not satisfy proposition-level hard-negative discrimination.
-
 ### NLI neutral-filter v1
 
 Frozen classification: `NLI_NEUTRAL_FILTER_GATE_FAILED`.
-
-Evaluation Surface v2:
 
 ```text
 useful hits:          46 / 48
@@ -266,35 +221,39 @@ Physical L3 is not automatically strict Canon. Successful import/equivalence doe
 Immutable phased localization source checkpoint: `51c205fe048fd69d39fcd47b43e042a50de432bc`.  
 D2 translation checkpoint: `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
 
-German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed under recorded parity/source contracts. German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian D1/D3/D4/D5 detail packs are current. D2 reviewer/safety translations remain current across all nine supported locales.
+Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed under recorded parity/source contracts. Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian D1/D3/D4/D5 detail packs are current. D2 reviewer/safety translations remain current across all nine supported locales.
 
-The **two other localized root README files and Reader-dependent detail packs** remain `REFRESH_NEEDED` at their recorded source checkpoints; two other locale detail packs require Reader refresh.
+The **one other localized root README file and Reader-dependent detail pack** remains `REFRESH_NEEDED` at its recorded source checkpoint; one other locale detail pack requires Reader refresh.
 
-German current parity audit base: `main@ad8cec8c868f64b6dfbdc3bf3087230f59c3861c`. French current parity audit base: `main@7d03cce2c89f7a4c3fda85742eb358e6b49961f2`. Spanish current parity audit base: `main@bbe6b0d3d90d80b3c669ddab5fc56aa1bfe419eb`. Italian current parity audit base: `main@e436577dc5ada4692e8fe399da861a44f800e2f1`. Japanese current parity audit base: `main@5903e90f3e0f2884f4ba257a71808d19fc439ebc`. Simplified Chinese current parity audit base: `main@5e6301f0eaee1a6c85d8543be89dc2e606dc05a8`. Russian current parity audit source: `main@9666781d390e3276a111cb5ee1735f6606a76283`. Human-first English README source: `main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883`.
+Arabic current parity audit base: `main@9e048c21fb929f7d299e3af0ef03d76c1df899d6`. German current parity audit base: `main@ad8cec8c868f64b6dfbdc3bf3087230f59c3861c`. French current parity audit base: `main@7d03cce2c89f7a4c3fda85742eb358e6b49961f2`. Spanish current parity audit base: `main@bbe6b0d3d90d80b3c669ddab5fc56aa1bfe419eb`. Italian current parity audit base: `main@e436577dc5ada4692e8fe399da861a44f800e2f1`. Japanese current parity audit base: `main@5903e90f3e0f2884f4ba257a71808d19fc439ebc`. Simplified Chinese current parity audit base: `main@5e6301f0eaee1a6c85d8543be89dc2e606dc05a8`. Russian current parity audit source: `main@9666781d390e3276a111cb5ee1735f6606a76283`. Human-first English README source: `main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883`.
 
 ### Retained post-German localization compatibility literal
 
-The exact phrases **`German and Russian Reader-dependent public/detail documentation is refreshed`** and **`seven other localized root README files and Reader-dependent detail packs`** are retained here solely as historical compatibility evidence for the closed German parity checkpoint. This sentence is retained as immutable post-German compatibility evidence only; it is **not current localization truth** after later parity refreshes.
+The exact phrases **`German and Russian Reader-dependent public/detail documentation is refreshed`** and **`seven other localized root README files and Reader-dependent detail packs`** are retained solely as historical compatibility evidence.
 
 ### Retained post-French localization compatibility literal
 
-The exact phrases **`German, French and Russian Reader-dependent public/detail documentation is refreshed`** and **`six other localized root README files and Reader-dependent detail packs`** are retained here solely as historical compatibility evidence for the closed French parity checkpoint. This sentence is retained as immutable post-French compatibility evidence only; it is **not current localization truth** after later parity refreshes.
+The exact phrases **`German, French and Russian Reader-dependent public/detail documentation is refreshed`** and **`six other localized root README files and Reader-dependent detail packs`** are retained solely as historical compatibility evidence.
 
 ### Retained post-Spanish localization compatibility literal
 
-The exact phrases **`German, French, Spanish and Russian Reader-dependent public/detail documentation is refreshed`** and **`five other localized root README files and Reader-dependent detail packs`** are retained here solely as historical compatibility evidence for the closed Spanish parity checkpoint. This sentence is retained as immutable post-Spanish compatibility evidence only; it is **not current localization truth** after later parity refreshes.
+The exact phrases **`German, French, Spanish and Russian Reader-dependent public/detail documentation is refreshed`** and **`five other localized root README files and Reader-dependent detail packs`** are retained solely as historical compatibility evidence.
 
 ### Retained post-Italian localization compatibility literal
 
-The exact phrases **`German, French, Spanish, Italian and Russian Reader-dependent public/detail documentation is refreshed`** and **`four other localized root README files and Reader-dependent detail packs`** are retained here solely as historical compatibility evidence for the closed Italian parity checkpoint. This sentence is retained as immutable post-Italian compatibility evidence only; it is **not current localization truth** after later parity refreshes.
+The exact phrases **`German, French, Spanish, Italian and Russian Reader-dependent public/detail documentation is refreshed`** and **`four other localized root README files and Reader-dependent detail packs`** are retained solely as historical compatibility evidence.
 
 ### Retained post-Simplified-Chinese localization compatibility literal
 
-The exact phrases **`German, French, Spanish, Italian, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed`** and **`three other localized root README files and Reader-dependent detail packs`** are retained here solely as historical compatibility evidence for the closed Simplified Chinese parity checkpoint. This sentence is retained as immutable post-Simplified-Chinese compatibility evidence only; it is **not current localization truth** after Japanese parity. The current state is German + French + Spanish + Italian + Japanese + Simplified Chinese + Russian with two remaining locale packs, as stated above.
+The exact phrases **`German, French, Spanish, Italian, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed`** and **`three other localized root README files and Reader-dependent detail packs`** are retained solely as historical compatibility evidence. They are not current localization truth after later parity milestones.
+
+### Retained post-Japanese localization compatibility literal
+
+The exact phrases **`German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed`** and **`two other localized root README files and Reader-dependent detail packs`** are retained solely as historical compatibility evidence for the closed Japanese parity checkpoint. They are **not current localization truth** after Arabic parity.
 
 ### Retained Evaluation-Surface-v2 localization compatibility literal
 
-The exact phrase **`eight other localized root README files`** is retained here solely as historical compatibility evidence for the older Evaluation Surface v2 documentation contract, when Russian was the only refreshed locale. It is **not current localization truth** after later parity milestones; the current count is two, as stated above.
+The exact phrase **`eight other localized root README files`** is retained solely as historical compatibility evidence for the older Evaluation Surface v2 documentation contract. It is not current localization truth; the current count is one, as stated above.
 
 A visually stronger old translation may be used as a layout reference only. It must not be treated as newer technical truth.
 
@@ -302,19 +261,9 @@ A visually stronger old translation may be used as a layout reference only. It m
 
 NLnet remains submitted / under review / not awarded. Approximate €50,000 remains planning context only.
 
-Separate residual issues:
-
-```text
-#155 Epistemic Router RFC
-#165 normalized-id migration / dedupe
-#214 PII fixture + supply-chain hygiene
-```
-
-They are not auto-started by Reader or documentation work.
+Separate residual issues are resolved from live GitHub; they are not auto-started by Reader or documentation work.
 
 ## Documentation interface lifecycle
-
-The maintained interface remains:
 
 ```text
 👤 README + docs/OVERVIEW.md
@@ -327,7 +276,7 @@ The maintained interface remains:
 overview != current state != machine truth != evidence != history
 ```
 
-Volatile repository lifecycle facts are deliberately **not** persisted here as “latest/current” constants. Resolve them before work:
+Volatile repository lifecycle facts are deliberately not persisted here as indefinitely-current constants:
 
 ```text
 repository HEAD + exact CI       → RESOLVE_LIVE_GITHUB
