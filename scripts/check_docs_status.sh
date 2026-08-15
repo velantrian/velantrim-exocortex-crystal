@@ -14,12 +14,17 @@ manifest = json.loads((root / "docs/status/implementation-manifest.json").read_t
 errors: list[str] = []
 runtime_commit = "bbd816c09dd39a02e6de6c1014438490572f40f6"
 source_checkpoint = "51c205fe048fd69d39fcd47b43e042a50de432bc"
-historical_root_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
+german_historical_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
 german_parity_base = "ad8cec8c868f64b6dfbdc3bf3087230f59c3861c"
+french_historical_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
 french_parity_base = "7d03cce2c89f7a4c3fda85742eb358e6b49961f2"
+spanish_historical_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
 spanish_parity_base = "bbe6b0d3d90d80b3c669ddab5fc56aa1bfe419eb"
+italian_historical_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
 italian_parity_base = "e436577dc5ada4692e8fe399da861a44f800e2f1"
+simplified_chinese_historical_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
 simplified_chinese_parity_base = "5e6301f0eaee1a6c85d8543be89dc2e606dc05a8"
+japanese_historical_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
 japanese_parity_base = "5903e90f3e0f2884f4ba257a71808d19fc439ebc"
 locales = ["ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN"]
 current_locales = ["de", "es", "fr", "it", "ja", "ru", "zh-CN"]
@@ -58,7 +63,8 @@ docs = manifest["documentation"]
 grant = manifest["grant"]
 rc5 = manifest.get("reader_core_rc5", {})
 
-# Retained historical runtime checkpoint remains immutable evidence.
+# Retained historical runtime checkpoint remains immutable evidence. Later Reader/localization
+# milestones carry separate evidence and do not rewrite this compatibility record.
 expect(checkpoint.get("commit"), runtime_commit, "runtime checkpoint")
 expect(tests.get("passed"), 2078, "tests passed")
 expect(tests.get("skipped"), 13, "tests skipped")
@@ -66,7 +72,7 @@ expect(tests.get("failed"), 0, "tests failed")
 expect(tests.get("measured_statements"), 9756, "measured statements")
 expect(tests.get("coverage_percent"), 100.0, "coverage")
 
-# Current machine Reader truth remains bounded and fail-closed.
+# Current machine Reader truth is RC-1..RC-7 bounded=true, dedicated/full Reader=false.
 for key in (
     "reader_core_rc1_skeleton",
     "reader_core_rc2_structural_map",
@@ -83,27 +89,44 @@ expect(boundaries.get("semantic_hybrid_reader_runtime"), False, "semantic Reader
 expect(boundaries.get("nli_reader_runtime_filter"), False, "NLI Reader runtime filter")
 expect(boundaries.get("rrtic_runtime_provider"), False, "RRTIC runtime provider")
 
-# Preserve the exact RC-5 machine contract as historical invariant.
+# Preserve the exact RC-5 machine contract as a historical invariant while public status moves
+# beyond RC-5. Localization work may not mutate this bounded implementation layer.
 expect(rc5.get("tracking_issue"), 367, "RC-5 issue")
 expect(rc5.get("pull_request"), 368, "RC-5 PR")
 expect(rc5.get("runtime_module"), "core/reader_relations.py", "RC-5 runtime")
 expect(rc5.get("test_module"), "tests/test_reader_relations.py", "RC-5 tests")
 expect(rc5.get("input_boundary"), "registered_rc4_proposition_candidates_only", "RC-5 input")
-expect(rc5.get("relation_kinds"), ["POSSIBLE_CONTRADICTION", "EXCEPTION", "QUALIFICATION", "TENSION"], "RC-5 kinds")
+expect(
+    rc5.get("relation_kinds"),
+    ["POSSIBLE_CONTRADICTION", "EXCEPTION", "QUALIFICATION", "TENSION"],
+    "RC-5 kinds",
+)
 for key in (
-    "same_reader_session_required", "same_source_version_required", "within_document_only",
-    "exact_candidate_id_linkage", "primary_and_supporting_provenance_preserved",
-    "explicit_rationale_required", "count_only_telemetry",
+    "same_reader_session_required",
+    "same_source_version_required",
+    "within_document_only",
+    "exact_candidate_id_linkage",
+    "primary_and_supporting_provenance_preserved",
+    "explicit_rationale_required",
+    "count_only_telemetry",
 ):
     expect(rc5.get(key), True, f"RC-5 {key}")
 for key in (
-    "automatic_semantic_equivalence", "automatic_cross_document_reasoning", "contradiction_resolution_authority",
-    "automatic_winner_selection", "evidence_admission", "fact_evidence_write", "confidence_promotion",
-    "llm_or_provider_integration", "embeddings_or_vector_database", "truth_or_canon_authority",
+    "automatic_semantic_equivalence",
+    "automatic_cross_document_reasoning",
+    "contradiction_resolution_authority",
+    "automatic_winner_selection",
+    "evidence_admission",
+    "fact_evidence_write",
+    "confidence_promotion",
+    "llm_or_provider_integration",
+    "embeddings_or_vector_database",
+    "truth_or_canon_authority",
 ):
     expect(rc5.get(key), False, f"RC-5 {key}")
 
-# Localization may advance without rewriting immutable Reader/source checkpoints.
+# Historical phased source checkpoint remains immutable while completed locale refreshes advance
+# independently against newer public semantics.
 expect(docs.get("localized_readme_source_checkpoint"), source_checkpoint, "localized README source")
 expect(docs.get("full_parity_current_locales"), current_locales, "root current locales")
 expect(docs.get("full_parity_refresh_needed_locales"), refresh_locales, "root refresh locales")
@@ -155,67 +178,108 @@ for locale in locales:
     for level in ("L0", "L1", "L2", "L3"):
         if level not in text:
             errors.append(f"{relative}: missing {level}")
-
     if locale == "ru":
-        markers = (
-            f"localization-source: main@{source_checkpoint}", "localization-status: CURRENT",
-            "reader_core_rc5_relation_candidates    = true", "contradiction candidate  != confirmed contradiction",
-        )
+        for marker in (
+            f"localization-source: main@{source_checkpoint}",
+            "localization-status: CURRENT",
+            "reader_core_rc5_relation_candidates    = true",
+            "contradiction candidate  != confirmed contradiction",
+        ):
+            if marker not in text:
+                errors.append(f"{relative}: missing retained localization marker {marker!r}")
     elif locale == "de":
-        markers = (
-            f"localization-source: main@{historical_root_source}", "localization-status: CURRENT",
+        for marker in (
+            f"localization-source: main@{german_historical_source}",
+            "localization-status: CURRENT",
             f"current-localization-source: main@{german_parity_base}",
-            "reader_core_rc5_relation_candidates    = true", "contradiction candidate  != confirmed contradiction",
-        )
+            "reader_core_rc5_relation_candidates    = true",
+            "contradiction candidate  != confirmed contradiction",
+        ):
+            if marker not in text:
+                errors.append(f"{relative}: missing German current/provenance marker {marker!r}")
     elif locale == "fr":
-        markers = (
-            f"localization-source: main@{historical_root_source}", "localization-status: CURRENT",
+        for marker in (
+            f"localization-source: main@{french_historical_source}",
+            "localization-status: CURRENT",
             f"current-localization-source: main@{french_parity_base}",
-            "reader_core_rc5_relation_candidates    = true", "contradiction candidate  != confirmed contradiction",
-        )
+            "reader_core_rc5_relation_candidates    = true",
+            "contradiction candidate  != confirmed contradiction",
+        ):
+            if marker not in text:
+                errors.append(f"{relative}: missing French current/provenance marker {marker!r}")
     elif locale == "es":
-        markers = (
-            f"localization-source: main@{historical_root_source}", "localization-status: CURRENT",
+        for marker in (
+            f"localization-source: main@{spanish_historical_source}",
+            "localization-status: CURRENT",
             f"current-localization-source: main@{spanish_parity_base}",
-            "reader_core_rc5_relation_candidates    = true", "contradiction candidate  != confirmed contradiction",
-        )
+            "reader_core_rc5_relation_candidates    = true",
+            "contradiction candidate  != confirmed contradiction",
+        ):
+            if marker not in text:
+                errors.append(f"{relative}: missing Spanish current/provenance marker {marker!r}")
     elif locale == "it":
-        markers = (
-            f"localization-source: main@{historical_root_source}", "localization-status: CURRENT",
+        for marker in (
+            f"localization-source: main@{italian_historical_source}",
+            "localization-status: CURRENT",
             f"current-localization-source: main@{italian_parity_base}",
-            "reader_core_rc5_relation_candidates    = true", "contradiction candidate  != confirmed contradiction",
-        )
+            "reader_core_rc5_relation_candidates    = true",
+            "contradiction candidate  != confirmed contradiction",
+        ):
+            if marker not in text:
+                errors.append(f"{relative}: missing Italian current/provenance marker {marker!r}")
     elif locale == "zh-CN":
-        markers = (
-            f"localization-source: main@{historical_root_source}", "localization-status: CURRENT",
+        for marker in (
+            f"localization-source: main@{simplified_chinese_historical_source}",
+            "localization-status: CURRENT",
             f"current-localization-source: main@{simplified_chinese_parity_base}",
-            "reader_core_rc5_relation_candidates    = true", "contradiction candidate  != confirmed contradiction",
-        )
+            "reader_core_rc5_relation_candidates    = true",
+            "contradiction candidate  != confirmed contradiction",
+        ):
+            if marker not in text:
+                errors.append(f"{relative}: missing Simplified Chinese current/provenance marker {marker!r}")
     elif locale == "ja":
-        markers = (
-            f"localization-source: main@{historical_root_source}", "localization-status: CURRENT",
+        for marker in (
+            f"localization-source: main@{japanese_historical_source}",
+            "localization-status: CURRENT",
             f"current-localization-source: main@{japanese_parity_base}",
-            "reader_core_rc5_relation_candidates    = true", "contradiction candidate  != confirmed contradiction",
-        )
-    else:
-        markers = ()
-        if f"localization-source: main@{source_checkpoint}" in text:
-            errors.append(f"{relative}: REFRESH_NEEDED root falsely pins RC-5 source")
-    for marker in markers:
-        if marker not in text:
-            errors.append(f"{relative}: missing current/provenance marker {marker!r}")
+            "reader_core_rc5_relation_candidates    = true",
+            "contradiction candidate  != confirmed contradiction",
+        ):
+            if marker not in text:
+                errors.append(f"{relative}: missing Japanese current/provenance marker {marker!r}")
+    elif f"localization-source: main@{source_checkpoint}" in text:
+        errors.append(f"{relative}: REFRESH_NEEDED root falsely pins RC-5 source")
 
+# Root English README is the current first-impression source and must track post-RC-9 truth.
 root_readme = (root / "README.md").read_text(encoding="utf-8")
-require("README.md", root_readme, (
-    "Current implemented Reader retrieval baseline", "RC-9 deterministic lexical PRE-ADMISSION candidate discovery",
-    "reader_core_rc7_cross_document_links", "dedicated_reader_core=false", "Recall@5", "Precision@5", "MRR",
-    "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP", "candidate discovery", "candidate adjudication", "Reviewer validation",
-    "submitted / under review / not awarded",
-))
-forbid("README.md", root_readme, (
-    "RC-6 as the authoritative implemented milestone", "RC-7 implementation draft",
-    "final RC-7 merge/signature/post-merge CI evidence is pending", "94% accuracy",
-))
+require(
+    "README.md",
+    root_readme,
+    (
+        "Current implemented Reader retrieval baseline",
+        "RC-9 deterministic lexical PRE-ADMISSION candidate discovery",
+        "reader_core_rc7_cross_document_links",
+        "dedicated_reader_core=false",
+        "Recall@5",
+        "Precision@5",
+        "MRR",
+        "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP",
+        "candidate discovery",
+        "candidate adjudication",
+        "Reviewer validation",
+        "submitted / under review / not awarded",
+    ),
+)
+forbid(
+    "README.md",
+    root_readme,
+    (
+        "RC-6 as the authoritative implemented milestone",
+        "RC-7 implementation draft",
+        "final RC-7 merge/signature/post-merge CI evidence is pending",
+        "94% accuracy",
+    ),
+)
 
 for locale in locales:
     index = (root / "docs" / locale / "README.md").read_text(encoding="utf-8")
@@ -225,55 +289,124 @@ for locale in locales:
             if marker not in index:
                 errors.append(f"docs/{locale}/README.md: missing {marker!r}")
     for marker in (
-        f"localization-index-source: main@{source_checkpoint}", "d2-status: CURRENT", "Localization policy", "Translation status",
+        f"localization-index-source: main@{source_checkpoint}",
+        "d2-status: CURRENT",
+        "Localization policy",
+        "Translation status",
     ):
         if marker not in index:
             errors.append(f"docs/{locale}/README.md: missing {marker!r}")
 
+# Active English status surfaces use semantic markers instead of stale exact section titles.
 required = {
     "docs/STATUS.md": (
-        "reader_core_rc7_cross_document_links", "core/reader_relations.py", "RC-9 deterministic lexical baseline",
-        "Recall@5", "candidate discovery != candidate adjudication", "active=false",
+        "reader_core_rc7_cross_document_links",
+        "core/reader_relations.py",
+        "RC-9 deterministic lexical baseline",
+        "Recall@5",
+        "candidate discovery != candidate adjudication",
+        "active=false",
     ),
     "docs/IMPLEMENTATION_STATUS.md": (
-        "reader_core_rc7_cross_document_links", "core/reader_relations.py", "Reader RC-9 lexical candidate discovery",
-        "Recall@5", "candidate discovery != candidate adjudication", "dedicated_reader_core=false",
+        "reader_core_rc7_cross_document_links",
+        "core/reader_relations.py",
+        "Reader RC-9 lexical candidate discovery",
+        "Recall@5",
+        "candidate discovery != candidate adjudication",
+        "dedicated_reader_core=false",
     ),
-    "docs/ARCHITECTURE_OVERVIEW.md": ("RC-5", "relation candidate", "contradiction candidate != confirmed contradiction", "active=false"),
-    "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md": ("Reader relation", "RC-5", "contradiction candidate != confirmed contradiction", "active=false"),
-    "docs/PROJECT_GRANT_AND_GOVERNANCE.md": ("RC-9", "submitted", "€50,000", "contradiction candidate != confirmed contradiction", "candidate discovery", "candidate adjudication"),
-    "docs/GLOSSARY.md": ("Reader Core RC-5", "POSSIBLE_CONTRADICTION", "EXCEPTION", "QUALIFICATION", "TENSION"),
-    "docs/EXTENDED_REFERENCE_POLICY.md": ("reader_core_rc5_relation_candidates", "contradiction candidate != confirmed contradiction", "REFRESH_NEEDED"),
+    "docs/ARCHITECTURE_OVERVIEW.md": (
+        "RC-5",
+        "relation candidate",
+        "contradiction candidate != confirmed contradiction",
+        "active=false",
+    ),
+    "docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md": (
+        "Reader relation",
+        "RC-5",
+        "contradiction candidate != confirmed contradiction",
+        "active=false",
+    ),
+    "docs/PROJECT_GRANT_AND_GOVERNANCE.md": (
+        "RC-9",
+        "submitted",
+        "€50,000",
+        "contradiction candidate != confirmed contradiction",
+        "candidate discovery",
+        "candidate adjudication",
+    ),
+    "docs/GLOSSARY.md": (
+        "Reader Core RC-5",
+        "POSSIBLE_CONTRADICTION",
+        "EXCEPTION",
+        "QUALIFICATION",
+        "TENSION",
+    ),
+    "docs/EXTENDED_REFERENCE_POLICY.md": (
+        "reader_core_rc5_relation_candidates",
+        "contradiction candidate != confirmed contradiction",
+        "REFRESH_NEEDED",
+    ),
     "docs/TRANSLATION_STATUS.md": (
-        source_checkpoint, "Reader RC-5 boundary", "16 `REFRESH_NEEDED` localized documents",
-        "German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian", "RC-9", "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP",
+        source_checkpoint,
+        "Reader RC-5 boundary",
+        "16 `REFRESH_NEEDED` localized documents",
+        "German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian",
+        "RC-9",
+        "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP",
     ),
     "docs/ai/CURRENT_STATE.md": (
-        source_checkpoint, "reader_core_rc7_cross_document_links", "two other localized root README files",
+        source_checkpoint,
+        "reader_core_rc7_cross_document_links",
+        "two other localized root README files",
         "German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed",
-        "RC-9", "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP",
+        "RC-9",
+        "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP",
     ),
     "ROADMAP.md": (
-        "RC-5 — relation candidates", "RC-6 — bounded long context", "RC-7 — bounded cross-document candidate links",
-        "RC-9 — deterministic lexical candidate discovery + benchmark", "issue #379",
+        "RC-5 — relation candidates",
+        "RC-6 — bounded long context",
+        "RC-7 — bounded cross-document candidate links",
+        "RC-9 — deterministic lexical candidate discovery + benchmark",
+        "issue #379",
     ),
 }
 for relative, markers in required.items():
-    require(relative, (root / relative).read_text(encoding="utf-8"), markers)
+    text = (root / relative).read_text(encoding="utf-8")
+    require(relative, text, markers)
 
+# Current grant/public surfaces must not regress to the pre-RC-9 baseline description.
 for relative in (
-    "README.md", "docs/GRANT_NLNET_SCOPE.md", "docs/PROJECT_GRANT_AND_GOVERNANCE.md",
-    "docs/grants/baseline-funded-delta-matrix.md", "ROADMAP.md",
+    "README.md",
+    "docs/GRANT_NLNET_SCOPE.md",
+    "docs/PROJECT_GRANT_AND_GOVERNANCE.md",
+    "docs/grants/baseline-funded-delta-matrix.md",
+    "ROADMAP.md",
 ):
-    forbid(relative, (root / relative).read_text(encoding="utf-8"), (
-        "Potential funded delta after RC-5", "RC-6 is currently being implemented",
-        "RC-7 tracking: issue #371; implementation draft: PR #372", "final RC-7 merge/signature/post-merge CI evidence is pending",
-    ))
+    text = (root / relative).read_text(encoding="utf-8")
+    forbid(
+        relative,
+        text,
+        (
+            "Potential funded delta after RC-5",
+            "RC-6 is currently being implemented",
+            "RC-7 tracking: issue #371; implementation draft: PR #372",
+            "final RC-7 merge/signature/post-merge CI evidence is pending",
+        ),
+    )
 
 link_pattern = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 link_surfaces = [
-    "README.md", "README.ru.md", "README.de.md", "README.fr.md", "README.es.md", "README.it.md",
-    "README.ja.md", "README.zh-CN.md", "docs/TRANSLATION_STATUS.md", "docs/DOCUMENTATION_MAP.md",
+    "README.md",
+    "README.ru.md",
+    "README.de.md",
+    "README.fr.md",
+    "README.es.md",
+    "README.it.md",
+    "README.ja.md",
+    "README.zh-CN.md",
+    "docs/TRANSLATION_STATUS.md",
+    "docs/DOCUMENTATION_MAP.md",
     *[f"docs/{locale}/README.md" for locale in locales],
 ]
 for relative in link_surfaces:
