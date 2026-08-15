@@ -1,74 +1,109 @@
-<!-- translation-source: docs/STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- translation-source: docs/STATUS.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
+<!-- historical-translation-source: docs/STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- current-translation-source: docs/STATUS.md@5e6301f0eaee1a6c85d8543be89dc2e606dc05a8 -->
 <!-- d1-locale: zh-CN -->
 <!-- d1-boundary: public-ask-read-only -->
 <!-- d1-boundary: postgresql-active=false -->
 <!-- d1-nonclaim: import-is-not-activation -->
 <!-- d1-nonclaim: nlnet-not-awarded -->
-# Velantrim Crystal — 当前状态
+# 🇨🇳 Crystal — 当前状态
 
-**日期：** 2026-08-08  
-**已验证 runtime checkpoint：** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
-**已验证 tree：** `f57e58a6f4d1954b649ba324996fcde42ac287b8`  
-**已验证 implementation head：** `d7af7c80722274f9217bc5545d150f92e9363f37`  
-**Runtime PR / CI：** #337 / `31256316536`  
-**PostgreSQL integration CI：** `31256316532`
+**状态日期：** 2026-08-15  
+**冻结的 Reader architecture checkpoint：** `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` — Reader Retrieval Typed Inspection Contract v1 / PR #392  
+**RRTIC exact-head CI：** `31754798549` — 9/9 SUCCESS  
+**RRTIC post-merge CI：** `31771677028` — 9/9 SUCCESS  
+**简体中文 parity audit base：** `main@5e6301f0eaee1a6c85d8543be89dc2e606dc05a8`。
 
-## 验证
-
-- Python 3.11：**2078 passed / 13 skipped / 0 failed**；
-- Python 3.12：**2078 passed / 13 skipped / 0 failed**；
-- **9756 statements / 100.00% line coverage**；
-- `core/postgresql_migration.py`：**44/44 statements**；
-- `core/postgresql_migration_impl.py`：**336/336 statements**；
-- Ring Zero mutants **7/7** killed；
-- permanent CI jobs **9/9** successful；
-- real PostgreSQL/pgvector integration **1/1** successful。
-
-精确证据：[TEST_REPORT.md](../../TEST_REPORT.md) 与
-[machine-readable manifest](../status/implementation-manifest.json)。
-
-## 当前已验证 capability boundary
-
-Crystal 保留 local-first SQLite baseline，并实现 issue #332 phase 1：
+> 📎 下列 runtime 数字仅作为 retained historical compatibility evidence，不是当前 repository 的 test count。
 
 ```text
-verified completed logical bundle
-→ PostgreSQL 16 / pgvector 0.8.2 preflight
-→ new inactive target schema
-→ serializable import
-→ independent read-only canonical target re-hash
-→ exact count / byte / SHA-256 equivalence
-→ non-secret receipts
+bbd816c09dd39a02e6de6c1014438490572f40f6
+2078 passed / 13 skipped / 0 failed
+9756 statements / 100.00% line coverage
 ```
 
-PostgreSQL driver 是可选 extra，只在显式 operator command 中 lazy-load。
-默认安装仍是 pure standard library。导入目标不注册到普通 runtime composition，
-保持 `active=false`，不能提供普通 reads/writes。
-
-## Authority boundary
+## 📖 当前 Reader position
 
 ```text
-storage profile         = deployment identity
-migration bundle        = operation evidence
-physical L3             = multi-status storage
-strict Canon            = trusted read projection
-migration/import        != TruthGate admission
-successful equivalence  != backend activation
+reader_core_rc1_skeleton = true
+reader_core_rc2_structural_map = true
+reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc4_proposition_extraction = true
+reader_core_rc5_relation_candidates = true
+reader_core_rc6_long_context_strategy = true
+reader_core_rc7_cross_document_links = true
+reader_rc9_lexical_candidate_discovery = true
+dedicated_reader_core = false
+semantic_hybrid_reader_runtime = false
+rrtic_runtime_authorization = false
+nli_reader_runtime_filter = false
 ```
 
-Guardian、TruthGate、restrictions、TrustSnapshot 与 CanonicalView 不变。
+RC-1…RC-7 是已实现的 bounded Reader layers。RC-9 是已实现的 deterministic lexical **PRE-ADMISSION** candidate discovery。Comparator v1 与 NLI neutral-filter v1 是冻结的 evaluation evidence，两个 gate 都失败。RRTIC-v1 是冻结的 typed-inspection architecture contract，没有 runtime provider。
 
-## 仍未实现
+## 🔬 Evidence chain
 
-- active PostgreSQL read/write runtime selection；
-- exact-vs-ANN evaluation 与已接受 ANN thresholds；
-- activation、cutover、fencing、rollback 或 dual-write；
-- PostgreSQL backup/restore/upgrade lifecycle、production pooling 与 distributed fencing；
-- production IdP/multi-tenancy 或 legal/security/GDPR certification；
-- 专用 verified Reader Core。
+```text
+RC-9 lexical discovery
+        ↓
+Evaluation Surface v2
+        ↓
+Comparator v1
+recall recovered · discrimination FAIL
+        ↓
+NLI neutral-filter v1
+discrimination improved · recall-safety FAIL
+        ↓
+post-NLI reassessment
+relation-contract mismatch
+        ↓
+RRTIC-v1
+architecture contract only
+```
 
-## 资助状态
+保留的 RC-9 control K=5：Recall@5 `0.937500`、Precision@5 `0.187500`、MRR `0.895833`、useful hits `15/16`、hard-negative hits `4/4`；classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`。
 
-项目已提交并正在审查。**不声称已获资助或预算发生变化。** PR #337 与
-issue #332 已是 merged baseline，不能再次计入未来资助工作。
+Comparator classification：`SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`。  
+NLI classification：`NLI_NEUTRAL_FILTER_GATE_FAILED`。
+
+## 🧬 RRTIC-v1
+
+RRTIC-v1 使用 suspicion-only relation families：`EQUIVALENCE_SUSPECT`、`RELATED_SUSPECT`、`CONTRADICTION_SUSPECT`、`QUALIFICATION_SUSPECT`、`TOPIC_ONLY_SUSPECT`、`UNKNOWN`，qualifier state 为 `MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE`。
+
+它不执行 model execution、filtering、reranking、identity decision、evidence admission、contradiction adjudication 或 Canon mutation。
+
+## 🛡 Authority boundaries
+
+```text
+coverage != comprehension proof
+pass completion != comprehension proof
+working-set coverage != comprehension proof
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+summary != evidence
+cross-document link != Canon relation
+same-topic != same proposition
+possible-same-claim != claim identity
+similarity signal != identity proof
+repetition across sources != corroboration
+retrieval match != evidence
+similarity != identity
+ranking != epistemic authority
+candidate discovery != candidate adjudication
+NLI label != proposition identity
+RRTIC suspicion != adjudicated relation
+evaluation pass != runtime authorization
+```
+
+Guardian、TruthGate、TrustSnapshot 与 CanonicalView 保持彼此独立的 authority/read roles。Public `HTTP /ask`、`CLI ask`、`MCP search` 保持 read-only。
+
+## 💾 Storage / grant / localization
+
+SQLite 是 ordinary active local-first path。PostgreSQL/pgvector 仍是 inactive target，`active=false`；不存在 automatic backend switching。`physical L3 != strict Canon`，successful import 也不是 backend activation。
+
+NLnet 仍为 **submitted / under review / not awarded**；约 €50,000 只是 planning context，budget change none。
+
+当前简体中文 parity 以 `main@5e6301f0eaee1a6c85d8543be89dc2e606dc05a8` 为 audit base。旧 source marker `a497b7d3cfbe59ca75b11d7449d5a728455b3130` 仅保留为历史 provenance；实时 repository lifecycle state 必须从 GitHub live 解析。
