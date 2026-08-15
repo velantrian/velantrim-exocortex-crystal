@@ -1,4 +1,4 @@
-<!-- translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@208f1c772ee3a112cb803d2413c120bef23adb05 -->
+<!-- translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
 <!-- d3-locale: hi -->
 <!-- d3-boundary: physical-l3-not-strict-canon -->
@@ -6,7 +6,13 @@
 <!-- d3-boundary: postgresql-active=false -->
 <!-- d3-nonclaim: import-is-not-activation -->
 <!-- d3-nonclaim: reader-core-not-implemented -->
+<!-- d3-nonclaim: dedicated-reader-core-not-implemented -->
 <!-- d3-nonclaim: nlnet-not-awarded -->
+<!-- d3-reader: rc1-skeleton-implemented -->
+<!-- d3-reader: rc2-structural-map-implemented -->
+<!-- d3-reader: rc3-multi-pass-mechanics-implemented -->
+<!-- d3-reader: rc4-proposition-extraction-implemented -->
+<!-- d3-reader: rc5-relation-candidates-implemented -->
 # Storage और Authority सीमाएँ
 
 Crystal में persistence, retrieval और epistemic authority अलग identities हैं।
@@ -23,11 +29,15 @@ migration proof != claim proof
 ## Authority firewall
 
 ```text
+coverage != comprehension proof
+pass completion != comprehension proof
+EXTRACTED_PROPOSITION != verified fact
 retrieval match != evidence
 similarity != identity
 ranking != epistemic authority
 repetition != corroboration
 candidate discovery != candidate adjudication
+Reader candidate != admitted evidence
 relation candidate != admitted evidence
 contradiction candidate != confirmed contradiction
 NLI label != proposition identity
@@ -42,6 +52,11 @@ Guardian structural integrity/policy boundary है, truth oracle नहीं�
 RC-1…RC-7 bounded Reader artifacts तथा RC-9 lexical PRE-ADMISSION discovery केवल candidates/inspection surfaces देते हैं। Frozen semantic comparator `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED` और NLI result `NLI_NEUTRAL_FILTER_GATE_FAILED` runtime authorization नहीं देते। RRTIC-v1 architecture-only है।
 
 ```text
+RC-1
+RC-2
+RC-3
+RC-4
+RC-5
 dedicated_reader_core=false
 semantic_hybrid_reader_runtime=false
 rrtic_runtime_authorization=false
