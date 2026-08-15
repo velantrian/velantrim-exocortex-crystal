@@ -1,4 +1,4 @@
-"""Validate mixed D4 project/grant/governance translation freshness after Spanish parity refresh."""
+"""Validate mixed D4 project/grant/governance translation freshness after Italian parity refresh."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from urllib.parse import unquote
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = "51c205fe048fd69d39fcd47b43e042a50de432bc"
 LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
-CURRENT_LOCALES = ("de", "es", "fr", "ru")
+CURRENT_LOCALES = ("de", "es", "fr", "it", "ru")
 REFRESH_LOCALES = tuple(locale for locale in LOCALES if locale not in CURRENT_LOCALES)
 FILES = {
     locale: (f"docs/{locale}/GRANT_OVERVIEW.md", f"docs/{locale}/GLOSSARY.md")
@@ -58,7 +58,7 @@ def main() -> int:
     checks = (
         (manifest.get("phase") == "D4", "phase"),
         (manifest.get("tracking_issue") == 341, "tracking issue"),
-        (manifest.get("latest_refresh_issue") == 417, "latest refresh issue"),
+        (manifest.get("latest_refresh_issue") == 419, "latest refresh issue"),
         (manifest.get("english_source_checkpoint") == SOURCE, "source checkpoint"),
         (manifest.get("current_locales") == list(CURRENT_LOCALES), "current locales"),
         (manifest.get("refresh_needed_locales") == list(REFRESH_LOCALES), "refresh locales"),
@@ -158,8 +158,8 @@ def main() -> int:
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
     for marker in (
         f"D4 source checkpoint:** `main@{SOURCE}`",
-        "D4 Reader-dependent detail translations are `CURRENT` in German, French, Spanish and Russian",
-        "five other supported locales are `REFRESH_NEEDED`",
+        "D4 Reader-dependent detail translations are `CURRENT` in German, French, Spanish, Italian and Russian",
+        "four other supported locales are `REFRESH_NEEDED`",
     ):
         if marker not in ledger:
             errors.append(f"translation ledger: missing D4 marker {marker!r}")
@@ -169,7 +169,7 @@ def main() -> int:
         for error in errors:
             print(f"  - {error}")
         return 1
-    print("D4 translation status consistent: German + French + Spanish + Russian CURRENT; 5 locales REFRESH_NEEDED")
+    print("D4 translation status consistent: German + French + Spanish + Italian + Russian CURRENT; 4 locales REFRESH_NEEDED")
     return 0
 
 
