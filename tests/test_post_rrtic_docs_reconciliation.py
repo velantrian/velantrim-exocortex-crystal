@@ -127,11 +127,10 @@ def test_grant_and_localization_boundaries_remain_unchanged() -> None:
         "de",
         "es",
         "fr",
+        "hi",
         "it",
         "ja",
         "ru",
         "zh-CN",
     ]
-    assert docs["full_parity_refresh_needed_locales"] == [
-        "hi",
-    ]
+    assert docs["full_parity_refresh_needed_locales"] == []
