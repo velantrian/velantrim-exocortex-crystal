@@ -3,6 +3,7 @@
 import pytest
 
 from core import memory
+from core.compliance import restrict_processing
 from core.ingest import ingest, _fact_id, _legacy_fact_id
 from core.ingest_identity import normalized_ingest_id
 from core.memory import ClaimIdentityError
@@ -83,6 +84,27 @@ def test_noncanonical_ing_prefix_is_not_enrolled_as_legacy_auto_id():
     assert not auto.get("duplicate")
     assert auto["fact"]["fact_id"] == _fact_id(original)
     assert memory.get_fact("ing:custom") is not None
+
+
+def test_processing_restricted_legacy_row_is_not_a_compatibility_target():
+    """A derived mapping cannot reactivate a row excluded from active processing."""
+    original = "I Prefer   Restricted Legacy"
+    legacy = _legacy_fact_id(original)
+    normalized = _fact_id(original)
+    assert legacy != normalized
+    assert ingest(original, fact_id=legacy)["accepted"] is True
+
+    # Build the mapping while the fact is eligible, then restrict it. The stale
+    # derived row may remain as cache data, but final lookup must join to current
+    # restriction state and refuse to route an occurrence to it.
+    assert ingest("i prefer restricted legacy")["duplicate"] is True
+    assert restrict_processing(legacy)["found"] is True
+
+    res = ingest("  I PREFER RESTRICTED LEGACY  ")
+    assert res["accepted"] is True
+    assert not res.get("duplicate")
+    assert res["fact"]["fact_id"] == normalized
+    assert memory.get_fact(legacy)["restricted"] is True
 
 
 def test_current_normalized_short_id_collision_fails_closed():
