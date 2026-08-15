@@ -35,6 +35,7 @@ reader_core_rc5_relation_candidates = true
 reader_core_rc6_long_context_strategy = true
 reader_core_rc7_cross_document_links = true
 dedicated_reader_core=false
+dedicated_reader_core = false
 semantic_hybrid_reader_runtime=false
 rrtic_runtime_authorization=false
 nli_reader_runtime_filter=false
