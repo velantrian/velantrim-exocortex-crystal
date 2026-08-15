@@ -5,9 +5,11 @@
 #
 # Principle: deletion must be COMPLETE and PROVABLE at the same time.
 #   Complete — the node disappears from L0 (cache), L1 (SQLite), L3 (canon: node + edges +
-#             mentions), the L3 outbox (re-merge queue), evidence_spans,
-#             import_sessions, and the derived normalized-ingest compatibility
-#             index. No personal data or dangling references remain anywhere.
+#             mentions), the L3 outbox (re-merge queue), evidence_spans
+#             (source_uri/chunk_id/section provenance pointers), import_sessions
+#             (session_id/source batch-provenance pointers), and the derived
+#             normalized-ingest compatibility index. No personal data or dangling
+#             references remain anywhere.
 #   Provable — a content-free tombstone is written to erasure_log: fact_id, time,
 #             reason, actor and the sha256 hash of the erased claim (not the claim itself). This is a
 #             record of processing (Art. 30): one can prove WHAT and WHEN was
@@ -98,10 +100,13 @@ def erase_fact(
     graph = get_l3_graph()
     fact = get_fact(fact_id)
     l3_node = graph.get_fact(fact_id)
-    # Delete evidence/import-session pointers and any derived normalized-id
-    # mapping BEFORE the no-op check below. The compatibility index is a
-    # rebuildable lookup cache and is intentionally not folded into `erased_now`
-    # or used as proof that canonical/personal data existed.
+    # Delete evidence and import-session entries BEFORE the no-op check below,
+    # and fold their results into that check. Either can be the only remaining
+    # trace of a fact_id whose L1/L3 rows are already gone (e.g. left behind by
+    # delete_fact_l1 called directly, bypassing erase_fact). The derived normalized
+    # mapping is also deleted here, but because it is a rebuildable lookup cache it
+    # is intentionally not folded into `erased_now` or treated as proof that
+    # canonical/personal data existed.
     evidence_removed = evidence.delete_evidence_for(fact_id)
     import_sessions_removed = delete_import_session_entries_for(fact_id)
     remove_normalized_ingest_mapping(fact_id)
