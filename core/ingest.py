@@ -172,6 +172,9 @@ def ingest(
     if not utterance or not utterance.strip():
         raise ValueError("ingest: empty utterance")
 
+    # Data minimisation (GDPR Art. 5): optionally strip PII before anything is
+    # stored. Off by default; enabled via VELANTRIM_REDACT_PII. The content-free
+    # summary (types/counts, no values) is kept in metadata for accountability.
     pii_redacted = None
     if pii.redaction_enabled():
         utterance, _found = pii.redact(utterance)
@@ -201,6 +204,11 @@ def ingest(
         fid = fact_id
         prior = get_fact(fid)
 
+    # Exact-duplicate dedup (Variant B): a repeat of an already-Validated fact is
+    # NOT independent evidence. It only records an occurrence (frequency) via
+    # reconcile.record_occurrence — never confidence, truth_status or ESM. Genuine
+    # independent corroboration is a separate, explicit reconcile.reinforce()
+    # decision, deliberately out of scope for the dedup path.
     if prior is not None and prior.get("epistemic_state") == "Validated":
         occurrences = record_occurrence(fid, source=source,
                                         fingerprint=_fingerprint(utterance))
@@ -227,8 +235,14 @@ def ingest(
     if meta:
         fact["metadata"] = meta
 
+    # L0/L1: store as raw experience (pending), even if the gates reject it.
     store_fact(fact)
 
+    # Immune pre-screen (RFC0072): block claims matching the CRISPR threat memory
+    # — known hallucination / harmful / previously-refuted patterns — BEFORE the
+    # gates. The threat memory is empty by default, so this is a no-op until a
+    # curator (or adaptive learning) records something. The fact stays Observed in
+    # L0/L1 (pending), never reaching the canon.
     pre = immune.screen(utterance, fact_id=fid, check_canon=False)
     if pre["verdict"] == immune.BLOCK:
         metrics.incr("ingest.immune_blocked")
@@ -250,6 +264,12 @@ def ingest(
         adaptation.record_block()
         return {"accepted": False, "reason": reason, "fact": fact}
 
+    # Immune contradiction check (RFC0072): WORLD_FACTs are checked against the
+    # canon ONCE here (reused for the result below). By default a contradiction is
+    # a non-destructive advisory — we still admit and link (see truth-first
+    # principle). With VELANTRIM_IMMUNE_STRICT, a claim that contradicts the canon
+    # is blocked outright (and, with VELANTRIM_IMMUNE_LEARN, recorded as a threat
+    # so a repeat is caught pre-gate next time).
     conflicts = find_conflicts(utterance, fact_id=fid) if ct == "WORLD_FACT" else []
     contradictions = [c for c in conflicts
                       if c["kind"] == contradiction.CONTRADICTION]
@@ -267,6 +287,11 @@ def ingest(
             "conflicts": conflicts, "fact": fact,
         }
 
+    # Passed the gates → Validated, truth_status by modality, MERGE into the L3 canon.
+    # CAS guard: if the persisted state changed under us (a competing writer),
+    # transition_esm returns False and evicts the stale L0 entry. Abort the
+    # promotion instead of merging a stale payload / recording success.
+    # Defense-in-depth, not a full atomicity guarantee.
     if not transition_esm(fid, "Validated"):
         adaptation.record_block()
         return {
@@ -280,10 +305,18 @@ def ingest(
     fact["truth_status"] = _truth_status_for(ct, source_status)
 
     graph = get_l3_graph()
+    # Guard against mixing embedders: merge puts the claim's vector into the store.
     assert_compatible_embedder(graph)
+    # We merge the persistent record (created_at/metadata) — otherwise SleepCycle
+    # will not find a reference timestamp for decay (see pipeline._l3_payload).
     try:
         graph.merge_fact(_l3_payload(fact))
     except Exception as exc:  # noqa: BLE001 — preserve post-gate recovery state
+        # Direct ingest and the main query pipeline share the same cross-store
+        # limitation: L1 and L3 have no transaction. Once the ESM transition has
+        # committed, an L3 failure must be recoverable rather than leaving a
+        # Validated/L3-missing fact with no repair record. Reuse the existing
+        # outbox; it remains a secondary-sync mechanism and grants no authority.
         get_outbox_queue().enqueue(fid)
         metrics.incr("ingest.blocked")
         adaptation.record_block()
@@ -297,6 +330,12 @@ def ingest(
     metrics.incr("ingest.accepted")
     adaptation.record_success()
     result = {"accepted": True, "fact": fact}
+    # Immune signal: for facts about the world we surface canon candidates that
+    # are close-but-different, classified (CONTRADICTION/REFINEMENT/RELATED) above.
+    # By default we only hand it off for a decision. With VELANTRIM_AUTO_CONTRADICT
+    # set, a high-precision CONTRADICTION is also recorded as a CONTRADICTS edge
+    # (new → prior) so the clash is queryable via fact_history — we LINK, we do
+    # not deprecate either side (a heuristic must not silently overwrite canon).
     if conflicts:
         result["conflicts"] = conflicts
         if contradictions and _auto_contradict_enabled():
@@ -306,6 +345,9 @@ def ingest(
                                 {"at": _now(), "signal": c["signal"], "auto": True})
             result["auto_contradicted"] = [c["fact_id"] for c in contradictions]
             metrics.incr("ingest.contradiction_detected")
+        # Neurogenesis pattern separation (RFC0073, opt-in): keep a vectorally
+        # close but non-contradictory memory distinct via a SEPARATED_FROM edge,
+        # rather than letting similar episodes blur together.
         if neurogenesis.separation_enabled():
             separated = neurogenesis.separate(fid, utterance, conflicts=conflicts)
             if separated:
