@@ -1,28 +1,94 @@
-<!-- translation-source: docs/GLOSSARY.md@151b41c680190f7f3de729bf63e8e80a9d2285ce -->
-<!-- d4-locale: ja -->
+<!-- translation-source: docs/GLOSSARY.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
+<!-- current-translation-source: docs/GLOSSARY.md@5903e90f3e0f2884f4ba257a71808d19fc439ebc -->
+<!-- d4-locale: ja -->
 <!-- d4-boundary: physical-l3-not-strict-canon -->
 <!-- d4-boundary: retrieval-score-not-evidence -->
 <!-- d4-boundary: model-output-not-source-truth -->
 <!-- d4-boundary: migration-proof-not-claim-proof -->
 <!-- d4-nonclaim: import-is-not-activation -->
-<!-- d4-nonclaim: reader-core-not-implemented -->
 <!-- d4-nonclaim: nlnet-not-awarded -->
 <!-- d4-nonclaim: security-legal-gdpr-not-certified -->
 <!-- d4-nonclaim: native-speaker-editorial-not-certified -->
-# Crystal 用語集と主張の規律
+# 🇯🇵 Crystal 用語集
 
-- **physical L3**: 複数状態を保持する保存層で、自動的に **strict Canon** ではありません。
-- **retrieval score**: 順位付け信号であり evidence ではありません。
-- **model output**: 生成物であり source truth ではありません。
-- **migration proof**: 移行/同値性の証拠であり claim proof ではありません。
-- **SQLite**: 通常のアクティブな local-first profile。
-- **Mock**: 明示的な開発/CI backend。
-- **PostgreSQL/pgvector**: `active=false` の任意の非アクティブ対象。import success は activation ではありません。
-- **Reader Core**: 計画中で not implemented。
-- **NLnet**: submitted / under review / not awarded。
-- **約 €50,000**: 計画額で、承認済み予算や支払約束ではありません。budget change: none。
-- **baseline**: 契約前に merge 済みの作業で、funded delta として再計上しません。
-- 法務・GDPR・security・native-speaker editorial certification はありません。
+## 📖 Reader
 
-矛盾時は [English glossary](../GLOSSARY.md)、[Translation status](../TRANSLATION_STATUS.md)、[Localization policy](../LOCALIZATION_POLICY.md) が優先されます。
+**RC-1 / RC-2 / RC-3 / RC-4 / RC-5 / RC-6 / RC-7** — bounded implemented Reader layers。source-linked skeleton、structural map、multi-pass mechanics、proposition extraction、relation candidates、long-context working sets、cross-document candidate links を順に扱います。
+
+**RC-9** — deterministic lexical **PRE-ADMISSION** candidate discovery。semantic Reader、Evidence Admission、Canon authority ではありません。
+
+**dedicated Reader** — full/autonomous Reader core。現在 **not implemented**、`dedicated_reader_core=false`。
+
+**EXTRACTED_PROPOSITION** — source-linked extracted candidate。`EXTRACTED_PROPOSITION != verified fact`。
+
+**Reader candidate** — Reader が見つけた inspection candidate。`Reader candidate != admitted evidence`。
+
+**contradiction candidate** — adjudication が必要な conflict candidate。`contradiction candidate != confirmed contradiction`。
+
+## 🧬 RC-5 relation vocabulary
+
+RC-5 は proposition presentation category と relation-candidate vocabulary を保持します。
+
+- `POSSIBLE_CONTRADICTION`
+- `EXCEPTION`
+- `QUALIFICATION`
+- `TENSION`
+
+これらは presentation/inspection category であり automatic truth decision ではありません。
+
+**source owner** — source identity / source record に対する provenance owner。truth oracle ではありません。
+
+**proposition presentation category** — proposition/relation candidate の表示分類。Evidence や Canon relation を自動作成しません。
+
+## 🔬 Post-RC-9 research
+
+**Comparator v1** — frozen evaluation; classification `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`。
+
+**NLI neutral-filter v1** — frozen evaluation; classification `NLI_NEUTRAL_FILTER_GATE_FAILED`。`NLI label != proposition identity`。
+
+**RRTIC-v1** — Reader Retrieval Typed Inspection Contract v1。architecture-only typed suspicion/qualifier contract。`RRTIC suspicion != adjudicated relation`、`rrtic_runtime_authorization=false`。
+
+## 🏛 Authority / Canon
+
+**Guardian** — structural integrity / structural policy boundary。truth oracle ではありません。
+
+**TruthGate** — L3 admission authority。
+
+**TrustSnapshot** — deny-dominant reconciliation surface。
+
+**CanonicalView** — strict trusted read-time projection。
+
+**physical L3** — physical multi-status graph/storage。`physical L3 != strict Canon`。
+
+**strict Canon** — policy/authority が許可した trusted read projection。保存済みデータ全体と同義ではありません。
+
+## 💾 Storage
+
+**SQLite** — ordinary active local-first path。
+
+**PostgreSQL/pgvector** — optional inactive import/equivalence target。`active=false`。successful import != backend activation。
+
+## 🛡 Authority firewall
+
+```text
+retrieval match != evidence
+similarity != identity
+ranking != epistemic authority
+candidate discovery != candidate adjudication
+Reader candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+NLI label != proposition identity
+RRTIC suspicion != adjudicated relation
+evaluation pass != runtime authorization
+```
+
+## 💶 Grant
+
+NLnet funding state: **submitted / under review / not awarded**。約 **€50,000** は planning context only。**budget change: none**。`not awarded` を approved/funded と翻訳・再解釈してはいけません。
+
+## 🧾 Certification boundary
+
+`CURRENT` は recorded technical localization parity/freshness を意味します。native-speaker editorial certification、legal certification、GDPR certification、security certification を意味しません。
+
+English terminology source: [`docs/GLOSSARY.md`](../GLOSSARY.md)。
