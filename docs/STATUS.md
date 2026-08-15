@@ -191,21 +191,23 @@ The bounded logical migration verifier now binds its final file recheck to both 
 
 Direct `ingest()` now reuses the existing L3 outbox when a post-gate merge fails after the L1 ESM transition. The request fails closed while preserving an explicit repair path; this is cross-store recovery parity with the main query pipeline, not a new admission path or authority mechanism.
 
+Exact-normalized ingest compatibility now includes historical `ing:*` rows through a **derived, rebuildable normalized-claim index**. The existing normalization contract remains NFC → trim → collapse whitespace → casefold. A future case/whitespace variant may route to an already-`Validated` historical raw-id fact as an occurrence instead of creating a second node. Existing fact IDs are not re-keyed; pre-existing collisions are preserved; a current normalized `fact_id` wins when present; multiple legacy collisions route future occurrences deterministically to the oldest existing row. The index is not evidence, identity inference, semantic matching or Canon authority, and dry-run resolves the same target without writing the index.
+
 ## Current validation baseline
 
 The RRTIC architecture checkpoint push CI `31771677028` completed **9/9 SUCCESS**. Python 3.11 collected 2244 tests and completed **2231 passed / 13 skipped / 0 failed** at **100% measured line coverage**. Later bounded fixes/docs reconciliations have their own exact-head/post-merge CI and do not redefine the RRTIC architecture checkpoint.
 
 ## Backlog boundaries
 
-- #165: **OPEN** — exact normalized admitted-fact dedupe/migration only; no semantic matching.
+- #165: **COMPLETED / CLOSED by PR #431 after guarded merge** — exact normalized historical `ing:*` compatibility index only; no semantic matching and no historical re-key/merge.
 - #155: **COMPLETED / CLOSED on 2026-08-14** — EPIS-001 architecture contract only; EPIS runtime remains `NOT IMPLEMENTED / NOT AUTHORIZED`.
 - #214: **COMPLETED / CLOSED on 2026-08-14** — residual fixture/PII review and reproducible supply-chain pinning were reconciled in their own completed scope.
 
-Among these three residual scopes, only #165 remains open. It is not auto-selected by this status reconciliation. Completed #155/#214 remain historical evidence and do not authorize EPIS runtime, a new Reader runtime or unrelated security claims. Resolve live GitHub before selecting any next bounded work.
+These three historical residual scopes are closed/completed. Their closure does not authorize EPIS runtime, a new Reader runtime, PostgreSQL activation, semantic dedupe or unrelated security claims. Resolve live GitHub before selecting any next bounded work.
 
 ## Localization truth
 
-Localization state is tracked separately in `docs/TRANSLATION_STATUS.md`; a locale's checkpoint marker must not be used as current English architecture authority. This audit remediation intentionally updates English authoritative/current-truth surfaces only. Localized documentation is not modified by this milestone and must be reconciled separately if its source contract requires a later parity update.
+Localization state is tracked separately in `docs/TRANSLATION_STATUS.md`; a locale's checkpoint marker must not be used as current English architecture authority. This #165 reconciliation intentionally updates English authoritative/current-truth surfaces only. Localized documentation is not modified by this milestone and must be reconciled separately by the maintainer if a later parity update is desired.
 
 ## Grant status
 
@@ -213,4 +215,4 @@ NLnet remains **submitted / under review / not awarded**. Approximate **€50,00
 
 ## Stop boundary
 
-RRTIC-v1 is closed. No discriminator/model/runtime implementation is authorized by this contract. Do not automatically add semantic/hybrid/vector Reader runtime, FTS/ANN, activate PostgreSQL/pgvector, mutate epistemic authority, implement EPIS runtime or start #165. Completed #155/#214 do not authorize unrelated runtime or security claims.
+RRTIC-v1 remains the frozen architecture contract; #165 changes only exact-normalized ingest compatibility. No discriminator/model/runtime implementation is authorized by either scope. Do not automatically add semantic/hybrid/vector Reader runtime, FTS/ANN, activate PostgreSQL/pgvector, mutate epistemic authority, implement EPIS runtime or start a new backlog item. Completed #155/#165/#214 do not authorize unrelated runtime or security claims.

@@ -2,6 +2,21 @@
 
 This compact log records material decisions, exact evidence, limitations and hand-offs. It does not replace Git history, issues, pull requests, `CHANGELOG.md` or Notion.
 
+## 2026-08-15 — Legacy exact-normalized ingest compatibility (#165 / PR #431)
+
+- Live starting point: signed `main@e2c557c07f23bc695bd58a70138421cccc3b5764`, `verified=true`, `reason=valid`, after audit-remediation PR #430 and post-merge CI `31902827194` SUCCESS.
+- Problem: pre-normalization historical `ing:*` facts use raw-text MD5 ids. The old compatibility fallback could reuse them only when a later utterance was byte-identical, so casing/whitespace variants could create a second normalized-id fact.
+- Selected design: a **persistent derived/rebuildable normalized-ingest compatibility index**, rather than a one-time historical fact-ID re-key/merge migration. This avoids coordinated rewriting of L1/L3/evidence/provenance/import-session/audit references.
+- Identity contract remains exact and deterministic only: `NFC → trim → collapse internal whitespace → casefold`. `exact normalized equality != semantic identity`.
+- Resolution order: an existing current normalized `fact_id` wins; otherwise an already-`Validated` historical `ing:*` row may be selected by exact normalized equality; the byte-identical raw-id fallback remains for pending/non-Validated legacy rows.
+- Historical collisions are preserved rather than merged. If multiple legacy rows already share one normalized identity, future occurrence-only hits route deterministically to the oldest `created_at`, then `fact_id`.
+- Explicit custom `fact_id` ingestion bypasses the compatibility resolver. Duplicate behavior remains occurrence-only: no reinforce, confidence change, ESM promotion, corroboration or Canon shortcut.
+- Import dry-run uses the same resolver in read-only mode and does not create/backfill the compatibility table. Full erasure removes the derived mapping; mapping existence is not treated as proof of Canon/personal data.
+- Adversarial tests cover cross-case/whitespace legacy variants, current-id precedence, preserved collisions, custom-id isolation, non-Validated isolation, pending raw fallback, dry-run/live parity, write-free preview, erasure cleanup and unchanged occurrence-only semantics.
+- Documentation impact: English authoritative/current-truth surfaces only. Localized documentation is deliberately untouched and remains a separate maintainer-controlled parity task.
+- Authority/non-goals: no semantic or near-duplicate matcher, Reader semantic/hybrid runtime, NLI/CrossEncoder/LLM judge, FTS/ANN/vector DB, PostgreSQL/pgvector activation, EPIS runtime, cross-project bridge or new authority owner.
+- PR #431 remains subject to final exact-head CI, review/thread gate, guarded squash merge, post-merge CI and existing Notion-surface reconciliation. Independent review/approval is not claimed unless actually obtained.
+
 ## 2026-08-14 — Mentaury External Labs boundary reconciliation · DRAFT
 
 - Live starting point: signed `main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883`, signature `verified=true` / `reason=valid`.
