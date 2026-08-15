@@ -250,8 +250,6 @@ def main() -> int:
     ):
         forbid(relative, text, stale_current_phrases, errors)
 
-    # Negative/non-claim wording is explicitly allowed. Only affirmative overclaim forms are
-    # forbidden here, so "does not claim automatic truth verification" remains valid public truth.
     forbid(
         "root README",
         readme,
@@ -301,8 +299,8 @@ def main() -> int:
         ledger,
         (
             "## D4 — project / grant / glossary",
-            "D4 Reader-dependent detail translations are `CURRENT` in German, French, Spanish, Italian and Russian",
-            "four other supported locales are `REFRESH_NEEDED`",
+            "D4 Reader-dependent detail translations are `CURRENT` in German, French, Spanish, Italian, Simplified Chinese and Russian",
+            "three other supported locales are `REFRESH_NEEDED`",
             "## D5 — extended reference corpus",
         ),
         errors,
