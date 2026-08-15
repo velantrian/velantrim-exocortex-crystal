@@ -339,34 +339,36 @@
     "authoritative_language": "English",
     "working_language": "English",
     "language_model": "english_primary_source_multilingual_product_surface",
-    "localized_readmes": "german_french_and_russian_current_post_rrtic_six_refresh_needed",
+    "localized_readmes": "german_french_spanish_and_russian_current_post_rrtic_five_refresh_needed",
     "translation_status_ledger": "docs/TRANSLATION_STATUS.md",
     "localization_policy": "docs/LOCALIZATION_POLICY.md",
     "localized_readme_source_checkpoint": "51c205fe048fd69d39fcd47b43e042a50de432bc",
     "english_human_first_readme_source": "3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883",
     "german_parity_audit_base": "ad8cec8c868f64b6dfbdc3bf3087230f59c3861c",
     "french_parity_audit_base": "7d03cce2c89f7a4c3fda85742eb358e6b49961f2",
+    "spanish_parity_audit_base": "bbe6b0d3d90d80b3c669ddab5fc56aa1bfe419eb",
     "supported_localized_readme_count": 9,
-    "full_parity_current_locales": ["de", "fr", "ru"],
-    "full_parity_refresh_needed_locales": ["ar", "es", "hi", "it", "ja", "zh-CN"],
+    "full_parity_current_locales": ["de", "es", "fr", "ru"],
+    "full_parity_refresh_needed_locales": ["ar", "hi", "it", "ja", "zh-CN"],
     "orientation_only_locales": [],
     "broader_document_translation": "phased_by_language_or_document_family",
     "full_corpus_translation_required_in_single_pr": false,
     "translation_tracking_issue": 341,
-    "latest_translation_refresh_issue": 414,
+    "latest_translation_refresh_issue": 417,
     "d1_source_checkpoint": "51c205fe048fd69d39fcd47b43e042a50de432bc",
-    "d1_current_locales": ["de", "fr", "ru"],
-    "d1_refresh_needed_locales": ["ar", "es", "hi", "it", "ja", "zh-CN"],
+    "d1_current_locales": ["de", "es", "fr", "ru"],
+    "d1_refresh_needed_locales": ["ar", "hi", "it", "ja", "zh-CN"],
     "d1_current_documents": {
       "de": ["docs/de/README.md", "docs/de/QUICKSTART.md", "docs/de/STATUS.md", "docs/de/IMPLEMENTATION_STATUS.md"],
+      "es": ["docs/es/README.md", "docs/es/QUICKSTART.md", "docs/es/STATUS.md", "docs/es/IMPLEMENTATION_STATUS.md"],
       "fr": ["docs/fr/README.md", "docs/fr/QUICKSTART.md", "docs/fr/STATUS.md", "docs/fr/IMPLEMENTATION_STATUS.md"],
       "ru": ["docs/ru/README.md", "docs/ru/QUICKSTART.md", "docs/ru/STATUS.md", "docs/ru/IMPLEMENTATION_STATUS.md"]
     },
     "d1_unchanged_current_documents": {
-      "ar": ["docs/ar/QUICKSTART.md"], "es": ["docs/es/QUICKSTART.md"], "hi": ["docs/hi/QUICKSTART.md"], "it": ["docs/it/QUICKSTART.md"], "ja": ["docs/ja/QUICKSTART.md"], "zh-CN": ["docs/zh-CN/QUICKSTART.md"]
+      "ar": ["docs/ar/QUICKSTART.md"], "hi": ["docs/hi/QUICKSTART.md"], "it": ["docs/it/QUICKSTART.md"], "ja": ["docs/ja/QUICKSTART.md"], "zh-CN": ["docs/zh-CN/QUICKSTART.md"]
     },
     "d1_refresh_needed_documents": {
-      "ar": ["docs/ar/STATUS.md", "docs/ar/IMPLEMENTATION_STATUS.md"], "es": ["docs/es/STATUS.md", "docs/es/IMPLEMENTATION_STATUS.md"], "hi": ["docs/hi/STATUS.md", "docs/hi/IMPLEMENTATION_STATUS.md"], "it": ["docs/it/STATUS.md", "docs/it/IMPLEMENTATION_STATUS.md"], "ja": ["docs/ja/STATUS.md", "docs/ja/IMPLEMENTATION_STATUS.md"], "zh-CN": ["docs/zh-CN/STATUS.md", "docs/zh-CN/IMPLEMENTATION_STATUS.md"]
+      "ar": ["docs/ar/STATUS.md", "docs/ar/IMPLEMENTATION_STATUS.md"], "hi": ["docs/hi/STATUS.md", "docs/hi/IMPLEMENTATION_STATUS.md"], "it": ["docs/it/STATUS.md", "docs/it/IMPLEMENTATION_STATUS.md"], "ja": ["docs/ja/STATUS.md", "docs/ja/IMPLEMENTATION_STATUS.md"], "zh-CN": ["docs/zh-CN/STATUS.md", "docs/zh-CN/IMPLEMENTATION_STATUS.md"]
     },
     "d1_pending_locales": []
   },

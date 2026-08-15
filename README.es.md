@@ -1,241 +1,390 @@
+<!-- localization-source: main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
+<!-- localization-status: CURRENT -->
+<!-- current-localization-source: main@bbe6b0d3d90d80b3c669ddab5fc56aa1bfe419eb -->
+<!-- current-english-readme-source: main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883 -->
 # 🔱 Velantrim ExoCortex — Crystal
 
 > 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 **Español** · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
 
-<!-- localization-source: main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
-<!-- localization-status: CURRENT -->
+## 💠 Infraestructura de memoria y evidencia donde discovery permanece separado de truth
 
-### Infraestructura local-first verificable de memoria, evidencia y decisión para sistemas de IA confiables
+Crystal es una **línea de investigación e ingeniería local-first para memoria de IA verificable**. El proyecto separa discovery, provenance, Evidence Admission, autoridad epistémica, estado canónico de confianza y presentation, para que algo recuperado por parecer relevante nunca se convierta automáticamente en verdad.
 
-`v0.3.0` · 🧪 **2078 passed / 13 skipped / 0 failed** · 🎯 **9756 statements / 100.00% line coverage** · 🧬 **7/7 Ring Zero mutants killed** · ✅ **9 CI jobs** · 🐍 runtime stdlib-only por defecto · ⚖️ **AGPL-3.0**
+> 👤 **¿Es tu primera vez con Crystal?** Esta página es el punto de entrada human-first.
+>
+> 🤖 **IA / agents / auditores automatizados:** empieza por **[Special for AI →](./docs/ai/README.md)**. No reconstruyas el estado actual del repositorio a partir de un README narrativo.
+>
+> 📚 **¿Buscas la arquitectura en profundidad?** Continúa con **[Deep System Overview →](./docs/OVERVIEW.md)** y después con las superficies españolas detalladas más abajo.
 
-> Crystal no es un chatbot ni un «oráculo de verdad» autónomo. Es una boundary de memoria, evidence y decisiones que conserva procedencia, estado epistémico, elegibilidad de grounding y decisiones auditadas sobre contradicciones.
+`v0.3.0` · 🎯 **100% line-coverage gate** · 🧬 **Ring Zero mutation gate** · ✅ **9 permanent CI jobs** · 🐍 **standard-library-first default runtime** · ⚖️ **AGPL-3.0**
 
-**Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` — PR #337.  
-**Reader foundation:** RC-1 evidence-linked skeleton y RC-2 caller-supplied Structural Document Map están implementados/probados; el Reader multi-pass dedicado no está implementado.  
-**Grant:** `submitted / under review / not awarded`.  
-**Evidence:** [TEST_REPORT.md](./TEST_REPORT.md), [STATUS.md](./docs/STATUS.md), [implementation manifest](./docs/status/implementation-manifest.json).
+## 👋 Qué es Crystal
 
-> El inglés sigue siendo la fuente primaria y resuelve discrepancias. Esta es una presentación pública completa, no un resumen reducido. Véase [docs/LOCALIZATION_POLICY.md](./docs/LOCALIZATION_POLICY.md) y [docs/TRANSLATION_STATUS.md](./docs/TRANSLATION_STATUS.md).
+Un sistema de retrieval clásico responde sobre todo a «¿qué parece relevante?». Crystal formula preguntas adicionales: ¿de dónde procede la información?, ¿apoya realmente la misma proposición?, ¿puede admitirse como evidence?, ¿una contradicción fue efectivamente adjudicated?, ¿qué puede conservarse como estado de confianza y qué tiene derecho el sistema a presentar como grounded answer?
 
----
+> **Discovery puede proponer qué merece inspección. Authority sigue una ruta de decisión separada.**
 
-## 🎯 Por qué existe Crystal
+## 🧠 Modelo mental
 
-Muchos sistemas AI/RAG mezclan documentos, afirmaciones del usuario, model output, hipótesis y memoria. Un texto fluido puede adquirir autoridad que su evidence no respalda.
-
-```text
-fluent claim        != trusted fact
-physical L3         != strict Canon
-retrieval score     != evidence
-model output        != independent source truth
-migration receipt   != claim evidence
-import success      != backend activation
-Reader coverage     != comprehension proof
-Reader structure    != truth/confidence authority
+```mermaid
+mindmap
+  root((💠 Crystal))
+    🔎 Discovery
+      sources
+      Reader
+      candidate retrieval
+    🧾 Evidence
+      provenance
+      support
+      admission
+    🛡 Authority
+      Guardian
+      TruthGate
+    🏛 Canon
+      authorized local state
+    💬 Presentation
+      grounded answer
+      bounded refusal
+    🔬 Research
+      evaluation
+      falsification
+      architecture
 ```
 
-## 🧠 Qué ofrece Crystal
+Este mapa muestra dominios de significado. **No** significa que Discovery reciba Authority.
 
-- claims tipados y lifecycle epistémico explícito;
-- source identity, evidence spans y provenance;
-- Guardian y TruthGate como admission boundaries;
-- physical L3 multi-status separado de strict Canon;
-- TrustSnapshot y CanonicalView deny-dominant;
-- HTTP /ask, CLI ask y MCP search read-only;
-- TRACE y Receipts reproducibles y tamper-evident;
-- review queue/session y ContradictionReport;
-- decisiones COEXIST / CONTEXTUALIZE / SUPERSEDE;
-- capacidades curator scoped y process-local leases;
-- lifecycle SQLite y migración lógica acotada;
-- import PostgreSQL/pgvector opcional e inactivo con `active=false`;
-- RC-1: source/version/session, SegmentCard, fidelity, coverage, bookmarks/open loops, stale/failure/privacy;
-- RC-2: estructura caller-supplied ligada a versión con RECOVERED / AMBIGUOUS / UNSUPPORTED.
+## 🗺️ Arquitectura de un vistazo
 
-RC-1/RC-2 no almacenan source body, no crean API/CLI/worker Reader ni schema durable Reader y no tienen autoridad Canon/ESM/planner. No hay parser/OCR automático, Reader LLM/provider orchestration, embeddings/ANN/vector DB ni runtime multi-pass/cross-document.
-
-## 🏛️ Arquitectura en tres vistas
-
-### 🧠 Mind map
+### ⚙️ Flujo de autoridad
 
 ```text
-🧠 Crystal
-├── 📖 Reader foundation
-│   ├── RC-1 evidence-linked skeleton
-│   ├── RC-2 Structural Document Map
-│   └── dedicated multi-pass Reader — NOT IMPLEMENTED
-├── 🏛️ Memory
+                 DISCOVERY SIDE                         AUTHORITY SIDE
+
+📥 source → 📖 Reader → 🔎 candidates       │       🧾 evidence boundary
+                                            │                ↓
+              may surface                   │       🛡 Guardian → TruthGate
+              may compare                   │                ↓
+              may inspect                   │       TrustSnapshot → CanonicalView
+                                            │                ↓
+                                            │            🏛 strict Canon
+                                            │                ↓
+                                            │       💬 answer / refusal
+
+                 proposal                    │          authorization
+```
+
+Un retrieval score, un model label o una typed suspicion pueden ayudar a inspeccionar; eso no les concede derecho a modificar trusted state.
+
+## 🌳 Árbol del sistema
+
+```text
+💠 Crystal
+│
+├── 📖 Reader
+│   ├── RC-1…RC-7 bounded implemented layers
+│   ├── RC-9 deterministic lexical PRE-ADMISSION candidate discovery
+│   └── RRTIC-v1 typed inspection contract — architecture only
+│
+├── 🧾 Evidence & provenance
+├── 🛡 Guardian / TruthGate
+├── 🏛 Memory / Canon
 │   ├── L0 — working cache
-│   ├── L1 — operational SQLite/WAL
+│   ├── L1 — operational SQLite
 │   ├── L2 — pending/review
-│   └── L3 — physical multi-status graph
-├── 🛡️ Trust
-│   ├── Guardian
-│   ├── TruthGate
-│   ├── TrustSnapshot
-│   └── CanonicalView
-└── 🗄️ Storage
-    ├── SQLite — active local-first
-    └── PostgreSQL/pgvector — inactive active=false
+│   ├── L3 — physical multi-status graph
+│   ├── TrustSnapshot — deny-dominant reconciliation surface
+│   ├── CanonicalView — trusted read projection
+│   ├── SQLite — ordinary active local-first path
+│   └── PostgreSQL/pgvector — inactive equivalence/import target, active=false
+│
+├── 💬 Read-only HTTP /ask · CLI ask · MCP search
+├── 🧪 Evaluation
+│   ├── RC-9 lexical baseline
+│   ├── Comparator v1 — frozen gate FAIL
+│   └── NLI neutral-filter v1 — frozen gate FAIL
+├── 🤖 AI documentation interface
+└── 🔬 Evidence / history surfaces
 ```
 
-### 🏗️ Flujo de información
+`physical L3 != strict Canon`: la persistencia física no equivale automáticamente a trusted read eligibility.
 
-```text
-Source / document
-      ↓
-RC-1 Reader artifacts
-      ↓
-RC-2 structural metadata
-      ↓
-explicit ingest / review
-      ↓
-Guardian → TruthGate
-      ↓
-L1 + physical L3
-      ↓
-TrustSnapshot → CanonicalView STRICT
-      ↓
-Grounded answer / bounded refusal
-      ↓
-TRACE + Receipt
+## 🔄 Topología
+
+```mermaid
+flowchart LR
+    S["📥 Sources"] --> R["📖 Reader"]
+    R --> D["🔎 Candidate discovery"]
+    R --> P["🧾 Provenance"]
+    D --> I["🧬 Typed inspection"]
+    P --> E["🧾 Evidence boundary"]
+    I --> E
+    E --> G["🛡 Guardian / TruthGate"]
+    G --> C["🏛 Canon"]
+    C --> Q["💬 Grounded presentation"]
+    X["🔬 Tests · evaluation · evidence"] -. constrain .-> D
+    X -. constrain .-> G
 ```
 
-### 🌳 Árbol de módulos
+## 📊 Qué existe realmente hoy
 
-```text
-🌳 core
-├── reader_core.py       # RC-1
-├── reader_structure.py  # RC-2
-├── evidence.py
-├── truth_gate.py
-├── pipeline.py
-├── query_pipeline.py
-└── storage/...
-```
-
-## 🧱 Superficies de memory y authority
-
-| Superficie | Función | Límite |
+| Superficie | Estado | Significado |
 |---|---|---|
-| Reader RC-1 | source-linked artifacts | candidate ≠ truth |
-| Reader RC-2 | structural map | order ≠ authority |
-| L0 | working cache | ephemeral |
-| L1 | operational state | durable |
-| L2 | review/pending | sin admisión automática |
-| L3 | physical graph | multi-status |
-| TrustSnapshot | reconciliation | deny-dominant |
-| CanonicalView | grounding | policy-allowed only |
-| TRACE / Receipt | audit/replay | evidence, no truth generator |
-| ContradictionReport | conflicto | no winner automático |
+| 📖 Reader RC-1…RC-7 | ✅ Implemented | bounded source/structure/pass/proposition/relation/long-context/cross-document layers |
+| 🔎 Reader RC-9 | ✅ Implemented | deterministic offline BM25 PRE-ADMISSION discovery |
+| 🧪 Comparator v1 | 🧊 Frozen evaluation | recall recovered; discrimination gate FAIL |
+| 🧪 NLI neutral-filter v1 | 🧊 Frozen evaluation | discrimination improved; recall-safety gate FAIL |
+| 🧬 RRTIC-v1 | 📐 Architecture contract | typed suspicion + qualifiers; no runtime provider |
+| 🏛 SQLite | ✅ Active local-first | ordinary runtime/storage path |
+| 🗄 PostgreSQL/pgvector | ⛔ Inactive | import/equivalence target; `active=false` |
+| 🧠 Semantic/hybrid Reader runtime | ❌ Not authorized | no Reader FTS/ANN/vector or NLI/RRTIC runtime stage |
+| 🤖 Dedicated/full autonomous Reader | ❌ Not implemented | `dedicated_reader_core=false` |
 
-## 🗄️ SQLite y PostgreSQL/pgvector
+La machine truth precisa vive en [Implementation Status](./docs/IMPLEMENTATION_STATUS.md), [Current Status](./docs/STATUS.md), [TEST_REPORT](./TEST_REPORT.md) y el [implementation manifest](./docs/status/implementation-manifest.json).
+
+## 🧭 RC-6 / RC-7 — frontera preservada
 
 ```text
-SQLite
-└── ordinary active local-first runtime
-    ├── reads/writes
-    ├── backup/restore
-    └── bounded logical export
-
-PostgreSQL 16 + pgvector
-└── optional inactive target
-    ├── explicit optional dependency
-    ├── SERIALIZABLE import
-    ├── exact target re-hash
-    └── active=false
+RC-4 direct proposition leaves
+        ↓
+RC-6 bounded working sets
+        ↓
+caller-supplied SUMMARY only
+        ↓
+RC-7 explicit cross-document candidates
 ```
 
-Un import exitoso no significa activation, cutover, rollback, dual-write, automatic switching, ANN acceptance o TruthGate admission. El runtime adapter normal de PostgreSQL no está activo.
+```text
+working-set coverage != comprehension proof
+summary != source text
+summary != evidence
+summary != verified fact
+summary != Canon admission
+```
 
-## 🔎 Crystal frente al RAG clásico
+RC-7 sigue siendo una capa explícita de comparación sin automatic semantic matching.
 
-| Pregunta | Classic RAG | Crystal |
+## 🛡 Authority Firewall
+
+```text
+retrieval match          != evidence
+similarity               != identity
+repetition               != corroboration
+cross-document candidate != Canon relation
+ranking                  != epistemic authority
+candidate discovery      != candidate adjudication
+NLI label                != proposition identity
+NLI contradiction        != contradiction adjudication
+RRTIC suspicion          != adjudicated relation
+qualifier mismatch       != truth decision
+evaluation pass          != runtime authorization
+physical L3              != strict Canon
+```
+
+El vocabulario histórico de compatibilidad RC-7 se conserva explícitamente:
+
+```text
+cross-document link != Canon relation
+cross-document support != admitted evidence
+contradiction candidate  != confirmed contradiction
+same-topic != same proposition
+possible-same-claim != claim identity
+similarity signal != identity proof
+repetition across sources != corroboration
+```
+
+## 🧠 Posicionamiento
+
+Esta es una matriz de arquitectura, no un leaderboard.
+
+| Enfoque | Foco principal | Crystal separa además |
 |---|---|---|
-| Encontrar material | fortaleza principal | adapters |
-| Claim vs trusted fact | app-specific | typed boundary |
-| Provenance | variable | first-class |
-| Reader structure/coverage | chunk-centric | RC-1/RC-2 foundation |
-| Evitar model self-source | no inherente | Ring Zero |
-| Contradicciones | lógica externa | explicit dispositions |
-| Replay evidence | optional | TRACE / Receipt |
-| Cloud/model obligatorio | depende | no en default runtime |
+| Classic vector RAG | contexto relevante | relevancia vs Evidence/Identity/Canon |
+| Agent memory | contexto útil de usuario/agent | provenance + Admission + trusted transitions |
+| Graph/temporal memory | relaciones / evolving context | discovered relation vs authorized relation |
+| Crystal | evidence-first local memory | discovery / evidence / authority / presentation |
 
-## 🛡️ Query boundary read-only
+## 🔬 Frontera actual de investigación
 
 ```text
-HTTP /ask
-CLI ask
-MCP search
-     ↓
-core.query_pipeline.query()
-     ↓
-strict read-only canonical projection
+RC-9 lexical baseline
+        ↓
+Comparator v1
+recall recovered · hard-negative discrimination FAIL
+        ↓
+NLI neutral-filter v1
+leakage reduced · useful-recall safety FAIL
+        ↓
+post-NLI architecture reassessment
+relation-contract mismatch
+        ↓
+RRTIC-v1
+contract-first · no runtime authorization
 ```
 
-Estas superficies no crean hechos, no mutan ESM ni escriben L3. Explicit ingest sigue siendo el write path separado.
+Los resultados negativos forman parte de la evidencia de investigación. No se reinterpretan como «semantic retrieval casi listo para producción».
 
-## ⚖️ Decisiones de contradicción
+### 🧬 Reader Retrieval Typed Inspection Contract v1
+
+RRTIC-v1 es un contrato arquitectónico bounded y model-free — **no un runtime provider**.
 
 ```text
-unresolved contradiction
-        ↓
-ContradictionReport
-        ↓
-scoped curator + capability + lease
-        ↓
-COEXIST / CONTEXTUALIZE / SUPERSEDE
-        ↓
-audited canonical write path
+EQUIVALENCE_SUSPECT
+RELATED_SUSPECT
+CONTRADICTION_SUSPECT
+QUALIFICATION_SUSPECT
+TOPIC_ONLY_SUSPECT
+UNKNOWN
 ```
 
-## 🚀 Inicio rápido
+```text
+entity_binding
+predicate_binding
+argument_roles
+polarity
+modality_quantifier
+temporal_version
+jurisdiction
+condition_direction
+units_thresholds
+attribution_causality
+```
+
+Qualifier state: `MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE`.
+
+RRTIC-v1 no aporta modelo, reranker, truth score, Accept/Reject policy, Evidence Admission, Contradiction Adjudication ni Canon writes. EPIS-001 también sigue architecture-only; no existe un Epistemic Router runtime implementado o autorizado.
+
+## ✅ Verificación orientada a reviewers
+
+Control RC-9 K=5 conservado:
+
+| Métrica | Resultado |
+|---|---:|
+| Recall@5 | `0.937500` |
+| Precision@5 | `0.187500` |
+| MRR | `0.895833` |
+| Useful hits | `15/16` |
+| Hard-negative hits | `4/4` |
+
+Classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+
+```text
+reader_core_rc1_skeleton               = true
+reader_core_rc2_structural_map         = true
+reader_core_rc3_multi_pass_mechanics   = true
+reader_core_rc4_proposition_extraction = true
+reader_core_rc5_relation_candidates    = true
+reader_core_rc6_long_context_strategy  = true
+reader_core_rc7_cross_document_links   = true
+reader_rc9_lexical_candidate_discovery = true
+dedicated_reader_core                  = false
+semantic_hybrid_reader_runtime         = false
+rrtic_runtime_authorization            = false
+nli_reader_runtime_filter              = false
+```
+
+Estas métricas son bounded retrieval evidence, no una prueba de semantic correctness, epistemic validity o production-scale quality.
+
+## 🧩 Roles de autoridad
+
+```text
+Guardian      = structural integrity / write-shape guard
+TruthGate     = L3 admission authority
+TrustSnapshot = deny-dominant reconciliation surface
+CanonicalView = strict trusted read-time projection
+TRACE         = provenance / replay evidence, not truth proof
+```
+
+Ningún retrieval score, embedding model, NLI label o RRTIC suspicion sustituye estos roles.
+
+## 🗄 Storage truth
+
+```text
+SQLite ordinary local-first = ACTIVE
+PostgreSQL/pgvector import target = INACTIVE
+active=false
+physical L3 != strict Canon
+successful import != backend activation
+```
+
+PostgreSQL/pgvector es una superficie inactiva de import/equivalence. No hay selección automática del Reader backend, automatic cutover ni autorización implícita creada por un import exitoso.
+
+## 🚫 Non-claims
+
+Crystal **no** reivindica universal truth / zero hallucinations, automatic semantic equivalence, automatic corroboration/evidence admission, semantic/hybrid/vector Reader runtime, Reader FTS/ANN/vector DB, NLI runtime filter, CrossEncoder reranker, RRTIC runtime provider, EPIS runtime implementado, dedicated Reader completo, PostgreSQL Reader selection activa, automatic backend cutover ni certificación legal/GDPR/security/supply-chain.
+
+**Funding truth:** NLnet — **submitted / under review / not awarded**. Aproximadamente **€50,000** es únicamente planning context, no approved budget, award ni payment commitment.
+
+## 🛠 Quickstart
 
 ```bash
 git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
 cd velantrim-exocortex-crystal
 python -m venv .venv
 source .venv/bin/activate
+python -m pip install --upgrade pip
 pip install -e '.[dev]'
-pytest tests/ --cov=. --cov-fail-under=100
+python -m pytest -q
+python scripts/eval_gate.py --out-dir eval-artifacts
 ```
 
-Opcional PostgreSQL: `pip install -e '.[postgresql]'`.
-
-## ✅ Baseline verificada
+## 📚 Dónde continuar
 
 ```text
-Runtime checkpoint: bbd816c09dd39a02e6de6c1014438490572f40f6
-Python 3.11/3.12: 2078 passed / 13 skipped / 0 failed
-Statements: 9756
-Coverage: 100.00%
-CI: 9/9
-Ring Zero: 7/7
-reader_core_rc1_skeleton = true
-reader_core_rc2_structural_map = true
-dedicated_reader_core = false
-PostgreSQL target: active=false
+👤 Human
+README.es.md
+  → docs/es/README.md
+  → docs/es/ARCHITECTURE_OVERVIEW.md
+  → docs/es/STATUS.md + docs/es/IMPLEMENTATION_STATUS.md
+
+🤖 AI
+docs/ai/README.md
+  → AGENTS.md
+  → docs/status/implementation-manifest.json
+  → exact English contracts/tests/CI
 ```
 
-## 🚧 Non-claims
+| Superficie española | Objetivo |
+|---|---|
+| [docs/es/README.md](./docs/es/README.md) | router localizado |
+| [docs/es/STATUS.md](./docs/es/STATUS.md) | estado actual |
+| [docs/es/IMPLEMENTATION_STATUS.md](./docs/es/IMPLEMENTATION_STATUS.md) | frontera de implementación |
+| [docs/es/ARCHITECTURE_OVERVIEW.md](./docs/es/ARCHITECTURE_OVERVIEW.md) | arquitectura |
+| [docs/es/STORAGE_AND_AUTHORITY_BOUNDARIES.md](./docs/es/STORAGE_AND_AUTHORITY_BOUNDARIES.md) | storage / authority |
+| [docs/es/GRANT_OVERVIEW.md](./docs/es/GRANT_OVERVIEW.md) | funding truth |
+| [docs/es/GLOSSARY.md](./docs/es/GLOSSARY.md) | terminología |
+| [docs/es/EXTENDED_REFERENCE_GUIDE.md](./docs/es/EXTENDED_REFERENCE_GUIDE.md) | reviewer / reference surface |
+| [docs/es/REVIEWER_GUIDE.md](./docs/es/REVIEWER_GUIDE.md) | D2 reviewer guide |
+| [docs/es/SAFETY_PRIVACY_AND_FAILURES.md](./docs/es/SAFETY_PRIVACY_AND_FAILURES.md) | D2 safety / privacy |
+| [docs/es/QUICKSTART.md](./docs/es/QUICKSTART.md) | quick start localizado |
 
-Crystal no afirma universal truth, zero hallucinations, AGI/consciousness, certificación legal/GDPR/security, production multi-tenancy, distributed exactly-once, runtime PostgreSQL activo, automatic switching/cutover/rollback/dual-write, parsing Reader automático, stack embeddings/ANN/vector Reader ni completed dedicated multi-pass Reader Core.
+## 📎 Compatibilidad histórica / provenance
 
-NLnet sigue **submitted / under review / not awarded**; aproximadamente €50,000 es planning only, budget change none. El trabajo merged antes del acuerdo permanece baseline.
+Los siguientes valores son **historical compatibility evidence**, no el HEAD actual del repositorio ni el recuento actual de tests:
 
-## 📚 Navegación
+```text
+Retained runtime checkpoint: bbd816c09dd39a02e6de6c1014438490572f40f6
+Retained tests: 2078 passed / 13 skipped / 0 failed
+Retained measured statements: 9756 statements / 100.00% line coverage
+```
 
-- [Documentation map](./docs/DOCUMENTATION_MAP.md)
-- [Quick Start](./docs/QUICKSTART.md)
-- [Status](./docs/STATUS.md)
-- [Implementation Status](./docs/IMPLEMENTATION_STATUS.md)
-- [Reader architecture](./docs/architecture/READER_CORE_ARCHITECTURE.md)
+```text
+Spanish historical localization source: 6b45bdd196eb42dea7bc30f58d69799b4b1712f2
+Retained phased localization source: 51c205fe048fd69d39fcd47b43e042a50de432bc
+English human-first README source: 3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883
+Spanish refresh audit source: bbe6b0d3d90d80b3c669ddab5fc56aa1bfe419eb
+```
+
+Estos anchors siguen visibles por provenance y validator compatibility. La current truth debe resolverse siempre desde live GitHub.
+
+## 🌍 Localization contract
+
+El inglés sigue siendo primary/source language y conflict resolver. `CURRENT` significa current respecto del **source/parity checkpoint registrado explícitamente**, no «idéntico para siempre a un futuro English HEAD».
+
 - [Localization policy](./docs/LOCALIZATION_POLICY.md)
 - [Translation status](./docs/TRANSLATION_STATUS.md)
-- [Security](./SECURITY.md)
-- [Governance](./GOVERNANCE.md)
-- [Contributing](./CONTRIBUTING.md)
+
+Una traducción no crea nueva arquitectura ni nueva autoridad epistémica. Si un cambio inglés posterior modifica la semántica pública, la superficie española afectada debe reevaluarse.
 
 ## 🤝 Contribución y licencia
 
-Los cambios deben conservar authority boundaries, tests/coverage y claims exactos. Véase [CONTRIBUTING.md](./CONTRIBUTING.md). Licencia: [AGPL-3.0](./LICENSE).
+Los cambios deben preservar Authority Boundaries, tests/coverage, resultados negativos de investigación y precisión de capability claims. Véase [CONTRIBUTING.md](./CONTRIBUTING.md). Licencia: [AGPL-3.0](./LICENSE).
