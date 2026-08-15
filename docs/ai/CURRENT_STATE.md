@@ -265,6 +265,8 @@ The logical migration verifier's final file recheck is content-bound as well as 
 
 Direct `ingest()` reuses the existing L3 outbox when an L3 merge fails after the L1 ESM transition. The call returns a failed result and leaves an explicit secondary-sync repair record instead of silently leaving `Validated` L1 state without a recovery path. This changes recovery parity only; it does not bypass Guardian, TruthGate or Canon authority.
 
+Issue #165 is closed by a bounded exact-normalized compatibility implementation. Current auto-ingest still derives identity from NFC → trim → internal-whitespace collapse → casefold. When the current normalized `fact_id` does not exist, a derived/rebuildable SQLite index can map that exact normalized claim to an already-`Validated` historical `ing:*` row. Historical IDs are not re-keyed; existing collisions are not merged; current normalized IDs take precedence; multiple legacy collisions route future occurrence-only hits deterministically to the oldest row. Dry-run uses the same resolver without writing the derived index, and full erasure removes its mapping. `exact normalized equality != semantic identity`; the index grants no evidence, corroboration or Canon authority.
+
 ## Localization truth
 
 Immutable phased localization source checkpoint: `51c205fe048fd69d39fcd47b43e042a50de432bc`.  
@@ -318,11 +320,11 @@ Residual scope ledger:
 
 ```text
 #155 CLOSED / completed — EPIS-001 architecture contract only; runtime not authorized
-#165 OPEN               — exact normalized-id migration / dedupe only
+#165 CLOSED / completed — exact normalized historical ing:* compatibility only; no re-key/semantic dedupe
 #214 CLOSED / completed — fixture/PII + supply-chain verification hygiene
 ```
 
-Only #165 is open among these three historical residual scopes, and this file does not auto-select it. Resolve live GitHub before acting because newer issues/PRs may exist.
+These three historical residual scopes are closed/completed. Their closure does not auto-select a new milestone or authorize EPIS runtime, semantic/hybrid/vector Reader runtime, PostgreSQL activation, semantic dedupe or authority expansion. Resolve live GitHub before acting because newer issues/PRs may exist.
 
 ## Documentation interface lifecycle
 
@@ -352,6 +354,6 @@ Synchronized Notion may preserve checkpoint provenance, but live GitHub remains 
 
 ## Stop boundary
 
-This file does not authorize or select the next workstream. The nine-locale documentation parity program being complete does not authorize runtime, model, storage or authority expansion. The bounded audit-remediation fixes above do not select #165 or any new architecture work. Before any new bounded work, resolve live GitHub/Notion, perform a fresh architecture reassessment, select exactly one scope, and preserve the authority firewall.
+This file does not authorize or select the next workstream. The nine-locale documentation parity program being complete does not authorize runtime, model, storage or authority expansion. The bounded audit-remediation fixes and the exact-normalized #165 compatibility closure do not select another architecture or backlog milestone. Before any new bounded work, resolve live GitHub/Notion, perform a fresh architecture reassessment, select exactly one scope, and preserve the authority firewall.
 
 No next model, discriminator, reranker, Reader backend, storage activation, authority expansion or residual issue is automatically authorized by a historical closure or by this static snapshot.
