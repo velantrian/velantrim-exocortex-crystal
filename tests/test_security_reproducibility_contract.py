@@ -14,7 +14,7 @@ WORKFLOWS = (
     ROOT / ".github/workflows/postgresql-integration.yml",
 )
 EXPECTED_ACTION_REFS = {
-    "actions/checkout": "34e114876b0b11c390a56381ad16ebd13914f8d5",
+    "actions/checkout": "3d3c42e5aac5ba805825da76410c181273ba90b1",
     "actions/setup-python": "a26af69be951a213d495a4c3e4e4022e16d87065",
     "actions/upload-artifact": "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
     "gitleaks/gitleaks-action": "e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e",
