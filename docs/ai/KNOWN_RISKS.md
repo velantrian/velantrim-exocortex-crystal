@@ -35,12 +35,29 @@ The bounded remediation reuses the already-existing outbox. A post-gate direct-i
 
 This is recovery parity, not a new recovery subsystem or epistemic authority mechanism.
 
+## ✅ Closed residual risk — legacy normalized exact duplicates can route to historical ids
+
+Issue #165 closed the migration-story gap left after current auto-ingest IDs moved to exact normalized content. Historical pre-normalization `ing:*` rows keep their original fact IDs, but a derived/rebuildable SQLite compatibility index now maps their stored claims to the same NFC → trim → whitespace-collapse → casefold identity used by current auto-ingest.
+
+The closure is deliberately conservative:
+
+- only already-`Validated` historical `ing:*` rows can act as compatibility targets;
+- a current normalized `fact_id` wins when it already exists;
+- pre-existing legacy collisions remain separate nodes and are not re-keyed or merged;
+- if only multiple legacy collisions exist, future exact-normalized occurrences route deterministically to the oldest row, then `fact_id` as tie-breaker;
+- duplicate handling remains occurrence-only and never reinforces confidence, promotes ESM state or creates corroboration;
+- explicit custom `fact_id` ingestion bypasses this auto-id resolver;
+- import dry-run uses the same target-selection rule without creating/backfilling the index;
+- full erasure removes the derived mapping, while the mapping itself is never treated as proof that Canon/personal data exists.
+
+Residual boundary: `exact normalized equality != semantic identity`. This does not solve paraphrase, semantic, entity-resolution or near-duplicate matching and does not authorize any such mechanism.
+
 ## P1 — PostgreSQL is an inactive migration target, not active runtime
 
 - target remains `active=false` and absent from normal runtime composition;
 - no cutover, rollback, dual-write, automatic switching or distributed exactly-once behavior exists;
 - endpoint/package/profile changes must never silently select another store;
-- no Reader decision, later Reader evaluation, EPIS-001 architecture work, security hardening or audit remediation activates PostgreSQL/pgvector.
+- no Reader decision, later Reader evaluation, EPIS-001 architecture work, security hardening, audit remediation or #165 exact-dedupe closure activates PostgreSQL/pgvector.
 
 ## P1 — Server lifecycle and operational security remain incomplete
 
@@ -166,25 +183,26 @@ Two existing developer-friendly `auto` selections remain operational boundaries 
 - `VELANTRIM_QUEUE_BACKEND=auto` can resolve to Redis when the package/server is available and SQLite otherwise;
 - `VELANTRIM_EMBEDDER=auto` can fall back from sentence-transformers to the hashing embedder, while a persistent-store mismatch is warning-only unless `VELANTRIM_EMBEDDER_STRICT` is enabled.
 
-For persistent/service deployments, operators should pin the intended queue/embedder configuration and treat the resolved state as deployment identity. This audit remediation does not change the global defaults or claim distributed exactly-once behavior.
+For persistent/service deployments, operators should pin the intended queue/embedder configuration and treat the resolved state as deployment identity. This bounded work does not change the global defaults or claim distributed exactly-once behavior.
 
 ## P2 — Localization parity is separate from English source reconciliation
 
-All nine supported localized Reader-dependent packs were current at the starting checkpoint. The 2026-08-15 audit remediation intentionally edits English authoritative/current-truth surfaces only. Localized documentation is not modified here; any parity work caused by later English source movement is a separate explicit documentation task.
+All nine supported localized Reader-dependent packs were current at the starting checkpoint. The 2026-08-15 #165 closure intentionally edits English authoritative/current-truth surfaces only. Localized documentation is not modified here; any later parity work remains a separate maintainer-controlled documentation task.
 
-## Open backlog isolation
+## Closed residual-scope isolation
 
-- **#165 — OPEN**: exact normalized ingest dedupe/migration, not near-duplicate or semantic matching.
+- **#165 — CLOSED/completed via PR #431**: exact normalized historical `ing:*` compatibility only; no re-key, merge, near-duplicate or semantic matching.
 - **#155 — CLOSED/completed**: EPIS-001 architecture contract only; EPIS runtime remains `NOT IMPLEMENTED / NOT AUTHORIZED`.
 - **#214 — CLOSED/completed**: bounded fixture/data and supply-chain verification reproducibility history.
 
-Among these three residual scopes, only #165 is open. It is not auto-started by this register or by the audit remediation. Always resolve live GitHub because newer bounded issues/PRs may exist.
+These three historical residual scopes are closed/completed. Their completion does not auto-select another backlog item. Always resolve live GitHub because newer bounded issues/PRs may exist.
 
 ## Claim and legal boundaries
 
 - physical L3 is multi-status storage, not strict Canon;
 - migration bundles/receipts are operational evidence, not claim evidence;
 - retrieval quality cannot override evidence/trust policy;
+- exact-normalized compatibility matching is deterministic identity routing only, not semantic evidence or corroboration;
 - local-first/offline does not itself prove security or GDPR compliance;
 - immutable workflow pins improve reproducibility but do not prove supply-chain security;
 - no universal truth, zero hallucinations, AGI, consciousness or production certification is claimed;
@@ -193,6 +211,6 @@ Among these three residual scopes, only #165 is open. It is not auto-started by 
 ## Next actions
 
 1. Resolve live GitHub and Notion before selecting a new bounded milestone; this static register does not select one.
-2. Do **not** automatically implement #165, EPIS-001 runtime, Reader semantic/hybrid/vector runtime, FTS, ANN/vector DB, model/provider wiring or storage/backend activation.
+2. Do **not** automatically implement EPIS-001 runtime, Reader semantic/hybrid/vector runtime, semantic dedupe, FTS, ANN/vector DB, model/provider wiring or storage/backend activation.
 3. Keep queue/embedder production-like configuration explicit rather than treating environment-dependent `auto` resolution as durable deployment identity.
 4. Treat future action/tool/dependency updates as reviewable proposals, never automatic trust promotion.
