@@ -388,6 +388,9 @@ Per live HEAD, open PRs/issues e CI più recente, usare direttamente GitHub e le
 
 L’inglese resta la lingua sorgente primaria. `CURRENT` qui significa parity/freshness tecnica rispetto ai contratti sorgente verificati; **non** implica native-speaker editorial certification.
 
+- [Localization policy](./docs/LOCALIZATION_POLICY.md) — `docs/LOCALIZATION_POLICY.md`
+- [Translation status](./docs/TRANSLATION_STATUS.md) — `docs/TRANSLATION_STATUS.md`
+
 ## 🤝 Contributi e licenza
 
 Le modifiche devono preservare authority boundaries, test eseguibili, coverage gates e public claims veritieri. Vedi [CONTRIBUTING](./CONTRIBUTING.md), [Governance](./GOVERNANCE.md) e [Security](./SECURITY.md).
