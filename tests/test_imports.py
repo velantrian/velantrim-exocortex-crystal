@@ -2,7 +2,7 @@
 import json
 
 from core import imports, memory
-from core.ingest import ingest, _fact_id
+from core.ingest import ingest, _fact_id, _legacy_fact_id
 from core.compliance import is_restricted
 from core.erasure import is_erased
 
@@ -40,6 +40,28 @@ def test_predict_duplicate_for_existing_validated():
     ingest("Gold is a metal")
     res = imports.predict_claim("Gold is a metal")
     assert res["verdict"] == "duplicate"
+
+
+def test_predict_legacy_cross_variant_duplicate_without_writing_index():
+    original = "I Prefer   Legacy Imports"
+    legacy = _legacy_fact_id(original)
+    normalized_id = _fact_id(original)
+    assert legacy != normalized_id
+    assert ingest(original, fact_id=legacy)["accepted"] is True
+
+    # A dry run must find the same cross-variant legacy target as live ingest,
+    # but must not create/backfill the persistent derived compatibility index.
+    res = imports.predict_claim("i prefer legacy imports")
+    assert res["verdict"] == "duplicate"
+    assert res["fact_id"] == legacy
+    assert memory.get_fact(normalized_id) is None
+
+    with memory._db() as conn:
+        table = conn.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' "
+            "AND name = 'normalized_ingest_index'"
+        ).fetchone()
+    assert table is None
 
 
 def test_predict_conflict_against_canon():
