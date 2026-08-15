@@ -1,31 +1,76 @@
-<!-- translation-source: docs/PROJECT_GRANT_AND_GOVERNANCE.md@151b41c680190f7f3de729bf63e8e80a9d2285ce -->
-<!-- d4-locale: zh-CN -->
+<!-- translation-source: docs/PROJECT_GRANT_AND_GOVERNANCE.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
+<!-- current-translation-source: docs/PROJECT_GRANT_AND_GOVERNANCE.md@5e6301f0eaee1a6c85d8543be89dc2e606dc05a8 -->
+<!-- d4-locale: zh-CN -->
 <!-- d4-boundary: physical-l3-not-strict-canon -->
 <!-- d4-boundary: retrieval-score-not-evidence -->
 <!-- d4-boundary: model-output-not-source-truth -->
 <!-- d4-boundary: migration-proof-not-claim-proof -->
 <!-- d4-nonclaim: import-is-not-activation -->
-<!-- d4-nonclaim: reader-core-not-implemented -->
 <!-- d4-nonclaim: nlnet-not-awarded -->
 <!-- d4-nonclaim: security-legal-gdpr-not-certified -->
 <!-- d4-nonclaim: native-speaker-editorial-not-certified -->
-# 项目、资助与治理概览
+# 🇨🇳 Crystal — Grant / Governance 概览
 
-Crystal 是面向可审计 AI 系统的 local-first 记忆、证据与决策边界基础设施。
+## 💶 当前 funding truth
+
+```text
+programme: NLnet NGI0 Commons Fund
+proposal: submitted
+review: in progress
+award: not awarded
+budget change: none
+```
+
+约 **€50,000** 只是 planning/transparency context。它不是 approved budget、award、payment commitment 或“semantic Reader funded”声明。
+
+## 📖 Reader / research truth
+
+- **RC-1、RC-2、RC-3、RC-4、RC-5、RC-6、RC-7**：bounded implemented Reader layers；
+- **RC-9**：implemented deterministic lexical **PRE-ADMISSION** candidate discovery；
+- **Comparator v1**：`SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`；
+- **NLI neutral-filter v1**：`NLI_NEUTRAL_FILTER_GATE_FAILED`；
+- **RRTIC-v1**：architecture contract only；
+- dedicated/full autonomous Reader：not implemented；
+- semantic/hybrid Reader runtime：not authorized。
+
+```text
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+retrieval match != evidence
+similarity != identity
+ranking != epistemic authority
+NLI label != proposition identity
+RRTIC suspicion != adjudicated relation
+evaluation pass != runtime authorization
+```
+
+Failed evaluation 不会因为 grant narrative 而变成 runtime capability。
+
+## 🏛 Authority / storage truth
 
 ```text
 physical L3 != strict Canon
-retrieval score != evidence
-model output != source truth
-migration proof != claim proof
-import success != activation
+SQLite ordinary local-first = ACTIVE
+PostgreSQL/pgvector = INACTIVE
+active=false
+successful import != backend activation
 ```
 
-SQLite 是普通的活跃 local-first 配置。Mock 是明确的开发/CI backend。PostgreSQL/pgvector 仍是 `active=false` 的可选非活跃目标；import 成功不等于 activation。
+Guardian 负责 structural integrity / structural policy boundary；TruthGate 是 L3 admission authority；TrustSnapshot 是 deny-dominant reconciliation surface；CanonicalView 是 strict trusted read-time projection。它们都不是 retrieval ranking 的附属功能。
 
-NLnet 提案已提交、正在审查、尚未获批。约 €50,000 只是申请规划数额，不是获批预算或付款承诺。预算变更：无。资助协议前已 merge 的工作属于现有 baseline，不能再次计为 funded delta。
+## 🚫 明确 non-claims
 
-Reader Core 尚未实现。没有法律、GDPR 或安全认证，也没有母语编辑认证。
+本项目不声称：
 
-英语基准来源：[概览](../PROJECT_GRANT_AND_GOVERNANCE.md)、[术语表](../GLOSSARY.md)、[NLnet scope](../GRANT_NLNET_SCOPE.md)、[funding plan](../grants/funding-use-plan.md)。
+- grant 已获批准或资金已到账；
+- €50,000 是 committed/approved budget；
+- semantic Reader、NLI runtime filter 或 RRTIC runtime provider 已获授权；
+- active PostgreSQL/pgvector Reader backend；
+- universal truth / zero hallucinations；
+- legal、security、GDPR 或 supply-chain certification；
+- native-speaker editorial certification。
+
+更完整的英文 funding/governance source：[`docs/PROJECT_GRANT_AND_GOVERNANCE.md`](../PROJECT_GRANT_AND_GOVERNANCE.md)。

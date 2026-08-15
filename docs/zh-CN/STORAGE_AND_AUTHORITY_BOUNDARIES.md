@@ -1,62 +1,122 @@
-<!-- translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@208f1c772ee3a112cb803d2413c120bef23adb05 -->
+<!-- translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
+<!-- historical-translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@208f1c772ee3a112cb803d2413c120bef23adb05 -->
+<!-- current-translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@5e6301f0eaee1a6c85d8543be89dc2e606dc05a8 -->
 <!-- d3-locale: zh-CN -->
 <!-- d3-boundary: physical-l3-not-strict-canon -->
 <!-- d3-boundary: public-query-read-only -->
 <!-- d3-boundary: postgresql-active=false -->
 <!-- d3-nonclaim: import-is-not-activation -->
-<!-- d3-nonclaim: reader-core-not-implemented -->
 <!-- d3-nonclaim: nlnet-not-awarded -->
-# 存储与权威边界
+<!-- d3-reader: rc1-skeleton-implemented -->
+<!-- d3-reader: rc2-structural-map-implemented -->
+<!-- d3-reader: rc3-multi-pass-mechanics-implemented -->
+<!-- d3-reader: rc4-proposition-extraction-implemented -->
+<!-- d3-reader: rc5-relation-candidates-implemented -->
+<!-- d3-nonclaim: dedicated-reader-core-not-implemented -->
+# 🇨🇳 存储与 Authority 边界
 
-## 分离的身份
+## 🧩 不同身份，不自动继承权限
 
 ```text
-storage profile = 部署身份
-physical L3 = 多状态图数据
-strict Canon = 可信读取投影
-migration bundle = 操作完整性证据
-retrieval score = 排序信号
-model output = 生成文本
+storage profile     = deployment identity
+physical L3         = multi-status physical storage
+strict Canon        = trusted read projection
+migration bundle    = operation-integrity evidence
+retrieval score     = ranking signal
+model output        = generated text
+Reader candidate    = inspection candidate
 ```
 
-任何一种身份都不会自动授予另一种身份的权威。
+这些身份彼此不同。任何一个身份都不会自动授予另一个身份的 authority。
 
-## durable profile
+## 📖 Reader 与 storage 的边界
 
-SQLite是普通active local-first profile。首次durable `auto`可选择可选LadybugDB或SQLite，并锁定backend及非秘密locator。后续冲突fail-closed。Mock仅作为显式development/CI状态。
+RC-1、RC-2、RC-3、RC-4、RC-5、RC-6、RC-7 是 bounded implemented Reader layers；RC-9 是 deterministic lexical PRE-ADMISSION discovery。它们都不能绕过 Evidence Admission / TruthGate。
 
-## physical L3与strict Canon
+```text
+coverage != comprehension proof
+pass completion != comprehension proof
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+```
 
-physical L3可包含VERIFIED、USER_CLAIMED、UNVERIFIED、HYPOTHESIS、SUBJECTIVE、contested、superseded或restricted记录。strict Canon是根据当前证据和policy形成的deny-dominant projection。存储、retrieval或高分均不足以获得信任。
+`dedicated_reader_core = false`。Semantic/hybrid Reader runtime、NLI runtime filter 与 RRTIC runtime provider 均未授权。
 
-## 读取与写入
+## 🏛 physical L3 与 strict Canon
 
-公共查询通过`core.query_pipeline.query()`以read-only方式运行。显式`ingest`才是可写入的接纳路径，Guardian和TruthGate随后施加结构与认识论边界。
+`physical L3 != strict Canon`。
 
-## SQLite生命周期与迁移
+physical L3 可以包含 VERIFIED、USER_CLAIMED、UNVERIFIED、HYPOTHESIS、SUBJECTIVE、contested、superseded 或 restricted records。strict Canon 是由 authority/policy 允许的 trusted read projection，而不是“已经持久化”的同义词。
 
-已实现backup、独立验证、inactive restore、有界确定性logical export和bundle验证。批准的physical-L3 datasets可导入新的inactive PostgreSQL schema并进行精确比较；目标保持`active=false`。
+```text
+stored != trusted
+retrieved != admitted
+ranked highly != epistemically authoritative
+```
 
-这不是对全部L1、audit/outbox、加密元数据、配置或独立副本的whole-system migration。不存在active PostgreSQL runtime、ANN acceptance、automatic switching、cutover、fencing、rollback或dual-write。
+## 💬 读取与写入
 
-## 秘密与副本
+Public query 通过：
 
-密码、token、私钥和含凭据DSN不得写入profiles、bundles、receipts、logs、GitHub或Notion。Backups、exports和migrations会生成额外副本；从active store删除并不会自动删除它们。选定L1字段加密不等于通用加密。
+```text
+HTTP /ask / CLI ask / MCP search
+              ↓
+core.query_pipeline.query()
+              ↓
+strict read-only canonical projection
+```
 
-## 操作证据
+它不会创建 facts、改变 ESM 或写入 L3。Explicit ingest/review 是独立 write path；Guardian 与 TruthGate 继续施加 structural 与 epistemic boundaries。
 
-| 事件 | 能证明 | 不能证明 |
-|---|---|---|
-| L3记录 | 物理持久化 | strict Canon成员资格 |
-| retrieval结果 | 候选相关性 | 证据充分性 |
-| 已验证backup | backup完整性 | claim真实性 |
-| 成功import | import完整性 | activation或runtime selection |
-| exact equivalence | 批准datasets相等 | 生产就绪或cutover |
+## 💾 SQLite 与 PostgreSQL/pgvector
 
-专用Reader Core尚未实现；NLnet仍为submitted / under review / not awarded。
+```text
+SQLite
+└── ordinary active local-first path
 
-## 详细英文合同
+PostgreSQL/pgvector
+└── optional inactive import/equivalence target
+    └── active=false
+```
+
+successful import != backend activation。Import success 不能推出 runtime selection、Reader activation、automatic switching、cutover、rollback、dual-write 或 ANN acceptance。
+
+## 🔐 Authority components
+
+```text
+Guardian      = structural integrity / structural policy boundary
+TruthGate     = L3 admission authority
+TrustSnapshot = deny-dominant reconciliation surface
+CanonicalView = strict trusted read-time projection
+TRACE         = provenance / replay evidence, not proof of truth
+```
+
+Guardian 不是 truth oracle；provenance 也不是 truth proof。
+
+## 🔬 Evaluation / inspection 不改变 authority
+
+```text
+retrieval match != evidence
+similarity != identity
+ranking != epistemic authority
+candidate discovery != candidate adjudication
+NLI label != proposition identity
+RRTIC suspicion != adjudicated relation
+evaluation pass != runtime authorization
+```
+
+Comparator v1 classification：`SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`。  
+NLI neutral-filter v1 classification：`NLI_NEUTRAL_FILTER_GATE_FAILED`。  
+RRTIC-v1：architecture contract only。
+
+## 💶 Grant boundary
+
+NLnet 仍是 **submitted / under review / not awarded**；约 €50,000 仅用于 planning/transparency context。
+
+## 📚 相关合同
 
 - [完整架构](../ARCHITECTURE.md)
 - [Durable Storage Profile](../architecture/DURABLE_STORAGE_PROFILE.md)

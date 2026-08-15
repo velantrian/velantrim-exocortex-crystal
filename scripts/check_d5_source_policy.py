@@ -1,4 +1,4 @@
-"""Resolve and validate the D5 repository documentation inventory after Italian parity refresh."""
+"""Resolve and validate the D5 repository documentation inventory after Simplified Chinese parity refresh."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "docs/status/d5-inventory.json"
 POLICY_PATH = ROOT / "docs/EXTENDED_REFERENCE_POLICY.md"
 LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
-CURRENT_LOCALES = ("de", "es", "fr", "it", "ru")
+CURRENT_LOCALES = ("de", "es", "fr", "it", "ru", "zh-CN")
 ALLOWED = {"CURRENT", "REFRESH_NEEDED", "RETIRED", "ENGLISH_ONLY_BY_DESIGN"}
 
 
@@ -80,19 +80,19 @@ def main() -> int:
         errors.append("D5 manifest: source-inventory checkpoint must remain the signed PR #350 merge")
     if manifest.get("tracking_issue") != 341:
         errors.append("D5 manifest: original tracking issue must remain #341")
-    if manifest.get("latest_refresh_issue") != 419:
-        errors.append("D5 manifest: Italian refresh must be bound to issue #419")
+    if manifest.get("latest_refresh_issue") != 421:
+        errors.append("D5 manifest: Simplified Chinese refresh must be bound to issue #421")
     if manifest.get("supported_locales") != list(LOCALES):
         errors.append("D5 manifest: supported locale set/order mismatch")
     if manifest.get("fully_current_locales") != expected_current_locales:
-        errors.append("D5 manifest: German, Spanish, French, Italian and Russian must be the fully current detail locales")
+        errors.append("D5 manifest: German, Spanish, French, Italian, Russian and Simplified Chinese must be the fully current detail locales")
     if manifest.get("refresh_needed_locales") != expected_refresh_locales:
         errors.append("D5 manifest: refresh-needed locale set/order mismatch")
     if manifest.get("root_readme_current_locales") != expected_current_locales:
-        errors.append("D5 manifest: German, Spanish, French, Italian and Russian must be the current localized root READMEs")
+        errors.append("D5 manifest: German, Spanish, French, Italian, Russian and Simplified Chinese must be the current localized root READMEs")
     if manifest.get("root_readme_refresh_needed_locales") != expected_refresh_locales:
         errors.append("D5 manifest: root README refresh-needed locale set/order mismatch")
-    if manifest.get("localized_d5_decision") != "GERMAN_FRENCH_SPANISH_ITALIAN_AND_RUSSIAN_ROOT_AND_DETAILS_CURRENT_FOUR_ROOT_AND_READER_DETAILS_REFRESH_NEEDED":
+    if manifest.get("localized_d5_decision") != "GERMAN_FRENCH_SPANISH_ITALIAN_SIMPLIFIED_CHINESE_AND_RUSSIAN_ROOT_AND_DETAILS_CURRENT_THREE_ROOT_AND_READER_DETAILS_REFRESH_NEEDED":
         errors.append("D5 manifest: localization decision mismatch")
     if set(manifest.get("allowed_states", [])) != ALLOWED:
         errors.append("D5 manifest: allowed state set mismatch")
@@ -220,7 +220,7 @@ def main() -> int:
             print(f"  - {error}")
         return 1
     print(
-        "D5 source inventory consistent: German + French + Spanish + Italian + Russian root/detail CURRENT; "
+        "D5 source inventory consistent: German + French + Spanish + Italian + Simplified Chinese + Russian root/detail CURRENT; "
         f"localized refresh debt={expected_refresh_count}"
     )
     return 0

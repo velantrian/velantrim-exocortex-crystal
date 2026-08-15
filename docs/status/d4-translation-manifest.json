@@ -3,28 +3,29 @@
   "phase": "D4",
   "status_date": "2026-08-15",
   "tracking_issue": 341,
-  "latest_refresh_issue": 419,
+  "latest_refresh_issue": 421,
   "english_source_checkpoint": "51c205fe048fd69d39fcd47b43e042a50de432bc",
   "german_parity_audit_base": "ad8cec8c868f64b6dfbdc3bf3087230f59c3861c",
   "french_parity_audit_base": "7d03cce2c89f7a4c3fda85742eb358e6b49961f2",
   "spanish_parity_audit_base": "bbe6b0d3d90d80b3c669ddab5fc56aa1bfe419eb",
   "italian_parity_audit_base": "e436577dc5ada4692e8fe399da861a44f800e2f1",
+  "simplified_chinese_parity_audit_base": "5e6301f0eaee1a6c85d8543be89dc2e606dc05a8",
   "source_documents": ["docs/PROJECT_GRANT_AND_GOVERNANCE.md", "docs/GLOSSARY.md"],
-  "current_locales": ["de", "es", "fr", "it", "ru"],
-  "refresh_needed_locales": ["ar", "hi", "ja", "zh-CN"],
+  "current_locales": ["de", "es", "fr", "it", "ru", "zh-CN"],
+  "refresh_needed_locales": ["ar", "hi", "ja"],
   "pending_locales": [],
   "current_documents": {
     "de": ["docs/de/GRANT_OVERVIEW.md", "docs/de/GLOSSARY.md"],
     "es": ["docs/es/GRANT_OVERVIEW.md", "docs/es/GLOSSARY.md"],
     "fr": ["docs/fr/GRANT_OVERVIEW.md", "docs/fr/GLOSSARY.md"],
     "it": ["docs/it/GRANT_OVERVIEW.md", "docs/it/GLOSSARY.md"],
-    "ru": ["docs/ru/GRANT_OVERVIEW.md", "docs/ru/GLOSSARY.md"]
+    "ru": ["docs/ru/GRANT_OVERVIEW.md", "docs/ru/GLOSSARY.md"],
+    "zh-CN": ["docs/zh-CN/GRANT_OVERVIEW.md", "docs/zh-CN/GLOSSARY.md"]
   },
   "refresh_needed_documents": {
     "ar": ["docs/ar/GRANT_OVERVIEW.md", "docs/ar/GLOSSARY.md"],
     "hi": ["docs/hi/GRANT_OVERVIEW.md", "docs/hi/GLOSSARY.md"],
-    "ja": ["docs/ja/GRANT_OVERVIEW.md", "docs/ja/GLOSSARY.md"],
-    "zh-CN": ["docs/zh-CN/GRANT_OVERVIEW.md", "docs/zh-CN/GLOSSARY.md"]
+    "ja": ["docs/ja/GRANT_OVERVIEW.md", "docs/ja/GLOSSARY.md"]
   },
   "locale_indexes": ["docs/ar/README.md", "docs/de/README.md", "docs/es/README.md", "docs/fr/README.md", "docs/hi/README.md", "docs/it/README.md", "docs/ja/README.md", "docs/ru/README.md", "docs/zh-CN/README.md"],
   "native_speaker_editorial_certification": false,
