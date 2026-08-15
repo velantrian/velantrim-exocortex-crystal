@@ -30,4 +30,8 @@
 
 D2 وQuick Start لم تتغير دلالاتهما المصدرية في هذا milestone ولذلك بقيا byte-preserved ضمن عقدهما المسجّل.
 
+### 🧾 توافق تاريخي
+
+الكلمة `REFRESH_NEEDED` محفوظة هنا كـ **historical RC-6 compatibility literal فقط**. لا تصف الحالة الحالية للوثائق العربية؛ الحالة الحالية D1/D3/D4/D5 هي `CURRENT` كما هو موضح أعلاه.
+
 [Localization policy](../LOCALIZATION_POLICY.md) · [Translation status](../TRANSLATION_STATUS.md)
