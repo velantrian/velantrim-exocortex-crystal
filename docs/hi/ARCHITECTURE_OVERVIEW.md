@@ -1,4 +1,4 @@
-<!-- translation-source: docs/ARCHITECTURE_OVERVIEW.md@208f1c772ee3a112cb803d2413c120bef23adb05 -->
+<!-- translation-source: docs/ARCHITECTURE_OVERVIEW.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
 <!-- d3-locale: hi -->
 <!-- d3-boundary: physical-l3-not-strict-canon -->
@@ -6,7 +6,13 @@
 <!-- d3-boundary: postgresql-active=false -->
 <!-- d3-nonclaim: import-is-not-activation -->
 <!-- d3-nonclaim: reader-core-not-implemented -->
+<!-- d3-nonclaim: dedicated-reader-core-not-implemented -->
 <!-- d3-nonclaim: nlnet-not-awarded -->
+<!-- d3-reader: rc1-skeleton-implemented -->
+<!-- d3-reader: rc2-structural-map-implemented -->
+<!-- d3-reader: rc3-multi-pass-mechanics-implemented -->
+<!-- d3-reader: rc4-proposition-extraction-implemented -->
+<!-- d3-reader: rc5-relation-candidates-implemented -->
 # Crystal — Architecture Overview
 
 यह Hindi architecture orientation current post-RC-9 / post-NLI / RRTIC-v1 truth को दर्शाती है।
@@ -39,9 +45,12 @@ Discovery path authority path नहीं है।
 - **RC-9:** deterministic lexical PRE-ADMISSION candidate discovery.
 
 ```text
+coverage != comprehension proof
+pass completion != comprehension proof
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
 relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
 cross-document link != Canon relation
 ```
 
