@@ -1,4 +1,4 @@
-<!-- translation-source: docs/GLOSSARY.md@151b41c680190f7f3de729bf63e8e80a9d2285ce -->
+<!-- translation-source: docs/GLOSSARY.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- d4-locale: hi -->
 <!-- translation-status: CURRENT -->
 <!-- d4-boundary: physical-l3-not-strict-canon -->
@@ -12,6 +12,22 @@
 <!-- d4-nonclaim: native-speaker-editorial-not-certified -->
 # Crystal शब्दावली और claim discipline
 
+Current bounded Reader vocabulary:
+
+```text
+RC-1 source/evidence-linked skeleton
+RC-2 structural document map
+RC-3 bounded multi-pass mechanics
+RC-4 source-linked proposition extraction
+RC-5 same-session relation candidates
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+```
+
+- **source owner:** proposition/source attribution का owner; generated wording इसे silently बदल नहीं सकती।
+- **proposition presentation category:** source claim किस रूप में प्रस्तुत हुआ — जैसे factual assertion, author opinion, hypothesis, conditional या quoted speech।
+- **POSSIBLE_CONTRADICTION / EXCEPTION / QUALIFICATION / TENSION:** RC-5 relation-candidate vocabulary; इनमें से कोई अपने-आप adjudicated relation नहीं है।
 - **Reader candidate:** inspection/adjudication candidate; admitted evidence नहीं।
 - **relation candidate:** RC-5 bounded relation proposal; admitted relation नहीं।
 - **cross-document link:** RC-7 candidate link; Canon relation नहीं।
@@ -31,11 +47,9 @@
 - **dedicated Reader Core:** `false`; implemented claim नहीं।
 - **semantic/vector Reader runtime:** `false`।
 - **NLnet:** submitted / under review / not awarded।
-- **लगभग €50,000:** planning/transparency context only; approved budget/payment commitment नहीं।
+- **लगभग €50,000:** planning/transparency context only; approved budget/payment commitment नहीं; budget change: none।
 
 ```text
-Reader candidate != admitted evidence
-contradiction candidate != confirmed contradiction
 physical L3 != strict Canon
 ```
 
