@@ -148,11 +148,11 @@ Reader ANN/vector DB not implemented
 automatic backend switching absent
 ```
 
-Issues #155, #165 and #214 remain isolated backlog and are not auto-started by this roadmap reconciliation.
+Among the historical residual scopes #155, #165 and #214, **#165 is the only open issue** at this reconciliation checkpoint. #155 is CLOSED/completed as the EPIS-001 architecture contract only; #214 is CLOSED/completed verification-reproducibility/security-hygiene history. Neither closure authorizes EPIS runtime, a new Reader runtime or another backlog item. Resolve live GitHub before selecting any next scope.
 
 ## 🌍 Localization boundary
 
-English has advanced beyond the immutable Reader localization checkpoints. Russian Reader-dependent D1/D3/D4/D5 retains its historical reviewed checkpoint; eight other locale packs remain `REFRESH_NEEDED`. No broad translation refresh is implied by this roadmap update.
+The nine supported localized Reader-dependent public/detail packs are current at the starting checkpoint for this English reconciliation. This milestone intentionally changes **English authoritative/current-truth surfaces only**; it does not modify localized documentation or silently advance any locale source checkpoint. Any later translation parity update remains a separate explicit documentation task.
 
 ## 🎓 Grant boundary
 
