@@ -1,4 +1,4 @@
-<!-- translation-source: docs/EXTENDED_REFERENCE_POLICY.md@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9 -->
+<!-- translation-source: docs/EXTENDED_REFERENCE_POLICY.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- d5-locale: hi -->
 <!-- translation-status: CURRENT -->
 <!-- d5-boundary: physical-l3-not-strict-canon -->
@@ -7,15 +7,86 @@
 <!-- d5-boundary: migration-proof-not-claim-proof -->
 <!-- d5-nonclaim: import-is-not-activation -->
 <!-- d5-nonclaim: reader-core-not-implemented -->
+<!-- d5-nonclaim: dedicated-reader-core-not-implemented -->
 <!-- d5-nonclaim: nlnet-not-awarded -->
 <!-- d5-nonclaim: security-legal-gdpr-not-certified -->
 <!-- d5-nonclaim: native-speaker-editorial-not-certified -->
+<!-- d5-reader: rc1-skeleton-implemented -->
+<!-- d5-reader: rc2-structural-map-implemented -->
+<!-- d5-reader: rc3-multi-pass-mechanics-implemented -->
+<!-- d5-reader: rc4-proposition-extraction-implemented -->
+<!-- d5-reader: rc5-relation-candidates-implemented -->
 # विस्तृत संदर्भ मार्गदर्शिका
 
-यह मार्गदर्शिका अस्थिर evidence की नकल किए बिना विस्तृत अंग्रेज़ी स्रोतों तक ले जाती है। `CURRENT` अनुरक्षित सामग्री है, `RETIRED` गैर-अधिकृत इतिहास है और `ENGLISH_ONLY_BY_DESIGN` तकनीकी, legal या audit विवरण है जो अंग्रेज़ी में रहता है।
+यह maintained Hindi orientation unstable evidence को duplicate किए बिना authoritative English contracts तक route करती है।
 
-सीमाएँ: physical L3 != strict Canon; retrieval score != evidence; model output != source truth; migration proof != claim proof; import success != activation। SQLite सामान्य सक्रिय local-first profile है, Mock development/CI के लिए है और PostgreSQL/pgvector `active=false` के साथ निष्क्रिय है। Reader Core not implemented।
+## Current Reader truth
 
-NLnet: submitted / under review / not awarded। लगभग €50,000 केवल planning है, approved budget या payment commitment नहीं; budget change: none; agreement से पहले merged baseline दोबारा funded delta नहीं। कोई legal/GDPR/security या native-speaker editorial certification नहीं।
+```text
+RC-1 … RC-7 = bounded implemented layers
+RC-9 = deterministic lexical PRE-ADMISSION discovery
+Semantic comparator = frozen evaluation only
+NLI neutral-filter = frozen evaluation only
+RRTIC-v1 = architecture contract only
+```
 
-मार्ग: [policy](../EXTENDED_REFERENCE_POLICY.md), [map](../DOCUMENTATION_MAP.md), [status](../STATUS.md), [architecture](../ARCHITECTURE.md), [ADR](../ADR.md), [security](../../SECURITY.md), [privacy](../../PRIVACY.md), [GDPR](../../GDPR.md), [archive](../archive/README.md)।
+Frozen classifications:
+
+```text
+SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED
+NLI_NEUTRAL_FILTER_GATE_FAILED
+```
+
+Machine non-claims:
+
+```text
+dedicated_reader_core=false
+semantic_hybrid_reader_runtime=false
+rrtic_runtime_authorization=false
+nli_reader_runtime_filter=false
+```
+
+Authority / compatibility boundaries:
+
+```text
+coverage != comprehension proof
+pass completion != comprehension proof
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+cross-document link != Canon relation
+NLI label != proposition identity
+RRTIC suspicion != adjudicated relation
+physical L3 != strict Canon
+```
+
+RC-5 relation vocabulary remains bounded candidate vocabulary:
+
+```text
+POSSIBLE_CONTRADICTION
+EXCEPTION
+QUALIFICATION
+TENSION
+```
+
+Historical localization state word `REFRESH_NEEDED` is retained here as compatibility vocabulary only; current Hindi D5 state is `CURRENT`.
+
+SQLite ordinary active local-first profile है। PostgreSQL/pgvector optional inactive target है, `active=false`; import/equivalence activation नहीं है।
+
+NLnet proposal submitted / under review / not awarded है। लगभग €50,000 planning context only है; budget change: none। कोई legal/GDPR/security या native-speaker editorial certification claim नहीं है।
+
+Historical runtime checkpoint `bbd816c09dd39a02e6de6c1014438490572f40f6`, `2078 passed / 13 skipped / 0 failed` और `9756 statements / 100.00% line coverage` provenance के रूप में retained हैं।
+
+## Authoritative routes
+
+- [Extended Reference Policy](../EXTENDED_REFERENCE_POLICY.md)
+- [Documentation Map](../DOCUMENTATION_MAP.md)
+- [Current Status](../STATUS.md)
+- [Architecture](../ARCHITECTURE.md)
+- [Reader Core Architecture](../architecture/READER_CORE_ARCHITECTURE.md)
+- [Translation Status](../TRANSLATION_STATUS.md)
+- [Security](../../SECURITY.md)
+- [Privacy](../../PRIVACY.md)
+- [GDPR](../../GDPR.md)
+- [Archive](../archive/README.md)

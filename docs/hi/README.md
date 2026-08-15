@@ -1,23 +1,37 @@
 <!-- localization-index-source: main@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- d1-source: main@51c205fe048fd69d39fcd47b43e042a50de432bc -->
-<!-- d1-status: REFRESH_NEEDED -->
+<!-- d1-status: CURRENT -->
 <!-- d2-source: main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f -->
 <!-- d2-status: CURRENT -->
 <!-- d3-source: main@51c205fe048fd69d39fcd47b43e042a50de432bc -->
-<!-- d3-status: REFRESH_NEEDED -->
+<!-- d3-status: CURRENT -->
 <!-- d4-source: main@51c205fe048fd69d39fcd47b43e042a50de432bc -->
-<!-- d4-status: REFRESH_NEEDED -->
+<!-- d4-status: CURRENT -->
 <!-- d5-source: main@51c205fe048fd69d39fcd47b43e042a50de432bc -->
-<!-- d5-status: REFRESH_NEEDED -->
+<!-- d5-status: CURRENT -->
 # 🇮🇳 Crystal हिंदी दस्तावेज़
 
-किसी असंगति में अंग्रेज़ी प्राथमिक स्रोत है। D2 और Quick Start `CURRENT` बने रहते हैं। पूर्ण root README तथा D1/D3/D4/D5 के Reader-निर्भर विस्तृत दस्तावेज़ अपनी समृद्ध पूर्व सामग्री बनाए रखते हैं, लेकिन RC-5 अर्थ-संबंधी refresh आवश्यक है, इसलिए वे `REFRESH_NEEDED` हैं।
+यह current Hindi documentation gateway Human-First / post-RC-9 / post-NLI / RRTIC-v1 presentation truth पर refreshed है। किसी conflict में English primary source है।
 
-- Root README: RC-5 के लिए `REFRESH_NEEDED`
-- D1: [Quick Start — CURRENT](./QUICKSTART.md), [Status — REFRESH_NEEDED](./STATUS.md), [Implementation — REFRESH_NEEDED](./IMPLEMENTATION_STATUS.md)
-- D2: [Reviewer Guide — CURRENT](./REVIEWER_GUIDE.md), [Safety/Privacy/Failures — CURRENT](./SAFETY_PRIVACY_AND_FAILURES.md)
-- D3: [Architecture — REFRESH_NEEDED](./ARCHITECTURE_OVERVIEW.md), [Storage/Authority — REFRESH_NEEDED](./STORAGE_AND_AUTHORITY_BOUNDARIES.md)
-- D4: [Grant Overview — REFRESH_NEEDED](./GRANT_OVERVIEW.md), [Glossary — REFRESH_NEEDED](./GLOSSARY.md)
-- D5: [Extended Reference Guide — REFRESH_NEEDED](./EXTENDED_REFERENCE_GUIDE.md)
+## 🧭 Reading map
+
+| Family | स्थिति | दस्तावेज़ |
+|---|---|---|
+| Root | `CURRENT` | [Hindi README](../../README.hi.md) |
+| D1 | `CURRENT` | [Quick Start](./QUICKSTART.md) · [Status](./STATUS.md) · [Implementation](./IMPLEMENTATION_STATUS.md) |
+| D2 | `CURRENT` | [Reviewer Guide](./REVIEWER_GUIDE.md) · [Safety/Privacy/Failures](./SAFETY_PRIVACY_AND_FAILURES.md) |
+| D3 | `CURRENT` | [Architecture](./ARCHITECTURE_OVERVIEW.md) · [Storage/Authority](./STORAGE_AND_AUTHORITY_BOUNDARIES.md) |
+| D4 | `CURRENT` | [Grant Overview](./GRANT_OVERVIEW.md) · [Glossary](./GLOSSARY.md) |
+| D5 | `CURRENT` | [Extended Reference Guide](./EXTENDED_REFERENCE_GUIDE.md) |
+
+## 🔒 Freshness boundary
+
+`CURRENT` का अर्थ recorded source/parity contract के विरुद्ध refreshed Reader-dependent presentation है। यह native-speaker editorial certification, legal/security/GDPR certification या future English semantic changes के बाद automatic freshness का दावा नहीं है।
+
+D2 और Quick Start इस milestone में byte-preserved हैं क्योंकि उनकी governing source semantics नहीं बदलीं।
+
+### 🧾 Historical compatibility
+
+पुराना literal `REFRESH_NEEDED` केवल **historical RC-6 compatibility evidence** के रूप में रखा गया है। Current Hindi D1/D3/D4/D5 state `CURRENT` है।
 
 [Localization policy](../LOCALIZATION_POLICY.md) · [Translation status](../TRANSLATION_STATUS.md)

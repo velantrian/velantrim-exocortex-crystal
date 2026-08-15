@@ -1,4 +1,4 @@
-<!-- translation-source: docs/PROJECT_GRANT_AND_GOVERNANCE.md@151b41c680190f7f3de729bf63e8e80a9d2285ce -->
+<!-- translation-source: docs/PROJECT_GRANT_AND_GOVERNANCE.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- d4-locale: hi -->
 <!-- translation-status: CURRENT -->
 <!-- d4-boundary: physical-l3-not-strict-canon -->
@@ -10,22 +10,61 @@
 <!-- d4-nonclaim: nlnet-not-awarded -->
 <!-- d4-nonclaim: security-legal-gdpr-not-certified -->
 <!-- d4-nonclaim: native-speaker-editorial-not-certified -->
-# परियोजना, अनुदान और शासन का सार
+# परियोजना, अनुदान और शासन — वर्तमान सार
 
-Crystal ऑडिट योग्य AI प्रणालियों के लिए local-first स्मृति, साक्ष्य और निर्णय-सीमा अवसंरचना है।
+Crystal local-first, auditable AI memory/evidence infrastructure है। Grant-facing documentation architecture truth को बढ़ा-चढ़ाकर नहीं बताती।
+
+## Current technical boundary
 
 ```text
+RC-1 bounded Reader layer
+RC-2 bounded Reader layer
+RC-3 bounded Reader layer
+RC-4 bounded Reader layer
+RC-5 bounded Reader layer
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+contradiction candidate != confirmed contradiction
 physical L3 != strict Canon
-retrieval score != evidence
+retrieval match != evidence
+similarity != identity
 model output != source truth
 migration proof != claim proof
 import success != activation
 ```
 
-SQLite सामान्य सक्रिय local-first प्रोफ़ाइल है। Mock स्पष्ट development/CI backend है। PostgreSQL/pgvector `active=false` वाला वैकल्पिक निष्क्रिय लक्ष्य है; सफल import activation नहीं है।
+Reader RC-1…RC-7 bounded implemented layers हैं। RC-9 deterministic lexical PRE-ADMISSION candidate discovery है। Dedicated Reader Core implemented नहीं है।
 
-NLnet प्रस्ताव जमा है, समीक्षा में है और प्रदान नहीं हुआ है। लगभग €50,000 केवल योजना राशि है, स्वीकृत बजट या भुगतान प्रतिबद्धता नहीं। बजट परिवर्तन: कोई नहीं। समझौते से पहले merge हुआ काम मौजूदा baseline है और funded delta के रूप में दोबारा नहीं गिना जा सकता।
+Frozen research evidence:
 
-Reader Core लागू नहीं है। कोई legal, GDPR या security certification और कोई native-speaker editorial certification नहीं है।
+```text
+SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED
+NLI_NEUTRAL_FILTER_GATE_FAILED
+```
 
-अंग्रेज़ी स्रोत: [overview](../PROJECT_GRANT_AND_GOVERNANCE.md), [glossary](../GLOSSARY.md), [NLnet scope](../GRANT_NLNET_SCOPE.md), [funding plan](../grants/funding-use-plan.md)।
+RRTIC-v1 typed inspection/suspicion architecture contract है; runtime authorization नहीं।
+
+```text
+dedicated_reader_core=false
+semantic_hybrid_reader_runtime=false
+rrtic_runtime_authorization=false
+nli_reader_runtime_filter=false
+```
+
+SQLite ordinary active local-first profile है। PostgreSQL/pgvector optional inactive target है और `active=false` रहता है।
+
+## Funding truth
+
+```text
+programme: NLnet NGI0 Commons Fund
+proposal: submitted
+review: in progress
+award: not awarded
+budget change: none
+```
+
+लगभग €50,000 केवल planning/transparency context है; approved budget या payment commitment नहीं। Agreement से पहले merged work existing baseline है और funded delta के रूप में दोबारा नहीं गिना जा सकता।
+
+कोई legal, GDPR, security या native-speaker editorial certification claim नहीं है।
+
+Historical runtime evidence `2078 passed / 13 skipped / 0 failed` और `9756 statements / 100.00% line coverage` retained provenance है, current test-count claim नहीं।

@@ -299,8 +299,8 @@ def main() -> int:
         ledger,
         (
             "## D4 — project / grant / glossary",
-            "D4 Reader-dependent detail translations are `CURRENT` in Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian",
-            "one other supported locale is `REFRESH_NEEDED`",
+            "D4 Reader-dependent detail translations are `CURRENT` in all nine supported locales",
+            "No supported Reader-dependent locale pack remains `REFRESH_NEEDED`",
             "## D5 — extended reference corpus",
         ),
         errors,

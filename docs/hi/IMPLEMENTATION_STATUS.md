@@ -1,59 +1,69 @@
-<!-- translation-source: docs/IMPLEMENTATION_STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- translation-source: docs/IMPLEMENTATION_STATUS.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
 <!-- d1-locale: hi -->
 <!-- d1-boundary: public-ask-read-only -->
 <!-- d1-boundary: postgresql-active=false -->
 <!-- d1-nonclaim: import-is-not-activation -->
 <!-- d1-nonclaim: nlnet-not-awarded -->
-# Implementation स्थिति: Crystal और भविष्य का कार्य
+# Implementation स्थिति — Crystal
 
-**तारीख:** 2026-08-08  
-**Checkpoint:** `bbd816c` / PR #337  
-**Evidence:** [TEST_REPORT.md](../../TEST_REPORT.md)  
-**Machine-readable status:** [manifest](../status/implementation-manifest.json)
+यह page current implemented boundary और research-only surfaces को अलग रखती है।
 
-| Component | स्थिति | वर्तमान सीमा |
+| Component | स्थिति | सीमा |
 |---|---|---|
-| Guardian / TruthGate / strict read projection | लागू | storage और migration authority bypass नहीं करते |
-| HTTP/CLI/MCP query boundary | लागू | ordinary queries Canon mutate नहीं करतीं |
-| SQLite backup/verify/inactive restore | लागू व tested | restore inactive, admission नहीं |
-| Bounded SQLite logical export | लागू व tested | canonical backend-neutral bundle |
-| PostgreSQL optional dependency/preflight | लागू व tested | explicit extra, lazy load |
-| Inactive PostgreSQL/pgvector import | लागू व tested | नया inactive schema, सामान्य I/O नहीं |
-| Exact target-state equivalence | लागू व tested | independent read-only re-hash |
-| Active PostgreSQL runtime adapter | लागू नहीं | normal composition में target नहीं |
-| Automatic SQLite/PostgreSQL switching | निषिद्ध | availability/import success चयन नहीं |
-| Exact-vs-ANN evaluation | लागू नहीं | अलग बाद की phase |
-| Cutover / rollback / dual-write | लागू नहीं | explicit future phases |
-| PostgreSQL server lifecycle | लागू नहीं | backup/restore/upgrade/pooling future |
-| Reader Core / Semantic Reading Layer | लागू नहीं | admission से पहले candidate layer |
+| Guardian / TruthGate / CanonicalView | ✅ implemented | retrieval/Reader authority bypass नहीं करते |
+| HTTP/CLI/MCP query | ✅ implemented | `core.query_pipeline.query()` read-only |
+| Reader RC-1…RC-7 | ✅ bounded implemented | pre-admission artifacts/candidates |
+| RC-9 lexical discovery | ✅ implemented | deterministic PRE-ADMISSION only |
+| Semantic comparator v1 | 🧊 frozen evaluation | runtime नहीं |
+| NLI neutral-filter v1 | 🧊 frozen gate fail | runtime नहीं |
+| RRTIC-v1 | 🧩 architecture contract | runtime authorization नहीं |
+| SQLite ordinary runtime | ✅ active | local-first |
+| PostgreSQL/pgvector import/equivalence | ✅ bounded optional | target `active=false` |
+| Active PostgreSQL runtime | ❌ false | normal composition में नहीं |
+| Dedicated Reader Core | ❌ false | implemented claim नहीं |
+| Semantic/vector Reader runtime | ❌ false | authorized नहीं |
+
+Reader machine truth:
 
 ```text
-SQLite lifecycle
-→ backup / independent verify / inactive restore
-
-logical portability
-→ bounded canonical bundle
-→ PostgreSQL preflight
-→ inactive transactional import
-→ independent exact-state equivalence
-→ non-secret receipts
+reader_core_rc1_skeleton = true
+reader_core_rc2_structural_map = true
+reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc4_proposition_extraction = true
+reader_core_rc5_relation_candidates = true
+reader_core_rc6_long_context_strategy = true
+reader_core_rc7_cross_document_links = true
+dedicated_reader_core=false
+dedicated_reader_core = false
+semantic_hybrid_reader_runtime=false
+rrtic_runtime_authorization=false
+nli_reader_runtime_filter=false
 ```
 
-Issues #331 और #332 PR #335 तथा #337 से लागू हैं। PostgreSQL `active=false` वाला optional
-operator path है। Successful equivalence backend activate नहीं कर सकती और Guardian,
-TruthGate या strict Canon को नहीं बदलती।
-
-Future work:
+Research classifications:
 
 ```text
-exact-vs-ANN retrieval evaluation
-→ explicit cutover and source/target fencing
-→ rollback proof and expiry policy
-→ PostgreSQL backup/restore/upgrade lifecycle
-→ multi-process concurrency and production observability
+SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED
+NLI_NEUTRAL_FILTER_GATE_FAILED
 ```
 
-Crystal active PostgreSQL backend, automatic migration, production multi-tenancy,
-universal truth, zero hallucinations, legal/security certification या consciousness का
-दावा नहीं करता।
+इनका अर्थ measured evaluation evidence है, runtime admission नहीं।
+
+Authority firewall:
+
+```text
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+NLI label != proposition identity
+RRTIC suspicion != adjudicated relation
+physical L3 != strict Canon
+```
+
+SQLite active ordinary profile है। PostgreSQL/pgvector optional inactive target है; successful import/equivalence backend activation, automatic switching, cutover, rollback या dual-write नहीं है।
+
+NLnet proposal submitted है, review में है और **not awarded** है। लगभग €50,000 planning context only है।
+
+Historical runtime checkpoint `bbd816c09dd39a02e6de6c1014438490572f40f6` और `2078 passed / 13 skipped / 0 failed` केवल retained provenance हैं।
