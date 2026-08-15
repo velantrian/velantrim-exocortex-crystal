@@ -26,6 +26,17 @@ RRTIC runtime authorization                             ❌
 dedicated Reader Core                                   ❌
 ```
 
+Machine-bound compatibility names:
+
+```text
+reader_core_rc1_skeleton = true
+reader_core_rc2_structural_map = true
+reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc4_proposition_extraction = true
+reader_core_rc5_relation_candidates = true
+dedicated_reader_core = false
+```
+
 ```text
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
