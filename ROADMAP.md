@@ -11,6 +11,7 @@
 **Comparator v1:** issue #386 / PR #387 completed — frozen gate FAIL  
 **NLI neutral-filter v1:** issue #388 / PR #389 completed — frozen gate FAIL  
 **RRTIC-v1:** issue #391 / PR #392 completed — architecture contract only  
+**Legacy exact-normalized dedupe:** issue #165 / PR #431 completed — derived compatibility index only; no re-key or semantic matching  
 **Grant status:** submitted / under review / not awarded
 
 ## ✅ Delivered Reader implementation baseline
@@ -146,9 +147,14 @@ PostgreSQL/pgvector inactive active=false
 Reader FTS not implemented
 Reader ANN/vector DB not implemented
 automatic backend switching absent
+legacy exact-normalized compatibility index implemented / derived / rebuildable
+historical fact re-keying absent
+semantic dedupe absent
 ```
 
-Among the historical residual scopes #155, #165 and #214, **#165 is the only open issue** at this reconciliation checkpoint. #155 is CLOSED/completed as the EPIS-001 architecture contract only; #214 is CLOSED/completed verification-reproducibility/security-hygiene history. Neither closure authorizes EPIS runtime, a new Reader runtime or another backlog item. Resolve live GitHub before selecting any next scope.
+Issue #165 is completed by the bounded compatibility-index implementation: historical `ing:*` rows can be matched by the same exact normalized claim identity used by current auto-ingest (NFC → trim → whitespace collapse → casefold), while already-current normalized IDs take precedence. Existing collisions are preserved rather than merged, future occurrences route deterministically, dry-run stays write-free, and full erasure removes the derived mapping. This is compatibility/recovery of exact identity only — not evidence, semantic identity inference or Canon authority.
+
+The historical residual scopes #155, #165 and #214 are therefore all **CLOSED/completed** at this reconciliation checkpoint. #155 remains EPIS-001 architecture only; #214 remains bounded verification-reproducibility/security-hygiene history; #165 does not authorize semantic dedupe or historical re-keying. Their closure does not select another backlog item. Resolve live GitHub before selecting any next scope.
 
 ## 🌍 Localization boundary
 
