@@ -81,8 +81,8 @@ def main() -> int:
     current_state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
     for marker in (
         "D2 reviewer/safety translations remain current across all nine supported locales",
-        "Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed",
-        "one other localized root README file and Reader-dependent detail pack",
+        "Arabic, German, French, Spanish, Hindi, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed",
+        "No localized root README or Reader-dependent detail pack remains `REFRESH_NEEDED`",
     ):
         if marker not in current_state:
             errors.append(f"AI current state: missing localization marker {marker!r}")
