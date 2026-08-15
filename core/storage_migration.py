@@ -53,6 +53,12 @@ _DATASET_CONSUMER: contextvars.ContextVar[
 MIN_TEMP_FREE_BYTES = 8 * 1024 * 1024
 MAX_DANGLING_EXAMPLES = 20
 
+# Final verification snapshots bind both path identity and content. The digest is
+# intentionally kept out of filesystem metadata because timestamp precision varies
+# across supported filesystems; the max-bytes value preserves the original bounded
+# streaming ceiling during the final reread.
+FileSnapshot = tuple[os.stat_result, str, int]
+
 DATASET_FILES = {
     "nodes": "nodes.jsonl",
     "vectors": "vectors.jsonl",
@@ -133,7 +139,7 @@ def _read_regular_bytes(
     label: str,
     *,
     max_bytes: int = MAX_CONTROL_FILE_BYTES,
-) -> tuple[bytes, os.stat_result]:
+) -> tuple[bytes, FileSnapshot]:
     """Read one small bounded control file from one stable descriptor."""
 
     fd, opened = _open_regular_fd(path, label, max_bytes=max_bytes)
@@ -156,7 +162,7 @@ def _read_regular_bytes(
         raw = b"".join(chunks)
         if len(raw) != after.st_size:
             raise StorageOperationError(f"{label} byte-size changed while it was read")
-        return raw, after
+        return raw, (after, hashlib.sha256(raw).hexdigest(), max_bytes)
     except StorageOperationError:
         raise
     except OSError as exc:
@@ -165,15 +171,50 @@ def _read_regular_bytes(
         os.close(fd)
 
 
-def _require_unchanged_file(path: Path, expected: os.stat_result, label: str) -> None:
+def _require_unchanged_file(path: Path, expected: FileSnapshot, label: str) -> None:
+    expected_stat, expected_sha256, max_bytes = expected
+    expected_identity = _file_identity(expected_stat)
     try:
         current = path.lstat()
     except OSError as exc:
         raise StorageOperationError(f"cannot recheck {label}: {exc}") from exc
-    if not stat.S_ISREG(current.st_mode) or _file_identity(current) != _file_identity(
-        expected
-    ):
+    if not stat.S_ISREG(current.st_mode) or _file_identity(current) != expected_identity:
         raise StorageOperationError(f"{label} changed during verification")
+
+    # Reopen without following symlinks and stream the content again. This is the
+    # final content-integrity check: same-inode/same-size rewrites are rejected even
+    # on filesystems whose observable mtime/ctime resolution is too coarse to show
+    # the mutation. The reread stays within the same resource ceiling as the first.
+    fd, opened = _open_regular_fd(path, label, max_bytes=max_bytes)
+    try:
+        if _file_identity(opened) != expected_identity:
+            raise StorageOperationError(f"{label} changed during verification")
+        digest = hashlib.sha256()
+        total = 0
+        while True:
+            chunk = os.read(fd, min(1024 * 1024, max_bytes + 1 - total))
+            if not chunk:
+                break
+            total += len(chunk)
+            if total > max_bytes:  # pragma: no cover - concurrent growth guard
+                raise StorageOperationError(f"{label} changed during verification")
+            digest.update(chunk)
+        after = os.fstat(fd)
+        final = path.lstat()
+        if (
+            _file_identity(after) != expected_identity
+            or not stat.S_ISREG(final.st_mode)
+            or _file_identity(final) != expected_identity
+            or total != after.st_size
+            or digest.hexdigest() != expected_sha256
+        ):
+            raise StorageOperationError(f"{label} changed during verification")
+    except StorageOperationError:
+        raise
+    except OSError as exc:
+        raise StorageOperationError(f"cannot recheck {label}: {exc}") from exc
+    finally:
+        os.close(fd)
 
 
 def _directory_identity(path: Path, label: str) -> os.stat_result:
@@ -798,7 +839,7 @@ def _read_dataset(
     path: Path,
     dataset: str,
     expected: Mapping[str, Any],
-) -> tuple[list[Mapping[str, Any]], os.stat_result]:
+) -> tuple[list[Mapping[str, Any]], FileSnapshot]:
     if path.name != expected.get("file"):
         raise StorageOperationError(f"{dataset} dataset filename mismatch")
     fd, snapshot = _open_regular_fd(
@@ -832,7 +873,8 @@ def _read_dataset(
             )
         if total != expected.get("bytes"):
             raise StorageOperationError(f"{dataset} dataset byte-size mismatch")
-        if digest.hexdigest() != expected_sha:
+        digest_hex = digest.hexdigest()
+        if digest_hex != expected_sha:
             raise StorageOperationError(f"{dataset} dataset SHA-256 mismatch")
 
         os.lseek(fd, 0, os.SEEK_SET)
@@ -882,7 +924,7 @@ def _read_dataset(
             raise StorageOperationError(
                 f"{dataset} dataset record-count mismatch"
             )
-        return records, snapshot
+        return records, (after, digest_hex, MAX_DATASET_BYTES)
     except StorageOperationError:
         raise
     except OSError as exc:
@@ -891,6 +933,7 @@ def _read_dataset(
         ) from exc
     finally:
         os.close(fd)
+
 
 def _valid_completed_at(value: Any) -> bool:
     if not _non_empty_string(value) or not value.endswith("Z"):
@@ -937,6 +980,7 @@ def _verification_index(
         raise StorageOperationError(
             f"cannot create migration verification index: {exc}"
         ) from exc
+
 
 def _missing_examples(
     connection: sqlite3.Connection,
@@ -1073,7 +1117,7 @@ def verify_logical_export(bundle: Path | str) -> dict[str, Any]:
         "logical verification",
     )
     temporary, index = _verification_index(root.parent)
-    snapshots: dict[str, os.stat_result] = {}
+    snapshots: dict[str, FileSnapshot] = {}
     actual_dimension: Optional[int] = None
 
     def consume_vector(record: Mapping[str, Any]) -> None:
