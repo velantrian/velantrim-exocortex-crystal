@@ -261,6 +261,10 @@ active=false
 
 Physical L3 is not automatically strict Canon. Successful import/equivalence does not imply runtime backend activation.
 
+The logical migration verifier's final file recheck is content-bound as well as metadata-bound: it reuses the existing SHA-256 verification signal in a bounded reread, so a same-size rewrite does not rely on filesystem timestamp precision for detection. Migration bundles remain operational evidence only and do not authorize activation.
+
+Direct `ingest()` reuses the existing L3 outbox when an L3 merge fails after the L1 ESM transition. The call returns a failed result and leaves an explicit secondary-sync repair record instead of silently leaving `Validated` L1 state without a recovery path. This changes recovery parity only; it does not bypass Guardian, TruthGate or Canon authority.
+
 ## Localization truth
 
 Immutable phased localization source checkpoint: `51c205fe048fd69d39fcd47b43e042a50de432bc`.  
@@ -310,15 +314,15 @@ A visually stronger old translation may be used as a layout reference only. It m
 
 NLnet remains submitted / under review / not awarded. Approximate €50,000 remains planning context only.
 
-Separate residual issues:
+Residual scope ledger:
 
 ```text
-#155 Epistemic Router RFC
-#165 normalized-id migration / dedupe
-#214 PII fixture + supply-chain hygiene
+#155 CLOSED / completed — EPIS-001 architecture contract only; runtime not authorized
+#165 OPEN               — exact normalized-id migration / dedupe only
+#214 CLOSED / completed — fixture/PII + supply-chain verification hygiene
 ```
 
-They are not auto-started by Reader or documentation work.
+Only #165 is open among these three historical residual scopes, and this file does not auto-select it. Resolve live GitHub before acting because newer issues/PRs may exist.
 
 ## Documentation interface lifecycle
 
@@ -348,6 +352,6 @@ Synchronized Notion may preserve checkpoint provenance, but live GitHub remains 
 
 ## Stop boundary
 
-This file does not authorize or select the next workstream. The nine-locale documentation parity program being complete does not authorize runtime, model, storage or authority expansion. Before any new bounded work, resolve live GitHub/Notion, perform a fresh architecture reassessment, select exactly one scope, and preserve the authority firewall.
+This file does not authorize or select the next workstream. The nine-locale documentation parity program being complete does not authorize runtime, model, storage or authority expansion. The bounded audit-remediation fixes above do not select #165 or any new architecture work. Before any new bounded work, resolve live GitHub/Notion, perform a fresh architecture reassessment, select exactly one scope, and preserve the authority firewall.
 
 No next model, discriminator, reranker, Reader backend, storage activation, authority expansion or residual issue is automatically authorized by a historical closure or by this static snapshot.
