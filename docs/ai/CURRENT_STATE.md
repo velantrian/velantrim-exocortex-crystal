@@ -274,7 +274,7 @@ German current parity audit base: `main@ad8cec8c868f64b6dfbdc3bf3087230f59c3861c
 
 ### Retained post-German localization compatibility literal
 
-The exact phrases **`German and Russian Reader-dependent public/detail documentation is refreshed`** and **`seven other localized root README files and Reader-dependent detail packs`** are retained here solely as historical compatibility evidence for the closed German parity checkpoint. They are **not current localization truth** after French parity; the current state is German + French + Russian with six remaining locale packs, as stated above.
+The exact phrases **`German and Russian Reader-dependent public/detail documentation is refreshed`** and **`seven other localized root README files and Reader-dependent detail packs`** are retained here solely as historical compatibility evidence for the closed German parity checkpoint. The current count is seven, as stated above. This sentence is retained as immutable post-German compatibility evidence only; it is **not current localization truth** after French parity. The current state is German + French + Russian with six remaining locale packs, as stated above.
 
 ### Retained Evaluation-Surface-v2 localization compatibility literal
 
