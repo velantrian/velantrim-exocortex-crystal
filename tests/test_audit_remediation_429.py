@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -34,6 +35,43 @@ def test_final_file_recheck_detects_same_size_content_change_with_coarse_metadat
 
     with pytest.raises(StorageOperationError, match="changed during verification"):
         migration._require_unchanged_file(path, coarse_snapshot, "payload")
+
+
+def test_final_file_recheck_detects_identity_race_after_initial_lstat(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "payload"
+    path.write_bytes(b"one")
+    _, snapshot = migration._read_regular_bytes(path, "payload")
+
+    replacement = tmp_path / "replacement"
+    replacement.write_bytes(b"two")
+    replacement_stat = replacement.stat()
+
+    def open_replacement(_path, _label, *, max_bytes):
+        assert max_bytes == snapshot[2]
+        return os.open(replacement, os.O_RDONLY), replacement_stat
+
+    monkeypatch.setattr(migration, "_open_regular_fd", open_replacement)
+
+    with pytest.raises(StorageOperationError, match="changed during verification"):
+        migration._require_unchanged_file(path, snapshot, "payload")
+
+
+def test_final_file_recheck_reports_stream_io_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "payload"
+    path.write_bytes(b"one")
+    _, snapshot = migration._read_regular_bytes(path, "payload")
+
+    def fail_read(_fd, _size):
+        raise OSError("simulated reread failure")
+
+    monkeypatch.setattr(migration.os, "read", fail_read)
+
+    with pytest.raises(StorageOperationError, match="cannot recheck payload"):
+        migration._require_unchanged_file(path, snapshot, "payload")
 
 
 def test_direct_ingest_l3_failure_uses_existing_outbox_and_heals(
