@@ -1,4 +1,4 @@
-<!-- translation-source: docs/EXTENDED_REFERENCE_POLICY.md@d5f7f1c4c0908d24f8994e4fbec45c102b9ab7d9 -->
+<!-- translation-source: docs/EXTENDED_REFERENCE_POLICY.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- d5-locale: hi -->
 <!-- translation-status: CURRENT -->
 <!-- d5-boundary: physical-l3-not-strict-canon -->
@@ -7,9 +7,15 @@
 <!-- d5-boundary: migration-proof-not-claim-proof -->
 <!-- d5-nonclaim: import-is-not-activation -->
 <!-- d5-nonclaim: reader-core-not-implemented -->
+<!-- d5-nonclaim: dedicated-reader-core-not-implemented -->
 <!-- d5-nonclaim: nlnet-not-awarded -->
 <!-- d5-nonclaim: security-legal-gdpr-not-certified -->
 <!-- d5-nonclaim: native-speaker-editorial-not-certified -->
+<!-- d5-reader: rc1-skeleton-implemented -->
+<!-- d5-reader: rc2-structural-map-implemented -->
+<!-- d5-reader: rc3-multi-pass-mechanics-implemented -->
+<!-- d5-reader: rc4-proposition-extraction-implemented -->
+<!-- d5-reader: rc5-relation-candidates-implemented -->
 # विस्तृत संदर्भ मार्गदर्शिका
 
 यह maintained Hindi orientation unstable evidence को duplicate किए बिना authoritative English contracts तक route करती है।
@@ -40,9 +46,11 @@ rrtic_runtime_authorization=false
 nli_reader_runtime_filter=false
 ```
 
-Authority boundaries:
+Authority / compatibility boundaries:
 
 ```text
+coverage != comprehension proof
+pass completion != comprehension proof
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
 relation candidate != admitted evidence
@@ -53,9 +61,20 @@ RRTIC suspicion != adjudicated relation
 physical L3 != strict Canon
 ```
 
+RC-5 relation vocabulary remains bounded candidate vocabulary:
+
+```text
+POSSIBLE_CONTRADICTION
+EXCEPTION
+QUALIFICATION
+TENSION
+```
+
+Historical localization state word `REFRESH_NEEDED` is retained here as compatibility vocabulary only; current Hindi D5 state is `CURRENT`.
+
 SQLite ordinary active local-first profile है। PostgreSQL/pgvector optional inactive target है, `active=false`; import/equivalence activation नहीं है।
 
-NLnet proposal submitted / under review / not awarded है। लगभग €50,000 planning context only है; budget change none। कोई legal/GDPR/security या native-speaker editorial certification claim नहीं है।
+NLnet proposal submitted / under review / not awarded है। लगभग €50,000 planning context only है; budget change: none। कोई legal/GDPR/security या native-speaker editorial certification claim नहीं है।
 
 Historical runtime checkpoint `bbd816c09dd39a02e6de6c1014438490572f40f6`, `2078 passed / 13 skipped / 0 failed` और `9756 statements / 100.00% line coverage` provenance के रूप में retained हैं।
 
