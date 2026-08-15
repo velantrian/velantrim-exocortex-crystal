@@ -97,7 +97,7 @@ def main() -> int:
 
     current_state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
     for marker in (
-        "German, French and Russian Reader-dependent public/detail documentation is refreshed",
+        "German, French, Spanish and Russian Reader-dependent public/detail documentation is refreshed",
         "D2 reviewer/safety translations remain current across all nine supported locales",
         f"main@{SOURCE}",
     ):
