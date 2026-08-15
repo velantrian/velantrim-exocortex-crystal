@@ -1,6 +1,6 @@
 # Implementation Status: Crystal vs Future Exo-Cortex Work
 
-**Status date:** 2026-08-14  
+**Status date:** 2026-08-15  
 **Current signed architecture checkpoint:** `main@76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` / PR #392; post-merge CI `31771677028` — 9/9 SUCCESS  
 **Historical RC-7 Reader baseline:** `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1` / PR #372; post-merge CI `31572918731` — retained immutable cross-document Reader provenance  
 **Signed RC-9 Reader implementation baseline:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` / PR #376; post-merge CI `31594027040`; retained RC-10 architecture decision #377  
@@ -20,7 +20,6 @@ reader_core_rc6_long_context_strategy  = true
 reader_core_rc7_cross_document_links   = true
 reader_rc9_lexical_candidate_discovery = true
 dedicated_reader_core                  = false
-dedicated_reader_core=false
 ```
 
 Implemented Reader runtime/domain components:
@@ -149,12 +148,12 @@ Post-RRTIC CI `31771677028`: **9/9 SUCCESS**. Python 3.11: **2231 passed / 13 sk
 
 ## Localization / grant / backlog
 
-Russian D1/D3/D4/D5 Reader documentation retains its historical localization checkpoint; eight other locale detail packs remain `REFRESH_NEEDED` — 64 documents. English post-RC-9 research/architecture truth does not silently advance translation parity.
+Localization parity is owned by `docs/TRANSLATION_STATUS.md`; localized checkpoint labels do not override current English implementation truth.
 
 NLnet remains **submitted / under review / not awarded**. Approximate €50,000 remains planning only.
 
-Issues #155, #165 and #214 remain separate scopes and are not implemented by this workstream.
+Issues #155 and #165 remain separate open scopes and are not implemented by this workstream. Issue #214 was **completed and closed on 2026-08-14**; its fixture/PII/supply-chain hygiene work is retained as completed engineering history, not an open backlog item.
 
 ## Stop boundary
 
-RRTIC-v1 is closed. No next model/discriminator/runtime milestone is implied. Any future mechanism requires separate authorization and fresh validation design.
+RRTIC-v1 is closed. No next model/discriminator/runtime milestone is implied. Any future mechanism requires separate authorization and fresh validation design. Completion of #214 grants no Reader runtime, evidence-admission or Canon authority.
