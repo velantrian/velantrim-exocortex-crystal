@@ -153,6 +153,8 @@ The other eight locale packs remain unchanged by Issue #427.
 
 All nine supported D2 locale packs remain `CURRENT` for their recorded source semantics. Hindi `REVIEWER_GUIDE.md` and `SAFETY_PRIVACY_AND_FAILURES.md` were deliberately not rewritten by Issue #427.
 
+D2 reviewer/safety translations remain current across all nine supported locales.
+
 No native-speaker editorial certification is implied by `CURRENT`; CI validates objective contract markers, not independent human language certification.
 
 ## D3 — architecture / storage / authority
