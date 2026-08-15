@@ -1,59 +1,103 @@
-<!-- translation-source: docs/IMPLEMENTATION_STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- translation-source: docs/IMPLEMENTATION_STATUS.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
+<!-- historical-translation-source: docs/IMPLEMENTATION_STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- current-translation-source: docs/IMPLEMENTATION_STATUS.md@5903e90f3e0f2884f4ba257a71808d19fc439ebc -->
 <!-- d1-locale: ja -->
 <!-- d1-boundary: public-ask-read-only -->
 <!-- d1-boundary: postgresql-active=false -->
 <!-- d1-nonclaim: import-is-not-activation -->
 <!-- d1-nonclaim: nlnet-not-awarded -->
-# 実装状態: Crystal と将来作業
+# 🇯🇵 実装状態 — Crystal の現在の能力と明示的 non-claims
 
-**日付:** 2026-08-08  
-**Checkpoint:** `bbd816c` / PR #337  
-**Evidence:** [TEST_REPORT.md](../../TEST_REPORT.md)  
-**Machine-readable status:** [manifest](../status/implementation-manifest.json)
+## ✅ Reader implementation boundary
 
-| Component | 状態 | 現在の境界 |
+```text
+reader_core_rc1_skeleton = true
+reader_core_rc2_structural_map = true
+reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc4_proposition_extraction = true
+reader_core_rc5_relation_candidates = true
+reader_core_rc6_long_context_strategy = true
+reader_core_rc7_cross_document_links = true
+reader_rc9_lexical_candidate_discovery = true
+dedicated_reader_core = false
+semantic_hybrid_reader_runtime = false
+rrtic_runtime_authorization = false
+nli_reader_runtime_filter = false
+```
+
+| Component | Status | Current boundary |
 |---|---|---|
-| Guardian / TruthGate / strict read projection | 実装済み | storage/migration は authority を回避不可 |
-| HTTP/CLI/MCP query boundary | 実装済み | 通常 query は Canon を変更しない |
-| SQLite backup/verify/inactive restore | 実装・検証済み | restore は inactive、admission ではない |
-| bounded SQLite logical export | 実装・検証済み | canonical backend-neutral bundle |
-| PostgreSQL optional dependency/preflight | 実装・検証済み | explicit extra、lazy load |
-| inactive PostgreSQL/pgvector import | 実装・検証済み | 新規 inactive schema、通常 I/O なし |
-| exact target-state equivalence | 実装・検証済み | independent read-only re-hash |
-| active PostgreSQL runtime adapter | 未実装 | normal composition に未登録 |
-| automatic SQLite/PostgreSQL switching | 禁止 | availability/import success は選択でない |
-| exact-vs-ANN evaluation | 未実装 | 後続の独立 phase |
-| cutover / rollback / dual-write | 未実装 | 後続の明示 phase |
-| PostgreSQL server lifecycle | 未実装 | backup/restore/upgrade/pooling は将来 |
-| Reader Core / Semantic Reading Layer | 未実装 | admission 前の候補 layer |
+| Reader RC-1…RC-7 | ✅ Implemented | bounded Reader layers; automatic epistemic authority なし |
+| Reader RC-9 | ✅ Implemented | deterministic lexical PRE-ADMISSION candidate discovery |
+| Comparator v1 | 🧊 Frozen evaluation | semantic recall recovered; discrimination gate FAIL |
+| NLI neutral-filter v1 | 🧊 Frozen evaluation | discrimination improved; recall-safety gate FAIL |
+| RRTIC-v1 | 📐 Frozen architecture contract | typed suspicion/qualifiers; runtime provider なし |
+| Guardian / TruthGate | ✅ Implemented | authority boundary; retrieval component ではない |
+| TrustSnapshot / CanonicalView | ✅ Implemented | deny-dominant reconciliation / strict trusted projection |
+| SQLite ordinary runtime | ✅ Active | local-first ordinary path |
+| PostgreSQL/pgvector import target | ⛔ Inactive | `active=false`; normal runtime composition に入らない |
+| semantic/hybrid Reader runtime | ❌ Not authorized | Reader FTS/ANN/vector backend なし |
+| RRTIC runtime provider | ❌ NOT AUTHORIZED / NOT IMPLEMENTED | architecture contract only |
+| NLI Reader runtime filter | ❌ NOT AUTHORIZED / NOT IMPLEMENTED | frozen failed evaluation only |
+| dedicated/full autonomous Reader | ❌ Not implemented | bounded layers ≠ autonomous Reader core |
+
+## 🛡 Authority invariants
 
 ```text
-SQLite lifecycle
-→ backup / independent verify / inactive restore
-
-logical portability
-→ bounded canonical bundle
-→ PostgreSQL preflight
-→ inactive transactional import
-→ independent exact-state equivalence
-→ non-secret receipts
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+cross-document link != Canon relation
+retrieval match != evidence
+similarity != identity
+ranking != epistemic authority
+candidate discovery != candidate adjudication
+NLI label != proposition identity
+RRTIC suspicion != adjudicated relation
+evaluation pass != runtime authorization
+physical L3 != strict Canon
 ```
 
-issue #331/#332 は PR #335/#337 で実装済みです。PostgreSQL は `active=false` の任意
-operator path です。equivalence 成功は backend を activate せず、Guardian、
-TruthGate、strict Canon を変更しません。
+RC-1…RC-7 と RC-9 の implementation は Guardian / TruthGate を bypass できません。retrieval、ranking、NLI label、typed suspicion から strict Canon authority は自動生成されません。
 
-将来作業:
+## 🧬 RRTIC-v1 implementation status
+
+RRTIC-v1 は relation suspicion と structural qualifier vocabulary を freeze した architecture contract です。model execution、hard filter、reranking、identity claim、evidence admission、adjudication、truth score、accept/reject policy、Canon writer はありません。
 
 ```text
-exact-vs-ANN retrieval evaluation
-→ explicit cutover and source/target fencing
-→ rollback proof and expiry policy
-→ PostgreSQL backup/restore/upgrade lifecycle
-→ multi-process concurrency and production observability
+RRTIC contract implemented as architecture documentation = yes
+RRTIC runtime provider = NOT AUTHORIZED / NOT IMPLEMENTED
+rrtic_runtime_authorization = false
 ```
 
-Crystal は active PostgreSQL backend、自動 migration、production multi-tenancy、
-universal truth、zero hallucinations、法務/security certification、consciousness を
-主張しません。
+## 💾 Storage
+
+```text
+SQLite ordinary local-first = ACTIVE
+PostgreSQL/pgvector = INACTIVE
+active=false
+successful import != backend activation
+physical L3 != strict Canon
+```
+
+Optional PostgreSQL/pgvector surface は inactive import/equivalence path のみです。automatic switching、cutover、rollback、dual-write、Reader backend activation はありません。
+
+## 💶 Grant truth
+
+```text
+programme: NLnet NGI0 Commons Fund
+proposal: submitted
+review: in progress
+award: not awarded
+budget change: none
+```
+
+約 €50,000 は planning/transparency context であり approved budget や committed funding ではありません。
+
+## 📎 Historical evidence
+
+`bbd816c09dd39a02e6de6c1014438490572f40f6`、`2078 passed / 13 skipped / 0 failed`、`9756 statements / 100.00% line coverage` は historical compatibility evidence として保持されます。現在の repository test count ではありません。
+
+正確な live implementation / CI state は GitHub、[`docs/STATUS.md`](../STATUS.md)、[`TEST_REPORT.md`](../../TEST_REPORT.md)、[machine-readable manifest](../status/implementation-manifest.json) から解決してください。

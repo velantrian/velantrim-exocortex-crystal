@@ -1,64 +1,124 @@
-<!-- translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@208f1c772ee3a112cb803d2413c120bef23adb05 -->
+<!-- translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
+<!-- historical-translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@208f1c772ee3a112cb803d2413c120bef23adb05 -->
+<!-- current-translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@5903e90f3e0f2884f4ba257a71808d19fc439ebc -->
 <!-- d3-locale: ja -->
 <!-- d3-boundary: physical-l3-not-strict-canon -->
 <!-- d3-boundary: public-query-read-only -->
 <!-- d3-boundary: postgresql-active=false -->
 <!-- d3-nonclaim: import-is-not-activation -->
-<!-- d3-nonclaim: reader-core-not-implemented -->
 <!-- d3-nonclaim: nlnet-not-awarded -->
-# ストレージと権限の境界
+<!-- d3-reader: rc1-skeleton-implemented -->
+<!-- d3-reader: rc2-structural-map-implemented -->
+<!-- d3-reader: rc3-multi-pass-mechanics-implemented -->
+<!-- d3-reader: rc4-proposition-extraction-implemented -->
+<!-- d3-reader: rc5-relation-candidates-implemented -->
+<!-- d3-nonclaim: dedicated-reader-core-not-implemented -->
+# 🇯🇵 Storage と Authority の境界
 
-## 分離された識別子
+## 🧩 Identity が違えば authority も自動継承しない
 
 ```text
-storage profile = deployment identity
-physical L3 = multi-status graph state
-strict Canon = trusted read projection
-migration bundle = operation-integrity evidence
-retrieval score = ranking signal
-model output = generated text
+storage profile     = deployment identity
+physical L3         = multi-status physical storage
+strict Canon        = trusted read projection
+migration bundle    = operation-integrity evidence
+retrieval score     = ranking signal
+model output        = generated text
+Reader candidate    = inspection candidate
 ```
 
-どの識別子も、他の権限を自動的に付与しません。
+これらの identity は別物です。どれか一つを持つことが、別の authority を自動的に与えることはありません。
 
-## durable profile
+## 📖 Reader と storage の境界
 
-SQLiteが通常のactive local-first profileです。最初のdurable `auto`はoptional LadybugDBまたはSQLiteを選び、backendとnon-secret locatorを固定できます。後の競合はfail-closedになります。Mockは明示的なdevelopment/CI状態に限られます。
+RC-1、RC-2、RC-3、RC-4、RC-5、RC-6、RC-7 は bounded implemented Reader layers。RC-9 は deterministic lexical PRE-ADMISSION discovery です。いずれも Evidence Admission / TruthGate を bypass できません。
 
-## physical L3とstrict Canon
+```text
+coverage != comprehension proof
+pass completion != comprehension proof
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+```
 
-physical L3はVERIFIED、USER_CLAIMED、UNVERIFIED、HYPOTHESIS、SUBJECTIVE、contested、superseded、restrictedを保持できます。strict Canonは現在のevidenceとpolicyに基づくdeny-dominant projectionです。保存、retrieval、高いscoreだけでは不十分です。
+`dedicated_reader_core = false`。Semantic/hybrid Reader runtime、NLI runtime filter、RRTIC runtime provider は authorized されていません。
 
-## 読み取りと書き込み
+## 🏛 physical L3 と strict Canon
 
-Public queryは`core.query_pipeline.query()`をread-onlyで通ります。明示的`ingest`がadmission-capable write pathであり、GuardianとTruthGateが構造的・認識論的境界を適用します。
+`physical L3 != strict Canon`。
 
-## SQLiteライフサイクルと移行
+physical L3 は VERIFIED、USER_CLAIMED、UNVERIFIED、HYPOTHESIS、SUBJECTIVE、contested、superseded、restricted records を保持できます。strict Canon は authority/policy が許可する trusted read projection であり、「persist されたすべて」と同義ではありません。
 
-Backup、independent verification、inactive restore、bounded deterministic logical export、bundle verificationが実装されています。承認されたphysical-L3 datasetsは新しいinactive PostgreSQL schemaへimportし、exact comparisonできます。targetは`active=false`のままです。
+```text
+stored != trusted
+retrieved != admitted
+ranked highly != epistemically authoritative
+```
 
-これはL1全体、audit/outbox、encryption metadata、configuration、independent copiesのwhole-system migrationではありません。Active PostgreSQL runtime、ANN acceptance、automatic switching、cutover、fencing、rollback、dual-writeはありません。
+## 💬 Read / write boundary
 
-## secretsとcopies
+Public query は次を通ります。
 
-Passwords、tokens、private keys、credential-bearing DSNsをprofiles、bundles、receipts、logs、GitHub、Notionへ入れてはいけません。Backups、exports、migrationsは追加copyを作り、active storeからの削除では自動的に消えません。Selected L1 field encryptionはuniversal encryptionではありません。
+```text
+HTTP /ask / CLI ask / MCP search
+              ↓
+core.query_pipeline.query()
+              ↓
+strict read-only canonical projection
+```
 
-## operation evidence
+fact を作成せず、ESM を変更せず、L3 に書き込みません。Explicit ingest/review は独立 write path で、Guardian / TruthGate が structural / epistemic boundary を維持します。
 
-| 事象 | 証明すること | 証明しないこと |
-|---|---|---|
-| L3 record | physical persistence | strict Canon membership |
-| retrieval result | candidate relevance | sufficient evidence |
-| verified backup | backup integrity | claim truth |
-| successful import | import integrity | activation / runtime selection |
-| exact equivalence | approved datasets equality | production readiness / cutover |
+## 💾 SQLite と PostgreSQL/pgvector
 
-専用Reader Coreは未実装で、NLnetはsubmitted / under review / not awardedです。
+```text
+SQLite
+└── ordinary active local-first path
 
-## 詳細な英語契約
+PostgreSQL/pgvector
+└── optional inactive import/equivalence target
+    └── active=false
+```
 
-- [完全なアーキテクチャ](../ARCHITECTURE.md)
+successful import != backend activation。Import success から runtime selection、Reader activation、automatic switching、cutover、rollback、dual-write、ANN acceptance を導くことはできません。
+
+## 🔐 Authority components
+
+```text
+Guardian      = structural integrity / structural policy boundary
+TruthGate     = L3 admission authority
+TrustSnapshot = deny-dominant reconciliation surface
+CanonicalView = strict trusted read-time projection
+TRACE         = provenance / replay evidence, not proof of truth
+```
+
+Guardian は truth oracle ではなく、provenance も truth proof ではありません。
+
+## 🔬 Evaluation / inspection は authority を変更しない
+
+```text
+retrieval match != evidence
+similarity != identity
+ranking != epistemic authority
+candidate discovery != candidate adjudication
+NLI label != proposition identity
+RRTIC suspicion != adjudicated relation
+evaluation pass != runtime authorization
+```
+
+Comparator v1 classification: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`。  
+NLI neutral-filter v1 classification: `NLI_NEUTRAL_FILTER_GATE_FAILED`。  
+RRTIC-v1: architecture contract only。
+
+## 💶 Grant boundary
+
+NLnet は **submitted / under review / not awarded**。約 €50,000 は planning/transparency context だけです。
+
+## 📚 Related contracts
+
+- [Full architecture](../ARCHITECTURE.md)
 - [Durable Storage Profile](../architecture/DURABLE_STORAGE_PROFILE.md)
 - [Migration Contract](../architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md)
 - [Inactive PostgreSQL Import](../architecture/POSTGRESQL_INACTIVE_IMPORT.md)

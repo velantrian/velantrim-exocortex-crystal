@@ -1,167 +1,285 @@
+<!-- localization-source: main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
+<!-- localization-status: CURRENT -->
+<!-- current-localization-source: main@5903e90f3e0f2884f4ba257a71808d19fc439ebc -->
+<!-- current-english-readme-source: main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883 -->
 # 🔱 Velantrim ExoCortex — Crystal
 
 > 🌐 🇬🇧 [English](./README.md) · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 **日本語** · 🇮🇳 [हिन्दी](./README.hi.md)
 
-<!-- localization-source: main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
-<!-- localization-status: CURRENT -->
+## 💠 「見つかった」と「真である」を分離する local-first メモリ／evidence 基盤
 
-### 信頼できるAIシステムのための、検証可能な local-first メモリ・evidence・意思決定インフラ
+Crystal は、**監査可能な AI memory** のための local-first な研究・実装ラインです。Discovery、provenance、Evidence Admission、epistemic authority、trusted Canon、presentation を分離し、関連情報を検索できたこと自体が「真として認可された」ことにならないよう設計されています。
 
-`v0.3.0` · 🧪 **2078 passed / 13 skipped / 0 failed** · 🎯 **9756 statements / 100.00% line coverage** · 🧬 **7/7 Ring Zero mutants killed** · ✅ **9 CI jobs** · 🐍 stdlib-only default runtime · ⚖️ **AGPL-3.0**
+> 👤 **初めて Crystal を読む方:** まずこのページを読んでください。human-first の公開入口です。
+>
+> 🤖 **AI / agents / automated auditors:** **[Special for AI →](./docs/ai/README.md)** から開始してください。この README だけから live repository state を再構成しないでください。
+>
+> 📚 **より深いアーキテクチャ:** **[Deep System Overview →](./docs/OVERVIEW.md)** に進んでください。
 
-> Crystal はチャットボットでも自律的な「真実のオラクル」でもありません。claim の由来、epistemic state、grounding 可否、矛盾に対する監査可能な決定を扱う memory/evidence/decision boundary です。
+`v0.3.0` · 🎯 **100% line-coverage gate** · 🧬 **Ring Zero mutation gate** · ✅ **9 permanent CI jobs** · 🐍 **standard-library-first default runtime** · ⚖️ **AGPL-3.0**
 
-**Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` — PR #337.  
-**Reader foundation:** RC-1 evidence-linked skeleton と RC-2 caller-supplied Structural Document Map は実装・テスト済み。dedicated multi-pass Reader は未実装です。  
-**Grant:** `submitted / under review / not awarded`.  
-**Evidence:** [TEST_REPORT.md](./TEST_REPORT.md), [STATUS.md](./docs/STATUS.md), [implementation manifest](./docs/status/implementation-manifest.json).
+## 👋 Crystal は何を解決するのか
 
-> 不一致がある場合、英語版が一次ソースです。この README は短い orientation ではなく、完全な公開プレゼンテーションです。[docs/LOCALIZATION_POLICY.md](./docs/LOCALIZATION_POLICY.md) と [docs/TRANSLATION_STATUS.md](./docs/TRANSLATION_STATUS.md) を参照してください。
+一般的な retrieval / RAG は「何が関連して見えるか」を得意とします。Crystal が追加で扱うのは、その後の境界です。
 
----
+- 情報はどこから来たのか。
+- 同じ proposition を支持しているのか、単に同じ話題なのか。
+- admitted evidence として扱えるのか。
+- contradiction は本当に adjudicate されたのか。
+- trusted memory に入れてよいのは何か。
+- grounded answer として提示してよいのは何か。
 
-## 🎯 Crystal が必要な理由
+> **Discovery may propose what deserves inspection. Authority is a separate decision path.**
 
-多くの AI/RAG システムは、文書、ユーザー発言、model output、hypothesis、memory を同じコンテキストに混在させます。その結果、流暢な文章が evidence に裏付けられない authority を得ることがあります。
+## 🧠 Mental model
 
-```text
-fluent claim        != trusted fact
-physical L3         != strict Canon
-retrieval score     != evidence
-model output        != independent source truth
-migration receipt   != claim evidence
-import success      != backend activation
-Reader coverage     != comprehension proof
-Reader structure    != truth/confidence authority
+```mermaid
+mindmap
+  root((💠 Crystal))
+    🔎 Discovery
+      Sources
+      Reader
+      Candidate retrieval
+    🧾 Evidence
+      Provenance
+      Support
+      Admission
+    🛡 Authority
+      Guardian
+      TruthGate
+    🏛 Canon
+      Trusted local state
+    💬 Presentation
+      Grounded answer
+      Bounded refusal
+    🔬 Research
+      Evaluation
+      Falsification
+      Architecture
 ```
 
-## 🧠 Crystal が提供するもの
+この図は概念領域を示すもので、authority inheritance を示すものではありません。candidate discovery と epistemic authorization は意図的に別の経路です。
 
-- typed claims と明示的な epistemic lifecycle;
-- source identity, evidence spans, provenance;
-- admission boundaries としての Guardian / TruthGate;
-- strict Canon と分離された multi-status physical L3;
-- deny-dominant TrustSnapshot / CanonicalView;
-- read-only HTTP /ask, CLI ask, MCP search;
-- TRACE と replayable tamper-evident Receipts;
-- review queue/session と ContradictionReport;
-- COEXIST / CONTEXTUALIZE / SUPERSEDE の明示的決定;
-- scoped curator capabilities と process-local leases;
-- SQLite lifecycle と bounded logical migration;
-- `active=false` の optional PostgreSQL/pgvector inactive import;
-- RC-1: source/version/session, SegmentCard, fidelity, coverage, bookmarks/open loops, stale/failure/privacy;
-- RC-2: RECOVERED / AMBIGUOUS / UNSUPPORTED を持つ version-bound caller-supplied structure。
-
-RC-1/RC-2 は source body を保持せず、Reader API/CLI/worker や durable Reader schema を追加せず、Canon/ESM/planner authority を持ちません。automatic parser/OCR、Reader LLM/provider orchestration、embeddings/ANN/vector DB、multi-pass/cross-document runtime はありません。
-
-## 🏛️ 3つのアーキテクチャビュー
-
-### 🧠 Mind map
+## ⚙️ Authority flow
 
 ```text
-🧠 Crystal
-├── 📖 Reader foundation
-│   ├── RC-1 evidence-linked skeleton
-│   ├── RC-2 Structural Document Map
-│   └── dedicated multi-pass Reader — NOT IMPLEMENTED
-├── 🏛️ Memory
+                 DISCOVERY SIDE                         AUTHORITY SIDE
+
+📥 source → 📖 Reader → 🔎 candidates       │       🧾 evidence boundary
+                                            │                ↓
+              may surface                   │       🛡 Guardian → TruthGate
+              may compare                   │                ↓
+              may inspect                   │       TrustSnapshot → CanonicalView
+                                            │                ↓
+                                            │            🏛 strict Canon
+                                            │                ↓
+                                            │       💬 answer / refusal
+
+                 proposal                    │          authorization
+```
+
+retrieval score、model label、typed suspicion は inspection を助けられますが、trusted state を変更する authority は持ちません。
+
+## 🌳 System tree
+
+```text
+💠 Crystal
+│
+├── 📖 Reader
+│   ├── RC-1…RC-7 bounded implemented layers
+│   ├── RC-9 deterministic lexical PRE-ADMISSION candidate discovery
+│   └── RRTIC-v1 typed inspection contract — architecture only
+│
+├── 🧾 Evidence & provenance
+├── 🛡 Guardian / TruthGate
+│
+├── 🏛 Memory / Canon
 │   ├── L0 — working cache
-│   ├── L1 — operational SQLite/WAL
-│   ├── L2 — pending/review
-│   └── L3 — physical multi-status graph
-├── 🛡️ Trust
-│   ├── Guardian
-│   ├── TruthGate
-│   ├── TrustSnapshot
-│   └── CanonicalView
-└── 🗄️ Storage
-    ├── SQLite — active local-first
-    └── PostgreSQL/pgvector — inactive active=false
+│   ├── L1 — operational SQLite
+│   ├── L2 — pending / review
+│   ├── L3 — physical multi-status graph
+│   ├── TrustSnapshot — deny-dominant reconciliation
+│   └── CanonicalView — strict trusted read projection
+│
+├── 💬 HTTP /ask · CLI ask · MCP search — read-only
+├── 🧪 Evaluation
+│   ├── RC-9 lexical baseline
+│   ├── Comparator v1 — frozen gate FAIL
+│   └── NLI neutral-filter v1 — frozen gate FAIL
+├── 🤖 AI documentation interface
+├── ⚙ Machine-readable implementation truth
+└── 🔬 Evidence / history surfaces
 ```
 
-### 🏗️ 情報フロー
+`physical L3 != strict Canon`。物理的に保存されたことと、strict trusted read に認可されたことは同義ではありません。
+
+## 🔄 Architecture topology
+
+```mermaid
+flowchart LR
+    S["📥 Sources"] --> R["📖 Reader"]
+    R --> D["🔎 Candidate discovery"]
+    R --> P["🧾 Provenance"]
+    D --> I["🧬 Typed inspection"]
+    P --> E["🧾 Evidence boundary"]
+    I --> E
+    E --> G["🛡 Guardian / TruthGate"]
+    G --> C["🏛 Canon"]
+    C --> Q["💬 Grounded presentation"]
+    X["🔬 Tests · evaluation · evidence"] -. constrain .-> D
+    X -. constrain .-> G
+```
+
+## 📊 現在の capability reality-check
+
+| Surface | Status | Current boundary |
+|---|---|---|
+| Reader RC-1…RC-7 | ✅ Implemented | bounded Reader layers |
+| Reader RC-9 | ✅ Implemented | deterministic lexical **PRE-ADMISSION** discovery |
+| Comparator v1 | 🧊 Frozen evaluation | semantic recall recovered; discrimination gate **FAIL** |
+| NLI neutral-filter v1 | 🧊 Frozen evaluation | discrimination improved; recall-safety gate **FAIL** |
+| RRTIC-v1 | 📐 Architecture contract | typed suspicion / qualifier inspection; no runtime provider |
+| Guardian / TruthGate | ✅ Implemented | authority boundary; not retrieval ranking |
+| TrustSnapshot / CanonicalView | ✅ Implemented | deny-dominant reconciliation / strict projection |
+| SQLite | ✅ Active | ordinary local-first path |
+| PostgreSQL/pgvector | ⛔ Inactive | import/equivalence target only; `active=false` |
+| semantic/hybrid Reader runtime | ❌ Not authorized | no Reader FTS/ANN/vector runtime |
+| NLI Reader runtime filter | ❌ Not authorized | failed evaluation only |
+| RRTIC runtime provider | ❌ Not authorized | contract only |
+| dedicated/full Reader | ❌ Not implemented | `dedicated_reader_core=false` |
+
+## 📖 Reader progression
 
 ```text
-Source / document
-      ↓
-RC-1 Reader artifacts
-      ↓
-RC-2 structural metadata
-      ↓
-explicit ingest / review
-      ↓
-Guardian → TruthGate
-      ↓
-L1 + physical L3
-      ↓
-TrustSnapshot → CanonicalView STRICT
-      ↓
-Grounded answer / bounded refusal
-      ↓
-TRACE + Receipt
+RC-1  source-linked skeleton
+  ↓
+RC-2  version-bound structural map
+  ↓
+RC-3  deterministic bounded multi-pass mechanics
+  ↓
+RC-4  source-linked proposition extraction
+  ↓
+RC-5  typed relation candidates
+  ↓
+RC-6  bounded long-context working sets
+  ↓
+RC-7  explicit cross-document candidates
+  ↓
+RC-9  deterministic lexical PRE-ADMISSION candidate discovery
 ```
 
-### 🌳 モジュールツリー
+RC-1…RC-7 は bounded implemented Reader layers です。RC-9 は implemented deterministic lexical candidate discovery です。どちらも Evidence Admission や Canon authority ではありません。
+
+## 🔬 Post-RC-9 research truth
 
 ```text
-🌳 core
-├── reader_core.py       # RC-1
-├── reader_structure.py  # RC-2
-├── evidence.py
-├── truth_gate.py
-├── pipeline.py
-├── query_pipeline.py
-└── storage/...
+RC-9 lexical baseline
+        ↓
+Comparator v1
+semantic recall recovered · discrimination FAIL
+        ↓
+NLI neutral-filter v1
+discrimination improved · recall-safety FAIL
+        ↓
+post-NLI architecture reassessment
+relation-contract mismatch
+        ↓
+RRTIC-v1
+architecture contract only
 ```
 
-## 🧱 Memory / authority surface
+RC-9 retained classification: `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`。
+
+Comparator v1 classification: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`。これは frozen evaluation evidence であり semantic Reader runtime の authorization ではありません。
+
+NLI neutral-filter v1 classification: `NLI_NEUTRAL_FILTER_GATE_FAILED`。discrimination は改善しましたが、frozen recall-safety gate を満たしませんでした。NLI runtime filter は authorized されていません。
+
+RRTIC-v1 は Reader Retrieval Typed Inspection Contract v1 です。model、reranker、truth score、identity engine、Evidence Admission authority、contradiction adjudicator、Canon writer ではありません。
+
+## 🧬 RRTIC-v1
+
+```text
+relation families:
+EQUIVALENCE_SUSPECT
+RELATED_SUSPECT
+CONTRADICTION_SUSPECT
+QUALIFICATION_SUSPECT
+TOPIC_ONLY_SUSPECT
+UNKNOWN
+
+qualifier states:
+MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE
+```
+
+```text
+identity_claimed=false
+evidence_admitted=false
+adjudication_performed=false
+runtime_authorization=false
+rrtic_runtime_authorization=false
+nli_reader_runtime_filter=false
+semantic_hybrid_reader_runtime=false
+```
+
+## 🛡 Authority Firewall
+
+以下は architecture invariants です。
+
+```text
+coverage != comprehension proof
+pass completion != comprehension proof
+working-set coverage != comprehension proof
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+cross-document link != Canon relation
+same-topic != same proposition
+possible-same-claim != claim identity
+similarity signal != identity proof
+repetition != corroboration
+retrieval match != evidence
+similarity != identity
+ranking != epistemic authority
+candidate discovery != candidate adjudication
+NLI label != proposition identity
+NLI contradiction != contradiction adjudication
+RRTIC suspicion != adjudicated relation
+qualifier mismatch != truth decision
+evaluation pass != runtime authorization
+physical L3 != strict Canon
+```
+
+Historical compatibility の executable literal も保持します。
+
+```text
+reader_core_rc1_skeleton               = true
+reader_core_rc2_structural_map         = true
+reader_core_rc3_multi_pass_mechanics   = true
+reader_core_rc4_proposition_extraction = true
+reader_core_rc5_relation_candidates    = true
+reader_core_rc6_long_context_strategy  = true
+reader_core_rc7_cross_document_links   = true
+dedicated_reader_core                  = false
+contradiction candidate  != confirmed contradiction
+```
+
+## 🏛 Memory / authority surfaces
 
 | Surface | Role | Boundary |
 |---|---|---|
-| Reader RC-1 | source-linked artifacts | candidate ≠ truth |
-| Reader RC-2 | structural map | order ≠ authority |
 | L0 | working cache | ephemeral |
-| L1 | operational state | durable |
-| L2 | review/pending | automatic admission なし |
-| L3 | physical graph | multi-status |
+| L1 | operational state | durable local state |
+| L2 | pending / review | no automatic admission |
+| physical L3 | multi-status graph | not strict Canon |
+| Guardian | structural integrity / policy | not truth oracle |
+| TruthGate | L3 admission authority | separate from retrieval |
 | TrustSnapshot | reconciliation | deny-dominant |
-| CanonicalView | grounding | policy-allowed only |
-| TRACE / Receipt | audit/replay | evidence, not truth generator |
-| ContradictionReport | conflict object | automatic winner なし |
+| CanonicalView | trusted read projection | strict policy-allowed view |
+| TRACE / Receipt | audit / replay | evidence of operation, not generator of truth |
+| ContradictionReport | conflict object | no automatic winner |
 
-## 🗄️ SQLite と PostgreSQL/pgvector
-
-```text
-SQLite
-└── ordinary active local-first runtime
-    ├── reads/writes
-    ├── backup/restore
-    └── bounded logical export
-
-PostgreSQL 16 + pgvector
-└── optional inactive target
-    ├── explicit optional dependency
-    ├── SERIALIZABLE import
-    ├── exact target re-hash
-    └── active=false
-```
-
-import success は activation、cutover、rollback、dual-write、automatic switching、ANN acceptance、TruthGate admission を意味しません。通常の PostgreSQL runtime adapter は active ではありません。
-
-## 🔎 Classic RAG との比較
-
-| Question | Classic RAG | Crystal |
-|---|---|---|
-| 関連資料の検索 | 主機能 | adapters |
-| claim vs trusted fact | app-specific | typed boundary |
-| provenance | 可変 | first-class |
-| Reader structure/coverage | chunk-centric | RC-1/RC-2 foundation |
-| model self-source 防止 | inherent ではない | Ring Zero |
-| contradiction | 外部ロジック | explicit dispositions |
-| evidence replay | optional | TRACE / Receipt |
-| cloud/model 必須 | varies | default runtime では不要 |
-
-## 🛡️ Read-only query boundary
+## 💬 Read-only query boundary
 
 ```text
 HTTP /ask
@@ -173,7 +291,26 @@ core.query_pipeline.query()
 strict read-only canonical projection
 ```
 
-これらは fact を作成せず、ESM を変更せず、L3 に書き込みません。Explicit ingest は独立した write path です。
+これらの public query surfaces は fact を作成せず、ESM を変更せず、L3 に書き込みません。Explicit ingest / review は独立した write path です。
+
+## 💾 SQLite と PostgreSQL/pgvector
+
+```text
+SQLite
+└── ordinary active local-first runtime
+    ├── reads / writes
+    ├── backup / restore
+    └── bounded logical export
+
+PostgreSQL 16 + pgvector
+└── optional inactive import/equivalence target
+    ├── explicit optional dependency
+    ├── SERIALIZABLE import
+    ├── exact target re-hash
+    └── active=false
+```
+
+successful import != backend activation。Import success は runtime selection、Reader activation、automatic switching、cutover、rollback、dual-write、ANN acceptance、TruthGate admission を意味しません。
 
 ## ⚖️ Contradiction decisions
 
@@ -189,6 +326,39 @@ COEXIST / CONTEXTUALIZE / SUPERSEDE
 audited canonical write path
 ```
 
+candidate / suspicion 自体はこの決定を代替しません。
+
+## 💶 Grant truth
+
+```text
+programme: NLnet NGI0 Commons Fund
+proposal: submitted
+review: in progress
+award: not awarded
+budget change: none
+```
+
+Historical/public compatibility literal: `submitted / under review / not awarded`。
+
+約 **€50,000** は planning / transparency context にすぎません。approved budget、award、payment commitment ではありません。failed evaluation を grant narrative によって runtime capability に変換することもありません。
+
+## 📎 Historical runtime evidence
+
+以下は current repository test count ではなく、retained verified runtime checkpoint の compatibility evidence です。
+
+```text
+Verified runtime checkpoint:
+bbd816c09dd39a02e6de6c1014438490572f40f6
+
+Historical tests:
+2078 passed / 13 skipped / 0 failed
+
+Historical measured coverage:
+9756 statements / 100.00% line coverage
+```
+
+現在の live CI / repository lifecycle は GitHub から解決してください。historical numbers を current と誤読しないでください。
+
 ## 🚀 Quick start
 
 ```bash
@@ -200,42 +370,33 @@ pip install -e '.[dev]'
 pytest tests/ --cov=. --cov-fail-under=100
 ```
 
-Optional PostgreSQL: `pip install -e '.[postgresql]'`.
+Optional PostgreSQL dependency: `pip install -e '.[postgresql]'`。これは backend activation ではありません。
 
-## ✅ Verified baseline
+## 🚫 Non-claims
 
-```text
-Runtime checkpoint: bbd816c09dd39a02e6de6c1014438490572f40f6
-Python 3.11/3.12: 2078 passed / 13 skipped / 0 failed
-Statements: 9756
-Coverage: 100.00%
-CI: 9/9
-Ring Zero: 7/7
-reader_core_rc1_skeleton = true
-reader_core_rc2_structural_map = true
-dedicated_reader_core = false
-PostgreSQL target: active=false
-```
+Crystal は次を主張しません。
 
-## 🚧 Non-claims
+- universal truth / zero hallucinations;
+- automatic proposition identity;
+- automatic corroboration;
+- semantic/hybrid/vector Reader runtime authorization;
+- NLI Reader runtime filter authorization;
+- RRTIC runtime provider authorization;
+- active PostgreSQL/pgvector Reader backend;
+- automatic storage cutover / rollback / dual-write;
+- native-speaker editorial certification;
+- legal / security / GDPR certification;
+- NLnet award or committed funding.
 
-Crystal は universal truth、zero hallucinations、AGI/consciousness、legal/GDPR/security certification、production multi-tenancy、distributed exactly-once、active PostgreSQL runtime、automatic switching/cutover/rollback/dual-write、automatic Reader parsing、embeddings/ANN/vector Reader stack、completed dedicated multi-pass Reader Core を主張しません。
+## 🧭 Documentation routes
 
-NLnet は **submitted / under review / not awarded**。約 €50,000 は planning only、budget change none。agreement 前に merged された仕事は baseline です。
+- 👤 Human overview: [docs/OVERVIEW.md](./docs/OVERVIEW.md)
+- 🤖 Special for AI: [docs/ai/README.md](./docs/ai/README.md)
+- 📊 Current status: [docs/STATUS.md](./docs/STATUS.md)
+- 🧱 Implementation status: [docs/IMPLEMENTATION_STATUS.md](./docs/IMPLEMENTATION_STATUS.md)
+- 🏛 Architecture: [docs/ARCHITECTURE_OVERVIEW.md](./docs/ARCHITECTURE_OVERVIEW.md)
+- 🧾 Evidence: [TEST_REPORT.md](./TEST_REPORT.md)
+- 🌍 Localization policy: [docs/LOCALIZATION_POLICY.md](./docs/LOCALIZATION_POLICY.md)
+- 🌐 Translation status: [docs/TRANSLATION_STATUS.md](./docs/TRANSLATION_STATUS.md)
 
-## 📚 Navigation
-
-- [Documentation map](./docs/DOCUMENTATION_MAP.md)
-- [Quick Start](./docs/QUICKSTART.md)
-- [Status](./docs/STATUS.md)
-- [Implementation Status](./docs/IMPLEMENTATION_STATUS.md)
-- [Reader architecture](./docs/architecture/READER_CORE_ARCHITECTURE.md)
-- [Localization policy](./docs/LOCALIZATION_POLICY.md)
-- [Translation status](./docs/TRANSLATION_STATUS.md)
-- [Security](./SECURITY.md)
-- [Governance](./GOVERNANCE.md)
-- [Contributing](./CONTRIBUTING.md)
-
-## 🤝 Contributing / License
-
-変更は authority boundaries、tests/coverage、正確な claims を維持する必要があります。[CONTRIBUTING.md](./CONTRIBUTING.md) を参照してください。License: [AGPL-3.0](./LICENSE).
+> 英語版が primary/source language です。Japanese `CURRENT` は recorded technical parity を意味し、native-speaker editorial certification を意味しません。
