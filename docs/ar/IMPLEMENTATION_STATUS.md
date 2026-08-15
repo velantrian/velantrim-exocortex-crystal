@@ -1,58 +1,76 @@
-<!-- translation-source: docs/IMPLEMENTATION_STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
+<!-- translation-source: docs/IMPLEMENTATION_STATUS.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
 <!-- d1-locale: ar -->
 <!-- d1-boundary: public-ask-read-only -->
 <!-- d1-boundary: postgresql-active=false -->
 <!-- d1-nonclaim: import-is-not-activation -->
 <!-- d1-nonclaim: nlnet-not-awarded -->
-# حالة التنفيذ: Crystal والعمل المستقبلي
+# حالة التنفيذ — Crystal
 
-**التاريخ:** 2026-08-08  
-**نقطة التشغيل:** `bbd816c` / PR #337  
-**الأدلة:** [TEST_REPORT.md](../../TEST_REPORT.md)  
-**الحالة الآلية:** [manifest](../status/implementation-manifest.json)
+هذه الصفحة تميّز بين ما هو **bounded implemented** وما هو evaluation/architecture only وما هو غير مصرح به في runtime.
+
+## 📊 مصفوفة التنفيذ
 
 | المكوّن | الحالة | الحد الحالي |
 |---|---|---|
-| Guardian / TruthGate / العرض الصارم | منفذ | التخزين والترحيل لا يتجاوزان السلطة |
-| استعلامات HTTP/CLI/MCP | منفذة | الاستعلامات العادية لا تعدّل Canon |
-| SQLite backup/verify/restore غير نشط | منفذ ومختبر | restore غير نشط وليس قبولاً |
-| تصدير SQLite منطقي محدود | منفذ ومختبر | bundle قانوني محايد للـ backend |
-| تبعية وpreflight لـ PostgreSQL | منفذ ومختبر | إضافة صريحة وتحميل كسول |
-| استيراد PostgreSQL/pgvector غير نشط | منفذ ومختبر | schema جديد غير نشط، بلا I/O عادي |
-| تكافؤ دقيق لحالة الوجهة | منفذ ومختبر | إعادة hash مستقلة للقراءة فقط |
-| adapter تشغيل PostgreSQL نشط | غير منفذ | الوجهة خارج التكوين العادي |
-| switching تلقائي SQLite/PostgreSQL | ممنوع | التوفر ونجاح الاستيراد ليسا اختياراً |
-| تقييم exact-vs-ANN | غير منفذ | مرحلة لاحقة مستقلة |
-| cutover / rollback / dual-write | غير منفذ | مراحل صريحة لاحقة |
-| دورة خادم PostgreSQL | غير منفذة | backup/restore/upgrade/pooling مستقبلية |
-| Reader Core / Semantic Reading Layer | غير منفذ | طبقة مرشحة قبل القبول |
+| Reader RC-1 | ✅ implemented bounded | evidence-linked domain skeleton |
+| Reader RC-2 | ✅ implemented bounded | caller-supplied structural map |
+| Reader RC-3 | ✅ implemented bounded | explicit deterministic multi-pass mechanics |
+| Reader RC-4 | ✅ implemented bounded | source-linked proposition extraction |
+| Reader RC-5 | ✅ implemented bounded | pre-admission relation candidates |
+| Reader RC-6 | ✅ implemented bounded | bounded long-context strategy |
+| Reader RC-7 | ✅ implemented bounded | cross-document candidate links |
+| Reader RC-9 lexical candidate discovery | ✅ implemented | deterministic PRE-ADMISSION retrieval baseline |
+| Comparator v1 | 🧊 frozen gate fail | evaluation only |
+| NLI neutral-filter v1 | 🧊 frozen gate fail | evaluation only |
+| RRTIC-v1 | 🧩 frozen architecture contract | no runtime provider |
+| dedicated/full Reader Core | ❌ not implemented | `dedicated_reader_core=false` |
+| SQLite | ✅ ordinary active local-first | operational profile |
+| PostgreSQL/pgvector import | ✅ bounded inactive import/equivalence | `active=false` |
+| PostgreSQL normal runtime adapter | ❌ not implemented | no normal reads/writes |
+
+## 🧬 Machine boundary names
 
 ```text
-SQLite lifecycle
-→ backup / independent verify / inactive restore
-
-logical portability
-→ bounded canonical bundle
-→ PostgreSQL preflight
-→ inactive transactional import
-→ independent exact-state equivalence
-→ non-secret receipts
+reader_core_rc1_skeleton = true
+reader_core_rc2_structural_map = true
+reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc4_proposition_extraction = true
+reader_core_rc5_relation_candidates = true
+reader_core_rc6_long_context_strategy = true
+reader_core_rc7_cross_document_links = true
+dedicated_reader_core = false
 ```
 
-نُفذت issue #331 و#332 عبر PR #335 و#337. يبقى PostgreSQL مسار مشغل اختياري
-مع `active=false`. لا يمكن لنجاح التكافؤ تفعيل backend أو تغيير Guardian أو TruthGate
-أو Canon الصارم.
+RC-5 implementation lives in `core/reader_relations.py`. Its relation candidates remain same-session/same-source-version inspection artifacts, not truth decisions.
 
-العمل المستقبلي:
+## 🛡️ Epistemic boundary
 
 ```text
-exact-vs-ANN retrieval evaluation
-→ explicit cutover and source/target fencing
-→ rollback proof and expiry policy
-→ PostgreSQL backup/restore/upgrade lifecycle
-→ multi-process concurrency and production observability
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+candidate discovery != candidate adjudication
 ```
 
-لا يدّعي Crystal وجود backend PostgreSQL نشط، أو ترحيل تلقائي، أو multi-tenancy
-إنتاجي، أو حقيقة شاملة، أو انعدام الهلوسة، أو اعتماد قانوني/أمني، أو وعي.
+No Reader layer writes admitted evidence merely because a candidate was extracted, linked, ranked or classified.
+
+## 🔐 Public query
+
+`HTTP /ask`, `CLI ask` و`MCP search` route through `core.query_pipeline.query()` as read-only canonical projection. They do not create facts or mutate Canon.
+
+## 🗄️ Storage implementation
+
+SQLite remains the normal local-first runtime. PostgreSQL/pgvector remains an optional inactive import/equivalence target with `active=false`; import success is not activation and does not authorize automatic backend switching.
+
+## 🔬 Research/runtime distinction
+
+Comparator v1 classification: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`.  
+NLI v1 classification: `NLI_NEUTRAL_FILTER_GATE_FAILED`.  
+RRTIC-v1: architecture contract only; `runtime_authorization=false`.
+
+Therefore semantic/hybrid retrieval, NLI filtering and RRTIC runtime provider are not production capabilities.
+
+## 💶 Grant truth
+
+NLnet remains **submitted / under review / not awarded**. Approximately €50,000 is planning context only; budget change: none. Work merged before any funding agreement remains existing baseline.
