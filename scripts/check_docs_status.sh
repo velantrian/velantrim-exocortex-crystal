@@ -22,6 +22,8 @@ french_historical_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
 french_parity_base = "7d03cce2c89f7a4c3fda85742eb358e6b49961f2"
 spanish_historical_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
 spanish_parity_base = "bbe6b0d3d90d80b3c669ddab5fc56aa1bfe419eb"
+hindi_historical_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
+hindi_parity_base = "e1df11219ee4fc3b9c175b05c7569e568cf6f512"
 italian_historical_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
 italian_parity_base = "e436577dc5ada4692e8fe399da861a44f800e2f1"
 simplified_chinese_historical_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
@@ -29,7 +31,7 @@ simplified_chinese_parity_base = "5e6301f0eaee1a6c85d8543be89dc2e606dc05a8"
 japanese_historical_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
 japanese_parity_base = "5903e90f3e0f2884f4ba257a71808d19fc439ebc"
 locales = ["ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN"]
-current_locales = ["ar", "de", "es", "fr", "it", "ja", "ru", "zh-CN"]
+current_locales = locales
 refresh_locales = [locale for locale in locales if locale not in current_locales]
 
 
@@ -130,16 +132,18 @@ for key in (
 # Historical phased source checkpoint remains immutable while completed locale refreshes advance
 # independently against newer public semantics.
 expect(docs.get("localized_readme_source_checkpoint"), source_checkpoint, "localized README source")
+expect(docs.get("localized_readmes"), "all_nine_supported_locales_current_post_rrtic_no_refresh_needed", "localized README decision")
 expect(docs.get("full_parity_current_locales"), current_locales, "root current locales")
 expect(docs.get("full_parity_refresh_needed_locales"), refresh_locales, "root refresh locales")
 expect(docs.get("d1_source_checkpoint"), source_checkpoint, "D1 source")
 expect(docs.get("d1_current_locales"), current_locales, "D1 current locales")
 expect(docs.get("d1_refresh_needed_locales"), refresh_locales, "D1 refresh locales")
-expect(docs.get("latest_translation_refresh_issue"), 425, "latest translation refresh issue")
+expect(docs.get("latest_translation_refresh_issue"), 427, "latest translation refresh issue")
 expect(docs.get("arabic_parity_audit_base"), arabic_parity_base, "Arabic parity audit base")
 expect(docs.get("german_parity_audit_base"), german_parity_base, "German parity audit base")
 expect(docs.get("french_parity_audit_base"), french_parity_base, "French parity audit base")
 expect(docs.get("spanish_parity_audit_base"), spanish_parity_base, "Spanish parity audit base")
+expect(docs.get("hindi_parity_audit_base"), hindi_parity_base, "Hindi parity audit base")
 expect(docs.get("italian_parity_audit_base"), italian_parity_base, "Italian parity audit base")
 expect(docs.get("simplified_chinese_parity_audit_base"), simplified_chinese_parity_base, "Simplified Chinese parity audit base")
 expect(docs.get("japanese_parity_audit_base"), japanese_parity_base, "Japanese parity audit base")
@@ -230,6 +234,16 @@ for locale in locales:
         ):
             if marker not in text:
                 errors.append(f"{relative}: missing Spanish current/provenance marker {marker!r}")
+    elif locale == "hi":
+        for marker in (
+            f"localization-source: main@{hindi_historical_source}",
+            "localization-status: CURRENT",
+            f"current-localization-source: main@{hindi_parity_base}",
+            "reader_core_rc5_relation_candidates = true",
+            "contradiction candidate  != confirmed contradiction",
+        ):
+            if marker not in text:
+                errors.append(f"{relative}: missing Hindi current/provenance marker {marker!r}")
     elif locale == "it":
         for marker in (
             f"localization-source: main@{italian_historical_source}",
@@ -260,8 +274,6 @@ for locale in locales:
         ):
             if marker not in text:
                 errors.append(f"{relative}: missing Japanese current/provenance marker {marker!r}")
-    elif f"localization-source: main@{source_checkpoint}" in text:
-        errors.append(f"{relative}: REFRESH_NEEDED root falsely pins RC-5 source")
 
 # Root English README is the current first-impression source and must track post-RC-9 truth.
 root_readme = (root / "README.md").read_text(encoding="utf-8")
@@ -363,16 +375,17 @@ required = {
     "docs/TRANSLATION_STATUS.md": (
         source_checkpoint,
         "Reader RC-5 boundary",
-        "8 `REFRESH_NEEDED` localized documents",
-        "Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian",
+        "0 `REFRESH_NEEDED` localized documents",
+        "Arabic, German, French, Spanish, Hindi, Italian, Japanese, Simplified Chinese and Russian",
+        "136 CURRENT",
         "RC-9",
         "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP",
     ),
     "docs/ai/CURRENT_STATE.md": (
         source_checkpoint,
         "reader_core_rc7_cross_document_links",
-        "one other localized root README file",
-        "Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed",
+        "No localized root README or Reader-dependent detail pack remains `REFRESH_NEEDED`",
+        "Arabic, German, French, Spanish, Hindi, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed",
         "RC-9",
         "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP",
     ),
@@ -416,6 +429,7 @@ link_surfaces = [
     "README.de.md",
     "README.fr.md",
     "README.es.md",
+    "README.hi.md",
     "README.it.md",
     "README.ja.md",
     "README.zh-CN.md",
@@ -449,6 +463,6 @@ if errors:
     raise SystemExit(1)
 print(
     "Documentation status consistent: Reader RC-1..RC-7 bounded=true, RC-9 lexical baseline current, "
-    "dedicated=false; English grant truth post-RC-9; Arabic + German + French + Spanish + Italian + Japanese + Simplified Chinese + Russian localization current"
+    "dedicated=false; English grant truth post-RC-9; all 9 supported localization packs CURRENT"
 )
 PY
