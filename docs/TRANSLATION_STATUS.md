@@ -48,6 +48,8 @@ The following exact literals describe immutable historical localization checkpoi
 - **Reader RC-6 immutable English source checkpoint:** `main@ed96a88369f841bdb2ffd79ca020acef174685fc`
 - **Reader RC-5 immutable English source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
 
+The later German human-first / post-RRTIC parity refresh is a separate newer presentation layer. The later German human-first / post-RRTIC parity refresh is tracked separately and does not rewrite this immutable RC-7 checkpoint.
+
 At the historical RC-7 checkpoint there were **64 `REFRESH_NEEDED` localized documents** and the executable inventory read **279 total = 72 CURRENT + 133 ENGLISH_ONLY_BY_DESIGN + 64 REFRESH_NEEDED + 10 RETIRED**. That snapshot is immutable evidence.
 
 The immutable RC-7 localization layer **does not claim later RC-8/RC-9 meaning** merely because current English, Russian, German or French presentation surfaces have advanced.
