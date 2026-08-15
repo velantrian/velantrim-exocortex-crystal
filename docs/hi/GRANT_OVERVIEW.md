@@ -1,4 +1,4 @@
-<!-- translation-source: docs/PROJECT_GRANT_AND_GOVERNANCE.md@151b41c680190f7f3de729bf63e8e80a9d2285ce -->
+<!-- translation-source: docs/PROJECT_GRANT_AND_GOVERNANCE.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- d4-locale: hi -->
 <!-- translation-status: CURRENT -->
 <!-- d4-boundary: physical-l3-not-strict-canon -->
@@ -17,16 +17,23 @@ Crystal local-first, auditable AI memory/evidence infrastructure है। Grant
 ## Current technical boundary
 
 ```text
+RC-1 bounded Reader layer
+RC-2 bounded Reader layer
+RC-3 bounded Reader layer
+RC-4 bounded Reader layer
+RC-5 bounded Reader layer
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+contradiction candidate != confirmed contradiction
 physical L3 != strict Canon
 retrieval match != evidence
 similarity != identity
 model output != source truth
 migration proof != claim proof
 import success != activation
-Reader candidate != admitted evidence
 ```
 
-Reader RC-1…RC-7 bounded implemented layers हैं। RC-9 deterministic lexical PRE-ADMISSION candidate discovery है।
+Reader RC-1…RC-7 bounded implemented layers हैं। RC-9 deterministic lexical PRE-ADMISSION candidate discovery है। Dedicated Reader Core implemented नहीं है।
 
 Frozen research evidence:
 
@@ -51,7 +58,7 @@ SQLite ordinary active local-first profile है। PostgreSQL/pgvector optiona
 ```text
 programme: NLnet NGI0 Commons Fund
 proposal: submitted
-review: in progress / under review
+review: in progress
 award: not awarded
 budget change: none
 ```
