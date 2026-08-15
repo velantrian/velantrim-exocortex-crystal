@@ -1,65 +1,110 @@
-<!-- translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@208f1c772ee3a112cb803d2413c120bef23adb05 -->
+<!-- translation-source: docs/STORAGE_AND_AUTHORITY_BOUNDARIES.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
 <!-- d3-locale: ar -->
 <!-- d3-boundary: physical-l3-not-strict-canon -->
 <!-- d3-boundary: public-query-read-only -->
 <!-- d3-boundary: postgresql-active=false -->
 <!-- d3-nonclaim: import-is-not-activation -->
-<!-- d3-nonclaim: reader-core-not-implemented -->
 <!-- d3-nonclaim: nlnet-not-awarded -->
-# حدود التخزين والسلطة
+<!-- d3-reader: rc1-skeleton-implemented -->
+<!-- d3-reader: rc2-structural-map-implemented -->
+<!-- d3-reader: rc3-multi-pass-mechanics-implemented -->
+<!-- d3-reader: rc4-proposition-extraction-implemented -->
+<!-- d3-reader: rc5-relation-candidates-implemented -->
+<!-- d3-nonclaim: dedicated-reader-core-not-implemented -->
+# حدود التخزين والسلطة في Crystal
 
-## هويات منفصلة
+## 🧱 هويات منفصلة
 
 ```text
-storage profile = هوية النشر
-physical L3 = حالة بيانية متعددة التصنيفات
-strict Canon = إسقاط قراءة موثوق
-migration bundle = دليل على سلامة العملية
-retrieval score = إشارة ترتيب
-model output = نص مولد
+storage profile = deployment identity
+physical L3     = multi-status graph storage
+strict Canon    = trusted read projection
+migration proof = operation evidence
+Reader relation = inspection candidate
 ```
 
-لا تمنح أي هوية من هذه الهويات سلطة الأخرى تلقائياً.
+**physical L3 != strict Canon**. كما أن انتقال بيانات ناجح لا يصبح claim evidence ولا TruthGate admission.
 
-## الملف الدائم
+## 📖 Reader لا يملك سلطة التخزين المعرفية
 
-SQLite هو الخيار النشط المحلي المعتاد. قد يختار أول `auto` دائم LadybugDB الاختياري أو SQLite ثم يقفل الخلفية والموقع. أي تعارض لاحق يفشل مغلقاً. Mock متاح فقط عند اختياره صراحة للتطوير أو CI.
+```text
+reader_core_rc1_skeleton = true
+reader_core_rc2_structural_map = true
+reader_core_rc3_multi_pass_mechanics = true
+reader_core_rc4_proposition_extraction = true
+reader_core_rc5_relation_candidates = true
+```
 
-## physical L3 مقابل strict Canon
+RC-1 وRC-2 وRC-3 وRC-4 وRC-5 bounded implemented؛ RC-6/RC-7 أيضاً مدمجان. لكن:
 
-يمكن لـphysical L3 الاحتفاظ بسجلات VERIFIED أو USER_CLAIMED أو UNVERIFIED أو HYPOTHESIS أو SUBJECTIVE أو contested أو superseded أو restricted. strict Canon هو إسقاط قراءة deny-dominant يعتمد على السياسة والدليل الحاليين. التخزين أو الاسترجاع أو الدرجة العالية لا تكفي للقبول.
+```text
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+coverage != comprehension proof
+pass completion != comprehension proof
+```
 
-## القراءة والكتابة
+RC-5 `POSSIBLE_CONTRADICTION` أو أي Reader relation يبقى candidate إلى أن يمر بمسار evidence/adjudication المصرح به.
 
-`core.query_pipeline.query()` هو مسار الاستعلام العام للقراءة فقط. `ingest` الصريح هو المسار القادر على الكتابة، ثم تطبق Guardian وTruthGate الحدود البنيوية والمعرفية.
+## 🗄️ SQLite
 
-## دورة SQLite والترحيل
+SQLite هو ordinary active local-first runtime profile. L1 وphysical L3 يمكن أن يكونا durable، لكن durability لا تساوي epistemic authority.
 
-المسار المنفذ يشمل backup وverification وinactive restore وlogical export محدوداً وحزمة حتمية متحققة. ويمكن استيراد مجموعات physical-L3 المعتمدة إلى مخطط PostgreSQL جديد غير نشط ثم إثبات التكافؤ الدقيق، مع بقاء `active=false`.
+## 🐘 PostgreSQL/pgvector
 
-هذا لا يرحّل كل حالة L1 أو audit/outbox أو إعدادات التشفير أو النسخ المستقلة. كما لا يضيف runtime نشطاً لـPostgreSQL أو ANN مقبولاً أو switching أو cutover أو fencing أو rollback أو dual-write.
+PostgreSQL/pgvector موجود كـ optional inactive import/equivalence target:
 
-## الأسرار والنسخ
+```text
+optional driver
+→ explicit preflight
+→ inactive target schema
+→ serializable import
+→ independent exact-state re-hash
+→ equivalence receipt
+→ active=false
+```
 
-يجب ألا تدخل كلمات المرور أو الرموز أو DSN المحتوية على أسرار في profiles أو bundles أو receipts أو logs أو GitHub أو Notion. النسخ الاحتياطية والصادرات والترحيل تنشئ نسخاً إضافية؛ حذف السجل من المتجر النشط لا يحذفها تلقائياً. تشفير بعض حقول L1 ليس تشفيراً شاملاً.
+`active=false` حاسم. import success != activation. لا يوجد automatic cutover أو rollback أو dual-write أو backend switching.
 
-## ما تثبته العمليات
+## 🔐 Public query boundary
 
-| الحدث | ما يثبته | ما لا يثبته |
-|---|---|---|
-| سجل في L3 | استمرار مادي | عضوية strict Canon |
-| نتيجة استرجاع | صلة مرشحة | كفاية الدليل |
-| backup متحقق | سلامة النسخة | حقيقة الادعاء |
-| import ناجح | سلامة الاستيراد | activation أو اختيار runtime |
-| exact equivalence | تطابق مجموعات البيانات المعتمدة | الجاهزية الإنتاجية أو cutover |
+```text
+HTTP /ask
+CLI ask
+MCP search
+     ↓
+core.query_pipeline.query()
+     ↓
+read-only CanonicalView projection
+```
 
-Reader Core المتخصص غير منفذ، وNLnet ما زالت submitted / under review / not awarded.
+لا تقوم هذه الواجهات بكتابة L3 أو تغيير ESM أو إنشاء facts.
 
-## العقود الإنجليزية التفصيلية
+## 🛡️ Authority path
 
-- [البنية الكاملة](../ARCHITECTURE.md)
-- [الملف الدائم](../architecture/DURABLE_STORAGE_PROFILE.md)
-- [عقد الترحيل](../architecture/CROSS_BACKEND_MIGRATION_CONTRACT.md)
-- [استيراد PostgreSQL غير النشط](../architecture/POSTGRESQL_INACTIVE_IMPORT.md)
-- [ADR-021](../adr/ADR-021-CROSS-BACKEND-MIGRATION-CONTRACT.md)
+```text
+candidate / evidence proposal
+        ↓
+explicit admission path
+        ↓
+Guardian → TruthGate
+        ↓
+physical L3 state
+        ↓
+TrustSnapshot
+        ↓
+CanonicalView STRICT
+```
+
+Retrieval score أو similarity أو Reader relation أو NLI label أو RRTIC suspicion لا يتجاوز هذا المسار.
+
+## 🚫 Non-claims
+
+- dedicated/full Reader Core غير منفذ؛
+- semantic/hybrid Reader runtime غير مصرح؛
+- PostgreSQL normal runtime غير نشط؛
+- active Reader pgvector/ANN غير مصرح؛
+- automatic contradiction adjudication غير موجود؛
+- NLnet submitted / under review / not awarded.
