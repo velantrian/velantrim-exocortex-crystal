@@ -5,10 +5,9 @@
 #
 # Principle: deletion must be COMPLETE and PROVABLE at the same time.
 #   Complete — the node disappears from L0 (cache), L1 (SQLite), L3 (canon: node + edges +
-#             mentions), the L3 outbox (re-merge queue), evidence_spans
-#             (source_uri/chunk_id/section provenance pointers), and
-#             import_sessions (session_id/source batch-provenance pointers).
-#             No personal data or dangling references remain anywhere.
+#             mentions), the L3 outbox (re-merge queue), evidence_spans,
+#             import_sessions, and the derived normalized-ingest compatibility
+#             index. No personal data or dangling references remain anywhere.
 #   Provable — a content-free tombstone is written to erasure_log: fact_id, time,
 #             reason, actor and the sha256 hash of the erased claim (not the claim itself). This is a
 #             record of processing (Art. 30): one can prove WHAT and WHEN was
@@ -33,6 +32,7 @@ from core.memory import (
 )
 from core.l3_graph import get_l3_graph
 from core.queue import get_outbox_queue
+from core.normalized_ingest_index import remove_fact as remove_normalized_ingest_mapping
 from core import audit
 from core import evidence
 from core.provenance_chain import ProvenanceChain
@@ -73,8 +73,8 @@ def erase_fact(
     Physically and irreversibly delete a fact (GDPR Art. 17, right to be forgotten).
 
     Removes the fact from L0, L1, the L3 canonical graph (node + all edges + mentions),
-    the L3 outbox, evidence_spans, and import_sessions, then writes a
-    content-free tombstone to erasure_log.
+    the L3 outbox, evidence_spans, import_sessions, and the derived exact-normalized
+    ingest compatibility index, then writes a content-free tombstone to erasure_log.
 
     cascade=True: besides the fact itself, also erases everything derived from it —
     facts with a DERIVED_FROM edge to it (recursively, with cycle protection). This way
@@ -98,15 +98,13 @@ def erase_fact(
     graph = get_l3_graph()
     fact = get_fact(fact_id)
     l3_node = graph.get_fact(fact_id)
-    # Delete evidence and import-session entries BEFORE the no-op check below,
-    # and fold their results into that check. Either can be the only
-    # remaining trace of a fact_id whose L1/L3 rows are already gone (e.g.
-    # left behind by delete_fact_l1 called directly, bypassing erase_fact) —
-    # the "never stored anywhere" no-op determination must not skip that
-    # orphan cleanup (Codex review on #242, same bug class here for
-    # import_sessions.source — plaintext, can carry personal data/file paths).
+    # Delete evidence/import-session pointers and any derived normalized-id
+    # mapping BEFORE the no-op check below. The compatibility index is a
+    # rebuildable lookup cache and is intentionally not folded into `erased_now`
+    # or used as proof that canonical/personal data existed.
     evidence_removed = evidence.delete_evidence_for(fact_id)
     import_sessions_removed = delete_import_session_entries_for(fact_id)
+    remove_normalized_ingest_mapping(fact_id)
 
     # A fact_id that was never stored anywhere — L1 (fact), L3 (l3_node),
     # evidence_spans, OR import_sessions — AND was never previously erased is
@@ -147,8 +145,8 @@ def erase_fact(
                        for e in graph.incoming_edges(fact_id, REL_DERIVED_FROM)]
 
     # Deletion across all fabrics. Each step is idempotent and independent.
-    # (evidence_spans and import_sessions were already deleted above, before
-    # the no-op check.)
+    # (evidence_spans, import_sessions and the derived compatibility mapping
+    # were already deleted above, before the no-op check.)
     l1_removed = delete_fact_l1(fact_id)
     l3_removed = graph.erase_fact(fact_id)
     get_outbox_queue().clear(fact_id)  # remove any possible entry from the re-merge queue
