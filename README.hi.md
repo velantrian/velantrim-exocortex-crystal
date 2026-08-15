@@ -4,164 +4,202 @@
 
 <!-- localization-source: main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
 <!-- localization-status: CURRENT -->
+<!-- current-localization-source: main@e1df11219ee4fc3b9c175b05c7569e568cf6f512 -->
 
-### भरोसेमंद AI प्रणालियों के लिए सत्यापन योग्य local-first memory, evidence और decision infrastructure
+## 💠 ऐसी AI memory जिसमें retrieval और truth अलग रहते हैं
 
-`v0.3.0` · 🧪 **2078 passed / 13 skipped / 0 failed** · 🎯 **9756 statements / 100.00% line coverage** · 🧬 **7/7 Ring Zero mutants killed** · ✅ **9 CI jobs** · 🐍 stdlib-only default runtime · ⚖️ **AGPL-3.0**
+Crystal एक **local-first, auditable AI memory/evidence infrastructure** है। इसका मूल नियम जानबूझकर conservative है: कोई relevant item मिल जाना उसे evidence, verified fact या Canon authority नहीं बनाता।
 
-> Crystal chatbot या autonomous “truth oracle” नहीं है। यह memory/evidence/decision boundary है जो claim की provenance, epistemic state, grounding eligibility और contradictions पर audited decisions को सुरक्षित रखता है।
+> 👤 **पहली बार Crystal पढ़ रहे हैं?** इस page से शुरू करें — यह human-first entry point है।
+>
+> 🤖 **AI / agents / automated reviewers:** **[Special for AI →](./docs/ai/README.md)** से शुरू करें; narrative README से machine state reconstruct न करें।
+>
+> 📚 **गहरी architecture view:** **[Deep System Overview →](./docs/OVERVIEW.md)**।
 
-**Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` — PR #337.  
-**Reader foundation:** RC-1 evidence-linked skeleton और RC-2 caller-supplied Structural Document Map implemented/tested हैं; dedicated multi-pass Reader implemented नहीं है।  
-**Grant:** `submitted / under review / not awarded`.  
-**Evidence:** [TEST_REPORT.md](./TEST_REPORT.md), [STATUS.md](./docs/STATUS.md), [implementation manifest](./docs/status/implementation-manifest.json).
+`v0.3.0` · 🎯 **100% line-coverage gate** · 🧬 **Ring Zero mutation gate** · ✅ **9 permanent CI jobs** · 🐍 standard-library-first default runtime · ⚖️ **AGPL-3.0**
 
-> किसी अंतर पर अंग्रेज़ी primary source है। यह पूर्ण public presentation है, short orientation नहीं। [docs/LOCALIZATION_POLICY.md](./docs/LOCALIZATION_POLICY.md) और [docs/TRANSLATION_STATUS.md](./docs/TRANSLATION_STATUS.md) देखें।
+किसी conflict में English primary source है। Localization policy: [docs/LOCALIZATION_POLICY.md](./docs/LOCALIZATION_POLICY.md). Current freshness ledger: [docs/TRANSLATION_STATUS.md](./docs/TRANSLATION_STATUS.md).
 
 ---
 
-## 🎯 Crystal क्यों
+## 👋 Crystal क्या करता है?
 
-कई AI/RAG systems documents, user statements, model output, hypotheses और memory को मिला देते हैं। तब fluent text evidence के बिना authority पा सकता है।
+Traditional RAG अक्सर पूछता है: “इस query से सबसे relevant text क्या है?” Crystal उसके बाद वाले प्रश्नों को formal बनाता है:
 
-```text
-fluent claim        != trusted fact
-physical L3         != strict Canon
-retrieval score     != evidence
-model output        != independent source truth
-migration receipt   != claim evidence
-import success      != backend activation
-Reader coverage     != comprehension proof
-Reader structure    != truth/confidence authority
-```
+- यह जानकारी कहाँ से आई?
+- क्या यह उसी proposition को support करती है या केवल related topic है?
+- क्या यह केवल candidate है या evidence admission तक पहुँची?
+- क्या contradiction वास्तव में adjudicate हुआ?
+- क्या policy इसे trusted memory में आने देती है?
+- grounded answer में क्या safely दिखाया जा सकता है?
 
-## 🧠 Crystal क्या देता है
+Central boundary:
 
-- typed claims और explicit epistemic lifecycle;
-- source identity, evidence spans और provenance;
-- Guardian और TruthGate admission boundaries;
-- strict Canon से अलग multi-status physical L3;
-- deny-dominant TrustSnapshot और CanonicalView;
-- read-only HTTP /ask, CLI ask और MCP search;
-- TRACE और replayable tamper-evident Receipts;
-- review queue/session और ContradictionReport;
-- explicit COEXIST / CONTEXTUALIZE / SUPERSEDE decisions;
-- scoped curator capabilities और process-local leases;
-- SQLite lifecycle और bounded logical migration;
-- optional PostgreSQL/pgvector inactive import, `active=false`;
-- RC-1: source/version/session, SegmentCard, fidelity, coverage, bookmarks/open loops, stale/failure/privacy;
-- RC-2: RECOVERED / AMBIGUOUS / UNSUPPORTED वाला version-bound caller-supplied structure.
-
-RC-1/RC-2 source body नहीं रखते, Reader API/CLI/worker या durable Reader schema नहीं जोड़ते और Canon/ESM/planner authority नहीं रखते। automatic parser/OCR, Reader LLM/provider orchestration, embeddings/ANN/vector DB या multi-pass/cross-document runtime नहीं है।
-
-## 🏛️ Architecture के तीन views
-
-### 🧠 Mind map
+> **candidate discovery निरीक्षण के लिए items सुझा सकता है; candidate adjudication और authority path अलग रहते हैं।**
 
 ```text
-🧠 Crystal
-├── 📖 Reader foundation
-│   ├── RC-1 evidence-linked skeleton
-│   ├── RC-2 Structural Document Map
-│   └── dedicated multi-pass Reader — NOT IMPLEMENTED
-├── 🏛️ Memory
-│   ├── L0 — working cache
-│   ├── L1 — operational SQLite/WAL
-│   ├── L2 — pending/review
-│   └── L3 — physical multi-status graph
-├── 🛡️ Trust
-│   ├── Guardian
-│   ├── TruthGate
-│   ├── TrustSnapshot
-│   └── CanonicalView
-└── 🗄️ Storage
-    ├── SQLite — active local-first
-    └── PostgreSQL/pgvector — inactive active=false
+fluent claim                  != trusted fact
+retrieval match               != evidence
+similarity                    != identity
+ranking                       != epistemic authority
+repetition                    != corroboration
+candidate discovery           != candidate adjudication
+Reader candidate              != admitted evidence
+relation candidate            != admitted evidence
+contradiction candidate       != confirmed contradiction
+cross-document link           != Canon relation
+NLI label                     != proposition identity
+RRTIC suspicion               != adjudicated relation
+evaluation pass               != runtime authorization
+physical L3                   != strict Canon
 ```
 
-### 🏗️ Information flow
+Historical compatibility literal retained exactly:
+
+```text
+contradiction candidate  != confirmed contradiction
+```
+
+## 🧠 Mental model
+
+```text
+💠 Crystal
+├── 📥 Sources / explicit ingest
+├── 📖 Reader RC-1 … RC-7
+│   ├── provenance + structure
+│   ├── bounded multi-pass mechanics
+│   ├── source-linked propositions
+│   ├── relation candidates
+│   ├── long-context working sets
+│   └── cross-document candidate links
+├── 🔎 RC-9 lexical PRE-ADMISSION discovery
+├── 🧪 frozen semantic-comparator / NLI evaluation evidence
+├── 🧩 RRTIC-v1 typed inspection contract
+├── 🛡️ Guardian → TruthGate
+├── 🏛️ L0 / L1 / L2 / physical L3
+├── 🔐 TrustSnapshot → CanonicalView
+└── 🧾 TRACE / Receipt
+```
+
+## 🏗️ Data path और authority path
 
 ```text
 Source / document
       ↓
-RC-1 Reader artifacts
+Reader RC-1 … RC-7 bounded artifacts
       ↓
-RC-2 structural metadata
+RC-9 lexical candidate discovery
       ↓
-explicit ingest / review
+RRTIC suspicion / typed inspection
+      ↓
+inspection candidate
+      ║
+      ║  automatic authority नहीं
+      ▼
+explicit evidence / review path
       ↓
 Guardian → TruthGate
       ↓
-L1 + physical L3
+physical L3
       ↓
 TrustSnapshot → CanonicalView STRICT
       ↓
-Grounded answer / bounded refusal
-      ↓
-TRACE + Receipt
+grounded output / bounded refusal
 ```
 
-### 🌳 Module tree
+Discovery ≠ Authority.
+
+## 📖 Reader में वास्तव में क्या implemented है?
+
+| Layer | Status | Boundary |
+|---|---|---|
+| RC-1 | ✅ bounded implemented | source/version/session + evidence-linked artifacts |
+| RC-2 | ✅ bounded implemented | caller-supplied Structural Document Map |
+| RC-3 | ✅ bounded implemented | deterministic explicit multi-pass mechanics |
+| RC-4 | ✅ bounded implemented | source-linked pre-admission proposition extraction |
+| RC-5 | ✅ bounded implemented | same-session relation candidates |
+| RC-6 | ✅ bounded implemented | bounded long-context strategy |
+| RC-7 | ✅ bounded implemented | explicit cross-document candidate links |
+| RC-9 | ✅ implemented | deterministic lexical PRE-ADMISSION candidate discovery |
+| Semantic comparator | 🧊 frozen evaluation | runtime authorization = false |
+| NLI neutral-filter | 🧊 frozen gate fail | runtime authorization = false |
+| RRTIC-v1 | 🧩 architecture contract | runtime provider = false |
+| dedicated/full Reader Core | ❌ false | implemented claim नहीं |
 
 ```text
-🌳 core
-├── reader_core.py       # RC-1
-├── reader_structure.py  # RC-2
-├── evidence.py
-├── truth_gate.py
-├── pipeline.py
-├── query_pipeline.py
-└── storage/...
+reader_core_rc1_skeleton               = true
+reader_core_rc2_structural_map         = true
+reader_core_rc3_multi_pass_mechanics   = true
+reader_core_rc4_proposition_extraction = true
+reader_core_rc5_relation_candidates    = true
+reader_core_rc6_long_context_strategy  = true
+reader_core_rc7_cross_document_links   = true
+dedicated_reader_core                  = false
+semantic_hybrid_reader_runtime         = false
+nli_reader_runtime_filter              = false
+rrtic_runtime_authorization            = false
 ```
 
-## 🧱 Memory और authority surfaces
-
-| Surface | Role | Boundary |
-|---|---|---|
-| Reader RC-1 | source-linked artifacts | candidate ≠ truth |
-| Reader RC-2 | structural map | order ≠ authority |
-| L0 | working cache | ephemeral |
-| L1 | operational state | durable |
-| L2 | review/pending | no automatic admission |
-| L3 | physical graph | multi-status |
-| TrustSnapshot | reconciliation | deny-dominant |
-| CanonicalView | grounding | policy-allowed only |
-| TRACE / Receipt | audit/replay | evidence, not truth generator |
-| ContradictionReport | conflict object | no automatic winner |
-
-## 🗄️ SQLite और PostgreSQL/pgvector
+Important proposition boundary:
 
 ```text
-SQLite
-└── ordinary active local-first runtime
-    ├── reads/writes
-    ├── backup/restore
-    └── bounded logical export
-
-PostgreSQL 16 + pgvector
-└── optional inactive target
-    ├── explicit optional dependency
-    ├── SERIALIZABLE import
-    ├── exact target re-hash
-    └── active=false
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
 ```
 
-Import success activation, cutover, rollback, dual-write, automatic switching, ANN acceptance या TruthGate admission नहीं है। normal PostgreSQL runtime adapter active नहीं है।
+## 🔎 RC-9 — current retrieval baseline
 
-## 🔎 Classic RAG बनाम Crystal
+RC-9 **deterministic lexical PRE-ADMISSION candidate discovery** है। यह semantic understanding, proposition identity या truth verification नहीं है।
 
-| Question | Classic RAG | Crystal |
-|---|---|---|
-| Relevant material | primary strength | adapters |
-| Claim vs trusted fact | app-specific | typed boundary |
-| Provenance | variable | first-class |
-| Reader structure/coverage | chunk-centric | RC-1/RC-2 foundation |
-| Model self-source रोकना | not inherent | Ring Zero |
-| Contradictions | external logic | explicit dispositions |
-| Evidence replay | optional | TRACE / Receipt |
-| Mandatory cloud/model | varies | default runtime में नहीं |
+Historical paired K=5 control:
 
-## 🛡️ Read-only query boundary
+```text
+useful hits:               15 / 16
+Recall@5:                  0.937500
+Precision@5:               0.187500
+MRR:                       0.895833
+paired hard-negative rate: 1.000000
+classification: LEXICAL_BASELINE_EXPOSES_MEASURED_GAP
+```
+
+## 🧪 Semantic comparator और NLI से क्या सीखा?
+
+### Comparator v1
+
+Frozen classification:
+
+`SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`
+
+Semantic recall recovered, लेकिन discrimination gate fail हुआ। इसलिए यह **evaluation-only** है; semantic/vector runtime authorized नहीं है।
+
+### NLI neutral-filter v1
+
+Frozen classification:
+
+`NLI_NEUTRAL_FILTER_GATE_FAILED`
+
+NLI label proposition identity नहीं है और independent factual source भी नहीं। Runtime NLI filter authorized नहीं है।
+
+## 🧩 RRTIC-v1 क्या है — और क्या नहीं
+
+RRTIC-v1 एक **architecture contract for typed inspection / suspicion** है। यह runtime model/provider, reranker, semantic retriever, proposition-identity oracle, evidence admission authority, contradiction adjudicator या Canon writer नहीं है।
+
+```text
+rrtic_runtime_authorization=false
+nli_reader_runtime_filter=false
+semantic_hybrid_reader_runtime=false
+```
+
+## 🛡️ Authority firewall
+
+- **Guardian** structural integrity / policy boundary है; truth oracle नहीं।
+- **TruthGate** L3 admission authority है।
+- **TrustSnapshot** deny-dominant reconciliation देता है।
+- **CanonicalView** strict trusted read-time projection है।
+- TRACE / provenance auditability देता है; provenance proof of truth नहीं है।
+
+Public read-only surfaces:
 
 ```text
 HTTP /ask
@@ -173,60 +211,73 @@ core.query_pipeline.query()
 strict read-only canonical projection
 ```
 
-ये surfaces facts नहीं बनातीं, ESM mutate नहीं करतीं और L3 में नहीं लिखतीं। Explicit ingest अलग write path है।
+ये surfaces facts create नहीं करतीं, ESM mutate नहीं करतीं और L3 में write नहीं करतीं। Explicit ingest अलग write path है।
 
-## ⚖️ Contradiction decisions
-
-```text
-unresolved contradiction
-        ↓
-ContradictionReport
-        ↓
-scoped curator + capability + lease
-        ↓
-COEXIST / CONTEXTUALIZE / SUPERSEDE
-        ↓
-audited canonical write path
-```
-
-## 🚀 Quick start
-
-```bash
-git clone https://github.com/velantrian/velantrim-exocortex-crystal.git
-cd velantrim-exocortex-crystal
-python -m venv .venv
-source .venv/bin/activate
-pip install -e '.[dev]'
-pytest tests/ --cov=. --cov-fail-under=100
-```
-
-Optional PostgreSQL: `pip install -e '.[postgresql]'`.
-
-## ✅ Verified baseline
+## 🗄️ Storage reality
 
 ```text
-Runtime checkpoint: bbd816c09dd39a02e6de6c1014438490572f40f6
-Python 3.11/3.12: 2078 passed / 13 skipped / 0 failed
-Statements: 9756
-Coverage: 100.00%
-CI: 9/9
-Ring Zero: 7/7
-reader_core_rc1_skeleton = true
-reader_core_rc2_structural_map = true
-dedicated_reader_core = false
-PostgreSQL target: active=false
+SQLite
+└── ordinary active local-first runtime
+
+PostgreSQL 16 + pgvector
+└── optional inactive target
+    ├── explicit optional dependency
+    ├── transactional import / equivalence checks
+    └── active=false
 ```
 
-## 🚧 Non-claims
+Successful import activation, backend selection, cutover, rollback, dual-write, ANN acceptance या TruthGate admission नहीं है।
 
-Crystal universal truth, zero hallucinations, AGI/consciousness, legal/GDPR/security certification, production multi-tenancy, distributed exactly-once, active PostgreSQL runtime, automatic switching/cutover/rollback/dual-write, automatic Reader parsing, embeddings/ANN/vector Reader stack या completed dedicated multi-pass Reader Core का दावा नहीं करता।
+```text
+physical L3 != strict Canon
+successful import != backend activation
+```
 
-NLnet **submitted / under review / not awarded** है; लगभग €50,000 planning only है, budget change none। Agreement से पहले merged work baseline है।
+## 💶 Grant truth
+
+```text
+programme: NLnet NGI0 Commons Fund
+proposal: submitted
+review: in progress / under review
+award: not awarded
+budget change: none
+```
+
+लगभग €50,000 केवल planning/transparency context है; approved budget या payment commitment नहीं। Agreement से पहले merged work existing baseline है।
+
+## 🧾 Historical runtime evidence
+
+पुराने runtime checkpoint को provenance के रूप में रखा गया है, current test-count claim के रूप में नहीं:
+
+```text
+checkpoint: bbd816c09dd39a02e6de6c1014438490572f40f6
+2078 passed / 13 skipped / 0 failed
+9756 statements / 100.00% line coverage
+```
+
+Current acceptance हमेशा exact GitHub CI से तय होता है।
+
+## 🚧 Explicit non-claims
+
+Crystal निम्न claims नहीं करता:
+
+- universal truth / zero hallucinations;
+- AGI या consciousness;
+- dedicated Reader Core implemented;
+- semantic/vector Reader runtime enabled;
+- RRTIC runtime authorized;
+- NLI runtime filtering enabled;
+- active PostgreSQL runtime;
+- automatic backend switching/cutover/rollback/dual-write;
+- legal/GDPR/security certification;
+- native-speaker editorial certification;
+- NLnet award या approved ~€50k budget।
 
 ## 📚 Navigation
 
+- [Special for AI](./docs/ai/README.md)
+- [Deep System Overview](./docs/OVERVIEW.md)
 - [Documentation map](./docs/DOCUMENTATION_MAP.md)
-- [Quick Start](./docs/QUICKSTART.md)
 - [Status](./docs/STATUS.md)
 - [Implementation Status](./docs/IMPLEMENTATION_STATUS.md)
 - [Reader architecture](./docs/architecture/READER_CORE_ARCHITECTURE.md)
@@ -234,8 +285,5 @@ NLnet **submitted / under review / not awarded** है; लगभग €50,000 
 - [Translation status](./docs/TRANSLATION_STATUS.md)
 - [Security](./SECURITY.md)
 - [Governance](./GOVERNANCE.md)
-- [Contributing](./CONTRIBUTING.md)
 
-## 🤝 Contributing और license
-
-Changes को authority boundaries, tests/coverage और exact claims सुरक्षित रखने चाहिए। [CONTRIBUTING.md](./CONTRIBUTING.md) देखें। License: [AGPL-3.0](./LICENSE).
+License: [AGPL-3.0](./LICENSE).
