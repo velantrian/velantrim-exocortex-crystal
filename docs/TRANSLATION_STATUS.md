@@ -12,21 +12,18 @@
 **Current Simplified Chinese parity audit source:** `main@5e6301f0eaee1a6c85d8543be89dc2e606dc05a8`  
 **Current Japanese parity audit source:** `main@5903e90f3e0f2884f4ba257a71808d19fc439ebc`  
 **Current Arabic parity audit source:** `main@9e048c21fb929f7d299e3af0ef03d76c1df899d6`  
-**Latest locale refresh tracking:** Issue #425 — Arabic Human-First Documentation Parity v1
+**Current Hindi parity audit source:** `main@e1df11219ee4fc3b9c175b05c7569e568cf6f512`  
+**Latest locale refresh tracking:** Issue #427 — Hindi Human-First Documentation Parity v1
 
 This ledger records translation freshness. Inline `CURRENT` markers are trace metadata; current technical truth still resolves through merged implementation, executable tests, exact CI, current English contracts and the machine-readable implementation manifest.
 
 ## Current localization truth
 
-Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian root/public Reader-dependent documentation are refreshed to the same **post-RC-9 / post-NLI / RRTIC-v1** public architecture truth. Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian D1/D3/D4/D5 Reader-dependent detail surfaces are `CURRENT` under their recorded source/provenance contracts.
+Arabic, German, French, Spanish, Hindi, Italian, Japanese, Simplified Chinese and Russian root/public Reader-dependent documentation are refreshed to the same **post-RC-9 / post-NLI / RRTIC-v1** public architecture truth. All nine supported locale packs have `CURRENT` D1/D3/D4/D5 Reader-dependent detail surfaces under their recorded source/provenance contracts.
 
-The one remaining Reader-dependent locale pack is `REFRESH_NEEDED` at its historical checkpoint:
+No supported Reader-dependent locale pack remains `REFRESH_NEEDED` after Hindi parity.
 
-```text
-hi
-```
-
-D2 reviewer/safety surfaces and Quick Start remain `CURRENT` across all nine supported locales where their governing source semantics did not change. Issue #425 does not churn those stable documents.
+D2 reviewer/safety surfaces and Quick Start remain `CURRENT` across all nine supported locales where their governing source semantics did not change. Issue #427 does not churn those stable documents.
 
 ## Historical phased checkpoints — immutable provenance
 
@@ -43,6 +40,7 @@ These checkpoints remain historical trace evidence and are **not** current repos
 - **Historical Simplified Chinese root source:** `main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2`
 - **Historical Japanese root source:** `main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2`
 - **Historical Arabic root source:** `main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2`
+- **Historical Hindi root source:** `main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2`
 - **Retained runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6`
 - **Retained historical runtime tests:** `2078 passed / 13 skipped / 0 failed`
 - **Retained historical measured statements:** `9756 statements / 100.00% line coverage`
@@ -101,7 +99,7 @@ The following literals describe the closed Simplified Chinese milestone and rema
 
 ### Retained post-Japanese compatibility snapshot
 
-The following literals describe the closed Japanese milestone and remain historical evidence after Arabic parity. They are **not** the current inventory:
+The following literals describe the closed Japanese milestone and remain historical evidence after later parity milestones. They are **not** the current inventory:
 
 - D1 Reader-dependent detail translations are `CURRENT` in German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian; two other supported locales are `REFRESH_NEEDED`.
 - D3 Reader-dependent detail translations are `CURRENT` in German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian; two other supported locales are `REFRESH_NEEDED`.
@@ -109,6 +107,14 @@ The following literals describe the closed Japanese milestone and remain histori
 - D5 Reader-dependent detail translations are `CURRENT` in German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian; two other supported locales are `REFRESH_NEEDED`.
 - The executable D5 inventory then resolved **16 `REFRESH_NEEDED` localized documents**.
 - Historical post-Japanese inventory: **279 total = 120 CURRENT + 133 ENGLISH_ONLY_BY_DESIGN + 16 REFRESH_NEEDED + 10 RETIRED**.
+
+### Retained post-Arabic compatibility snapshot
+
+The following literals describe the closed Arabic milestone and remain historical evidence after Hindi parity. They are **not** the current inventory:
+
+- D1/D3/D4/D5 Reader-dependent detail translations were `CURRENT` in Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian; Hindi remained `REFRESH_NEEDED`.
+- The executable D5 inventory then resolved **8 `REFRESH_NEEDED` localized documents**.
+- Historical post-Arabic inventory: **279 total = 128 CURRENT + 133 ENGLISH_ONLY_BY_DESIGN + 8 REFRESH_NEEDED + 10 RETIRED**.
 
 ## Root README status
 
@@ -118,11 +124,11 @@ The following literals describe the closed Japanese milestone and remain histori
 | German | `README.de.md` | `CURRENT` | current human-first parity audited from `main@ad8cec8…`; historical root source retained |
 | French | `README.fr.md` | `CURRENT` | current human-first parity audited from `main@7d03cce2…`; historical root source retained |
 | Spanish | `README.es.md` | `CURRENT` | current human-first parity audited from `main@bbe6b0d3…`; historical root source retained |
+| Hindi | `README.hi.md` | `CURRENT` | current human-first parity audited from `main@e1df1121…`; historical root source retained |
 | Italian | `README.it.md` | `CURRENT` | current human-first parity audited from `main@e436577d…`; historical root source retained |
 | Japanese | `README.ja.md` | `CURRENT` | current human-first parity audited from `main@5903e90f…`; historical root source retained |
 | Simplified Chinese | `README.zh-CN.md` | `CURRENT` | current human-first parity audited from `main@5e6301f0…`; historical root source retained |
 | Russian | `README.ru.md` | `CURRENT` | current human-first parity audited from `main@9666781…`; RC-5/6/7 provenance retained |
-| Hindi | `README.hi.md` | `REFRESH_NEEDED` | rich historical translation; Reader semantics lag current English |
 
 `CURRENT` means refreshed against an explicit recorded source/parity checkpoint. It never means native-speaker editorial certification or automatic freshness after future English semantic changes.
 
@@ -130,22 +136,22 @@ The following literals describe the closed Japanese milestone and remain histori
 
 **D1 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
 
-D1 Reader-dependent detail translations are `CURRENT` in Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian; one other supported locale is `REFRESH_NEEDED`.
+D1 Reader-dependent detail translations are `CURRENT` in all nine supported locales.
 
-Current Arabic D1:
+Current Hindi D1:
 
-- `docs/ar/README.md` — current locale router;
-- `docs/ar/QUICKSTART.md` — `CURRENT`, unchanged because source semantics did not change;
-- `docs/ar/STATUS.md` — current post-RRTIC status;
-- `docs/ar/IMPLEMENTATION_STATUS.md` — current post-RRTIC implementation boundary.
+- `docs/hi/README.md` — current locale router;
+- `docs/hi/QUICKSTART.md` — `CURRENT`, unchanged because source semantics did not change;
+- `docs/hi/STATUS.md` — current post-RRTIC status;
+- `docs/hi/IMPLEMENTATION_STATUS.md` — current post-RRTIC implementation boundary.
 
-German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian D1 remain unchanged by Issue #425.
+The other eight locale packs remain unchanged by Issue #427.
 
 ## D2 — reviewer / safety / privacy
 
 **D2 source checkpoint:** `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`
 
-All nine supported D2 locale packs remain `CURRENT` for their recorded source semantics. D2 reviewer/safety translations remain current across all nine supported locales. Arabic `REVIEWER_GUIDE.md` and `SAFETY_PRIVACY_AND_FAILURES.md` were deliberately not rewritten by Issue #425.
+All nine supported D2 locale packs remain `CURRENT` for their recorded source semantics. Hindi `REVIEWER_GUIDE.md` and `SAFETY_PRIVACY_AND_FAILURES.md` were deliberately not rewritten by Issue #427.
 
 No native-speaker editorial certification is implied by `CURRENT`; CI validates objective contract markers, not independent human language certification.
 
@@ -153,9 +159,9 @@ No native-speaker editorial certification is implied by `CURRENT`; CI validates 
 
 **D3 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
 
-D3 Reader-dependent detail translations are `CURRENT` in Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian; one other supported locale is `REFRESH_NEEDED`.
+D3 Reader-dependent detail translations are `CURRENT` in all nine supported locales.
 
-Arabic D3 preserves the current architecture chain:
+Hindi D3 preserves the current architecture chain:
 
 ```text
 RC-1 → RC-2 → RC-3 → RC-4 → RC-5 → RC-6 → RC-7
@@ -173,7 +179,7 @@ RC-1 → RC-2 → RC-3 → RC-4 → RC-5 → RC-6 → RC-7
 
 **D4 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
 
-D4 Reader-dependent detail translations are `CURRENT` in Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian; one other supported locale is `REFRESH_NEEDED`.
+D4 Reader-dependent detail translations are `CURRENT` in all nine supported locales.
 
 Funding truth remains identical in every current locale:
 
@@ -191,29 +197,21 @@ Approximately €50,000 remains planning/transparency context only.
 
 **D5 source checkpoint:** `main@51c205fe048fd69d39fcd47b43e042a50de432bc`
 
-D5 Reader-dependent detail translations are `CURRENT` in Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian; one other supported locale is `REFRESH_NEEDED`.
+D5 Reader-dependent detail translations are `CURRENT` in all nine supported locales.
 
-The executable D5 inventory now resolves **8 `REFRESH_NEEDED` localized documents**:
+The executable D5 inventory now resolves **0 `REFRESH_NEEDED` localized documents**.
 
-```text
-1 refresh-needed root README
-+
-1 refresh-needed locale pack × 7 Reader-dependent detail files
-=
-8 REFRESH_NEEDED localized documents
-```
-
-Resolved inventory target after Arabic parity:
+Resolved inventory after Hindi parity:
 
 ```text
 279 total
-128 CURRENT
+136 CURRENT
 133 ENGLISH_ONLY_BY_DESIGN
-8 REFRESH_NEEDED
+0 REFRESH_NEEDED
 10 RETIRED
 ```
 
-The immutable D5 source-inventory repository checkpoint remains the signed PR #350 merge `3de746e74be844c6fda55849c10faac5c3f0631a`. Arabic parity changes freshness classification, not that historical checkpoint.
+The immutable D5 source-inventory repository checkpoint remains the signed PR #350 merge `3de746e74be844c6fda55849c10faac5c3f0631a`. Hindi parity changes freshness classification, not that historical checkpoint.
 
 ## Reader RC-5 boundary — retained compatibility contract
 
@@ -271,8 +269,6 @@ NLnet remains **submitted / under review / not awarded**. Translation cannot tur
 
 ## Remaining localization program
 
-After Arabic closure, the remaining Reader-dependent parity backlog is:
+The bounded Human-First documentation parity program is complete for all nine supported locales. No Reader-dependent locale remains in the refresh backlog.
 
-1. Hindi
-
-This ledger does **not** authorize starting the next language automatically. Each locale requires a separate bounded issue/branch/PR, exact-head CI, guarded merge, post-merge CI and closure.
+Any future localization work requires a new live audit if English source semantics change; `CURRENT` is not a permanent freshness guarantee.
