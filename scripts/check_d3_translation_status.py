@@ -1,4 +1,4 @@
-"""Validate mixed D3 architecture/storage translation freshness after Arabic parity refresh."""
+"""Validate D3 architecture/storage translation freshness after Hindi parity refresh."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from urllib.parse import unquote
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = "51c205fe048fd69d39fcd47b43e042a50de432bc"
 LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
-CURRENT_LOCALES = ("ar", "de", "es", "fr", "it", "ja", "ru", "zh-CN")
+CURRENT_LOCALES = LOCALES
 REFRESH_LOCALES = tuple(locale for locale in LOCALES if locale not in CURRENT_LOCALES)
 FILES = {
     locale: (
@@ -59,7 +59,7 @@ def main() -> int:
     checks = (
         (manifest.get("phase") == "D3", "phase"),
         (manifest.get("tracking_issue") == 341, "tracking issue"),
-        (manifest.get("latest_refresh_issue") == 425, "latest refresh issue"),
+        (manifest.get("latest_refresh_issue") == 427, "latest refresh issue"),
         (manifest.get("english_source_checkpoint") == SOURCE, "source checkpoint"),
         (manifest.get("current_locales") == list(CURRENT_LOCALES), "current locales"),
         (manifest.get("refresh_needed_locales") == list(REFRESH_LOCALES), "refresh locales"),
@@ -135,8 +135,8 @@ def main() -> int:
     ledger = (ROOT / "docs/TRANSLATION_STATUS.md").read_text(encoding="utf-8")
     for marker in (
         f"D3 source checkpoint:** `main@{SOURCE}`",
-        "D3 Reader-dependent detail translations are `CURRENT` in Arabic, German, French, Spanish, Italian, Japanese, Simplified Chinese and Russian",
-        "one other supported locale is `REFRESH_NEEDED`",
+        "D3 Reader-dependent detail translations are `CURRENT` in all nine supported locales",
+        "No supported Reader-dependent locale pack remains `REFRESH_NEEDED`",
     ):
         if marker not in ledger:
             errors.append(f"translation ledger: missing D3 marker {marker!r}")
@@ -146,7 +146,7 @@ def main() -> int:
         for error in errors:
             print(f"  - {error}")
         return 1
-    print("D3 translation status consistent: Arabic + German + French + Spanish + Italian + Japanese + Simplified Chinese + Russian CURRENT; 1 locale REFRESH_NEEDED")
+    print("D3 translation status consistent: all 9 supported locales CURRENT; 0 REFRESH_NEEDED")
     return 0
 
 
