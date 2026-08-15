@@ -4,164 +4,244 @@
 
 <!-- localization-source: main@6b45bdd196eb42dea7bc30f58d69799b4b1712f2 -->
 <!-- localization-status: CURRENT -->
+<!-- current-localization-source: main@9e048c21fb929f7d299e3af0ef03d76c1df899d6 -->
 
-### بنية local-first قابلة للتحقق للذاكرة والأدلة والقرارات في أنظمة الذكاء الاصطناعي الموثوقة
+## 💠 بنية ذاكرة وأدلة تفصل الاسترجاع عن الحقيقة
 
-`v0.3.0` · 🧪 **2078 passed / 13 skipped / 0 failed** · 🎯 **9756 statements / 100.00% line coverage** · 🧬 **7/7 Ring Zero mutants killed** · ✅ **9 CI jobs** · 🐍 stdlib-only default runtime · ⚖️ **AGPL-3.0**
+Crystal هو خط بحث وتنفيذ **local-first** لذاكرة ذكاء اصطناعي قابلة للتدقيق. الفكرة الأساسية بسيطة ومحافظة: العثور على مادة تبدو ذات صلة لا يمنحها تلقائياً صفة الدليل، ولا يجعلها حقيقة، ولا يسمح لها بالدخول إلى Canon.
 
-> Crystal ليس chatbot ولا «oracle للحقيقة» يعمل ذاتياً. إنه memory/evidence/decision boundary يحفظ أصل الادعاء وحالته المعرفية وإمكانية استخدامه في grounding والقرارات الصريحة القابلة للتدقيق حول التناقضات.
+> 👤 **هل هذه أول مرة تقرأ عن Crystal؟** ابدأ بهذه الصفحة؛ فهي بوابة بشرية أولاً.
+>
+> 🤖 **للـ AI / agents / المدققين الآليين:** ابدأ من **[Special for AI →](./docs/ai/README.md)** ولا تعِد بناء الحالة الحالية من هذا README السردي وحده.
+>
+> 📚 **للتفاصيل المعمارية الأعمق:** انتقل إلى **[Deep System Overview →](./docs/OVERVIEW.md)**.
 
-**Verified runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` — PR #337.  
-**Reader foundation:** تم تنفيذ واختبار RC-1 evidence-linked skeleton وRC-2 caller-supplied Structural Document Map؛ أما dedicated multi-pass Reader فلم يُنفذ.  
-**Grant:** `submitted / under review / not awarded`.  
-**Evidence:** [TEST_REPORT.md](./TEST_REPORT.md)، [STATUS.md](./docs/STATUS.md)، [implementation manifest](./docs/status/implementation-manifest.json).
+`v0.3.0` · 🎯 **100% line-coverage gate** · 🧬 **Ring Zero mutation gate** · ✅ **9 permanent CI jobs** · 🐍 standard-library-first default runtime · ⚖️ **AGPL-3.0**
 
-> تبقى الإنجليزية المصدر الأساسي والحاسم عند التعارض. هذا README عرض عام كامل وليس ملخصاً قصيراً. راجع [docs/LOCALIZATION_POLICY.md](./docs/LOCALIZATION_POLICY.md) و[docs/TRANSLATION_STATUS.md](./docs/TRANSLATION_STATUS.md).
+## 👋 ما هو Crystal؟
 
----
+أنظمة RAG التقليدية تجيب جيداً عن سؤال مثل: «ما النص الأقرب إلى هذا الاستعلام؟». Crystal يهتم بالأسئلة التالية بعد ذلك:
 
-## 🎯 لماذا Crystal
+- من أين جاءت المعلومة؟
+- هل تدعم نفس proposition أم موضوعاً قريباً فقط؟
+- هل وصلت إلى evidence admission أم ما زالت candidate؟
+- هل تم adjudication للتناقض فعلاً؟
+- هل يسمح policy بدخولها إلى trusted memory؟
+- ماذا يمكن للنظام عرضه بأمان باعتباره grounded؟
 
-تخلط كثير من أنظمة AI/RAG بين الوثائق وأقوال المستخدم وmodel output والفرضيات والذاكرة. عندها قد يكتسب نص مقنع authority لا تدعمها الأدلة.
+القاعدة المركزية:
 
-```text
-fluent claim        != trusted fact
-physical L3         != strict Canon
-retrieval score     != evidence
-model output        != independent source truth
-migration receipt   != claim evidence
-import success      != backend activation
-Reader coverage     != comprehension proof
-Reader structure    != truth/confidence authority
-```
-
-## 🧠 ما الذي يقدمه Crystal
-
-- typed claims وepistemic lifecycle صريح؛
-- source identity وevidence spans وprovenance؛
-- Guardian وTruthGate كحدود admission؛
-- physical L3 متعدد الحالات منفصل عن strict Canon؛
-- TrustSnapshot وCanonicalView بسياسة deny-dominant؛
-- HTTP /ask وCLI ask وMCP search للقراءة فقط؛
-- TRACE وReceipts قابلة لإعادة التحقق ومقاومة للعبث؛
-- review queue/session وContradictionReport؛
-- قرارات COEXIST / CONTEXTUALIZE / SUPERSEDE الصريحة؛
-- scoped curator capabilities وprocess-local leases؛
-- SQLite lifecycle وbounded logical migration؛
-- optional PostgreSQL/pgvector inactive import مع `active=false`؛
-- RC-1: source/version/session وSegmentCard وfidelity وcoverage وbookmarks/open loops وstale/failure/privacy؛
-- RC-2: بنية caller-supplied مرتبطة بالإصدار مع RECOVERED / AMBIGUOUS / UNSUPPORTED.
-
-لا يحتفظ RC-1/RC-2 بنص المصدر، ولا يضيفان Reader API/CLI/worker أو durable Reader schema، ولا يملكان Canon/ESM/planner authority. لا يوجد automatic parser/OCR أو Reader LLM/provider orchestration أو embeddings/ANN/vector DB أو multi-pass/cross-document runtime.
-
-## 🏛️ ثلاث رؤى للمعمارية
-
-### 🧠 Mind map
+> **candidate discovery قد يقترح ما يستحق الفحص؛ candidate adjudication ومسار السلطة منفصلان.**
 
 ```text
-🧠 Crystal
-├── 📖 Reader foundation
-│   ├── RC-1 evidence-linked skeleton
-│   ├── RC-2 Structural Document Map
-│   └── dedicated multi-pass Reader — NOT IMPLEMENTED
-├── 🏛️ Memory
-│   ├── L0 — working cache
-│   ├── L1 — operational SQLite/WAL
-│   ├── L2 — pending/review
-│   └── L3 — physical multi-status graph
-├── 🛡️ Trust
-│   ├── Guardian
-│   ├── TruthGate
-│   ├── TrustSnapshot
-│   └── CanonicalView
-└── 🗄️ Storage
-    ├── SQLite — active local-first
-    └── PostgreSQL/pgvector — inactive active=false
+fluent claim                  != trusted fact
+retrieval match               != evidence
+similarity                    != identity
+NLI label                     != proposition identity
+RRTIC suspicion               != adjudicated relation
+physical L3                   != strict Canon
+Reader candidate              != admitted evidence
+contradiction candidate       != confirmed contradiction
 ```
 
-### 🏗️ تدفق المعلومات
+## 🧠 النموذج الذهني
+
+```text
+💠 Crystal
+├── 📥 Sources / explicit ingest
+├── 📖 Reader RC-1 … RC-7
+│   ├── provenance + structure
+│   ├── multi-pass mechanics
+│   ├── propositions
+│   ├── relation candidates
+│   ├── long-context working sets
+│   └── cross-document candidate links
+├── 🔎 RC-9 lexical PRE-ADMISSION discovery
+├── 🧪 frozen comparator / NLI evaluation evidence
+├── 🧩 RRTIC-v1 typed inspection contract
+├── 🛡️ Guardian → TruthGate
+├── 🏛️ L0 / L1 / L2 / physical L3
+├── 🔐 TrustSnapshot → CanonicalView
+└── 🧾 TRACE / Receipt
+```
+
+## 🏗️ مسار البيانات مقابل مسار السلطة
 
 ```text
 Source / document
       ↓
-RC-1 Reader artifacts
+Reader RC-1 … RC-7 bounded artifacts
       ↓
-RC-2 structural metadata
+RC-9 lexical candidate discovery
       ↓
-explicit ingest / review
+RRTIC suspicion / typed inspection
+      ↓
+inspection candidate
+      ║
+      ║  لا توجد سلطة تلقائية
+      ▼
+explicit evidence / review path
       ↓
 Guardian → TruthGate
       ↓
-L1 + physical L3
+physical L3
       ↓
 TrustSnapshot → CanonicalView STRICT
       ↓
-Grounded answer / bounded refusal
-      ↓
-TRACE + Receipt
+grounded output / bounded refusal
 ```
 
-### 🌳 شجرة الوحدات
+هذا الفصل هو سبب وجود Crystal: ranking وretrieval وReader inspection أدوات اكتشاف وفحص، وليست طريقاً مختصراً إلى epistemic authority.
+
+## 📖 ما الذي تم تنفيذه في Reader فعلياً؟
+
+| الطبقة | الحالة | الحد الحاسم |
+|---|---|---|
+| RC-1 | ✅ bounded implemented | source/version/session + evidence-linked artifacts |
+| RC-2 | ✅ bounded implemented | caller-supplied Structural Document Map |
+| RC-3 | ✅ bounded implemented | deterministic explicit multi-pass mechanics |
+| RC-4 | ✅ bounded implemented | source-linked pre-admission proposition extraction |
+| RC-5 | ✅ bounded implemented | same-session relation candidates |
+| RC-6 | ✅ bounded implemented | bounded long-context strategy |
+| RC-7 | ✅ bounded implemented | explicit cross-document candidate links |
+| RC-9 | ✅ implemented | deterministic lexical PRE-ADMISSION candidate discovery |
+| Semantic comparator | 🧊 frozen evaluation | runtime authorization = false |
+| NLI neutral-filter | 🧊 frozen gate fail | runtime authorization = false |
+| RRTIC-v1 | 🧩 architecture contract | runtime provider = false |
+| dedicated/full Reader Core | ❌ false | لا يُدّعى أنه منفذ |
 
 ```text
-🌳 core
-├── reader_core.py       # RC-1
-├── reader_structure.py  # RC-2
-├── evidence.py
-├── truth_gate.py
-├── pipeline.py
-├── query_pipeline.py
-└── storage/...
+reader_core_rc1_skeleton               = true
+reader_core_rc2_structural_map         = true
+reader_core_rc3_multi_pass_mechanics   = true
+reader_core_rc4_proposition_extraction = true
+reader_core_rc5_relation_candidates    = true
+reader_core_rc6_long_context_strategy  = true
+reader_core_rc7_cross_document_links   = true
+dedicated_reader_core                  = false
+semantic_hybrid_reader_runtime         = false
+nli_reader_runtime_filter              = false
+rrtic_runtime_provider                 = false
 ```
 
-## 🧱 أسطح الذاكرة والسلطة
+وللتوافق مع validators التاريخية يبقى أيضاً النص الدقيق:
 
-| السطح | الدور | الحد الحاسم |
+```text
+reader_core_rc5_relation_candidates    = true
+contradiction candidate  != confirmed contradiction
+```
+
+## 🔎 RC-9 — baseline الاسترجاع الحالي
+
+RC-9 هو **deterministic lexical PRE-ADMISSION candidate discovery**. لا يُسوَّق باعتباره semantic understanding ولا automatic truth verification.
+
+Historical paired K=5 control:
+
+```text
+useful hits:               15 / 16
+Recall@5:                  0.937500
+Precision@5:               0.187500
+MRR:                       0.895833
+paired hard-negative rate: 1.000000
+classification: LEXICAL_BASELINE_EXPOSES_MEASURED_GAP
+```
+
+Evaluation Surface v2 أظهر أن lexical baseline مفيد لكنه لا يحل وحده multi-stratum retrieval/discrimination gaps.
+
+## 🧪 ما الذي تعلمناه من المقارنات الدلالية؟
+
+### Comparator v1
+
+Frozen classification: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`.
+
+```text
+Recall@5:             1.000000
+MRR:                  1.000000
+hard-negative rate:   0.854167
+runtime authorization: false
+```
+
+استعاد semantic recall، لكنه فشل في discrimination gate، ولذلك **لم يتحول إلى production Reader runtime**.
+
+### NLI neutral-filter v1
+
+Frozen classification: `NLI_NEUTRAL_FILTER_GATE_FAILED`.
+
+```text
+Recall@5:             0.958333
+MRR:                  1.000000
+hard-negative rate:   0.375000
+runtime authorization: false
+```
+
+خفض leakage لكنه لم يكن recall-safe وفق frozen gate. النتيجة evidence للتقييم فقط.
+
+## 🧩 RRTIC-v1 — عقد الفحص، لا محرك حقيقة
+
+RRTIC-v1 يجمّد suspicion-only relation families ويجعل qualifier mismatches مرئية قبل أي authority decision.
+
+```text
+EQUIVALENCE_SUSPECT
+RELATED_SUSPECT
+CONTRADICTION_SUSPECT
+QUALIFICATION_SUSPECT
+TOPIC_ONLY_SUSPECT
+UNKNOWN
+```
+
+```text
+identity_claimed=false
+evidence_admitted=false
+adjudication_performed=false
+runtime_authorization=false
+```
+
+RRTIC لا يفلتر أو يعيد الترتيب تلقائياً، ولا يقرر proposition identity، ولا يكتب Canon، ولا يسجل RC-5 relation تلقائياً.
+
+## 🛡️ جدار السلطة الدائم
+
+```text
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+coverage != comprehension proof
+pass completion != comprehension proof
+cross-document link != Canon relation
+same-topic != same proposition
+possible-same-claim != claim identity
+similarity signal != identity proof
+retrieval match != evidence
+candidate discovery != candidate adjudication
+```
+
+أي retrieval أو ranking أو similarity أو NLI أو RRTIC diagnostic يبقى خارج evidence admission إلى أن يمر عبر المسار المصرح به.
+
+## 🏛️ L0 / L1 / L2 / L3
+
+| السطح | الدور | ما لا يعنيه |
 |---|---|---|
-| Reader RC-1 | source-linked artifacts | candidate ≠ truth |
-| Reader RC-2 | structural map | order ≠ authority |
-| L0 | working cache | ephemeral |
-| L1 | operational state | durable |
-| L2 | review/pending | لا admission تلقائي |
-| L3 | physical graph | multi-status |
-| TrustSnapshot | reconciliation | deny-dominant |
-| CanonicalView | grounding | policy-allowed only |
-| TRACE / Receipt | audit/replay | evidence لا truth generator |
-| ContradictionReport | conflict | لا winner تلقائي |
+| L0 | working cache | ليس ذاكرة موثوقة دائمة |
+| L1 | operational local state | لا يساوي Canon تلقائياً |
+| L2 | pending / review | لا admission ذاتي |
+| physical L3 | multi-status graph | **physical L3 != strict Canon** |
+| TrustSnapshot | reconciliation | لا يمنح retrieval authority |
+| CanonicalView | trusted projection | policy-allowed only |
+| TRACE / Receipt | audit / replay | operation evidence لا truth generator |
 
 ## 🗄️ SQLite وPostgreSQL/pgvector
 
 ```text
-SQLite
-└── ordinary active local-first runtime
-    ├── reads/writes
-    ├── backup/restore
-    └── bounded logical export
-
-PostgreSQL 16 + pgvector
-└── optional inactive target
-    ├── explicit optional dependency
-    ├── SERIALIZABLE import
-    ├── exact target re-hash
-    └── active=false
+SQLite ordinary local-first             ACTIVE
+PostgreSQL/pgvector import target        INACTIVE
+PostgreSQL normal runtime adapter        NOT IMPLEMENTED
+PostgreSQL Reader activation             NOT AUTHORIZED
+active=false
 ```
 
-نجاح import لا يعني activation أو cutover أو rollback أو dual-write أو automatic switching أو ANN acceptance أو TruthGate admission. لا يوجد normal PostgreSQL runtime adapter نشط.
+نجاح import أو exact-state equivalence هو دليل على سلامة العملية، وليس activation أو cutover أو dual-write أو rollback أو automatic switching.
 
-## 🔎 Crystal مقابل Classic RAG
-
-| السؤال | Classic RAG | Crystal |
-|---|---|---|
-| العثور على مادة ذات صلة | الوظيفة الرئيسية | adapters |
-| claim مقابل trusted fact | app-specific | typed boundary |
-| provenance | متغير | first-class |
-| Reader structure/coverage | chunk-centric | RC-1/RC-2 foundation |
-| منع model self-source | ليس inherent | Ring Zero |
-| التناقضات | منطق خارجي | explicit dispositions |
-| replay evidence | optional | TRACE / Receipt |
-| cloud/model إلزامي | يختلف | لا في default runtime |
-
-## 🛡️ Query boundary للقراءة فقط
+## 🔐 واجهات القراءة العامة
 
 ```text
 HTTP /ask
@@ -173,9 +253,9 @@ core.query_pipeline.query()
 strict read-only canonical projection
 ```
 
-هذه الأسطح لا تنشئ facts ولا تغير ESM ولا تكتب L3. يبقى explicit ingest مسار كتابة منفصلاً.
+هذه الواجهات لا تنشئ facts ولا تعدّل Canon ولا تمنح نتيجة retrieval صفة evidence.
 
-## ⚖️ قرارات التناقض
+## ⚖️ التناقضات
 
 ```text
 unresolved contradiction
@@ -188,6 +268,53 @@ COEXIST / CONTEXTUALIZE / SUPERSEDE
         ↓
 audited canonical write path
 ```
+
+لا يوجد automatic winner selection من Reader أو similarity أو NLI.
+
+## ✅ دليل التشغيل التاريخي المحتفظ به
+
+هذا checkpoint مهم كدليل runtime تاريخي، لكنه ليس وصفاً لآخر عدد اختبارات بعد كل milestone لاحق:
+
+```text
+verified runtime checkpoint:
+bbd816c09dd39a02e6de6c1014438490572f40f6
+
+Python 3.11 / 3.12:
+2078 passed / 13 skipped / 0 failed
+
+9756 statements / 100.00% line coverage
+CI: 9/9
+Ring Zero: 7/7
+```
+
+## 💶 حقيقة المنحة
+
+```text
+programme: NLnet NGI0 Commons Fund
+proposal: submitted
+review: in progress
+award: not awarded
+budget change: none
+```
+
+الحالة الدقيقة المختصرة تبقى: **submitted / under review / not awarded**. نحو **€50,000** هو planning/transparency context فقط، وليس awarded budget أو التزام دفع. ما تم دمجه قبل أي اتفاق يبقى existing baseline ولا يجوز احتسابه لاحقاً كـ funded delta جديد.
+
+## 🚧 Capability reality-check
+
+| الادعاء | الحقيقة الحالية |
+|---|---|
+| Reader RC-1…RC-7 | ✅ bounded implemented |
+| RC-9 lexical discovery | ✅ implemented |
+| semantic/hybrid Reader runtime | ❌ false |
+| NLI runtime filter | ❌ false |
+| RRTIC runtime provider | ❌ false |
+| dedicated/full Reader Core | ❌ false |
+| active PostgreSQL runtime | ❌ false (`active=false`) |
+| automatic backend switching | ❌ false |
+| automatic contradiction adjudication | ❌ false |
+| legal/GDPR/security certification | ❌ not claimed |
+| native-speaker editorial certification | ❌ not claimed |
+| NLnet award | ❌ not awarded |
 
 ## 🚀 البدء السريع
 
@@ -202,40 +329,23 @@ pytest tests/ --cov=. --cov-fail-under=100
 
 PostgreSQL اختياري: `pip install -e '.[postgresql]'`.
 
-## ✅ Baseline متحقق
+## 🧭 أين تذهب بعد ذلك؟
+
+- 👤 [Deep System Overview](./docs/OVERVIEW.md)
+- 🤖 [Special for AI](./docs/ai/README.md)
+- 📊 [Current State for AI](./docs/ai/CURRENT_STATE.md)
+- 🗺️ [Documentation map](./docs/DOCUMENTATION_MAP.md)
+- 📖 [Reader architecture](./docs/architecture/READER_CORE_ARCHITECTURE.md)
+- 🧾 [Status](./docs/STATUS.md)
+- 🧱 [Implementation Status](./docs/IMPLEMENTATION_STATUS.md)
+- 🛡️ [Security](./SECURITY.md)
+- ⚖️ [Governance](./GOVERNANCE.md)
+
+Localization governance remains explicit:
 
 ```text
-Runtime checkpoint: bbd816c09dd39a02e6de6c1014438490572f40f6
-Python 3.11/3.12: 2078 passed / 13 skipped / 0 failed
-Statements: 9756
-Coverage: 100.00%
-CI: 9/9
-Ring Zero: 7/7
-reader_core_rc1_skeleton = true
-reader_core_rc2_structural_map = true
-dedicated_reader_core = false
-PostgreSQL target: active=false
+docs/LOCALIZATION_POLICY.md
+docs/TRANSLATION_STATUS.md
 ```
 
-## 🚧 ما لا يدعيه Crystal
-
-لا يدعي Crystal universal truth أو zero hallucinations أو AGI/consciousness أو legal/GDPR/security certification أو production multi-tenancy أو distributed exactly-once أو active PostgreSQL runtime أو automatic switching/cutover/rollback/dual-write أو automatic Reader parsing أو embeddings/ANN/vector Reader stack أو completed dedicated multi-pass Reader Core.
-
-تبقى NLnet **submitted / under review / not awarded**؛ نحو €50,000 للتخطيط فقط، budget change none. العمل merged قبل الاتفاق يبقى baseline.
-
-## 📚 التنقل
-
-- [Documentation map](./docs/DOCUMENTATION_MAP.md)
-- [Quick Start](./docs/QUICKSTART.md)
-- [Status](./docs/STATUS.md)
-- [Implementation Status](./docs/IMPLEMENTATION_STATUS.md)
-- [Reader architecture](./docs/architecture/READER_CORE_ARCHITECTURE.md)
-- [Localization policy](./docs/LOCALIZATION_POLICY.md)
-- [Translation status](./docs/TRANSLATION_STATUS.md)
-- [Security](./SECURITY.md)
-- [Governance](./GOVERNANCE.md)
-- [Contributing](./CONTRIBUTING.md)
-
-## 🤝 المساهمة والترخيص
-
-يجب أن تحافظ التغييرات على authority boundaries وtests/coverage ودقة claims. راجع [CONTRIBUTING.md](./CONTRIBUTING.md). الترخيص: [AGPL-3.0](./LICENSE).
+الإنجليزية هي المصدر الحاكم عند التعارض. كلمة `CURRENT` تعني parity against a recorded source/audit contract، ولا تعني native-speaker certification ولا freshness تلقائية بعد أي تغيير إنجليزي مستقبلي.
