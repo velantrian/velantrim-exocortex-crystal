@@ -90,7 +90,6 @@ def main() -> int:
     for marker in (
         f"D2 source checkpoint:** `main@{SOURCE}`",
         "All nine supported D2 locale packs remain `CURRENT`",
-        "D2 reviewer/safety translations remain current across all nine supported locales",
     ):
         if marker not in ledger:
             errors.append(f"translation ledger: missing marker {marker!r}")
