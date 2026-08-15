@@ -1,69 +1,117 @@
-<!-- translation-source: docs/ARCHITECTURE_OVERVIEW.md@208f1c772ee3a112cb803d2413c120bef23adb05 -->
+<!-- translation-source: docs/ARCHITECTURE_OVERVIEW.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
+<!-- historical-translation-source: docs/ARCHITECTURE_OVERVIEW.md@208f1c772ee3a112cb803d2413c120bef23adb05 -->
+<!-- current-translation-source: docs/ARCHITECTURE_OVERVIEW.md@7d03cce2c89f7a4c3fda85742eb358e6b49961f2 -->
 <!-- d3-locale: fr -->
 <!-- d3-boundary: physical-l3-not-strict-canon -->
 <!-- d3-boundary: public-query-read-only -->
 <!-- d3-boundary: postgresql-active=false -->
 <!-- d3-nonclaim: import-is-not-activation -->
-<!-- d3-nonclaim: reader-core-not-implemented -->
 <!-- d3-nonclaim: nlnet-not-awarded -->
-# Crystal — vue d’ensemble de l’architecture
+<!-- d3-reader: rc1-skeleton-implemented -->
+<!-- d3-reader: rc2-structural-map-implemented -->
+<!-- d3-reader: rc3-multi-pass-mechanics-implemented -->
+<!-- d3-reader: rc4-proposition-extraction-implemented -->
+<!-- d3-reader: rc5-relation-candidates-implemented -->
+<!-- d3-nonclaim: dedicated-reader-core-not-implemented -->
+# 🇫🇷 Crystal — vue d’ensemble de l’architecture
 
-Cette traduction sert d’orientation. En cas de conflit, le code fusionné, les tests exécutables, le CI exact et les contrats anglais prévalent.
+**Authority :** le code fusionné, l’exact CI, `docs/ai/CURRENT_STATE.md` et l’implementation manifest restent la vérité technique. Cette traduction ne crée aucune Authority propre.
 
-## Modèle central
-
-```text
-sources + ingest explicite
-→ provenance + normalisation
-→ contrôles Guardian
-→ décision TruthGate
-→ état opérationnel L1 + physical L3 multi-statut
-→ projection de lecture strict Canon à déni dominant
-→ retrieval read-only / réponse / refus borné
-```
-
-Un enregistrement dans physical L3 n’appartient pas automatiquement à strict Canon. Le score de retrieval, la similarité vectorielle et le texte d’un modèle ne sont pas des preuves indépendantes.
-
-## Couches mémoire et revue
-
-- **L0 :** contexte éphémère du processus.
-- **L1 :** SQLite/WAL pour l’état opérationnel, les preuves, l’audit, les receipts, les sessions d’import/revue et l’outbox.
-- **L2 :** staging pending/review pour candidats ou quarantaine ; ce n’est pas une couche de vérité finale.
-- **L3 :** stockage graphe multi-statut ; distinct de strict Canon.
-- **TrustSnapshot / CanonicalView :** surface de lecture fiable à politique deny-dominant.
-
-## Séparation lecture/écriture
-
-`HTTP /ask`, `CLI ask` et MCP passent en read-only par `core.query_pipeline.query()`. Une requête ne peut ni créer ni renforcer un fait, ni modifier ESM, L3, l’outbox, les liens d’épisodes ou l’identité de l’embedder. Seul `ingest` explicite peut emprunter le chemin d’écriture gouverné par Guardian et TruthGate.
-
-## Profils et portabilité
-
-SQLite est le profil actif local-first ordinaire. Lors du premier `auto` durable, LadybugDB optionnel ou SQLite peut être choisi puis verrouillé avec une identité de locator non secrète. Un fallback silencieux vers Mock éphémère est interdit.
-
-Le chemin PostgreSQL/pgvector vérifié s’arrête à une cible inactive :
+## Architecture
 
 ```text
-bundle SQLite vérifié
-→ import PostgreSQL transactionnel
-→ re-hash indépendant read-only
-→ équivalence exacte
-→ active=false
+exact source/document identity
+→ RC-1 source/session
+→ RC-2 structure
+→ RC-3 passes
+→ RC-4 EXTRACTED_PROPOSITION
+→ RC-5 relation candidates
+→ RC-6 bounded working sets / SUMMARY
+→ RC-7 explicit cross-document candidate links
+→ RC-9 lexical PRE-ADMISSION discovery
+→ RRTIC-v1 typed inspection contract (architecture only)
+→ evidence/admission boundary
+→ Guardian → TruthGate
+→ physical L3 → TrustSnapshot → CanonicalView
+→ strict Canon read projection
 ```
 
-Import ou équivalence ne signifient ni activation, ni sélection du backend, ni admission TruthGate, ni cutover, rollback ou dual-write. PostgreSQL est absent de la composition runtime normale.
+`core.query_pipeline.query()` reste le public read-only path.
 
-## Lecture de documents
+## Reader Capability Map
 
-Les source spans, enregistrements de documents, sessions d’import et flux dry-run/review font partie du baseline implémenté. Un Reader Core dédié, multi-passe, avec cartes de couverture, relecture sensible aux contradictions et synthèse documentaire n’est pas implémenté.
+| Layer | État | Frontière |
+|---|---|---|
+| RC-1 | implemented | source/session identity |
+| RC-2 | implemented | structure, not truth |
+| RC-3 | implemented | explicit pass mechanics |
+| RC-4 | implemented | proposition candidate, not evidence |
+| RC-5 | implemented | relation suspicion |
+| RC-6 | implemented | bounded context + caller SUMMARY |
+| RC-7 | implemented | cross-document comparison candidates |
+| RC-8 | research complete | retrieval/evaluation decision |
+| RC-9 | implemented | deterministic BM25 candidate discovery |
+| Comparator v1 | frozen FAIL | no runtime authorization |
+| NLI v1 | frozen FAIL | no runtime authorization |
+| RRTIC-v1 | architecture only | no provider/filter/reranker |
 
-## Non-revendications
+`dedicated_reader_core=false`; un semantic/hybrid Reader runtime n’est ni implémenté ni autorisé.
 
-Crystal ne revendique ni AGI, ni conscience, ni zéro hallucination, ni runtime PostgreSQL actif, ni switching automatique, ni ANN accepté en production, ni cutover/rollback/dual-write, ni certification sécurité/juridique/GDPR, ni attribution NLnet.
+## Frontière de compatibilité RC-1…RC-7 conservée
 
-## Sources anglaises
+```text
+coverage != comprehension proof
+pass completion != comprehension proof
+working-set coverage != comprehension proof
+EXTRACTED_PROPOSITION != verified fact
+Reader candidate != admitted evidence
+relation candidate != admitted evidence
+contradiction candidate != confirmed contradiction
+summary != evidence
+cross-document link != Canon relation
+same-topic != same proposition
+possible-same-claim != claim identity
+similarity signal != identity proof
+repetition across sources != corroboration
+```
 
-- [Architecture complète](../ARCHITECTURE.md)
-- [Limites stockage/autorité](../STORAGE_AND_AUTHORITY_BOUNDARIES.md)
-- [État d’implémentation](../IMPLEMENTATION_STATUS.md)
-- [Import PostgreSQL inactif](../architecture/POSTGRESQL_INACTIVE_IMPORT.md)
+RC-5 conserve `POSSIBLE_CONTRADICTION`, `EXCEPTION`, `QUALIFICATION`, `TENSION` comme PRE-ADMISSION relation candidates. RC-7 conserve exact two-sided provenance et caller rationale ; automatic semantic matching reste absent.
+
+## Post-RC-9 Evidence
+
+RC-9 a exposé un lexical retrieval gap mesuré. Comparator v1 a rétabli useful recall mais a échoué sur hard-negative discrimination. NLI neutral-filter v1 a amélioré la discrimination mais a échoué sur useful-recall safety. Le post-NLI reassessment a classé la capability manquante comme **relation-contract mismatch**.
+
+RRTIC-v1 gèle donc typed relation suspicion et dix qualifier dimensions. Il n’exécute aucun model execution, filtering, reranking, evidence admission, contradiction adjudication ou Canon mutation.
+
+```text
+retrieval match != evidence
+similarity != identity
+ranking != epistemic authority
+candidate discovery != candidate adjudication
+NLI label != proposition identity
+RRTIC suspicion != adjudicated relation
+qualifier mismatch != truth decision
+evaluation pass != runtime authorization
+```
+
+## Storage et Authority
+
+| Surface | Rôle | Frontière |
+|---|---|---|
+| L0 | working cache | ephemeral |
+| L1 | SQLite operational state | durable operational memory |
+| L2 | pending/review | candidate staging |
+| physical L3 | multi-status graph | not strict Canon |
+| TrustSnapshot | reconciliation | deny-dominant |
+| CanonicalView | trusted read | policy-allowed projection |
+
+SQLite reste ordinary active local-first. PostgreSQL/pgvector reste inactif `active=false`; Import/Equivalence n’est ni Activation, ni cutover/rollback, ni Admission Authority.
+
+## Non-claims / Grant
+
+Aucun dedicated/full autonomous Reader, semantic/hybrid Reader runtime, Reader FTS/ANN/vector DB, NLI/CrossEncoder runtime, RRTIC runtime provider, automatic identity/evidence/adjudication/Canon mutation, active PostgreSQL runtime, security/legal/GDPR certification ou awarded grant n’est revendiqué.
+
+NLnet reste **submitted / under review / not awarded** ; environ €50,000 est planning only.
+
+Historical French source : `main@208f1c772ee3a112cb803d2413c120bef23adb05`. Current French refresh audit source : `main@7d03cce2c89f7a4c3fda85742eb358e6b49961f2`.
