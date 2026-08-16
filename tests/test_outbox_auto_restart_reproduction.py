@@ -1,5 +1,6 @@
 """Adversarial reproduction/regression for Outbox auto-backend continuity."""
 
+import os
 from pathlib import Path
 
 import pytest
@@ -66,8 +67,6 @@ def test_auto_restart_redis_to_sqlite_fails_closed_with_pending_preserved(
     with pytest.raises(RuntimeError, match="simulated Redis outage"):
         get_outbox_queue()
 
-    # The repair obligation remains in its original backend; normal construction
-    # refuses to pretend an empty fallback queue is equivalent recovery state.
     assert RedisOutboxQueue(redis_state).pending() == ["redis-before-restart"]
     assert SqliteOutboxQueue().pending() == []
 
@@ -133,3 +132,40 @@ def test_queue_profile_persistence_is_idempotent_and_rejects_race_mismatch(
         queue_mod._persist_auto_backend_profile("redis")
     with pytest.raises(QueueProfileError, match="unsupported queue backend"):
         queue_mod._persist_auto_backend_profile("future")
+
+
+def test_queue_profile_read_io_failure_is_redacted(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Unreadable durable identity fails closed without exposing raw OS detail."""
+    path = _profile(monkeypatch, tmp_path)
+    path.write_text("sqlite\n", encoding="ascii")
+    original_read_text = Path.read_text
+
+    def fail_profile_read(self: Path, *args, **kwargs):
+        if self == path:
+            raise OSError("sensitive filesystem detail")
+        return original_read_text(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", fail_profile_read)
+    with pytest.raises(QueueProfileError, match="cannot read queue backend profile.*OSError") as exc:
+        queue_mod._load_auto_backend_profile()
+    assert "sensitive filesystem detail" not in str(exc.value)
+
+
+def test_queue_profile_atomic_replace_failure_is_redacted_and_cleaned(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Publish failure surfaces a bounded error and removes transient artifacts."""
+    path = _profile(monkeypatch, tmp_path)
+
+    def fail_replace(src, dst):
+        raise OSError("sensitive publish detail")
+
+    monkeypatch.setattr(os, "replace", fail_replace)
+    with pytest.raises(QueueProfileError, match="cannot persist queue backend profile.*OSError") as exc:
+        queue_mod._persist_auto_backend_profile("sqlite")
+    assert "sensitive publish detail" not in str(exc.value)
+    assert not path.exists()
+    assert not path.with_name(f"{path.name}.lock").exists()
+    assert not list(tmp_path.glob(f".{path.name}.*.tmp"))
