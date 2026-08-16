@@ -15,7 +15,7 @@ WORKFLOWS = (
 )
 EXPECTED_ACTION_REFS = {
     "actions/checkout": "3d3c42e5aac5ba805825da76410c181273ba90b1",
-    "actions/setup-python": "a26af69be951a213d495a4c3e4e4022e16d87065",
+    "actions/setup-python": "5fda3b95a4ea91299a34e894583c3862153e4b97",
     "actions/upload-artifact": "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
     "gitleaks/gitleaks-action": "e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e",
 }
