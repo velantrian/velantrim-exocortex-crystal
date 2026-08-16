@@ -17,9 +17,10 @@ Read in this order before making architecture/runtime/status claims:
 5. [`CURRENT_STATE.md`](./CURRENT_STATE.md) — detailed Reader/evaluation/architecture evidence snapshot.
 6. [`../ARCHITECTURE_OVERVIEW.md`](../ARCHITECTURE_OVERVIEW.md) — technical architecture map.
 7. [`../ARCHITECTURE.md`](../ARCHITECTURE.md) and relevant `docs/architecture/**` contracts.
-8. [`KNOWN_RISKS.md`](./KNOWN_RISKS.md), [`COMPONENT_MAP.md`](./COMPONENT_MAP.md), [`WORK_LOG.md`](./WORK_LOG.md).
-9. [`../../TEST_REPORT.md`](../../TEST_REPORT.md), relevant tests, evaluation artifacts and exact CI.
-10. [`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md) + [`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md) when public/localized documentation is affected.
+8. [`AUDIT_AND_FUTURE_WORK.md`](./AUDIT_AND_FUTURE_WORK.md) — open/deferred audit questions, future-work candidates, and explicit non-authorization boundaries. Treat it as a ledger, **not** as permission to implement the next item.
+9. [`KNOWN_RISKS.md`](./KNOWN_RISKS.md), [`COMPONENT_MAP.md`](./COMPONENT_MAP.md), [`WORK_LOG.md`](./WORK_LOG.md).
+10. [`../../TEST_REPORT.md`](../../TEST_REPORT.md), relevant tests, evaluation artifacts and exact CI.
+11. [`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md) + [`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md) when public/localized documentation is affected.
 
 Do not bulk-load the repository before completing this orientation pass.
 
@@ -76,10 +77,12 @@ resolve live GitHub main + PRs/issues + exact CI
         ↓
 compare machine/status surfaces
         ↓
+read AUDIT_AND_FUTURE_WORK for unresolved/deferred questions
+        ↓
 use synchronized Notion only as secondary checkpoint/history
 ```
 
-Do not add a new hard-coded “latest completed docs issue/PR” or “repository main at last audit” field to this router. Immutable historical evidence belongs in the relevant PR/issue, CI/checkpoint record, status/evaluation history, or synchronized Notion checkpoint.
+Do not add a new hard-coded “latest completed docs issue/PR” or “repository main at last audit” field to this router. Immutable historical evidence belongs in the relevant PR/issue, CI/checkpoint record, status/evaluation history, synchronized Notion checkpoint, or the future-work ledger when it is needed to explain an unresolved question.
 
 ## 4. Reader capability map
 
@@ -152,6 +155,8 @@ never_infer:
   zero_review_threads_is_independent_approval: true
   closed_milestone_is_active_work: true
   residual_issue_is_auto_selected: true
+  future_work_priority_is_authorization: true
+  future_work_entry_is_milestone_selection: true
 ```
 
 ## 7. Machine flags vs explanatory prose
@@ -180,7 +185,7 @@ One project truth is exposed through four interfaces:
 ONE PROJECT TRUTH
       │
       ├── 👤 HUMAN   README.md + docs/OVERVIEW.md
-      ├── 🤖 AI      docs/ai/README.md + AI context pack
+      ├── 🤖 AI      docs/ai/README.md + AI context pack + future-work ledger
       ├── ⚙ MACHINE docs/status/implementation-manifest.json + schemas
       └── 🧾 EVIDENCE STATUS + TEST_REPORT + tests + CI + eval + history
 ```
@@ -220,15 +225,27 @@ NLnet = submitted / under review / not awarded
 ~€50k = planning context only
 ```
 
-Residual issues are separate scopes:
+The future-work ledger is the place to preserve unresolved questions and deferred candidates. It is not a backlog executor. Any issue number or candidate listed there must be re-resolved live before use.
+
+Do not auto-start a residual issue from documentation closure, an old roadmap, or the existence of a future-work entry.
+
+### Future-work ledger contract
+
+[`AUDIT_AND_FUTURE_WORK.md`](./AUDIT_AND_FUTURE_WORK.md) exists to prevent loss of unfinished reasoning across chats and agents.
+
+Use it to answer:
 
 ```text
-#155 Epistemic Router RFC
-#165 normalized-id migration / dedupe
-#214 PII fixture + supply-chain hygiene
+what is genuinely still open?
+what is only worth investigating?
+what is deliberately deferred?
+what is explicitly not authorized?
+what evidence must exist before implementation?
 ```
 
-Do not auto-start them from documentation closure or from this router.
+Its states such as `OPEN`, `INVESTIGATE`, `DEFERRED`, `BLOCKED`, and `NOT_AUTHORIZED` are **not** implementation commands.
+
+A future audit should reconcile every relevant entry against live GitHub and report `DONE / STILL_OPEN / STALE / NEW_FINDING / NEEDS_REPRODUCTION / NOT_AUTHORIZED` before selecting work.
 
 ## 11. Current stop boundary
 
@@ -239,6 +256,8 @@ resolve live GitHub main + exact CI
         ↓
 resolve open PRs/issues and lifecycle state
         ↓
+read and reconcile AUDIT_AND_FUTURE_WORK
+        ↓
 compare authorized Notion checkpoints
         ↓
 fresh architecture reassessment
@@ -246,4 +265,4 @@ fresh architecture reassessment
 select exactly one bounded scope
 ```
 
-No model, discriminator, reranker, Reader backend, storage backend activation, authority expansion or residual issue implementation is authorized by this document. A historical closure, a stale snapshot, or the absence of open PRs is not authorization to start the next backlog item.
+No model, discriminator, reranker, Reader backend, storage backend activation, authority expansion or residual issue implementation is authorized by this document or by the future-work ledger. A historical closure, a stale snapshot, the absence of open PRs, or a high-priority future-work item is not authorization to start the next backlog item.
