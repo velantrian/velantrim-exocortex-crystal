@@ -2,6 +2,19 @@
 
 This compact log records material decisions, exact evidence, limitations and hand-offs. It does not replace Git history, issues, pull requests, `CHANGELOG.md` or Notion.
 
+## 2026-08-16 — Outbox auto-backend restart continuity (#434 / PR #433)
+
+- Live starting point: `main@5e008af09f03750c6811ac4b6fdb147ad463fd78`; the audit first traced `core.queue` selection, enqueue and `drain_l3_outbox()` without changing runtime behavior.
+- Reproduction was frozen before repair at commit `d79ea81099430b218e947c144c06d3b00a4263be`, CI `31967243107`. Python 3.11 produced exactly the two new failures: Redis→SQLite and SQLite→Redis both made the previously persisted pending item invisible to the newly selected queue; result `2 failed / 2268 passed / 13 skipped`, 100% measured line coverage.
+- Violated invariant: a known L3 recovery obligation must not become silently unreachable from the standard Outbox recovery surface merely because environment-selected `VELANTRIM_QUEUE_BACKEND=auto` changes backend family after restart.
+- Selected bounded repair: persist the first **environment-selected auto** backend family (`redis` or `sqlite`) in a non-secret local marker at `VELANTRIM_QUEUE_PROFILE_PATH`; later restarts honor that family instead of re-probing a different backend.
+- Fail-closed behavior: locked Redis becoming unavailable now surfaces construction failure; it does not silently fall back to an empty SQLite queue. Locked SQLite remains SQLite even when Redis later appears, so existing SQLite pending work stays visible.
+- Programmatic `get_outbox_queue(backend=...)` remains a fresh uncached one-off path and does not read/write the persistent auto marker. Profile creation is lock-protected/atomic; concurrent first-selection disagreement is rejected.
+- Explicit limitations: the marker stores backend family only, never Redis credentials/URL or queue content. This is not queue federation, migration, dual-read/write, locator identity, distributed coordination or exactly-once proof.
+- Documentation impact: English authoritative/current-truth surfaces only; localized documentation is deliberately untouched. `docs/STATUS.md` and `docs/ai/KNOWN_RISKS.md` record the bounded recovery truth.
+- Issue #432 server-side governance remains separate. Reader/RRTIC, Canon, Guardian, TruthGate, PostgreSQL/pgvector and grant authority are unchanged.
+- Final acceptance still requires green full CI on the exact final PR head, 0 unresolved review threads, required Notion synchronization, guarded merge, signed new `main`, exact post-merge CI and issue closure. Independent review/approval is not claimed unless it actually occurs.
+
 ## 2026-08-15 — Legacy exact-normalized ingest compatibility (#165 / PR #431)
 
 - Live starting point: signed `main@e2c557c07f23bc695bd58a70138421cccc3b5764`, `verified=true`, `reason=valid`, after audit-remediation PR #430 and post-merge CI `31902827194` SUCCESS.
