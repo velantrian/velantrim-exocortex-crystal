@@ -1,6 +1,6 @@
 # ⚠️ Crystal Known Risks and Open Boundaries
 
-**Status date:** 2026-08-15  
+**Status date:** 2026-08-16  
 **Verified retained runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
 **Repository HEAD / exact CI / active milestone:** `RESOLVE_LIVE_GITHUB`  
 **Current bounded milestone selected by this register:** none
@@ -176,18 +176,30 @@ The repository has historical exact/vector retrieval mechanisms in admitted-memo
 
 Public/grant surfaces must route volatile repository lifecycle state back to live GitHub rather than treating historical SHAs, closed issues or old localization counts as current truth. Historical compatibility literals may remain only when they are explicitly labeled as historical/non-current.
 
-## P2 — Operational backend identity remains environment-sensitive in developer `auto` modes
+## ✅ Bounded remediation — Outbox `auto` no longer silently switches backend family after restart
 
-Two existing developer-friendly `auto` selections remain operational boundaries rather than Canon-authority defects:
+Issue #434 reproduced a real recovery-continuity failure on `main@5e008af09f03750c6811ac4b6fdb147ad463fd78`: pending work persisted in Redis became invisible when a restarted process automatically fell back to SQLite, and pending SQLite work became invisible when Redis later appeared and `auto` switched to it.
 
-- `VELANTRIM_QUEUE_BACKEND=auto` can resolve to Redis when the package/server is available and SQLite otherwise;
-- `VELANTRIM_EMBEDDER=auto` can fall back from sentence-transformers to the hashing embedder, while a persistent-store mismatch is warning-only unless `VELANTRIM_EMBEDDER_STRICT` is enabled.
+The bounded repair keeps the existing Redis/SQLite queue implementations and adds only a non-secret persistent backend-family marker for environment-selected `VELANTRIM_QUEUE_BACKEND=auto`:
 
-For persistent/service deployments, operators should pin the intended queue/embedder configuration and treat the resolved state as deployment identity. This bounded work does not change the global defaults or claim distributed exactly-once behavior.
+- the first automatic selection persists `redis` or `sqlite` at `VELANTRIM_QUEUE_PROFILE_PATH`;
+- later restarts honor that backend family rather than probing and silently switching;
+- a locked Redis outage fails closed instead of selecting an empty SQLite queue;
+- a locked SQLite selection remains SQLite even if Redis later becomes available;
+- programmatic `get_outbox_queue(backend=...)` remains an uncached one-off inspection/test path and does not mutate the marker;
+- profile creation is lock-protected and atomic, and conflicting concurrent first selections fail closed.
+
+Boundary: the marker stores only backend family, not Redis credentials, URL, queue payloads or a distributed coordination claim. It does not migrate queues, federate backends, dual-read/dual-write, provide distributed exactly-once behavior, or prove continuity after an operator deliberately changes an explicit backend/locator. Final acceptance remains tied to exact-head CI and merge evidence; live GitHub overrides this branch description until merged.
+
+## P2 — Embedder `auto` identity remains environment-sensitive
+
+`VELANTRIM_EMBEDDER=auto` can fall back from sentence-transformers to the hashing embedder, while a persistent-store mismatch is warning-only unless `VELANTRIM_EMBEDDER_STRICT` is enabled. This is a separate operational boundary and is not modified by the Outbox remediation.
+
+For persistent/service deployments, operators should keep model/backend configuration explicit and treat resolved deployment identity as operational state. No distributed exactly-once, model-equivalence or automatic migration claim is implied.
 
 ## P2 — Localization parity is separate from English source reconciliation
 
-All nine supported localized Reader-dependent packs were current at the starting checkpoint. The 2026-08-15 #165 closure intentionally edits English authoritative/current-truth surfaces only. Localized documentation is not modified here; any later parity work remains a separate maintainer-controlled documentation task.
+All nine supported localized Reader-dependent packs were current at the starting checkpoint. The #434 Outbox remediation changes English authoritative/current-truth documentation only. Localized documentation is intentionally not modified here; any later parity work remains a separate maintainer-controlled documentation task.
 
 ## Closed residual-scope isolation
 
@@ -212,5 +224,5 @@ These three historical residual scopes are closed/completed. Their completion do
 
 1. Resolve live GitHub and Notion before selecting a new bounded milestone; this static register does not select one.
 2. Do **not** automatically implement EPIS-001 runtime, Reader semantic/hybrid/vector runtime, semantic dedupe, FTS, ANN/vector DB, model/provider wiring or storage/backend activation.
-3. Keep queue/embedder production-like configuration explicit rather than treating environment-dependent `auto` resolution as durable deployment identity.
+3. Treat the Outbox family lock as recovery continuity for the reproduced `auto` backend-switch defect only; do not inflate it into queue migration, locator identity or distributed exactly-once semantics.
 4. Treat future action/tool/dependency updates as reviewable proposals, never automatic trust promotion.
