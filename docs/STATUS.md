@@ -1,6 +1,6 @@
 # Velantrim Crystal — Current Status
 
-**Status date:** 2026-08-15  
+**Status date:** 2026-08-16  
 **Current signed architecture checkpoint:** `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e`, `verified=true`, reason `valid`  
 **Current architecture milestone:** Reader Retrieval Typed Inspection Contract v1 — Issue #391 / PR #392 — complete  
 **RRTIC exact-head CI:** `31754798549` — 9/9 SUCCESS  
@@ -185,11 +185,13 @@ SQLite ordinary active local-first
 → active=false
 ```
 
-Reader SQLite FTS is not implemented. No Reader ANN/vector DB is introduced. Automatic backend switching remains absent.
+Reader SQLite FTS is not implemented. No Reader ANN/vector DB is introduced. Automatic L3 storage backend switching remains absent.
 
 The bounded logical migration verifier now binds its final file recheck to both filesystem identity and the already-established SHA-256 content digest. This strengthens the existing fail-closed migration proof against same-size rewrites on filesystems with coarse timestamp precision; it does not activate another backend or make a migration bundle claim evidence.
 
 Direct `ingest()` now reuses the existing L3 outbox when a post-gate merge fails after the L1 ESM transition. The request fails closed while preserving an explicit repair path; this is cross-store recovery parity with the main query pipeline, not a new admission path or authority mechanism.
+
+Issue #434 reproduced that environment-selected `VELANTRIM_QUEUE_BACKEND=auto` could silently switch the Outbox between Redis and SQLite across a restart and thereby hide pending recovery work from the normal drain path. The bounded repair persists only the first automatically selected queue backend family. A later restart keeps SQLite if SQLite was locked; if Redis was locked and becomes unavailable, queue construction fails closed instead of silently falling back to an empty SQLite queue. Programmatic explicit backend construction remains a fresh one-off path. This is recovery continuity for the reproduced backend-family switch only: it is not queue migration, locator identity, federation, dual-write or distributed exactly-once behavior.
 
 Exact-normalized ingest compatibility now includes historical `ing:*` rows through a **derived, rebuildable normalized-claim index**. The existing normalization contract remains NFC → trim → collapse whitespace → casefold. A future case/whitespace variant may route to an already-`Validated` historical raw-id fact as an occurrence instead of creating a second node. Existing fact IDs are not re-keyed; pre-existing collisions are preserved; a current normalized `fact_id` wins when present; multiple legacy collisions route future occurrences deterministically to the oldest existing row. The index is not evidence, identity inference, semantic matching or Canon authority, and dry-run resolves the same target without writing the index.
 
@@ -199,15 +201,16 @@ The RRTIC architecture checkpoint push CI `31771677028` completed **9/9 SUCCESS*
 
 ## Backlog boundaries
 
+- #434: **OPEN during this bounded branch until exact-head/merge evidence closes it** — Outbox `auto` backend-family restart continuity only; no queue federation/migration or distributed exactly-once claim.
 - #165: **COMPLETED / CLOSED by PR #431 after guarded merge** — exact normalized historical `ing:*` compatibility index only; no semantic matching and no historical re-key/merge.
 - #155: **COMPLETED / CLOSED on 2026-08-14** — EPIS-001 architecture contract only; EPIS runtime remains `NOT IMPLEMENTED / NOT AUTHORIZED`.
 - #214: **COMPLETED / CLOSED on 2026-08-14** — residual fixture/PII review and reproducible supply-chain pinning were reconciled in their own completed scope.
 
-These three historical residual scopes are closed/completed. Their closure does not authorize EPIS runtime, a new Reader runtime, PostgreSQL activation, semantic dedupe or unrelated security claims. Resolve live GitHub before selecting any next bounded work.
+Issue #434 is the selected bounded recovery-remediation scope only. The historical #155/#165/#214 closures do not authorize EPIS runtime, a new Reader runtime, PostgreSQL activation, semantic dedupe or unrelated security claims. Resolve live GitHub before selecting any later work.
 
 ## Localization truth
 
-Localization state is tracked separately in `docs/TRANSLATION_STATUS.md`; a locale's checkpoint marker must not be used as current English architecture authority. This #165 reconciliation intentionally updates English authoritative/current-truth surfaces only. Localized documentation is not modified by this milestone and must be reconciled separately by the maintainer if a later parity update is desired.
+Localization state is tracked separately in `docs/TRANSLATION_STATUS.md`; a locale's checkpoint marker must not be used as current English architecture authority. The #434 remediation updates English authoritative/current-truth surfaces only. Localized documentation is intentionally not modified by this milestone.
 
 ## Grant status
 
@@ -215,4 +218,4 @@ NLnet remains **submitted / under review / not awarded**. Approximate **€50,00
 
 ## Stop boundary
 
-RRTIC-v1 remains the frozen architecture contract; #165 changes only exact-normalized ingest compatibility. No discriminator/model/runtime implementation is authorized by either scope. Do not automatically add semantic/hybrid/vector Reader runtime, FTS/ANN, activate PostgreSQL/pgvector, mutate epistemic authority, implement EPIS runtime or start a new backlog item. Completed #155/#165/#214 do not authorize unrelated runtime or security claims.
+RRTIC-v1 remains the frozen Reader architecture contract; #434 changes only Outbox recovery continuity for the reproduced automatic Redis/SQLite backend-family restart switch. No discriminator/model/Reader runtime implementation is authorized by this scope. Do not automatically add semantic/hybrid/vector Reader runtime, FTS/ANN, activate PostgreSQL/pgvector, mutate epistemic authority, implement EPIS runtime, federate queues or start another backlog item after #434 closes.
