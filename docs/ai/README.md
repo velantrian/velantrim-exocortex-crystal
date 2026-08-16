@@ -229,7 +229,7 @@ The future-work ledger is the place to preserve unresolved questions and deferre
 
 Do not auto-start a residual issue from documentation closure, an old roadmap, or the existence of a future-work entry.
 
-## 11. Future-work ledger contract
+### Future-work ledger contract
 
 [`AUDIT_AND_FUTURE_WORK.md`](./AUDIT_AND_FUTURE_WORK.md) exists to prevent loss of unfinished reasoning across chats and agents.
 
@@ -247,7 +247,7 @@ Its states such as `OPEN`, `INVESTIGATE`, `DEFERRED`, `BLOCKED`, and `NOT_AUTHOR
 
 A future audit should reconcile every relevant entry against live GitHub and report `DONE / STILL_OPEN / STALE / NEW_FINDING / NEEDS_REPRODUCTION / NOT_AUTHORIZED` before selecting work.
 
-## 12. Current stop boundary
+## 11. Current stop boundary
 
 This static AI router does not select or persist the current workstream. Before any new bounded work:
 
