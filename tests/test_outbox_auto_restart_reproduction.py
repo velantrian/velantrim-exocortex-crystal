@@ -1,19 +1,16 @@
-"""Adversarial reproduction for Outbox auto-backend continuity across restart.
+"""Adversarial reproduction/regression for Outbox auto-backend continuity."""
 
-These tests intentionally freeze the recovery invariant before any runtime repair:
-a pending L3 recovery item created under one automatically selected queue backend
-must remain observable after a process-style registry reset if `auto` resolves to
-the other supported backend.
-
-If current behavior silently switches between Redis and SQLite without preserving
-pending visibility or failing closed, these tests are expected to fail. That
-failure is the reproduction evidence; this file does not prescribe a fix.
-"""
+from pathlib import Path
 
 import pytest
 
 from core import queue as queue_mod
-from core.queue import RedisOutboxQueue, SqliteOutboxQueue, get_outbox_queue
+from core.queue import (
+    QueueProfileError,
+    RedisOutboxQueue,
+    SqliteOutboxQueue,
+    get_outbox_queue,
+)
 
 
 class PersistentFakeRedis:
@@ -39,43 +36,47 @@ class PersistentFakeRedis:
         return True
 
 
-def test_auto_restart_redis_to_sqlite_keeps_pending_visible(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """Pending Redis work must not silently disappear when auto later selects SQLite."""
-
-    redis_state = PersistentFakeRedis()
+def _profile(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
+    path = tmp_path / "queue-profile"
+    monkeypatch.setenv("VELANTRIM_QUEUE_PROFILE_PATH", str(path))
     monkeypatch.setenv("VELANTRIM_QUEUE_BACKEND", "auto")
+    return path
+
+
+def test_auto_restart_redis_to_sqlite_fails_closed_with_pending_preserved(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """A locked Redis queue must not silently switch to empty SQLite after restart."""
+    path = _profile(monkeypatch, tmp_path)
+    redis_state = PersistentFakeRedis()
     monkeypatch.setattr(queue_mod, "_redis_client", lambda: redis_state)
 
     first = get_outbox_queue()
     assert isinstance(first, RedisOutboxQueue)
     first.enqueue("redis-before-restart")
     assert first.pending() == ["redis-before-restart"]
+    assert path.read_text(encoding="ascii") == "redis\n"
 
-    # Model a new process: the registry singleton is gone and Redis is now
-    # unavailable, so the same supported `auto` configuration resolves again.
     queue_mod.reset_outbox_queue()
 
     def redis_unavailable():
         raise RuntimeError("simulated Redis outage after restart")
 
     monkeypatch.setattr(queue_mod, "_redis_client", redis_unavailable)
-    second = get_outbox_queue()
-    assert isinstance(second, SqliteOutboxQueue)
+    with pytest.raises(RuntimeError, match="simulated Redis outage"):
+        get_outbox_queue()
 
-    # Recovery invariant under test: normal pending/drain observation after the
-    # restart must still see the already-persisted repair obligation, or the
-    # backend switch must have failed closed before reaching this point.
-    assert "redis-before-restart" in second.pending()
+    # The repair obligation remains in its original backend; normal construction
+    # refuses to pretend an empty fallback queue is equivalent recovery state.
+    assert RedisOutboxQueue(redis_state).pending() == ["redis-before-restart"]
+    assert SqliteOutboxQueue().pending() == []
 
 
-def test_auto_restart_sqlite_to_redis_keeps_pending_visible(
-    monkeypatch: pytest.MonkeyPatch,
+def test_auto_restart_sqlite_to_redis_keeps_locked_sqlite_pending_visible(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    """Pending SQLite work must not silently disappear when auto later selects Redis."""
-
-    monkeypatch.setenv("VELANTRIM_QUEUE_BACKEND", "auto")
+    """A SQLite auto selection remains SQLite even when Redis later appears."""
+    path = _profile(monkeypatch, tmp_path)
 
     def redis_unavailable():
         raise RuntimeError("simulated Redis outage before restart")
@@ -85,15 +86,50 @@ def test_auto_restart_sqlite_to_redis_keeps_pending_visible(
     assert isinstance(first, SqliteOutboxQueue)
     first.enqueue("sqlite-before-restart")
     assert first.pending() == ["sqlite-before-restart"]
+    assert path.read_text(encoding="ascii") == "sqlite\n"
 
-    # New process, same `auto` configuration, but Redis has become available.
     queue_mod.reset_outbox_queue()
     redis_state = PersistentFakeRedis()
     monkeypatch.setattr(queue_mod, "_redis_client", lambda: redis_state)
 
     second = get_outbox_queue()
-    assert isinstance(second, RedisOutboxQueue)
+    assert isinstance(second, SqliteOutboxQueue)
+    assert second.pending() == ["sqlite-before-restart"]
+    assert RedisOutboxQueue(redis_state).pending() == []
 
-    # The standard recovery surface must not silently observe an empty backend
-    # while the previous durable backend still contains pending work.
-    assert "sqlite-before-restart" in second.pending()
+
+def test_programmatic_explicit_auto_does_not_create_persistent_profile(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """One-off inspection preserves the existing uncached explicit-backend contract."""
+    path = _profile(monkeypatch, tmp_path)
+    monkeypatch.setattr(queue_mod, "_redis_client", lambda: PersistentFakeRedis())
+    assert isinstance(get_outbox_queue("auto"), RedisOutboxQueue)
+    assert not path.exists()
+
+
+def test_queue_profile_malformed_and_empty_path_fail_closed(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    path = _profile(monkeypatch, tmp_path)
+    path.write_text("future\n", encoding="ascii")
+    with pytest.raises(QueueProfileError, match="sqlite.*redis"):
+        queue_mod._load_auto_backend_profile()
+
+    monkeypatch.setenv("VELANTRIM_QUEUE_PROFILE_PATH", " ")
+    with pytest.raises(QueueProfileError, match="must not be empty"):
+        queue_mod.queue_profile_path()
+
+
+def test_queue_profile_persistence_is_idempotent_and_rejects_race_mismatch(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    path = _profile(monkeypatch, tmp_path)
+    assert queue_mod._persist_auto_backend_profile("sqlite") == "sqlite"
+    assert queue_mod._persist_auto_backend_profile("sqlite") == "sqlite"
+    assert path.read_text(encoding="ascii") == "sqlite\n"
+
+    with pytest.raises(QueueProfileError, match="different queue backend"):
+        queue_mod._persist_auto_backend_profile("redis")
+    with pytest.raises(QueueProfileError, match="unsupported queue backend"):
+        queue_mod._persist_auto_backend_profile("future")
