@@ -109,11 +109,12 @@ def test_rc7_merge_truth_remains_visible_after_later_reader_milestones():
     assert "RC-9 — deterministic lexical candidate discovery + benchmark" in roadmap
 
 
-def test_rc7_ci_run_id_typo_does_not_recur():
+def test_rc7_ci_run_id_typo_does_not_recur_in_active_surfaces():
     """31478117504 does not exist on GitHub Actions (verified 404); the real post-merge
     CI run for the RC-7 checkpoint (PR #372, commit b5541ce5...) is 31572918731. This
-    forbids the stale/wrong literal anywhere in tracked repository docs, not only in
-    ROADMAP.md, so a future doc reconciliation can't silently reintroduce it."""
+    forbids the stale/wrong literal in this selected set of active status/evidence
+    surfaces, so a future doc reconciliation can't silently reintroduce it there. It is
+    not a repository-wide scan and does not claim to cover every file."""
     for path in (
         "ROADMAP.md", "docs/STATUS.md", "docs/IMPLEMENTATION_STATUS.md",
         "docs/ai/CURRENT_STATE.md", "docs/ai/COMPONENT_MAP.md",
