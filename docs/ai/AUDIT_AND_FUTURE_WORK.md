@@ -54,13 +54,17 @@ Do not force repository-local vocabulary into a different ecosystem label when t
 
 ---
 
-## 1. Fresh live checkpoint — 2026-08-17
+## 1. Audited base checkpoint — 2026-08-17 (AUDITED_BASE_CHECKPOINT, not live HEAD)
 
-Fresh reconciliation established:
+This document is itself committed to `main`, so any commit it names as "current" is
+stale as a live-HEAD pointer the moment this document merges. Treat the value below as
+the frozen base this reconciliation was performed against — resolve live GitHub for the
+actual current repository HEAD.
 
 ```text
-live main:                         31e529cf1269619778449f7f5228b83b184caa56
-main signature:                    VERIFIED / valid
+audited base checkpoint (reconciliation time): 31e529cf1269619778449f7f5228b83b184caa56
+live repository HEAD:              RESOLVE_LIVE_GITHUB
+main signature (at audited base):  VERIFIED / valid
 open PRs:                          0
 exact-main CI:                     31971362495 — SUCCESS
 RRTIC-v1:                          FROZEN_ARCHITECTURE_CONTRACT
