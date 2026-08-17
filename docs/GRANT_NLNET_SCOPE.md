@@ -54,11 +54,11 @@ The current open core already includes:
 - a baseline evaluation harness (`core/eval.py`) reporting retrieval/trace/receipt
   metrics;
 - external knowledge ingestion for `.txt`, `.md`, `.json`, `.jsonl`, `.ndjson`,
-  and `.csv`;
+  `.csv` and N-Triples `.nt` RDF (stdlib), with optional YAML/PDF adapters;
 - GDPR-relevant erasure, restriction, record-of-processing and audit logging;
 - opt-in encryption at rest for L1 personal-data fields;
 - dependency-free read-only MCP server;
-- 591 passing tests and ~99% coverage.
+- 605 passing tests and ~99% coverage.
 
 ## Why this fits public-interest infrastructure
 
@@ -122,12 +122,15 @@ credible quality signal:
 
 ### WP4 — Stronger Knowledge Adapters
 
-Add optional adapters while keeping the default runtime dependency-free:
+A **baseline is already implemented** (`core/adapters.py`), keeping the default
+runtime dependency-free: N-Triples (`.nt`) RDF import is stdlib; YAML (`.[yaml]`)
+and PDF (`.[pdf]`) are optional extras. The funded work adds the heavier,
+institution-grade paths:
 
-- PDF text extraction adapter;
-- YAML adapter;
-- RDF/Wikidata import path;
-- license/source metadata handling.
+- full Turtle / RDF-XML and **Wikidata** import;
+- layout-aware PDF extraction with line/section **span offsets**;
+- per-source licence and provenance metadata capture;
+- robust encoding/format detection for messy real-world corpora.
 
 **Outcome:** better fit for libraries, archives, research datasets and public
 knowledge sources.

@@ -2,7 +2,7 @@
 
 ### *Verifiable, local-first, open-source memory infrastructure for trustworthy AI*
 
-`v0.1.0` · 🧪 **591 tests** · 🎯 **~99% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
+`v0.1.0` · 🧪 **605 tests** · 🎯 **~99% coverage** · 🐍 **pure-stdlib runtime** · ⚖️ **AGPL-3.0** · 🔒 **local-first**
 
 > Velantrim Crystal is **not another chatbot**. It is a **verifiable memory layer**
 > that AI systems write to and read from. Every stored fact carries provenance,
@@ -206,6 +206,7 @@ Crystal is a set of small, focused modules, dependency-free by default and teste
 | `core/generation.py` | Extractive local answerer or optional LLM answerer |
 | `core/ingest.py` | Utterance → claim-type classification → gate → L3 |
 | `core/knowledge.py` | External ingestion for `.txt`, `.md`, `.json`, `.jsonl`, `.ndjson`, `.csv` |
+| `core/adapters.py` | Ingestion adapters (WP4): N-Triples RDF `.nt` (stdlib), optional YAML `.[yaml]` / PDF `.[pdf]` |
 | `core/imports.py` | Import sessions & dry-run review (WP2): `learn --dry-run`, batch restrict/erase |
 | `core/eval.py` | Evaluation harness (`eval`): retrieval/trace/receipt + source-span coverage + contradiction P/R |
 
@@ -286,7 +287,7 @@ Default queue behaviour remains dependency-free with SQLite.
 - GDPR-relevant erasure, restriction, record-of-processing, audit and PII tools;
 - read-only MCP server;
 - biological-memory research modules;
-- 591 passing tests and ~99% coverage;
+- 605 passing tests and ~99% coverage;
 - baseline evaluation harness (`core/eval.py`, `velantrim eval`).
 
 **Next / grant-scope candidates**

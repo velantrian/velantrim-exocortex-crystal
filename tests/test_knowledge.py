@@ -58,7 +58,7 @@ def test_extract_csv_bad_number_is_skipped():
 
 def test_unsupported_format_raises():
     with pytest.raises(ValueError):
-        knowledge.extract_claims("...", "yaml")
+        knowledge.extract_claims("...", "xml")
 
 
 # ─── Ingestion through the TruthGate ──────────────────────────────────────────

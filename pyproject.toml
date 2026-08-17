@@ -61,6 +61,16 @@ encryption = [
 redis = [
     "redis>=5.0.0",
 ]
+# External-ingestion adapters (WP4). N-Triples (.nt) RDF import is dependency-free
+# (stdlib); these extras add the heavier formats:
+#   pip install '.[yaml]'   # .yaml / .yml import
+#   pip install '.[pdf]'    # .pdf text import
+yaml = [
+    "PyYAML>=6.0",
+]
+pdf = [
+    "pypdf>=4.0.0",
+]
 
 # Explicit package surface — the runtime is the `core` package plus the
 # top-level `epigenetic_adaptation_module` it imports. Declaring them keeps the

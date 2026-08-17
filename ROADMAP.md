@@ -4,7 +4,7 @@
 > and tested** and what is **designed but not yet coded**. The README documents
 > only the former; this file tracks both.
 
-**Status:** 🧪 **591 tests passing** · 🎯 **99% coverage** (gate 95%) · 🐍 stdlib-only
+**Status:** 🧪 **605 tests passing** · 🎯 **99% coverage** (gate 95%) · 🐍 stdlib-only
 runtime · every delivered item below ships with tests and a CLI surface.
 
 ---
@@ -27,9 +27,10 @@ runtime · every delivered item below ships with tests and a CLI surface.
   (extractive default / Claude LLM opt-in).
 - **Ingestion** (`core/ingest.py`): utterance → claim_type → gate → L3.
 - **External knowledge ingestion** (`core/knowledge.py`, RFC0063): bulk-import
-  `.txt` / `.md` / `.json` / `.jsonl` / `.csv` knowledge files through the SAME
-  TruthGate; imported facts carry `source_status = EXTERNAL` + the source file as
-  provenance. Stdlib-only parsers (PDF/YAML/RDF left to optional adapters); CLI `learn`.
+  `.txt` / `.md` / `.json` / `.jsonl` / `.csv` **+ N-Triples RDF (`.nt`, stdlib)**,
+  and **optional YAML (`.[yaml]`) / PDF (`.[pdf]`)** adapters (`core/adapters.py`,
+  WP4), all through the SAME TruthGate; imported facts carry
+  `source_status = EXTERNAL` + the source as provenance. CLI `learn`.
 - **Import sessions & dry-run review** (`core/imports.py`, WP2): preview a corpus
   (`learn --dry-run`) — predict accept/reinforce/block/conflict through the SAME
   validators with **zero writes**; real imports get a session id so a whole batch
@@ -130,7 +131,7 @@ runtime · every delivered item below ships with tests and a CLI surface.
 
 | RFC / item | What it adds | Target |
 |---|---|---|
-| 🌾 **RFC0063+** | Additional external-ingestion adapters: PDF / YAML / Wikidata RDF (core text/JSON/JSONL/CSV already shipped in `core/knowledge.py`) | S5+ |
+| 🌾 **RFC0063++** | Richer ingestion: full Turtle/RDF-XML & **Wikidata** import, layout-aware PDF **span offsets**, per-source licence metadata (baseline `.nt`/YAML/PDF adapters already shipped in `core/adapters.py`) | S5+ |
 | 🧠 **RFC0068 Phase 1+** | **NeuroCore** active model adaptation + consolidation (Phase 0 passive tracker already shipped in `core/neurocore.py`) | S6+ |
 | 🩹 **A6 / A7 / A10** | Sprint-A patches for the optional Phase‑1 stack (Neo4j locks, async EventBus backpressure, aioredis pool) — N/A to the dependency-free core; wired only if those components are activated. See **[docs/SPRINT_A_STATUS.md](./docs/SPRINT_A_STATUS.md)** | S6+ |
 | ⚙️ async core | Full async/await rewrite of the stores (async *entry points* already shipped) | S3+ |

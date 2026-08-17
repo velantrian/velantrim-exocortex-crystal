@@ -7,11 +7,11 @@ numbers: run the commands below and compare the figures.
 
 | Metric | Value |
 |--------|-------|
-| **Tests passing** | **591** |
+| **Tests passing** | **605** |
 | Tests skipped | 12 |
 | Tests failing | 0 |
 | **Total coverage** | **~99%** (gate enforced at 95%) |
-| Test files | 44 (`tests/test_*.py`) |
+| Test files | 45 (`tests/test_*.py`) |
 | Python | 3.11 / 3.12 in CI |
 | Runtime dependencies | standard library only |
 
@@ -37,6 +37,7 @@ pytest tests/ -v --cov=core --cov-fail-under=95
 |--------|------:|------:|
 | `core/_registry.py`    | 18  | 100% |
 | `core/adaptation.py`   | 22  | 100% |
+| `core/adapters.py`     | 45  | 100% |
 | `core/analogy.py`      | 86  | 100% |
 | `core/aio.py`          | 10  | 100% |
 | `core/audit.py`        | 69  | 100% |
@@ -55,7 +56,7 @@ pytest tests/ -v --cov=core --cov-fail-under=95
 | `core/immune.py`       | 94  | 100% |
 | `core/imports.py`      | 82  | 100% |
 | `core/ingest.py`       | 90  | 100% |
-| `core/knowledge.py`    | 125 | 99%  |
+| `core/knowledge.py`    | 132 | 99%  |
 | `core/l3_graph.py`     | 259 | 99%  |
 | `core/mcp_server.py`   | 104 | 100% |
 | `core/memory.py`       | 191 | 100% |
@@ -71,7 +72,7 @@ pytest tests/ -v --cov=core --cov-fail-under=95
 | `core/trace.py`        | 26  | 100% |
 | `core/velum.py`        | 112 | 99%  |
 | `core/volition.py`     | 75  | 99%  |
-| **Total (repo-wide)**  | **3717** | **~99%** |
+| **Total (repo-wide)**  | **3773** | **~99%** |
 
 ## What the tests cover
 
@@ -91,6 +92,7 @@ pytest tests/ -v --cov=core --cov-fail-under=95
 | External knowledge ingestion (RFC0063) — txt/md/json/jsonl/csv parsers, TruthGate routing, `learn` CLI | `test_knowledge.py` |
 | Evaluation harness — retrieval/trace/receipt + source-span coverage & contradiction precision/recall, `eval` CLI | `test_eval.py` |
 | Import sessions & dry-run review (WP2) — predict-without-write, session restrict/erase, `learn --dry-run` | `test_imports.py` |
+| Ingestion adapters (WP4) — N-Triples RDF (stdlib), optional YAML/PDF, `learn` dispatch | `test_adapters.py` |
 | L3 canonical graph adapter & backends | `test_l3_graph.py` |
 | On-disk SQLite L3 backend (persistence, erase, vectors, entities) | `test_l3_sqlite.py` |
 | Packaging contract (entry point, version, package surface) | `test_packaging.py` |

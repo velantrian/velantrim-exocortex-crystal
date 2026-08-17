@@ -25,10 +25,11 @@ import re
 from typing import Dict, Any, List, Optional, Iterable
 
 from core import ingest as _ingest_mod
-from core import metrics, evidence
+from core import metrics, evidence, adapters
 
 EXTERNAL = "EXTERNAL"
-_SUPPORTED = (".txt", ".md", ".markdown", ".json", ".jsonl", ".ndjson", ".csv")
+_SUPPORTED = (".txt", ".md", ".markdown", ".json", ".jsonl", ".ndjson", ".csv",
+              ".nt", ".yaml", ".yml", ".pdf")
 
 # Markdown noise we strip to recover the underlying claim text.
 _MD_BULLET = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+")
@@ -66,6 +67,10 @@ def extract_claims(content: str, fmt: str) -> List[Dict[str, Any]]:
         return out
     if fmt == "csv":
         return _extract_csv(content)
+    if fmt == "nt":
+        return adapters.extract_ntriples(content)           # WP4: RDF (stdlib)
+    if fmt in ("yaml", "yml"):
+        return adapters.extract_yaml(content)               # WP4: optional [yaml]
     raise ValueError(f"extract_claims: unsupported format {fmt!r}")
 
 
@@ -210,8 +215,13 @@ def ingest_file(
     if ext not in _SUPPORTED:
         raise ValueError(
             f"ingest_file: unsupported extension {ext!r} (supported: {_SUPPORTED})")
-    with open(path, encoding="utf-8") as fh:
-        content = fh.read()
-    return ingest_text(content, fmt=ext.lstrip("."),
+    if ext == ".pdf":
+        # Binary: extract text via the optional PDF adapter, then treat as text.
+        content, ingest_fmt = adapters.extract_pdf_text(path), "txt"
+    else:
+        with open(path, encoding="utf-8") as fh:
+            content = fh.read()
+        ingest_fmt = ext.lstrip(".")
+    return ingest_text(content, fmt=ingest_fmt,
                        source=source or os.path.basename(path),
                        source_status=source_status)

@@ -121,9 +121,14 @@ def dry_run_file(path: str, *, source: Optional[str] = None,
         raise ValueError(
             f"dry_run_file: unsupported extension {ext!r} "
             f"(supported: {knowledge._SUPPORTED})")
-    with open(path, encoding="utf-8") as fh:
-        content = fh.read()
-    return dry_run_text(content, fmt=ext.lstrip("."),
+    if ext == ".pdf":
+        from core import adapters
+        content, fmt = adapters.extract_pdf_text(path), "txt"
+    else:
+        with open(path, encoding="utf-8") as fh:
+            content = fh.read()
+        fmt = ext.lstrip(".")
+    return dry_run_text(content, fmt=fmt,
                         source=source or os.path.basename(path))
 
 

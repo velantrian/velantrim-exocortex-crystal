@@ -13,6 +13,8 @@
 #   pip install '.[embeddings]'
 #   pip install '.[llm]'
 #   pip install '.[encryption]'
+#   pip install '.[yaml]'        # .yaml/.yml ingestion (N-Triples .nt is stdlib)
+#   pip install '.[pdf]'         # .pdf ingestion
 #
 # L3 backend defaults:
 #   auto -> LadybugDB if installed -> on-disk SQLite -> in-memory mock.
