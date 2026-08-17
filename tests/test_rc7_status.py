@@ -87,6 +87,10 @@ def test_rc7_merge_truth_remains_visible_after_later_reader_milestones():
     assert "b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1" in roadmap
     assert "PR #372" in roadmap
     assert "reader_core_rc7_cross_document_links" in roadmap
+    # ROADMAP.md previously cited a non-existent CI run (31478117504, verified 404 on
+    # GitHub Actions) for this checkpoint while every other status surface below already
+    # cited the real one. Pin it here too so this specific file can't drift again.
+    assert "31572918731" in roadmap
 
     for path in (
         "docs/STATUS.md", "docs/IMPLEMENTATION_STATUS.md", "docs/ai/CURRENT_STATE.md",
@@ -103,6 +107,19 @@ def test_rc7_merge_truth_remains_visible_after_later_reader_milestones():
     assert "Delivered Reader implementation baseline" in roadmap
     assert "RC-8 — retrieval architecture decision" in roadmap
     assert "RC-9 — deterministic lexical candidate discovery + benchmark" in roadmap
+
+
+def test_rc7_ci_run_id_typo_does_not_recur():
+    """31478117504 does not exist on GitHub Actions (verified 404); the real post-merge
+    CI run for the RC-7 checkpoint (PR #372, commit b5541ce5...) is 31572918731. This
+    forbids the stale/wrong literal anywhere in tracked repository docs, not only in
+    ROADMAP.md, so a future doc reconciliation can't silently reintroduce it."""
+    for path in (
+        "ROADMAP.md", "docs/STATUS.md", "docs/IMPLEMENTATION_STATUS.md",
+        "docs/ai/CURRENT_STATE.md", "docs/ai/COMPONENT_MAP.md",
+        "docs/architecture/READER_RC8_RETRIEVAL_DECISION.md",
+    ):
+        assert "31478117504" not in _text(path), path
 
 
 def test_rc7_does_not_authorize_semantic_vector_retrieval():
