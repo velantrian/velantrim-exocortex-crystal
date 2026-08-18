@@ -12,6 +12,7 @@ import shutil
 import sqlite3
 import stat
 import tempfile
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Iterable, Iterator, Mapping, Optional
@@ -58,6 +59,15 @@ MAX_DANGLING_EXAMPLES = 20
 # across supported filesystems; the max-bytes value preserves the original bounded
 # streaming ceiling during the final reread.
 FileSnapshot = tuple[os.stat_result, str, int]
+
+
+@dataclass(frozen=True)
+class DirectorySnapshot:
+    """Stable directory identity plus a deterministic child-entry inventory."""
+
+    st_dev: int
+    st_ino: int
+    entries: tuple[tuple[str, int, int, int], ...]
 
 DATASET_FILES = {
     "nodes": "nodes.jsonl",
@@ -217,33 +227,54 @@ def _require_unchanged_file(path: Path, expected: FileSnapshot, label: str) -> N
         os.close(fd)
 
 
-def _directory_identity(path: Path, label: str) -> os.stat_result:
+def _directory_entry_inventory(
+    path: Path, label: str
+) -> tuple[tuple[str, int, int, int], ...]:
+    """Return a stable, no-follow inventory for immediate directory entries."""
+
+    entries: list[tuple[str, int, int, int]] = []
+    try:
+        with os.scandir(path) as iterator:
+            for entry in iterator:
+                try:
+                    entry_stat = entry.stat(follow_symlinks=False)
+                except OSError as exc:
+                    raise StorageOperationError(
+                        f"cannot inspect {label} entry {entry.name!r}: {exc}"
+                    ) from exc
+                entries.append((
+                    entry.name,
+                    entry_stat.st_dev,
+                    entry_stat.st_ino,
+                    stat.S_IFMT(entry_stat.st_mode),
+                ))
+    except StorageOperationError:
+        raise
+    except OSError as exc:
+        raise StorageOperationError(f"cannot enumerate {label}: {exc}") from exc
+    entries.sort(key=lambda item: item[0])
+    return tuple(entries)
+
+
+def _directory_identity(path: Path, label: str) -> DirectorySnapshot:
     try:
         value = path.lstat()
     except OSError as exc:
         raise StorageOperationError(f"cannot inspect {label}: {exc}") from exc
     if not stat.S_ISDIR(value.st_mode):
         raise StorageOperationError(f"{label} must be a directory: {path}")
-    return value
+    return DirectorySnapshot(
+        st_dev=value.st_dev,
+        st_ino=value.st_ino,
+        entries=_directory_entry_inventory(path, label),
+    )
 
 
 def _require_unchanged_directory(
-    path: Path, expected: os.stat_result, label: str
+    path: Path, expected: DirectorySnapshot, label: str
 ) -> None:
     current = _directory_identity(path, label)
-    identity = (
-        current.st_dev,
-        current.st_ino,
-        current.st_mtime_ns,
-        current.st_ctime_ns,
-    )
-    expected_identity = (
-        expected.st_dev,
-        expected.st_ino,
-        expected.st_mtime_ns,
-        expected.st_ctime_ns,
-    )
-    if identity != expected_identity:
+    if current != expected:
         raise StorageOperationError(f"{label} changed during verification")
 
 

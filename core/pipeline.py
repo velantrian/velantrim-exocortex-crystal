@@ -321,16 +321,14 @@ def _load_demo_seed():
 # core/retrieval_config.py: bounded, validated, optionally loaded from
 # VELANTRIM_RETRIEVAL_CONFIG. Defaults are bit-identical to the historical
 # constants (k=3, min_similarity=0.05, hops=2, decay=0.5).
-# Activation propagation weights by edge type. Truth-maintenance edges do NOT
-# carry relevance: a fact is not "more relevant" because it is refuted
-# (CONTRADICTS) or because it is replaced (SUPERSEDED_BY) — otherwise graph-walk would lift
-# exactly the refuted/obsolete. Episodic association (CO_OCCURRED) and any
-# unknown types propagate normally (default weight 1.0).
+# Activation propagation is default-deny. Graph edges are navigation signals,
+# not evidence or truth, and an edge writer must not gain ranking influence
+# merely by inventing a new relation type. Start conservatively with the one
+# explicitly associative relation already used by episodic recall.
 _WALK_EDGE_WEIGHTS = {
-    "CONTRADICTS": 0.0,
-    "SUPERSEDED_BY": 0.0,
+    "CO_OCCURRED": 1.0,
 }
-_WALK_DEFAULT_EDGE_WEIGHT = 1.0
+_WALK_DEFAULT_EDGE_WEIGHT = 0.0
 
 # graph.vector_search(k=...) returns at most k rows straight from the
 # backend, ranked by similarity, BEFORE _may_seed_vector_hit()'s deny
@@ -544,44 +542,63 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
         hit["fact_id"]: hit.get("_relevance", 0.0) * _safe_confidence(hit.get("confidence", 0.0))
         for hit in vector_hits
     }
+    # Bound even the initial vector-seed frontier. Stable score/fact-id order
+    # prevents backend insertion order from changing graph work.
+    current = dict(sorted(
+        current.items(), key=lambda item: (-item[1], item[0])
+    )[:cfg.graph_walk_frontier_limit])
+
     for _hop in range(cfg.graph_walk_hops):
         nxt: Dict[str, float] = {}
-        for fid, act in current.items():
-            # Every fid reaching `current` — whether an initial vector hit
-            # or a later-hop target — has already passed
-            # _may_seed_vector_hit()/_may_propagate_activation(), both of
-            # which check the SOURCE's own L1 terminal-state/restricted
-            # status before it is ever admitted; no separate re-check is
-            # needed here (#257 independent-review rounds 2 and 4).
-            # Outgoing edges by type → weight; only edges with
-            # weight > 0 propagate to Validated nodes. Activation is split proportionally to weights
-            # (normalized by their sum), not by raw out-degree — edges with
-            # weight 0 do not "eat" a neighbor's share.
+        for fid, act in sorted(current.items(), key=lambda item: item[0]):
+            # Only explicitly approved relation types are requested from the
+            # backend. Each backend receives a hard LIMIT so a dense node cannot
+            # materialize an unbounded outgoing-edge set for this query.
             targets = []
-            for edge in graph.get_edges(fid):
-                weight = _WALK_EDGE_WEIGHTS.get(
-                    edge["rel_type"], _WALK_DEFAULT_EDGE_WEIGHT)
-                if weight <= 0.0:
-                    continue
-                node = graph.get_fact(edge["target"])
-                if node is None or not _may_propagate_activation(node):
-                    continue  # stale-terminal-in-L1 or restricted/UNKNOWN-restricted: do not propagate
-                targets.append((node, weight))
-            total_weight = sum(w for _, w in targets)
+            remaining_edges = cfg.graph_walk_edges_per_node
+            for rel_type, weight in sorted(_WALK_EDGE_WEIGHTS.items()):
+                if remaining_edges <= 0:
+                    break
+                edges = graph.get_edges(
+                    fid, rel_type=rel_type, limit=remaining_edges
+                )
+                for edge in edges:
+                    remaining_edges -= 1
+                    node = graph.get_fact(edge["target"])
+                    if node is None or not _may_propagate_activation(node):
+                        continue
+                    targets.append((node, weight))
+            total_weight = sum(weight for _, weight in targets)
             if total_weight <= 0.0:
                 continue
             for node, weight in targets:
                 nid = node["fact_id"]
                 if nid in seeds:
-                    continue  # do not pour activation into vector hits
+                    continue
                 share = act * cfg.graph_walk_decay * (weight / total_weight)
                 nxt[nid] = nxt.get(nid, 0.0) + share
                 node_cache[nid] = node
         if not nxt:
             break
-        for nid, val in nxt.items():
+
+        # Highest activation wins; fact_id is the deterministic tie-breaker.
+        # Candidate and frontier ceilings are independent: one limits distinct
+        # graph-origin results over the whole walk, the other limits work in
+        # the next hop. Existing candidates may still accumulate activation.
+        ranked_nxt = sorted(nxt.items(), key=lambda item: (-item[1], item[0]))
+        bounded_next: Dict[str, float] = {}
+        for nid, val in ranked_nxt:
+            is_new_candidate = nid not in graph_score
+            if (is_new_candidate
+                    and len(graph_score) >= cfg.graph_walk_candidate_limit):
+                continue
             graph_score[nid] = graph_score.get(nid, 0.0) + val
-        current = nxt
+            bounded_next[nid] = val
+            if len(bounded_next) >= cfg.graph_walk_frontier_limit:
+                break
+        if not bounded_next:
+            break
+        current = bounded_next
 
     for nid, score in graph_score.items():
         graph_items.append(_from_node(node_cache[nid], score, "graph"))
