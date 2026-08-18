@@ -90,7 +90,7 @@ jobs:
           props["graph_explanation"] = {
               "type": "object",
               "description": "Bounded heuristic activation explanation; not evidence or proof",
-              "additionalProperties": true,
+              "additionalProperties": True,
           }
           evidence = data["$defs"]["evidence_span"]["properties"]
           evidence["lineage_id"] = {"type": ["string", "null"]}
