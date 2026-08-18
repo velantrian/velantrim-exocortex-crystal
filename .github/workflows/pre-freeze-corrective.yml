@@ -1,6 +1,8 @@
 name: Pre-Freeze Corrective Gate
 
 on:
+  pull_request:
+    branches: [main]
   push:
     branches:
       - agent/crystal-pre-freeze-remediation-2026-08-18
@@ -8,7 +10,6 @@ on:
 permissions:
   contents: write
 
-# Trigger marker: workflow already exists on the branch for this push.
 jobs:
   corrective:
     if: github.actor != 'github-actions[bot]'
