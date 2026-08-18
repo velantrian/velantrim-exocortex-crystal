@@ -34,7 +34,7 @@ jobs:
         run: ruff check core/evidence.py core/reconcile.py core/trace.py core/storage_migration.py core/eval.py tools/pre_freeze_corrective_patch.py
       - name: Targeted corrective tests
         run: |
-          pytest -q \
+          pytest -q -o addopts='' \
             tests/test_pre_freeze_wave1.py \
             tests/test_pre_freeze_wave2.py \
             tests/test_pre_freeze_wave3.py \
