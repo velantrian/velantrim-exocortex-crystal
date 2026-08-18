@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import pytest
 from concurrent.futures import ThreadPoolExecutor
 
-from core import embedding, evidence, query_pipeline, reconcile
+import pytest
+
+from core import embedding, evidence, memory, query_pipeline, reconcile
 from core.l3_graph import MockL3Graph
 from core.memory import get_fact, store_fact, transition_esm
 
@@ -47,6 +48,27 @@ def test_lineage_defaults_unknown_and_metrics_do_not_infer_independence():
     metrics = evidence.lineage_metrics([fact["fact_id"]])
     assert metrics["unknown_lineage_rate"] == pytest.approx(0.5)
     assert metrics["independence_assertion_coverage"] == 0.0
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({"independence_class": "FORGED"}, "invalid independence_class"),
+        ({"lineage_basis": "FORGED"}, "invalid lineage_basis"),
+        ({"independence_class": "INDEPENDENT_ASSERTED"}, "requires lineage_id"),
+        ({
+            "independence_class": "INDEPENDENT_ASSERTED",
+            "lineage_id": "family:no-basis",
+        }, "requires an assertion basis"),
+    ],
+)
+def test_evidence_lineage_validation_rejects_malformed_assertions(kwargs, message):
+    fact = _stored_verified(f"f3-invalid-{message.replace(' ', '-')}")
+    with pytest.raises(ValueError, match=message):
+        evidence.attach_evidence(
+            fact["fact_id"], "file://invalid-lineage", source_text="source",
+            span_start=0, span_end=1, **kwargs,
+        )
 
 
 def test_reinforce_same_lineage_is_idempotent():
@@ -119,6 +141,29 @@ def test_grant_reinforce_rejects_nonindependent_or_wrong_fact_evidence(monkeypat
         reconcile.reinforce("f5-primary", evidence_id=same_lineage["evidence_id"])
     with pytest.raises(ValueError, match="valid evidence for this fact"):
         reconcile.reinforce("f5-primary", evidence_id=wrong_fact["evidence_id"])
+
+
+def test_grant_reinforce_rejects_corrupt_authoritative_lineage(monkeypatch):
+    _stored_verified("f5-corrupt")
+    row = _independent_evidence("f5-corrupt", "family:corrupt")
+    monkeypatch.setenv("VELANTRIM_RELEASE_PROFILE", "grant")
+
+    with memory._db() as conn:
+        conn.execute(
+            "UPDATE evidence_spans SET lineage_id = NULL WHERE evidence_id = ?",
+            (row["evidence_id"],),
+        )
+    with pytest.raises(ValueError, match="requires lineage_id"):
+        reconcile.reinforce("f5-corrupt", evidence_id=row["evidence_id"])
+
+    with memory._db() as conn:
+        conn.execute(
+            "UPDATE evidence_spans SET lineage_id = ?, lineage_basis = 'UNKNOWN' "
+            "WHERE evidence_id = ?",
+            ("family:corrupt", row["evidence_id"]),
+        )
+    with pytest.raises(ValueError, match="requires lineage assertion basis"):
+        reconcile.reinforce("f5-corrupt", evidence_id=row["evidence_id"])
 
 
 def test_grant_same_lineage_concurrent_reinforcement_increments_once(monkeypatch):
