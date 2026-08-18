@@ -77,6 +77,7 @@ DATASET_FILES = {
     "mentions": "mentions.jsonl",
     "meta": "meta.jsonl",
 }
+MAX_MIGRATION_DIRECTORY_ENTRIES = 2 + len(DATASET_FILES)
 
 EXPECTED_COLUMNS = {
     "nodes": ("fact_id", "data"),
@@ -236,6 +237,10 @@ def _directory_entry_inventory(
     try:
         with os.scandir(path) as iterator:
             for entry in iterator:
+                if len(entries) >= MAX_MIGRATION_DIRECTORY_ENTRIES:
+                    raise StorageOperationError(
+                        f"{label} exceeds the {MAX_MIGRATION_DIRECTORY_ENTRIES}-entry resource limit"
+                    )
                 try:
                     entry_stat = entry.stat(follow_symlinks=False)
                 except OSError as exc:

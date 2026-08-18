@@ -45,8 +45,8 @@ def _validate_span(span_start: Optional[int], span_end: Optional[int]) -> None:
     provenance pointer that addresses nothing (or a negative/inverted range).
 
     Either both offsets are given (a real span) or both are omitted (a
-    document/chunk-level reference). A half-open [start, end) range must satisfy
-    0 <= start <= end.
+    document/chunk-level reference). A half-open [start, end) text range must
+    satisfy 0 <= start < end; a zero-length boundary is not evidence of a claim.
     """
     if span_start is None and span_end is None:
         return
@@ -57,9 +57,9 @@ def _validate_span(span_start: Optional[int], span_end: Optional[int]) -> None:
         raise ValueError("attach_evidence: span offsets must be integers")
     if span_start < 0 or span_end < 0:
         raise ValueError("attach_evidence: span offsets must be non-negative")
-    if span_start > span_end:
+    if span_start >= span_end:
         raise ValueError(
-            f"attach_evidence: invalid span [{span_start}, {span_end})")
+            f"attach_evidence: span must be non-empty [{span_start}, {span_end})")
 
 
 def attach_evidence(
@@ -244,7 +244,7 @@ def has_evidence(fact_id: str) -> bool:
 def _valid_source_location(span: Dict[str, Any]) -> bool:
     start, end = span.get("span_start"), span.get("span_end")
     if isinstance(start, int) and not isinstance(start, bool) and isinstance(end, int) and not isinstance(end, bool):
-        return 0 <= start <= end
+        return 0 <= start < end
     return bool(span.get("chunk_id") or span.get("section"))
 
 

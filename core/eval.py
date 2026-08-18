@@ -102,13 +102,16 @@ def unsupported_provenance_count(fact_ids: Sequence[str]) -> int:
 # Fixtures live in JSON files bundled with the package; the inline constants below
 # are a robust fallback if the data files are ever missing.
 
-def _fixture_manifest() -> Optional[Dict[str, Any]]:
+def _fixture_manifest() -> Dict[str, Any]:
+    """Load the frozen fixture manifest; absence or corruption is a gate failure."""
     try:
         text = resources.files(_FIXTURE_PKG).joinpath(_FIXTURE_MANIFEST).read_text(encoding="utf-8")
         data = json.loads(text)
-    except (FileNotFoundError, ModuleNotFoundError, OSError, ValueError):
-        return None
-    return data if isinstance(data, dict) else None
+    except (FileNotFoundError, ModuleNotFoundError, OSError, ValueError) as exc:
+        raise RuntimeError("fixture manifest is missing or malformed") from exc
+    if not isinstance(data, dict):
+        raise RuntimeError("fixture manifest must be a JSON object")
+    return data
 
 
 def _load_fixture_json(name: str) -> Optional[Dict[str, Any]]:
@@ -116,15 +119,14 @@ def _load_fixture_json(name: str) -> Optional[Dict[str, Any]]:
     try:
         text = resources.files(_FIXTURE_PKG).joinpath(name).read_text(encoding="utf-8")
         manifest = _fixture_manifest()
-        if manifest is not None:
-            expected = (manifest.get("sha256") or {}).get(name)
-            if not isinstance(expected, str) or not expected:
-                raise RuntimeError(f"fixture manifest has no digest for {name}")
-            actual = hashlib.sha256(text.encode("utf-8")).hexdigest()
-            if actual != expected:
-                raise RuntimeError(
-                    f"fixture digest mismatch for {name}: expected {expected}, got {actual}"
-                )
+        expected = (manifest.get("sha256") or {}).get(name)
+        if not isinstance(expected, str) or not expected:
+            raise RuntimeError(f"fixture manifest has no digest for {name}")
+        actual = hashlib.sha256(text.encode("utf-8")).hexdigest()
+        if actual != expected:
+            raise RuntimeError(
+                f"fixture digest mismatch for {name}: expected {expected}, got {actual}"
+            )
         return json.loads(text)
     except RuntimeError:
         raise

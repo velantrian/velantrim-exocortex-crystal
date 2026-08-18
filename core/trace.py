@@ -43,10 +43,14 @@ def build_trace(retrieved: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         if not signals:
             signals = [str(item.get("origin", "retrieval"))]
 
+        source = item.get("source")
+        if not isinstance(source, str) or not source.strip():
+            source = "unknown"
+
         entry: Dict[str, Any] = {
             "trace_version": 2,
             "fact_id": fact_id,
-            "source": item.get("source", "unknown"),
+            "source": source,
             "origin": item.get("origin", "retrieval"),
             "epistemic_state": item.get("epistemic_state", "Observed"),
             "retrieval_rank": rank,

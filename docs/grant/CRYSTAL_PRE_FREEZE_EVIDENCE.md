@@ -2,9 +2,9 @@
 
 Status: **freeze candidate; not production authorization**.
 
-Cleaned implementation baseline SHA: `5b419ed8e268c72caf3d707666006507ab2eefe7`
+Corrective closure status: **pending final exact-SHA CI evidence**.
 
-This package accompanies the Crystal pre-freeze remediation branch. The baseline above contains the production remediation code with all temporary pre-freeze patch scripts and one-shot workflows removed. The current documentation-only child commit is used to trigger the repository's normal supported CI matrix against the same implementation tree.
+The exact freeze-candidate SHA is intentionally not pinned until the corrective delta and the full Python 3.11/3.12 matrix are green on one head. Intermediate SHAs are not freeze evidence.
 
 ## Architecture boundary
 
@@ -21,13 +21,13 @@ This package accompanies the Crystal pre-freeze remediation branch. The baseline
 3. Grant strict grounding requires replayable evidence spans for VERIFIED facts.
 4. Grant retrieval profile requires a pinned embedder; mismatch/provider degradation is explicit.
 5. TRACE v2 calls relevance `retrieval_score` and carries bounded retrieval explanation.
-6. Evidence lineage is unknown by default; same-lineage reinforcement cannot increase support twice.
+6. In the grant profile, reinforcement accepts an authoritative `evidence_id`; lineage is derived from the evidence store, `UNKNOWN`/`SAME_LINEAGE` cannot raise support, and one lineage can contribute at most once.
 7. Concept clustering excludes non-Validated, restricted, and store-conflicted facts.
-8. The shipping evaluation corpus is hash-frozen and gates strict provenance + lineage metrics.
+8. The shipping evaluation corpus is hash-frozen; a missing/malformed manifest fails closed and the gate checks strict provenance + lineage metrics.
 
 ## Explicit non-claims
 
-Crystal does not claim that retrieval equals truth, ranking equals confidence, a graph path is proof, a source label is exact evidence, source count implies independent corroboration, an embedding fallback preserves semantic equivalence, bounded hop depth alone bounds graph work, or green CI constitutes production authorization.
+Crystal does not claim that retrieval equals truth, ranking equals confidence, a graph path is proof, a source label is exact evidence, source count implies independent corroboration, an embedding fallback preserves semantic equivalence, bounded hop depth alone bounds graph work, or green CI constitutes production authorization. Durable SQLite/Cypher graph backends push edge limits into the backend query; `MockL3Graph` is a non-durable test backend and is not part of the production resource-bound claim. The HTTP API exposes evidence read-only; it does not expose `attach_evidence()` or `reinforce()` as remote write authority.
 
 ## Freeze exit gate
 
