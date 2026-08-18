@@ -2,6 +2,8 @@
 
 Status: **freeze candidate; not production authorization**.
 
+Implementation candidate SHA: `7855c6d94c91c77a2e7666902c8012360f028a50`
+
 This package accompanies the Crystal pre-freeze remediation branch. The exact
 implementation baseline SHA and CI run IDs are pinned only after the final code
 commit has passed the supported Python 3.11/3.12 matrix. A documentation-only
