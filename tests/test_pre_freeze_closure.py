@@ -112,3 +112,8 @@ def test_concept_eligibility_ignores_malformed_nodes():
             return [{"claim": "missing id"}, {"fact_id": 42}]
 
     assert concept._concept_eligible_fact_ids(Graph()) == set()
+
+
+def test_trace_safe_score_rejects_non_numeric_and_overflow():
+    assert trace._safe_score("1.0") == 0.0
+    assert trace._safe_score(10 ** 10000) == 0.0

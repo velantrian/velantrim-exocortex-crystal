@@ -164,3 +164,27 @@ def test_retrieval_config_rejects_unbounded_graph_limits():
         _cfg(graph_walk_frontier_limit=2049)
     with pytest.raises(ValueError):
         _cfg(graph_walk_candidate_limit=4097)
+
+
+def test_graph_walk_stops_after_relation_budget_is_exhausted(monkeypatch):
+    graph = _BoundedGraph([
+        {"source": "seed", "rel_type": "A_TEST_REL", "target": "assoc-a"},
+        {"source": "seed", "rel_type": "Z_TEST_REL", "target": "assoc-b"},
+    ])
+    monkeypatch.setenv("VELANTRIM_EMBEDDER", "hashing")
+    embedding.reset_embedder()
+    monkeypatch.setattr(pipeline, "get_l3_graph", lambda: graph)
+    monkeypatch.setattr(
+        pipeline, "get_retrieval_config",
+        lambda: _cfg(graph_walk_hops=1, graph_walk_edges_per_node=1),
+    )
+    monkeypatch.setattr(
+        pipeline, "_WALK_EDGE_WEIGHTS",
+        {"A_TEST_REL": 1.0, "Z_TEST_REL": 1.0},
+    )
+
+    result = pipeline.retrieve("seed", k=3)
+
+    assert "assoc-a" in {item["id"] for item in result}
+    assert "assoc-b" not in {item["id"] for item in result}
+    assert graph.calls == [("seed", "A_TEST_REL", 1)]
