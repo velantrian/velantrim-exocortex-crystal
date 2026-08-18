@@ -232,6 +232,9 @@ _EVIDENCE_DDL = """
         span_end      INTEGER,
         source_sha256 TEXT,
         claim_sha256  TEXT NOT NULL,
+        lineage_id    TEXT,
+        independence_class TEXT NOT NULL DEFAULT 'UNKNOWN',
+        lineage_basis TEXT NOT NULL DEFAULT 'UNKNOWN',
         created_at    TEXT NOT NULL
     )
 """
@@ -375,13 +378,16 @@ _MIGRATIONS = [
 # Columns added to evidence_spans after its first release (WP1 hardening, #61).
 _EVIDENCE_MIGRATIONS = [
     ("section", "TEXT"),  # human-readable source location (heading/page/section)
+    ("lineage_id", "TEXT"),
+    ("independence_class", "TEXT NOT NULL DEFAULT 'UNKNOWN'"),
+    ("lineage_basis", "TEXT NOT NULL DEFAULT 'UNKNOWN'"),
 ]
 
 # SQLite's PRAGMA user_version is the single schema-version marker for the L1
 # database. Version 1 covers the revision CAS token added in #244; version 2
-# adds durable audit/provenance chain checkpoints. Future schema changes must
-# increment this value.
-_SCHEMA_VERSION = 2
+# adds durable audit/provenance chain checkpoints; version 3 adds unknown-by-default
+# evidence lineage metadata. Future schema changes must increment this value.
+_SCHEMA_VERSION = 3
 
 # Serializes first-open schema initialization within this process. The
 # BEGIN IMMEDIATE inside _ensure_schema provides the corresponding

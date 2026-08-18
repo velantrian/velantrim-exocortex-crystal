@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional
 
 from core import metrics
 from core.embedding import get_embedder
+from core.evidence import has_valid_evidence_for_grounding
 from core.l3_graph import get_l3_graph
 from core.legacy_retrieval import (
     LEGACY_REINDEX_REASON_CODE,
@@ -332,6 +333,22 @@ def query(
             episode_requested=episode is not None,
             retrieval=legacy,
         )
+
+    if _grant_profile_enabled():
+        verified_before = [f for f in facts if f.get("truth_status") == "VERIFIED"]
+        facts = [
+            f for f in facts
+            if f.get("truth_status") != "VERIFIED"
+            or has_valid_evidence_for_grounding(f["fact_id"])
+        ]
+        if verified_before and not any(f.get("truth_status") == "VERIFIED" for f in facts):
+            return _blocked(
+                "Insufficient grounding: VERIFIED facts lack valid replayable evidence spans.",
+                query_text,
+                reason_code="insufficient_grounding_missing_verified_evidence",
+                episode_requested=episode is not None,
+                retrieval=legacy,
+            )
 
     config_id = _retrieval_config_id()
     trace_input = [

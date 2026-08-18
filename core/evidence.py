@@ -18,11 +18,16 @@
 # automatically during PDF/Markdown ingestion, dry-run review) remains future work.
 
 import hashlib
+import re
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from core import memory
+
+_LINEAGE_CLASSES = frozenset({"UNKNOWN", "SAME_LINEAGE", "INDEPENDENT_ASSERTED"})
+_LINEAGE_BASES = frozenset({"UNKNOWN", "CURATOR_ASSERTED", "PUBLISHER_DECLARED", "IMPORTER_DECLARED"})
+_SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 
 
 def _now() -> str:
@@ -69,6 +74,9 @@ def attach_evidence(
     span_end: Optional[int] = None,
     source_text: Optional[str] = None,
     source_sha256: Optional[str] = None,
+    lineage_id: Optional[str] = None,
+    independence_class: str = "UNKNOWN",
+    lineage_basis: str = "UNKNOWN",
 ) -> Dict[str, Any]:
     """
     Attach a source-span evidence record to a fact.
@@ -86,6 +94,14 @@ def attach_evidence(
     claim_text = claim if claim is not None else fact.get("claim", "")
     if source_sha256 is None and source_text is not None:
         source_sha256 = sha256(source_text)
+    if independence_class not in _LINEAGE_CLASSES:
+        raise ValueError(f"attach_evidence: invalid independence_class {independence_class!r}")
+    if lineage_basis not in _LINEAGE_BASES:
+        raise ValueError(f"attach_evidence: invalid lineage_basis {lineage_basis!r}")
+    if independence_class != "UNKNOWN" and not (isinstance(lineage_id, str) and lineage_id.strip()):
+        raise ValueError("attach_evidence: non-UNKNOWN independence requires lineage_id")
+    if independence_class != "UNKNOWN" and lineage_basis == "UNKNOWN":
+        raise ValueError("attach_evidence: non-UNKNOWN independence requires an assertion basis")
 
     row = {
         "evidence_id":   "ev:" + uuid.uuid4().hex[:12],
@@ -98,17 +114,22 @@ def attach_evidence(
         "span_end":      span_end,
         "source_sha256": source_sha256,
         "claim_sha256":  sha256(claim_text),
+        "lineage_id":    lineage_id.strip() if isinstance(lineage_id, str) and lineage_id.strip() else None,
+        "independence_class": independence_class,
+        "lineage_basis": lineage_basis,
         "created_at":    _now(),
     }
     with memory._db() as conn:
         conn.execute(
             "INSERT INTO evidence_spans (evidence_id, fact_id, source_uri, "
             "source_kind, chunk_id, section, span_start, span_end, source_sha256, "
-            "claim_sha256, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "claim_sha256, lineage_id, independence_class, lineage_basis, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (row["evidence_id"], row["fact_id"], row["source_uri"],
              row["source_kind"], row["chunk_id"], row["section"],
              row["span_start"], row["span_end"], row["source_sha256"],
-             row["claim_sha256"], row["created_at"]),
+             row["claim_sha256"], row["lineage_id"], row["independence_class"],
+             row["lineage_basis"], row["created_at"]),
         )
     return row
 
@@ -118,7 +139,8 @@ def evidence_for(fact_id: str) -> List[Dict[str, Any]]:
     with memory._db() as conn:
         rows = conn.execute(
             "SELECT evidence_id, fact_id, source_uri, source_kind, chunk_id, "
-            "section, span_start, span_end, source_sha256, claim_sha256, created_at "
+            "section, span_start, span_end, source_sha256, claim_sha256, "
+            "lineage_id, independence_class, lineage_basis, created_at "
             "FROM evidence_spans WHERE fact_id = ? ORDER BY created_at",
             (fact_id,),
         ).fetchall()
@@ -217,6 +239,75 @@ def requires_evidence(fact: Dict[str, Any]) -> bool:
 def has_evidence(fact_id: str) -> bool:
     """True if at least one source-span evidence record is attached to the fact."""
     return bool(evidence_for(fact_id))
+
+
+def _valid_source_location(span: Dict[str, Any]) -> bool:
+    start, end = span.get("span_start"), span.get("span_end")
+    if isinstance(start, int) and not isinstance(start, bool) and isinstance(end, int) and not isinstance(end, bool):
+        return 0 <= start <= end
+    return bool(span.get("chunk_id") or span.get("section"))
+
+
+def valid_evidence_for_grounding(fact_id: str) -> List[Dict[str, Any]]:
+    """Replayable evidence eligible for grant-profile strict factual grounding.
+
+    A source label is not enough: require a non-blank URI, sealed source digest,
+    current-claim binding, and a bounded source location. This is a read predicate;
+    it never promotes a fact or fabricates legacy spans.
+    """
+    fact = memory.get_fact(fact_id)
+    if fact is None or fact.get("restricted"):
+        return []
+    claim_digest = sha256(fact.get("claim", ""))
+    valid: List[Dict[str, Any]] = []
+    for span in evidence_for(fact_id):
+        uri = span.get("source_uri")
+        digest = span.get("source_sha256")
+        if not isinstance(uri, str) or not uri.strip():
+            continue
+        if not isinstance(digest, str) or _SHA256_RE.fullmatch(digest) is None:
+            continue
+        if span.get("claim_sha256") != claim_digest:
+            continue
+        if not _valid_source_location(span):
+            continue
+        valid.append(span)
+    return valid
+
+
+def has_valid_evidence_for_grounding(fact_id: str) -> bool:
+    return bool(valid_evidence_for_grounding(fact_id))
+
+
+def lineage_metrics(fact_ids: List[str]) -> Dict[str, float | int]:
+    """Honest, unknown-preserving lineage coverage for a retrieved evidence set."""
+    rows = [span for fid in fact_ids for span in evidence_for(fid)]
+    total = len(rows)
+    if total == 0:
+        return {
+            "evidence_count": 0, "known_lineage_coverage": 0.0,
+            "same_lineage_duplicate_rate": 0.0, "unique_lineage_count": 0,
+            "independence_assertion_coverage": 0.0, "unknown_lineage_rate": 0.0,
+        }
+    known = [r for r in rows if r.get("lineage_id") and r.get("independence_class") != "UNKNOWN"]
+    independent = [r for r in rows if r.get("independence_class") == "INDEPENDENT_ASSERTED"]
+    unknown = [r for r in rows if r.get("independence_class") == "UNKNOWN"]
+    seen: set[str] = set()
+    duplicate = 0
+    for row in known:
+        lineage = row["lineage_id"]
+        if lineage in seen:
+            duplicate += 1
+        else:
+            seen.add(lineage)
+    return {
+        "evidence_count": total,
+        "known_lineage_coverage": len(known) / total,
+        "same_lineage_duplicate_rate": duplicate / total,
+        "unique_lineage_count": len(seen),
+        "independence_assertion_coverage": len(independent) / total,
+        "unknown_lineage_rate": len(unknown) / total,
+    }
 
 
 # ─── Public exposure wrappers (GDPR Art. 18) ──────────────────────────────────
