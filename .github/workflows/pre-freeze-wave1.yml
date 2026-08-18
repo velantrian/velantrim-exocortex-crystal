@@ -1,6 +1,12 @@
 name: Crystal Pre-Freeze Wave 1
 
 on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - tools/pre_freeze_wave1_patch.py
+      - .github/workflows/pre-freeze-wave1.yml
   push:
     branches:
       - agent/crystal-pre-freeze-remediation-2026-08-18
@@ -17,6 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
           fetch-depth: 0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
@@ -36,6 +43,7 @@ jobs:
             tests/test_storage_migration.py::test_safe_rechecks_and_directory_guards \
             tests/test_pre_freeze_wave1.py
       - name: Commit validated Wave 1 changes
+        if: github.event_name == 'pull_request'
         run: |
           git config user.name "velantrim-pre-freeze-bot"
           git config user.email "actions@users.noreply.github.com"
