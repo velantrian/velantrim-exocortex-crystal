@@ -57,6 +57,26 @@ jobs:
           path.write_text(text[:start] + fixed + text[end:], encoding="utf-8")
           PY
           python tools/pre_freeze_wave4_patch.py
+      - name: Correct restricted concept test fixture
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("tests/test_pre_freeze_wave4.py")
+          text = path.read_text(encoding="utf-8")
+          old = '''    fact = get_fact(fid)
+              get_l3_graph().merge_fact(fact)
+              return fact
+          '''
+          new = '''    fact = get_fact(fid)
+              node = dict(fact)
+              node["restricted"] = restricted
+              get_l3_graph().merge_fact(node)
+              return fact
+          '''
+          if old not in text:
+              raise SystemExit("restricted fixture anchor not found")
+          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
       - name: Synchronize TRACE v2 JSON schema
         run: |
           python - <<'PY'
