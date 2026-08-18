@@ -2,9 +2,21 @@
 
 Status: **freeze candidate; not production authorization**.
 
-Corrective closure status: **pending final exact-SHA CI evidence**.
+Implementation baseline SHA: `a563a0f6661c477ca6403b4cda8775acf190e799`.
 
-The exact freeze-candidate SHA is intentionally not pinned until the corrective delta and the full Python 3.11/3.12 matrix are green on one head. Intermediate SHAs are not freeze evidence.
+Final implementation CI evidence: GitHub Actions `CI` run **#1738** (`run_id=32195304666`) on that exact SHA.
+
+- Python 3.11: **2322 passed, 13 skipped, 100.00% coverage**.
+- Python 3.12: **2322 passed, 13 skipped, 100.00% coverage**.
+- Eval gate: **green**.
+- Security: **green**.
+- Code quality / Ruff: **green**.
+- Documentation status: **green**.
+- JSONL integrity: **green**.
+- Ring Zero mutation gate: **green**.
+- Hardened Docker image build: **green**.
+
+This document is a docs-only child commit over the tested implementation baseline. The implementation SHA above, not the documentation child SHA, is the commit-pinned code/test evidence object.
 
 ## Architecture boundary
 
@@ -16,9 +28,9 @@ The exact freeze-candidate SHA is intentionally not pinned until the corrective 
 
 ## Freeze blockers remediated
 
-1. Logical-export verification uses directory identity plus deterministic entry inventory.
+1. Logical-export verification uses directory identity plus deterministic entry inventory and a bounded directory-entry ceiling.
 2. Graph recall uses a positive edge allow-list and independent work ceilings.
-3. Grant strict grounding requires replayable evidence spans for VERIFIED facts.
+3. Grant strict grounding requires replayable non-empty evidence spans for VERIFIED facts.
 4. Grant retrieval profile requires a pinned embedder; mismatch/provider degradation is explicit.
 5. TRACE v2 calls relevance `retrieval_score` and carries bounded retrieval explanation.
 6. In the grant profile, reinforcement accepts an authoritative `evidence_id`; lineage is derived from the evidence store, `UNKNOWN`/`SAME_LINEAGE` cannot raise support, and one lineage can contribute at most once.
@@ -31,9 +43,14 @@ Crystal does not claim that retrieval equals truth, ranking equals confidence, a
 
 ## Freeze exit gate
 
-- [ ] Python 3.11 full CI green on the cleaned implementation tree.
-- [ ] Python 3.12 full CI green on the cleaned implementation tree.
-- [x] `scripts/eval_gate.py` green with the frozen fixture manifest in the focused Wave 4 gate.
+- [x] Python 3.11 full CI green on implementation SHA `a563a0f6661c477ca6403b4cda8775acf190e799`.
+- [x] Python 3.12 full CI green on implementation SHA `a563a0f6661c477ca6403b4cda8775acf190e799`.
+- [x] `scripts/eval_gate.py` green with the frozen fixture manifest.
+- [x] Security, code-quality, docs-status, JSONL-integrity, Ring Zero mutation, and Docker build gates green.
 - [x] No temporary pre-freeze patch/workflow files remain.
-- [x] Reviewer package identifies the cleaned implementation baseline.
+- [x] Reviewer package identifies the exact implementation baseline and exact CI run.
 - [x] No advanced RAG framework, semantic Reader runtime, or new authority path introduced.
+
+## Freeze recommendation
+
+The pre-freeze remediation scope is complete. The branch is suitable for reviewer inspection and an explicit human freeze/merge decision. This package does **not** itself authorize production deployment, Canon mutation, or merge to `main`.
