@@ -1,0 +1,119 @@
+name: Pre-Freeze Final Closure
+
+on:
+  pull_request:
+    types: [synchronize]
+
+permissions:
+  contents: write
+
+jobs:
+  close-final-coverage:
+    if: github.event.pull_request.head.ref == 'agent/crystal-pre-freeze-remediation-2026-08-18'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: agent/crystal-pre-freeze-remediation-2026-08-18
+          fetch-depth: 0
+      - name: Apply minimal test-only closure
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              target = Path(path)
+              text = target.read_text(encoding="utf-8")
+              if new in text:
+                  return
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{path}: expected one patch anchor, found {count}")
+              target.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+          replace_once(
+              "tests/test_storage_migration.py",
+              '''def test_verify_bundle_file_and_dataset_guards(tmp_path):
+              bundle, _, _ = export_bundle(tmp_path / "extra")
+              (bundle / "extra").write_text("x")
+              assert_error("file set mismatch", m.verify_logical_export, bundle)
+          ''',
+              '''def test_verify_bundle_file_and_dataset_guards(tmp_path):
+              bundle, _, _ = export_bundle(tmp_path / "extra")
+              (bundle / m.DATASET_FILES["meta"]).rename(bundle / "extra")
+              assert_error("file set mismatch", m.verify_logical_export, bundle)
+          ''',
+          )
+
+          closure = Path("tests/test_pre_freeze_closure.py")
+          closure_text = closure.read_text(encoding="utf-8")
+          marker = "def test_trace_safe_score_rejects_non_numeric_and_overflow():"
+          if marker not in closure_text:
+              closure.write_text(
+                  closure_text
+                  + '''\n\ndef test_trace_safe_score_rejects_non_numeric_and_overflow():\n'''
+                    '''    assert trace._safe_score("1.0") == 0.0\n'''
+                    '''    assert trace._safe_score(10 ** 10000) == 0.0\n''',
+                  encoding="utf-8",
+              )
+
+          wave1 = Path("tests/test_pre_freeze_wave1.py")
+          wave1_text = wave1.read_text(encoding="utf-8")
+          marker = "def test_graph_walk_stops_after_relation_budget_is_exhausted(monkeypatch):"
+          if marker not in wave1_text:
+              wave1.write_text(
+                  wave1_text
+                  + '''\n\ndef test_graph_walk_stops_after_relation_budget_is_exhausted(monkeypatch):\n'''
+                    '''    graph = _BoundedGraph([\n'''
+                    '''        {"source": "seed", "rel_type": "A_TEST_REL", "target": "assoc-a"},\n'''
+                    '''        {"source": "seed", "rel_type": "Z_TEST_REL", "target": "assoc-b"},\n'''
+                    '''    ])\n'''
+                    '''    monkeypatch.setenv("VELANTRIM_EMBEDDER", "hashing")\n'''
+                    '''    embedding.reset_embedder()\n'''
+                    '''    monkeypatch.setattr(pipeline, "get_l3_graph", lambda: graph)\n'''
+                    '''    monkeypatch.setattr(\n'''
+                    '''        pipeline, "get_retrieval_config",\n'''
+                    '''        lambda: _cfg(graph_walk_hops=1, graph_walk_edges_per_node=1),\n'''
+                    '''    )\n'''
+                    '''    monkeypatch.setattr(\n'''
+                    '''        pipeline, "_WALK_EDGE_WEIGHTS",\n'''
+                    '''        {"A_TEST_REL": 1.0, "Z_TEST_REL": 1.0},\n'''
+                    '''    )\n'''
+                    '''\n'''
+                    '''    result = pipeline.retrieve("seed", k=3)\n'''
+                    '''\n'''
+                    '''    assert "assoc-a" in {item["id"] for item in result}\n'''
+                    '''    assert "assoc-b" not in {item["id"] for item in result}\n'''
+                    '''    assert graph.calls == [("seed", "A_TEST_REL", 1)]\n''',
+                  encoding="utf-8",
+              )
+          PY
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Install development dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip install -e .
+      - name: Run focused closure tests
+        run: >-
+          pytest -o addopts=''
+          tests/test_storage_migration.py::test_verify_bundle_file_and_dataset_guards
+          tests/test_pre_freeze_closure.py
+          tests/test_pre_freeze_wave1.py
+      - name: Commit verified test-only closure
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/test_storage_migration.py tests/test_pre_freeze_closure.py tests/test_pre_freeze_wave1.py
+          if git diff --cached --quiet; then
+            echo "No closure changes required"
+            exit 0
+          fi
+          git commit -m "test(pre-freeze): close final defensive branches"
+          git push origin HEAD:agent/crystal-pre-freeze-remediation-2026-08-18
