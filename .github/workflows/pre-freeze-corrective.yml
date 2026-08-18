@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
 
+# Trigger marker: workflow already exists on the branch for this push.
 jobs:
   corrective:
     if: github.actor != 'github-actions[bot]'
