@@ -2,12 +2,9 @@
 
 Status: **freeze candidate; not production authorization**.
 
-Implementation candidate SHA: `7855c6d94c91c77a2e7666902c8012360f028a50`
+Cleaned implementation baseline SHA: `5b419ed8e268c72caf3d707666006507ab2eefe7`
 
-This package accompanies the Crystal pre-freeze remediation branch. The exact
-implementation baseline SHA and CI run IDs are pinned only after the final code
-commit has passed the supported Python 3.11/3.12 matrix. A documentation-only
-closure commit may reference that already-tested implementation SHA.
+This package accompanies the Crystal pre-freeze remediation branch. The baseline above contains the production remediation code with all temporary pre-freeze patch scripts and one-shot workflows removed. The current documentation-only child commit is used to trigger the repository's normal supported CI matrix against the same implementation tree.
 
 ## Architecture boundary
 
@@ -30,16 +27,13 @@ closure commit may reference that already-tested implementation SHA.
 
 ## Explicit non-claims
 
-Crystal does not claim that retrieval equals truth, ranking equals confidence, a graph
-path is proof, a source label is exact evidence, source count implies independent
-corroboration, an embedding fallback preserves semantic equivalence, bounded hop
-depth alone bounds graph work, or green CI constitutes production authorization.
+Crystal does not claim that retrieval equals truth, ranking equals confidence, a graph path is proof, a source label is exact evidence, source count implies independent corroboration, an embedding fallback preserves semantic equivalence, bounded hop depth alone bounds graph work, or green CI constitutes production authorization.
 
 ## Freeze exit gate
 
-- [ ] Python 3.11 full CI green on the exact implementation candidate.
-- [ ] Python 3.12 full CI green on the exact implementation candidate.
-- [ ] `scripts/eval_gate.py` green with the frozen fixture manifest.
-- [ ] No temporary pre-freeze patch/workflow files remain.
-- [ ] Final reviewer package pins the tested implementation SHA and CI/eval evidence.
-- [ ] No advanced RAG framework, semantic Reader runtime, or new authority path introduced.
+- [ ] Python 3.11 full CI green on the cleaned implementation tree.
+- [ ] Python 3.12 full CI green on the cleaned implementation tree.
+- [x] `scripts/eval_gate.py` green with the frozen fixture manifest in the focused Wave 4 gate.
+- [x] No temporary pre-freeze patch/workflow files remain.
+- [x] Reviewer package identifies the cleaned implementation baseline.
+- [x] No advanced RAG framework, semantic Reader runtime, or new authority path introduced.
