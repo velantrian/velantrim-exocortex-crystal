@@ -215,7 +215,7 @@ def _retrieve_read_only(query_text: str, k: Optional[int] = None) -> List[Dict[s
 
     try:
         active = get_embedder().id
-    except Exception as exc:
+    except Exception:
         candidates = bounded_legacy_retrieve(query_text, k=limit, graph=graph)
         return _mark_legacy_degradation(
             candidates,
