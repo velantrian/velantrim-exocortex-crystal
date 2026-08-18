@@ -12,7 +12,10 @@ def test_build_trace_maps_fields_and_defaults():
     assert el["source"] == "physics"
     assert el["origin"] == "retrieval"            # default
     assert el["epistemic_state"] == "Observed"    # default
-    assert el["confidence"] == pytest.approx(0.42)
+    assert el["trace_version"] == 2
+    assert el["retrieval_score"] == pytest.approx(0.42)
+    assert "confidence" not in el
+    assert el["retrieval_rank"] == 1
     assert "retrieved_at" in el
 
 
@@ -43,3 +46,34 @@ def test_format_trace_empty_and_populated():
     assert out.startswith("TRACE:")
     assert "f1" in out
     assert "source=physics" in out
+
+
+def test_trace_v2_carries_bounded_retrieval_explanation():
+    trace = build_trace([{
+        "id": "f1",
+        "source": "s",
+        "_score": 0.7,
+        "_retrieval_rank": 2,
+        "_retrieval_signals": ["vector", "graph"],
+        "_active_embedder_id": "hashing-v1",
+        "_stored_embedder_id": "hashing-v1",
+        "_retrieval_config_id": "cfg",
+        "_projection_id": "canonical_read_only",
+        "_graph_explanation": {
+            "seed_fact_id": "seed",
+            "contributor_paths": [{
+                "fact_ids": ["seed", "f1"],
+                "edge_types": ["CO_OCCURRED"],
+                "hop_count": 1,
+                "activation_contribution": 0.2,
+            }],
+            "final_activation": 0.2,
+            "exclusion_reason_codes": [],
+        },
+    }])
+    entry = trace[0]
+    assert entry["retrieval_rank"] == 2
+    assert entry["retrieval_signals"] == ["vector", "graph"]
+    assert entry["active_embedder_id"] == "hashing-v1"
+    assert entry["retrieval_config_id"] == "cfg"
+    assert entry["graph_explanation"]["seed_fact_id"] == "seed"

@@ -547,9 +547,22 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
     current = dict(sorted(
         current.items(), key=lambda item: (-item[1], item[0])
     )[:cfg.graph_walk_frontier_limit])
+    best_path: Dict[str, Dict[str, Any]] = {
+        fid: {
+            "seed_fact_id": fid,
+            "fact_ids": [fid],
+            "edge_types": [],
+            "hop_count": 0,
+            "activation_contribution": act,
+        }
+        for fid, act in current.items()
+    }
+    graph_best_path: Dict[str, Dict[str, Any]] = {}
+    graph_exclusion_codes: set[str] = set()
 
     for _hop in range(cfg.graph_walk_hops):
         nxt: Dict[str, float] = {}
+        nxt_best_path: Dict[str, Dict[str, Any]] = {}
         for fid, act in sorted(current.items(), key=lambda item: item[0]):
             # Only explicitly approved relation types are requested from the
             # backend. Each backend receives a hard LIMIT so a dense node cannot
@@ -567,17 +580,32 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
                     node = graph.get_fact(edge["target"])
                     if node is None or not _may_propagate_activation(node):
                         continue
-                    targets.append((node, weight))
-            total_weight = sum(weight for _, weight in targets)
+                    targets.append((node, weight, rel_type))
+            total_weight = sum(weight for _, weight, _ in targets)
             if total_weight <= 0.0:
                 continue
-            for node, weight in targets:
+            for node, weight, rel_type in targets:
                 nid = node["fact_id"]
                 if nid in seeds:
                     continue
                 share = act * cfg.graph_walk_decay * (weight / total_weight)
                 nxt[nid] = nxt.get(nid, 0.0) + share
                 node_cache[nid] = node
+                parent_path = best_path.get(fid)
+                if parent_path is not None:
+                    candidate_path = {
+                        "seed_fact_id": parent_path["seed_fact_id"],
+                        "fact_ids": [*parent_path["fact_ids"], nid],
+                        "edge_types": [*parent_path["edge_types"], rel_type],
+                        "hop_count": parent_path["hop_count"] + 1,
+                        "activation_contribution": share,
+                    }
+                    previous = nxt_best_path.get(nid)
+                    if (previous is None
+                            or share > previous["activation_contribution"]
+                            or (share == previous["activation_contribution"]
+                                and tuple(candidate_path["fact_ids"]) < tuple(previous["fact_ids"]))):
+                        nxt_best_path[nid] = candidate_path
         if not nxt:
             break
 
@@ -591,17 +619,41 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
             is_new_candidate = nid not in graph_score
             if (is_new_candidate
                     and len(graph_score) >= cfg.graph_walk_candidate_limit):
+                graph_exclusion_codes.add("GRAPH_CANDIDATE_LIMIT_REACHED")
                 continue
             graph_score[nid] = graph_score.get(nid, 0.0) + val
             bounded_next[nid] = val
+            path = nxt_best_path.get(nid)
+            if path is not None:
+                previous = graph_best_path.get(nid)
+                if (previous is None
+                        or path["activation_contribution"] > previous["activation_contribution"]):
+                    graph_best_path[nid] = path
             if len(bounded_next) >= cfg.graph_walk_frontier_limit:
+                if len(ranked_nxt) > len(bounded_next):
+                    graph_exclusion_codes.add("FRONTIER_LIMIT_REACHED")
                 break
         if not bounded_next:
             break
         current = bounded_next
+        best_path = {nid: nxt_best_path[nid] for nid in bounded_next if nid in nxt_best_path}
 
     for nid, score in graph_score.items():
-        graph_items.append(_from_node(node_cache[nid], score, "graph"))
+        item = _from_node(node_cache[nid], score, "graph")
+        path = graph_best_path.get(nid)
+        if path is not None:
+            item["_graph_explanation"] = {
+                "seed_fact_id": path["seed_fact_id"],
+                "contributor_paths": [{
+                    "fact_ids": path["fact_ids"],
+                    "edge_types": path["edge_types"],
+                    "hop_count": path["hop_count"],
+                    "activation_contribution": round(path["activation_contribution"], 6),
+                }],
+                "final_activation": round(score, 6),
+                "exclusion_reason_codes": sorted(graph_exclusion_codes),
+            }
+        graph_items.append(item)
 
     # Fuse ranked candidate lists with RRF (ordering only — no truth/confidence change).
     rankings: List[List[Dict[str, Any]]] = []
@@ -615,7 +667,28 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
         return []
     fused = (rankings[0] if len(rankings) == 1
              else rrf_fuse(rankings, key=lambda x: x["id"]))
-    return fused[:k]
+
+    signals: Dict[str, set[str]] = {}
+    graph_explanations: Dict[str, Dict[str, Any]] = {}
+    for signal, items in (
+        ("vector", vector_items),
+        ("graph", graph_items),
+        ("seed", seed_items),
+    ):
+        for item in items:
+            signals.setdefault(item["id"], set()).add(signal)
+            if signal == "graph" and isinstance(item.get("_graph_explanation"), dict):
+                graph_explanations[item["id"]] = item["_graph_explanation"]
+
+    result: List[Dict[str, Any]] = []
+    for rank, item in enumerate(fused[:k], 1):
+        annotated = dict(item)
+        annotated["_retrieval_rank"] = rank
+        annotated["_retrieval_signals"] = sorted(signals.get(item["id"], {item.get("origin", "retrieval")}))
+        if item["id"] in graph_explanations:
+            annotated["_graph_explanation"] = graph_explanations[item["id"]]
+        result.append(annotated)
+    return result
 
 
 # ─── FACTS PACK ───────────────────────────────────────────────────────────────
