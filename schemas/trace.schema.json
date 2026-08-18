@@ -4,18 +4,34 @@
   "title": "Velantrim Answer Trace / Receipt",
   "description": "The two provenance artifacts the runtime actually emits: (1) the answer trace — the ordered list of trace items produced by core/trace.py build_trace() and returned in the pipeline result under 'trace'; (2) the sealed, replayable receipt produced by core/provenance.py build_receipt(). Both are verifiable offline without the LLM that phrased the answer. Receipts carry no separate receipt_id/trace_id: a receipt is identified and sealed by its content digest.",
   "oneOf": [
-    {"$ref": "#/$defs/trace"},
-    {"$ref": "#/$defs/receipt"}
+    {
+      "$ref": "#/$defs/trace"
+    },
+    {
+      "$ref": "#/$defs/receipt"
+    }
   ],
   "$defs": {
     "trace": {
       "type": "array",
       "description": "Answer trace as emitted by core/trace.py build_trace(): one item per retrieved fact used to ground the answer.",
-      "items": {"$ref": "#/$defs/trace_item"}
+      "items": {
+        "$ref": "#/$defs/trace_item"
+      }
     },
     "trace_item": {
       "type": "object",
-      "required": ["fact_id", "source", "origin", "epistemic_state", "confidence", "retrieved_at"],
+      "required": [
+        "trace_version",
+        "fact_id",
+        "source",
+        "origin",
+        "epistemic_state",
+        "retrieval_rank",
+        "retrieval_score",
+        "retrieval_signals",
+        "retrieved_at"
+      ],
       "additionalProperties": true,
       "properties": {
         "fact_id": {
@@ -44,22 +60,77 @@
           ],
           "description": "ESM state of the fact at retrieval time (full list: core/memory.py ESM_STATES)"
         },
-        "confidence": {
-          "type": "number",
-          "minimum": 0.0,
-          "maximum": 1.0,
-          "description": "Retrieval relevance/confidence score for this item"
-        },
         "retrieved_at": {
           "type": "string",
           "format": "date-time"
+        },
+        "trace_version": {
+          "type": "integer",
+          "const": 2
+        },
+        "retrieval_rank": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "retrieval_score": {
+          "type": "number",
+          "description": "Query-local retrieval relevance score; never epistemic confidence"
+        },
+        "retrieval_signals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Query-local mechanisms that contributed to retrieval ordering"
+        },
+        "active_embedder_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "stored_embedder_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "retrieval_mode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "retrieval_config_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "projection_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "graph_explanation": {
+          "type": "object",
+          "description": "Bounded heuristic activation explanation; not evidence or proof",
+          "additionalProperties": true
         }
       }
     },
     "receipt": {
       "type": "object",
       "description": "Sealed provenance receipt as emitted by core/provenance.py build_receipt() (RECEIPT_VERSION 2). The digest covers the sealed fields (version, created_at, query, answer, citations); 'signature' is present only when an HMAC key is configured.",
-      "required": ["version", "created_at", "query", "answer", "citations", "digest"],
+      "required": [
+        "version",
+        "created_at",
+        "query",
+        "answer",
+        "citations",
+        "digest"
+      ],
       "additionalProperties": true,
       "properties": {
         "version": {
@@ -82,7 +153,9 @@
         "citations": {
           "type": "array",
           "minItems": 1,
-          "items": {"$ref": "#/$defs/citation"}
+          "items": {
+            "$ref": "#/$defs/citation"
+          }
         },
         "digest": {
           "type": "string",
@@ -96,7 +169,13 @@
     },
     "citation": {
       "type": "object",
-      "required": ["fact_id", "claim_sha256", "source", "epistemic_state", "truth_status"],
+      "required": [
+        "fact_id",
+        "claim_sha256",
+        "source",
+        "epistemic_state",
+        "truth_status"
+      ],
       "additionalProperties": true,
       "properties": {
         "fact_id": {
@@ -135,24 +214,84 @@
         "evidence": {
           "type": "array",
           "description": "Receipt v2: sealed source-span evidence attached to the cited fact (present only when spans exist)",
-          "items": {"$ref": "#/$defs/evidence_span"}
+          "items": {
+            "$ref": "#/$defs/evidence_span"
+          }
         }
       }
     },
     "evidence_span": {
       "type": "object",
-      "required": ["evidence_id", "source_uri", "source_kind", "chunk_id", "span_start", "span_end", "source_sha256", "claim_sha256"],
+      "required": [
+        "evidence_id",
+        "source_uri",
+        "source_kind",
+        "chunk_id",
+        "span_start",
+        "span_end",
+        "source_sha256",
+        "claim_sha256"
+      ],
       "additionalProperties": true,
       "properties": {
-        "evidence_id": {"type": "string"},
-        "source_uri": {"type": "string"},
-        "source_kind": {"type": "string"},
-        "chunk_id": {"type": ["string", "integer"]},
-        "section": {"type": ["string", "null"]},
-        "span_start": {"type": "integer", "minimum": 0},
-        "span_end": {"type": "integer", "minimum": 0},
-        "source_sha256": {"type": "string"},
-        "claim_sha256": {"type": "string"}
+        "evidence_id": {
+          "type": "string"
+        },
+        "source_uri": {
+          "type": "string"
+        },
+        "source_kind": {
+          "type": "string"
+        },
+        "chunk_id": {
+          "type": [
+            "string",
+            "integer"
+          ]
+        },
+        "section": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "span_start": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "span_end": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source_sha256": {
+          "type": "string"
+        },
+        "claim_sha256": {
+          "type": "string"
+        },
+        "lineage_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "independence_class": {
+          "type": "string",
+          "enum": [
+            "UNKNOWN",
+            "SAME_LINEAGE",
+            "INDEPENDENT_ASSERTED"
+          ]
+        },
+        "lineage_basis": {
+          "type": "string",
+          "enum": [
+            "UNKNOWN",
+            "CURATOR_ASSERTED",
+            "PUBLISHER_DECLARED",
+            "IMPORTER_DECLARED"
+          ]
+        }
       }
     }
   }

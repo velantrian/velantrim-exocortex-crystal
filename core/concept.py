@@ -25,6 +25,7 @@ from typing import Dict, Any, List, Optional, Tuple
 
 from core.memory import get_fact
 from core.l3_graph import get_l3_graph
+from core.trust_snapshot import TrustSnapshot
 from core import metrics
 
 CONCEPT_KIND = "CONCEPT"
@@ -50,6 +51,26 @@ def _min_size() -> int:
     return _envi(_ENV_MIN_SIZE, 2)
 
 
+def _concept_eligible_fact_ids(graph) -> set[str]:
+    """Deny-dominant eligible facts for concept clustering.
+
+    Concept emergence may write entity/membership projections, so a non-admitted,
+    restricted, terminal, or store-conflicted fact must not shape a cluster.
+    This mirrors the read boundary without importing the retrieval pipeline.
+    """
+    eligible: set[str] = set()
+    for node in graph.all_facts():
+        fact_id = node.get("fact_id")
+        if not isinstance(fact_id, str) or not fact_id:
+            continue
+        snapshot = TrustSnapshot.from_records(
+            fact_id=fact_id, l3=node, l1=get_fact(fact_id), retrieval_score=0.0
+        )
+        if snapshot.epistemic_state == "Validated" and snapshot.restricted is False:
+            eligible.add(fact_id)
+    return eligible
+
+
 def hebbian_weights() -> Dict[Tuple[str, str], int]:
     """
     Undirected Hebbian co-activation weights between canonical facts.
@@ -64,11 +85,11 @@ def hebbian_weights() -> Dict[Tuple[str, str], int]:
     # directions. This is robust even if only one direction is present (no
     # halving, so odd counts are never lost), and matches the symmetric case.
     directed: Dict[Tuple[str, str], int] = {}
-    for fact in graph.all_facts():
-        a = fact["fact_id"]
+    eligible = _concept_eligible_fact_ids(graph)
+    for a in sorted(eligible):
         for edge in graph.get_edges(a, _EPISODE_REL):
             b = edge["target"]
-            if a == b:
+            if a == b or b not in eligible:
                 continue
             directed[(a, b)] = directed.get((a, b), 0) + 1
     weights: Dict[Tuple[str, str], int] = {}

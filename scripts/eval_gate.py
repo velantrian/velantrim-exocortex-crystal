@@ -67,8 +67,11 @@ def main() -> int:
     print(f"  grounding:    trace={report['trace_completeness']} "
           f"metadata={report['metadata_completeness']} "
           f"span={report['source_span_coverage']} "
+          f"strict_span={report['strict_source_span_coverage']} "
           f"receipts={report['receipt_replay_survival']} "
-          f"unsupported={report['unsupported_provenance']}")
+          f"unsupported={report['unsupported_provenance']} "
+          f"lineage_known={report['lineage']['known_lineage_coverage']} "
+          f"lineage_dupes={report['lineage']['same_lineage_duplicate_rate']}")
     print(f"  contradiction: precision={con['precision']} recall={con['recall']} "
           f"fpr={con['false_positive_rate']}")
     bnd = report.get("boundary", {})
