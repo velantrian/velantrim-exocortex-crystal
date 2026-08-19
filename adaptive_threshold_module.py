@@ -1,10 +1,11 @@
 # Adaptive Threshold Module (formerly the RFC0071 "epigenetic adaptation"
 # metaphor). Mechanically this is a small set of bounded [0,1] weights ("tags")
-# that a stream of stress signals nudges up or down; the verification weight is
-# read by core/adaptation.py to move the TruthGate confidence threshold. The old
-# name was an engineering metaphor, not a biological-cognition or plant-memory
-# claim — see docs/METAPHOR_VS_MECHANISM.md. Attribute names (epigenetic_tags)
-# are kept as-is for continuity.
+# that a stream of stress signals nudges up or down. The verification weight is
+# exposed through core/adaptation.py as advisory telemetry/research output; it
+# does not set the default TruthGate confidence policy. The old name was an
+# engineering metaphor, not a biological-cognition or plant-memory claim — see
+# docs/METAPHOR_VS_MECHANISM.md. Attribute names (epigenetic_tags) are kept
+# as-is for continuity.
 
 class AdaptiveThresholdModule:
     """
