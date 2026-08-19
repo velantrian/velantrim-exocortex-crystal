@@ -20,6 +20,7 @@
 # raising confidence stays an explicit reinforce() decision.
 
 import logging
+import os
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional, List
 
@@ -73,7 +74,44 @@ def _sync_l3(fact_id: str) -> Optional[Dict[str, Any]]:
     return fact
 
 
-def reinforce(fact_id: str, agreement: bool = True) -> Optional[float]:
+def _grant_reinforcement_lineage(fact_id: str, evidence_id: Optional[str]) -> str:
+    """Resolve grant reinforcement lineage from authoritative evidence only.
+
+    Caller-supplied lineage labels are not authority. The evidence store owns the
+    fact binding, claim binding, source digest/location and declared lineage.
+    """
+    if not isinstance(evidence_id, str) or not evidence_id.strip():
+        raise ValueError("reinforce: grant profile requires evidence_id")
+
+    from core.evidence import valid_evidence_for_grounding
+
+    row = next(
+        (item for item in valid_evidence_for_grounding(fact_id)
+         if item.get("evidence_id") == evidence_id),
+        None,
+    )
+    if row is None:
+        raise ValueError(
+            "reinforce: evidence_id must reference valid evidence for this fact")
+    if row.get("independence_class") != "INDEPENDENT_ASSERTED":
+        raise ValueError(
+            "reinforce: grant confidence change requires INDEPENDENT_ASSERTED evidence")
+    lineage = row.get("lineage_id")
+    if not isinstance(lineage, str) or not lineage.strip():
+        raise ValueError("reinforce: grant evidence requires lineage_id")
+    basis = row.get("lineage_basis")
+    if not isinstance(basis, str) or not basis.strip() or basis == "UNKNOWN":
+        raise ValueError("reinforce: grant evidence requires lineage assertion basis")
+    return lineage.strip()
+
+
+def reinforce(
+    fact_id: str,
+    agreement: bool = True,
+    *,
+    lineage_id: Optional[str] = None,
+    evidence_id: Optional[str] = None,
+) -> Optional[float]:
     """
     Reinforce a fact with independent evidence. Returns the new confidence;
     None if the fact does not exist; or the fact's current (unchanged)
@@ -84,13 +122,33 @@ def reinforce(fact_id: str, agreement: bool = True) -> Optional[float]:
     agreement=True  → confidence += (1 - confidence) / (obs + 1)  — decaying growth.
     agreement=False → confidence *= obs / (obs + 1)               — decaying decline.
     The observation counter is stored in metadata['observations'].
+
+    In the grant profile, ``evidence_id`` is mandatory and is resolved through
+    the evidence store. Its fact binding, replayability, independence assertion,
+    lineage and assertion basis are validated before confidence may change.
+    ``lineage_id`` remains only for backward-compatible non-grant callers.
     """
+    normalized_lineage = lineage_id.strip() if isinstance(lineage_id, str) and lineage_id.strip() else None
+    grant_profile = os.environ.get("VELANTRIM_RELEASE_PROFILE", "").strip().casefold() == "grant"
+    if grant_profile:
+        if normalized_lineage is not None:
+            raise ValueError(
+                "reinforce: grant profile derives lineage_id from evidence_id")
+        normalized_lineage = _grant_reinforcement_lineage(fact_id, evidence_id)
+
     for attempt in range(_CAS_MAX_ATTEMPTS):
         fact = get_fact(fact_id)
         if fact is None:
             return None
 
         meta = dict(fact.get("metadata") or {})
+        counted_lineages = {
+            value for value in (meta.get("reinforcement_lineages") or [])
+            if isinstance(value, str) and value
+        }
+        if normalized_lineage is not None and normalized_lineage in counted_lineages:
+            return float(fact.get("confidence", 0.5))
+
         obs = int(meta.get("observations", 1))
         conf = float(fact.get("confidence", 0.5))
 
@@ -100,6 +158,12 @@ def reinforce(fact_id: str, agreement: bool = True) -> Optional[float]:
             new_conf = round(conf * obs / (obs + 1), 4)
 
         meta["observations"] = obs + 1
+        if normalized_lineage is not None:
+            counted_lineages.add(normalized_lineage)
+            meta["reinforcement_lineages"] = sorted(counted_lineages)
+            meta["last_reinforcement_lineage"] = normalized_lineage
+        else:
+            meta["reinforcement_lineage_status"] = "UNKNOWN"
         meta["last_consolidated"] = _now()  # reinforcement resets the decay clock
         if update_fact(fact_id, confidence=new_conf, metadata=meta):
             _sync_l3(fact_id)

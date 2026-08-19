@@ -29,13 +29,16 @@ from typing import Any, Dict, Optional
 _ENV_VAR = "VELANTRIM_RETRIEVAL_CONFIG"
 
 # Closed ranges for every tunable knob: (min, max, type).
-# k is the only integer; everything else is a float weight/threshold.
+# Graph work ceilings are integers; score/decay knobs are bounded floats.
 _BOUNDS: Dict[str, Any] = {
-    "k":                   (1,   50,  int),
-    "min_similarity":      (0.0, 1.0, float),
-    "graph_walk_hops":     (0,   5,   int),
-    "graph_walk_decay":    (0.0, 1.0, float),
-    "significance_weight": (0.0, 2.0, float),
+    "k":                            (1,    50,   int),
+    "min_similarity":               (0.0,  1.0,  float),
+    "graph_walk_hops":              (0,    5,    int),
+    "graph_walk_decay":             (0.0,  1.0,  float),
+    "graph_walk_edges_per_node":    (1,    256,  int),
+    "graph_walk_frontier_limit":    (1,    2048, int),
+    "graph_walk_candidate_limit":   (1,    4096, int),
+    "significance_weight":          (0.0,  2.0,  float),
 }
 
 _ALLOWED_SOURCES = ("default", "manual", "imported")
@@ -51,6 +54,9 @@ class RetrievalConfig:
     min_similarity: float = 0.05        # cosine cutoff (hash-collision noise floor)
     graph_walk_hops: int = 2            # spreading-activation depth
     graph_walk_decay: float = 0.5       # activation damping per hop
+    graph_walk_edges_per_node: int = 32 # eligible outgoing edges inspected per node
+    graph_walk_frontier_limit: int = 128 # max nodes activated in any next-hop frontier
+    graph_walk_candidate_limit: int = 256 # max distinct graph-origin candidates per query
     significance_weight: float = 0.5    # salience contribution in vector_search
     source: str = "default"             # default | manual | imported
     saved_at: Optional[str] = None      # ISO timestamp from the config file

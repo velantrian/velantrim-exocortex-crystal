@@ -14,38 +14,59 @@ from core.memory import ESM_STATES
 
 # ─── TRACE BUILDER ────────────────────────────────────────────────────────────
 
+def _safe_score(value: Any) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return 0.0
+    try:
+        score = float(value)
+    except OverflowError:
+        return 0.0
+    return score if score == score and score not in (float("inf"), float("-inf")) else 0.0
+
+
 def build_trace(retrieved: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """
-    Build a trace chain from a list of retrieved facts.
-
-    Each element contains:
-      - fact_id:         the fact's identifier
-      - source:          source (where the fact came from)
-      - origin:          how it was obtained (retrieval / ingestion / volition)
-      - epistemic_state: the fact's current ESM state
-      - retrieved_at:    the retrieval timestamp
-
-    epistemic_state:
-      Observed → the fact was just obtained from retrieval, not yet verified.
-      Validated → passed the TruthGate (set in the pipeline after truth_gate()).
-      Full list of ESM states: core/memory.py → ESM_STATES.
-    """
+    """Build TRACE v2: query-local retrieval explanation, never evidence authority."""
     trace: List[Dict[str, Any]] = []
     now = datetime.now(timezone.utc).isoformat()
 
-    for item in retrieved:
+    for fallback_rank, item in enumerate(retrieved, 1):
         fact_id = item.get("id") or item.get("fact_id")
         if not fact_id:
-            continue  # skip malformed entries
+            continue
+        rank = item.get("_retrieval_rank", fallback_rank)
+        if isinstance(rank, bool) or not isinstance(rank, int) or rank < 1:
+            rank = fallback_rank
+        signals = item.get("_retrieval_signals", [])
+        if not isinstance(signals, list):
+            signals = []
+        signals = [signal for signal in signals if isinstance(signal, str) and signal]
+        if not signals:
+            signals = [str(item.get("origin", "retrieval"))]
 
-        trace.append({
-            "fact_id":         fact_id,
-            "source":          item.get("source", "unknown"),
-            "origin":          item.get("origin", "retrieval"),
+        source = item.get("source")
+        if not isinstance(source, str) or not source.strip():
+            source = "unknown"
+
+        entry: Dict[str, Any] = {
+            "trace_version": 2,
+            "fact_id": fact_id,
+            "source": source,
+            "origin": item.get("origin", "retrieval"),
             "epistemic_state": item.get("epistemic_state", "Observed"),
-            "confidence":      round(float(item.get("_score", 0.5)), 4),
-            "retrieved_at":    now,
-        })
+            "retrieval_rank": rank,
+            "retrieval_score": round(_safe_score(item.get("_score", 0.0)), 4),
+            "retrieval_signals": list(dict.fromkeys(signals)),
+            "active_embedder_id": item.get("_active_embedder_id"),
+            "stored_embedder_id": item.get("_stored_embedder_id"),
+            "retrieval_mode": item.get("_retrieval_mode"),
+            "retrieval_config_id": item.get("_retrieval_config_id"),
+            "projection_id": item.get("_projection_id"),
+            "retrieved_at": now,
+        }
+        graph_explanation = item.get("_graph_explanation")
+        if isinstance(graph_explanation, dict):
+            entry["graph_explanation"] = graph_explanation
+        trace.append(entry)
 
     return trace
 
@@ -82,6 +103,6 @@ def format_trace(trace: List[Dict[str, Any]]) -> str:
             f"  [{i}] {el.get('fact_id', '?')} | "
             f"source={el.get('source', '?')} | "
             f"state={el.get('epistemic_state', '?')} | "
-            f"confidence={el.get('confidence', '?')}"
+            f"retrieval_score={el.get('retrieval_score', '?')}"
         )
     return "\n".join(lines)

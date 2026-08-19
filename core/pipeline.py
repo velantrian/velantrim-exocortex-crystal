@@ -321,16 +321,14 @@ def _load_demo_seed():
 # core/retrieval_config.py: bounded, validated, optionally loaded from
 # VELANTRIM_RETRIEVAL_CONFIG. Defaults are bit-identical to the historical
 # constants (k=3, min_similarity=0.05, hops=2, decay=0.5).
-# Activation propagation weights by edge type. Truth-maintenance edges do NOT
-# carry relevance: a fact is not "more relevant" because it is refuted
-# (CONTRADICTS) or because it is replaced (SUPERSEDED_BY) — otherwise graph-walk would lift
-# exactly the refuted/obsolete. Episodic association (CO_OCCURRED) and any
-# unknown types propagate normally (default weight 1.0).
+# Activation propagation is default-deny. Graph edges are navigation signals,
+# not evidence or truth, and an edge writer must not gain ranking influence
+# merely by inventing a new relation type. Start conservatively with the one
+# explicitly associative relation already used by episodic recall.
 _WALK_EDGE_WEIGHTS = {
-    "CONTRADICTS": 0.0,
-    "SUPERSEDED_BY": 0.0,
+    "CO_OCCURRED": 1.0,
 }
-_WALK_DEFAULT_EDGE_WEIGHT = 1.0
+_WALK_DEFAULT_EDGE_WEIGHT = 0.0
 
 # graph.vector_search(k=...) returns at most k rows straight from the
 # backend, ranked by similarity, BEFORE _may_seed_vector_hit()'s deny
@@ -544,47 +542,118 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
         hit["fact_id"]: hit.get("_relevance", 0.0) * _safe_confidence(hit.get("confidence", 0.0))
         for hit in vector_hits
     }
+    # Bound even the initial vector-seed frontier. Stable score/fact-id order
+    # prevents backend insertion order from changing graph work.
+    current = dict(sorted(
+        current.items(), key=lambda item: (-item[1], item[0])
+    )[:cfg.graph_walk_frontier_limit])
+    best_path: Dict[str, Dict[str, Any]] = {
+        fid: {
+            "seed_fact_id": fid,
+            "fact_ids": [fid],
+            "edge_types": [],
+            "hop_count": 0,
+            "activation_contribution": act,
+        }
+        for fid, act in current.items()
+    }
+    graph_best_path: Dict[str, Dict[str, Any]] = {}
+    graph_exclusion_codes: set[str] = set()
+
     for _hop in range(cfg.graph_walk_hops):
         nxt: Dict[str, float] = {}
-        for fid, act in current.items():
-            # Every fid reaching `current` — whether an initial vector hit
-            # or a later-hop target — has already passed
-            # _may_seed_vector_hit()/_may_propagate_activation(), both of
-            # which check the SOURCE's own L1 terminal-state/restricted
-            # status before it is ever admitted; no separate re-check is
-            # needed here (#257 independent-review rounds 2 and 4).
-            # Outgoing edges by type → weight; only edges with
-            # weight > 0 propagate to Validated nodes. Activation is split proportionally to weights
-            # (normalized by their sum), not by raw out-degree — edges with
-            # weight 0 do not "eat" a neighbor's share.
+        nxt_best_path: Dict[str, Dict[str, Any]] = {}
+        for fid, act in sorted(current.items(), key=lambda item: item[0]):
+            # Only explicitly approved relation types are requested from the
+            # backend. Each backend receives a hard LIMIT so a dense node cannot
+            # materialize an unbounded outgoing-edge set for this query.
             targets = []
-            for edge in graph.get_edges(fid):
-                weight = _WALK_EDGE_WEIGHTS.get(
-                    edge["rel_type"], _WALK_DEFAULT_EDGE_WEIGHT)
-                if weight <= 0.0:
-                    continue
-                node = graph.get_fact(edge["target"])
-                if node is None or not _may_propagate_activation(node):
-                    continue  # stale-terminal-in-L1 or restricted/UNKNOWN-restricted: do not propagate
-                targets.append((node, weight))
-            total_weight = sum(w for _, w in targets)
+            remaining_edges = cfg.graph_walk_edges_per_node
+            for rel_type, weight in sorted(_WALK_EDGE_WEIGHTS.items()):
+                if remaining_edges <= 0:
+                    break
+                edges = graph.get_edges(
+                    fid, rel_type=rel_type, limit=remaining_edges
+                )
+                for edge in edges:
+                    remaining_edges -= 1
+                    node = graph.get_fact(edge["target"])
+                    if node is None or not _may_propagate_activation(node):
+                        continue
+                    targets.append((node, weight, rel_type))
+            total_weight = sum(weight for _, weight, _ in targets)
             if total_weight <= 0.0:
                 continue
-            for node, weight in targets:
+            for node, weight, rel_type in targets:
                 nid = node["fact_id"]
                 if nid in seeds:
-                    continue  # do not pour activation into vector hits
+                    continue
                 share = act * cfg.graph_walk_decay * (weight / total_weight)
                 nxt[nid] = nxt.get(nid, 0.0) + share
                 node_cache[nid] = node
+                parent_path = best_path.get(fid)
+                if parent_path is not None:
+                    candidate_path = {
+                        "seed_fact_id": parent_path["seed_fact_id"],
+                        "fact_ids": [*parent_path["fact_ids"], nid],
+                        "edge_types": [*parent_path["edge_types"], rel_type],
+                        "hop_count": parent_path["hop_count"] + 1,
+                        "activation_contribution": share,
+                    }
+                    previous = nxt_best_path.get(nid)
+                    if (previous is None
+                            or share > previous["activation_contribution"]
+                            or (share == previous["activation_contribution"]
+                                and tuple(candidate_path["fact_ids"]) < tuple(previous["fact_ids"]))):
+                        nxt_best_path[nid] = candidate_path
         if not nxt:
             break
-        for nid, val in nxt.items():
+
+        # Highest activation wins; fact_id is the deterministic tie-breaker.
+        # Candidate and frontier ceilings are independent: one limits distinct
+        # graph-origin results over the whole walk, the other limits work in
+        # the next hop. Existing candidates may still accumulate activation.
+        ranked_nxt = sorted(nxt.items(), key=lambda item: (-item[1], item[0]))
+        bounded_next: Dict[str, float] = {}
+        for nid, val in ranked_nxt:
+            is_new_candidate = nid not in graph_score
+            if (is_new_candidate
+                    and len(graph_score) >= cfg.graph_walk_candidate_limit):
+                graph_exclusion_codes.add("GRAPH_CANDIDATE_LIMIT_REACHED")
+                continue
             graph_score[nid] = graph_score.get(nid, 0.0) + val
-        current = nxt
+            bounded_next[nid] = val
+            path = nxt_best_path.get(nid)
+            if path is not None:
+                previous = graph_best_path.get(nid)
+                if (previous is None
+                        or path["activation_contribution"] > previous["activation_contribution"]):
+                    graph_best_path[nid] = path
+            if len(bounded_next) >= cfg.graph_walk_frontier_limit:
+                if len(ranked_nxt) > len(bounded_next):
+                    graph_exclusion_codes.add("FRONTIER_LIMIT_REACHED")
+                break
+        if not bounded_next:
+            break
+        current = bounded_next
+        best_path = {nid: nxt_best_path[nid] for nid in bounded_next if nid in nxt_best_path}
 
     for nid, score in graph_score.items():
-        graph_items.append(_from_node(node_cache[nid], score, "graph"))
+        item = _from_node(node_cache[nid], score, "graph")
+        path = graph_best_path.get(nid)
+        if path is not None:
+            item["_graph_explanation"] = {
+                "seed_fact_id": path["seed_fact_id"],
+                "contributor_paths": [{
+                    "fact_ids": path["fact_ids"],
+                    "edge_types": path["edge_types"],
+                    "hop_count": path["hop_count"],
+                    "activation_contribution": round(path["activation_contribution"], 6),
+                }],
+                "final_activation": round(score, 6),
+                "exclusion_reason_codes": sorted(graph_exclusion_codes),
+            }
+        graph_items.append(item)
 
     # Fuse ranked candidate lists with RRF (ordering only — no truth/confidence change).
     rankings: List[List[Dict[str, Any]]] = []
@@ -598,7 +667,28 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
         return []
     fused = (rankings[0] if len(rankings) == 1
              else rrf_fuse(rankings, key=lambda x: x["id"]))
-    return fused[:k]
+
+    signals: Dict[str, set[str]] = {}
+    graph_explanations: Dict[str, Dict[str, Any]] = {}
+    for signal, items in (
+        ("vector", vector_items),
+        ("graph", graph_items),
+        ("seed", seed_items),
+    ):
+        for item in items:
+            signals.setdefault(item["id"], set()).add(signal)
+            if signal == "graph" and isinstance(item.get("_graph_explanation"), dict):
+                graph_explanations[item["id"]] = item["_graph_explanation"]
+
+    result: List[Dict[str, Any]] = []
+    for rank, item in enumerate(fused[:k], 1):
+        annotated = dict(item)
+        annotated["_retrieval_rank"] = rank
+        annotated["_retrieval_signals"] = sorted(signals.get(item["id"], {item.get("origin", "retrieval")}))
+        if item["id"] in graph_explanations:
+            annotated["_graph_explanation"] = graph_explanations[item["id"]]
+        result.append(annotated)
+    return result
 
 
 # ─── FACTS PACK ───────────────────────────────────────────────────────────────

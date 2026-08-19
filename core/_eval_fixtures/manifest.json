@@ -1,0 +1,12 @@
+{
+  "algorithm": "sha256",
+  "sha256": {
+    "boundaries.json": "99983566837d4bc93587d8e22a9fa5e380bce73aee1adf60d83f0eadd6219e88",
+    "contradictions.json": "5d5552218ec667d78e822407df95b56ce737c4645f69964f475f3bda2d7971c1",
+    "retrieval.json": "44344f8119d4d7ab085610834ec01d56a4353f0d851be0b73a8e9f618846c2e7",
+    "retrieval_de.json": "d348a12ed9f34f822666330ba08f1452b783104d1a7a58ed619d8ed5da0be946",
+    "retrieval_fr.json": "d7d888a438382132776b437399d5e18a328fbc464f4e8f01c947a52302c3b534",
+    "retrieval_ru.json": "f4cf89eb32388bf184093ca057ba7d61ab5152eff32e4481128f6453c03d951a"
+  },
+  "version": 1
+}

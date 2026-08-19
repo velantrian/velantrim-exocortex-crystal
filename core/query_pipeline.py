@@ -7,10 +7,15 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import math
+import os
 from typing import Any, Dict, List, Optional
 
 from core import metrics
+from core.embedding import get_embedder
+from core.evidence import has_valid_evidence_for_grounding
 from core.l3_graph import get_l3_graph
 from core.legacy_retrieval import (
     LEGACY_REINDEX_REASON_CODE,
@@ -28,6 +33,44 @@ from core.trust_snapshot import (
 
 STORE_STATE_CONFLICT = _STORE_STATE_CONFLICT
 _QUERY_POLICY = "canonical_read_only"
+_GRANT_PROFILE_ENV = "VELANTRIM_RELEASE_PROFILE"
+_GRANT_PROFILE = "grant"
+_GRANT_EMBEDDER_REASON = "grant_profile_requires_pinned_embedder"
+_EMBEDDER_MISMATCH_FALLBACK = "embedder_mismatch_lexical_fallback"
+_EMBEDDER_PROVIDER_FALLBACK = "embedder_provider_unavailable_lexical_fallback"
+
+
+def _grant_profile_enabled() -> bool:
+    return os.environ.get(_GRANT_PROFILE_ENV, "").strip().casefold() == _GRANT_PROFILE
+
+
+def _retrieval_config_id() -> str:
+    payload = json.dumps(
+        get_retrieval_config().to_dict(),
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _mark_legacy_degradation(
+    candidates: List[Dict[str, Any]],
+    *,
+    reason_code: str,
+    active_embedder_id: Optional[str],
+    stored_embedder_id: Optional[str],
+) -> List[Dict[str, Any]]:
+    setattr(candidates, "degradation_reason_code", reason_code)
+    setattr(candidates, "active_embedder_id", active_embedder_id)
+    setattr(candidates, "stored_embedder_id", stored_embedder_id)
+    for rank, item in enumerate(candidates, 1):
+        item["_retrieval_rank"] = rank
+        item["_retrieval_signals"] = ["bounded_legacy_lexical"]
+        item["_active_embedder_id"] = active_embedder_id
+        item["_stored_embedder_id"] = stored_embedder_id
+        item["_retrieval_mode"] = "bounded_legacy_lexical"
+    return candidates
 
 
 def _safe_retrieval_score(value: Any) -> float:
@@ -59,12 +102,22 @@ def _legacy_metadata(retrieved: List[Dict[str, Any]]) -> Optional[Dict[str, Any]
     examined = getattr(retrieved, "examined", None)
     candidate_limit = getattr(retrieved, "candidate_limit", None)
     if isinstance(examined, int) and isinstance(candidate_limit, int):
-        return {
+        metadata: Dict[str, Any] = {
             "mode": "bounded_legacy_lexical",
             "candidates_examined": examined,
             "candidate_limit": candidate_limit,
             "reindex_recommended": True,
         }
+        reason_code = getattr(retrieved, "degradation_reason_code", None)
+        if isinstance(reason_code, str) and reason_code:
+            metadata["reason_code"] = reason_code
+        active_id = getattr(retrieved, "active_embedder_id", None)
+        stored_id = getattr(retrieved, "stored_embedder_id", None)
+        if active_id is not None:
+            metadata["active_embedder_id"] = active_id
+        if stored_id is not None:
+            metadata["stored_embedder_id"] = stored_id
+        return metadata
     legacy = [item for item in retrieved if item.get("origin") == "bounded_legacy_lexical"]
     if not legacy:
         return None
@@ -124,16 +177,69 @@ def _resolve_canonical_fact(item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         l1=get_fact(fact_id),
         retrieval_score=item.get("_score", item.get("_relevance", 0.0)),
     )
-    return snapshot.to_fact_dict()
+    fact = snapshot.to_fact_dict()
+    # Retrieval metadata is query-local and never becomes L3/Canon state.
+    for key in (
+        "_retrieval_rank",
+        "_retrieval_signals",
+        "_active_embedder_id",
+        "_stored_embedder_id",
+        "_retrieval_mode",
+        "_graph_explanation",
+    ):
+        if key in item:
+            fact[key] = item[key]
+    return fact
 
 
 def _retrieve_read_only(query_text: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
-    """Retrieve without creating an embedding-space fingerprint."""
+    """Retrieve without silent embedding-space changes or durable mutation."""
     limit = get_retrieval_config().k if k is None else k
     graph = get_l3_graph()
-    if graph.embedder_fingerprint() is not None:
-        return retrieve(query_text, k=limit)
-    return bounded_legacy_retrieve(query_text, k=limit, graph=graph)
+    configured_embedder = os.environ.get("VELANTRIM_EMBEDDER", "auto").strip().casefold() or "auto"
+    if _grant_profile_enabled() and configured_embedder == "auto":
+        raise LegacyRetrievalUnavailable(
+            "grant profile requires an explicit VELANTRIM_EMBEDDER value",
+            reason_code=_GRANT_EMBEDDER_REASON,
+        )
+
+    stored = graph.embedder_fingerprint()
+    if stored is None:
+        candidates = bounded_legacy_retrieve(query_text, k=limit, graph=graph)
+        return _mark_legacy_degradation(
+            candidates,
+            reason_code=LEGACY_REINDEX_REASON_CODE,
+            active_embedder_id=None,
+            stored_embedder_id=None,
+        )
+
+    try:
+        active = get_embedder().id
+    except Exception:
+        candidates = bounded_legacy_retrieve(query_text, k=limit, graph=graph)
+        return _mark_legacy_degradation(
+            candidates,
+            reason_code=_EMBEDDER_PROVIDER_FALLBACK,
+            active_embedder_id=None,
+            stored_embedder_id=stored,
+        )
+
+    if active != stored:
+        candidates = bounded_legacy_retrieve(query_text, k=limit, graph=graph)
+        return _mark_legacy_degradation(
+            candidates,
+            reason_code=_EMBEDDER_MISMATCH_FALLBACK,
+            active_embedder_id=active,
+            stored_embedder_id=stored,
+        )
+
+    retrieved = retrieve(query_text, k=limit)
+    for rank, item in enumerate(retrieved, 1):
+        item.setdefault("_retrieval_rank", rank)
+        item.setdefault("_active_embedder_id", active)
+        item.setdefault("_stored_embedder_id", stored)
+        item.setdefault("_retrieval_mode", "admitted_memory_hybrid")
+    return retrieved
 
 
 def _resolve_retrieval_hits(retrieved: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -228,6 +334,23 @@ def query(
             retrieval=legacy,
         )
 
+    if _grant_profile_enabled():
+        verified_before = [f for f in facts if f.get("truth_status") == "VERIFIED"]
+        facts = [
+            f for f in facts
+            if f.get("truth_status") != "VERIFIED"
+            or has_valid_evidence_for_grounding(f["fact_id"])
+        ]
+        if verified_before and not any(f.get("truth_status") == "VERIFIED" for f in facts):
+            return _blocked(
+                "Insufficient grounding: VERIFIED facts lack valid replayable evidence spans.",
+                query_text,
+                reason_code="insufficient_grounding_missing_verified_evidence",
+                episode_requested=episode is not None,
+                retrieval=legacy,
+            )
+
+    config_id = _retrieval_config_id()
     trace_input = [
         {
             "id": fact["fact_id"],
@@ -235,6 +358,14 @@ def query(
             "origin": "canonical_read",
             "epistemic_state": fact.get("epistemic_state"),
             "_score": fact.get("_score", 0.0),
+            "_retrieval_rank": fact.get("_retrieval_rank"),
+            "_retrieval_signals": fact.get("_retrieval_signals", []),
+            "_active_embedder_id": fact.get("_active_embedder_id"),
+            "_stored_embedder_id": fact.get("_stored_embedder_id"),
+            "_retrieval_mode": fact.get("_retrieval_mode"),
+            "_retrieval_config_id": config_id,
+            "_projection_id": _QUERY_POLICY,
+            "_graph_explanation": fact.get("_graph_explanation"),
         }
         for fact in facts
     ]

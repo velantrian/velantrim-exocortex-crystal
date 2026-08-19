@@ -293,7 +293,7 @@ def _mutate_complete(bundle: Path, key: str, value) -> None:
 
 def test_verify_bundle_file_and_dataset_guards(tmp_path):
     bundle, _, _ = export_bundle(tmp_path / "extra")
-    (bundle / "extra").write_text("x")
+    (bundle / m.DATASET_FILES["meta"]).rename(bundle / "extra")
     assert_error("file set mismatch", m.verify_logical_export, bundle)
 
     bundle, _, _ = export_bundle(tmp_path / "size")

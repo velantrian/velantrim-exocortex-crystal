@@ -153,6 +153,7 @@ def test_bounded_no_hit_still_reports_degraded_work(monkeypatch):
         "candidates_examined": 8,
         "candidate_limit": 256,
         "reindex_recommended": True,
+        "reason_code": LEGACY_REINDEX_REASON_CODE,
     }
 
 

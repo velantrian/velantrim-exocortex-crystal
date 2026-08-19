@@ -48,6 +48,15 @@ def _salience_score(similarity: float, significance: Any) -> float:
     return similarity * (1.0 + get_retrieval_config().significance_weight * sig)
 
 
+def _normalize_edge_limit(limit: Optional[int]) -> Optional[int]:
+    """Validate an optional edge-read ceiling; bool is not an integer limit."""
+    if limit is None:
+        return None
+    if isinstance(limit, bool) or not isinstance(limit, int) or limit < 0:
+        raise ValueError("edge limit must be a non-negative integer or None")
+    return limit
+
+
 # ─── BACKEND INTERFACE ────────────────────────────────────────────────────────
 
 class L3GraphBackend(ABC):
@@ -108,11 +117,12 @@ class L3GraphBackend(ABC):
     @abstractmethod
     def get_edges(
         self, fact_id: str, rel_type: Optional[str] = None,
+        limit: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         """
         A fact's outgoing edges together with their props (unlike neighbors,
         which returns only nodes). Element: {rel_type, target, props}.
-        Needed to read the episodic who/where/when context from edges.
+        ``limit`` provides a deterministic query-local work ceiling.
         """
 
     @abstractmethod
@@ -256,7 +266,9 @@ class MockL3Graph(L3GraphBackend):
 
     def get_edges(
         self, fact_id: str, rel_type: Optional[str] = None,
+        limit: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
+        limit = _normalize_edge_limit(limit)
         out = []
         for src, rel, dst, props in self._edges:
             if src != fact_id:
@@ -264,7 +276,12 @@ class MockL3Graph(L3GraphBackend):
             if rel_type is not None and rel != rel_type:
                 continue
             out.append({"rel_type": rel, "target": dst, "props": dict(props)})
-        return out
+        out.sort(key=lambda edge: (
+            str(edge["rel_type"]),
+            str(edge["target"]),
+            json.dumps(edge["props"], ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+        ))
+        return out if limit is None else out[:limit]
 
     def incoming_edges(
         self, fact_id: str, rel_type: Optional[str] = None,
@@ -464,12 +481,18 @@ class SqliteL3Graph(L3GraphBackend):
     @_synchronized
     def get_edges(
         self, fact_id: str, rel_type: Optional[str] = None,
+        limit: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
+        limit = _normalize_edge_limit(limit)
         q = "SELECT rel_type, dst, props FROM edges WHERE src = ?"
         params: List[Any] = [fact_id]
         if rel_type is not None:
             q += " AND rel_type = ?"
             params.append(rel_type)
+        q += " ORDER BY rel_type, dst, props"
+        if limit is not None:
+            q += " LIMIT ?"
+            params.append(limit)
         return [{"rel_type": r["rel_type"], "target": r["dst"],
                  "props": json.loads(r["props"])}
                 for r in self._conn.execute(q, params)]
@@ -714,16 +737,20 @@ class LadybugL3Graph(L3GraphBackend):  # pragma: no cover
 
     def get_edges(
         self, fact_id: str, rel_type: Optional[str] = None,
+        limit: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         import base64
         import json
+        limit = _normalize_edge_limit(limit)
         cypher = "MATCH (a:Fact {fact_id: $id})-[e:EDGE]->(b:Fact)"
         params: Dict[str, Any] = {"id": fact_id}
         if rel_type is not None:
             cypher += " WHERE e.rel_type = $rt"
             params["rt"] = rel_type
-        res = self._conn.execute(
-            f"{cypher} RETURN e.rel_type, b.fact_id, e.props", params)
+        query = f"{cypher} RETURN e.rel_type, b.fact_id, e.props ORDER BY e.rel_type, b.fact_id"
+        if limit is not None:
+            query += f" LIMIT {limit}"
+        res = self._conn.execute(query, params)
         out = []
         while res.has_next():
             rel, target, raw = res.get_next()
@@ -915,15 +942,18 @@ class Neo4jL3Graph(L3GraphBackend):  # pragma: no cover
         rows = self._run(cypher + " RETURN properties(b) AS p", **params)
         return [self._node(r["p"]) for r in rows]
 
-    def get_edges(self, fact_id, rel_type=None) -> List[Dict[str, Any]]:
+    def get_edges(self, fact_id, rel_type=None, limit=None) -> List[Dict[str, Any]]:
         import json
+        limit = _normalize_edge_limit(limit)
         cypher = "MATCH (a:Fact {fact_id: $id})-[e:EDGE]->(b:Fact)"
         params = {"id": fact_id}
         if rel_type is not None:
             cypher += " WHERE e.rel_type = $rt"
             params["rt"] = rel_type
-        rows = self._run(
-            cypher + " RETURN e.rel_type AS rt, b.fact_id AS t, e.props AS p", **params)
+        query = cypher + " RETURN e.rel_type AS rt, b.fact_id AS t, e.props AS p ORDER BY e.rel_type, b.fact_id"
+        if limit is not None:
+            query += f" LIMIT {limit}"
+        rows = self._run(query, **params)
         out = []
         for r in rows:
             try:

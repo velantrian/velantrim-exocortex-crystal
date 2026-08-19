@@ -11,6 +11,7 @@
 # rather than a narrative. Advanced fixtures (source-span coverage, dry-run review)
 # remain future work (grant scope WP2/WP3).
 
+import hashlib
 import json
 from importlib import resources
 from typing import Any, Dict, List, Optional, Sequence
@@ -28,6 +29,7 @@ _REQUIRED_FIELDS = ("source", "source_status", "claim_type", "epistemic_state")
 # Curated fixture corpora are bundled inside the package (WP3) so `velantrim eval`
 # works from an installed wheel as well as the repo.
 _FIXTURE_PKG = "core._eval_fixtures"
+_FIXTURE_MANIFEST = "manifest.json"
 
 
 # ─── Pure metric functions ────────────────────────────────────────────────────
@@ -81,6 +83,15 @@ def source_span_coverage(fact_ids: Sequence[str]) -> float:
     return round(covered / len(ids), 4)
 
 
+def strict_source_span_coverage(fact_ids: Sequence[str]) -> float:
+    """Fraction with replayable evidence eligible for grant strict grounding."""
+    ids = list(fact_ids)
+    if not ids:
+        return 0.0
+    covered = sum(1 for fid in ids if evidence.has_valid_evidence_for_grounding(fid))
+    return round(covered / len(ids), 4)
+
+
 def unsupported_provenance_count(fact_ids: Sequence[str]) -> int:
     """Number of VERIFIED facts that present high-confidence provenance with no
     source-span evidence (#61). A healthy corpus keeps this at zero."""
@@ -91,11 +102,34 @@ def unsupported_provenance_count(fact_ids: Sequence[str]) -> int:
 # Fixtures live in JSON files bundled with the package; the inline constants below
 # are a robust fallback if the data files are ever missing.
 
+def _fixture_manifest() -> Dict[str, Any]:
+    """Load the frozen fixture manifest; absence or corruption is a gate failure."""
+    try:
+        text = resources.files(_FIXTURE_PKG).joinpath(_FIXTURE_MANIFEST).read_text(encoding="utf-8")
+        data = json.loads(text)
+    except (FileNotFoundError, ModuleNotFoundError, OSError, ValueError) as exc:
+        raise RuntimeError("fixture manifest is missing or malformed") from exc
+    if not isinstance(data, dict):
+        raise RuntimeError("fixture manifest must be a JSON object")
+    return data
+
+
 def _load_fixture_json(name: str) -> Optional[Dict[str, Any]]:
-    """Load a bundled fixture JSON by file name, or None if unavailable."""
+    """Load a bundled fixture and fail closed if its frozen digest drifts."""
     try:
         text = resources.files(_FIXTURE_PKG).joinpath(name).read_text(encoding="utf-8")
+        manifest = _fixture_manifest()
+        expected = (manifest.get("sha256") or {}).get(name)
+        if not isinstance(expected, str) or not expected:
+            raise RuntimeError(f"fixture manifest has no digest for {name}")
+        actual = hashlib.sha256(text.encode("utf-8")).hexdigest()
+        if actual != expected:
+            raise RuntimeError(
+                f"fixture digest mismatch for {name}: expected {expected}, got {actual}"
+            )
         return json.loads(text)
+    except RuntimeError:
+        raise
     except (FileNotFoundError, ModuleNotFoundError, OSError, ValueError):
         return None
 
@@ -354,12 +388,21 @@ def run_baseline(fixture: List[Dict[str, str]] | None = None, *, k: int = 5,
     # accidentally exercising the "unverified user claim" path instead of the
     # "verified external corpus" path it is documented to simulate.
     claim_to_id: Dict[str, str] = {}
-    for case in cases:
+    for case_index, case in enumerate(cases, 1):
         res = ingest(case["claim"], source_status="EXTERNAL")
         fid = res["fact"]["fact_id"]
         claim_to_id[case["claim"]] = fid
-        evidence.attach_evidence(fid, "eval-fixture", source_kind="fixture",
-                                 claim=case["claim"])
+        evidence.attach_evidence(
+            fid,
+            f"fixture://retrieval/{case_index}",
+            source_kind="fixture",
+            claim=case["claim"],
+            section=f"case:{case_index}",
+            source_text=case["claim"],
+            lineage_id=f"fixture-lineage:{case_index}",
+            independence_class="INDEPENDENT_ASSERTED",
+            lineage_basis="IMPORTER_DECLARED",
+        )
     fact_ids = list(claim_to_id.values())
 
     # 2. Per-query retrieval ranking + trace + receipt.
@@ -403,8 +446,10 @@ def run_baseline(fixture: List[Dict[str, str]] | None = None, *, k: int = 5,
         "trace_completeness": round(traced / n, 4),
         "metadata_completeness": metadata_completeness(fact_ids),
         "source_span_coverage": source_span_coverage(fact_ids),
+        "strict_source_span_coverage": strict_source_span_coverage(fact_ids),
         "unsupported_provenance": unsupported_provenance_count(fact_ids),
         "receipt_replay_survival": round(receipts_ok / n, 4),
+        "lineage": evidence.lineage_metrics(fact_ids),
         "contradiction": contradiction_eval(),
     }
     if boundary is not None:
@@ -426,7 +471,10 @@ DEFAULT_GATE: Dict[str, float] = {
     "trace_completeness": 1.0,
     "metadata_completeness": 1.0,
     "source_span_coverage": 1.0,
+    "strict_source_span_coverage": 1.0,
     "receipt_replay_survival": 1.0,
+    "lineage.known_lineage_coverage": 1.0,
+    "lineage.independence_assertion_coverage": 1.0,
     "contradiction.precision": 0.75,   # baseline 0.8333
     "contradiction.recall": 0.75,      # baseline 0.8333
     "boundary.refusal_correctness": 1.0,   # T3: every expected abstention happens
@@ -434,6 +482,8 @@ DEFAULT_GATE: Dict[str, float] = {
 # Metrics where LOWER is better (ceilings, not floors).
 _GATE_MAX: Dict[str, float] = {
     "unsupported_provenance": 0,          # baseline 0
+    "lineage.same_lineage_duplicate_rate": 0.0,
+    "lineage.unknown_lineage_rate": 0.0,
     "contradiction.false_positive_rate": 0.25,   # baseline 0.1667
     "boundary.violations": 0,             # T3: no trust-boundary expectation may fail
 }
@@ -497,6 +547,10 @@ def format_report_md(report: Dict[str, Any]) -> str:
         f"| trace_completeness | {r['trace_completeness']} |",
         f"| metadata_completeness | {r['metadata_completeness']} |",
         f"| source_span_coverage | {r['source_span_coverage']} |",
+        f"| strict_source_span_coverage | {r['strict_source_span_coverage']} |",
+        f"| lineage.known_lineage_coverage | {r['lineage']['known_lineage_coverage']} |",
+        f"| lineage.same_lineage_duplicate_rate | {r['lineage']['same_lineage_duplicate_rate']} |",
+        f"| lineage.unknown_lineage_rate | {r['lineage']['unknown_lineage_rate']} |",
         f"| unsupported_provenance | {r['unsupported_provenance']} |",
         f"| receipt_replay_survival | {r['receipt_replay_survival']} |",
         "",
