@@ -1,1 +1,1 @@
-trigger TruthGate v1 localization freshness closure
+trigger TruthGate v1 localization freshness closure v2
