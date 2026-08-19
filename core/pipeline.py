@@ -1219,7 +1219,7 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     # 4. Guardian (structural check)
     guardian_ok, guardian_reason = guardian(facts_pack, trace)
     if not guardian_ok:
-        adaptation.record_block()   # stress → verification rises (RFC0071)
+        adaptation.record_block()   # high-stress telemetry; default TruthGate policy stays fixed
         return _blocked(f"Guardian: {guardian_reason}", query, facts_pack, trace)
 
     # 5. TruthGate (verification)
@@ -1324,7 +1324,7 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     result = generate_answer(facts_pack, trace)
     if result.get("answer") is not None:
         metrics.incr("query.answered")
-        adaptation.record_success()     # a healthy outcome → the threshold relaxes
+        adaptation.record_success()     # low-stress telemetry; verification tag is unchanged
         # 8. Episodic binding (#257 corrective hardening, independent finding):
         # only an EXPLICIT episode may create episodic graph mutations, and
         # only AFTER a successful strict-grounded answer, linking only the
@@ -1345,7 +1345,7 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
                 metrics.incr("episode_link.failed")
     else:
         metrics.incr("query.blocked")
-        adaptation.record_block()       # stress → verification rises (RFC0071)
+        adaptation.record_block()       # high-stress telemetry; default TruthGate policy stays fixed
     return result
 
 
