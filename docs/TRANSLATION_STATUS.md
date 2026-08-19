@@ -23,6 +23,19 @@ Arabic, German, French, Spanish, Hindi, Italian, Japanese, Simplified Chinese an
 
 No supported Reader-dependent locale pack remains `REFRESH_NEEDED` after Hindi parity.
 
+### Pending material English policy change — TruthGate v1
+
+English `docs/STATUS.md` and `docs/IMPLEMENTATION_STATUS.md` changed at
+`main@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a` to state the fixed, versioned default TruthGate policy
+(`truth-gate-v1-fixed-0.05`) and the separation of adaptation telemetry from
+admission authority.
+
+The existing localized D1 `STATUS.md` and `IMPLEMENTATION_STATUS.md` markers
+remain evidence of the earlier post-RRTIC checkpoint only. They are **not proof
+of parity for this policy change**. Reassessment is tracked in Issue #441;
+affected files are listed in `docs/status/implementation-manifest.json` under
+`truth_gate_v1_localization_reassessment`.
+
 D2 reviewer/safety surfaces and Quick Start remain `CURRENT` across all nine supported locales where their governing source semantics did not change. Issue #427 does not churn those stable documents.
 
 ## Historical phased checkpoints — immutable provenance

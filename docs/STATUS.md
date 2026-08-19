@@ -210,7 +210,7 @@ These completed scopes do not authorize EPIS runtime, a new Reader runtime, Post
 
 ## Localization truth
 
-Localization state is tracked separately in `docs/TRANSLATION_STATUS.md`; a locale's checkpoint marker must not be used as current English architecture authority. The 2026-08-19 English TruthGate/current-status reconciliation materially changes current English implementation/status prose. Localized D1 status documents therefore require a separate freshness reassessment before their prior checkpoint can be treated as proof of parity; this PR does not claim that unchanged translations already express the new policy. The bounded reassessment is tracked in Issue #441 and does not authorize a nine-locale rewrite inside PR #440.
+Localization state is tracked separately in `docs/TRANSLATION_STATUS.md`; a locale's checkpoint marker must not be used as current English architecture authority. The 2026-08-19 English TruthGate/current-status reconciliation materially changes current English implementation/status prose. Localized D1 status documents therefore require a separate freshness reassessment before their prior checkpoint can be treated as proof of parity; this PR does not claim that unchanged translations already express the new policy. The bounded reassessment is tracked by Issue #441. The bounded reassessment is tracked in Issue #441 and does not authorize a nine-locale rewrite inside PR #440.
 
 ## Grant status
 
