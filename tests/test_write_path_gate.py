@@ -12,7 +12,7 @@ import warnings
 
 import pytest
 
-from core import review, audit, kb_ingest
+from core import review, audit, kb_ingest, adaptation
 from core.ingest import ingest
 
 
@@ -71,6 +71,44 @@ def test_force_approve_audit_includes_gate_reason(monkeypatch):
     assert "gate_reason" in detail
     assert detail["gate_reason"], "gate_reason must be populated, not empty"
     assert "LLM_OUTPUT cannot be WORLD_FACT" in detail["gate_reason"]
+
+
+# ─── 3. Live admission is invariant to process-local adaptation ───────────────
+
+def test_live_ingest_default_admission_ignores_adaptive_history(monkeypatch):
+    """Pin the production write path, not only core.truth_gate in isolation.
+
+    The same independently sourced WORLD_FACT at confidence 0.1 must receive
+    the same default admission decision before and after process-local adaptive
+    stress. Adaptation remains telemetry/research and cannot become hidden
+    admission authority through ingest() wiring.
+    """
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
+    adaptation.reset_adaptation()
+
+    before = ingest(
+        "Freeze pin alpha is independently observed",
+        fact_id="freeze:adaptive:before",
+        source="freeze-review",
+        confidence=0.1,
+        claim_type="WORLD_FACT",
+        source_status="EXTERNAL",
+    )
+    assert before["accepted"] is True
+
+    for _ in range(20):
+        adaptation.record_block()
+    assert adaptation.verification_threshold() > 0.1
+
+    after = ingest(
+        "Freeze pin beta is independently observed",
+        fact_id="freeze:adaptive:after",
+        source="freeze-review",
+        confidence=0.1,
+        claim_type="WORLD_FACT",
+        source_status="EXTERNAL",
+    )
+    assert after["accepted"] is True
 
 
 # ─── 4. Bulk import dry-run blocks an LLM-origin world fact ────────────────────
