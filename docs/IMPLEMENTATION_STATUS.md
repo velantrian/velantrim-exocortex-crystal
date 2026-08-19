@@ -1,12 +1,13 @@
 # Implementation Status: Crystal vs Future Exo-Cortex Work
 
-**Status date:** 2026-08-15  
-**Current signed architecture checkpoint:** `main@76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` / PR #392; post-merge CI `31771677028` — 9/9 SUCCESS  
+**Status date:** 2026-08-19  
+**Current pre-freeze remediation baseline:** `main@cf7471086edee78fd9ec39abeef557ba6b10c7fb` / PR #439; exact PR head `323f2b6611c5165a316741587043329532e76d7a`; CI `32195806158` (#1739) — all permanent jobs SUCCESS  
+**Historical signed architecture checkpoint:** `main@76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` / PR #392; post-merge CI `31771677028` — 9/9 SUCCESS  
 **Historical RC-7 Reader baseline:** `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1` / PR #372; post-merge CI `31572918731` — retained immutable cross-document Reader provenance  
 **Signed RC-9 Reader implementation baseline:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` / PR #376; post-merge CI `31594027040`; retained RC-10 architecture decision #377  
 **Post-RC-10 architecture reassessment:** Issue #382 / PR #383 — selected Evaluation Surface v2 before any further comparator execution  
 **Latest completed model-backed evaluation:** NLI neutral-filter v1 / PR #389 — frozen gate FAIL  
-**Current frozen architecture contract:** RRTIC-v1 / Issue #391 / PR #392 — no runtime authorization
+**Current frozen Reader architecture contract:** RRTIC-v1 / Issue #391 / PR #392 — no runtime authorization
 
 ## Implemented Reader capability truth
 
@@ -144,7 +145,9 @@ PostgreSQL/pgvector remains `active=false`. SQLite ordinary local-first remains 
 
 ## Current verification
 
-Post-RRTIC CI `31771677028`: **9/9 SUCCESS**. Python 3.11: **2231 passed / 13 skipped / 0 failed**, 100% measured line coverage.
+PR #439 pre-freeze remediation is merged to `main@cf7471086edee78fd9ec39abeef557ba6b10c7fb`. Its exact PR head `323f2b6611c5165a316741587043329532e76d7a` passed CI `32195806158` (#1739), including Python 3.11 and Python 3.12 full suites at 100% line coverage, eval, security, docs-status, Ring Zero, JSONL integrity, code quality, and Docker build.
+
+The freeze-closure policy change makes the TruthGate default deterministic and versioned: `DEFAULT_MIN_CONFIDENCE = 0.05`, `TRUTH_GATE_POLICY_VERSION = "truth-gate-v1-fixed-0.05"`. Process-local adaptation may remain as telemetry/research behavior but no longer changes the default admission threshold. Explicit `min_confidence` remains a bounded caller parameter for existing internal/test flows.
 
 ## Localization / grant / backlog
 
@@ -152,8 +155,8 @@ Localization parity is owned by `docs/TRANSLATION_STATUS.md`; localized checkpoi
 
 NLnet remains **submitted / under review / not awarded**. Approximate €50,000 remains planning only.
 
-Issues #155 and #165 remain separate open scopes and are not implemented by this workstream. Issue #214 was **completed and closed on 2026-08-14**; its fixture/PII/supply-chain hygiene work is retained as completed engineering history, not an open backlog item.
+Issues #155 and #165 are **completed and closed**; they are retained as completed engineering/RFC history, not open implementation scopes. Issue #214 was **completed and closed on 2026-08-14**; its fixture/PII/supply-chain hygiene work is retained as completed engineering history, not an open backlog item.
 
 ## Stop boundary
 
-RRTIC-v1 is closed. No next model/discriminator/runtime milestone is implied. Any future mechanism requires separate authorization and fresh validation design. Completion of #214 grants no Reader runtime, evidence-admission or Canon authority.
+RRTIC-v1 is closed. No next model/discriminator/runtime milestone is implied. Any future mechanism requires separate authorization and fresh validation design. Completion of #155, #165, or #214 grants no Reader runtime, evidence-admission or Canon authority. The Crystal freeze closure does not authorize semantic Reader runtime, PostgreSQL/pgvector activation, advanced RAG frameworks, or Titan research features.
