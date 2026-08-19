@@ -1,18 +1,21 @@
 # core/adaptation.py
-# Velantrim ExoCortex — adaptive threshold wiring (formerly RFC0071)
+# Velantrim ExoCortex — adaptive verification telemetry (formerly RFC0071)
 #
-# Brings the adaptive_threshold_module to life in the core: gate blocks
-# are "stress"; as it accumulates, it raises the verification tag, which tightens
-# the TruthGate threshold. Hallucination defense adapts without retraining; under
-# a healthy flow (successes) the threshold gradually relaxes.
+# Gate outcomes feed a process-local verification signal: blocks add stress and
+# successful answers relax it. The resulting verification_threshold() value is
+# advisory telemetry/research output only. It does not own the default TruthGate
+# admission policy; the default authority decision is fixed and versioned in
+# core/truth_gate.py. Existing callers may request this signal explicitly for
+# bounded experiments/tests, but process history must not silently mutate
+# admission authority.
 
 from typing import Dict, Any, Optional
 
 from adaptive_threshold_module import AdaptiveThresholdModule
 
-# Base confidence threshold for WORLD_FACT at the gate (verification == 0.5).
+# Base value for the advisory verification signal (verification == 0.5).
 _BASE_CONFIDENCE = 0.05
-# The maximum amount the threshold rises by at verification == 1.0.
+# The maximum amount the advisory signal rises by at verification == 1.0.
 _MAX_BOOST = 0.3
 _STRESS_HIGH = 0.85   # gate block
 _STRESS_LOW = 0.2     # successful answer
@@ -28,30 +31,35 @@ def get_adaptation() -> AdaptiveThresholdModule:
 
 
 def reset_adaptation() -> None:
-    """Reset state (for tests / a new window)."""
+    """Reset process-local telemetry state (for tests / a new window)."""
     global _MODULE
     _MODULE = None
 
 
 def record_block() -> None:
-    """Record stress — a block at Guardian/TruthGate/L3."""
+    """Record stress after a block at Guardian/TruthGate/L3."""
     get_adaptation().record_stress(_STRESS_HIGH, context="gate_block")
 
 
 def record_success() -> None:
-    """Record a healthy outcome — a successful answer."""
+    """Record a healthy outcome after a successful answer."""
     get_adaptation().record_stress(_STRESS_LOW, context="answered")
 
 
 def verification_threshold() -> float:
     """
-    Adaptive confidence threshold for WORLD_FACT: rises with the verification tag.
-    verification 0.5 → base 0.05; 1.0 → 0.05 + _MAX_BOOST.
+    Return an advisory adaptive confidence signal for WORLD_FACT review.
+
+    verification 0.5 -> base 0.05; 1.0 -> 0.05 + _MAX_BOOST. This value is
+    intentionally not consulted by the default TruthGate admission path. The
+    fixed/versioned default policy lives in ``core.truth_gate``; using this
+    adaptive signal as an admission threshold requires an explicit caller and
+    must not occur implicitly through process history.
     """
     v = get_adaptation().epigenetic_tags["verification"]
     return round(_BASE_CONFIDENCE + max(0.0, v - 0.5) * (_MAX_BOOST / 0.5), 4)
 
 
 def state() -> Dict[str, Any]:
-    """Summary of the epigenetic state (tags, mean stress)."""
+    """Summary of the process-local epigenetic telemetry state."""
     return get_adaptation().get_state_summary()
