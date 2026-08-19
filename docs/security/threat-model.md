@@ -7,7 +7,8 @@
 > governs the short summary and reporting; this file provides the detailed
 > STRIDE breakdown and code-grounded mitigation mapping.
 >
-> Updated after the non-configurable TruthPolicy hardening recorded in ADR-011.
+> Updated after the non-configurable TruthPolicy hardening recorded in ADR-011
+> and the fixed/versioned default TruthGate policy freeze closure.
 
 ## Root threat
 
@@ -48,9 +49,11 @@ path that degrades auditability.
 1. **Ingestion boundary** — user/external input → `core/ingest.py` →
    `guardian()` → `truth_gate()` → caller performs an L3 write only on pass.
    TruthGate is an admission/decision function: it returns `(passed, reason)`
-   and performs no database/Canon write (ADR-007). Its confidence threshold may
-   read `core/adaptation` when no explicit threshold is supplied. The
-   `LLM_OUTPUT` + `WORLD_FACT` rejection is non-configurable and cannot be
+   and performs no database/Canon write (ADR-007). When no explicit threshold
+   is supplied, the default WORLD_FACT confidence threshold is fixed and
+   versioned in `core/truth_gate.py`; process-local `core/adaptation` output is
+   advisory telemetry/research and is not consulted by that default decision.
+   The `LLM_OUTPUT` + `WORLD_FACT` rejection is non-configurable and cannot be
    weakened by process environment or runtime mode (ADR-011).
 2. **Read-only query boundary** — HTTP `/ask`/`/receipt`, CLI `ask`/`receipt`
    and MCP search use `core.query_pipeline`; they must not create L0/L1 facts,
@@ -119,8 +122,9 @@ DoS remains the weakest-covered STRIDE category in the current baseline.
 ## 5. Mitigation map
 
 - **Admission boundary:** `core/truth_gate.py` — side-effect-free decision over
-  the evidence package plus the adaptive threshold context. ADR-011 fixes the
-  model-origin policy as non-configurable.
+  the evidence package plus the fixed/versioned default confidence policy.
+  Process-local adaptation is separate advisory telemetry/research; ADR-011
+  fixes the model-origin policy as non-configurable.
 - **Read-only boundary:** `core/query_pipeline.py`, `core/cli.py`,
   `core/mcp_server.py`, `core/api.py` — query/search surfaces do not become
   admission paths.
@@ -142,9 +146,11 @@ DoS remains the weakest-covered STRIDE category in the current baseline.
    objective truth. A non-empty independent source can still be wrong,
    misleading or low quality; source authority/evidence quality require broader
    verification policy and human review.
-2. **Adaptive threshold context remains.** When `min_confidence` is omitted,
-   `core/adaptation` supplies the threshold, so otherwise identical low-margin
-   claims can receive different confidence decisions as adaptive state changes.
+2. **Adaptive telemetry remains process-local.** Its advisory signal can vary
+   with process history, but the default TruthGate admission decision does not
+   consume it. A specialized caller can still pass an explicit `min_confidence`
+   threshold deliberately; current production admission callers do not inject
+   the adaptive signal into that parameter.
 3. **Fact-writer serialization is scoped to one SQLite database.** It is not a
    distributed lock across copied/replicated databases.
 4. **On-disk L3 plaintext.** Field-level encryption covers selected L1 data only
