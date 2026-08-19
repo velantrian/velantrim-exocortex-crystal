@@ -1,8 +1,10 @@
 # core/adaptation.py
 # Velantrim ExoCortex — adaptive verification telemetry (formerly RFC0071)
 #
-# Gate outcomes feed a process-local verification signal: blocks add stress and
-# successful answers relax it. The resulting verification_threshold() value is
+# Gate outcomes feed a process-local verification signal: blocks add high-stress
+# telemetry; successful answers record low-stress telemetry. In the current
+# implementation low stress increases exploration/creativity but does not lower
+# the verification tag. The resulting verification_threshold() value is
 # advisory telemetry/research output only. It does not own the default TruthGate
 # admission policy; the default authority decision is fixed and versioned in
 # core/truth_gate.py. Existing callers may request this signal explicitly for
