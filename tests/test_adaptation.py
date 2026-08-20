@@ -15,24 +15,24 @@ def test_blocks_raise_threshold_successes_relax():
     assert stressed > base                       # defensive after repeated blocks
 
 
-def test_truth_gate_uses_adaptive_threshold():
+def test_truth_gate_default_ignores_adaptive_threshold():
     fact = {"facts": [{"fact_id": "a", "source": "s", "confidence": 0.1,
                        "claim_type": "WORLD_FACT"}]}
-    # fresh: threshold 0.05 → 0.1 passes
+    # fresh: fixed default threshold 0.05 → 0.1 passes
     assert truth_gate(fact)[0] is True
-    # after repeated stress the threshold climbs above 0.1 → same fact blocked
+    # adaptation telemetry still reacts to stress, but does not own admission.
     for _ in range(5):
         adaptation.record_block()
     assert adaptation.verification_threshold() > 0.1
-    assert truth_gate(fact)[0] is False
+    assert truth_gate(fact)[0] is True
 
 
-def test_explicit_min_confidence_overrides_adaptive():
+def test_explicit_min_confidence_remains_caller_controlled():
     for _ in range(5):
         adaptation.record_block()
     fact = {"facts": [{"fact_id": "a", "source": "s", "confidence": 0.1,
                        "claim_type": "WORLD_FACT"}]}
-    # explicit floor ignores the adaptive threshold
+    # an explicit bounded floor remains available to existing callers
     assert truth_gate(fact, min_confidence=0.05)[0] is True
 
 

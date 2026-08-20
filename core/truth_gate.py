@@ -10,7 +10,13 @@
 from typing import Any, Dict, Optional
 
 from core.memory import SUBJECTIVE_CLAIM_TYPES
-from core import adaptation
+
+
+# Freeze-grade default admission policy. This value is deliberately fixed and
+# versioned: process-local adaptation may remain useful as telemetry/research,
+# but prior request history must not silently change admission authority.
+DEFAULT_MIN_CONFIDENCE = 0.05
+TRUTH_GATE_POLICY_VERSION = "truth-gate-v1-fixed-0.05"
 
 
 def truth_gate(
@@ -20,9 +26,10 @@ def truth_gate(
     """
     Decide whether facts may be admitted to L3.
 
-    min_confidence=None → adaptive threshold (epigenetic verification, RFC0071):
-    after blocks the threshold rises (more defensive), under a healthy flow it
-    relaxes. Returns (passed: bool, reason: str | None).
+    ``min_confidence=None`` uses the fixed, versioned freeze policy
+    ``DEFAULT_MIN_CONFIDENCE``. Callers may still provide an explicit threshold
+    for bounded tests/specialized internal flows, but process-local adaptive
+    history is not part of the default authority decision.
 
     Type-aware: the gate does not discard subjective experience, but it does not
     let it masquerade as a fact about the external world.
@@ -42,7 +49,7 @@ def truth_gate(
     canon/database writes.
     """
     if min_confidence is None:
-        min_confidence = adaptation.verification_threshold()
+        min_confidence = DEFAULT_MIN_CONFIDENCE
     facts = facts_pack.get("facts", [])
 
     if not facts:

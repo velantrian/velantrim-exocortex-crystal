@@ -1,6 +1,6 @@
 # Velantrim Crystal — Current Status
 
-**Status date:** 2026-08-16  
+**Status date:** 2026-08-19  
 **Current signed architecture checkpoint:** `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e`, `verified=true`, reason `valid`  
 **Current architecture milestone:** Reader Retrieval Typed Inspection Contract v1 — Issue #391 / PR #392 — complete  
 **RRTIC exact-head CI:** `31754798549` — 9/9 SUCCESS  
@@ -173,7 +173,7 @@ comparison pass != runtime authorization
 evaluation pass != runtime authorization
 ```
 
-Guardian, TruthGate, TrustSnapshot and CanonicalView remain unchanged. Public `HTTP /ask`, `CLI ask` and `MCP search` remain admitted-memory read-only query surfaces, not Reader evaluation/inspection authority interfaces.
+Guardian, TrustSnapshot and CanonicalView retain their existing authority roles. TruthGate's default WORLD_FACT confidence policy is now explicitly fixed and versioned at `DEFAULT_MIN_CONFIDENCE = 0.05` / `TRUTH_GATE_POLICY_VERSION = "truth-gate-v1-fixed-0.05"`; process-local adaptation remains telemetry/research and does not silently change default admission authority. Public `HTTP /ask`, `CLI ask` and `MCP search` remain admitted-memory read-only query surfaces, not Reader evaluation/inspection authority interfaces.
 
 ## Storage truth
 
@@ -197,20 +197,20 @@ Exact-normalized ingest compatibility now includes historical `ing:*` rows throu
 
 ## Current validation baseline
 
-The RRTIC architecture checkpoint push CI `31771677028` completed **9/9 SUCCESS**. Python 3.11 collected 2244 tests and completed **2231 passed / 13 skipped / 0 failed** at **100% measured line coverage**. Later bounded fixes/docs reconciliations have their own exact-head/post-merge CI and do not redefine the RRTIC architecture checkpoint.
+The RRTIC architecture checkpoint push CI `31771677028` completed **9/9 SUCCESS**. Python 3.11 collected 2244 tests and completed **2231 passed / 13 skipped / 0 failed** at **100% measured line coverage**. Later bounded fixes/docs reconciliations have their own exact-head/post-merge CI and do not redefine the RRTIC architecture checkpoint. PR #440 must be judged on its own exact-head CI after every policy/test/documentation change; a prior green child commit is not evidence for a newer head.
 
 ## Backlog boundaries
 
-- #434: **OPEN during this bounded branch until exact-head/merge evidence closes it** — Outbox `auto` backend-family restart continuity only; no queue federation/migration or distributed exactly-once claim.
+- #434: **COMPLETED / CLOSED on 2026-08-16** — Outbox `auto` backend-family restart continuity only; no queue federation/migration or distributed exactly-once claim.
 - #165: **COMPLETED / CLOSED by PR #431 after guarded merge** — exact normalized historical `ing:*` compatibility index only; no semantic matching and no historical re-key/merge.
 - #155: **COMPLETED / CLOSED on 2026-08-14** — EPIS-001 architecture contract only; EPIS runtime remains `NOT IMPLEMENTED / NOT AUTHORIZED`.
 - #214: **COMPLETED / CLOSED on 2026-08-14** — residual fixture/PII review and reproducible supply-chain pinning were reconciled in their own completed scope.
 
-Issue #434 is the selected bounded recovery-remediation scope only. The historical #155/#165/#214 closures do not authorize EPIS runtime, a new Reader runtime, PostgreSQL activation, semantic dedupe or unrelated security claims. Resolve live GitHub before selecting any later work.
+These completed scopes do not authorize EPIS runtime, a new Reader runtime, PostgreSQL activation, semantic dedupe, queue federation, or unrelated security claims. Resolve live GitHub before selecting any later work.
 
 ## Localization truth
 
-Localization state is tracked separately in `docs/TRANSLATION_STATUS.md`; a locale's checkpoint marker must not be used as current English architecture authority. The #434 remediation updates English authoritative/current-truth surfaces only. Localized documentation is intentionally not modified by this milestone.
+Localization state is tracked separately in `docs/TRANSLATION_STATUS.md`; a locale's checkpoint marker must not be used as current English architecture authority. The 2026-08-19 English TruthGate/current-status reconciliation materially changes current English implementation/status prose. Localized D1 status documents therefore require a separate freshness reassessment before their prior checkpoint can be treated as proof of parity; this PR does not claim that unchanged translations already express the new policy. The bounded reassessment is tracked by Issue #441. The bounded reassessment is tracked in Issue #441 and does not authorize a nine-locale rewrite inside PR #440.
 
 ## Grant status
 
@@ -218,4 +218,4 @@ NLnet remains **submitted / under review / not awarded**. Approximate **€50,00
 
 ## Stop boundary
 
-RRTIC-v1 remains the frozen Reader architecture contract; #434 changes only Outbox recovery continuity for the reproduced automatic Redis/SQLite backend-family restart switch. No discriminator/model/Reader runtime implementation is authorized by this scope. Do not automatically add semantic/hybrid/vector Reader runtime, FTS/ANN, activate PostgreSQL/pgvector, mutate epistemic authority, implement EPIS runtime, federate queues or start another backlog item after #434 closes.
+RRTIC-v1 remains the frozen Reader architecture contract. The Crystal freeze closure fixes default TruthGate admission policy at the versioned `0.05` threshold and explicitly separates process-local adaptation telemetry from default admission authority. No discriminator/model/Reader runtime implementation is authorized by this scope. Do not automatically add semantic/hybrid/vector Reader runtime, FTS/ANN, activate PostgreSQL/pgvector, implement EPIS runtime, federate queues, or treat adaptive telemetry as an implicit authority source.

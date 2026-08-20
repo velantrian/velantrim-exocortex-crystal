@@ -1,13 +1,18 @@
 """Pin tests for core/truth_gate.py — the extracted admission boundary.
 
 These tests pin import compatibility and exact gate behaviour so any future
-change that weakens Ring Zero fails loudly.
+change that weakens Ring Zero or reintroduces history-dependent default
+admission fails loudly.
 """
 import pytest
 
 from core import pipeline
 from core.pipeline import truth_gate as truth_gate_via_pipeline
-from core.truth_gate import truth_gate
+from core.truth_gate import (
+    DEFAULT_MIN_CONFIDENCE,
+    TRUTH_GATE_POLICY_VERSION,
+    truth_gate,
+)
 
 
 # ─── Import compatibility ─────────────────────────────────────────────────────
@@ -80,11 +85,32 @@ def test_sourced_confident_world_fact_passes():
     assert ok is True and reason is None
 
 
-def test_default_threshold_comes_from_adaptation(monkeypatch):
+def test_default_policy_is_fixed_and_versioned():
+    assert DEFAULT_MIN_CONFIDENCE == 0.05
+    assert TRUTH_GATE_POLICY_VERSION == "truth-gate-v1-fixed-0.05"
+
+
+def test_default_threshold_is_not_process_history_dependent():
+    """The same admission input must produce the same answer regardless of
+    volatile adaptive history; adaptation is telemetry/research, not authority."""
     from core import adaptation
-    monkeypatch.setattr(adaptation, "verification_threshold", lambda: 0.95)
-    ok, reason = truth_gate({"facts": [_fact(confidence=0.9)]})
-    assert ok is False and "0.95" in reason
+
+    fact = _fact(confidence=DEFAULT_MIN_CONFIDENCE)
+    adaptation.reset_adaptation()
+    before = truth_gate({"facts": [fact]})
+    for _ in range(20):
+        adaptation.record_block()
+    stressed = truth_gate({"facts": [fact]})
+    for _ in range(20):
+        adaptation.record_success()
+    relaxed = truth_gate({"facts": [fact]})
+    adaptation.reset_adaptation()
+    restarted = truth_gate({"facts": [fact]})
+
+    assert before == (True, None)
+    assert stressed == before
+    assert relaxed == before
+    assert restarted == before
 
 
 # ─── Threshold boundary (mutation-killing pins) ───────────────────────────────
@@ -104,12 +130,9 @@ def test_confidence_just_below_threshold_is_blocked():
     assert ok is False and "Confidence 0.4999 < threshold 0.5" in reason
 
 
-def test_adaptive_threshold_boundary_also_admits_equality(monkeypatch):
-    """Equality admits on the min_confidence=None path too, where the
-    threshold comes from adaptation.verification_threshold()."""
-    from core import adaptation
-    monkeypatch.setattr(adaptation, "verification_threshold", lambda: 0.7)
-    ok, reason = truth_gate({"facts": [_fact(confidence=0.7)]})
+def test_default_threshold_boundary_admits_equality():
+    ok, reason = truth_gate(
+        {"facts": [_fact(confidence=DEFAULT_MIN_CONFIDENCE)]})
     assert ok is True and reason is None
 
 

@@ -12,6 +12,13 @@ SOURCE = "51c205fe048fd69d39fcd47b43e042a50de432bc"
 LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
 CURRENT_LOCALES = LOCALES
 REFRESH_LOCALES = tuple(locale for locale in LOCALES if locale not in CURRENT_LOCALES)
+TRUTH_GATE_V1_SOURCE = "b4be6831a8b9f87cea815b6a0ef2c497a2d5059a"
+TRUTH_GATE_V1_STATE = "REASSESSMENT_REQUIRED"
+TRUTH_GATE_V1_ISSUE = 441
+TRUTH_GATE_V1_DOCUMENTS = {
+    locale: [f"docs/{locale}/STATUS.md", f"docs/{locale}/IMPLEMENTATION_STATUS.md"]
+    for locale in LOCALES
+}
 READER_MARKERS = (
     "reader_core_rc1_skeleton = true",
     "reader_core_rc2_structural_map = true",
@@ -56,6 +63,17 @@ def main() -> int:
     documentation = json.loads(
         (ROOT / "docs/status/implementation-manifest.json").read_text(encoding="utf-8")
     )["documentation"]
+    policy = documentation.get("truth_gate_v1_localization_reassessment")
+    expected_policy = {
+        "state": TRUTH_GATE_V1_STATE,
+        "tracking_issue": TRUTH_GATE_V1_ISSUE,
+        "english_source_sha": TRUTH_GATE_V1_SOURCE,
+        "material_change": "fixed_versioned_default_truthgate_policy",
+        "affected_documents": TRUTH_GATE_V1_DOCUMENTS,
+        "current_markers_are_policy_parity_proof": False,
+    }
+    if policy != expected_policy:
+        errors.append("manifest: invalid TruthGate v1 localization reassessment state")
     refresh_docs = {
         locale: [f"docs/{locale}/STATUS.md", f"docs/{locale}/IMPLEMENTATION_STATUS.md"]
         for locale in REFRESH_LOCALES
@@ -137,6 +155,17 @@ def main() -> int:
     ):
         if marker not in ledger:
             errors.append(f"translation ledger: missing D1 marker {marker!r}")
+
+    for marker in (
+        "Pending material English policy change — TruthGate v1",
+        f"main@{TRUTH_GATE_V1_SOURCE}",
+        f"Issue #{TRUTH_GATE_V1_ISSUE}",
+        "not proof",
+    ):
+        if marker not in ledger:
+            errors.append(
+                f"translation ledger: missing TruthGate v1 reassessment marker {marker!r}"
+            )
 
     state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
     for marker in (
