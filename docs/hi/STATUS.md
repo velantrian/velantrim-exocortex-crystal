@@ -1,5 +1,7 @@
 <!-- translation-source: docs/STATUS.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
+<!-- truthgate-v1-source: docs/STATUS.md@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a -->
+<!-- truthgate-v1-status: CURRENT -->
 <!-- d1-locale: hi -->
 <!-- d1-boundary: public-ask-read-only -->
 <!-- d1-boundary: postgresql-active=false -->
@@ -8,6 +10,10 @@
 # Velantrim Crystal — वर्तमान स्थिति
 
 यह Hindi status page current **post-RC-9 / post-NLI / RRTIC-v1** public architecture truth को प्रस्तुत करता है। Exact current repository truth हमेशा merged code, executable tests, exact CI और machine-readable manifests से तय होती है।
+
+## TruthGate v1 — PR #440 के बाद पुनः-जाँच
+
+इस D1 page को `main@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a` पर हुए material English policy change के विरुद्ध फिर से जाँचा गया है। `WORLD_FACT` के लिए default TruthGate policy अब fixed और versioned है: `DEFAULT_MIN_CONFIDENCE = 0.05`, `TRUTH_GATE_POLICY_VERSION = "truth-gate-v1-fixed-0.05"`। Process-local adaptation telemetry/research ही रहती है और default admission authority को चुपचाप नहीं बदलती। यह clarification Reader/RAG/retrieval runtime या PostgreSQL/pgvector को activate नहीं करती, Canon को expand नहीं करती और Titan को authority transfer नहीं करती। पुराने source markers historical provenance के रूप में बने रहते हैं।
 
 ## Reader स्थिति
 

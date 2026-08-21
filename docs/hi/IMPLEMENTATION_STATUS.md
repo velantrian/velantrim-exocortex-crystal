@@ -1,5 +1,7 @@
 <!-- translation-source: docs/IMPLEMENTATION_STATUS.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
+<!-- truthgate-v1-source: docs/IMPLEMENTATION_STATUS.md@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a -->
+<!-- truthgate-v1-status: CURRENT -->
 <!-- d1-locale: hi -->
 <!-- d1-boundary: public-ask-read-only -->
 <!-- d1-boundary: postgresql-active=false -->
@@ -8,6 +10,10 @@
 # Implementation स्थिति — Crystal
 
 यह page current implemented boundary और research-only surfaces को अलग रखती है।
+
+## TruthGate v1 — PR #440 के बाद implementation reconciliation
+
+इस D1 page को `main@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a` पर हुए material English policy change के विरुद्ध फिर से जाँचा गया है। Default `WORLD_FACT` admission fixed और versioned policy उपयोग करती है: `DEFAULT_MIN_CONFIDENCE = 0.05`, `TRUTH_GATE_POLICY_VERSION = "truth-gate-v1-fixed-0.05"`। Process-local adaptation telemetry/research ही रहती है और default admission threshold नहीं बदलती। Explicit `min_confidence` मौजूदा internal/test flows के लिए bounded caller parameter बना रहता है। इससे Reader/RAG/retrieval runtime नहीं जुड़ता, PostgreSQL/pgvector activate नहीं होता, Canon expand नहीं होता और Titan को authority transfer नहीं होती। पुराने source markers historical provenance के रूप में संरक्षित रहते हैं।
 
 | Component | स्थिति | सीमा |
 |---|---|---|
