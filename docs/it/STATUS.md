@@ -2,6 +2,8 @@
 <!-- translation-status: CURRENT -->
 <!-- historical-translation-source: docs/STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
 <!-- current-translation-source: docs/STATUS.md@e436577dc5ada4692e8fe399da861a44f800e2f1 -->
+<!-- truthgate-v1-source: docs/STATUS.md@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a -->
+<!-- truthgate-v1-status: CURRENT -->
 <!-- d1-locale: it -->
 <!-- d1-boundary: public-ask-read-only -->
 <!-- d1-boundary: postgresql-active=false -->
@@ -14,6 +16,10 @@
 **RRTIC exact-head CI:** `31754798549` — 9/9 SUCCESS  
 **RRTIC post-merge CI:** `31771677028` — 9/9 SUCCESS  
 **Italian parity audit base:** `main@e436577dc5ada4692e8fe399da861a44f800e2f1`.
+
+## TruthGate v1 — riesame dopo PR #440
+
+Questa pagina D1 è stata riesaminata rispetto alla modifica materiale della policy inglese in `main@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a`. La policy TruthGate predefinita per `WORLD_FACT` è ora fissa e versionata: `DEFAULT_MIN_CONFIDENCE = 0.05`, `TRUTH_GATE_POLICY_VERSION = "truth-gate-v1-fixed-0.05"`. L’adattamento locale al processo resta telemetria/ricerca e non modifica silenziosamente l’autorità di admission predefinita. Questo chiarimento non attiva Reader/RAG/retrieval runtime o PostgreSQL/pgvector, non estende Canon e non trasferisce autorità a Titan. I precedenti source markers restano provenance storica.
 
 > 📎 Le cifre runtime seguenti sono retained historical compatibility evidence, non il conteggio corrente dei test del repository.
 
