@@ -2,12 +2,18 @@
 <!-- translation-status: CURRENT -->
 <!-- historical-translation-source: docs/IMPLEMENTATION_STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
 <!-- current-translation-source: docs/IMPLEMENTATION_STATUS.md@5e6301f0eaee1a6c85d8543be89dc2e606dc05a8 -->
+<!-- truthgate-v1-source: docs/IMPLEMENTATION_STATUS.md@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a -->
+<!-- truthgate-v1-status: CURRENT -->
 <!-- d1-locale: zh-CN -->
 <!-- d1-boundary: public-ask-read-only -->
 <!-- d1-boundary: postgresql-active=false -->
 <!-- d1-nonclaim: import-is-not-activation -->
 <!-- d1-nonclaim: nlnet-not-awarded -->
 # 🇨🇳 实现状态：Crystal 当前能力与明确未实现项
+
+## TruthGate v1 — PR #440 后的实现对齐
+
+本 D1 页面已针对 `main@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a` 中英文政策的实质性变化重新核对。默认 `WORLD_FACT` admission 使用固定且版本化的 policy：`DEFAULT_MIN_CONFIDENCE = 0.05`，`TRUTH_GATE_POLICY_VERSION = "truth-gate-v1-fixed-0.05"`。process-local adaptation 仍属于 telemetry/research，不会改变 default admission threshold。显式 `min_confidence` 仍是现有 internal/test flows 的 bounded caller parameter。此变化不会增加 Reader/RAG/retrieval runtime，不会启用 PostgreSQL/pgvector，不扩展 Canon，也不会向 Titan 转移 authority。此前的 source markers 保留为 historical provenance。
 
 ## ✅ Reader implementation boundary
 

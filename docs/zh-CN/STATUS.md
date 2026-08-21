@@ -2,6 +2,8 @@
 <!-- translation-status: CURRENT -->
 <!-- historical-translation-source: docs/STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
 <!-- current-translation-source: docs/STATUS.md@5e6301f0eaee1a6c85d8543be89dc2e606dc05a8 -->
+<!-- truthgate-v1-source: docs/STATUS.md@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a -->
+<!-- truthgate-v1-status: CURRENT -->
 <!-- d1-locale: zh-CN -->
 <!-- d1-boundary: public-ask-read-only -->
 <!-- d1-boundary: postgresql-active=false -->
@@ -14,6 +16,10 @@
 **RRTIC exact-head CI：** `31754798549` — 9/9 SUCCESS  
 **RRTIC post-merge CI：** `31771677028` — 9/9 SUCCESS  
 **简体中文 parity audit base：** `main@5e6301f0eaee1a6c85d8543be89dc2e606dc05a8`。
+
+## TruthGate v1 — PR #440 后重新核对
+
+本 D1 页面已针对 `main@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a` 中英文政策的实质性变化重新核对。`WORLD_FACT` 的默认 TruthGate policy 现在固定且版本化：`DEFAULT_MIN_CONFIDENCE = 0.05`，`TRUTH_GATE_POLICY_VERSION = "truth-gate-v1-fixed-0.05"`。process-local adaptation 仍仅属于 telemetry/research，不会静默改变默认 admission authority。此澄清不会启用 Reader/RAG/retrieval runtime 或 PostgreSQL/pgvector，不扩展 Canon，也不会向 Titan 转移 authority。此前的 source markers 保留为 historical provenance。
 
 > 📎 下列 runtime 数字仅作为 retained historical compatibility evidence，不是当前 repository 的 test count。
 
