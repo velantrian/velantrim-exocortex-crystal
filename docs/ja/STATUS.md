@@ -2,6 +2,8 @@
 <!-- translation-status: CURRENT -->
 <!-- historical-translation-source: docs/STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
 <!-- current-translation-source: docs/STATUS.md@5903e90f3e0f2884f4ba257a71808d19fc439ebc -->
+<!-- truthgate-v1-source: docs/STATUS.md@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a -->
+<!-- truthgate-v1-status: CURRENT -->
 <!-- d1-locale: ja -->
 <!-- d1-boundary: public-ask-read-only -->
 <!-- d1-boundary: postgresql-active=false -->
@@ -14,6 +16,10 @@
 **RRTIC exact-head CI:** `31754798549` — 9/9 SUCCESS  
 **RRTIC post-merge CI:** `31771677028` — 9/9 SUCCESS  
 **Japanese parity audit base:** `main@5903e90f3e0f2884f4ba257a71808d19fc439ebc`
+
+## TruthGate v1 — PR #440 後の再確認
+
+この D1 ページは、`main@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a` における英語ポリシーの実質的な変更に対して再確認済みです。`WORLD_FACT` のデフォルト TruthGate ポリシーは固定かつバージョン管理され、`DEFAULT_MIN_CONFIDENCE = 0.05`、`TRUTH_GATE_POLICY_VERSION = "truth-gate-v1-fixed-0.05"` です。process-local adaptation は telemetry/research のままであり、デフォルトの admission authority を暗黙に変更しません。この明確化は Reader/RAG/retrieval runtime や PostgreSQL/pgvector を有効化せず、Canon を拡張せず、Titan へ authority を移譲しません。以前の source marker は historical provenance として保持されます。
 
 > 📎 次の runtime 数値は retained historical compatibility evidence であり、現在の repository test count ではありません。
 

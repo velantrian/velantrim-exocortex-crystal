@@ -2,12 +2,18 @@
 <!-- translation-status: CURRENT -->
 <!-- historical-translation-source: docs/IMPLEMENTATION_STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
 <!-- current-translation-source: docs/IMPLEMENTATION_STATUS.md@5903e90f3e0f2884f4ba257a71808d19fc439ebc -->
+<!-- truthgate-v1-source: docs/IMPLEMENTATION_STATUS.md@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a -->
+<!-- truthgate-v1-status: CURRENT -->
 <!-- d1-locale: ja -->
 <!-- d1-boundary: public-ask-read-only -->
 <!-- d1-boundary: postgresql-active=false -->
 <!-- d1-nonclaim: import-is-not-activation -->
 <!-- d1-nonclaim: nlnet-not-awarded -->
 # 🇯🇵 実装状態 — Crystal の現在の能力と明示的 non-claims
+
+## TruthGate v1 — PR #440 後の実装整合
+
+この D1 ページは、`main@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a` における英語ポリシーの実質的な変更に対して再確認済みです。デフォルトの `WORLD_FACT` admission は固定かつバージョン管理されたポリシーを使用し、`DEFAULT_MIN_CONFIDENCE = 0.05`、`TRUTH_GATE_POLICY_VERSION = "truth-gate-v1-fixed-0.05"` です。process-local adaptation は telemetry/research のままで、default admission threshold を変更しません。明示的な `min_confidence` は既存の internal/test flow の bounded caller parameter として残ります。これは Reader/RAG/retrieval runtime を追加せず、PostgreSQL/pgvector を有効化せず、Canon を拡張せず、Titan へ authority を移譲しません。以前の source marker は historical provenance として保持されます。
 
 ## ✅ Reader implementation boundary
 
