@@ -1,5 +1,7 @@
 <!-- translation-source: docs/STATUS.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
+<!-- truthgate-v1-source: docs/STATUS.md@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a -->
+<!-- truthgate-v1-status: CURRENT -->
 <!-- d1-locale: ar -->
 <!-- d1-boundary: public-ask-read-only -->
 <!-- d1-boundary: postgresql-active=false -->
@@ -11,6 +13,10 @@
 **دليل التشغيل التاريخي المحتفظ به:** `bbd816c09dd39a02e6de6c1014438490572f40f6`  
 **الحقيقة الآلية:** [implementation manifest](../status/implementation-manifest.json)  
 **الدليل التاريخي:** [TEST_REPORT.md](../../TEST_REPORT.md)
+
+## TruthGate v1 — إعادة التحقق بعد PR #440
+
+أُعيدت مراجعة صفحة D1 هذه مقابل التغيير الجوهري في السياسة الإنجليزية عند `main@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a`. أصبحت سياسة TruthGate الافتراضية لـ `WORLD_FACT` ثابتة ومحددة الإصدار: `DEFAULT_MIN_CONFIDENCE = 0.05` و`TRUTH_GATE_POLICY_VERSION = "truth-gate-v1-fixed-0.05"`. تبقى عملية التكيّف المحلية داخل العملية telemetry/research ولا تغيّر ضمنياً سلطة admission الافتراضية. لا يفعّل هذا التوضيح Reader/RAG/retrieval runtime أو PostgreSQL/pgvector، ولا يوسّع Canon، ولا ينقل أي authority إلى Titan. تبقى markers التاريخية السابقة provenance محفوظة.
 
 ## 📖 Reader الحالي
 

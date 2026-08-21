@@ -1,5 +1,7 @@
 <!-- translation-source: docs/IMPLEMENTATION_STATUS.md@51c205fe048fd69d39fcd47b43e042a50de432bc -->
 <!-- translation-status: CURRENT -->
+<!-- truthgate-v1-source: docs/IMPLEMENTATION_STATUS.md@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a -->
+<!-- truthgate-v1-status: CURRENT -->
 <!-- d1-locale: ar -->
 <!-- d1-boundary: public-ask-read-only -->
 <!-- d1-boundary: postgresql-active=false -->
@@ -8,6 +10,10 @@
 # حالة التنفيذ — Crystal
 
 هذه الصفحة تميّز بين ما هو **bounded implemented** وما هو evaluation/architecture only وما هو غير مصرح به في runtime.
+
+## TruthGate v1 — مطابقة التنفيذ بعد PR #440
+
+أُعيدت مراجعة صفحة D1 هذه مقابل التغيير الجوهري في السياسة الإنجليزية عند `main@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a`. تستخدم admission الافتراضية لـ `WORLD_FACT` سياسة ثابتة ومحددة الإصدار: `DEFAULT_MIN_CONFIDENCE = 0.05` و`TRUTH_GATE_POLICY_VERSION = "truth-gate-v1-fixed-0.05"`. يبقى التكيّف المحلي داخل العملية telemetry/research ولا يغيّر default admission threshold. يظل `min_confidence` الصريح caller parameter محدوداً للتدفقات الداخلية/tests الحالية. لا يضيف هذا Reader/RAG/retrieval runtime، ولا يفعّل PostgreSQL/pgvector، ولا يوسّع Canon، ولا ينقل authority إلى Titan. تبقى markers المصدر السابقة provenance تاريخية.
 
 ## 📊 مصفوفة التنفيذ
 
