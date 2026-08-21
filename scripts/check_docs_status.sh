@@ -14,6 +14,7 @@ manifest = json.loads((root / "docs/status/implementation-manifest.json").read_t
 errors: list[str] = []
 runtime_commit = "bbd816c09dd39a02e6de6c1014438490572f40f6"
 source_checkpoint = "51c205fe048fd69d39fcd47b43e042a50de432bc"
+truthgate_v1_source = "b4be6831a8b9f87cea815b6a0ef2c497a2d5059a"
 arabic_historical_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
 arabic_parity_base = "9e048c21fb929f7d299e3af0ef03d76c1df899d6"
 german_historical_source = "6b45bdd196eb42dea7bc30f58d69799b4b1712f2"
@@ -66,6 +67,7 @@ boundaries = manifest["implemented_boundaries"]
 docs = manifest["documentation"]
 grant = manifest["grant"]
 rc5 = manifest.get("reader_core_rc5", {})
+truthgate_v1 = docs.get("truth_gate_v1_localization_reassessment", {})
 
 # Retained historical runtime checkpoint remains immutable evidence. Later Reader/localization
 # milestones carry separate evidence and do not rewrite this compatibility record.
@@ -147,6 +149,10 @@ expect(docs.get("hindi_parity_audit_base"), hindi_parity_base, "Hindi parity aud
 expect(docs.get("italian_parity_audit_base"), italian_parity_base, "Italian parity audit base")
 expect(docs.get("simplified_chinese_parity_audit_base"), simplified_chinese_parity_base, "Simplified Chinese parity audit base")
 expect(docs.get("japanese_parity_audit_base"), japanese_parity_base, "Japanese parity audit base")
+expect(truthgate_v1.get("state"), "COMPLETE", "TruthGate-v1 reassessment state")
+expect(truthgate_v1.get("tracking_issue"), 441, "TruthGate-v1 tracking issue")
+expect(truthgate_v1.get("english_source_sha"), truthgate_v1_source, "TruthGate-v1 source")
+expect(truthgate_v1.get("current_markers_are_policy_parity_proof"), True, "TruthGate-v1 parity proof")
 expect(grant.get("submitted"), True, "grant submitted")
 expect(grant.get("under_review"), True, "grant review")
 expect(grant.get("awarded"), False, "grant awarded")
@@ -275,7 +281,6 @@ for locale in locales:
             if marker not in text:
                 errors.append(f"{relative}: missing Japanese current/provenance marker {marker!r}")
 
-# Root English README is the current first-impression source and must track post-RC-9 truth.
 root_readme = (root / "README.md").read_text(encoding="utf-8")
 require(
     "README.md",
@@ -322,7 +327,6 @@ for locale in locales:
         if marker not in index:
             errors.append(f"docs/{locale}/README.md: missing {marker!r}")
 
-# Active English status surfaces use semantic markers instead of stale exact section titles.
 required = {
     "docs/STATUS.md": (
         "reader_core_rc7_cross_document_links",
@@ -378,6 +382,9 @@ required = {
         "0 `REFRESH_NEEDED` localized documents",
         "Arabic, German, French, Spanish, Hindi, Italian, Japanese, Simplified Chinese and Russian",
         "136 CURRENT",
+        "TruthGate v1 reassessment — COMPLETE",
+        truthgate_v1_source,
+        "18/18",
         "RC-9",
         "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP",
     ),
@@ -386,6 +393,8 @@ required = {
         "reader_core_rc7_cross_document_links",
         "No localized root README or Reader-dependent detail pack remains `REFRESH_NEEDED`",
         "Arabic, German, French, Spanish, Hindi, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed",
+        "TruthGate-v1 D1 reassessment: COMPLETE",
+        truthgate_v1_source,
         "RC-9",
         "LEXICAL_BASELINE_EXPOSES_MEASURED_GAP",
     ),
@@ -401,7 +410,6 @@ for relative, markers in required.items():
     text = (root / relative).read_text(encoding="utf-8")
     require(relative, text, markers)
 
-# Current grant/public surfaces must not regress to the pre-RC-9 baseline description.
 for relative in (
     "README.md",
     "docs/GRANT_NLNET_SCOPE.md",
@@ -463,6 +471,6 @@ if errors:
     raise SystemExit(1)
 print(
     "Documentation status consistent: Reader RC-1..RC-7 bounded=true, RC-9 lexical baseline current, "
-    "dedicated=false; English grant truth post-RC-9; all 9 supported localization packs CURRENT"
+    "dedicated=false; historical post-RRTIC localization current=9; TruthGate-v1 D1 reassessment=COMPLETE (18/18)"
 )
 PY

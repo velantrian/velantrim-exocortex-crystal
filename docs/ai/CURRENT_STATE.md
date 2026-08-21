@@ -1,6 +1,6 @@
 # 🤖 Crystal AI Current State
 
-**Status date:** 2026-08-15  
+**Status date:** 2026-08-21  
 **Document role:** compact technical state snapshot; live GitHub + tests + exact CI override this file if repository state has advanced.  
 **Repository HEAD:** `RESOLVE_LIVE_GITHUB`.  
 **Repository lifecycle provenance:** `RESOLVE_LIVE_GITHUB` for current main, exact CI, latest closure, open PRs/issues and active milestone.  
@@ -274,7 +274,9 @@ D2 translation checkpoint: `main@b7e6574dd7aefa2f32783ab79054fac6b3b4109f`.
 
 Arabic, German, French, Spanish, Hindi, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed under recorded parity/source contracts. All nine supported D1/D3/D4/D5 detail packs are current. D2 reviewer/safety translations remain current across all nine supported locales.
 
-No localized root README or Reader-dependent detail pack remains `REFRESH_NEEDED` in the current localization state.
+**TruthGate-v1 D1 reassessment: COMPLETE.** All 18 affected localized `STATUS.md` / `IMPLEMENTATION_STATUS.md` documents were reassessed against the material English policy source `main@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a` under Issue #441. Their older checkpoint markers remain historical provenance; the explicit TruthGate-v1 markers are the policy-freshness evidence for this change.
+
+No localized root README or Reader-dependent detail pack remains `REFRESH_NEEDED` for the recorded semantics. This is a documentation-parity claim, not native-speaker editorial certification and not runtime authorization.
 
 Arabic current parity audit base: `main@9e048c21fb929f7d299e3af0ef03d76c1df899d6`. German current parity audit base: `main@ad8cec8c868f64b6dfbdc3bf3087230f59c3861c`. French current parity audit base: `main@7d03cce2c89f7a4c3fda85742eb358e6b49961f2`. Spanish current parity audit base: `main@bbe6b0d3d90d80b3c669ddab5fc56aa1bfe419eb`. Hindi current parity audit base: `main@e1df11219ee4fc3b9c175b05c7569e568cf6f512`. Italian current parity audit base: `main@e436577dc5ada4692e8fe399da861a44f800e2f1`. Japanese current parity audit base: `main@5903e90f3e0f2884f4ba257a71808d19fc439ebc`. Simplified Chinese current parity audit base: `main@5e6301f0eaee1a6c85d8543be89dc2e606dc05a8`. Russian current parity audit source: `main@9666781d390e3276a111cb5ee1735f6606a76283`. Human-first English README source: `main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883`.
 
