@@ -1,6 +1,6 @@
 # 🌍 Crystal Translation Status
 
-**Status date:** 2026-08-15  
+**Status date:** 2026-08-21  
 **Primary/source language:** English  
 **Active policy:** [LOCALIZATION_POLICY.md](./LOCALIZATION_POLICY.md)  
 **Current English human-first README source:** `main@3bc9f4c3b7ad30a3d0cc7a59904f26509a5a1883`  
@@ -13,7 +13,7 @@
 **Current Japanese parity audit source:** `main@5903e90f3e0f2884f4ba257a71808d19fc439ebc`  
 **Current Arabic parity audit source:** `main@9e048c21fb929f7d299e3af0ef03d76c1df899d6`  
 **Current Hindi parity audit source:** `main@e1df11219ee4fc3b9c175b05c7569e568cf6f512`  
-**Latest locale refresh tracking:** Issue #427 — Hindi Human-First Documentation Parity v1
+**Latest locale refresh tracking:** Issue #441 — TruthGate-v1 D1 freshness reassessment
 
 This ledger records translation freshness. Inline `CURRENT` markers are trace metadata; current technical truth still resolves through merged implementation, executable tests, exact CI, current English contracts and the machine-readable implementation manifest.
 
@@ -23,20 +23,17 @@ Arabic, German, French, Spanish, Hindi, Italian, Japanese, Simplified Chinese an
 
 No supported Reader-dependent locale pack remains `REFRESH_NEEDED` after Hindi parity.
 
-### Pending material English policy change — TruthGate v1
+### TruthGate v1 reassessment — COMPLETE
 
-English `docs/STATUS.md` and `docs/IMPLEMENTATION_STATUS.md` changed at
+English `docs/STATUS.md` and `docs/IMPLEMENTATION_STATUS.md` materially changed at
 `main@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a` to state the fixed, versioned default TruthGate policy
-(`truth-gate-v1-fixed-0.05`) and the separation of adaptation telemetry from
-admission authority.
+(`truth-gate-v1-fixed-0.05`) and the separation of process-local adaptation telemetry/research from default admission authority.
 
-The existing localized D1 `STATUS.md` and `IMPLEMENTATION_STATUS.md` markers
-remain evidence of the earlier post-RRTIC checkpoint only. They are **not proof
-of parity for this policy change**. Reassessment is tracked in Issue #441;
-affected files are listed in `docs/status/implementation-manifest.json` under
-`truth_gate_v1_localization_reassessment`.
+Issue #441 reassessed all nine supported locale pairs. All **18/18** affected D1 files now carry explicit `truthgate-v1-source` and `truthgate-v1-status: CURRENT` trace markers and local-language policy text covering the fixed/versioned default plus the non-authority role of process-local adaptation. The older D1/RRTIC source markers remain immutable historical provenance; they are not replaced or reinterpreted.
 
-D2 reviewer/safety surfaces and Quick Start remain `CURRENT` across all nine supported locales where their governing source semantics did not change. Issue #427 does not churn those stable documents.
+This completion is a documentation-parity claim only. It does not certify native-speaker editorial quality and does not authorize Reader/RAG/retrieval runtime, PostgreSQL/pgvector activation, Canon expansion, or Titan authority transfer.
+
+D2 reviewer/safety surfaces and Quick Start remain `CURRENT` across all nine supported locales because their governing source semantics did not change in this reassessment.
 
 ## Historical phased checkpoints — immutable provenance
 
@@ -151,14 +148,7 @@ The following literals describe the closed Arabic milestone and remain historica
 
 D1 Reader-dependent detail translations are `CURRENT` in all nine supported locales.
 
-Current Hindi D1:
-
-- `docs/hi/README.md` — current locale router;
-- `docs/hi/QUICKSTART.md` — `CURRENT`, unchanged because source semantics did not change;
-- `docs/hi/STATUS.md` — current post-RRTIC status;
-- `docs/hi/IMPLEMENTATION_STATUS.md` — current post-RRTIC implementation boundary.
-
-The other eight locale packs remain unchanged by Issue #427.
+TruthGate-v1 policy freshness is separately complete for all nine supported locale pairs against `main@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a` under Issue #441; historical D1 source checkpoints remain provenance rather than being rewritten.
 
 ## D2 — reviewer / safety / privacy
 
@@ -284,6 +274,6 @@ NLnet remains **submitted / under review / not awarded**. Translation cannot tur
 
 ## Remaining localization program
 
-The bounded Human-First documentation parity program is complete for all nine supported locales. No Reader-dependent locale remains in the refresh backlog.
+The bounded Human-First documentation parity program is complete for all nine supported locales. The TruthGate-v1 D1 reassessment under Issue #441 is also complete for all 18 affected D1 documents. No Reader-dependent locale remains in the refresh backlog for the recorded semantics.
 
 Any future localization work requires a new live audit if English source semantics change; `CURRENT` is not a permanent freshness guarantee.

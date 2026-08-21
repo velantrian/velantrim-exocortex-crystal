@@ -4,6 +4,8 @@
 <!-- rc7-translation-source: docs/IMPLEMENTATION_STATUS.md@ab3ad31c437647535030e371d58f456faf14017b -->
 <!-- rc7-status: CURRENT -->
 <!-- current-translation-source: docs/IMPLEMENTATION_STATUS.md@9666781d390e3276a111cb5ee1735f6606a76283 -->
+<!-- truthgate-v1-source: docs/IMPLEMENTATION_STATUS.md@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a -->
+<!-- truthgate-v1-status: CURRENT -->
 # 🇷🇺 Crystal — Implementation Status
 
 **Текущий signed architecture checkpoint:** `main@76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` / PR #392; post-merge CI `31771677028` — 9/9 SUCCESS.  
@@ -11,6 +13,10 @@
 **Signed RC-9 implementation baseline:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` / PR #376; post-merge CI `31594027040`.  
 **Latest completed model-backed evaluation:** NLI neutral-filter v1 / PR #389 — frozen gate FAIL.  
 **Current frozen architecture contract:** RRTIC-v1 / Issue #391 / PR #392 — no runtime authorization.
+
+## TruthGate v1 — сверка реализации после PR #440
+
+Эта D1-страница повторно сверена с материальным изменением английской политики в `main@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a`. Default `WORLD_FACT` admission использует фиксированную и версионированную политику: `DEFAULT_MIN_CONFIDENCE = 0.05`, `TRUTH_GATE_POLICY_VERSION = "truth-gate-v1-fixed-0.05"`. Process-local adaptation остаётся telemetry/research и не меняет default admission threshold. Явный `min_confidence` остаётся bounded caller parameter существующих внутренних/test flows. Это не добавляет Reader/RAG/retrieval runtime, не активирует PostgreSQL/pgvector, не расширяет Canon и не передаёт authority Titan. Предыдущие translation-source markers сохраняются как историческое provenance.
 
 ## Реально implemented Reader capabilities
 

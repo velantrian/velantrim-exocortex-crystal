@@ -2,6 +2,8 @@
 <!-- translation-status: CURRENT -->
 <!-- historical-translation-source: docs/IMPLEMENTATION_STATUS.md@a497b7d3cfbe59ca75b11d7449d5a728455b3130 -->
 <!-- current-translation-source: docs/IMPLEMENTATION_STATUS.md@bbe6b0d3d90d80b3c669ddab5fc56aa1bfe419eb -->
+<!-- truthgate-v1-source: docs/IMPLEMENTATION_STATUS.md@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a -->
+<!-- truthgate-v1-status: CURRENT -->
 <!-- d1-locale: es -->
 <!-- d1-boundary: public-ask-read-only -->
 <!-- d1-boundary: postgresql-active=false -->
@@ -14,6 +16,10 @@
 **Última model-backed evaluation completada:** NLI neutral-filter v1 / PR #389 — frozen gate FAIL.  
 **Architecture contract actual congelado:** RRTIC-v1 / Issue #391 / PR #392 — sin runtime authorization.  
 **Spanish parity audit base:** `main@bbe6b0d3d90d80b3c669ddab5fc56aa1bfe419eb`.
+
+## TruthGate v1 — reconciliación de implementación después de PR #440
+
+Esta página D1 se volvió a revisar contra el cambio material de la política inglesa en `main@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a`. La admission predeterminada de `WORLD_FACT` usa una política fija y versionada: `DEFAULT_MIN_CONFIDENCE = 0.05`, `TRUTH_GATE_POLICY_VERSION = "truth-gate-v1-fixed-0.05"`. La adaptación local al proceso sigue siendo telemetría/investigación y no cambia el threshold de admission predeterminado. El `min_confidence` explícito sigue siendo un parámetro bounded del caller para flujos internos/tests existentes. Esto no añade Reader/RAG/retrieval runtime, no activa PostgreSQL/pgvector, no amplía Canon y no transfiere autoridad a Titan. Los source markers anteriores se conservan como provenance histórica.
 
 ## Reader capabilities realmente implementadas
 

@@ -1,4 +1,4 @@
-"""Validate D1 localization freshness after Hindi parity refresh."""
+"""Validate D1 localization freshness and TruthGate-v1 policy parity."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ LOCALES = ("ar", "de", "es", "fr", "hi", "it", "ja", "ru", "zh-CN")
 CURRENT_LOCALES = LOCALES
 REFRESH_LOCALES = tuple(locale for locale in LOCALES if locale not in CURRENT_LOCALES)
 TRUTH_GATE_V1_SOURCE = "b4be6831a8b9f87cea815b6a0ef2c497a2d5059a"
-TRUTH_GATE_V1_STATE = "REASSESSMENT_REQUIRED"
+TRUTH_GATE_V1_STATE = "COMPLETE"
 TRUTH_GATE_V1_ISSUE = 441
 TRUTH_GATE_V1_DOCUMENTS = {
     locale: [f"docs/{locale}/STATUS.md", f"docs/{locale}/IMPLEMENTATION_STATUS.md"]
@@ -70,10 +70,11 @@ def main() -> int:
         "english_source_sha": TRUTH_GATE_V1_SOURCE,
         "material_change": "fixed_versioned_default_truthgate_policy",
         "affected_documents": TRUTH_GATE_V1_DOCUMENTS,
-        "current_markers_are_policy_parity_proof": False,
+        "current_markers_are_policy_parity_proof": True,
     }
     if policy != expected_policy:
         errors.append("manifest: invalid TruthGate v1 localization reassessment state")
+
     refresh_docs = {
         locale: [f"docs/{locale}/STATUS.md", f"docs/{locale}/IMPLEMENTATION_STATUS.md"]
         for locale in REFRESH_LOCALES
@@ -128,10 +129,14 @@ def main() -> int:
                 for marker in (
                     f"translation-source: {english}@{SOURCE}",
                     "translation-status: CURRENT",
+                    f"truthgate-v1-source: {english}@{TRUTH_GATE_V1_SOURCE}",
+                    "truthgate-v1-status: CURRENT",
+                    "truth-gate-v1-fixed-0.05",
+                    "DEFAULT_MIN_CONFIDENCE = 0.05",
                     "active=false",
                 ):
                     if marker not in text:
-                        errors.append(f"{relative}: missing current Reader evidence {marker!r}")
+                        errors.append(f"{relative}: missing current evidence {marker!r}")
                 normalized = normalize_spacing(text)
                 for marker in (*READER_MARKERS, *AUTHORITY_MARKERS):
                     if marker not in normalized:
@@ -152,25 +157,19 @@ def main() -> int:
         f"D1 source checkpoint:** `main@{SOURCE}`",
         "D1 Reader-dependent detail translations are `CURRENT` in all nine supported locales",
         "No supported Reader-dependent locale pack remains `REFRESH_NEEDED`",
-    ):
-        if marker not in ledger:
-            errors.append(f"translation ledger: missing D1 marker {marker!r}")
-
-    for marker in (
-        "Pending material English policy change — TruthGate v1",
+        "TruthGate v1 reassessment — COMPLETE",
         f"main@{TRUTH_GATE_V1_SOURCE}",
         f"Issue #{TRUTH_GATE_V1_ISSUE}",
-        "not proof",
+        "18/18",
     ):
         if marker not in ledger:
-            errors.append(
-                f"translation ledger: missing TruthGate v1 reassessment marker {marker!r}"
-            )
+            errors.append(f"translation ledger: missing D1/TruthGate marker {marker!r}")
 
     state = (ROOT / "docs/ai/CURRENT_STATE.md").read_text(encoding="utf-8")
     for marker in (
         "Arabic, German, French, Spanish, Hindi, Italian, Japanese, Simplified Chinese and Russian Reader-dependent public/detail documentation is refreshed",
-        "No localized root README or Reader-dependent detail pack remains `REFRESH_NEEDED`",
+        "TruthGate-v1 D1 reassessment: COMPLETE",
+        f"main@{TRUTH_GATE_V1_SOURCE}",
         "reader_core_rc5_relation_candidates    = true",
     ):
         if marker not in state:
@@ -181,7 +180,7 @@ def main() -> int:
         for error in errors:
             print(f"  - {error}")
         return 1
-    print("D1 translation status consistent: all 9 supported locales CURRENT; 0 REFRESH_NEEDED")
+    print("D1 translation status consistent: historical post-RRTIC current=9; TruthGate-v1 reassessment COMPLETE; 18/18 policy-refresh documents current")
     return 0
 
 

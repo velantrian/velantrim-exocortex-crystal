@@ -4,6 +4,8 @@
 <!-- rc7-translation-source: docs/STATUS.md@ab3ad31c437647535030e371d58f456faf14017b -->
 <!-- rc7-status: CURRENT -->
 <!-- current-translation-source: docs/STATUS.md@9666781d390e3276a111cb5ee1735f6606a76283 -->
+<!-- truthgate-v1-source: docs/STATUS.md@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a -->
+<!-- truthgate-v1-status: CURRENT -->
 # 🇷🇺 Crystal — текущий статус
 
 **Дата статуса:** 2026-08-15  
@@ -12,6 +14,10 @@
 **RRTIC exact-head CI:** `31754798549` — 9/9 SUCCESS  
 **RRTIC post-merge CI:** `31771677028` — 9/9 SUCCESS  
 **Historical RC-7 localization source:** `main@ab3ad31c437647535030e371d58f456faf14017b`.
+
+## TruthGate v1 — сверка после PR #440
+
+Эта D1-страница повторно сверена с материальным изменением английской политики в `main@b4be6831a8b9f87cea815b6a0ef2c497a2d5059a`. Политика TruthGate по умолчанию для `WORLD_FACT` теперь фиксирована и версионирована: `DEFAULT_MIN_CONFIDENCE = 0.05`, `TRUTH_GATE_POLICY_VERSION = "truth-gate-v1-fixed-0.05"`. Локальная для процесса адаптация остаётся телеметрией/исследовательским поведением и не может незаметно менять полномочия admission по умолчанию. Это уточнение не активирует Reader/RAG/retrieval runtime, PostgreSQL/pgvector, не расширяет Canon и не передаёт Crystal полномочия Titan. Более ранние translation-source markers ниже/выше сохраняются как историческое provenance.
 
 > 📎 Retained runtime evidence ниже — historical compatibility evidence, а не текущий repository test count.
 
