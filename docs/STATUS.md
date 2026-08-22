@@ -26,7 +26,7 @@ AUTOMATIC NEXT MILESTONE = NONE
 
 ## Implemented Reader position
 
-RC-1 through RC-7 remain bounded implemented Reader/domain layers. RC-5 remains implemented in `core/reader_relations.py`. RC-9 remains the deterministic lexical PRE-ADMISSION retrieval baseline. Comparator v1 and NLI neutral-filter v1 remain completed frozen evaluations whose admission gates failed. RRTIC-v1 remains a frozen typed-inspection architecture contract and adds no runtime authority.
+RC-1 through RC-7 remain bounded implemented Reader/domain layers. RC-5 remains implemented in `core/reader_relations.py`. RC-9 remains the deterministic lexical PRE-ADMISSION retrieval baseline implemented in `core/reader_lexical_discovery.py`. Comparator v1 and NLI neutral-filter v1 remain completed frozen evaluations whose admission gates failed. **Reader Retrieval Typed Inspection Contract v1 (RRTIC-v1)** remains a frozen typed-inspection architecture contract and adds no runtime authority.
 
 ```text
 reader_core_rc1_skeleton               = true
@@ -130,12 +130,12 @@ NLnet remains **submitted / under review / not awarded**. Approximate **€50,00
 
 This section preserves the previously verified Reader checkpoints, measurements and authority-firewall language as immutable evidence. It is **not** the current lifecycle milestone and does not supersede the V1 closure above.
 
-**Signed RRTIC architecture checkpoint:** `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e`, `verified=true`, reason `valid`  
+**Signed Reader Retrieval Typed Inspection Contract v1 architecture checkpoint:** `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e`, `verified=true`, reason `valid`  
 **RRTIC exact-head CI:** `31754798549` — 9/9 SUCCESS  
 **RRTIC post-merge CI:** `31771677028` — 9/9 SUCCESS  
 **Historical RC-7 merged baseline:** `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1` — PR #372; post-merge CI `31572918731`.  
 **Historical signed RC-9 implementation baseline:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` — PR #376; post-merge CI `31594027040`; retained RC-10 architecture decision #377.  
-**Historical post-RC-10 reassessment:** Issue #382 selected an **orchestration-only** evaluation path; it authorized no new retrieval runtime.  
+**Historical post-RC-10 reassessment:** Issue #382 selected an **orchestration-only** Evaluation Surface v2 path; it authorized no new retrieval runtime.  
 **Retained storage-runtime checkpoint:** `bbd816c09dd39a02e6de6c1014438490572f40f6` / PR #337.
 
 ### Reader evidence chain
