@@ -1,80 +1,92 @@
 # 🌐 Velantrim Ecosystem / Экосистема Velantrim
 
 > **Document type:** navigation and integration-boundary map.  
-> **Authority:** this document does not authorize runtime integration, data transfer, shared Canon writes, or capability inheritance.  
-> **Languages:** English is primary for Crystal's public and grant-facing surface; the Russian companion text is included below. Other localizations may follow after the English/Russian contract is stable.
+> **Authority:** orientation only; this document does not authorize runtime integration, data transfer, shared Canon writes or capability inheritance.  
+> **Crystal lifecycle:** **V1 COMPLETE / 100% / FREEZE-STABILITY / P0=0 / P1=0**.  
+> **Atlas rule:** live owning repositories and owning Current State records override this navigation map for volatile implementation facts.
 
 ## English
 
 ### Crystal's role
 
-**Velantrim ExoCortex — Crystal** is the grant-facing, verifiable-memory infrastructure track of the wider Velantrim ecosystem.
-
-Crystal provides evidence-aware claims, provenance, epistemic states, Guardian and TruthGate boundaries, strict Canon projections, TRACE and replayable Receipts. Crystal remains independently usable and independently auditable.
+**Velantrim Exo-Cortex — Crystal** is the trusted local-first memory/evidence kernel of the wider Velantrim ecosystem. V1 is complete and in freeze/stability. Crystal provides evidence admission, provenance/lineage, bounded canonical writes, Guardian/TruthGate boundaries, TRACE, receipts, local persistence/recovery and auditable replay.
 
 ```text
 Being part of the Velantrim ecosystem
-≠ depending on every Velantrim project
-≠ sharing one runtime or one Canon
-≠ claiming an integration that has not been implemented and tested
+!= depending on every Velantrim project
+!= sharing one runtime or one Canon
+!= transferring authority between domains
+!= claiming an integration that has not been implemented and tested
 ```
 
-### Project map
+### Six-project Atlas topology
 
-| Project | Primary role | Current relationship to Crystal |
+| Project | Primary role | Relationship to Crystal |
 |---|---|---|
-| [💎 Crystal](https://github.com/velantrian/velantrim-exocortex-crystal) | Verifiable memory, evidence, provenance, trust and audit boundaries | This repository; implemented grant-facing track |
-| [🔱 Titan](https://github.com/velantrian/Velantrim-ExoCortex-Titan) | Broader Exo-Cortex research: cognition, orchestration, retrieval, tools and agent workflows | Separate research/runtime track; future adapters require independent review |
-| [🧬 Native Kernel](https://github.com/velantrian/velantrim-native-kernel) | Long-horizon substrate-neutral memory and event-contract research | Independent architecture research; Crystal does not currently run on it |
-| [⭐️ Mentaury Soul](https://github.com/velantrian/velantrim-mentaury-soul) | Independent substrate-neutral cognition and digital-individuality research: identity continuity, character, epistemic discipline, understanding/inquiry, relationships, commitments and governed development | Separate research owner; Crystal may only provide bounded evidence/provenance inputs through a separately admitted interface and has no cognition, belief or identity authority |
+| [💠 Crystal](https://github.com/velantrian/velantrim-exocortex-crystal) | Trusted local-first memory/evidence, provenance, bounded Canon writes, integrity and receipts | This repository; **V1 COMPLETE / FREEZE-STABILITY** |
+| [🗿 Titan](https://github.com/velantrian/Velantrim-ExoCortex-Titan) | Orchestration, providers/models/tools, retrieval composition, adapters, benchmarks and research incubation | Separate orchestration/research owner; cannot promote research into Crystal authority automatically |
+| [🧬 Native Kernel](https://github.com/velantrian/velantrim-native-kernel) | Technology-neutral semantic laws, invariants and reference contracts | Separate semantic-constitution owner; specification does not grant Crystal runtime authority |
+| [🌀 Mentaury Soul](https://github.com/velantrian/velantrim-mentaury-soul) | Bounded cognition/identity: claims, beliefs, self, relationships and commitments | Crystal evidence may be transported only through bounded admitted contracts; evidence is not belief or identity |
+| 🪁 Mentaury Kernel | Cross-domain composition specifications, compatibility, provenance preservation and non-escalation | Specification/composition layer only; not a central online authority server |
+| 🌎 Continuum | Falsifiable process-continuity research across lost/replaced inference/context/runtime | Research/shadow domain; pilot or continuity hypothesis does not become Crystal evidence or authority automatically |
 
 ### Conceptual relationship map
 
 ```text
-                         🌐 VELANTRIM ECOSYSTEM
-                                   │
-          ┌────────────────────────┼────────────────────────┐
-          │                        │                        │
-          ▼                        ▼                        ▼
-  ⭐️ Mentaury Soul            🔱 Titan                 💎 Crystal
- cognition / individuality   cognition / tools       evidence / trust
- continuity / character      orchestration           provenance / audit
-          │                        │                        │
-          └──────── proposed governed contracts ──────────┘
-                                   │
-                                   ▼
-                         🧬 Native Kernel
-                 substrate-neutral contract research
+                         🗺️ VELANTRIM KNOWLEDGE ATLAS
+                                      │
+             ┌────────────────────────┼────────────────────────┐
+             │                        │                        │
+             ▼                        ▼                        ▼
+       💠 Crystal                 🗿 Titan              🧬 Native Kernel
+   evidence / trust          orchestration / R&D       semantic laws
+             │                        │                        │
+             ├──────────────┐         │         ┌──────────────┤
+             ▼              ▼         ▼         ▼              ▼
+        🌀 Soul        🪁 Mentaury Kernel              🌎 Continuum
+ cognition/identity     composition specs          continuity research
 
-Dashed/proposed relationships are architectural possibilities,
-not claims of current runtime wiring.
+All cross-domain arrows mean bounded contracts/proposals only.
+They do not imply shared Canon, authority inheritance or current runtime wiring.
 ```
+
+### Cross-domain authority law
+
+```text
+SOURCE DOMAIN
+    │ proposes / transports
+    ▼
+AdmissionRequest
+    │
+    ▼
+TARGET-DOMAIN validation
+    ├── DENY → DecisionReceipt
+    └── ALLOW → CapabilityLease
+                     │
+                     ▼
+                bounded use
+                     │
+                     ▼
+              ConsumptionReceipt
+```
+
+A source domain cannot grant itself permission to mutate a target domain. Target-domain-authorized authority decides ALLOW/DENY. Integration is not authority transfer.
 
 ### Mandatory boundaries
 
-1. Crystal keeps its own implementation truth, tests, release status and Canon boundary.
-2. Titan, Native Kernel and Mentaury do not receive automatic write authority over Crystal.
-3. Crystal evidence, claims, Receipts or tool output do not become Mentaury belief, identity state, relationship, commitment or M3 state automatically.
-4. Mentaury research results, reflections or hypotheses do not become Crystal Canon, evidence or runtime authority automatically.
-5. No project may infer capabilities, credentials, consent or authority from another project's data.
-6. Shared vocabulary or research inspiration does not imply shared architecture or shared ownership.
-7. Any future integration requires a scoped RFC/ADR, explicit contracts, threat and privacy review, tests, rollback, Receipts and operator approval.
-8. Research documents, open pull requests and Notion plans are not equivalent to merged runtime implementation.
+1. Each project keeps its own implementation truth, tests, lifecycle status and authority boundary.
+2. Titan, Native Kernel, Soul, Mentaury Kernel and Continuum receive no automatic write authority over Crystal.
+3. Crystal evidence or receipts do not automatically become Soul belief/identity state.
+4. Soul cognition/identity output does not automatically become Crystal Canon.
+5. Mentaury Kernel composition is specification, not central authorization.
+6. Continuum research/pilot output is not evidence or production authority by default.
+7. Shared vocabulary, contracts or research inspiration do not imply shared ownership.
+8. Any future authority-impacting integration requires explicit bounded contracts, validation, auditability and owner authorization.
+9. Research documents, open PRs, Notion pages and CI success are not equivalent to runtime/production authorization.
 
-### Safe future integration pattern
+### Crystal stop boundary
 
-```text
-proposal
-→ ownership discrimination
-→ bounded interface contract
-→ adapter in an isolated branch
-→ deterministic tests
-→ threat/privacy review
-→ Offline Shadow or read-only evaluation
-→ receipts and failure analysis
-→ explicit approval
-→ separately versioned integration
-```
+Crystal V1 completion does not authorize V1.x/V2, Reader expansion, GraphRAG, semantic/hybrid/vector runtime, PostgreSQL/pgvector activation, EITI/EPIS runtime integration, distributed sync or central authority routing. Future work requires a separate explicit owner decision.
 
 ---
 
@@ -82,48 +94,44 @@ proposal
 
 ### Роль Crystal
 
-**Velantrim Exo-Cortex — Crystal** — грантовое и публичное направление проверяемой памяти внутри более широкой экосистемы Velantrim.
-
-Crystal отвечает за утверждения с доказательствами, provenance, эпистемические состояния, границы Guardian и TruthGate, строгие проекции Canon, TRACE и воспроизводимые Receipts. При этом Crystal остаётся самостоятельным и независимо аудируемым проектом.
+**Velantrim Exo-Cortex — Crystal** — trusted local-first ядро памяти и доказательств в экосистеме Velantrim. **V1 завершён на 100% и находится в FREEZE / STABILITY; P0=0, P1=0.** Crystal отвечает за admission evidence, provenance/lineage, ограниченные записи Canon, Guardian/TruthGate, TRACE, Receipts, локальное хранение/восстановление и проверяемый replay.
 
 ```text
-Принадлежность к экосистеме Velantrim
-≠ зависимость от всех проектов Velantrim
-≠ единый runtime или единый Canon
-≠ заявление о ещё не реализованной интеграции
+Принадлежность к Velantrim
+!= единый монолит
+!= единый runtime
+!= единый Canon
+!= наследование authority
+!= автоматически реализованная интеграция
 ```
 
-### Карта проектов
+### Шесть owning-проектов Atlas
 
-| Проект | Основная роль | Текущее отношение к Crystal |
+| Проект | Основная роль | Отношение к Crystal |
 |---|---|---|
-| [💎 Crystal](https://github.com/velantrian/velantrim-exocortex-crystal) | Проверяемая память, доказательства, provenance, доверие и аудит | Этот репозиторий; реализуемое грантовое направление |
-| [🔱 Titan](https://github.com/velantrian/Velantrim-ExoCortex-Titan) | Более широкий Exo-Cortex: cognition, orchestration, retrieval, инструменты и агенты | Отдельное исследовательское/runtime-направление; будущие адаптеры требуют отдельной проверки |
-| [🧬 Native Kernel](https://github.com/velantrian/velantrim-native-kernel) | Долгосрочное substrate-neutral исследование памяти и event-контрактов | Независимая архитектурная работа; Crystal сейчас не работает поверх Kernel |
-| [⭐️ Mentaury Soul](https://github.com/velantrian/velantrim-mentaury-soul) | Независимое substrate-neutral исследование cognition и цифровой индивидуальности: continuity, character, эпистемическая дисциплина, understanding/inquiry, отношения, commitments и управляемое развитие | Отдельный research-owner; Crystal может быть только ограниченным источником evidence/provenance через отдельно принятую границу и не владеет cognition, belief или identity Mentaury |
+| 💠 Crystal | Trusted memory/evidence, provenance, bounded Canon, integrity, receipts | Этот репозиторий; **V1 COMPLETE / FREEZE-STABILITY** |
+| 🗿 Titan | Orchestration, providers/models/tools, retrieval composition, adapters, benchmarks, incubation | Отдельный research/orchestration owner; исследования не получают Crystal authority автоматически |
+| 🧬 Native Kernel | Технологически нейтральные semantic laws и invariants | Отдельная semantic constitution; spec != implementation |
+| 🌀 Mentaury Soul | Claims, beliefs, self/identity, relationships, commitments | Evidence Crystal != belief/identity Soul; перенос только через bounded admitted contracts |
+| 🪁 Mentaury Kernel | Cross-domain composition, compatibility, provenance preservation, non-escalation | Specification-only; не центральный сервер authority |
+| 🌎 Continuum | Исследование process continuity и recovery/rehydration | Research/shadow; pilot != evidence и не даёт Crystal authority |
+
+### Закон междоменной authority
+
+Источник может только **предложить или транспортировать** данные. Право изменения целевого домена определяется целевым доменом через bounded admission/lease/receipt contract. Интеграция не означает перенос власти.
 
 ### Обязательные границы
 
-1. Crystal сохраняет собственную истину реализации, тесты, release-status и границу Canon.
-2. Titan, Native Kernel и Mentaury не получают автоматического права записи в Crystal.
-3. Evidence, claims, Receipts и tool output Crystal не становятся автоматически belief, identity-state, relationship, commitment или M3-state Mentaury.
-4. Research results, reflections и hypotheses Mentaury не становятся автоматически Crystal Canon, evidence или runtime authority.
-5. Ни один проект не наследует capabilities, credentials, consent или authority из данных другого проекта.
-6. Общая терминология или research inspiration не означают общую архитектуру или общего владельца.
-7. Любая будущая интеграция требует ограниченного RFC/ADR, явных контрактов, threat/privacy review, тестов, rollback, Receipts и одобрения оператора.
-8. Research-документ, открытый PR или план в Notion не равен реализации, смерженной в `main`.
+1. Каждый проект сохраняет собственную implementation truth и authority boundary.
+2. Ни один соседний проект не получает автоматического права записи в Crystal.
+3. Evidence/Receipt Crystal не становятся автоматически belief или identity Soul.
+4. Output Soul не становится автоматически Crystal Canon.
+5. Mentaury Kernel задаёт composition rules, но не является центральным authority router.
+6. Continuum остаётся исследованием continuity; pilot и hypothesis не равны evidence.
+7. Общий словарь и shared contracts не означают общего владельца или общего Canon.
+8. Любая authority-impacting интеграция требует явного bounded contract, проверки, аудита и owner authorization.
+9. Research, Notion, открытый PR или зелёный CI не равны production/runtime authorization.
 
-### Безопасная последовательность интеграции
+### Stop boundary Crystal
 
-```text
-предложение
-→ определение владельца
-→ ограниченный контракт интерфейса
-→ адаптер в изолированной ветке
-→ детерминированные тесты
-→ threat/privacy review
-→ Offline Shadow или read-only оценка
-→ Receipts и анализ отказов
-→ явное одобрение
-→ отдельно версионируемая интеграция
-```
+V1 завершён. Автоматического следующего milestone нет. V1.x/V2, GraphRAG, semantic/hybrid Reader, PostgreSQL/pgvector, EPIS/EITI runtime, distributed sync и central authority routing остаются неавторизованными до отдельного решения владельца.
