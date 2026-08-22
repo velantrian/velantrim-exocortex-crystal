@@ -1,15 +1,33 @@
 # Implementation Status: Crystal vs Future Exo-Cortex Work
 
-**Status date:** 2026-08-19  
-**Current pre-freeze remediation baseline:** `main@cf7471086edee78fd9ec39abeef557ba6b10c7fb` / PR #439; exact PR head `323f2b6611c5165a316741587043329532e76d7a`; CI `32195806158` (#1739) — all permanent jobs SUCCESS  
-**Historical signed architecture checkpoint:** `main@76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` / PR #392; post-merge CI `31771677028` — 9/9 SUCCESS  
-**Historical RC-7 Reader baseline:** `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1` / PR #372; post-merge CI `31572918731` — retained immutable cross-document Reader provenance  
-**Signed RC-9 Reader implementation baseline:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` / PR #376; post-merge CI `31594027040`; retained RC-10 architecture decision #377  
-**Post-RC-10 architecture reassessment:** Issue #382 / PR #383 — selected Evaluation Surface v2 before any further comparator execution  
-**Latest completed model-backed evaluation:** NLI neutral-filter v1 / PR #389 — frozen gate FAIL  
-**Current frozen Reader architecture contract:** RRTIC-v1 / Issue #391 / PR #392 — no runtime authorization
+**Status date:** 2026-08-22  
+**V1 lifecycle:** **COMPLETE / 100% / FREEZE-STABILITY**  
+**P0/P1 remaining:** `0 / 0`  
+**Automatic next implementation milestone:** `NONE`  
+**Authoritative closure:** [`docs/status/CRYSTAL_V1_CLOSURE_2026-08-22.md`](./status/CRYSTAL_V1_CLOSURE_2026-08-22.md)
 
-## Implemented Reader capability truth
+This file describes implementation truth. Historical Reader/evaluation checkpoints remain retained evidence, but they no longer represent an unfinished V1 milestone.
+
+## Implemented V1 capability truth
+
+Crystal V1 is a local-first evidence/memory kernel and bounded decision boundary. Implemented V1 responsibilities include evidence admission, provenance/lineage, bounded canonical writes, Guardian and fixed TruthGate boundaries, traces, sealed receipts/replay, local persistence/recovery and the bounded Reader components listed below.
+
+| Capability | Status | Primary implementation |
+|---|---|---|
+| RC-1 source/session skeleton | **IMPLEMENTED** | `core/reader_core.py` |
+| RC-2 structural map | **IMPLEMENTED** | `core/reader_structure.py` |
+| RC-3 multi-pass mechanics | **IMPLEMENTED** | `core/reader_passes.py` |
+| RC-4 proposition extraction contract/runtime | **IMPLEMENTED** | `core/reader_extraction.py` |
+| RC-5 relation candidates | **IMPLEMENTED** | `core/reader_relations.py` |
+| RC-6 bounded long-context strategy | **IMPLEMENTED** | `core/reader_long_context.py` |
+| RC-7 explicit cross-document candidate links | **IMPLEMENTED** | `core/reader_cross_document.py` |
+| RC-9 lexical candidate discovery | **IMPLEMENTED** | `core/reader_lexical_discovery.py` |
+| Dedicated/full autonomous Reader | **NOT IMPLEMENTED** | `dedicated_reader_core=false` |
+| Semantic/hybrid Reader runtime | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
+| Reader FTS / ANN / vector DB | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
+| NLI runtime filter / CrossEncoder reranker | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
+| RRTIC runtime provider | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
+| PostgreSQL/pgvector active runtime | **NOT AUTHORIZED / INACTIVE** | `active=false` |
 
 ```text
 reader_core_rc1_skeleton               = true
@@ -23,115 +41,32 @@ reader_rc9_lexical_candidate_discovery = true
 dedicated_reader_core                  = false
 ```
 
-Implemented Reader runtime/domain components:
-
-| Capability | Status | Primary implementation |
-|---|---|---|
-| RC-1 source/session skeleton | **IMPLEMENTED** | `core/reader_core.py` |
-| RC-2 structural map | **IMPLEMENTED** | `core/reader_structure.py` |
-| RC-3 multi-pass mechanics | **IMPLEMENTED** | `core/reader_passes.py` |
-| RC-4 proposition extraction contract/runtime | **IMPLEMENTED** | `core/reader_extraction.py` |
-| RC-5 relation candidates | **IMPLEMENTED** | `core/reader_relations.py` |
-| RC-6 bounded long-context strategy | **IMPLEMENTED** | `core/reader_long_context.py` |
-| RC-7 explicit cross-document candidate links | **IMPLEMENTED** | `core/reader_cross_document.py` |
-| Reader RC-9 lexical candidate discovery | **IMPLEMENTED** | `core/reader_lexical_discovery.py` |
-| Dedicated/full autonomous Reader | **NOT IMPLEMENTED** | `dedicated_reader_core=false` |
-| Semantic/hybrid Reader runtime | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
-| Reader FTS / ANN / vector DB | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
-| NLI runtime filter / CrossEncoder reranker | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
-| RRTIC runtime provider | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
-
 ## Research/evaluation evidence is not implementation
 
-The following repository milestones are real, completed work, but they are **not runtime features**:
+The following completed milestones remain immutable evidence but do not authorize runtime expansion:
 
 | Evidence / contract | Result | Runtime meaning |
 |---|---|---|
-| RC-8 retrieval decision | architecture/research complete | selected deterministic lexical baseline first |
-| Reader Retrieval Evaluation Surface v2 | frozen judged evaluation surface | no runtime added |
+| RC-8 retrieval decision | architecture/research complete | deterministic lexical baseline selected first |
+| Reader Retrieval Evaluation Surface v2 | frozen judged surface | no runtime added |
 | Comparator v1 | `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED` | semantic comparator rejected as runtime authorization |
 | NLI neutral-filter v1 | `NLI_NEUTRAL_FILTER_GATE_FAILED` | filter rejected as Reader retrieval stage |
-| RRTIC-v1 | frozen typed inspection architecture contract | no model/filter/reranker/provider added |
+| RRTIC-v1 | frozen typed inspection contract | no model/filter/reranker/provider added |
 
-## RC-9 retained implementation evidence
+Historical RC-9 and evaluation metrics remain available in repository history and their owning evidence records. V1 closure does not reinterpret those results.
 
-Historical RC-9 K=5 evidence remains:
-
-- Recall@5 `0.937500`;
-- Precision@5 `0.187500`;
-- MRR `0.895833`;
-- paired hard-negative rate@5 `1.000000`;
-- useful hits `15/16`;
-- hard-negative hits `4/4`;
-- classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
-
-These are retrieval measurements, not semantic/adjudication accuracy.
-
-## Reader Retrieval Evaluation Surface v2 — retained frozen surface
-
-Final frozen v2 surface: 24 queries, 12 primary strata ×2, 6 candidates/query, 144/144 explicit qrels, judgment coverage `1.0`, K=5, composite SHA-256 `753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cdd`.
-
-Final unchanged RC-9 v2 control:
-
-- useful hits **42 / 48**;
-- Recall@5 **0.875000**;
-- fixed-slot Precision@5 **0.350000**;
-- judged precision-over-returned **0.355932**;
-- MRR **0.857639**;
-- hard-negative hits **38 / 48**;
-- hard-negative rate@5 **0.791667**.
-
-Classification: `LEXICAL_CONTROL_EXPOSES_MULTI_STRATUM_GAPS`.
-
-## Comparator v1 result
-
-Comparator v1 recovered `48/48` useful v2 candidates with Recall@5 `1.0` and MRR `1.0`, but also surfaced `41/48` hard negatives. Its historical RC-10 screen surfaced `4/4` hard negatives.
-
-Classification: `SEMANTIC_RECALL_RECOVERED_DISCRIMINATION_GATE_FAILED`.
-
-No semantic/hybrid Reader runtime was authorized.
-
-## NLI neutral-filter v1 result
-
-The preregistered NLI neutral filter reduced v2 hard-negative hits to `18/48`, but useful hits regressed to `46/48`; historical useful hits regressed to `15/16`. The no-recall-loss overlay and frozen gates failed.
-
-Classification: `NLI_NEUTRAL_FILTER_GATE_FAILED`.
-
-## RRTIC-v1 contract
-
-RRTIC-v1 responds to the post-NLI **relation-contract mismatch** finding. It freezes six suspicion-only relation families and ten structural qualifier dimensions so a future discriminator can be evaluated against an explicit relation/qualifier contract rather than one scalar similarity score.
-
-```text
-relation families:
-EQUIVALENCE_SUSPECT
-RELATED_SUSPECT
-CONTRADICTION_SUSPECT
-QUALIFICATION_SUSPECT
-TOPIC_ONLY_SUSPECT
-UNKNOWN
-
-qualifier states:
-MATCH | MISMATCH | UNKNOWN | NOT_APPLICABLE
-```
-
-RRTIC-v1 does not filter, rerank, execute a model, establish identity, admit evidence, adjudicate contradictions, mutate Canon or auto-register RC-5 relations.
-
-## Retained Reader authority firewall
+## Authority firewall
 
 ```text
 EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
 relation candidate != admitted evidence
 contradiction candidate != confirmed contradiction
-working-set coverage != comprehension proof
 summary != evidence
 cross-document link != Canon relation
 same-topic != same proposition
-possible-same-claim != claim identity
 similarity signal != identity proof
-repetition across sources != corroboration
 retrieval match != evidence
-similarity != identity
 NLI label != proposition identity
 RRTIC suspicion != adjudicated relation
 qualifier mismatch != truth decision
@@ -139,24 +74,73 @@ ranking != epistemic authority
 candidate discovery != candidate adjudication
 comparison pass != runtime authorization
 evaluation pass != runtime authorization
+research != runtime
+spec != implementation
+receipt != truth
+model output != Canon
+CI green != production
 ```
 
-PostgreSQL/pgvector remains `active=false`. SQLite ordinary local-first remains active.
+TruthGate default remains deterministic and versioned:
 
-## Current verification
+```text
+DEFAULT_MIN_CONFIDENCE = 0.05
+TRUTH_GATE_POLICY_VERSION = "truth-gate-v1-fixed-0.05"
+```
 
-PR #439 pre-freeze remediation is merged to `main@cf7471086edee78fd9ec39abeef557ba6b10c7fb`. Its exact PR head `323f2b6611c5165a316741587043329532e76d7a` passed CI `32195806158` (#1739), including Python 3.11 and Python 3.12 full suites at 100% line coverage, eval, security, docs-status, Ring Zero, JSONL integrity, code quality, and Docker build.
+Process-local adaptation may remain telemetry/research but does not change default admission authority.
 
-The freeze-closure policy change makes the TruthGate default deterministic and versioned: `DEFAULT_MIN_CONFIDENCE = 0.05`, `TRUTH_GATE_POLICY_VERSION = "truth-gate-v1-fixed-0.05"`. Process-local adaptation may remain as telemetry/research behavior but no longer changes the default admission threshold. Explicit `min_confidence` remains a bounded caller parameter for existing internal/test flows.
+## Persistence and recovery
 
-## Localization / grant / backlog
+SQLite remains the ordinary active local-first storage profile. V1 includes restart continuity, backup/verify/inactive restore, bounded logical export and explicit outbox recovery for post-gate merge failure.
 
-Localization parity is owned by `docs/TRANSLATION_STATUS.md`; localized checkpoint labels do not override current English implementation truth.
+```text
+SQLite ordinary active local-first
+→ backup / verify / inactive restore
+→ bounded logical export
+→ PostgreSQL 16 + pgvector inactive import/equivalence
+→ active=false
+```
 
-NLnet remains **submitted / under review / not awarded**. Approximate €50,000 remains planning only.
+PostgreSQL/pgvector activation, queue federation, distributed exactly-once behavior and distributed sync are outside V1 authority.
 
-Issues #155 and #165 are **completed and closed**; they are retained as completed engineering/RFC history, not open implementation scopes. Issue #214 was **completed and closed on 2026-08-14**; its fixture/PII/supply-chain hygiene work is retained as completed engineering history, not an open backlog item.
+## Validation / governance
+
+The permanent V1 PR matrix consists of nine checks: `code-quality`, `Ring Zero mutation gate`, `docs-status`, `test (3.11)`, `test (3.12)`, `jsonl-integrity`, `eval-gate`, `security`, and `docker-build`.
+
+The final governance probe PR #446 exercised the permanent matrix successfully before being closed without merge. Issue #432 is closed. These are V1 closure evidence, not generic production authorization.
+
+## Localization / grant
+
+Localization parity and historical provenance are owned by [`docs/TRANSLATION_STATUS.md`](./TRANSLATION_STATUS.md). The 2026-08-22 V1 lifecycle closure is an overlay across supported locales and does not rewrite older architecture checkpoints.
+
+NLnet remains **submitted / under review / not awarded**. Approximate €50,000 remains planning context only.
+
+## Future work boundary
+
+No P0/P1 implementation work remains in the V1 completion program. P2/P3, research, deferred and frozen items are non-blocking backlog only.
+
+V1 completion does **not** authorize:
+
+- V1.x or V2;
+- semantic/hybrid/vector Reader runtime;
+- GraphRAG or advanced RAG runtime;
+- PostgreSQL/pgvector activation;
+- EPIS/EITI runtime integration;
+- distributed sync or queue federation;
+- central authority routing;
+- automatic transfer of Titan research into Crystal.
+
+Any future implementation phase requires a separate explicit owner decision, bounded scope and fresh validation design.
 
 ## Stop boundary
 
-RRTIC-v1 is closed. No next model/discriminator/runtime milestone is implied. Any future mechanism requires separate authorization and fresh validation design. Completion of #155, #165, or #214 grants no Reader runtime, evidence-admission or Canon authority. The Crystal freeze closure does not authorize semantic Reader runtime, PostgreSQL/pgvector activation, advanced RAG frameworks, or Titan research features.
+```text
+CRYSTAL V1 = COMPLETE
+DONE = 100%
+REMAINING = 0%
+P0 = 0
+P1 = 0
+PHASE = FREEZE / STABILITY
+AUTOMATIC NEXT MILESTONE = NONE
+```
