@@ -26,7 +26,7 @@ AUTOMATIC NEXT MILESTONE = NONE
 
 ## Implemented Reader position
 
-RC-1 through RC-7 remain bounded implemented Reader/domain layers. RC-9 remains the deterministic lexical PRE-ADMISSION retrieval baseline. Comparator v1 and NLI neutral-filter v1 remain completed frozen evaluations whose admission gates failed. RRTIC-v1 remains a frozen typed-inspection architecture contract and adds no runtime authority.
+RC-1 through RC-7 remain bounded implemented Reader/domain layers. RC-5 remains implemented in `core/reader_relations.py`. RC-9 remains the deterministic lexical PRE-ADMISSION retrieval baseline. Comparator v1 and NLI neutral-filter v1 remain completed frozen evaluations whose admission gates failed. RRTIC-v1 remains a frozen typed-inspection architecture contract and adds no runtime authority.
 
 ```text
 reader_core_rc1_skeleton               = true
