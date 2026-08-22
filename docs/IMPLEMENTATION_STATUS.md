@@ -21,7 +21,7 @@ Crystal V1 is a local-first evidence/memory kernel and bounded decision boundary
 | RC-5 relation candidates | **IMPLEMENTED** | `core/reader_relations.py` |
 | RC-6 bounded long-context strategy | **IMPLEMENTED** | `core/reader_long_context.py` |
 | RC-7 explicit cross-document candidate links | **IMPLEMENTED** | `core/reader_cross_document.py` |
-| RC-9 lexical candidate discovery | **IMPLEMENTED** | `core/reader_lexical_discovery.py` |
+| Reader RC-9 lexical candidate discovery | **IMPLEMENTED** | `core/reader_lexical_discovery.py` |
 | Dedicated/full autonomous Reader | **NOT IMPLEMENTED** | `dedicated_reader_core=false` |
 | Semantic/hybrid Reader runtime | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
 | Reader FTS / ANN / vector DB | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
@@ -53,7 +53,35 @@ The following completed milestones remain immutable evidence but do not authoriz
 | NLI neutral-filter v1 | `NLI_NEUTRAL_FILTER_GATE_FAILED` | filter rejected as Reader retrieval stage |
 | RRTIC-v1 | frozen typed inspection contract | no model/filter/reranker/provider added |
 
-Historical RC-9 and evaluation metrics remain available in repository history and their owning evidence records. V1 closure does not reinterpret those results.
+## RC-9 retained implementation evidence
+
+Historical RC-9 K=5 evidence remains immutable provenance:
+
+- Recall@5 `0.937500`;
+- Precision@5 `0.187500`;
+- MRR `0.895833`;
+- paired hard-negative rate@5 `1.000000`;
+- useful hits `15/16`;
+- hard-negative hits `4/4`;
+- classification `LEXICAL_BASELINE_EXPOSES_MEASURED_GAP`.
+
+These are retrieval measurements, not semantic/adjudication accuracy. V1 closure does not reinterpret those results.
+
+## Reader Retrieval Evaluation Surface v2 — retained frozen surface
+
+Final frozen v2 surface: 24 queries, 12 primary strata ×2, 6 candidates/query, 144/144 explicit qrels, judgment coverage `1.0`, K=5, composite SHA-256 `753cc550bc5fc47697aa6d7b1cda294bf11abaa08d515816e5e1db59eb526cdd`.
+
+Final unchanged RC-9 v2 control:
+
+- useful hits **42 / 48**;
+- Recall@5 **0.875000**;
+- fixed-slot Precision@5 **0.350000**;
+- judged precision-over-returned **0.355932**;
+- MRR **0.857639**;
+- hard-negative hits **38 / 48**;
+- hard-negative rate@5 **0.791667**.
+
+Classification: `LEXICAL_CONTROL_EXPOSES_MULTI_STRATUM_GAPS`.
 
 ## Authority firewall
 
@@ -62,6 +90,7 @@ EXTRACTED_PROPOSITION != verified fact
 Reader candidate != admitted evidence
 relation candidate != admitted evidence
 contradiction candidate != confirmed contradiction
+working-set coverage != comprehension proof
 summary != evidence
 cross-document link != Canon relation
 same-topic != same proposition
