@@ -41,6 +41,18 @@ reader_rc9_lexical_candidate_discovery = true
 dedicated_reader_core                  = false
 ```
 
+## Immutable Reader provenance retained under V1 closure
+
+The lifecycle overlay does not replace the historical Reader evidence chain:
+
+- RC-7 merged baseline: `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1` / PR #372 / post-merge CI `31572918731`;
+- RC-9 implementation baseline: `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` / PR #376 / post-merge CI `31594027040`;
+- retained RC-10 architecture decision: #377;
+- post-RC-10 reassessment: #382, which selected **Evaluation Surface v2** as an orchestration/evaluation-only path before later comparator work;
+- signed RRTIC architecture checkpoint: `76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` / PR #392 / post-merge CI `31771677028`.
+
+These identifiers are immutable provenance. They do not make any historical milestone current again and do not authorize a new runtime.
+
 ## Research/evaluation evidence is not implementation
 
 The following completed milestones remain immutable evidence but do not authorize runtime expansion:
@@ -94,7 +106,9 @@ working-set coverage != comprehension proof
 summary != evidence
 cross-document link != Canon relation
 same-topic != same proposition
+possible-same-claim != claim identity
 similarity signal != identity proof
+repetition across sources != corroboration
 retrieval match != evidence
 NLI label != proposition identity
 RRTIC suspicion != adjudicated relation
