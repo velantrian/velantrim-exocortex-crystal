@@ -71,9 +71,9 @@ class ReaderProductBridge:
     v0.1 executes exactly:
 
     1. one BROAD_READ pass over every non-DOCUMENT structural node;
-    2. at most one TARGETED_REREAD pass over regions left NEEDS_REVIEW;
-    3. fail-closed completion: any remaining UNREAD/NEEDS_REVIEW region degrades
-       the session and the result.
+    2. at most one TARGETED_REREAD pass over bridge-target regions left NEEDS_REVIEW;
+    3. fail-closed completion: any remaining session-visible UNREAD/NEEDS_REVIEW
+       region degrades the session and the result.
 
     No semantic work is invented here. ``executor`` owns the actual region
     processing and must return an explicit coverage outcome for every scheduled
@@ -108,6 +108,7 @@ class ReaderProductBridge:
         targets = tuple(
             node for node in self._structure.nodes if node.kind is not StructuralKind.DOCUMENT
         )
+        target_ids = tuple(node.node_id for node in targets)
         if not targets:
             self._session.degrade("reader_product_no_readable_regions")
             return self._result((), ())
@@ -115,7 +116,7 @@ class ReaderProductBridge:
         broad = self._reader.begin_pass(
             "product-broad-read",
             ReaderPassKind.BROAD_READ,
-            [node.node_id for node in targets],
+            target_ids,
             rationale="bounded product broad read",
         )
         try:
@@ -135,10 +136,11 @@ class ReaderProductBridge:
             self._session.degrade("reader_product_broad_read_failed")
             raise
 
+        coverage = self._session.coverage
         reread_nodes = tuple(
             self._structure.get(region_id)
-            for region_id, entry in self._session.coverage.items()
-            if entry.state is CoverageState.NEEDS_REVIEW
+            for region_id in target_ids
+            if coverage[region_id].state is CoverageState.NEEDS_REVIEW
         )
 
         if reread_nodes:
