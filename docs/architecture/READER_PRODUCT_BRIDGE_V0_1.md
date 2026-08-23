@@ -1,7 +1,7 @@
 # Crystal Reader Product Bridge v0.1
 
 **Status:** IMPLEMENTED IN DRAFT PR · NOT MERGED  
-**Scope:** bounded foreground orchestration over existing RC-1..RC-3  
+**Scope:** pass-bounded foreground orchestration over existing RC-1..RC-3  
 **Documentation impact:** `GITHUB_AND_NOTION`
 
 ## Purpose
@@ -55,13 +55,15 @@ The bridge receives an existing `ReaderSession`, an existing `DocumentStructural
 
 The executor is the only component allowed to claim that actual reading/processing happened. The bridge never converts scheduling into `PROCESSED` coverage by itself.
 
-The run is bounded to:
+The run is pass-bounded to:
 
 1. exactly one `BROAD_READ` pass over non-document structural nodes;
-2. at most one `TARGETED_REREAD` pass over nodes still marked `NEEDS_REVIEW`;
+2. at most one `TARGETED_REREAD` pass over bridge-target nodes still marked `NEEDS_REVIEW`;
 3. no recursive reread loop;
-4. `COMPLETED` only when no `UNREAD` or `NEEDS_REVIEW` coverage remains;
+4. `COMPLETED` only when no session-visible `UNREAD` or `NEEDS_REVIEW` coverage remains;
 5. otherwise `DEGRADED` with `reader_product_incomplete_after_bounded_reread`.
+
+This v0.1 contract bounds orchestration depth, not total input size or executor cost. `DocumentStructuralMap` remains caller-supplied and does not impose a target-count or character budget, and `RegionExecutor` remains caller-supplied. A future product resource budget (for example max targets, max reread tasks or character ceilings) would be a separate explicitly reviewed stage; it is not implied by the word `bounded` here.
 
 Existing RC-3 transition validation remains authoritative. Ambiguous or unsupported structure cannot be silently marked processed.
 
@@ -98,4 +100,4 @@ public_reader_cli = false
 reader_model_provider_integration = false
 ```
 
-A later stage may separately decide whether to add a local file-ingestion/CLI surface or an opt-in semantic executor. This v0.1 does not authorize either.
+A later stage may separately decide whether to add a local file-ingestion/CLI surface, an opt-in semantic executor, or explicit product resource budgets. This v0.1 does not authorize any of them.
