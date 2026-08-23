@@ -116,13 +116,15 @@ reader_core_rc4_proposition_extraction = true
 reader_core_rc5_relation_candidates = true
 reader_core_rc6_long_context_strategy = true
 reader_core_rc7_cross_document_links = true
-bounded_reader_product_bridge_v0_1 = true   # on PR #455 branch; not authoritative main until merged
+bounded_reader_product_bridge_v0_1 = true   # merged in PR #455; current main since 2026-08-23
 dedicated_reader_core = false
 ```
 
-### Reader Product Bridge v0.1 — PR #455 branch
+### Reader Product Bridge v0.1 — MERGED / IN MAIN
 
 **Start:** `core/reader_product_bridge.py`, `tests/test_reader_product_bridge.py`, `docs/architecture/READER_PRODUCT_BRIDGE_V0_1.md`.
+
+PR #455 merged reviewed head `5636e312305369513ac3541761d339c27c3010b3` as signed merge commit `06e81edc159838b4129b41284d701823ce49cff8`. Final exact-head CI #1787 / run `32643913034` completed 9/9 SUCCESS before merge.
 
 The bridge composes existing RC-1..RC-3 primitives into a foreground product-style run with exactly one `BROAD_READ` and at most one `TARGETED_REREAD`. Remaining session-visible `UNREAD`/`NEEDS_REVIEW` coverage fails closed to `DEGRADED`.
 
