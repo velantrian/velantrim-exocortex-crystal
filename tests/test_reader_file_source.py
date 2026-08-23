@@ -110,9 +110,10 @@ def test_size_limit_checks_before_and_after_read(tmp_path: Path, monkeypatch):
         reader_file_source.load_reader_file(path, objective="read", max_source_bytes=3)
 
     original_stat = Path.stat
+    target = path.resolve()
 
     def fake_stat(self, *args, **kwargs):
-        if self == path.resolve():
+        if self == target:
             return SimpleNamespace(st_size=1)
         return original_stat(self, *args, **kwargs)
 
