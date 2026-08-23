@@ -220,6 +220,82 @@ def test_bridge_rejects_wrong_versions_closed_sessions_and_non_callable_executor
         bridge.run(object())  # type: ignore[arg-type]
 
 
+def test_bridge_constructor_rejects_invalid_runtime_types():
+    source = _source()
+    with pytest.raises(ValueError, match="ReaderSession"):
+        ReaderProductBridge(object(), _structure(source))  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="DocumentStructuralMap"):
+        ReaderProductBridge(
+            ReaderSession("typed", source, "read"),
+            object(),  # type: ignore[arg-type]
+        )
+
+
+def test_run_rejects_session_that_closed_after_bridge_creation():
+    bridge = _bridge()
+    bridge.reader.session.degrade("closed externally")
+
+    with pytest.raises(ValueError, match="OPEN"):
+        bridge.run(lambda kind, node, before: RegionReadResult(CoverageState.PROCESSED))
+
+
+def test_document_only_structure_degrades_without_executor_call():
+    source = _source()
+    structure = DocumentStructuralMap(
+        source,
+        [StructuralNode("doc", StructuralKind.DOCUMENT, _loc(source, 0, 300), 0)],
+    )
+    bridge = ReaderProductBridge(ReaderSession("doc-only", source, "read"), structure)
+    calls = 0
+
+    def executor(kind, node, before):
+        nonlocal calls
+        calls += 1
+        return RegionReadResult(CoverageState.PROCESSED)
+
+    result = bridge.run(executor)
+
+    assert result.status is ReaderProductStatus.DEGRADED
+    assert result.session.state is ReaderSessionState.DEGRADED
+    assert result.session.state_reason == "reader_product_no_readable_regions"
+    assert result.passes == ()
+    assert calls == 0
+
+
+def test_targeted_reread_failure_degrades_and_propagates_without_hidden_retry():
+    bridge = _bridge()
+    calls: list[tuple[ReaderPassKind, str]] = []
+
+    def executor(kind, node, before):
+        calls.append((kind, node.node_id))
+        if kind is ReaderPassKind.TARGETED_REREAD:
+            raise RuntimeError("reread unavailable")
+        if node.node_id == "section-b":
+            return RegionReadResult(CoverageState.NEEDS_REVIEW, "needs reread")
+        return RegionReadResult(CoverageState.PROCESSED)
+
+    with pytest.raises(RuntimeError, match="reread unavailable"):
+        bridge.run(executor)
+
+    assert bridge.reader.session.state is ReaderSessionState.DEGRADED
+    assert bridge.reader.session.state_reason == "reader_product_targeted_reread_failed"
+    assert len(bridge.reader.records) == 2
+    assert bridge.reader.records[1].kind is ReaderPassKind.TARGETED_REREAD
+    assert bridge.reader.records[1].state is ReaderPassState.DEGRADED
+    assert sum(kind is ReaderPassKind.TARGETED_REREAD for kind, _ in calls) == 1
+
+
+def test_executor_must_return_region_read_result():
+    bridge = _bridge()
+
+    with pytest.raises(ValueError, match="RegionReadResult"):
+        bridge.run(lambda kind, node, before: object())  # type: ignore[return-value]
+
+    assert bridge.reader.session.state is ReaderSessionState.DEGRADED
+    assert bridge.reader.session.state_reason == "reader_product_broad_read_failed"
+    assert bridge.reader.records[0].state is ReaderPassState.DEGRADED
+
+
 def test_region_result_validation():
     with pytest.raises(ValueError, match="CoverageState"):
         RegionReadResult("PROCESSED")  # type: ignore[arg-type]
