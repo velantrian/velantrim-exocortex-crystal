@@ -6,7 +6,14 @@ import inspect
 import pytest
 
 import core.reader_product_bridge as reader_product_bridge
-from core.reader_core import CoverageState, ReaderSession, ReaderSessionState, SourceLocator, SourceVersion
+from core.reader_core import (
+    CoverageEntry,
+    CoverageState,
+    ReaderSession,
+    ReaderSessionState,
+    SourceLocator,
+    SourceVersion,
+)
 from core.reader_passes import ReaderPassKind, ReaderPassState
 from core.reader_product_bridge import (
     ReaderProductBridge,
@@ -120,6 +127,38 @@ def test_remaining_gap_degrades_after_exactly_one_reread_round():
     assert result.unresolved_node_ids == ("section-b",)
     assert reread_calls == 1
     assert len(result.passes) == 2
+
+
+def test_preexisting_out_of_map_gap_degrades_without_hidden_reread_or_crash():
+    source = _source()
+    session = ReaderSession("product-session", source, "understand document")
+    session.set_coverage(
+        CoverageEntry(
+            region_id="legacy-region",
+            state=CoverageState.NEEDS_REVIEW,
+            locator=_loc(source, 291, 299),
+            reason="pre-existing unresolved region",
+        )
+    )
+    bridge = ReaderProductBridge(session, _structure(source))
+    calls: list[tuple[ReaderPassKind, str]] = []
+
+    def executor(kind, node, before):
+        calls.append((kind, node.node_id))
+        return RegionReadResult(CoverageState.PROCESSED)
+
+    result = bridge.run(executor)
+
+    assert result.status is ReaderProductStatus.DEGRADED
+    assert result.session.state is ReaderSessionState.DEGRADED
+    assert result.session.state_reason == "reader_product_incomplete_after_bounded_reread"
+    assert result.reread_node_ids == ()
+    assert result.unresolved_node_ids == ("legacy-region",)
+    assert [record.kind for record in result.passes] == [ReaderPassKind.BROAD_READ]
+    assert calls == [
+        (ReaderPassKind.BROAD_READ, "section-a"),
+        (ReaderPassKind.BROAD_READ, "section-b"),
+    ]
 
 
 def test_unresolved_structure_cannot_be_silently_marked_processed():
