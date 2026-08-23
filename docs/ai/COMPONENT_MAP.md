@@ -116,8 +116,27 @@ reader_core_rc4_proposition_extraction = true
 reader_core_rc5_relation_candidates = true
 reader_core_rc6_long_context_strategy = true
 reader_core_rc7_cross_document_links = true
+bounded_reader_product_bridge_v0_1 = true   # on PR #455 branch; not authoritative main until merged
 dedicated_reader_core = false
 ```
+
+### Reader Product Bridge v0.1 — PR #455 branch
+
+**Start:** `core/reader_product_bridge.py`, `tests/test_reader_product_bridge.py`, `docs/architecture/READER_PRODUCT_BRIDGE_V0_1.md`.
+
+The bridge composes existing RC-1..RC-3 primitives into a foreground product-style run with exactly one `BROAD_READ` and at most one `TARGETED_REREAD`. Remaining session-visible `UNREAD`/`NEEDS_REVIEW` coverage fails closed to `DEGRADED`.
+
+Its boundedness is **pass-bounded orchestration depth**. v0.1 intentionally does not claim a target-count, character, time, token or executor-cost budget; such resource ceilings require a separate reviewed stage.
+
+```text
+scheduled != processed
+coverage != comprehension proof
+Reader product result != evidence admission
+Reader product result != Canon
+merge != production authorization
+```
+
+It adds no parser/file ingestion, LLM/provider, automatic extraction, semantic/vector retrieval, public CLI/API, persistence, background worker, TruthGate/Guardian/memory/Canon write path, or production authorization.
 
 No automatic Reader parser/OCR/multimodal engine, semantic/hybrid/vector Reader runtime, automatic semantic equivalence/entity resolution, durable Reader vector schema or dedicated/full autonomous Reader exists.
 
