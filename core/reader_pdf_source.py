@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
+from io import BytesIO
 from pathlib import Path
 from typing import Optional
 
@@ -29,12 +30,12 @@ def _positive_limit(value: int, field_name: str) -> int:
     return value
 
 
-def _load_pdf_reader(path: Path):
+def _load_pdf_reader(raw: bytes):
     try:
         from pypdf import PdfReader
-    except ImportError as exc:  # pragma: no cover - exercised through import blocking
+    except ImportError as exc:
         raise RuntimeError("PDF Reader support requires the optional 'pdf' dependency") from exc
-    return PdfReader(str(path))
+    return PdfReader(BytesIO(raw))
 
 
 @dataclass(frozen=True)
@@ -125,7 +126,7 @@ def load_reader_pdf(
     )
 
     try:
-        reader = _load_pdf_reader(resolved)
+        reader = _load_pdf_reader(raw)
     except Exception as exc:
         if isinstance(exc, RuntimeError):
             raise
