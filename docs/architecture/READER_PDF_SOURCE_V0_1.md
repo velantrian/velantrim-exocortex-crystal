@@ -8,8 +8,10 @@
 ```text
 local .pdf
    ↓ bounded binary read
-exact PDF-byte SHA-256 + file URI
-   ↓ optional low-level pypdf extraction
+exact captured PDF-byte snapshot
+   ↓ SHA-256 + file URI
+same captured bytes → optional low-level pypdf extraction
+   ↓
 page text + pdf:page:N locators
    ↓
 DocumentStructuralMap
@@ -35,7 +37,7 @@ These limits do **not** claim a token, time, provider-cost, semantic-executor or
 
 ## Source identity and replay
 
-PDF source identity is SHA-256 of the exact PDF bytes, not of extracted text. This avoids claiming that extraction output is the original binary source.
+PDF source identity is SHA-256 of the exact captured PDF bytes, not of extracted text. The same captured byte snapshot is passed to `pypdf`; the parser does not reopen the source path after identity is established. This prevents a file-change race from pairing one PDF hash with text extracted from different bytes.
 
 Because character offsets in extracted text are not offsets into PDF bytes, v0.1 does not invent exact spans. Pages use explicit structural locators:
 
