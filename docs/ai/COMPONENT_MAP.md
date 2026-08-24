@@ -117,6 +117,7 @@ reader_core_rc5_relation_candidates = true
 reader_core_rc6_long_context_strategy = true
 reader_core_rc7_cross_document_links = true
 bounded_reader_product_bridge_v0_1 = true   # merged in PR #455; current main since 2026-08-23
+reader_file_source_v0_1 = true              # branch-local candidate; not authoritative main until merged
 dedicated_reader_core = false
 ```
 
@@ -138,7 +139,23 @@ Reader product result != Canon
 merge != production authorization
 ```
 
-It adds no parser/file ingestion, LLM/provider, automatic extraction, semantic/vector retrieval, public CLI/API, persistence, background worker, TruthGate/Guardian/memory/Canon write path, or production authorization.
+### Reader File Source Bridge v0.1 — BRANCH CANDIDATE
+
+**Start:** `core/reader_file_source.py`, `tests/test_reader_file_source.py`, `docs/architecture/READER_FILE_SOURCE_V0_1.md`.
+
+This branch adds a read-only local-file preparation path for UTF-8 `.txt` and `.md`. It creates exact source identity, deterministic blank-line paragraph spans, a `DocumentStructuralMap`, `ReaderSession`, and the existing `ReaderProductBridge`. Source text is retained only in the foreground prepared object for exact span replay by the caller-supplied executor.
+
+The file-load ceiling is `2,000,000` bytes and is checked before and after the read. This is only a local source-load bound; it does not claim an executor/token/time/provider-cost budget.
+
+```text
+file text != admitted evidence
+paragraph region != claim
+WP4 ingest adapter != Reader parser authority
+local file load != memory admission
+Reader product result != Canon
+```
+
+The module imports no WP4 knowledge-ingest adapter and no ingest, TruthGate, Guardian, memory, pipeline, embedding, provider or remote-egress authority. PDF/EPUB/DOCX, OCR/layout, semantic execution, CLI/API, persistence and production authorization remain separate stages.
 
 No automatic Reader parser/OCR/multimodal engine, semantic/hybrid/vector Reader runtime, automatic semantic equivalence/entity resolution, durable Reader vector schema or dedicated/full autonomous Reader exists.
 
