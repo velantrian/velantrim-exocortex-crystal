@@ -1,6 +1,8 @@
 # Crystal Reader PDF Source Bridge v0.1
 
-**Status:** DRAFT IMPLEMENTATION · NOT MERGED  
+**Status:** MERGED / IN MAIN · NOT RUNTIME-AUTHORIZED  
+**Merged:** PR #458 · exact reviewed head `5f3aeed2830966b55605e7a79ef2acc48d94b490` · signed merge `ca1d0e2b9b1948c3cb1502a8cd029d82922d0961`  
+**Validation:** exact-head CI #1803 / run `32725224598` — 9/9 SUCCESS; bounded review `5007665602` — PASS, P0=0/P1=0  
 **Scope:** local read-side PDF preparation for the existing Reader Product Bridge
 
 ## Path
@@ -81,6 +83,12 @@ merge != production authorization
 ```
 
 No TruthGate, Guardian, memory, ingest, pipeline, embedding, model/provider, remote-egress, persistence, vector retrieval or background-worker integration is added.
+
+## Merge evidence
+
+PR #458 was guarded-merged from exact reviewed head `5f3aeed2830966b55605e7a79ef2acc48d94b490` onto unchanged tested base `fea1971ebf2420df8c677a1d0a4c74c18700d095`. Final pre-merge exact-head CI #1803 / run `32725224598` completed 9/9 SUCCESS. Fresh bounded review `5007665602` found no remaining P0/P1 blocker. The resulting merge commit `ca1d0e2b9b1948c3cb1502a8cd029d82922d0961` is signed and verified.
+
+No separate post-merge CI is claimed here unless independently observed. Merge records repository lifecycle state only; it does not authorize production/runtime activation, evidence admission, Canon writes, OCR, DOCX/EPUB, or semantic/model execution.
 
 ## Explicit non-goals
 
