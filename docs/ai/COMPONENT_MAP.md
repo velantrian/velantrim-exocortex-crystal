@@ -116,8 +116,9 @@ reader_core_rc4_proposition_extraction = true
 reader_core_rc5_relation_candidates = true
 reader_core_rc6_long_context_strategy = true
 reader_core_rc7_cross_document_links = true
-bounded_reader_product_bridge_v0_1 = true   # merged in PR #455; current main since 2026-08-23
-reader_file_source_v0_1 = true              # branch-local candidate; not authoritative main until merged
+bounded_reader_product_bridge_v0_1 = true   # merged PR #455
+reader_file_source_v0_1 = true              # merged PR #457; current main since 2026-08-24
+reader_pdf_source_v0_1 = false              # branch candidate; not authoritative until merged
 dedicated_reader_core = false
 ```
 
@@ -139,13 +140,13 @@ Reader product result != Canon
 merge != production authorization
 ```
 
-### Reader File Source Bridge v0.1 — BRANCH CANDIDATE
+### Reader File Source Bridge v0.1 — MERGED / IN MAIN
 
 **Start:** `core/reader_file_source.py`, `tests/test_reader_file_source.py`, `docs/architecture/READER_FILE_SOURCE_V0_1.md`.
 
-This branch adds a read-only local-file preparation path for UTF-8 `.txt` and `.md`. It creates exact source identity, deterministic blank-line paragraph spans, a `DocumentStructuralMap`, `ReaderSession`, and the existing `ReaderProductBridge`. Source text is retained only in the foreground prepared object for exact span replay by the caller-supplied executor.
+PR #457 merged reviewed head `e8e54d4f1d448b53bf711a7e029e2b376e174304` as signed merge commit `fea1971ebf2420df8c677a1d0a4c74c18700d095`. Exact-head CI #1793 / run `32679810125` completed 9/9 SUCCESS before merge.
 
-The file-load ceiling is `2,000,000` bytes and is checked before and after the read. This is only a local source-load bound; it does not claim an executor/token/time/provider-cost budget.
+The read-only local-file preparation path supports UTF-8 `.txt` and `.md`, exact source identity, deterministic blank-line paragraph spans, a `DocumentStructuralMap`, `ReaderSession`, and the existing `ReaderProductBridge`. The local file-load ceiling is `2,000,000` bytes.
 
 ```text
 file text != admitted evidence
@@ -155,9 +156,22 @@ local file load != memory admission
 Reader product result != Canon
 ```
 
-The module imports no WP4 knowledge-ingest adapter and no ingest, TruthGate, Guardian, memory, pipeline, embedding, provider or remote-egress authority. PDF/EPUB/DOCX, OCR/layout, semantic execution, CLI/API, persistence and production authorization remain separate stages.
+### Reader PDF Source Bridge v0.1 — BRANCH CANDIDATE
 
-No automatic Reader parser/OCR/multimodal engine, semantic/hybrid/vector Reader runtime, automatic semantic equivalence/entity resolution, durable Reader vector schema or dedicated/full autonomous Reader exists.
+**Start:** `core/reader_pdf_source.py`, `tests/test_reader_pdf_source.py`, `docs/architecture/READER_PDF_SOURCE_V0_1.md`.
+
+This branch adds local PDF preparation with exact binary SHA-256 identity and page-level structural locators. It uses the optional low-level `pypdf` dependency directly but does not import the WP4 knowledge-ingest adapters. Bounded preparation ceilings cover PDF bytes, page count and extracted characters. Encrypted, image-only, over-limit and extraction-failing PDFs fail closed.
+
+```text
+same parser library != same ingest authority
+PDF extracted text != admitted evidence
+page locator != claim
+Reader product result != Canon
+```
+
+OCR/layout reconstruction, DOCX/EPUB, semantic/model execution, vector retrieval, CLI/API, persistence/background workers and production authorization remain separate stages.
+
+No automatic Reader OCR/multimodal engine, semantic/hybrid/vector Reader runtime, automatic semantic equivalence/entity resolution, durable Reader vector schema or dedicated/full autonomous Reader exists.
 
 ## 9. Documentation / grant governance
 
