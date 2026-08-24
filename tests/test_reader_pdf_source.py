@@ -35,7 +35,7 @@ def _pdf(tmp_path: Path, payload: bytes = b"%PDF-1.7\nfixture") -> Path:
 
 def _reader(monkeypatch, pages, *, encrypted=False):
     fake = SimpleNamespace(pages=list(pages), is_encrypted=encrypted)
-    monkeypatch.setattr(reader_pdf_source, "_load_pdf_reader", lambda path: fake)
+    monkeypatch.setattr(reader_pdf_source, "_load_pdf_reader", lambda raw: fake)
     return fake
 
 
@@ -147,13 +147,36 @@ def test_pdf_byte_ceiling_is_checked_before_and_during_read(tmp_path, monkeypatc
         reader_pdf_source.load_reader_pdf(path, objective="read", max_pdf_bytes=6)
 
 
-def test_low_level_pdf_loader_success_and_missing_dependency(tmp_path, monkeypatch):
-    path = _pdf(tmp_path)
+def test_parser_is_bound_to_exact_captured_bytes(tmp_path, monkeypatch):
+    original = b"%PDF-1.7\noriginal-snapshot"
+    path = _pdf(tmp_path, original)
+    captured = []
+    fake = SimpleNamespace(pages=[_Page("snapshot text")], is_encrypted=False)
+
+    def fake_loader(raw):
+        captured.append(raw)
+        path.write_bytes(b"%PDF-1.7\nchanged-after-read")
+        return fake
+
+    monkeypatch.setattr(reader_pdf_source, "_load_pdf_reader", fake_loader)
+    prepared = reader_pdf_source.load_reader_pdf(path, objective="read")
+
+    assert captured == [original]
+    assert prepared.source.source_sha256 == hashlib.sha256(original).hexdigest()
+    assert prepared.text_for(prepared.structure.nodes[1]) == "snapshot text"
+
+
+def test_low_level_pdf_loader_success_and_missing_dependency(monkeypatch):
+    raw = b"%PDF-1.7\nfixture"
     fake_module = ModuleType("pypdf")
-    fake_module.PdfReader = lambda value: ("reader", value)
+
+    def fake_pdf_reader(stream):
+        return ("reader", stream.read())
+
+    fake_module.PdfReader = fake_pdf_reader
     monkeypatch.setitem(sys.modules, "pypdf", fake_module)
 
-    assert reader_pdf_source._load_pdf_reader(path) == ("reader", str(path))
+    assert reader_pdf_source._load_pdf_reader(raw) == ("reader", raw)
 
     monkeypatch.delitem(sys.modules, "pypdf", raising=False)
     original_import = builtins.__import__
@@ -165,16 +188,16 @@ def test_low_level_pdf_loader_success_and_missing_dependency(tmp_path, monkeypat
 
     monkeypatch.setattr(builtins, "__import__", blocked_import)
     with pytest.raises(RuntimeError, match="optional 'pdf' dependency"):
-        reader_pdf_source._load_pdf_reader(path)
+        reader_pdf_source._load_pdf_reader(raw)
 
 
 def test_parser_encryption_page_and_character_failures_are_closed(tmp_path, monkeypatch):
     path = _pdf(tmp_path)
-    monkeypatch.setattr(reader_pdf_source, "_load_pdf_reader", lambda path: (_ for _ in ()).throw(RuntimeError("missing pdf dependency")))
+    monkeypatch.setattr(reader_pdf_source, "_load_pdf_reader", lambda raw: (_ for _ in ()).throw(RuntimeError("missing pdf dependency")))
     with pytest.raises(RuntimeError, match="missing pdf dependency"):
         reader_pdf_source.load_reader_pdf(path, objective="read")
 
-    monkeypatch.setattr(reader_pdf_source, "_load_pdf_reader", lambda path: (_ for _ in ()).throw(Exception("bad")))
+    monkeypatch.setattr(reader_pdf_source, "_load_pdf_reader", lambda raw: (_ for _ in ()).throw(Exception("bad")))
     with pytest.raises(ValueError, match="could not open"):
         reader_pdf_source.load_reader_pdf(path, objective="read")
 
