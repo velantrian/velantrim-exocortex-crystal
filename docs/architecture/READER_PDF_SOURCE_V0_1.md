@@ -31,9 +31,9 @@ v0.1 has three independent local preparation ceilings:
 - `DEFAULT_MAX_PDF_PAGES = 512`;
 - `DEFAULT_MAX_EXTRACTED_CHARS = 2_000_000`.
 
-The byte ceiling is enforced before and during the read. Page count is checked before extraction. Extracted characters are accumulated page-by-page and fail closed when the ceiling is crossed.
+The byte ceiling is enforced before and during the read. Page count is checked before the page collection is materialized or page text extraction begins. Extracted characters are accumulated page-by-page and fail closed when the ceiling is crossed.
 
-These limits do **not** claim a token, time, provider-cost, semantic-executor or total Reader-work budget.
+These limits do **not** claim a token, time, provider-cost, semantic-executor, parser-internal decompression/transient-memory, or total Reader-work budget.
 
 ## Source identity and replay
 
