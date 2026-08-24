@@ -172,3 +172,9 @@ Reader product result != Canon
 OCR/layout reconstruction, DOCX/EPUB, semantic/model execution, vector retrieval, CLI/API, persistence/background workers and production authorization remain separate stages.
 
 No automatic Reader OCR/multimodal engine, semantic/hybrid/vector Reader runtime, automatic semantic equivalence/entity resolution, durable Reader vector schema or dedicated/full autonomous Reader exists.
+
+## 9. Documentation / grant governance
+
+**Start:** `AGENTS.md`, `docs/DOCUMENTATION_SYNC_PROTOCOL.md`, `docs/STATUS.md`, `docs/IMPLEMENTATION_STATUS.md`, `ROADMAP.md`, `docs/ai/WORK_LOG.md`.
+
+NLnet remains `submitted / under review / not awarded`. Issues #155, #165 and #214 remain separate scopes. Notion is synchronized only after exact post-merge evidence.
