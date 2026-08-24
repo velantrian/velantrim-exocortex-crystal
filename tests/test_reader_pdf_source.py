@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import ast
+import builtins
 import hashlib
 import inspect
+import sys
 from pathlib import Path
-from types import SimpleNamespace
+from types import ModuleType, SimpleNamespace
 
 import pytest
 
@@ -145,8 +147,33 @@ def test_pdf_byte_ceiling_is_checked_before_and_during_read(tmp_path, monkeypatc
         reader_pdf_source.load_reader_pdf(path, objective="read", max_pdf_bytes=6)
 
 
+def test_low_level_pdf_loader_success_and_missing_dependency(tmp_path, monkeypatch):
+    path = _pdf(tmp_path)
+    fake_module = ModuleType("pypdf")
+    fake_module.PdfReader = lambda value: ("reader", value)
+    monkeypatch.setitem(sys.modules, "pypdf", fake_module)
+
+    assert reader_pdf_source._load_pdf_reader(path) == ("reader", str(path))
+
+    monkeypatch.delitem(sys.modules, "pypdf", raising=False)
+    original_import = builtins.__import__
+
+    def blocked_import(name, *args, **kwargs):
+        if name == "pypdf":
+            raise ImportError("blocked for test")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", blocked_import)
+    with pytest.raises(RuntimeError, match="optional 'pdf' dependency"):
+        reader_pdf_source._load_pdf_reader(path)
+
+
 def test_parser_encryption_page_and_character_failures_are_closed(tmp_path, monkeypatch):
     path = _pdf(tmp_path)
+    monkeypatch.setattr(reader_pdf_source, "_load_pdf_reader", lambda path: (_ for _ in ()).throw(RuntimeError("missing pdf dependency")))
+    with pytest.raises(RuntimeError, match="missing pdf dependency"):
+        reader_pdf_source.load_reader_pdf(path, objective="read")
+
     monkeypatch.setattr(reader_pdf_source, "_load_pdf_reader", lambda path: (_ for _ in ()).throw(Exception("bad")))
     with pytest.raises(ValueError, match="could not open"):
         reader_pdf_source.load_reader_pdf(path, objective="read")
