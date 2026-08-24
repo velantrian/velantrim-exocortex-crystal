@@ -118,7 +118,7 @@ reader_core_rc6_long_context_strategy = true
 reader_core_rc7_cross_document_links = true
 bounded_reader_product_bridge_v0_1 = true   # merged PR #455
 reader_file_source_v0_1 = true              # merged PR #457; current main since 2026-08-24
-reader_pdf_source_v0_1 = false              # branch candidate; not authoritative until merged
+reader_pdf_source_v0_1 = true               # merged PR #458; in main since 2026-08-24
 dedicated_reader_core = false
 ```
 
@@ -156,20 +156,23 @@ local file load != memory admission
 Reader product result != Canon
 ```
 
-### Reader PDF Source Bridge v0.1 — BRANCH CANDIDATE
+### Reader PDF Source Bridge v0.1 — MERGED / IN MAIN
 
 **Start:** `core/reader_pdf_source.py`, `tests/test_reader_pdf_source.py`, `docs/architecture/READER_PDF_SOURCE_V0_1.md`.
 
-This branch adds local PDF preparation with exact binary SHA-256 identity and page-level structural locators. It uses the optional low-level `pypdf` dependency directly but does not import the WP4 knowledge-ingest adapters. Bounded preparation ceilings cover PDF bytes, page count and extracted characters. Encrypted, image-only, over-limit and extraction-failing PDFs fail closed.
+PR #458 merged exact reviewed head `5f3aeed2830966b55605e7a79ef2acc48d94b490` as signed merge commit `ca1d0e2b9b1948c3cb1502a8cd029d82922d0961`. Final pre-merge exact-head CI #1803 / run `32725224598` completed 9/9 SUCCESS; bounded review `5007665602` found no remaining P0/P1 blocker.
+
+The merged Reader PDF path adds local PDF preparation with exact binary SHA-256 identity and page-level structural locators. The exact captured byte snapshot used for identity is also passed to low-level `pypdf`, so the parser does not reopen the path after identity is established. Page count is enforced before page collection materialization/extraction. It uses the optional low-level `pypdf` dependency directly but does not import the WP4 knowledge-ingest adapters. Bounded preparation ceilings cover PDF bytes, page count and extracted characters. Encrypted, image-only, over-limit and extraction-failing PDFs fail closed.
 
 ```text
 same parser library != same ingest authority
 PDF extracted text != admitted evidence
 page locator != claim
 Reader product result != Canon
+merge != production authorization
 ```
 
-OCR/layout reconstruction, DOCX/EPUB, semantic/model execution, vector retrieval, CLI/API, persistence/background workers and production authorization remain separate stages.
+OCR/layout reconstruction, DOCX/EPUB, semantic/model execution, vector retrieval, CLI/API, persistence/background workers and production authorization remain separate stages. No separate post-merge CI is claimed here unless independently observed.
 
 No automatic Reader OCR/multimodal engine, semantic/hybrid/vector Reader runtime, automatic semantic equivalence/entity resolution, durable Reader vector schema or dedicated/full autonomous Reader exists.
 
