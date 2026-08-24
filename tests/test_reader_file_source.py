@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 import inspect
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
@@ -102,7 +101,7 @@ def test_missing_directory_and_unsupported_sources_fail_closed(tmp_path: Path):
         reader_file_source.load_reader_file(unsupported, objective="read")
 
 
-def test_size_limit_checks_before_and_after_read(tmp_path: Path, monkeypatch):
+def test_size_limit_checks_before_and_during_read(tmp_path: Path, monkeypatch):
     path = tmp_path / "large.txt"
     path.write_text("abcdef", encoding="utf-8")
 
@@ -113,9 +112,12 @@ def test_size_limit_checks_before_and_after_read(tmp_path: Path, monkeypatch):
     target = path.resolve()
 
     def fake_stat(self, *args, **kwargs):
+        result = original_stat(self, *args, **kwargs)
         if self == target:
-            return SimpleNamespace(st_size=1)
-        return original_stat(self, *args, **kwargs)
+            values = list(result)
+            values[6] = 1
+            return type(result)(values)
+        return result
 
     monkeypatch.setattr(Path, "stat", fake_stat)
     with pytest.raises(ValueError, match="exceeds max_source_bytes"):

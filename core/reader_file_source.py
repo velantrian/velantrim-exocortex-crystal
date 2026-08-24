@@ -98,7 +98,8 @@ def load_reader_file(
     if resolved.stat().st_size > limit:
         raise ValueError("Reader source exceeds max_source_bytes")
 
-    raw = resolved.read_bytes()
+    with resolved.open("rb") as handle:
+        raw = handle.read(limit + 1)
     if len(raw) > limit:
         raise ValueError("Reader source exceeds max_source_bytes")
     try:
