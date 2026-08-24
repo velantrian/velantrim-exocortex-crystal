@@ -134,11 +134,12 @@ def load_reader_pdf(
 
     if getattr(reader, "is_encrypted", False):
         raise ValueError("Encrypted PDFs are not supported by Reader PDF v0.1")
-    pages = tuple(reader.pages)
-    if not pages:
+    page_count = len(reader.pages)
+    if page_count == 0:
         raise ValueError("Reader PDF source must contain at least one page")
-    if len(pages) > page_limit:
+    if page_count > page_limit:
         raise ValueError("Reader PDF source exceeds max_pages")
+    pages = tuple(reader.pages)
 
     extracted: list[str] = []
     total_chars = 0
