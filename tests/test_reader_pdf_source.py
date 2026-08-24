@@ -27,6 +27,17 @@ class _Page:
         return self.text
 
 
+class _NonIterablePages:
+    def __init__(self, count):
+        self.count = count
+
+    def __len__(self):
+        return self.count
+
+    def __iter__(self):
+        raise AssertionError("over-limit page collection must not be materialized")
+
+
 def _pdf(tmp_path: Path, payload: bytes = b"%PDF-1.7\nfixture") -> Path:
     path = tmp_path / "book.pdf"
     path.write_bytes(payload)
@@ -132,8 +143,10 @@ def test_pdf_byte_ceiling_is_checked_before_and_during_read(tmp_path, monkeypatc
     class _Growing:
         def __enter__(self):
             return self
+
         def __exit__(self, *args):
             return False
+
         def read(self, size=-1):
             return b"%PDF-123456"
 
@@ -189,6 +202,15 @@ def test_low_level_pdf_loader_success_and_missing_dependency(monkeypatch):
     monkeypatch.setattr(builtins, "__import__", blocked_import)
     with pytest.raises(RuntimeError, match="optional 'pdf' dependency"):
         reader_pdf_source._load_pdf_reader(raw)
+
+
+def test_page_limit_is_checked_before_page_materialization(tmp_path, monkeypatch):
+    path = _pdf(tmp_path)
+    fake = SimpleNamespace(pages=_NonIterablePages(513), is_encrypted=False)
+    monkeypatch.setattr(reader_pdf_source, "_load_pdf_reader", lambda raw: fake)
+
+    with pytest.raises(ValueError, match="max_pages"):
+        reader_pdf_source.load_reader_pdf(path, objective="read", max_pages=512)
 
 
 def test_parser_encryption_page_and_character_failures_are_closed(tmp_path, monkeypatch):
