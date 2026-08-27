@@ -248,17 +248,28 @@ def _valid_source_location(span: Dict[str, Any]) -> bool:
     return bool(span.get("chunk_id") or span.get("section"))
 
 
-def valid_evidence_for_grounding(fact_id: str) -> List[Dict[str, Any]]:
-    """Replayable evidence eligible for grant-profile strict factual grounding.
+_EXPECTED_CLAIM_UNSET = object()
+
+
+def valid_evidence_for_grounding(
+    fact_id: str,
+    *,
+    expected_claim: Any = _EXPECTED_CLAIM_UNSET,
+) -> List[Dict[str, Any]]:
+    """Replayable evidence eligible for strict factual grounding.
 
     A source label is not enough: require a non-blank URI, sealed source digest,
-    current-claim binding, and a bounded source location. This is a read predicate;
-    it never promotes a fact or fabricates legacy spans.
+    binding to the expected grounding claim when supplied (otherwise the stored L1
+    claim for compatibility), and a bounded source location. This is a read
+    predicate; it never promotes a fact or fabricates legacy spans.
     """
     fact = memory.get_fact(fact_id)
     if fact is None or fact.get("restricted"):
         return []
-    claim_digest = sha256(fact.get("claim", ""))
+    claim = fact.get("claim", "") if expected_claim is _EXPECTED_CLAIM_UNSET else expected_claim
+    if not isinstance(claim, str) or not claim:
+        return []
+    claim_digest = sha256(claim)
     valid: List[Dict[str, Any]] = []
     for span in evidence_for(fact_id):
         uri = span.get("source_uri")
@@ -275,8 +286,12 @@ def valid_evidence_for_grounding(fact_id: str) -> List[Dict[str, Any]]:
     return valid
 
 
-def has_valid_evidence_for_grounding(fact_id: str) -> bool:
-    return bool(valid_evidence_for_grounding(fact_id))
+def has_valid_evidence_for_grounding(
+    fact_id: str,
+    *,
+    expected_claim: Any = _EXPECTED_CLAIM_UNSET,
+) -> bool:
+    return bool(valid_evidence_for_grounding(fact_id, expected_claim=expected_claim))
 
 
 def lineage_metrics(fact_ids: List[str]) -> Dict[str, float | int]:

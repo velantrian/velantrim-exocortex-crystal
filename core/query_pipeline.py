@@ -342,7 +342,9 @@ def query(
     facts = [
         f for f in facts
         if f.get("truth_status") != "VERIFIED"
-        or has_valid_evidence_for_grounding(f["fact_id"])
+        or has_valid_evidence_for_grounding(
+            f["fact_id"], expected_claim=f.get("claim")
+        )
     ]
     if verified_before and not any(f.get("truth_status") == "VERIFIED" for f in facts):
         return _blocked(

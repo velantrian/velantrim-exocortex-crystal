@@ -76,3 +76,143 @@ def test_public_query_requires_evidence_bound_to_exact_resolved_claim(capsys):
 
     assert result["answer"] is None
     assert result["reason_code"] == "insufficient_grounding_missing_verified_evidence"
+
+
+def test_matching_l1_l3_claim_and_evidence_remains_answerable():
+    """CASE A: matching L1/L3 C1 with evidence SHA(C1) retains public authority."""
+    claim = "P1 R464 matching claim remains answerable"
+    fact_id = "p1-r464-matching"
+    ingest(
+        claim,
+        fact_id=fact_id,
+        source="file://p1-r464-matching.txt",
+        confidence=0.91,
+        source_status="EXTERNAL",
+    )
+    evidence.attach_evidence(
+        fact_id,
+        "file://p1-r464-matching.txt",
+        source_text="matching source text",
+        span_start=0,
+        span_end=6,
+    )
+
+    result = query_pipeline.query(claim)
+
+    assert evidence.has_valid_evidence_for_grounding(
+        fact_id, expected_claim=claim
+    ) is True
+    assert result["answer"] is not None
+    assert result.get("reason_code") is None
+    assert [fact["fact_id"] for fact in result["facts"]] == [fact_id]
+
+
+def test_one_matching_support_remains_answerable_after_other_span_removed():
+    """CASE D: one valid exact-claim span remains sufficient after one disappears."""
+    claim = "P1 R464 one remaining exact claim support"
+    fact_id = "p1-r464-one-support-remains"
+    ingest(
+        claim,
+        fact_id=fact_id,
+        source="file://p1-r464-one-remains.txt",
+        confidence=0.91,
+        source_status="EXTERNAL",
+    )
+    removed = evidence.attach_evidence(
+        fact_id,
+        "file://p1-r464-one-remains-a.txt",
+        source_text="first support text",
+        span_start=0,
+        span_end=6,
+    )
+    retained = evidence.attach_evidence(
+        fact_id,
+        "file://p1-r464-one-remains-b.txt",
+        source_text="second support text",
+        span_start=0,
+        span_end=6,
+    )
+    with memory._db() as conn:
+        conn.execute(
+            "DELETE FROM evidence_spans WHERE evidence_id = ?",
+            (removed["evidence_id"],),
+        )
+
+    eligible = evidence.valid_evidence_for_grounding(
+        fact_id, expected_claim=claim
+    )
+    result = query_pipeline.query(claim)
+
+    assert [span["evidence_id"] for span in eligible] == [retained["evidence_id"]]
+    assert result["answer"] is not None
+    assert [fact["fact_id"] for fact in result["facts"]] == [fact_id]
+
+
+def test_mixed_retrieval_keeps_exactly_bound_fact_and_filters_split_claim_fact():
+    """CASE E: a C1-bound F2 cannot leak alongside valid exact-bound F1."""
+    common = "P1 R464 mixed retrieval shared anchor"
+    valid_claim = f"{common} valid-f1"
+    stale_l1_claim = f"{common} original-f2"
+    resolved_l3_claim = f"{common} replacement-f2"
+    valid_id = "p1-r464-mixed-valid"
+    split_id = "p1-r464-mixed-split"
+
+    ingest(
+        valid_claim,
+        fact_id=valid_id,
+        source="file://p1-r464-mixed-valid.txt",
+        confidence=0.91,
+        source_status="EXTERNAL",
+    )
+    evidence.attach_evidence(
+        valid_id,
+        "file://p1-r464-mixed-valid.txt",
+        source_text="valid f1 source",
+        span_start=0,
+        span_end=6,
+    )
+
+    ingest(
+        stale_l1_claim,
+        fact_id=split_id,
+        source="file://p1-r464-mixed-split.txt",
+        confidence=0.91,
+        source_status="EXTERNAL",
+    )
+    evidence.attach_evidence(
+        split_id,
+        "file://p1-r464-mixed-split.txt",
+        source_text="C1-only f2 source",
+        span_start=0,
+        span_end=6,
+    )
+    graph = get_l3_graph()
+    split_l3 = graph.get_fact(split_id)
+    assert split_l3 is not None
+    graph.merge_fact({**split_l3, "claim": resolved_l3_claim})
+
+    result = query_pipeline.query(common)
+    returned_ids = [fact["fact_id"] for fact in result["facts"]]
+
+    assert evidence.has_valid_evidence_for_grounding(
+        split_id, expected_claim=resolved_l3_claim
+    ) is False
+    assert result["answer"] is not None
+    assert valid_id in returned_ids
+    assert split_id not in returned_ids
+    assert all(fact["claim"] != resolved_l3_claim for fact in result["facts"])
+
+
+def test_explicit_expected_claim_never_falls_back_to_stale_l1_claim():
+    """The optional compatibility argument is fail-closed when exact claim is absent/mismatched."""
+    l1, _l3, snapshot, _span = _create_split_claim_state()
+
+    assert l1["claim"] == C1
+    assert snapshot.claim == C2
+    assert evidence.has_valid_evidence_for_grounding(FACT_ID) is True
+    assert evidence.has_valid_evidence_for_grounding(
+        FACT_ID, expected_claim=C2
+    ) is False
+    assert evidence.has_valid_evidence_for_grounding(
+        FACT_ID, expected_claim=None
+    ) is False

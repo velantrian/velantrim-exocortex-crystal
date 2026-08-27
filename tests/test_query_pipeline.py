@@ -351,7 +351,9 @@ def test_guardian_rejection_is_bounded(monkeypatch):
             "_score": 0.9,
         },
     )
-    monkeypatch.setattr(query_pipeline, "has_valid_evidence_for_grounding", lambda _fid: True)
+    monkeypatch.setattr(
+        query_pipeline, "has_valid_evidence_for_grounding", lambda _fid, **_kwargs: True
+    )
     monkeypatch.setattr(query_pipeline, "guardian", lambda _pack, _trace: (False, "bad"))
 
     result = query_pipeline.query("canonical")
