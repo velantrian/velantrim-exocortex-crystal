@@ -11,16 +11,17 @@ Human-oriented explanation lives in [`../../README.md`](../../README.md) and [`.
 Read in this order before making architecture/runtime/status claims:
 
 1. [`../../AGENTS.md`](../../AGENTS.md) — repository operating instructions.
-2. [`../status/implementation-manifest.json`](../status/implementation-manifest.json) — machine-readable capability and authorization fields.
-3. [`../STATUS.md`](../STATUS.md) — current implementation/evidence summary.
-4. [`../IMPLEMENTATION_STATUS.md`](../IMPLEMENTATION_STATUS.md) — capability matrix and explicit non-implementation.
-5. [`CURRENT_STATE.md`](./CURRENT_STATE.md) — detailed Reader/evaluation/architecture evidence snapshot.
-6. [`../ARCHITECTURE_OVERVIEW.md`](../ARCHITECTURE_OVERVIEW.md) — technical architecture map.
-7. [`../ARCHITECTURE.md`](../ARCHITECTURE.md) and relevant `docs/architecture/**` contracts.
-8. [`AUDIT_AND_FUTURE_WORK.md`](./AUDIT_AND_FUTURE_WORK.md) — open/deferred audit questions, future-work candidates, and explicit non-authorization boundaries. Treat it as a ledger, **not** as permission to implement the next item.
-9. [`KNOWN_RISKS.md`](./KNOWN_RISKS.md), [`COMPONENT_MAP.md`](./COMPONENT_MAP.md), [`WORK_LOG.md`](./WORK_LOG.md).
-10. [`../../TEST_REPORT.md`](../../TEST_REPORT.md), relevant tests, evaluation artifacts and exact CI.
-11. [`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md) + [`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md) when public/localized documentation is affected.
+2. [`../status/current-lifecycle-overlay.json`](../status/current-lifecycle-overlay.json) — dated volatile lifecycle/governance reconciliation; live GitHub overrides it when state advances.
+3. [`../status/implementation-manifest.json`](../status/implementation-manifest.json) — retained machine-readable capability, architecture and authorization fields; historical checkpoints inside it are not live repository-head declarations.
+4. [`../STATUS.md`](../STATUS.md) — current implementation/evidence summary.
+5. [`../IMPLEMENTATION_STATUS.md`](../IMPLEMENTATION_STATUS.md) — capability matrix and explicit non-implementation.
+6. [`CURRENT_STATE.md`](./CURRENT_STATE.md) — detailed Reader/evaluation/architecture evidence snapshot.
+7. [`../ARCHITECTURE_OVERVIEW.md`](../ARCHITECTURE_OVERVIEW.md) — technical architecture map.
+8. [`../ARCHITECTURE.md`](../ARCHITECTURE.md) and relevant `docs/architecture/**` contracts.
+9. [`AUDIT_AND_FUTURE_WORK.md`](./AUDIT_AND_FUTURE_WORK.md) — open/deferred audit questions, future-work candidates, and explicit non-authorization boundaries. Treat it as a ledger, **not** as permission to implement the next item.
+10. [`KNOWN_RISKS.md`](./KNOWN_RISKS.md), [`COMPONENT_MAP.md`](./COMPONENT_MAP.md), [`WORK_LOG.md`](./WORK_LOG.md).
+11. [`../../TEST_REPORT.md`](../../TEST_REPORT.md), relevant tests, evaluation artifacts and exact CI.
+12. [`../LOCALIZATION_POLICY.md`](../LOCALIZATION_POLICY.md) + [`../TRANSLATION_STATUS.md`](../TRANSLATION_STATUS.md) when public/localized documentation is affected.
 
 Do not bulk-load the repository before completing this orientation pass.
 
@@ -31,7 +32,8 @@ authority_order:
   - live_merged_github_main
   - executable_tests_and_exact_ci
   - runtime_configuration_and_composition
-  - machine_implementation_manifest
+  - current_lifecycle_overlay_for_dated_machine_reconciliation
+  - machine_implementation_manifest_for_retained_capability_architecture_truth
   - status_and_implementation_status
   - accepted_architecture_contracts_and_adrs
   - test_report_and_frozen_evaluation_artifacts
@@ -47,6 +49,8 @@ Notion is synchronized documentation, not a substitute for repository evidence. 
 ## 3. Durable truth + live provenance resolution
 
 This static router intentionally does **not** freeze volatile repository lifecycle facts such as the current `main` SHA, latest CI run, latest completed docs PR/issue, or active milestone. Those values become stale as soon as a later merge lands.
+
+`current-lifecycle-overlay.json` is therefore a **dated reconciliation snapshot**, not a permanent live-state oracle. It exists so machine readers can distinguish a current lifecycle/governance checkpoint from immutable historical architecture and verification fields retained in `implementation-manifest.json`.
 
 ```yaml
 repository_head: RESOLVE_LIVE_GITHUB
@@ -73,9 +77,9 @@ Resolution rule:
 ```text
 current repository/lifecycle claim
         ↓
-resolve live GitHub main + PRs/issues + exact CI
+resolve live GitHub main + PRs/issues + exact CI + ruleset when governance matters
         ↓
-compare machine/status surfaces
+compare current-lifecycle-overlay + machine/status surfaces
         ↓
 read AUDIT_AND_FUTURE_WORK for unresolved/deferred questions
         ↓
@@ -96,6 +100,9 @@ RC-6  bounded long-context strategy              IMPLEMENTED
 RC-7  explicit cross-document candidate links    IMPLEMENTED
 RC-8  retrieval architecture decision            ARCHITECTURE / RESEARCH
 RC-9  deterministic lexical discovery            IMPLEMENTED
+Reader Product Bridge v0.1                       IMPLEMENTED / POST-V1 / NOT PRODUCTION-AUTHORIZED
+Local file Reader source v0.1                    IMPLEMENTED / POST-V1 / PRE-ADMISSION
+Local PDF Reader source v0.1                     IMPLEMENTED / POST-V1 / PRE-ADMISSION
 Comparator v1                                    FROZEN EVALUATION / GATE FAIL
 NLI neutral-filter v1                            FROZEN EVALUATION / GATE FAIL
 RRTIC-v1                                         FROZEN ARCHITECTURE CONTRACT
@@ -131,15 +138,21 @@ ranking != epistemic authority
 candidate discovery != candidate adjudication
 comparison pass != runtime authorization
 evaluation pass != runtime authorization
+same fact_id != same claim
+evidence(C1) != evidence(C2)
+historical VERIFIED != current evidence-backed standing
+support loss != falsity
+receipt authenticity != current standing
 ```
 
-RC-7 retains **no automatic semantic matching**. Reader discovery/inspection does not establish evidence, identity, contradiction resolution or Canon authority.
+RC-7 retains **no automatic semantic matching**. Reader discovery/inspection does not establish evidence, identity, contradiction resolution or Canon authority. Public current-evidence standing hardening does not rewrite historical ESM/receipt state or widen Canon/TruthGate/Guardian/WriteGate authority.
 
 ## 6. Forbidden inferences
 
 ```yaml
 never_infer:
   historical_sha_is_live_head: true
+  dated_lifecycle_overlay_is_live_without_recheck: true
   static_ai_snapshot_is_live_repository_provenance: true
   architecture_contract_is_runtime_provider: true
   retrieval_match_is_evidence: true
@@ -164,9 +177,11 @@ never_infer:
 When prose and machine fields appear inconsistent:
 
 ```text
-live code/tests/CI
+live code/tests/CI + live GitHub lifecycle/governance
       ↓
-implementation-manifest.json
+current-lifecycle-overlay.json (dated reconciliation only)
+      ↓
+implementation-manifest.json (retained capability/architecture machine truth)
       ↓
 STATUS / IMPLEMENTATION_STATUS
       ↓
@@ -175,7 +190,7 @@ architecture contracts
 human overview / README
 ```
 
-Do not “repair” a machine field based solely on prettier or newer prose.
+Do not “repair” a machine field based solely on prettier or newer prose. Also do not treat a retained historical checkpoint inside `implementation-manifest.json` as the current repository head.
 
 ## 8. Documentation interface architecture
 
@@ -186,7 +201,7 @@ ONE PROJECT TRUTH
       │
       ├── 👤 HUMAN   README.md + docs/OVERVIEW.md
       ├── 🤖 AI      docs/ai/README.md + AI context pack + future-work ledger
-      ├── ⚙ MACHINE docs/status/implementation-manifest.json + schemas
+      ├── ⚙ MACHINE current-lifecycle-overlay.json + implementation-manifest.json + schemas
       └── 🧾 EVIDENCE STATUS + TEST_REPORT + tests + CI + eval + history
 ```
 
@@ -255,6 +270,8 @@ This static AI router does not select or persist the current workstream. Before 
 resolve live GitHub main + exact CI
         ↓
 resolve open PRs/issues and lifecycle state
+        ↓
+resolve governance ruleset if governance state matters
         ↓
 read and reconcile AUDIT_AND_FUTURE_WORK
         ↓
