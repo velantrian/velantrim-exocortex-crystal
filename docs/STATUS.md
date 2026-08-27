@@ -1,12 +1,13 @@
 # Velantrim Crystal — Current Status
 
-**Status date:** 2026-08-22  
+**Status date:** 2026-08-27  
 **Lifecycle:** **V1 COMPLETE / 100% / FREEZE-STABILITY**  
-**P0:** `0`  
-**P1:** `0`  
+**V1 P0:** `0`  
+**V1 P1:** `0`  
+**Post-V1 governance:** Issue `#432` is **OPEN / P1**; it does **not** reopen Crystal V1.  
 **Automatic next milestone:** `NONE`  
 **Authoritative closure record:** [`docs/status/CRYSTAL_V1_CLOSURE_2026-08-22.md`](./status/CRYSTAL_V1_CLOSURE_2026-08-22.md)  
-**Repository-head rule:** resolve live GitHub before treating any documentation checkpoint as current repository HEAD.
+**Repository-head rule:** resolve live GitHub before treating any documentation checkpoint, issue state, PR state, CI state, or governance snapshot as current.
 
 ## Current product position
 
@@ -14,19 +15,24 @@ Crystal V1 is complete. The bounded V1 completion program is closed; remaining P
 
 Crystal remains a local-first evidence/memory kernel and bounded decision boundary. Its trusted responsibilities are evidence admission, provenance/lineage, bounded canonical writes, fixed TruthGate semantics, Guardian constraints, traces, receipts, local persistence and auditable replay.
 
+The current repository also contains post-V1 bounded Reader bridges and the public-query evidence-standing hardening merged through PR #464. Those changes do not reopen V1 and do not create production/runtime authorization.
+
 ```text
 CRYSTAL V1 = COMPLETE
 PROJECT COMPLETION = 100%
 REMAINING = 0%
 PHASE = FREEZE / STABILITY
-P0 = 0
-P1 = 0
+V1 P0 = 0
+V1 P1 = 0
+POST-V1 GOVERNANCE #432 = OPEN / P1
 AUTOMATIC NEXT MILESTONE = NONE
 ```
 
 ## Implemented Reader position
 
 RC-1 through RC-7 remain bounded implemented Reader/domain layers. RC-5 remains implemented in `core/reader_relations.py`. RC-9 remains the deterministic lexical PRE-ADMISSION retrieval baseline implemented in `core/reader_lexical_discovery.py`. Comparator v1 and NLI neutral-filter v1 remain completed frozen evaluations whose admission gates failed. **Reader Retrieval Typed Inspection Contract v1 (RRTIC-v1)** remains a frozen typed-inspection architecture contract and adds no runtime authority.
+
+Post-V1 bounded Reader surfaces now in `main` include Reader Product Bridge v0.1, local UTF-8 file source v0.1 and local PDF source v0.1. They remain read-side/pre-admission and do not authorize evidence admission, Canon writes, semantic/model execution or production runtime.
 
 ```text
 reader_core_rc1_skeleton               = true
@@ -37,12 +43,29 @@ reader_core_rc5_relation_candidates    = true
 reader_core_rc6_long_context_strategy  = true
 reader_core_rc7_cross_document_links   = true
 reader_rc9_lexical_candidate_discovery = true
+bounded_reader_product_bridge_v0_1     = true
+reader_file_source_v0_1                = true
+reader_pdf_source_v0_1                 = true
 dedicated_reader_core                  = false
 semantic_hybrid_reader_runtime         = false
 rrtic_runtime_authorization            = false
 ```
 
 Historical Reader checkpoints and evaluation measurements remain immutable provenance; they are not the current lifecycle milestone.
+
+## Public evidence-standing hardening
+
+PR #464 / Issue #463 closed a real public-read standing gap. A `VERIFIED` fact may ground the public read-only answer path only while it retains qualifying replayable evidence, and evidence must bind to the exact TrustSnapshot-resolved claim used for current public grounding. Divergent L1/L3 claim content under the same `fact_id` cannot inherit stale evidence authority.
+
+```text
+same fact_id != same claim
+evidence(C1) != evidence(C2)
+historical VERIFIED != current evidence-backed standing
+support loss != falsity
+receipt authenticity != current standing
+```
+
+This hardening does not rewrite historical ESM/receipt state, expand Canon authority, change TruthGate/Guardian/WriteGate ownership, or authorize production.
 
 ## Authority boundaries
 
@@ -81,7 +104,7 @@ SQLite ordinary active local-first
 
 PostgreSQL/pgvector activation, Reader FTS/ANN/vector runtime, distributed sync and queue federation are not authorized by V1 closure.
 
-## Validation and governance closure
+## Validation and governance
 
 The permanent PR matrix remains nine checks:
 
@@ -95,7 +118,9 @@ The permanent PR matrix remains nine checks:
 8. `security`
 9. `docker-build`
 
-The final governance probe PR #446 ran the permanent matrix successfully and was closed without merge. Issue #432 is closed. This evidence closes the bounded V1 governance program; it does not mean CI alone grants production or future runtime authority.
+The final V1 governance probe PR #446 exercised the permanent matrix successfully and was closed without merge. That evidence supports the bounded V1 closure, but it does **not** prove that GitHub server-side governance enforces the matrix.
+
+Issue #432 is currently **OPEN / P1** as a post-V1 governance enforcement/read-back issue. The current ruleset snapshot must be resolved live before use; at the 2026-08-27 audit checkpoint, required review-thread resolution was still false and no required-status-check rule was present. This does not reopen V1 and does not change runtime or epistemic authority.
 
 ## Localization truth
 
@@ -105,7 +130,7 @@ Localization freshness is owned by [`docs/TRANSLATION_STATUS.md`](./TRANSLATION_
 
 ## Backlog boundary
 
-There is no open P0/P1 work in the V1 completion program. Existing P2/P3, research, future and frozen records remain optional backlog/evidence only.
+There is no open P0/P1 work in the **V1 completion program**. Post-V1 governance Issue #432 remains separately open. Existing P2/P3, research, future and frozen records remain optional backlog/evidence only.
 
 The following are explicitly **not** implied next steps:
 
@@ -294,8 +319,9 @@ PROJECT V1 — DONE
 DONE 100%
 REMAINING 0%
 ██████████ 100%
-P0 0
-P1 0
+V1 P0 0
+V1 P1 0
+POST-V1 GOVERNANCE #432 OPEN / P1
 V1.x / V2 / RESEARCH = BACKLOG ONLY
 CURRENT PROJECT PHASE = FREEZE / STABILITY
 AUTOMATIC NEXT MILESTONE = NONE
