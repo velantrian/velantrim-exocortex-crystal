@@ -103,12 +103,23 @@ and must not imply that every physical L3 node belongs to strict CanonicalView.
 Processing-restricted rows are excluded before claim/source content is returned.
 
 `query()` additionally runs Guardian's structural check and CanonicalView's
-strict projection before producing a confident answer.
+strict projection before producing a confident answer. A fact labelled
+`truth_status="VERIFIED"` must also retain at least one current, valid,
+replayable source-span evidence record whose sealed `claim_sha256` matches the
+**exact resolved claim** emitted by `TrustSnapshot` from the physical L3 node
+and used by `query()` for current public grounding. L1 may deny through its
+terminal/restriction/trust fields, but its stale claim text cannot authorize a
+different resolved L3 claim. Otherwise the query fails closed with
+`insufficient_grounding_missing_verified_evidence`. This is a read-time
+current-standing decision only: it does not rewrite historical ESM transitions,
+provenance receipts, or evidence-loss events.
 
 ## Immutable trust reconciliation
 
-L3 supplies stored claim and verdict fields. L1 is consulted deny-dominantly for
-a newer terminal ESM state, processing restriction or trust-metadata drift.
+L3 supplies the stored claim and verdict fields used by the resolved public
+fact. L1 is consulted deny-dominantly for a newer terminal ESM state, processing
+restriction or trust-metadata drift; its claim/source content does not replace
+the L3-resolved claim at the public grounding boundary.
 
 The resolver does not assemble those fields by mutating a shared dictionary.
 It first creates a frozen, slotted `core.trust_snapshot.TrustSnapshot`, completes

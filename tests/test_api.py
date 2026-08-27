@@ -8,7 +8,7 @@ import pytest
 fastapi = pytest.importorskip("fastapi")
 from fastapi.testclient import TestClient  # noqa: E402
 
-from core import api  # noqa: E402
+from core import api, evidence  # noqa: E402
 
 
 @pytest.fixture
@@ -56,7 +56,11 @@ def test_ingest_then_ask(client):
     # which does not change an existing fact's source_status/truth_status)
     # does ground a confident /ask answer.
     from core.ingest import ingest
-    ingest("Portugal's capital city is Lisbon", source_status="EXTERNAL")
+    verified = ingest("Portugal's capital city is Lisbon", source_status="EXTERNAL")
+    evidence.attach_evidence(
+        verified["fact"]["fact_id"], "file://portugal.txt",
+        source_text="Portugal source", section="fixture",
+    )
     r3 = client.post("/ask", json={"query": "what is the capital of Portugal"})
     assert r3.status_code == 200
     assert r3.json()["answer"] is not None
@@ -147,7 +151,11 @@ def test_receipt_and_verify(client):
     # which would otherwise leave /receipt with no answer to attest to. This
     # test is about receipt/verify mechanics, not ingest write-policy.
     from core.ingest import ingest
-    ingest("Gold is a chemical element", source_status="EXTERNAL")
+    verified = ingest("Gold is a chemical element", source_status="EXTERNAL")
+    evidence.attach_evidence(
+        verified["fact"]["fact_id"], "file://gold.txt",
+        source_text="Gold source", section="fixture",
+    )
     r = client.get("/receipt", params={"q": "tell me about gold"})
     assert r.status_code == 200
     receipt = r.json()

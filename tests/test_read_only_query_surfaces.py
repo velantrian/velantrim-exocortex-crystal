@@ -20,6 +20,7 @@ def _graph_snapshot():
 
 
 def _seed_verified(claim="Saturn has prominent rings"):
+    from core import evidence
     from core.ingest import ingest
 
     result = ingest(
@@ -29,6 +30,10 @@ def _seed_verified(claim="Saturn has prominent rings"):
         confidence=0.95,
     )
     assert result["accepted"] is True
+    evidence.attach_evidence(
+        result["fact"]["fact_id"], "file://read-only-fixture.txt",
+        source_text="read-only fixture source", section="fixture",
+    )
     return result["fact"]["fact_id"]
 
 

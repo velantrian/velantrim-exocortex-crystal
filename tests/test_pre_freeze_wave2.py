@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from core import embedding, query_pipeline
+from core import embedding, evidence, query_pipeline
 from core.l3_graph import MockL3Graph
 
 
@@ -42,8 +42,21 @@ def test_pipeline_retrieval_explanation_is_navigation_not_confidence(monkeypatch
     graph = MockL3Graph()
     monkeypatch.setenv("VELANTRIM_EMBEDDER", "hashing")
     embedding.reset_embedder()
-    graph.merge_fact(_validated_fact("seed", "alpha seed"))
-    graph.merge_fact(_validated_fact("neighbor", "distant memory"))
+    seed = _validated_fact("seed", "alpha seed")
+    neighbor = _validated_fact("neighbor", "distant memory")
+    graph.merge_fact(seed)
+    graph.merge_fact(neighbor)
+    # The graph fixture is also made visible to the evidence predicate via the
+    # test's isolated L1 store, without changing its trace-focused assertion.
+    from core.memory import store_fact
+    store_fact(seed)
+    store_fact(neighbor)
+    evidence.attach_evidence(
+        "seed", "file://seed.txt", source_text="seed source", section="fixture",
+    )
+    evidence.attach_evidence(
+        "neighbor", "file://neighbor.txt", source_text="neighbor source", section="fixture",
+    )
     graph.add_edge("seed", "CO_OCCURRED", "neighbor")
     monkeypatch.setattr(query_pipeline, "get_l3_graph", lambda: graph)
     monkeypatch.setattr("core.pipeline.get_l3_graph", lambda: graph)

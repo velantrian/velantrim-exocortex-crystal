@@ -20,7 +20,7 @@ def _graph_snapshot():
 
 
 def test_query_reads_existing_canon_without_durable_or_adaptive_mutation():
-    from core import adaptation
+    from core import adaptation, evidence
     from core.ingest import ingest
     from core.memory import get_fact
     from core.query_pipeline import query
@@ -33,6 +33,9 @@ def test_query_reads_existing_canon_without_durable_or_adaptive_mutation():
     )
     assert admitted["accepted"] is True
     fact_id = admitted["fact"]["fact_id"]
+    evidence.attach_evidence(
+        fact_id, "file://portugal.txt", source_text="Portugal source", section="fixture",
+    )
 
     l1_before = get_fact(fact_id)
     graph_before = _graph_snapshot()
@@ -103,7 +106,8 @@ def test_legacy_canon_without_fingerprint_uses_non_mutating_lexical_fallback():
 
     result = query("Lisbon capital Portugal")
 
-    assert result["answer"] is not None
+    assert result["answer"] is None
+    assert result["reason_code"] == "insufficient_grounding_missing_verified_evidence"
     assert result["read_only"] is True
     assert graph.embedder_fingerprint() is None
     assert _graph_snapshot() == before
@@ -141,7 +145,7 @@ def test_unknown_retrieval_candidate_is_not_written(monkeypatch):
 
 
 def test_episode_context_is_never_recorded_by_query(monkeypatch):
-    from core import query_pipeline
+    from core import evidence, query_pipeline
     from core.ingest import ingest
 
     first = ingest(
@@ -156,6 +160,14 @@ def test_episode_context_is_never_recorded_by_query(monkeypatch):
         source_status="EXTERNAL",
         confidence=0.95,
     )["fact"]
+    evidence.attach_evidence(
+        first["fact_id"], "file://fixture-a.txt",
+        source_text="fixture a source", section="fixture",
+    )
+    evidence.attach_evidence(
+        second["fact_id"], "file://fixture-b.txt",
+        source_text="fixture b source", section="fixture",
+    )
 
     monkeypatch.setattr(
         query_pipeline,
@@ -205,7 +217,7 @@ def test_http_ask_surface_preserves_memory(monkeypatch):
     pytest.importorskip("fastapi")
     from fastapi.testclient import TestClient
 
-    from core import api
+    from core import api, evidence
     from core.ingest import ingest
     from core.memory import get_fact
 
@@ -216,6 +228,9 @@ def test_http_ask_surface_preserves_memory(monkeypatch):
         confidence=0.95,
     )
     fact_id = admitted["fact"]["fact_id"]
+    evidence.attach_evidence(
+        fact_id, "file://gold.txt", source_text="Gold source", section="fixture",
+    )
     l1_before = get_fact(fact_id)
     graph_before = _graph_snapshot()
 
@@ -336,6 +351,9 @@ def test_guardian_rejection_is_bounded(monkeypatch):
             "_score": 0.9,
         },
     )
+    monkeypatch.setattr(
+        query_pipeline, "has_valid_evidence_for_grounding", lambda _fid, **_kwargs: True
+    )
     monkeypatch.setattr(query_pipeline, "guardian", lambda _pack, _trace: (False, "bad"))
 
     result = query_pipeline.query("canonical")
@@ -379,15 +397,19 @@ def test_fingerprinted_query_does_not_materialise_whole_canon(monkeypatch):
     would be discarded work growing linearly with the canon on every HTTP
     /ask and /receipt call — a remote cost amplifier on the read path.
     """
-    from core import query_pipeline
+    from core import evidence, query_pipeline
     from core.ingest import ingest
     from core.l3_graph import get_l3_graph
 
-    ingest(
+    admitted = ingest(
         "Portugal's capital city is Lisbon",
         source="reference",
         source_status="EXTERNAL",
         confidence=0.95,
+    )
+    evidence.attach_evidence(
+        admitted["fact"]["fact_id"], "file://portugal.txt",
+        source_text="Portugal source", section="fixture",
     )
     graph = get_l3_graph()
     assert graph.embedder_fingerprint() is not None
