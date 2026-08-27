@@ -1,12 +1,13 @@
 # Implementation Status: Crystal vs Future Exo-Cortex Work
 
-**Status date:** 2026-08-22  
+**Status date:** 2026-08-27  
 **V1 lifecycle:** **COMPLETE / 100% / FREEZE-STABILITY**  
-**P0/P1 remaining:** `0 / 0`  
+**V1 P0/P1 remaining:** `0 / 0`  
+**Post-V1 governance:** Issue `#432` is **OPEN / P1**; this does **not** reopen V1.  
 **Automatic next implementation milestone:** `NONE`  
 **Authoritative closure:** [`docs/status/CRYSTAL_V1_CLOSURE_2026-08-22.md`](./status/CRYSTAL_V1_CLOSURE_2026-08-22.md)
 
-This file describes implementation truth. Historical Reader/evaluation checkpoints remain retained evidence, but they no longer represent an unfinished V1 milestone.
+This file describes implementation truth. Historical Reader/evaluation checkpoints remain retained evidence, but they no longer represent an unfinished V1 milestone. Resolve live GitHub before treating issue, PR, CI, governance or repository-head state as current.
 
 ## Implemented V1 capability truth
 
@@ -22,6 +23,10 @@ Crystal V1 is a local-first evidence/memory kernel and bounded decision boundary
 | RC-6 bounded long-context strategy | **IMPLEMENTED** | `core/reader_long_context.py` |
 | RC-7 explicit cross-document candidate links | **IMPLEMENTED** | `core/reader_cross_document.py` |
 | Reader RC-9 lexical candidate discovery | **IMPLEMENTED** | `core/reader_lexical_discovery.py` |
+| Reader Product Bridge v0.1 | **IMPLEMENTED / POST-V1 / NOT PRODUCTION-AUTHORIZED** | `core/reader_product_bridge.py` |
+| Local file Reader source v0.1 | **IMPLEMENTED / POST-V1 / PRE-ADMISSION** | `core/reader_file_source.py` |
+| Local PDF Reader source v0.1 | **IMPLEMENTED / POST-V1 / PRE-ADMISSION** | `core/reader_pdf_source.py` |
+| Public current-evidence standing / exact resolved-claim binding | **IMPLEMENTED** | `core/query_pipeline.py`, `core/evidence.py` |
 | Dedicated/full autonomous Reader | **NOT IMPLEMENTED** | `dedicated_reader_core=false` |
 | Semantic/hybrid Reader runtime | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
 | Reader FTS / ANN / vector DB | **NOT AUTHORIZED / NOT IMPLEMENTED** | — |
@@ -38,8 +43,25 @@ reader_core_rc5_relation_candidates    = true
 reader_core_rc6_long_context_strategy  = true
 reader_core_rc7_cross_document_links   = true
 reader_rc9_lexical_candidate_discovery = true
+bounded_reader_product_bridge_v0_1     = true
+reader_file_source_v0_1                = true
+reader_pdf_source_v0_1                 = true
 dedicated_reader_core                  = false
 ```
+
+## Current public evidence-standing boundary
+
+PR #464 / Issue #463 hardened the public read-only answer path. A resolved `VERIFIED` fact may ground a factual public answer only while qualifying replayable evidence remains, and the evidence must bind to the exact TrustSnapshot-resolved claim being used for grounding.
+
+```text
+same fact_id != same claim
+evidence(C1) != evidence(C2)
+historical VERIFIED != current evidence-backed standing
+support loss != falsity
+receipt authenticity != current standing
+```
+
+This is a read-authority hardening only: no historical ESM or receipt rewrite, no Canon authority expansion, no TruthGate/Guardian/WriteGate weakening, and no production authorization.
 
 ## Immutable Reader provenance retained under V1 closure
 
@@ -151,7 +173,9 @@ PostgreSQL/pgvector activation, queue federation, distributed exactly-once behav
 
 The permanent V1 PR matrix consists of nine checks: `code-quality`, `Ring Zero mutation gate`, `docs-status`, `test (3.11)`, `test (3.12)`, `jsonl-integrity`, `eval-gate`, `security`, and `docker-build`.
 
-The final governance probe PR #446 exercised the permanent matrix successfully before being closed without merge. Issue #432 is closed. These are V1 closure evidence, not generic production authorization.
+PR #446 exercised the matrix successfully before being closed without merge. That is V1 closure evidence, not proof of server-side enforcement.
+
+Issue #432 is **OPEN / P1** as a separate post-V1 governance enforcement/read-back issue. At the 2026-08-27 audit checkpoint, the active ruleset still had `required_review_thread_resolution=false` and no required-status-check rule. This governance P1 does not reopen V1 and changes no runtime/epistemic authority.
 
 ## Localization / grant
 
@@ -161,7 +185,7 @@ NLnet remains **submitted / under review / not awarded**. Approximate €50,000 
 
 ## Future work boundary
 
-No P0/P1 implementation work remains in the V1 completion program. P2/P3, research, deferred and frozen items are non-blocking backlog only.
+No P0/P1 implementation work remains in the **V1 completion program**. Post-V1 governance #432 remains separate. P2/P3, research, deferred and frozen items are non-blocking backlog only.
 
 V1 completion does **not** authorize:
 
@@ -182,8 +206,9 @@ Any future implementation phase requires a separate explicit owner decision, bou
 CRYSTAL V1 = COMPLETE
 DONE = 100%
 REMAINING = 0%
-P0 = 0
-P1 = 0
+V1 P0 = 0
+V1 P1 = 0
+POST-V1 GOVERNANCE #432 = OPEN / P1
 PHASE = FREEZE / STABILITY
 AUTOMATIC NEXT MILESTONE = NONE
 ```
