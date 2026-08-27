@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "project": "Velantrim Exo-Cortex Crystal",
+  "status_date": "2026-08-27",
+  "role": "volatile_lifecycle_overlay",
+  "repository_head_rule": "RESOLVE_LIVE_GITHUB",
+  "audited_main_checkpoint": "ad43d9231f567e06bd092c1b1230d8f0bebf773c",
+  "post_merge_ci": {
+    "run": 33065605480,
+    "job_count": 9,
+    "all_successful": true
+  },
+  "v1_lifecycle": {
+    "status": "COMPLETE_FREEZE_STABILITY",
+    "completion_percent": 100,
+    "p0": 0,
+    "p1": 0,
+    "automatic_next_milestone": "NONE"
+  },
+  "post_v1_governance": {
+    "tracking_issue": 432,
+    "status": "OPEN_P1",
+    "reopens_v1": false,
+    "ruleset_id": 20602128,
+    "audited_ruleset_checkpoint": {
+      "enforcement": "active",
+      "default_branch_targeted": true,
+      "required_approving_review_count": 0,
+      "required_review_thread_resolution": false,
+      "required_status_check_rule_present": false,
+      "bypass_actors_present": false
+    }
+  },
+  "public_evidence_standing": {
+    "tracking_issue": 463,
+    "pull_request": 464,
+    "merged": true,
+    "reviewed_head": "9ffe72ef44fe1005b68ddadec90d016cc2b801eb",
+    "merge_commit": "ad43d9231f567e06bd092c1b1230d8f0bebf773c",
+    "exact_head_ci_run": 33057472012,
+    "post_merge_ci_run": 33065605480,
+    "current_support_required_for_public_factual_grounding": true,
+    "evidence_bound_to_exact_resolved_claim": true,
+    "historical_state_rewritten": false
+  },
+  "post_v1_reader": {
+    "bounded_reader_product_bridge_v0_1": true,
+    "reader_file_source_v0_1": true,
+    "reader_pdf_source_v0_1": true,
+    "pre_admission_read_side_only": true,
+    "production_authorized": false,
+    "semantic_hybrid_runtime_authorized": false
+  },
+  "authority_boundaries": {
+    "canon_authority_changed": false,
+    "truthgate_authority_changed": false,
+    "guardian_authority_changed": false,
+    "writegate_authority_changed": false,
+    "postgresql_pgvector_active": false,
+    "runtime_or_production_authorized": false
+  },
+  "interpretation": "This overlay records a dated current-lifecycle reconciliation. Historical architecture and verification checkpoints remain in implementation-manifest.json. Live GitHub overrides this overlay when repository or governance state advances."
+}
