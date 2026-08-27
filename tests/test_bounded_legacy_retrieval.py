@@ -158,10 +158,17 @@ def test_bounded_no_hit_still_reports_degraded_work(monkeypatch):
 
 
 def test_bounded_query_does_not_mutate_fingerprint_or_graph(monkeypatch):
-    from core import query_pipeline
+    from core import evidence, query_pipeline
+    from core.memory import store_fact
 
     graph = MockL3Graph()
-    graph.merge_fact(_node("legacy:lisbon", "Lisbon is the capital of Portugal"))
+    fact = _node("legacy:lisbon", "Lisbon is the capital of Portugal")
+    graph.merge_fact(fact)
+    store_fact(fact)
+    evidence.attach_evidence(
+        fact["fact_id"], "file://legacy-lisbon.txt",
+        source_text="Lisbon source", section="fixture",
+    )
     before = graph.all_facts()
     monkeypatch.setattr(query_pipeline, "get_l3_graph", lambda: graph)
     result = query_pipeline.query("Lisbon capital Portugal")

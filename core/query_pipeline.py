@@ -334,21 +334,24 @@ def query(
             retrieval=legacy,
         )
 
-    if _grant_profile_enabled():
-        verified_before = [f for f in facts if f.get("truth_status") == "VERIFIED"]
-        facts = [
-            f for f in facts
-            if f.get("truth_status") != "VERIFIED"
-            or has_valid_evidence_for_grounding(f["fact_id"])
-        ]
-        if verified_before and not any(f.get("truth_status") == "VERIFIED" for f in facts):
-            return _blocked(
-                "Insufficient grounding: VERIFIED facts lack valid replayable evidence spans.",
-                query_text,
-                reason_code="insufficient_grounding_missing_verified_evidence",
-                episode_requested=episode is not None,
-                retrieval=legacy,
-            )
+    # Current factual authority is derived at read time: a VERIFIED fact may
+    # ground a public answer only while it retains at least one valid,
+    # replayable evidence span. This reuses the established predicate and does
+    # not rewrite historical ESM/provenance when support is later removed.
+    verified_before = [f for f in facts if f.get("truth_status") == "VERIFIED"]
+    facts = [
+        f for f in facts
+        if f.get("truth_status") != "VERIFIED"
+        or has_valid_evidence_for_grounding(f["fact_id"])
+    ]
+    if verified_before and not any(f.get("truth_status") == "VERIFIED" for f in facts):
+        return _blocked(
+            "Insufficient grounding: VERIFIED facts lack valid replayable evidence spans.",
+            query_text,
+            reason_code="insufficient_grounding_missing_verified_evidence",
+            episode_requested=episode is not None,
+            retrieval=legacy,
+        )
 
     config_id = _retrieval_config_id()
     trace_input = [

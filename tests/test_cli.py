@@ -24,8 +24,13 @@ def test_cli_ask_returns_answer(capsys):
     # printing the answer text, not about write-path classification — seed
     # with genuinely verifiable content so the read path under test has
     # something to ground on.
+    from core import evidence
     from core.ingest import ingest
-    ingest("Octopuses have three hearts", source_status="EXTERNAL")
+    admitted = ingest("Octopuses have three hearts", source_status="EXTERNAL")
+    evidence.attach_evidence(
+        admitted["fact"]["fact_id"], "file://octopus.txt",
+        source_text="Octopus source", section="fixture",
+    )
     capsys.readouterr()
     main(["ask", "octopus hearts"])
     out = capsys.readouterr().out

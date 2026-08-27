@@ -103,7 +103,12 @@ and must not imply that every physical L3 node belongs to strict CanonicalView.
 Processing-restricted rows are excluded before claim/source content is returned.
 
 `query()` additionally runs Guardian's structural check and CanonicalView's
-strict projection before producing a confident answer.
+strict projection before producing a confident answer. A fact labelled
+`truth_status="VERIFIED"` must also retain at least one current, valid,
+replayable source-span evidence record; otherwise the query fails closed with
+`insufficient_grounding_missing_verified_evidence`. This is a read-time
+current-standing decision only: it does not rewrite historical ESM transitions,
+provenance receipts, or evidence-loss events.
 
 ## Immutable trust reconciliation
 

@@ -172,6 +172,10 @@ def _seed_cli_receipt_fact():
         confidence=0.95,
     )
     assert result["accepted"] is True
+    evidence.attach_evidence(
+        result["fact"]["fact_id"], "file://dna.txt",
+        source_text="DNA source", section="fixture",
+    )
     return claim
 
 
