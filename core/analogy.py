@@ -9,8 +9,8 @@
 #        METAPHOR_OF  (directional: "a is a metaphor of b")
 #        ANALOGOUS_TO (symmetric:   "a is analogous to b")
 #      These are ASSOCIATIONS, not truth claims. They are edges, never :Fact —
-#      so Graph = Truth is untouched (an analogy can be wild without lying about
-#      the world, exactly like CONTRADICTS/SEPARATED_FROM edges).
+#      so physical L3 != strict Canon remains explicit (an analogy can be wild
+#      without lying about the world, exactly like CONTRADICTS/SEPARATED_FROM edges).
 #
 #   2. Semantic Bridge Engine — find a *bridge* between two nodes WITHOUT an LLM:
 #      a shared relational neighbour, a shared emergent concept, or an explicit
@@ -54,7 +54,7 @@ def link_analogy(
     """
     Record an analogy edge. METAPHOR_OF is directional (src → dst); ANALOGOUS_TO
     is symmetric (both directions written). Idempotent for identical edges.
-    Never creates a fact — Graph = Truth is preserved.
+    Never creates a fact — associative graph edges are not Canon admission.
     """
     if kind not in _KINDS:
         raise ValueError(f"link_analogy: kind must be one of {_KINDS}, got {kind!r}")

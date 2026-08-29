@@ -1,8 +1,9 @@
 # core/generation.py
 # Velantrim ExoCortex — Answer Generation (pluggable abstraction)
 #
-# Principle: LLM = Language, Graph = Truth. The generator phrases the answer ONLY
-# from facts that passed the TruthGate — it adds no external knowledge (anti-hallucination).
+# Principle: LLM = Language; physical L3 != strict Canon. The generator phrases
+# the answer ONLY from facts that passed the TruthGate — it adds no external
+# knowledge and has no Canon admission authority (anti-hallucination).
 #
 # Pluggable backend:
 #   ExtractiveGenerator (default) — dependency-free: concatenation of claims. CI-safe.
@@ -78,7 +79,7 @@ class AnthropicGenerator(Generator):
     The FactsPack goes into the system block with prompt caching (stable prefix →
     cache hits on repeats), the user's query — into a user message. Model
     claude-opus-4-8 + adaptive thinking. Answers only from verified
-    facts (see _SYSTEM_PROMPT) — the graph remains the source of truth.
+    facts (see _SYSTEM_PROMPT); generation does not create Canon authority.
 
     `anthropic` — optional dependency; requires ANTHROPIC_API_KEY. Excluded from
     the coverage gate (CI does not install the SDK and makes no network calls); behavior

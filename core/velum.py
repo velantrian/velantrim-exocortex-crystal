@@ -9,9 +9,9 @@
 # Crucial boundary (RFC0016 invariants):
 #   I1: Velum stores ONLY edges (entity_a, entity_b, weight) — never episode
 #       content. It observes a *connection*, not a fact.
-#   I3: Velum is NOT a source of facts. Graph = Truth is untouched — Velum only
+#   I3: Velum is NOT a source of facts. physical L3 != strict Canon — Velum only
 #       emits hints (VelumSignals) for schedulers/retrieval; nothing it produces
-#       enters the canon except, later, through the TruthGate elsewhere.
+#       enters Canon except, later, through the TruthGate elsewhere.
 #   I4: Velum is in-memory and not persistent across sessions by default.
 #
 # A co-occurrence bumps a pair's weight by PROMOTE_WEIGHT/CO_OCCUR_THRESHOLD, so a
