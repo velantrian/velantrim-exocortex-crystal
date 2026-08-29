@@ -180,4 +180,4 @@ No automatic Reader OCR/multimodal engine, semantic/hybrid/vector Reader runtime
 
 **Start:** `AGENTS.md`, `docs/DOCUMENTATION_SYNC_PROTOCOL.md`, `docs/STATUS.md`, `docs/IMPLEMENTATION_STATUS.md`, `ROADMAP.md`, `docs/ai/WORK_LOG.md`.
 
-NLnet remains `submitted / under review / not awarded`. Issues #155, #165 and #214 remain separate scopes. Notion is synchronized only after exact post-merge evidence.
+NLnet remains `submitted / under review / not awarded`. Issues #155, #165 and #214 are historical closed/completed scopes retained for provenance, not current open work. Notion is synchronized only after exact post-merge evidence.
