@@ -2,9 +2,9 @@
 <!-- d4-source-scope: project-grant-governance-glossary -->
 # 🗺️ Velantrim Exo-Cortex Crystal — Roadmap
 
-> Only merged `main`, executable tests and exact CI are implementation truth.
+> Only merged `main`, executable tests and exact CI are implementation truth. Resolve live GitHub and `docs/STATUS.md` before treating retained signed checkpoints below as the current repository head.
 
-**Current signed architecture checkpoint:** `main@76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` — PR #392; post-merge CI `31771677028` 9/9  
+**Retained signed architecture checkpoint (architecture evidence; not live HEAD):** `main@76a9493b8ba64b832472ef9bfc1f1c23ebe6654e` — PR #392; post-merge CI `31771677028` 9/9  
 **Historical signed RC-7 merge checkpoint:** `main@b5541ce504af9002c8d3e2dcfa44ef4c0ead86c1` — implementation PR #372; RC-7 post-merge CI `31572918731`; later Issue #373 / PR #374 documentation closure  
 **Signed RC-9 implementation baseline:** `main@f8b7d7ea36625b6589a4cf02f12b94c5f98fdb61` — PR #376; post-merge CI `31594027040`; retained RC-10 architecture decision #377  
 **Grant reconciliation:** issue #379 / PR #380 / PR #381 completed  
