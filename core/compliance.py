@@ -142,7 +142,7 @@ def record_of_processing(controller: Optional[str] = None) -> Dict[str, Any]:
             "data_minimisation": "pii.redact at ingest (Art. 5(1)(c))",
         },
         "security_measures": [
-            "single-entry TruthGate (Graph = Truth, I1)",
+            "single-entry TruthGate (policy-constrained Canon admission, I1)",
             "Ring Zero immutability (I6)",
             "validated ESM transitions",
             "content-free erasure tombstones",
