@@ -12,9 +12,9 @@
 #   - Dependency-free: only stdlib parsers (text / markdown / json / jsonl / csv).
 #     Heavier sources (PDF, YAML, Wikidata RDF) are intentionally left to optional
 #     adapters so the runtime stays stdlib-only.
-#   - Graph = Truth: imported facts carry source_status = EXTERNAL and the source
-#     file as their `source`, so provenance always shows where knowledge came from.
-#   - No new entry into the canon — everything still goes through ingest()/TruthGate.
+#   - physical L3 != strict Canon: imported facts carry source_status = EXTERNAL
+#     and the source file as their `source`, preserving explicit provenance.
+#   - No alternate entry into Canon — everything still goes through ingest()/TruthGate.
 
 import csv
 import hashlib

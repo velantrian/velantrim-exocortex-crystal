@@ -6,7 +6,7 @@
 # write a fact it generated itself, and it can decide which of its memories
 # deserve attention and rehearsal.
 #
-# Two faces, both faithful to "Graph = Truth":
+# Two faces, both faithful to policy-constrained Canon admission:
 #   - write_voluntary(): the system writes a self-authored fact — but through
 #     the SAME Guardian → TruthGate path as everything else. Volition never
 #     bypasses the gate; a self-generated claim earns its place or is blocked

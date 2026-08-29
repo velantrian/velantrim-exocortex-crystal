@@ -11,9 +11,10 @@
 # the would-be weight delta ΔW and logs it; it does NOT apply anything to a model.
 #
 # Key invariant — I68 (NeuroCoreIsolation):
-#   NeuroCore NEVER modifies the L3 graph. Graph = Truth is absolute. On any
-#   conflict, L3 wins. This module therefore imports NOTHING from core.l3_graph
-#   and writes only to its own observation table (`neurocore_delta_log`).
+#   NeuroCore NEVER modifies physical L3. physical L3 != strict Canon, and
+#   NeuroCore has no Canon admission authority. This module therefore imports
+#   NOTHING from core.l3_graph and writes only to its own observation table
+#   (`neurocore_delta_log`).
 #
 # Deployment phases (only Phase 0 is implemented here):
 #   0 — Passive tracker : log ΔW to SQLite; model untouched.            ✅ current
