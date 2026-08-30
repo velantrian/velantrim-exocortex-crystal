@@ -92,6 +92,10 @@ def test_ropa_aggregates_and_is_content_free():
     assert ropa["categories_of_data"]["EMOTION"] == 1
     assert ropa["restricted_count"] == 1
     assert ropa["restricted_fact_ids"] == ["f1"]
+    assert "single-entry TruthGate (policy-constrained Canon admission, I1)" in ropa[
+        "security_measures"
+    ]
+    assert all("Graph = Truth" not in measure for measure in ropa["security_measures"])
     # Content-free: no actual claim text leaks into the record.
     assert "highly sensitive personal claim" not in json.dumps(ropa)
 
