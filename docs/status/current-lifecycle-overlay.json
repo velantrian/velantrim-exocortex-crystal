@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "project": "Velantrim Exo-Cortex Crystal",
-  "status_date": "2026-08-27",
+  "status_date": "2026-09-07",
   "role": "volatile_lifecycle_overlay",
   "repository_head_rule": "RESOLVE_LIVE_GITHUB",
-  "audited_main_checkpoint": "ad43d9231f567e06bd092c1b1230d8f0bebf773c",
+  "audited_main_checkpoint": "7509be14c274cdc83e8e00287f46a78f8ee33696",
   "post_merge_ci": {
-    "run": 33065605480,
+    "run": 33305338492,
     "job_count": 9,
     "all_successful": true
   },
@@ -19,16 +19,28 @@
   },
   "post_v1_governance": {
     "tracking_issue": 432,
-    "status": "OPEN_P1",
+    "status": "CLOSED_COMPLETED",
     "reopens_v1": false,
     "ruleset_id": 20602128,
     "audited_ruleset_checkpoint": {
       "enforcement": "active",
       "default_branch_targeted": true,
       "required_approving_review_count": 0,
-      "required_review_thread_resolution": false,
-      "required_status_check_rule_present": false,
-      "bypass_actors_present": false
+      "required_review_thread_resolution": true,
+      "required_status_check_rule_present": true,
+      "required_status_checks": [
+        "code-quality",
+        "Ring Zero mutation gate",
+        "docs-status",
+        "test (3.11)",
+        "test (3.12)",
+        "jsonl-integrity",
+        "eval-gate",
+        "security",
+        "docker-build"
+      ],
+      "bypass_actors_present": false,
+      "current_user_can_bypass": "never"
     }
   },
   "public_evidence_standing": {
