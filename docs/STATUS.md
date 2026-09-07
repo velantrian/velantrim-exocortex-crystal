@@ -1,10 +1,10 @@
 # Velantrim Crystal — Current Status
 
-**Status date:** 2026-08-27  
+**Status date:** 2026-09-07  
 **Lifecycle:** **V1 COMPLETE / 100% / FREEZE-STABILITY**  
 **V1 P0:** `0`  
 **V1 P1:** `0`  
-**Post-V1 governance:** Issue `#432` is **OPEN / P1**; it does **not** reopen Crystal V1.  
+**Post-V1 governance:** Issue `#432` is **CLOSED / COMPLETED**; its bounded server-side governance acceptance criteria are satisfied and it does **not** reopen Crystal V1.  
 **Automatic next milestone:** `NONE`  
 **Authoritative closure record:** [`docs/status/CRYSTAL_V1_CLOSURE_2026-08-22.md`](./status/CRYSTAL_V1_CLOSURE_2026-08-22.md)  
 **Repository-head rule:** resolve live GitHub before treating any documentation checkpoint, issue state, PR state, CI state, or governance snapshot as current.
@@ -24,7 +24,7 @@ REMAINING = 0%
 PHASE = FREEZE / STABILITY
 V1 P0 = 0
 V1 P1 = 0
-POST-V1 GOVERNANCE #432 = OPEN / P1
+POST-V1 GOVERNANCE #432 = CLOSED / COMPLETED
 AUTOMATIC NEXT MILESTONE = NONE
 ```
 
@@ -118,9 +118,9 @@ The permanent PR matrix remains nine checks:
 8. `security`
 9. `docker-build`
 
-The final V1 governance probe PR #446 exercised the permanent matrix successfully and was closed without merge. That evidence supports the bounded V1 closure, but it does **not** prove that GitHub server-side governance enforces the matrix.
+The final V1 governance probe PR #446 exercised the permanent matrix successfully and was closed without merge. That evidence supports the bounded V1 closure.
 
-Issue #432 is currently **OPEN / P1** as a post-V1 governance enforcement/read-back issue. The current ruleset snapshot must be resolved live before use; at the 2026-08-27 audit checkpoint, required review-thread resolution was still false and no required-status-check rule was present. This does not reopen V1 and does not change runtime or epistemic authority.
+Live ruleset read-back on 2026-09-07 confirms that `crystal-main-governance` / `20602128` is active on the default branch, requires review-thread resolution, and requires all nine permanent CI check contexts listed above. Required approval count remains `0`; bypass actors are absent and the current user cannot bypass. Issue #432 is therefore **CLOSED / COMPLETED**. This governance closure does not reopen V1 and does not change runtime or epistemic authority.
 
 ## Localization truth
 
@@ -130,7 +130,7 @@ Localization freshness is owned by [`docs/TRANSLATION_STATUS.md`](./TRANSLATION_
 
 ## Backlog boundary
 
-There is no open P0/P1 work in the **V1 completion program**. Post-V1 governance Issue #432 remains separately open. Existing P2/P3, research, future and frozen records remain optional backlog/evidence only.
+There is no open P0/P1 work in the **V1 completion program**. Post-V1 governance Issue #432 is closed/completed. Existing P2/P3, research, future and frozen records remain optional backlog/evidence only.
 
 The following are explicitly **not** implied next steps:
 
@@ -321,7 +321,7 @@ REMAINING 0%
 ██████████ 100%
 V1 P0 0
 V1 P1 0
-POST-V1 GOVERNANCE #432 OPEN / P1
+POST-V1 GOVERNANCE #432 CLOSED / COMPLETED
 V1.x / V2 / RESEARCH = BACKLOG ONLY
 CURRENT PROJECT PHASE = FREEZE / STABILITY
 AUTOMATIC NEXT MILESTONE = NONE

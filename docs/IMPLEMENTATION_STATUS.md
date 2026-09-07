@@ -1,9 +1,9 @@
 # Implementation Status: Crystal vs Future Exo-Cortex Work
 
-**Status date:** 2026-08-27  
+**Status date:** 2026-09-07  
 **V1 lifecycle:** **COMPLETE / 100% / FREEZE-STABILITY**  
 **V1 P0/P1 remaining:** `0 / 0`  
-**Post-V1 governance:** Issue `#432` is **OPEN / P1**; this does **not** reopen V1.  
+**Post-V1 governance:** Issue `#432` is **CLOSED / COMPLETED**; its bounded server-side acceptance criteria are satisfied and this does **not** reopen V1.  
 **Automatic next implementation milestone:** `NONE`  
 **Authoritative closure:** [`docs/status/CRYSTAL_V1_CLOSURE_2026-08-22.md`](./status/CRYSTAL_V1_CLOSURE_2026-08-22.md)
 
@@ -173,9 +173,9 @@ PostgreSQL/pgvector activation, queue federation, distributed exactly-once behav
 
 The permanent V1 PR matrix consists of nine checks: `code-quality`, `Ring Zero mutation gate`, `docs-status`, `test (3.11)`, `test (3.12)`, `jsonl-integrity`, `eval-gate`, `security`, and `docker-build`.
 
-PR #446 exercised the matrix successfully before being closed without merge. That is V1 closure evidence, not proof of server-side enforcement.
+PR #446 exercised the matrix successfully before being closed without merge. That remains historical V1 closure evidence.
 
-Issue #432 is **OPEN / P1** as a separate post-V1 governance enforcement/read-back issue. At the 2026-08-27 audit checkpoint, the active ruleset still had `required_review_thread_resolution=false` and no required-status-check rule. This governance P1 does not reopen V1 and changes no runtime/epistemic authority.
+Live ruleset read-back on 2026-09-07 confirms that `crystal-main-governance` / `20602128` is active on the default branch, requires review-thread resolution, and requires all nine permanent CI check contexts. Required approval count remains `0`; bypass actors are absent and the current user cannot bypass. Issue #432 is therefore **CLOSED / COMPLETED**. This governance closure does not reopen V1 and changes no runtime/epistemic authority.
 
 ## Localization / grant
 
@@ -185,7 +185,7 @@ NLnet remains **submitted / under review / not awarded**. Approximate €50,000 
 
 ## Future work boundary
 
-No P0/P1 implementation work remains in the **V1 completion program**. Post-V1 governance #432 remains separate. P2/P3, research, deferred and frozen items are non-blocking backlog only.
+No P0/P1 implementation work remains in the **V1 completion program**. Post-V1 governance #432 is closed/completed. P2/P3, research, deferred and frozen items are non-blocking backlog only.
 
 V1 completion does **not** authorize:
 
@@ -208,7 +208,7 @@ DONE = 100%
 REMAINING = 0%
 V1 P0 = 0
 V1 P1 = 0
-POST-V1 GOVERNANCE #432 = OPEN / P1
+POST-V1 GOVERNANCE #432 = CLOSED / COMPLETED
 PHASE = FREEZE / STABILITY
 AUTOMATIC NEXT MILESTONE = NONE
 ```
