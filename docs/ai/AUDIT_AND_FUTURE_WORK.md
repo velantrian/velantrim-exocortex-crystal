@@ -151,7 +151,13 @@ reconciliation date:                 2026-09-08
 resolved main checkpoint:            main@df4a651a2b4dd06df486e65cdbdcfe1090743135
 Issue #432:                          CLOSED / COMPLETED
   closed_at:                         2026-08-29T14:48:45Z
-  closed_by_pull_request:            #465 (MERGED)
+  closure basis:                     live ruleset read-back satisfied the
+                                      bounded target configuration (below);
+                                      no merged PR implements or closes #432 —
+                                      PR #465 (merged 2026-08-27, two days
+                                      before this closure) explicitly states
+                                      "This PR does not implement or close
+                                      #432" in its own body
 ruleset: crystal-main-governance / 20602128
   enforcement:                       active
   target:                            default branch (~DEFAULT_BRANCH)
@@ -166,11 +172,13 @@ ruleset: crystal-main-governance / 20602128
   current_user_can_bypass:           never
 ```
 
-Evidence anchors: Issue #432 (closed/completed) · merged PR #465 (governance
-closure) · PR #472 (`main@df4a651a2b4dd06df486e65cdbdcfe1090743135`) reconciling
-`docs/STATUS.md`, `docs/IMPLEMENTATION_STATUS.md`, and
+Evidence anchors: Issue #432 (CLOSED/COMPLETED, closed_at 2026-08-29T14:48:45Z)
+· live ruleset `20602128` read-back satisfying the bounded target
+configuration · PR #472 (`main@df4a651a2b4dd06df486e65cdbdcfe1090743135`)
+reconciling `docs/STATUS.md`, `docs/IMPLEMENTATION_STATUS.md`, and
 `docs/status/current-lifecycle-overlay.json` to this same live ruleset
-read-back.
+read-back · `docs/status/REPOSITORY_HYGIENE_2026-08-29.md` recording the
+reopen/re-close history. No merged PR is the closure mechanism for #432.
 
 **FW-001 is reclassified `DONE` in §3 below.** This reconciliation changes no
 runtime, Reader, Canon, Guardian, TruthGate, storage, grant, or cross-project
@@ -208,7 +216,7 @@ Reader discovery/inspection remains upstream of ordinary evidence admission and 
 **Implementation authorized:** NO by this ledger; governance-only scope requires separate action  
 **Runtime capability change:** NO  
 **Authority impact:** repository merge-governance only if later explicitly changed  
-**Known Issue / PR:** Issue #432 (CLOSED/COMPLETED, closed 2026-08-29 via merged PR #465)  
+**Known Issue / PR:** Issue #432 (CLOSED/COMPLETED, closed_at 2026-08-29T14:48:45Z; closure basis is the live ruleset read-back, not a merged PR — see §1a)  
 **Last verified:** 2026-09-08 (previously 2026-08-17 — see §1a)  
 **Evidence anchor:** live ruleset `20602128` reconciled 2026-09-08 (§1a) + Issue #432 CLOSED/COMPLETED + `main@df4a651a2b4dd06df486e65cdbdcfe1090743135`  
 **Revalidation trigger:** ruleset update; Issue #432 lifecycle; workflow/context rename; branch-governance decision.
