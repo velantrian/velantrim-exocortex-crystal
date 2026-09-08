@@ -5,8 +5,8 @@
 **Project:** `velantrian/velantrim-exocortex-crystal`  
 **Default branch:** `main`  
 **Authority:** orientation / audit / future-work ledger only; it does **not** authorize implementation.  
-**Last live reconciliation:** 2026-08-17  
-**Audited repository checkpoint:** `main@31e529cf1269619778449f7f5228b83b184caa56`  
+**Last live reconciliation:** 2026-08-17 (full-ledger audit); FW-001 governance item reconciled again 2026-09-08 — see §1a  
+**Audited repository checkpoint:** `main@31e529cf1269619778449f7f5228b83b184caa56` (2026-08-17 full-ledger audit); `main@df4a651a2b4dd06df486e65cdbdcfe1090743135` (2026-09-08 FW-001 reconciliation, §1a)  
 **Current-state / implementation owner:** `docs/status/implementation-manifest.json` + current code/tests/runtime composition  
 **Notion mirror:** `🤖 Crystal — AI Agent Context & Audit Hand-off`
 
@@ -107,6 +107,11 @@ No fresh live evidence in this audit selects a new Reader experiment, PostgreSQL
 **Runtime changed by this reconciliation:** NO.  
 **Authority changed by this reconciliation:** NO.
 
+> **This 2026-08-17 checkpoint is preserved verbatim as historical audit evidence.**
+> It is superseded as a description of *current* FW-001/Issue #432/ruleset state by
+> the §1a reconciliation below. Do not edit the text above when reconciling; add a
+> new dated section instead.
+
 ### Evidence anchors
 
 - `main@31e529cf1269619778449f7f5228b83b184caa56`
@@ -127,6 +132,49 @@ Re-run relevant ledger audits when any of these change:
 - runtime/backend activation changes;
 - a new explicit Owner/maintainer authorization selects a bounded scope;
 - grant/public status changes where the claim queue is concerned.
+
+---
+
+## 1a. Reconciliation checkpoint — 2026-09-08 (FW-001 closure evidence)
+
+This section reconciles FW-001 against fresh live evidence. **It does not alter,
+delete, or reinterpret the 2026-08-17 checkpoint in §1 above**, which remains
+frozen historical audit evidence of what the ruleset and Issue #432 looked like
+on that date (including an intermediate reopen/re-close cycle recorded in
+`docs/status/REPOSITORY_HYGIENE_2026-08-29.md`, P1: Issue #432 was briefly
+reopened on 2026-08-29 after a hygiene audit found the closure evidence
+insufficient, then re-closed only once a fresh read-back proved the bounded
+target configuration).
+
+```text
+reconciliation date:                 2026-09-08
+resolved main checkpoint:            main@df4a651a2b4dd06df486e65cdbdcfe1090743135
+Issue #432:                          CLOSED / COMPLETED
+  closed_at:                         2026-08-29T14:48:45Z
+  closed_by_pull_request:            #465 (MERGED)
+ruleset: crystal-main-governance / 20602128
+  enforcement:                       active
+  target:                            default branch (~DEFAULT_BRANCH)
+  required_approving_review_count:   0
+  required_review_thread_resolution: true
+  required_status_check_rule:        present — 9 permanent PR CI contexts:
+                                      code-quality, Ring Zero mutation gate,
+                                      docs-status, test (3.11), test (3.12),
+                                      jsonl-integrity, eval-gate, security,
+                                      docker-build
+  bypass_actors:                     none
+  current_user_can_bypass:           never
+```
+
+Evidence anchors: Issue #432 (closed/completed) · merged PR #465 (governance
+closure) · PR #472 (`main@df4a651a2b4dd06df486e65cdbdcfe1090743135`) reconciling
+`docs/STATUS.md`, `docs/IMPLEMENTATION_STATUS.md`, and
+`docs/status/current-lifecycle-overlay.json` to this same live ruleset
+read-back.
+
+**FW-001 is reclassified `DONE` in §3 below.** This reconciliation changes no
+runtime, Reader, Canon, Guardian, TruthGate, storage, grant, or cross-project
+authority — it is a governance-tracking-ledger update only.
 
 ---
 
@@ -154,15 +202,15 @@ Reader discovery/inspection remains upstream of ordinary evidence admission and 
 
 ## FW-001 — Server-side main governance enforcement
 
-**State:** `OPEN / STILL_OPEN`  
+**State:** `DONE` (reconciled 2026-09-08 — see §1a; 2026-08-17 evidence below is historical)  
 **Priority:** `P1`  
 **Suggested audit sequence:** 1  
 **Implementation authorized:** NO by this ledger; governance-only scope requires separate action  
 **Runtime capability change:** NO  
 **Authority impact:** repository merge-governance only if later explicitly changed  
-**Known Issue / PR:** Issue #432  
-**Last verified:** 2026-08-17  
-**Evidence anchor:** live ruleset `20602128` + Issue #432 + `main@31e529cf...`  
+**Known Issue / PR:** Issue #432 (CLOSED/COMPLETED, closed 2026-08-29 via merged PR #465)  
+**Last verified:** 2026-09-08 (previously 2026-08-17 — see §1a)  
+**Evidence anchor:** live ruleset `20602128` reconciled 2026-09-08 (§1a) + Issue #432 CLOSED/COMPLETED + `main@df4a651a2b4dd06df486e65cdbdcfe1090743135`  
 **Revalidation trigger:** ruleset update; Issue #432 lifecycle; workflow/context rename; branch-governance decision.
 
 ### Question
@@ -172,7 +220,18 @@ Does GitHub itself enforce Crystal's permanent PR CI gates and review-thread res
 A correctly followed manual process can coexist with a weaker server-side merge gate.
 
 ### Current evidence
-The active default-branch ruleset still requires PR use but has `required_review_thread_resolution=false`, zero required approvals, no required-status-check rule, and no bypass actors. Issue #432 remains open.
+**Superseded 2026-08-17 evidence (historical, preserved in §1 above):** the active
+default-branch ruleset at that time had `required_review_thread_resolution=false`,
+zero required approvals, no required-status-check rule, and no bypass actors;
+Issue #432 was open.
+
+**Current evidence (2026-09-08, see §1a):** the live ruleset `20602128` now has
+`required_review_thread_resolution=true` and a required-status-check rule
+present covering all 9 permanent PR CI contexts (`code-quality`, `Ring Zero
+mutation gate`, `docs-status`, `test (3.11)`, `test (3.12)`, `jsonl-integrity`,
+`eval-gate`, `security`, `docker-build`). Required approvals remain `0` (solo-
+maintainer governance model, unchanged) and bypass actors remain absent. Issue
+#432 is CLOSED/COMPLETED.
 
 ### Files / components to inspect
 `.github/workflows/ci.yml`, live ruleset payload, branch/rules governance, and any accepted governance documentation.
@@ -195,8 +254,16 @@ Required approval count remains a separate governance decision. `0 unresolved th
 ### Falsification / closure condition
 `DONE` only if fresh server-side read-back proves the intended permanent checks and review-thread resolution are actually enforced. Otherwise remain open or mark superseded by a newer explicit governance decision.
 
+**Satisfied 2026-09-08** (see §1a): a fresh ruleset read-back proves both the
+required-status-check rule (all 9 permanent contexts) and
+`required_review_thread_resolution=true` are enforced server-side.
+
 ### Exit criteria
 Evidence-bound `DONE / STILL_OPEN / SUPERSEDED` classification.
+
+**Closed as `DONE` on 2026-09-08.** A future revalidation trigger (ruleset
+change, workflow/context rename, or governance decision) may reopen this
+entry; do not reopen on speculation alone.
 
 ### Possible outcomes
 `DONE`, `STILL_OPEN`, `SUPERSEDED`, `BLOCKED`.
