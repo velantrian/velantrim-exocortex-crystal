@@ -1,7 +1,7 @@
 # core/pipeline.py
 # Velantrim ExoCortex — Core Pipeline
 #
-# Principle: Graph = Truth · LLM = Language · Memory = layered storage tiers
+# Principle: physical L3 != strict Canon · LLM = Language · Memory = layered storage tiers
 # Pipeline: Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer
 #
 # Retrieval — vector-based (cosine of embeddings) over the seed corpus + recall from L3.

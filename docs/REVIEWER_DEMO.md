@@ -81,13 +81,13 @@ The Eiffel Tower is in Paris.
 No model was called: the default answerer is extractive and deterministic.
 The graph, not a language model, is the source of the answer.
 
-## Step 3 — Inspect the typed canon
+## Step 3 — Inspect the L3 store (typed epistemic states)
 
 ```bash
 velantrim report
 ```
 ```text
-MEMORY REPORT (L3 canonical graph)
+MEMORY REPORT (L3 store — all epistemic states)
   facts: 1  avg_confidence=0.6  avg_significance=0.5
   epistemic_state: {'Validated': 1}
   claim_type:      {'WORLD_FACT': 1}

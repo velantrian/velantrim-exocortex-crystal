@@ -51,10 +51,11 @@ The Eiffel Tower is in Paris.
 
 The answer comes from the stored fact via extractive retrieval — **no model was
 called**. The fact was classified (`WORLD_FACT`), gated, and given an epistemic
-state. `velantrim report` confirms the canon:
+state. `velantrim report` shows the L3 store state (all epistemic states —
+physical L3 != strict Canon):
 
 ```
-MEMORY REPORT (L3 canonical graph)
+MEMORY REPORT (L3 store — all epistemic states)
   facts: 1  avg_confidence=0.6  avg_significance=0.5
   epistemic_state: {'Validated': 1}
   claim_type:      {'WORLD_FACT': 1}

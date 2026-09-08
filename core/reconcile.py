@@ -247,8 +247,9 @@ def supersede(old_id: str, new_fact: Dict[str, Any], *, enforce_gate: bool = Tru
 
     The new fact is a *fresh* claim, so by default it must clear the same
     Guardian + TruthGate path as any other entry into L3 — a supersession is not
-    a licence to inject an unvalidated world fact into the canon (Graph = Truth:
-    the gate is the only entry). Raises ValueError if the new fact is rejected.
+    a licence to inject an unvalidated world fact into the canon (the gate is
+    the only entry; physical L3 != strict Canon). Raises ValueError if the new
+    fact is rejected.
     `enforce_gate=False` is reserved for callers that have already gated the fact.
     """
     new_id = new_fact.get("fact_id")
