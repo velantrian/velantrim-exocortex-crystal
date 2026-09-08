@@ -5,7 +5,8 @@
 # module. The only automatic entry into the L3 graph. Bypassing it = an
 # architectural bug. core/pipeline.py re-exports `truth_gate` for backward
 # compatibility — both import paths resolve to this single function.
-# TODO Sprint 2: full ESM transition matrix, Laplace confidence.
+# Known limitation (not scheduled — Crystal V1 is freeze/stability with no
+# automatic next milestone): full ESM transition matrix, Laplace confidence.
 
 from typing import Any, Dict, Optional
 

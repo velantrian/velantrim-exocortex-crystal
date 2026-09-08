@@ -6,5 +6,6 @@ graduated into `core/adaptation.py`). They live here so the repo root stays
 focused on the runtime memory system, and so the README stops implying the core
 already calls them.
 
-See FUTURE.md §3.3 for the per-module "wire it in vs keep as prototype" decision.
+See prototypes/README.md for the per-module classification: RETAINED RESEARCH,
+not wired into the core pipeline.
 """

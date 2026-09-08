@@ -9,7 +9,8 @@
 # backend (auto→LadybugDB / mock / neo4j). Full L0–L6 architecture:
 # docs/archive/Velantrim_V8_Crystal_Sprint1_toc.md
 #
-# TODO (next):
+# Known limitations (not scheduled — Crystal V1 is freeze/stability with no
+# automatic next milestone; these are deferred, non-authorizing notes):
 #   - ESM: full transition matrix + automatic Supported/Hypothesized
 #   - First-class episodic nodes (Person/Place/Time) instead of edge props
 # (Done: HybridRetriever graph-walk over vector-recall — see _graph_walk below.)

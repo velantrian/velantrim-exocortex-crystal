@@ -71,7 +71,8 @@ class L3GraphBackend(ABC):
     # store's vectors were built with, so embedding.assert_compatible_embedder
     # catches an embedder swap. Default — an in-process attribute; that is enough
     # for the mock and for detecting a swap within a session. Cross-restart persistence
-    # of the fingerprint on LadybugDB/Neo4j (a metadata row) is an optional step, see FUTURE.md §2.2.
+    # of the fingerprint on LadybugDB/Neo4j (a metadata row) remains an optional,
+    # unscheduled enhancement.
     def embedder_fingerprint(self) -> Optional[str]:
         """id of the embedder the store's vectors were built with (None before the first write)."""
         return getattr(self, "_embedder_fp", None)
