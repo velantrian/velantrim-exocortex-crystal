@@ -1,6 +1,6 @@
 # ADR-017 — Crash-consistent curator decisions and idempotent L3 projection
 
-- **Status:** Proposed implementation draft in issue #315
+- **Status:** Accepted
 - **Date:** 2026-08-06
 - **Scope:** curator approve, force approve, reject and explicit contradiction decisions
 
@@ -90,8 +90,7 @@ success.
 - L3 may temporarily lag a recorded decision and must expose that status;
 - process-local projector execution is not distributed exactly-once delivery;
 - multi-process scheduling/fencing remains a separate concern;
-- a complete CI run and independent review are required before this draft becomes
-  accepted runtime baseline.
+- acceptance of this ADR does not by itself authorize production deployment or a new runtime phase.
 
 ## Non-goals
 
@@ -102,7 +101,9 @@ success.
 - no new cloud, broker or graph dependency;
 - no production distributed-lock claim.
 
-## Verification required before acceptance
+## Verification expectations for this accepted baseline
+
+Future changes to these guarantees must preserve:
 
 - L3 failure after decision commit;
 - audit failure before commit;
