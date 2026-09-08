@@ -2,9 +2,10 @@
 # Velantrim ExoCortex — Memory-health diagnostic
 #
 # A single, read-only diagnostic score derived from the existing memory_report()
-# observability snapshot (core/observe.py). It summarises the state of the L3
-# canonical graph — average confidence minus penalties for contradicted,
-# deprecated and weak-confidence facts.
+# observability snapshot (core/observe.py). It summarises the state of the
+# physical L3 store across epistemic states (physical L3 != strict Canon) —
+# average confidence minus penalties for contradicted, deprecated and
+# weak-confidence facts.
 #
 # This is a *diagnostic memory-health* score. It is NOT a truth guarantee,
 # NOT a compliance score, and NOT a production-readiness score. There is exactly
@@ -32,8 +33,9 @@ def health_score() -> Dict[str, Any]:
         - weak_confidence_ratio  * 0.20
     )
 
-    Deterministic and read-only: it only reads the L3 observability snapshot and
-    never writes to L1/L3 or mutates any state.
+    Deterministic and read-only: it only reads the physical L3 observability
+    snapshot (all epistemic states) and never writes to L1/L3 or mutates any
+    state.
     """
     report = memory_report()
     n = report["total_facts"]

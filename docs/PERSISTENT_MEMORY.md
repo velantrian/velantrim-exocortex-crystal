@@ -3,8 +3,10 @@
 Velantrim separates **persistence**, **canonical truth**, and **immutability**. These are related but not identical.
 
 > Persistent memory survives process restart.  
-> Canonical memory has passed the TruthGate and entered the L3 graph — but
-> physical L3 membership alone is not strict Canon; see §4.  
+> Gated/admitted memory has passed Guardian + TruthGate and may be persisted
+> to physical L3. Physical L3 membership alone does not imply strict Canon
+> eligibility — strict grounding eligibility is derived through CanonicalView;
+> see §4.  
 > Immutable memory is protected by Ring Zero / `ImmutableCore` rules.
 
 ---
