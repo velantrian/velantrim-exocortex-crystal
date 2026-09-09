@@ -1,6 +1,6 @@
 # ADR-019 — Bounded no-fingerprint retrieval and explicit reindex
 
-- **Status:** Proposed implementation draft in issue #317
+- **Status:** Accepted
 - **Date:** 2026-08-06
 - **Scope:** strict read-only query/search on legacy L3 stores
 
@@ -68,7 +68,8 @@ complete index.
 - Mock still scans keys to select the smallest bounded window;
 - reindex can be a long operator task;
 - Ladybug/other backends need separately reviewed reindex/bounded adapters;
-- the informational benchmark does not establish a production latency SLO.
+- the informational benchmark does not establish a production latency SLO;
+- acceptance of this ADR does not by itself authorize backend activation or a new runtime phase.
 
 ## Non-goals
 

@@ -1,6 +1,6 @@
 # ADR-018 — Authenticated curator write composition
 
-- **Status:** Proposed implementation draft in issue #316
+- **Status:** Accepted
 - **Date:** 2026-08-06
 - **Scope:** public approve, reject, force-approve and contradiction-resolution surfaces across HTTP and CLI
 
@@ -112,7 +112,7 @@ external fencing adapter.
 - token rotation, revocation, tenant policy administration and per-token role
   mapping remain host/deployment work;
 - the included lease is process-local only;
-- independent current-head review and full CI are required before acceptance.
+- acceptance of this ADR does not by itself authorize production deployment or a new runtime phase.
 
 ## Non-goals
 

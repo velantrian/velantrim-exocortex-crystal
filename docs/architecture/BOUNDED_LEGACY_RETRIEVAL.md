@@ -1,6 +1,6 @@
 # Bounded legacy retrieval and explicit embedding reindex
 
-**Status:** implementation draft for issue #317.  
+**Status:** accepted baseline for issue #317 / ADR-019.  
 **Boundary:** read-only public query vs explicit operator maintenance.
 
 ## Problem
@@ -87,7 +87,7 @@ as a compatible complete index.
 Mock therefore keeps the previous complete index usable on failure; it does not expose a
 partial replacement as compatible.
 
-The reviewed reindex adapters in this draft are `MockL3Graph` and `SqliteL3Graph`.
+The reviewed reindex adapters are `MockL3Graph` and `SqliteL3Graph`.
 Other backends require an explicit adapter and otherwise fail with
 `ReindexUnsupported`.
 
@@ -127,4 +127,5 @@ but avoids full sorting; SQLite delegates the ordered limit to its primary-key i
 - reindex is an explicit potentially long maintenance operation;
 - no mandatory FTS, external search service or cloud dependency is added;
 - no automatic reindex occurs during query;
-- controlled-environment capacity/SLO policy remains separate future work.
+- controlled-environment capacity/SLO policy remains separate future work;
+- acceptance of this baseline does not authorize backend activation or a new runtime phase.

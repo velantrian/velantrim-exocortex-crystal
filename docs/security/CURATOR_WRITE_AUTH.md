@@ -1,6 +1,6 @@
 # Curator write authentication and authorization boundary
 
-**Status:** implementation draft for issue #316 / ADR-018.  
+**Status:** accepted baseline for issue #316 / ADR-018.  
 **Scope:** approve, reject, force-approve and explicit contradiction decisions across HTTP and CLI.
 
 ## Security objective
@@ -135,7 +135,9 @@ multi-tenancy from the bundled implementation.
 - test token revocation/rotation and backup recovery in the host environment;
 - never copy secrets or private identity configuration into repository documentation.
 
-## Verification required before acceptance
+## Regression expectations
+
+Future changes must preserve:
 
 - actor-spoofing denial with zero L1/L3/audit mutation across HTTP and CLI;
 - missing-principal denial under bearer authentication and CLI execution;
@@ -146,3 +148,5 @@ multi-tenancy from the bundled implementation.
 - fixed synthetic local-mode tests and documentation;
 - invalid bearer-token configuration tests;
 - complete Python 3.11/3.12 CI, coverage and security checks.
+
+Acceptance of this baseline does not imply production deployment authorization.
