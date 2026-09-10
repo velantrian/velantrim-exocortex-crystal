@@ -1,8 +1,9 @@
 # core/observe.py
 # Velantrim ExoCortex — Memory Observability
 #
-# A window into L3 canonical memory: how many facts, in which ESM states, of which
-# modalities and truth statuses, how many contradictions/obsolete, which
+# A window into the L3 store across all epistemic states (not a Canon-filtered
+# view — physical L3 != strict Canon): how many facts, in which ESM states, of
+# which modalities and truth statuses, how many contradictions/obsolete, which
 # have dropped in confidence (forgotten by SleepCycle), and edges by type. Supports the goal
 # of transparent, source-grounded memory observability — the state of truth is visible in one call.
 
@@ -17,7 +18,8 @@ _WEAK_CONFIDENCE = 0.2
 
 def memory_report(*, weak_confidence: float = _WEAK_CONFIDENCE) -> Dict[str, Any]:
     """
-    Summary of the L3 canonical graph. Deterministic, read-only.
+    Summary of the L3 store across all epistemic states (not a Canon-filtered
+    view). Deterministic, read-only.
     """
     graph = get_l3_graph()
     facts = graph.all_facts()
@@ -65,7 +67,7 @@ def memory_report(*, weak_confidence: float = _WEAK_CONFIDENCE) -> Dict[str, Any
 def format_report(report: Dict[str, Any]) -> str:
     """Human-readable rendering of the memory_report() report."""
     lines = [
-        "MEMORY REPORT (L3 canonical graph)",
+        "MEMORY REPORT (L3 store — all epistemic states)",
         f"  facts: {report['total_facts']}  "
         f"avg_confidence={report['avg_confidence']}  "
         f"avg_significance={report['avg_significance']}",

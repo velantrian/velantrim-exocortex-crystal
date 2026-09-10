@@ -4,10 +4,10 @@
 
 ## What it does
 
-Runs a read-only, machine-executable check against the current Crystal L3
-canonical state and emits a JSON report of which epistemic invariants are
-satisfied, which are violated, and which cannot be checked given the current
-schema.
+Runs a read-only, machine-executable check against the current Crystal
+physical L3 state (all epistemic states — physical L3 != strict Canon) and
+emits a JSON report of which epistemic invariants are satisfied, which are
+violated, and which cannot be checked given the current schema.
 
 It is **reviewer / conformance tooling**. It does not claim to be a formal
 mathematical proof.
@@ -141,7 +141,7 @@ verified.
 
 `velantrim invariant-check` does not write to any store. It queries:
 
-- L3 canonical graph (`all_facts()`)
+- L3 store (`all_facts()`) — physical L3 across all epistemic states, not a strict-Canon-filtered projection
 - Evidence span store (`has_evidence()`)
 
 It does not call TruthGate, Guardian, the review queue, or any write-path function.

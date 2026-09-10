@@ -3,7 +3,10 @@
 Velantrim separates **persistence**, **canonical truth**, and **immutability**. These are related but not identical.
 
 > Persistent memory survives process restart.  
-> Canonical memory has passed the TruthGate and entered the L3 graph.  
+> Gated/admitted memory has passed Guardian + TruthGate and may be persisted
+> to physical L3. Physical L3 membership alone does not imply strict Canon
+> eligibility — strict grounding eligibility is derived through CanonicalView;
+> see §4.  
 > Immutable memory is protected by Ring Zero / `ImmutableCore` rules.
 
 ---
@@ -96,6 +99,17 @@ L3 graph merge
 ```
 
 A direct write to L3 without TruthGate is an architectural violation.
+
+**Physical L3 membership is not strict Canon.** Passing Guardian + TruthGate and
+merging into L3 is the gated *write* path; it is necessary but not sufficient
+for "strict Canon" grounding eligibility. Canon membership for confident-answer
+grounding is a separate, read-time question, resolved by `core.canonical_view`'s
+default STRICT projection (see [`CANONICAL_VIEW_RFC.md`](./CANONICAL_VIEW_RFC.md)
+and [`STORAGE_AND_AUTHORITY_BOUNDARIES.md`](./STORAGE_AND_AUTHORITY_BOUNDARIES.md)).
+A Validated, L3-resident fact can still be excluded from STRICT grounding by
+that projection's own rules (for example, qualifier/claim-type policy). This
+document describes the persistence/write-path model only; it is not the
+source of truth for Canon *read* eligibility.
 
 ---
 

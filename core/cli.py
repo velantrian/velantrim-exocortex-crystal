@@ -78,7 +78,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_ask.add_argument("query")
     p_hist = sub.add_parser("history", help="truth provenance of a fact")
     p_hist.add_argument("fact_id")
-    sub.add_parser("report", help="summary of L3 canonical memory")
+    sub.add_parser("report", help="summary of the L3 store (all epistemic states)")
     p_erase = sub.add_parser(
         "erase", help="physically delete a fact across all fabrics (GDPR Art. 17)")
     p_erase.add_argument("fact_id")
