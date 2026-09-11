@@ -1,8 +1,9 @@
 # Topic facets and curator IAM
 
 This guide covers advisory topic metadata and the authenticated curator
-composition proposed in issue #316 / ADR-018. Deployment threats and controls
-are documented in [Curator write authentication](./security/CURATOR_WRITE_AUTH.md).
+composition — accepted baseline for issue #316 / ADR-018 (issue closed/completed,
+ADR-018 Accepted). Deployment threats and controls are documented in
+[Curator write authentication](./security/CURATOR_WRITE_AUTH.md).
 
 ## Advisory topic facets
 
