@@ -9,7 +9,8 @@
 #   - ImmuneCRISPRMemoryGuard     → prototypes/immune_crispr_memory_guard.py (RFC0072)
 #   - NeurogenesisDynamicGrowth   → prototypes/neurogenesis_dynamic_growth.py (RFC0073)
 #
-# ⚠️ Prototype: NOT wired into the core pipeline (unlike epigenetic). See FUTURE.md §3.3.
+# ⚠️ Prototype: NOT wired into the core pipeline (unlike epigenetic). See
+# prototypes/README.md — RETAINED RESEARCH, not wired into the core pipeline.
 
 import time
 import uuid
@@ -119,7 +120,8 @@ class HybridBiologicalMemory:
 
 
 # Demo — mirrors the example in DEMO.md so that `python -m prototypes.hybrid_biological_memory`
-# actually shows something. A prototype, not wired into the core pipeline (see FUTURE.md §3.3).
+# actually shows something. A prototype, not wired into the core pipeline (see
+# prototypes/README.md).
 if __name__ == "__main__":  # pragma: no cover
     hbm = HybridBiologicalMemory()
 
