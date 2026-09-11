@@ -2,11 +2,10 @@
 
 ## Status
 
-`PROPOSED ON BRANCH · GITHUB_AND_NOTION · NOT AUTHORITATIVE MAIN UNTIL MERGED`
+`MERGED / IN MAIN · NOT RUNTIME-AUTHORIZED`
 
-Target baseline at branch creation:
-
-`main@b28899989a0af67ed397264bb73cac8e970b101c`
+**Merged:** PR #457 · merge commit `fea1971ebf2420df8c677a1d0a4c74c18700d095` (2026-08-24)  
+**Validation:** exact-head CI #1793 — 9/9 SUCCESS; bounded review — no P0/P1 blocker
 
 ## Problem
 

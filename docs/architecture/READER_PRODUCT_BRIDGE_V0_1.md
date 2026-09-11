@@ -1,6 +1,8 @@
 # Crystal Reader Product Bridge v0.1
 
-**Status:** IMPLEMENTED IN DRAFT PR · NOT MERGED  
+**Status:** MERGED / IN MAIN · NOT RUNTIME-AUTHORIZED  
+**Merged:** PR #455 · merge commit `06e81edc159838b4129b41284d701823ce49cff8` (2026-08-23)  
+**Validation:** exact-head CI #1787 — 9/9 SUCCESS; final bounded review — no remaining P0/P1 blocker  
 **Scope:** pass-bounded foreground orchestration over existing RC-1..RC-3  
 **Documentation impact:** `GITHUB_AND_NOTION`
 
