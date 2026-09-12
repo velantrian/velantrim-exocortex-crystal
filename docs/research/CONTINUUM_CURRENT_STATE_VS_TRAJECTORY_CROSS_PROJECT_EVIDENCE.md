@@ -48,9 +48,9 @@ For reviewers, this is useful because it shows how the wider Velantrim research 
 
 ## 2. The research question
 
-The current Continuum experiment, `CONT-E0T`, tests a deliberately narrow **Claim B**:
+The preregistered Continuum experiment, `CONT-E0T`, tests a deliberately narrow **Claim B**:
 
-> For a frozen, fallible, replaceable reader, does adding a bounded genuine accepted trajectory to the same competent current-state representation improve practical resume adequacy on the frozen test surface?
+> For a protocol-frozen, fallible, replaceable reader, does adding a bounded genuine accepted trajectory to the same competent current-state representation improve practical resume adequacy on the frozen test surface?
 
 The two arms are conceptually:
 
@@ -62,6 +62,8 @@ CONT-T2
 = byte-identical current-state semantics
 + bounded genuine accepted transition trajectory
 ```
+
+In this note, **genuine trajectory** means that the experimenter-authored Evidence scenarios contain substantive intermediate state evolution rather than a snapshot-derived `SET`-from-final encoding. It does **not** mean naturally observed production history or a real user's historical log.
 
 The experiment is **not** designed to prove:
 
@@ -85,9 +87,9 @@ T2 > T1 != UNIVERSAL MEMORY LAW
 
 ## 3. An important correction made before the confirmatory run
 
-Earlier Continuum E0-T material included an event-log representation derived from an already-final current-state snapshot. Inspection showed that this older T2 representation did **not** contain genuine temporal state evolution: it serialized final fields into synthetic `SET` events.
+An earlier **pre-freeze candidate design** for Continuum E0-T included an event-log representation derived from an already-final current-state snapshot. Inspection showed that this older T2 representation did **not** contain genuine temporal state evolution: `event_projection()` emitted a snapshot-derived / `SET`-from-final event encoding in deterministic field order.
 
-Therefore an apparent old-style `T2 > T1` result could not have established independent value from real transition history. It could have reflected representation, redundancy or salience effects.
+Therefore, a hypothetical `T2 > T1` under that older design could not have established independent value from real transition history. It could have reflected representation, redundancy or salience effects.
 
 That problem was treated as a scientific identifiability failure rather than hidden behind a stronger claim.
 
@@ -102,7 +104,7 @@ The successor `CONT-E0T` design was rebuilt around a cleaner contrast:
 - list ordering in T1 is explicitly non-temporal;
 - model screening during Evidence construction is forbidden.
 
-This correction is itself a useful research result about experimental method:
+This correction is itself a useful **methodological finding** about experimental design:
 
 ```text
 REPRESENTATION ADVANTAGE != HISTORY ADVANTAGE
@@ -134,9 +136,11 @@ The confirmatory set contains exactly four frozen Evidence fixtures, promoted by
 
 The frozen decision rule is intentionally bounded. A positive experiment-level outcome requires all four pairs to complete, at least three `T2_SUPERIOR` pairs, and zero `T2_INFERIOR` pairs.
 
-The reader contract uses `deepseek-flash` / provider-labelled DeepSeek-V4.1-Flash with thinking disabled, temperature zero, no tools, no web, no memory and one fresh stateless invocation per arm/probe. The model alias is mutable and no immutable weight snapshot is available; the protocol therefore records the returned model identity and aborts on an identity change during the run.
+At the arm level, **adequate** means `PRIMARY_PASS` **and** no HARD FAIL. `PRIMARY_PASS` requires the frozen resume decision plus all required `must_compose` relations; a correct binary May/No action by itself is not sufficient. HARD FAIL classes include loss/override of a binding constraint, dishonest resolution of required UNKNOWN, or fabricated authorization.
 
-Blinded scoring roles are separated procedurally from fixture construction and arm permutation. This is procedural isolation, not a claim of hard physical independence.
+The reader contract uses `deepseek-flash` / provider-labelled DeepSeek-V4.1-Flash with thinking disabled, temperature zero, no tools, no web, no memory and one fresh stateless invocation per arm/probe. The **protocol is frozen, not the model weights**: the model alias is mutable and no immutable weight snapshot is available; the protocol therefore records the returned model identity and aborts on an identity change during the run.
+
+Scorer-A, Scorer-B and the Adjudicator are **Grok Bot agents, not humans**. Blinded scoring roles are separated procedurally from fixture construction and arm permutation. This is procedural isolation, not a claim of hard physical independence.
 
 As of this note:
 
@@ -162,11 +166,11 @@ A valid comparison must separate at least:
 4. the cost and attention burden of the richer package;
 5. state authority from model interpretation.
 
-It has also established that synthetic event re-encoding of a final snapshot cannot be used as evidence for independent trajectory value.
+It has also established that snapshot-derived event re-encoding of a final state cannot be used as evidence for independent trajectory value.
 
 ### Not established
 
-No current evidence supports the statements:
+No current **CONT-E0T evidence on the frozen source set** supports the statements:
 
 ```text
 history is necessary for continuation
@@ -176,7 +180,7 @@ event sourcing is the correct architecture
 current state alone is sufficient in general
 ```
 
-Those would exceed the preregistered evidence ceiling.
+Those would exceed the preregistered evidence ceiling. This statement is scoped to the present Continuum experiment and its evidence state; it is not a claim about all external literature.
 
 ---
 
@@ -295,9 +299,9 @@ Do not claim:
 ## 10. Current classification
 
 ```text
-CROSS_PROJECT_RESEARCH_RELEVANCE = HIGH
-CRYSTAL_REVIEWER_RELEVANCE       = HIGH
-GRANT_RESEARCH_RATIONALE         = RELEVANT
+CROSS_PROJECT_RESEARCH_RELEVANCE = HIGH [EDITORIAL ASSESSMENT]
+CRYSTAL_REVIEWER_RELEVANCE       = HIGH [EDITORIAL ASSESSMENT]
+GRANT_RESEARCH_RATIONALE         = RELEVANT [EDITORIAL ASSESSMENT]
 
 CONT_E0T_PREREGISTRATION         = FROZEN_PENDING_OWNER_GO
 CONT_E0T_READY_FOR_OWNER_GO      = YES
@@ -319,11 +323,19 @@ FUNDED_DELIVERABLE_CREATED       = NO
 
 ## 11. Source map
 
-### Continuum — primary research source
+### Continuum — primary research and protocol sources
+
+All detailed Continuum links below are pinned to immutable commits so an external reviewer can trace the claims without reconstructing the research history from branch state.
 
 - Repository: https://github.com/velantrian/Velantrim-Continuum
 - Frozen preregistration commit: https://github.com/velantrian/Velantrim-Continuum/commit/6847eb759d747955b8618021d2414f5ffa840584
 - Final preregistration: https://github.com/velantrian/Velantrim-Continuum/blob/6847eb759d747955b8618021d2414f5ffa840584/docs/research/CONT_E0T_FINAL_PREREGISTRATION.md
+- V2 candidate / correction record: https://github.com/velantrian/Velantrim-Continuum/blob/6847eb759d747955b8618021d2414f5ffa840584/docs/research/CONT_E0T_PREREGISTRATION_V2_CANDIDATE.md
+- Fields 1–4 + run integrity: https://github.com/velantrian/Velantrim-Continuum/blob/6847eb759d747955b8618021d2414f5ffa840584/docs/research/CONT_E0T_FIELDS_1_4_RUN_INTEGRITY.md
+- Fields 6–10 / pre-Evidence rules: https://github.com/velantrian/Velantrim-Continuum/blob/6847eb759d747955b8618021d2414f5ffa840584/docs/research/CONT_E0T_PRE_EVIDENCE_RULES.md
+- Field 5 reader contract: https://github.com/velantrian/Velantrim-Continuum/blob/6847eb759d747955b8618021d2414f5ffa840584/docs/research/CONT_E0T_FIELD5_READER_CONTRACT.md
+- Legacy snapshot-derived `event_projection()` implementation: https://github.com/velantrian/Velantrim-Continuum/blob/6847eb759d747955b8618021d2414f5ffa840584/scripts/e0/prepare_transfer.py
+- V2.2 correction commit: https://github.com/velantrian/Velantrim-Continuum/commit/2bb4aabd7772498278648be3b8cf36b2cbc2b9fa
 - Confirmatory Evidence manifest: https://github.com/velantrian/Velantrim-Continuum/blob/6847eb759d747955b8618021d2414f5ffa840584/docs/research/cont_e0t_v2/EVIDENCE_MANIFEST.json
 
 ### Crystal — relevant boundaries
