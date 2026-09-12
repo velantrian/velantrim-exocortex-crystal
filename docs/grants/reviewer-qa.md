@@ -172,6 +172,28 @@ identity, automatic corroboration, contradiction resolution, autonomous evidence
 zero hallucinations, universal truth, full security/GDPR certification, production-grade
 semantic search or a completed autonomous Reader.
 
+### Q13. What adjacent research exists on long-horizon memory and process continuity?
+
+A separate Velantrim project, **Continuum**, has reached a frozen preregistration for a bounded
+experiment comparing a competent current-state representation with the **same current state plus
+a genuine bounded transition trajectory**. The preregistration is frozen at
+`velantrian/Velantrim-Continuum@6847eb759d747955b8618021d2414f5ffa840584`.
+
+The experiment is currently `READY_FOR_OWNER_GO`, but it is **not authorized, not executed and
+has no model outputs or scientific result yet**. It tests only a practical utilization claim for
+a frozen replaceable reader. Even a positive result would not prove that historical trajectory
+is semantically necessary, that event sourcing is required, or that no better current-state-only
+representation exists.
+
+This work is relevant to Crystal because Crystal already distinguishes current trusted state
+from provenance, revision and lineage. It is therefore useful reviewer-facing research on when
+historical path information may or may not deserve reader/context exposure. It does **not**
+change Crystal runtime, Reader, Canon, Guardian, TruthGate, grant scope, award status or budget.
+
+See
+[`CONTINUUM_CURRENT_STATE_VS_TRAJECTORY_CROSS_PROJECT_EVIDENCE.md`](../research/CONTINUUM_CURRENT_STATE_VS_TRAJECTORY_CROSS_PROJECT_EVIDENCE.md)
+for the full cross-project boundary and source map.
+
 ---
 
 ## One-line positioning
