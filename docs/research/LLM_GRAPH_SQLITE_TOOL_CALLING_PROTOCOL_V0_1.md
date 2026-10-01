@@ -211,12 +211,14 @@ Gateway добавляет идентичность сессии и права �
 
 Результат для случая, где есть только рекомендация ассистента:
 
+Если полнота истории для этой области не подтверждена, отсутствие найденного пользовательского решения не доказывает, что решения не было; состояние остаётся `unknown` при `partial_or_unverified`.
+
 ```json
 {
   "scope_key": "direct_signet_integration",
   "candidate_key": "signet",
-  "decision_state": "no_confirmed_user_decision",
-  "coverage_state": "complete_for_scope",
+  "decision_state": "unknown",
+  "coverage_state": "partial_or_unverified",
   "basis_event_ids": ["evt-001", "evt-002"],
   "evidence": [
     {
@@ -498,7 +500,7 @@ Policy engine сверяет их с `current_standing`. Если evidence не 
 {"scope_key":"direct_signet_integration","candidate_key":"signet","include_evidence":true}
 ```
 
-2. Получает `decision_state=no_confirmed_user_decision`, `coverage_state=complete_for_scope` и `evt-001` с actor `assistant`.
+2. При неполном или непроверенном покрытии получает `decision_state=unknown`, `coverage_state=partial_or_unverified` и `evt-001` с actor `assistant`; эта запись не доказывает отсутствие пользовательского решения.
 
 3. Допустимый ответ LLM:
 
