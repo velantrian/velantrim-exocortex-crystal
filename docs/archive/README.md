@@ -23,6 +23,7 @@ are kept for provenance and audit-trail continuity only.
 | `Velantrim_V8_Crystal_Sprint1.jsonl` | A raw Sprint 1 design dump (RFC-style chunks). Retained as an audit note; CI still validates its JSONL integrity (parse + required fields + duplicate `chunk_id`) so the archived artifact does not silently rot. |
 | `Velantrim_V8_Crystal_Sprint1_toc.md` | The generated table of contents for the dump above. |
 | `grant-sync/` | Historical pre-sync grant/status snapshots retained for provenance. Internal links may point to paths that existed at capture time; treat these files as archival evidence, not current navigation. |
+| `documentation-audits/DOCUMENTATION_AUDIT_2026-08-23.md` | Historical documentation audit snapshot. Current defects were reconciled later; this copy is retained for provenance, not current status. |
 
 If you are looking for the architecture as it exists today, start from
 [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md), not the files in this directory.
