@@ -107,12 +107,12 @@ def test_ingest_low_confidence_world_fact_is_blocked():
     assert get_l3_graph().get_fact(res["fact"]["fact_id"]) is None
 
 
-def test_ingest_aborts_on_cas_miss(monkeypatch):
-    """If transition_esm reports a CAS miss (a competing writer changed the state),
-    ingest aborts: accepted False, nothing merged into the canon, no success
-    recorded. Defense-in-depth, not a full thread/process atomicity guarantee."""
+def test_ingest_aborts_on_guarded_promotion_miss(monkeypatch):
+    """A persisted-version mismatch aborts ingest before canon admission."""
     import core.ingest as ingest_mod
-    monkeypatch.setattr(ingest_mod, "transition_esm", lambda *a, **k: False)
+    monkeypatch.setattr(
+        ingest_mod, "transition_esm_if_unchanged", lambda *a, **k: None
+    )
     res = ingest("I feel calm right now")   # subjective → passes the gate
     assert res["accepted"] is False
     assert "CAS conflict" in res["reason"]

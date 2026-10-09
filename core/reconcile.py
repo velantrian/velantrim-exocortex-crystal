@@ -24,7 +24,17 @@ import os
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional, List
 
-from core.memory import get_fact, store_fact, transition_esm, update_fact, l3_secondary_sync_admissible
+from core.memory import (
+    get_fact,
+    store_fact,
+    transition_esm,
+    update_fact,
+    l3_secondary_sync_admissible,
+    ClaimIdentityError,
+    IngestStateChangedError,
+    TerminalStateError,
+    INGEST_TERMINAL_STATES,
+)
 from core.l3_graph import get_l3_graph
 from core.embedding import get_embedder
 from core.queue import get_outbox_queue
@@ -190,6 +200,7 @@ def record_occurrence(
     *,
     source: Optional[str] = None,
     fingerprint: Optional[str] = None,
+    expected_claim: Optional[str] = None,
 ) -> Optional[int]:
     """
     Register that identical content was ingested again (an exact-duplicate
@@ -208,6 +219,10 @@ def record_occurrence(
       last_seen          — ISO timestamp of the most recent sighting
       sources_seen       — sorted list of distinct source labels
       fingerprint_sha256 — sha256 of the normalized content (audit)
+
+    Ingest supplies `expected_claim` for its exact-duplicate path. That makes
+    the metadata update conditional on the same persisted identity and
+    Validated ESM state inside update_fact()'s final SQLite transaction.
     """
     for attempt in range(_CAS_MAX_ATTEMPTS):
         fact = get_fact(fact_id)
@@ -227,7 +242,16 @@ def record_occurrence(
             seen.add(source)
         meta["sources_seen"] = sorted(seen)
 
-        if update_fact(fact_id, metadata=meta):
+        if expected_claim is None:
+            updated = update_fact(fact_id, metadata=meta)
+        else:
+            updated = update_fact(
+                fact_id,
+                expected_state="Validated",
+                expected_claim=expected_claim,
+                metadata=meta,
+            )
+        if updated:
             # Guardrail: occurrence tracking must never promote a fact into the
             # canon. Sync to L3 ONLY when the fact is already Validated (already
             # in the canon); a non-Validated fact is never merged from here.
@@ -243,6 +267,20 @@ def record_occurrence(
     current = get_fact(fact_id)
     if current is None:
         return None
+    if expected_claim is not None:
+        if current.get("claim") != expected_claim:
+            raise ClaimIdentityError(
+                f"claim identity for '{fact_id}' changed during occurrence retries"
+            )
+        state = current.get("epistemic_state")
+        if state in INGEST_TERMINAL_STATES:
+            raise TerminalStateError(
+                f"ordinary ingest cannot record an occurrence for terminal state '{state}'"
+            )
+        if state != "Validated":
+            raise IngestStateChangedError(
+                "persisted ESM state changed during occurrence retries"
+            )
     return int((current.get("metadata") or {}).get("occurrences", 1))
 
 

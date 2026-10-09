@@ -165,7 +165,11 @@ def create_app():
         try:
             return await aio.aingest(req.text, **kwargs)
         except ValueError as e:
-            raise HTTPException(status_code=422, detail=str(e))
+            detail = str(e)
+            code = getattr(e, "code", None)
+            if isinstance(code, str) and code and not detail.startswith(f"{code}:"):
+                detail = f"{code}: {detail}"
+            raise HTTPException(status_code=422, detail=detail)
 
     @app.post("/ask", dependencies=_guarded)
     async def ask_endpoint(req: AskRequest) -> Dict[str, Any]:

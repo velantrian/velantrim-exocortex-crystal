@@ -133,6 +133,13 @@ CLAIM_IDENTITY_LOCKED_STATES = {
     "Contradicted", "Deprecated", "Collapsed",
 }
 
+# Ordinary ingest may not rewrite provenance after a fact has reached a
+# terminal historical state. ImmutableCore is included because it has no
+# outgoing ESM transitions, even though CanonicalView may still admit it.
+INGEST_TERMINAL_STATES = frozenset({
+    "Collapsed", "Deprecated", "Contradicted", "ImmutableCore",
+})
+
 
 class ImmutableStateError(Exception):
     """Raised when attempting to transition a Ring Zero / VALUES_CORE fact."""
@@ -141,7 +148,21 @@ class ImmutableStateError(Exception):
 
 class ClaimIdentityError(ValueError):
     """Raised when promoted/historical fact text is rewritten in place."""
+
+    code = "CLAIM_IDENTITY_CONFLICT"
+
+
+class TerminalStateError(ValueError):
+    """Raised when an ingest write targets a terminal persisted ESM state."""
     pass
+
+
+class IngestStateChangedError(ValueError):
+    """Raised when persisted ESM changed after an ingest caller's initial read."""
+    pass
+
+
+_INGEST_EXPECTATION_UNSET = object()
 
 
 # ─── L0: LRU cache (in-memory, lives only within the session) ─────────────────────────
@@ -685,7 +706,13 @@ def _assert_claim_identity(
             f"'{epistemic_state}'; create a new fact and supersede the old one"
         )
 
-def store_fact(fact: Dict) -> None:
+def store_fact(
+    fact: Dict,
+    *,
+    expected_state: Any = _INGEST_EXPECTATION_UNSET,
+    reject_terminal: bool = False,
+    return_persisted: bool = False,
+) -> Optional[Dict]:
     """
     Store a fact in L0 (LRU RAM) and L1 (SQLite).
 
@@ -695,6 +722,13 @@ def store_fact(fact: Dict) -> None:
     Hypothesized. Supported/validated/terminal claims have stable identity;
     replace them by creating a new fact and calling reconcile.supersede().
     Other fields remain updateable. Use transition_esm() to advance state.
+
+    Ingest may supply `expected_state` to make its earlier state read a final
+    write precondition, and `reject_terminal=True` to refuse terminal rows.
+    The bounded ingest path may request a copy of the exact row snapshot
+    committed by this write, including its persisted revision.
+    Both checks run under BEGIN IMMEDIATE against the current row, before the
+    upsert can alter source, confidence or metadata.
 
     A direct write to the L3 graph is only via the TruthGate (not here).
     """
@@ -769,6 +803,28 @@ def store_fact(fact: Dict) -> None:
                     record["claim"],
                     existing_row["epistemic_state"],
                 )
+                persisted_state = existing_row["epistemic_state"]
+                if reject_terminal and persisted_state in INGEST_TERMINAL_STATES:
+                    _l0_pop(fact_id)
+                    raise TerminalStateError(
+                        f"ordinary ingest cannot update terminal state '{persisted_state}'"
+                    )
+                if (
+                    expected_state is not _INGEST_EXPECTATION_UNSET
+                    and persisted_state != expected_state
+                ):
+                    _l0_pop(fact_id)
+                    raise IngestStateChangedError(
+                        "persisted ESM state changed after ingest preflight"
+                    )
+            elif (
+                expected_state is not _INGEST_EXPECTATION_UNSET
+                and expected_state is not None
+            ):
+                _l0_pop(fact_id)
+                raise IngestStateChangedError(
+                    "persisted fact disappeared after ingest preflight"
+                )
             conn.execute("""
                 INSERT INTO facts
                     (fact_id, claim, source, confidence, epistemic_state,
@@ -819,6 +875,11 @@ def store_fact(fact: Dict) -> None:
         # on a timestamp comparison would reintroduce the exact bug this
         # lock exists to fix (see _l0_put_if_fresher's docstring).
         _l0_put(fact_id, record)
+        if return_persisted:
+            # Do not expose the same dict held in L0: ingest adds transient
+            # gate/result fields to its local snapshot after this write.
+            return dict(record)
+    return None
 
 
 def get_fact(fact_id: str) -> Optional[Dict]:
@@ -860,7 +921,13 @@ _CANON_REPAIRABLE_FIELDS = {
 }
 
 
-def update_fact(fact_id: str, **fields) -> bool:
+def update_fact(
+    fact_id: str,
+    *,
+    expected_state: Any = _INGEST_EXPECTATION_UNSET,
+    expected_claim: Any = _INGEST_EXPECTATION_UNSET,
+    **fields,
+) -> bool:
     """
     Update individual fields of a fact WITHOUT touching epistemic_state.
     Changing the ESM state — only via transition_esm. Returns True if the
@@ -894,6 +961,10 @@ def update_fact(fact_id: str, **fields) -> bool:
     class of bug #248 fixed for store_fact() alone; see _FACTS_WRITE_LOCK's
     docstring). Administrative fact writers use the same lock, so their cache
     publications cannot land out of SQLite commit order either.
+
+    When `expected_state` or `expected_claim` is supplied, the caller is doing a
+    guarded ingest occurrence write: BEGIN IMMEDIATE protects the fresh-row
+    precondition check and metadata UPDATE as one cross-process transaction.
     """
     fields = {k: v for k, v in fields.items() if k in _UPDATABLE}
     existing = get_fact(fact_id)
@@ -926,6 +997,43 @@ def update_fact(fact_id: str, **fields) -> bool:
 
     with _FACTS_WRITE_LOCK:
         with _db() as conn:
+            guarded = (
+                expected_state is not _INGEST_EXPECTATION_UNSET
+                or expected_claim is not _INGEST_EXPECTATION_UNSET
+            )
+            if guarded:
+                begin_immediate(conn)
+                row = conn.execute(
+                    "SELECT claim, epistemic_state, revision "
+                    "FROM facts WHERE fact_id = ?",
+                    (fact_id,),
+                ).fetchone()
+                if row is None or row["revision"] != expected_revision:
+                    _l0_pop(fact_id)
+                    return False
+                persisted_claim = crypto.decrypt(row["claim"])
+                if (
+                    expected_claim is not _INGEST_EXPECTATION_UNSET
+                    and persisted_claim != expected_claim
+                ):
+                    _l0_pop(fact_id)
+                    raise ClaimIdentityError(
+                        f"claim identity for '{fact_id}' changed during occurrence write"
+                    )
+                persisted_state = row["epistemic_state"]
+                if (
+                    expected_state is not _INGEST_EXPECTATION_UNSET
+                    and persisted_state != expected_state
+                ):
+                    _l0_pop(fact_id)
+                    if persisted_state in INGEST_TERMINAL_STATES:
+                        raise TerminalStateError(
+                            f"ordinary ingest cannot record an occurrence for "
+                            f"terminal state '{persisted_state}'"
+                        )
+                    raise IngestStateChangedError(
+                        "persisted ESM state changed before occurrence write"
+                    )
             cur = conn.execute(
                 f"UPDATE facts SET {', '.join(sets)}, revision = revision + 1, "  # nosec B608 — keys from _UPDATABLE allowlist
                 f"updated_at = :updated_at "
@@ -1040,6 +1148,89 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
         refreshed["metadata"] = json.loads(crypto.decrypt(refreshed["metadata"]))
         _l0_put(fact_id, refreshed)
         return True
+
+
+def transition_esm_if_unchanged(
+    expected_fact: Dict[str, Any], new_state: str
+) -> Optional[Dict[str, Any]]:
+    """Promote only the exact persisted claim version supplied to its gates.
+
+    The read/check/update is one SQLite ``BEGIN IMMEDIATE`` transaction. The
+    Guardian and TruthGate calls happen before this helper and hold no SQLite
+    write lock. ``None`` means the row disappeared or any persisted identity,
+    revision, ESM, or gate-relevant field changed since the snapshot was
+    captured. Ordinary ``transition_esm()`` callers retain their existing API.
+    """
+    required = (
+        "fact_id", "claim", "revision", "epistemic_state", "created_at",
+        "source", "confidence", "claim_type", "source_status",
+    )
+    if any(key not in expected_fact for key in required):
+        raise ValueError("transition_esm_if_unchanged: incomplete persisted snapshot")
+    fact_id = expected_fact["fact_id"]
+    if not fact_id:
+        raise ValueError("transition_esm_if_unchanged: fact_id is required")
+    if new_state not in ESM_STATES:
+        raise ValueError(f"transition_esm_if_unchanged: invalid state '{new_state}'")
+    if fact_id in IMMUTABLE_FACT_IDS:
+        raise ImmutableStateError(
+            f"transition_esm_if_unchanged: fact '{fact_id}' is protected by Ring Zero"
+        )
+
+    with _FACTS_WRITE_LOCK:
+        with _db() as conn:
+            begin_immediate(conn)
+            row = conn.execute(
+                "SELECT * FROM facts WHERE fact_id = ?", (fact_id,)
+            ).fetchone()
+            if row is None:
+                _l0_pop(fact_id)
+                return None
+
+            persisted_claim = crypto.decrypt(row["claim"])
+            unchanged = (
+                persisted_claim == expected_fact["claim"]
+                and row["revision"] == expected_fact["revision"]
+                and row["epistemic_state"] == expected_fact["epistemic_state"]
+                and row["created_at"] == expected_fact["created_at"]
+                and row["source"] == expected_fact["source"]
+                and row["confidence"] == expected_fact["confidence"]
+                and row["claim_type"] == expected_fact["claim_type"]
+                and row["source_status"] == expected_fact["source_status"]
+            )
+            if not unchanged:
+                _l0_pop(fact_id)
+                return None
+
+            current_state = row["epistemic_state"]
+            allowed = ESM_TRANSITIONS.get(current_state)
+            if allowed is not None and new_state not in allowed:
+                _l0_pop(fact_id)
+                raise ValueError(
+                    f"transition_esm_if_unchanged: transition '{current_state}' "
+                    f"→ '{new_state}' is not allowed"
+                )
+
+            now = datetime.now(timezone.utc).isoformat()
+            cur = conn.execute(
+                "UPDATE facts SET epistemic_state = ?, revision = revision + 1, "
+                "updated_at = ? WHERE fact_id = ? AND revision = ? "
+                "AND epistemic_state = ?",
+                (new_state, now, fact_id, expected_fact["revision"], current_state),
+            )
+            if cur.rowcount != 1:
+                _l0_pop(fact_id)
+                return None
+            refreshed_row = conn.execute(
+                "SELECT * FROM facts WHERE fact_id = ?", (fact_id,)
+            ).fetchone()
+
+        refreshed = dict(refreshed_row)
+        refreshed["claim"] = crypto.decrypt(refreshed["claim"])
+        refreshed["metadata"] = json.loads(crypto.decrypt(refreshed["metadata"]))
+        _l0_put(fact_id, refreshed)
+        # The caller adds transient truth_status/result fields; keep L0 isolated.
+        return dict(refreshed)
 
 
 def get_all_facts(epistemic_state: Optional[str] = None) -> list:

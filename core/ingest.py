@@ -11,10 +11,20 @@
 # Replacing it with an LLM classifier is a separate step (see the core/generation.py pattern).
 
 import hashlib
+import logging
 import re
 from typing import Dict, Any, Optional
 
-from core.memory import store_fact, get_fact, transition_esm, ClaimIdentityError
+from core.memory import (
+    store_fact,
+    get_fact,
+    transition_esm_if_unchanged,
+    ClaimIdentityError,
+    TerminalStateError,
+    IngestStateChangedError,
+    CLAIM_IDENTITY_LOCKED_STATES,
+    INGEST_TERMINAL_STATES,
+)
 from core.l3_graph import get_l3_graph
 from core.embedding import assert_compatible_embedder
 from core.queue import get_outbox_queue
@@ -24,6 +34,16 @@ from core.ingest_identity import normalize_claim, normalized_ingest_id
 from core.normalized_ingest_index import resolve_validated_normalized_fact
 from core import (metrics, adaptation, pii, contradiction, immune,
                   neurogenesis, salience, mosc)
+
+_LOGGER = logging.getLogger(__name__)
+
+
+class IngestError(ValueError):
+    """A deterministic refusal from the ordinary ingest write path."""
+
+    def __init__(self, code: str, message: str):
+        self.code = code
+        super().__init__(f"{code}: {message}")
 
 # Modality markers (RU + EN). Order matters: we check from specific to general.
 _CLAIM_MARKERS = [
@@ -120,8 +140,9 @@ def _resolve_auto_fact(
     misclassifying the incoming claim as a duplicate.
 
     The index never creates identity by similarity and never merges historical
-    rows. ``persist_index=False`` is used by dry-run prediction so it performs
-    the same selection without writing the derived index.
+    rows. ``persist_index=False`` is used for refusal-safe preflight and dry-run
+    prediction; successful ingest refreshes the derived index only after its
+    primary L1 write commits.
     """
     fid = _fact_id(utterance)
     prior = get_fact(fid)
@@ -153,6 +174,18 @@ def _resolve_auto_fact(
             return legacy, prior
 
     return fid, None
+
+
+def _refresh_normalized_ingest_index_after_success(utterance: str) -> None:
+    """Best-effort refresh after the primary fact/occurrence write committed."""
+    try:
+        resolve_validated_normalized_fact(utterance, persist_index=True)
+    except Exception as exc:  # noqa: BLE001 — this index is derived and rebuildable
+        _LOGGER.warning(
+            "Skipping derived normalized-ingest index refresh after primary "
+            "write (%s)",
+            type(exc).__name__,
+        )
 
 
 def ingest(
@@ -214,11 +247,28 @@ def ingest(
             }
 
     metrics.incr("ingest.total")
-    if fact_id is None:
-        fid, prior = _resolve_auto_fact(utterance)
+    explicit_fact_id = fact_id is not None
+    if not explicit_fact_id:
+        fid, prior = _resolve_auto_fact(utterance, persist_index=False)
     else:
         fid = fact_id
         prior = get_fact(fid)
+
+    if prior is not None:
+        prior_state = prior.get("epistemic_state", "Observed")
+        if (
+            explicit_fact_id
+            and prior_state in CLAIM_IDENTITY_LOCKED_STATES
+            and utterance.strip() != prior.get("claim", "")
+        ):
+            raise ClaimIdentityError(
+                "fact_id is already bound to a different claim"
+            )
+        if prior_state in INGEST_TERMINAL_STATES:
+            raise IngestError(
+                "TERMINAL_STATE",
+                "ordinary ingest cannot update a terminal fact or its provenance",
+            )
 
     # Exact-duplicate dedup (Variant B): a repeat of an already-Validated fact is
     # NOT independent evidence. It only records an occurrence (frequency) via
@@ -226,8 +276,25 @@ def ingest(
     # independent corroboration is a separate, explicit reconcile.reinforce()
     # decision, deliberately out of scope for the dedup path.
     if prior is not None and prior.get("epistemic_state") == "Validated":
-        occurrences = record_occurrence(fid, source=source,
-                                        fingerprint=_fingerprint(utterance))
+        try:
+            occurrences = record_occurrence(
+                fid,
+                source=source,
+                fingerprint=_fingerprint(utterance),
+                expected_claim=prior.get("claim", ""),
+            )
+        except TerminalStateError as exc:
+            raise IngestError(
+                "TERMINAL_STATE",
+                "fact entered a terminal state before duplicate occurrence write",
+            ) from exc
+        except IngestStateChangedError as exc:
+            raise IngestError(
+                "CONCURRENT_STATE_CHANGE",
+                "fact state changed before duplicate occurrence write",
+            ) from exc
+        if not explicit_fact_id:
+            _refresh_normalized_ingest_index_after_success(utterance)
         metrics.incr("ingest.duplicate")
         return {"accepted": True, "duplicate": True,
                 "occurrences": occurrences, "fact": get_fact(fid)}
@@ -252,7 +319,35 @@ def ingest(
         fact["metadata"] = meta
 
     # L0/L1: store as raw experience (pending), even if the gates reject it.
-    store_fact(fact)
+    expected_state = (
+        prior.get("epistemic_state", "Observed") if prior is not None else None
+    )
+    try:
+        persisted_fact = store_fact(
+            fact,
+            expected_state=expected_state,
+            reject_terminal=True,
+            return_persisted=True,
+        )
+    except TerminalStateError as exc:
+        raise IngestError(
+            "TERMINAL_STATE",
+            "ordinary ingest cannot update a terminal fact or its provenance",
+        ) from exc
+    except IngestStateChangedError as exc:
+        raise IngestError(
+            "CONCURRENT_STATE_CHANGE",
+            "fact state changed before the ingest write",
+        ) from exc
+    if not explicit_fact_id:
+        _refresh_normalized_ingest_index_after_success(utterance)
+
+    # Guardian and TruthGate must see the exact row committed by store_fact,
+    # including its persisted revision and normalized/defaulted gate fields.
+    # Keep transient truth_status out of L1 and out of the persisted snapshot.
+    assert persisted_fact is not None, "store_fact must return its persisted snapshot"
+    fact = persisted_fact
+    fact["truth_status"] = "UNVERIFIED"
 
     # Immune pre-screen (RFC0072): block claims matching the CRISPR threat memory
     # — known hallucination / harmful / previously-refuted patterns — BEFORE the
@@ -303,21 +398,21 @@ def ingest(
             "conflicts": conflicts, "fact": fact,
         }
 
-    # Passed the gates → Validated, truth_status by modality, MERGE into the L3 canon.
-    # CAS guard: if the persisted state changed under us (a competing writer),
-    # transition_esm returns False and evicts the stale L0 entry. Abort the
-    # promotion instead of merging a stale payload / recording success.
-    # Defense-in-depth, not a full atomicity guarantee.
-    if not transition_esm(fid, "Validated"):
+    # Passed the gates → attempt a claim-version-bound Validated promotion.
+    # This short transaction re-checks the persisted identity, revision, state,
+    # and gate inputs atomically; no SQLite write lock is held during the gates.
+    promoted_fact = transition_esm_if_unchanged(fact, "Validated")
+    if promoted_fact is None:
         adaptation.record_block()
         return {
             "accepted": False,
-            "reason": "ESM CAS conflict: fact state changed concurrently; not promoted",
+            "reason": (
+                "ESM CAS conflict: persisted claim version changed; "
+                "not promoted"
+            ),
             "conflicts": conflicts, "fact": fact,
         }
-    updated = get_fact(fid)
-    if updated:
-        fact["epistemic_state"] = updated["epistemic_state"]
+    fact = promoted_fact
     fact["truth_status"] = _truth_status_for(ct, source_status)
 
     graph = get_l3_graph()
