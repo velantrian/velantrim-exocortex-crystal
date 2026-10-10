@@ -240,6 +240,8 @@ def test_full_erasure_removes_derived_normalized_mapping():
             "SELECT COUNT(*) FROM normalized_ingest_index WHERE fact_id = ?",
             (legacy,),
         ).fetchone()[0] == 0
+        from core import normalized_ingest_index
+        assert normalized_ingest_index.is_complete(conn)
     assert get_fact(normalized_id) is None
 
 

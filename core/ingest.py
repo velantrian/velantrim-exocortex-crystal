@@ -31,7 +31,10 @@ from core.queue import get_outbox_queue
 from core.pipeline import guardian, truth_gate, _truth_status_for, _l3_payload
 from core.reconcile import record_occurrence, find_conflicts, REL_CONTRADICTS, _now
 from core.ingest_identity import normalize_claim, normalized_ingest_id
-from core.normalized_ingest_index import resolve_validated_normalized_fact
+from core.normalized_ingest_index import (
+    rebuild_if_incomplete,
+    resolve_validated_normalized_fact,
+)
 from core import (metrics, adaptation, pii, contradiction, immune,
                   neurogenesis, salience, mosc)
 
@@ -177,9 +180,9 @@ def _resolve_auto_fact(
 
 
 def _refresh_normalized_ingest_index_after_success(utterance: str) -> None:
-    """Best-effort refresh after the primary fact/occurrence write committed."""
+    """Best-effort rebuild after a successful duplicate or post-gate L1 write."""
     try:
-        resolve_validated_normalized_fact(utterance, persist_index=True)
+        rebuild_if_incomplete()
     except Exception as exc:  # noqa: BLE001 — this index is derived and rebuildable
         _LOGGER.warning(
             "Skipping derived normalized-ingest index refresh after primary "
@@ -339,9 +342,6 @@ def ingest(
             "CONCURRENT_STATE_CHANGE",
             "fact state changed before the ingest write",
         ) from exc
-    if not explicit_fact_id:
-        _refresh_normalized_ingest_index_after_success(utterance)
-
     # Guardian and TruthGate must see the exact row committed by store_fact,
     # including its persisted revision and normalized/defaulted gate fields.
     # Keep transient truth_status out of L1 and out of the persisted snapshot.
@@ -414,6 +414,12 @@ def ingest(
         }
     fact = promoted_fact
     fact["truth_status"] = _truth_status_for(ct, source_status)
+    if not explicit_fact_id:
+        # Only after the exact L1 snapshot passed Guardian/TruthGate and the
+        # claim-version-bound ESM CAS committed may an incomplete index rebuild.
+        # If L3 fails below, the derived mapping still reflects the authoritative
+        # post-gate L1 row and the existing outbox handles secondary projection.
+        _refresh_normalized_ingest_index_after_success(utterance)
 
     graph = get_l3_graph()
     # Guard against mixing embedders: merge puts the claim's vector into the store.

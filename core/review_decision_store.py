@@ -196,6 +196,7 @@ def stage_review_decision(
         with memory._db() as conn:
             memory.begin_immediate(conn)
             _ensure_schema(conn)
+            index_was_complete = memory._normalized_index_capture_complete(conn)
             existing = conn.execute(
                 "SELECT * FROM review_decisions WHERE decision_id = ?", (decision_id,)
             ).fetchone()
@@ -279,6 +280,10 @@ def stage_review_decision(
                     current_state = new_state
                     revision += 1
                 changed_ids.append(target_id)
+
+            memory._normalized_index_refresh_after_write(
+                conn, changed_ids, was_complete=index_was_complete
+            )
 
             partial_tuple = tuple(sorted(dict.fromkeys(partial_target_ids)))
             projection = dict(projection_builder(partial_tuple)) if projection_builder else {}

@@ -103,13 +103,14 @@ def erase_fact(
     # Delete evidence and import-session entries BEFORE the no-op check below,
     # and fold their results into that check. Either can be the only remaining
     # trace of a fact_id whose L1/L3 rows are already gone (e.g. left behind by
-    # delete_fact_l1 called directly, bypassing erase_fact). The derived normalized
-    # mapping is also deleted here, but because it is a rebuildable lookup cache it
-    # is intentionally not folded into `erased_now` or treated as proof that
-    # canonical/personal data existed.
+    # delete_fact_l1 called directly, bypassing erase_fact). If the L1 fact exists,
+    # delete_fact_l1 removes its derived mapping in the same transaction. An orphan
+    # mapping for a missing L1 row is cleaned here but never counted as proof that
+    # personal data existed.
     evidence_removed = evidence.delete_evidence_for(fact_id)
     import_sessions_removed = delete_import_session_entries_for(fact_id)
-    remove_normalized_ingest_mapping(fact_id)
+    if fact is None:
+        remove_normalized_ingest_mapping(fact_id)
 
     # A fact_id that was never stored anywhere — L1 (fact), L3 (l3_node),
     # evidence_spans, OR import_sessions — AND was never previously erased is

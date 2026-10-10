@@ -418,8 +418,9 @@ _EVIDENCE_MIGRATIONS = [
 # SQLite's PRAGMA user_version is the single schema-version marker for the L1
 # database. Version 1 covers the revision CAS token added in #244; version 2
 # adds durable audit/provenance chain checkpoints; version 3 adds unknown-by-default
-# evidence lineage metadata. Future schema changes must increment this value.
-_SCHEMA_VERSION = 3
+# evidence lineage metadata; version 4 adds normalized-ingest index completeness.
+# Future schema changes must increment this value.
+_SCHEMA_VERSION = 4
 
 # Serializes first-open schema initialization within this process. The
 # BEGIN IMMEDIATE inside _ensure_schema provides the corresponding
@@ -465,6 +466,13 @@ def _migrate(conn) -> None:
             "      GROUP BY fact_id) AS tail "
             "ON tail.fact_id = p.fact_id AND tail.seq = p.seq"
         )
+
+    # The mapping table remains lazy-created. Coverage metadata and facts-write
+    # invalidation triggers are additive schema state; old mappings start UNKNOWN
+    # until a complete transactional rebuild validates them.
+    from core.normalized_ingest_index import install_state_migration
+
+    install_state_migration(conn)
 
 
 def _schema_version(conn) -> int:
@@ -690,6 +698,28 @@ _FACTS_WRITE_LOCK = threading.Lock()
 
 # ─── API ───────────────────────────────────────────────────────────────────────
 
+def _normalized_index_capture_complete(conn) -> bool:
+    """Capture safe index coverage before a facts mutation under its DB lock."""
+    try:
+        from core.normalized_ingest_index import capture_complete
+
+        return capture_complete(conn)
+    except Exception:
+        return False
+
+
+def _normalized_index_refresh_after_write(
+    conn, fact_ids, *, was_complete: bool
+) -> None:
+    """Keep a proven-complete derived index aligned with this facts transaction."""
+    try:
+        from core.normalized_ingest_index import refresh_facts_after_write
+
+        refresh_facts_after_write(conn, fact_ids, was_complete=was_complete)
+    except Exception:
+        # SQLite invalidation triggers have already made uncertain coverage dirty.
+        pass
+
 def _assert_claim_identity(
     fact_id: str,
     existing_claim: str,
@@ -792,6 +822,7 @@ def store_fact(
             # before the upsert, letting a stale draft-state decision rewrite
             # an already-promoted claim.
             begin_immediate(conn)
+            index_was_complete = _normalized_index_capture_complete(conn)
             existing_row = conn.execute(
                 "SELECT claim, epistemic_state FROM facts WHERE fact_id = ?",
                 (fact_id,),
@@ -845,6 +876,9 @@ def store_fact(
                     metadata        = excluded.metadata,
                     revision        = facts.revision + 1
             """, l1_record)
+            _normalized_index_refresh_after_write(
+                conn, (fact_id,), was_complete=index_was_complete
+            )
             # Re-read the persisted epistemic_state/created_at/restricted/revision
             # within the same connection so L0 is never poisoned with incoming/
             # default values on a conflict-update. The ON CONFLICT clause
@@ -997,12 +1031,13 @@ def update_fact(
 
     with _FACTS_WRITE_LOCK:
         with _db() as conn:
+            begin_immediate(conn)
+            index_was_complete = _normalized_index_capture_complete(conn)
             guarded = (
                 expected_state is not _INGEST_EXPECTATION_UNSET
                 or expected_claim is not _INGEST_EXPECTATION_UNSET
             )
             if guarded:
-                begin_immediate(conn)
                 row = conn.execute(
                     "SELECT claim, epistemic_state, revision "
                     "FROM facts WHERE fact_id = ?",
@@ -1047,6 +1082,10 @@ def update_fact(
                 # our lost update.
                 _l0_pop(fact_id)
                 return False
+
+            _normalized_index_refresh_after_write(
+                conn, (fact_id,), was_complete=index_was_complete
+            )
 
             # Re-read the row we just committed, in the same connection/
             # transaction, so L0 is populated from the real persisted winner —
@@ -1114,6 +1153,7 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
     with _FACTS_WRITE_LOCK:
         with _db() as conn:
             begin_immediate(conn)
+            index_was_complete = _normalized_index_capture_complete(conn)
             row = conn.execute(
                 "SELECT * FROM facts WHERE fact_id = ?", (fact_id,)
             ).fetchone()
@@ -1138,6 +1178,9 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
                 "UPDATE facts SET epistemic_state = ?, revision = revision + 1, "
                 "updated_at = ? WHERE fact_id = ?",
                 (new_state, now, fact_id),
+            )
+            _normalized_index_refresh_after_write(
+                conn, (fact_id,), was_complete=index_was_complete
             )
             refreshed_row = conn.execute(
                 "SELECT * FROM facts WHERE fact_id = ?", (fact_id,)
@@ -1180,6 +1223,7 @@ def transition_esm_if_unchanged(
     with _FACTS_WRITE_LOCK:
         with _db() as conn:
             begin_immediate(conn)
+            index_was_complete = _normalized_index_capture_complete(conn)
             row = conn.execute(
                 "SELECT * FROM facts WHERE fact_id = ?", (fact_id,)
             ).fetchone()
@@ -1221,6 +1265,9 @@ def transition_esm_if_unchanged(
             if cur.rowcount != 1:
                 _l0_pop(fact_id)
                 return None
+            _normalized_index_refresh_after_write(
+                conn, (fact_id,), was_complete=index_was_complete
+            )
             refreshed_row = conn.execute(
                 "SELECT * FROM facts WHERE fact_id = ?", (fact_id,)
             ).fetchone()
@@ -1298,6 +1345,7 @@ def set_restricted(fact_id: str, restricted: bool) -> bool:
     with _FACTS_WRITE_LOCK:
         with _db() as conn:
             begin_immediate(conn)
+            index_was_complete = _normalized_index_capture_complete(conn)
             existing_row = conn.execute(
                 "SELECT fact_id FROM facts WHERE fact_id = ?", (fact_id,)
             ).fetchone()
@@ -1309,6 +1357,9 @@ def set_restricted(fact_id: str, restricted: bool) -> bool:
                 "UPDATE facts SET restricted = ?, revision = revision + 1, "
                 "updated_at = ? WHERE fact_id = ?",
                 (val, now, fact_id),
+            )
+            _normalized_index_refresh_after_write(
+                conn, (fact_id,), was_complete=index_was_complete
             )
             refreshed_row = conn.execute(
                 "SELECT * FROM facts WHERE fact_id = ?", (fact_id,)
@@ -1333,7 +1384,12 @@ def delete_fact_l1(fact_id: str) -> bool:
     """
     with _FACTS_WRITE_LOCK:
         with _db() as conn:
+            begin_immediate(conn)
+            index_was_complete = _normalized_index_capture_complete(conn)
             cur = conn.execute("DELETE FROM facts WHERE fact_id = ?", (fact_id,))
+            _normalized_index_refresh_after_write(
+                conn, (fact_id,), was_complete=index_was_complete
+            )
         _l0_pop(fact_id)
         return cur.rowcount > 0
 
