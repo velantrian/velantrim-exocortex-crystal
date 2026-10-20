@@ -39,6 +39,16 @@ final outcome. Approximate €50,000 remains historical planning context only.
 
 ## Current localization truth
 
+### Introductory wording — 2026-10-20
+
+Based on `main@6fab6a10bf4cead9118ed11e49f6bcc9fd2a36ed`, English and all nine
+root README translations receive the same two short additions: the broader human
+motivation and an old-approval-note example. Existing headings, diagrams, tables,
+technical claims and source checkpoints are retained. This is parity for those
+two additions only, not a new full technical or native-speaker editorial audit.
+The English deep overview expands the same explanation. The dated funding outcome
+remains visible alongside the existing funding discussion.
+
 Arabic, German, French, Spanish, Hindi, Italian, Japanese, Simplified Chinese and Russian root/public Reader-dependent documentation are refreshed to the same **post-RC-9 / post-NLI / RRTIC-v1** public architecture truth. All nine supported locale packs have `CURRENT` D1/D3/D4/D5 Reader-dependent detail surfaces under their recorded source/provenance contracts.
 
 No supported Reader-dependent locale pack remains `REFRESH_NEEDED` after Hindi parity.

@@ -8,6 +8,8 @@
 
 ## 💠 ऐसी AI memory जिसमें retrieval और truth अलग रहते हैं
 
+Crystal एक व्यापक उद्देश्य से निकला है: लोगों को ऐसे AI साथी के साथ अपने विचार विकसित करने में मदद करना, जो पिछले काम का सहारा ले सके। Crystal का ध्यान उस स्मृति की नींव पर है: दावों के स्रोत और उन पर भरोसा करने के निर्णय जाँच के लिए स्पष्ट रखना।
+
 Crystal एक **local-first, auditable AI memory/evidence infrastructure** है। इसका मूल नियम जानबूझकर conservative है: कोई relevant item मिल जाना उसे evidence, verified fact या Canon authority नहीं बनाता।
 
 > 👤 **पहली बार Crystal पढ़ रहे हैं?** इस page से शुरू करें — यह human-first entry point है।
@@ -59,6 +61,8 @@ Historical compatibility literal retained exactly:
 ```text
 contradiction candidate  != confirmed contradiction
 ```
+
+उदाहरण के लिए, सहायक को कोई पुरानी टिप्पणी मिल सकती है जिसमें किसी निर्णय को मंजूरी मिलने की बात हो। टिप्पणी मिलना उपयोगी है; उसे अब भी लागू मंजूरी मानने से पहले उसका स्रोत, संदर्भ और दर्ज निर्णय भी जाँचना ज़रूरी है।
 
 ## 🧠 Mental model
 

@@ -8,6 +8,8 @@
 
 ## 💠 Gedächtnis- und Evidenzinfrastruktur, in der Retrieval von Wahrheit getrennt bleibt
 
+Crystal entstand aus einem größeren Ziel: Menschen dabei zu helfen, ihre Ideen mit einem KI-Partner weiterzuentwickeln, der auf bisheriger Arbeit aufbauen kann. Crystal konzentriert sich auf die Gedächtnisgrundlage: Die Quellen von Aussagen und die Entscheidungen darüber, welchen Aussagen vertraut wird, sollen überprüfbar sein.
+
 Crystal ist eine **local-first Forschungs- und Engineering-Linie für überprüfbares KI-Gedächtnis**. Das Projekt trennt Discovery, Provenienz, Evidence Admission, epistemische Autorität, vertrauenswürdigen kanonischen Zustand und Präsentation, damit relevantes gefundenes Material nicht automatisch zu Wahrheit wird.
 
 > 👤 **Neu bei Crystal?** Diese Seite ist der human-first Einstieg.
@@ -23,6 +25,8 @@ Crystal ist eine **local-first Forschungs- und Engineering-Linie für überprüf
 Ein klassisches Retrieval-System beantwortet vor allem: „Was sieht relevant aus?“ Crystal stellt weitere Fragen: Woher stammt die Information? Unterstützt sie dieselbe Proposition? Darf sie als Evidence gelten? Wurde ein Widerspruch tatsächlich adjudiziert? Was darf als vertrauenswürdiger Zustand gespeichert werden, und was darf das System als grounded answer präsentieren?
 
 > **Discovery darf vorschlagen, was geprüft werden sollte. Authority ist ein eigener Entscheidungsweg.**
+
+Ein Assistent kann zum Beispiel eine alte Notiz finden, nach der eine Entscheidung genehmigt wurde. Die Notiz zu finden ist nützlich; um sie als weiterhin gültige Genehmigung zu behandeln, müssen auch Quelle, Kontext und dokumentierte Entscheidungen geprüft werden.
 
 ## 🧠 Mentales Modell
 

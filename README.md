@@ -1,11 +1,10 @@
 # 🔱 Velantrim ExoCortex — Crystal
 
-**NLnet decision (2026-10-09):** `NOT_SELECTED / NOT_AWARDED`; review completed. Submission remains recorded; no award, approved budget or payment commitment.
-
-
 > 🌐 🇬🇧 **English** · 🇩🇪 [Deutsch](./README.de.md) · 🇫🇷 [Français](./README.fr.md) · 🇪🇸 [Español](./README.es.md) · 🇮🇹 [Italiano](./README.it.md) · 🇷🇺 [Русский](./README.ru.md) · 🇨🇳 [简体中文](./README.zh-CN.md) · 🇸🇦 [العربية](./README.ar.md) · 🇯🇵 [日本語](./README.ja.md) · 🇮🇳 [हिन्दी](./README.hi.md)
 
 ## 💠 Memory and evidence infrastructure that keeps retrieval separate from truth
+
+Crystal grew out of a broader aim: to help people develop their ideas with an AI partner that can build on past work. Its focus is the memory foundation: making the sources of claims and the decisions about what to trust open to inspection.
 
 Crystal is a **local-first research and implementation line for auditable AI memory**. It separates discovery, provenance, evidence admission, epistemic authority, trusted canonical state and presentation so that finding relevant material does not automatically make that material true.
 
@@ -35,6 +34,8 @@ Crystal is built around the harder follow-up questions:
 The central rule is deliberately conservative:
 
 > **Discovery may propose what deserves inspection. Authority is a separate decision path.**
+
+For example, an assistant may find an old note saying that a decision was approved. Finding the note is useful; treating it as current approval also requires checking its source, context and recorded decisions.
 
 ## 🧠 Mental model
 
@@ -251,6 +252,8 @@ Crystal does **not** claim:
 - active PostgreSQL/pgvector Reader selection or automatic backend cutover;
 - production-scale retrieval quality from bounded synthetic evaluation surfaces;
 - legal, GDPR, security or supply-chain certification.
+
+**NLnet decision (2026-10-09):** `NOT_SELECTED / NOT_AWARDED`; review completed. Submission remains recorded; no award, approved budget or payment commitment.
 
 **Funding truth:** NLnet remains **submitted / not selected / not awarded**. Approximate **€50,000** is planning context only, not an approved budget, grant award or payment commitment.
 

@@ -8,6 +8,8 @@
 
 ## 💠 「見つかった」と「真である」を分離する local-first メモリ／evidence 基盤
 
+Crystal は、過去の取り組みを生かせる AI パートナーとともに、人が自分のアイデアを発展させられるようにする、という広い目標から生まれました。Crystal が担うのは、そのための記憶の土台です。主張の出典と、何を信頼するかについての判断を確認できるようにします。
+
 Crystal は、**監査可能な AI memory** のための local-first な研究・実装ラインです。Discovery、provenance、Evidence Admission、epistemic authority、trusted Canon、presentation を分離し、関連情報を検索できたこと自体が「真として認可された」ことにならないよう設計されています。
 
 > 👤 **初めて Crystal を読む方:** まずこのページを読んでください。human-first の公開入口です。
@@ -30,6 +32,8 @@ Crystal は、**監査可能な AI memory** のための local-first な研究�
 - grounded answer として提示してよいのは何か。
 
 > **Discovery may propose what deserves inspection. Authority is a separate decision path.**
+
+たとえば、アシスタントが「ある決定は承認済み」と書かれた古いメモを見つける場合があります。メモを見つけることは有用ですが、現在も有効な承認として扱うには、出典、文脈、記録された判断も確認する必要があります。
 
 ## 🧠 Mental model
 

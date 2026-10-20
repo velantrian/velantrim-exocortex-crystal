@@ -1,13 +1,14 @@
 # 💠 Velantrim Exo-Cortex Crystal — Deep System Overview
 
-**NLnet decision (2026-10-09):** `NOT_SELECTED / NOT_AWARDED`; review completed. Submission remains recorded; no award, approved budget or payment commitment.
-
-
 > 👤 **Audience:** humans who want to understand the architecture without reading the repository as an internal engineering ledger.
 >
 > 🤖 **AI / automated agents:** use [Special for AI](./ai/README.md) instead. This document explains; it does not override live code, tests, CI, STATUS or the machine manifest.
 
 ## 🧭 What Crystal is
+
+The broader motivation is to help people develop ideas with an AI partner that can build on earlier work. Crystal addresses the memory foundation of that ambition: keeping the origin of a claim and the decisions about trusting it available for inspection. A complete personal partner remains a broader goal, not a capability claim for this repository.
+
+An old note saying “approved” illustrates the problem. Retrieval can bring the note back; it does not establish that the approval still applies, that it came from the right person, or that a later decision has not replaced it. Those questions require source context and explicit decisions. Crystal’s separation of retrieval, evidence and authority gives this distinction a place in the design; it does not promise automatic resolution of every such case.
 
 Crystal is a local-first memory, evidence and Reader architecture for AI systems that need to keep several questions separate:
 
@@ -488,6 +489,8 @@ Crystal does not claim:
 - active PostgreSQL/pgvector Reader backend;
 - legal, GDPR or security certification;
 - awarded NLnet funding.
+
+**NLnet decision (2026-10-09):** `NOT_SELECTED / NOT_AWARDED`; review completed. Submission remains recorded; no award, approved budget or payment commitment.
 
 NLnet remains **submitted / not selected / not awarded**. Approximate €50,000 remains planning context only.
 

@@ -8,6 +8,8 @@
 
 ## 💠 Infraestructura de memoria y evidencia donde discovery permanece separado de truth
 
+Crystal nació de un objetivo más amplio: ayudar a las personas a desarrollar sus ideas con un compañero de IA que pueda apoyarse en el trabajo anterior. Crystal se centra en la base de esa memoria: permitir examinar las fuentes de las afirmaciones y las decisiones sobre qué merece confianza.
+
 Crystal es una **línea de investigación e ingeniería local-first para memoria de IA verificable**. El proyecto separa discovery, provenance, Evidence Admission, autoridad epistémica, estado canónico de confianza y presentation, para que algo recuperado por parecer relevante nunca se convierta automáticamente en verdad.
 
 > 👤 **¿Es tu primera vez con Crystal?** Esta página es el punto de entrada human-first.
@@ -23,6 +25,8 @@ Crystal es una **línea de investigación e ingeniería local-first para memoria
 Un sistema de retrieval clásico responde sobre todo a «¿qué parece relevante?». Crystal formula preguntas adicionales: ¿de dónde procede la información?, ¿apoya realmente la misma proposición?, ¿puede admitirse como evidence?, ¿una contradicción fue efectivamente adjudicated?, ¿qué puede conservarse como estado de confianza y qué tiene derecho el sistema a presentar como grounded answer?
 
 > **Discovery puede proponer qué merece inspección. Authority sigue una ruta de decisión separada.**
+
+Por ejemplo, un asistente puede encontrar una nota antigua que dice que se aprobó una decisión. Encontrar la nota es útil; tratarla como una aprobación vigente exige además comprobar su fuente, su contexto y las decisiones registradas.
 
 ## 🧠 Modelo mental
 

@@ -105,9 +105,9 @@ A human or AI agent with Notion access must:
 
 ## HOFF-20261020-01 — NLnet final decision reconciliation
 
-- Status: `HANDOFF_REQUIRED`
+- Status: `SYNCED`
 - Created: 2026-10-20
-- GitHub PR: the single Draft PR from `fix/nlnet-not-selected-2026-10-09` into `main`; exact head and check evidence are recorded there.
+- GitHub PR: [#496](https://github.com/velantrian/velantrim-exocortex-crystal/pull/496), merged on 2026-10-20 from `f3871e33948e44639ece52dfee50ec91d439e393`.
 - Exact base SHA: `6660210b65ff99362a16a7290d03b3f769b08cf0`.
 - Intended Notion record title: Crystal — NLnet grant status and decision history.
 - Notion access for originating actor: `UNAVAILABLE`.
@@ -142,14 +142,21 @@ Run docs-status, D1–D5 source/translation gates, relevant pytest and the exist
 
 ### Known limitations and next actions
 
-The PR remains draft and unmerged for user review. A connected maintainer must synchronize only this public outcome and the PR/CI evidence into the intended Notion history; do not introduce private refusal details. No Notion update is claimed. If the PR is later explicitly approved and merged, record its final merge/CI evidence then; this task does not authorize merging.
+PR #496 has merged. A connected follow-up checked the existing dated decision
+record, synchronized the public outcome and exact post-merge evidence into the
+Crystal Project Hub and decision page, and read both pages back successfully.
+The Hub's October 1 checkpoint is explicitly historical. No private refusal
+details were copied into GitHub; no project-specific rejection cause is inferred.
+The originating actor's source/access limitations above remain part of its history.
 
 ### Synchronization completion
 
-- Connected actor: pending.
-- Safe Notion title/reference: pending.
-- Synchronization date: pending.
-- Final merge SHA / CI evidence: not applicable; not merged.
+- Connected actor: Codex, with Notion access during the follow-up.
+- Safe Notion title/reference: Velantrim Exo-Cortex Crystal — Project Hub;
+  NLnet NGI0 Commons Fund — Decision · 2026-10-09.
+- Synchronization date: 2026-10-20; both records verified by read-back.
+- Final merge SHA: `6fab6a10bf4cead9118ed11e49f6bcc9fd2a36ed`.
+- Post-merge CI: [39418258927](https://github.com/velantrian/velantrim-exocortex-crystal/actions/runs/39418258927), 9/9 jobs SUCCESS on that merge SHA.
 
 
 ## Completed hand-offs

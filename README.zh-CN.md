@@ -8,6 +8,8 @@
 
 ## 💠 将“发现相关内容”与“判定为真”严格分离的本地优先记忆与证据基础设施
 
+Crystal 源于一个更广泛的目标：让人们与能够利用过去工作成果的 AI 伙伴一起发展自己的想法。Crystal 专注于其中的记忆基础：让主张的来源，以及决定哪些内容值得信赖的过程，可以被检查。
+
 Crystal 是一条面向**可审计 AI 记忆**的 local-first 研究与实现路线。它把 discovery、provenance、Evidence Admission、epistemic authority、可信 Canon 状态与 presentation 分开，因此“找到了相关材料”不会自动变成“该材料已被系统判定为真”。
 
 > 👤 **第一次了解 Crystal？** 先读本页。这是 human-first 的公开入口。
@@ -23,6 +25,8 @@ Crystal 是一条面向**可审计 AI 记忆**的 local-first 研究与实现路
 传统 retrieval 系统主要回答：“什么看起来相关？” Crystal 进一步追问：信息来自哪里？它支持的是同一 proposition，还是仅仅相关？它是否具备 admitted evidence 的资格？contradiction 是否真的完成了 adjudication？哪些内容可以进入可信记忆？系统又可以把什么安全地呈现为 grounded answer？
 
 > **Discovery 可以提出“什么值得检查”；Authority 必须走独立的决策路径。**
+
+例如，助手可能找到一条旧笔记，里面写着某项决定已获批准。找到笔记很有用；但要把它当作当前仍然有效的批准，还需要检查其来源、上下文和已记录的决定。
 
 ## 🧠 心智模型
 

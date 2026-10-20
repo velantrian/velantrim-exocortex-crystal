@@ -2,6 +2,25 @@
 
 This compact log records material decisions, exact evidence, limitations and hand-offs. It does not replace Git history, issues, pull requests, `CHANGELOG.md` or Notion.
 
+## 2026-10-20 — Human introduction and completed NLnet synchronization
+
+- Base: `main@6fab6a10bf4cead9118ed11e49f6bcc9fd2a36ed`, after merged PR #496.
+  Post-merge CI `39418258927` succeeded in all nine jobs. The parallel unsubmitted
+  funding repair was superseded by this merged work; it is not reapplied.
+- Completed `HOFF-20261020-01` in the Crystal Project Hub and dated NLnet decision
+  page, including exact merge/CI evidence. Both Notion records were read back.
+- Add two short paragraphs to English and nine localized root READMEs: human
+  motivation first, then an old-approval-note example before the diagrams.
+  Expand the explanation in `docs/OVERVIEW.md`. The complete AI-partner ambition
+  stays distinct from Crystal's memory/evidence contribution.
+- Move the English README/overview funding notice beside their existing funding
+  discussion. Preserve the outcome, all section headings, diagrams, tables,
+  commands, implementation boundaries and technical translation provenance.
+- Documentation impact: `GITHUB_AND_NOTION`. Runtime, tests, funding decision,
+  private personal-memory repository and original grant submission are unchanged.
+  The README follow-up remains proposed until its own PR merges; no new runtime
+  checkpoint or independent review is claimed.
+
 ## 2026-10-20 — NLnet final-outcome reconciliation · DRAFT
 
 - Authorized scope: one grant-status correction from live `main@6660210b65ff99362a16a7290d03b3f769b08cf0`; no runtime, architecture or other repository changes.
