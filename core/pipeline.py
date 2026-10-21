@@ -744,7 +744,11 @@ def build_facts_pack(
         if safe_source is not None:
             fact["source"] = safe_source
         # L0/L1 store (store_fact does not persist the transient _score).
-        store_fact(fact)
+        # preserve_metadata: a recalled item carries no metadata; without it
+        # every query overwrote the stored metadata with {} and erased
+        # authorship/lineage markers such as metadata.volition (system-
+        # authored), occurrences and sources_seen.
+        store_fact(fact, preserve_metadata=True)
         # Sync epistemic_state and restricted from the persisted store:
         # store_fact preserves the existing state on conflict, so the fact
         # dict may carry a stale retrieve() value (e.g. demo-seed items
@@ -877,6 +881,7 @@ def _truth_status_for(claim_type: str, source_status: Optional[str] = None) -> s
       EXTERNAL / DERIVED / OBSERVED  → VERIFIED  (independently sourced knowledge)
       USER_REPORTED                  → USER_CLAIMED (stored as recalled, not yet verified)
       LLM_OUTPUT                     → UNVERIFIED (blocked by truth_gate, but defensive)
+      SYSTEM_AUTHORED                → UNVERIFIED (the system's own statement; never VERIFIED, never USER_CLAIMED)
       UNKNOWN / None                 → UNVERIFIED
 
     A user saying "Earth orbits the Sun" is a USER_CLAIMED world claim, not a

@@ -92,6 +92,35 @@ def test_user_reported_world_fact_speculative():
     assert decision.requires_citation
 
 
+def test_system_authored_world_fact_speculative():
+    """Rule 7 covers SYSTEM_AUTHORED (variant A) exactly like USER_REPORTED."""
+    for es in ["Hypothesized", "Observed"]:
+        user = decide_response_policy(make_input(
+            claim_type="WORLD_FACT", source_status="USER_REPORTED", epistemic_state=es,
+        ))
+        system = decide_response_policy(make_input(
+            claim_type="WORLD_FACT", source_status="SYSTEM_AUTHORED", epistemic_state=es,
+        ))
+        assert system.action == "SPECULATIVE"
+        assert system.action == user.action
+        assert system.requires_citation == user.requires_citation
+        assert system.requires_citation
+        # Authorship stays honest: a system thought is never labelled user-reported.
+        assert "System-authored" in system.reason
+        assert "User-reported" not in system.reason
+        assert "User-reported" in user.reason
+
+
+def test_validated_user_reported_or_system_authored_acknowledge():
+    """Strong (Validated) facts from either source are unaffected by rule 7."""
+    for ss in ["USER_REPORTED", "SYSTEM_AUTHORED"]:
+        decision = decide_response_policy(make_input(
+            claim_type="WORLD_FACT", source_status=ss, epistemic_state="Validated",
+        ))
+        assert decision.action == "ACKNOWLEDGE"
+        assert not decision.requires_citation
+
+
 def test_pure_no_side_effects():
     inp = make_input()
     original = inp.claim_type

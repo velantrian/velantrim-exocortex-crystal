@@ -68,6 +68,7 @@
         "DERIVED",
         "EXTERNAL",
         "LLM_OUTPUT",
+        "SYSTEM_AUTHORED",
         "UNKNOWN"
       ],
       "description": "Origin channel. LLM_OUTPUT alone never becomes VERIFIED. EXTERNAL/DERIVED/OBSERVED from an independent source can reach VERIFIED."

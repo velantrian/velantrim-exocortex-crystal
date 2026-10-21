@@ -111,6 +111,7 @@ SOURCE_STATUSES = {
     "DERIVED",        # derived from other facts
     "EXTERNAL",       # external source / retrieval
     "LLM_OUTPUT",     # the model's answer — by itself NOT a fact about the world
+    "SYSTEM_AUTHORED",  # formulated by the system itself (volition) — not the user's words, not an external fact
     "UNKNOWN",
 }
 DEFAULT_SOURCE_STATUS = "UNKNOWN"
@@ -742,6 +743,7 @@ def store_fact(
     expected_state: Any = _INGEST_EXPECTATION_UNSET,
     reject_terminal: bool = False,
     return_persisted: bool = False,
+    preserve_metadata: bool = False,
 ) -> Optional[Dict]:
     """
     Store a fact in L0 (LRU RAM) and L1 (SQLite).
@@ -759,6 +761,15 @@ def store_fact(
     committed by this write, including its persisted revision.
     Both checks run under BEGIN IMMEDIATE against the current row, before the
     upsert can alter source, confidence or metadata.
+
+    `preserve_metadata=True` (the recall path, core.pipeline.build_facts_pack)
+    keeps an existing row's stored metadata instead of overwriting it with
+    the incoming dict: a recalled item carries no metadata, and replacing the
+    stored JSON with {} on every query silently erased authorship/lineage
+    markers (metadata.volition, occurrences, sources_seen, rehearsal
+    timestamps). The existing metadata is read under the same write lock and
+    transaction as the upsert, so a concurrent update_fact() cannot be lost.
+    New rows still take the incoming metadata.
 
     A direct write to the L3 graph is only via the TruthGate (not here).
     """
@@ -824,10 +835,14 @@ def store_fact(
             begin_immediate(conn)
             index_was_complete = _normalized_index_capture_complete(conn)
             existing_row = conn.execute(
-                "SELECT claim, epistemic_state FROM facts WHERE fact_id = ?",
+                "SELECT claim, epistemic_state, metadata FROM facts WHERE fact_id = ?",
                 (fact_id,),
             ).fetchone()
             if existing_row is not None:
+                if preserve_metadata:
+                    metadata_dict = json.loads(crypto.decrypt(existing_row["metadata"]))
+                    record["metadata"] = metadata_dict
+                    l1_record["metadata"] = existing_row["metadata"]
                 _assert_claim_identity(
                     fact_id,
                     crypto.decrypt(existing_row["claim"]),

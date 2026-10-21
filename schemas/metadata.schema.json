@@ -64,6 +64,7 @@
         "DERIVED",
         "EXTERNAL",
         "LLM_OUTPUT",
+        "SYSTEM_AUTHORED",
         "UNKNOWN"
       ]
     },

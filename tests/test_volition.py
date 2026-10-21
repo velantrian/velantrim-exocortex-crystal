@@ -76,7 +76,21 @@ def test_write_voluntary_declares_source_status_explicitly(monkeypatch):
                         lambda utterance: ("WORLD_FACT", "OBSERVED"))
     res = volition.write_voluntary("Self-authored claim for this test")
     assert res["accepted"] is True
-    assert res["fact"]["source_status"] == "USER_REPORTED"
+    assert res["fact"]["source_status"] == "SYSTEM_AUTHORED"
+
+
+def test_write_voluntary_is_never_user_reported_nor_verified(monkeypatch):
+    """A self-authored write must never be attributed to the user
+    (USER_REPORTED) nor become VERIFIED — even if the user-utterance
+    classifier would label the text as a privileged/external source."""
+    from core import ingest as ingest_mod
+    for fallback in ("USER_REPORTED", "OBSERVED", "EXTERNAL", "DERIVED"):
+        monkeypatch.setattr(ingest_mod, "classify_claim",
+                            lambda utterance, _s=fallback: ("WORLD_FACT", _s))
+        res = volition.write_voluntary(f"Self-authored claim via {fallback}")
+        fact = res["fact"]
+        assert fact["source_status"] != "USER_REPORTED"
+        assert fact.get("truth_status") != "VERIFIED"
 
 
 def test_write_voluntary_can_be_blocked_like_any_write():
@@ -156,3 +170,69 @@ def test_cli_volition_roundtrip(capsys):
 
     assert main(["volition-report"]) == 0
     assert json.loads(capsys.readouterr().out.strip())["voluntary"] == 1
+
+
+# ─── Recall must not erase stored metadata (audit finding #1) ─────────────────
+
+def test_recall_preserves_system_authorship_metadata(monkeypatch):
+    """A normal pipeline recall (build_facts_pack → store_fact) must not wipe
+    the stored metadata of a system-authored fact: before the fix every query
+    rewrote L1 metadata as {}, dropping metadata.volition so the fact no
+    longer showed up as voluntary."""
+    from core.pipeline import run
+    from core.memory import _L0
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")  # recall only our own fact
+    claim = "The Pacific is the largest ocean"
+    res = volition.write_voluntary(claim)
+    assert res["accepted"] is True
+    fid = res["fact"]["fact_id"]
+    assert volition.volition_report()["voluntary"] == 1
+
+    out = run(claim)
+    assert fid in [t["fact_id"] for t in out["trace"]]  # the query really recalled it
+
+    _L0.clear()  # read the persisted L1 row, not the L0 cache
+    stored = get_fact(fid)
+    assert stored["metadata"].get("volition") is True
+    assert stored["source_status"] == "SYSTEM_AUTHORED"
+    assert volition.volition_report()["voluntary"] == 1
+
+
+def test_recall_preserves_occurrence_metadata(monkeypatch):
+    """Occurrence/lineage metadata (occurrences, sources_seen) survives a recall."""
+    from core.pipeline import run
+    from core.memory import _L0
+    monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")  # recall only our own fact
+    from core.reconcile import record_occurrence
+    claim = "Water boils at 100 degrees Celsius at sea level"
+    res = volition.write_voluntary(claim)
+    fid = res["fact"]["fact_id"]
+    assert record_occurrence(fid, source="user") == 2
+    before = get_fact(fid)["metadata"]
+    assert before["occurrences"] == 2 and "user" in before["sources_seen"]
+
+    out = run(claim)
+    assert fid in [t["fact_id"] for t in out["trace"]]  # the query really recalled it
+
+    _L0.clear()
+    after = get_fact(fid)["metadata"]
+    assert after["occurrences"] == 2
+    assert after["sources_seen"] == before["sources_seen"]
+    assert after.get("volition") is True
+
+
+def test_store_fact_preserve_metadata_only_affects_existing_rows():
+    """preserve_metadata keeps an existing row's metadata but a brand-new row
+    still takes the incoming metadata; the default overwrite is unchanged."""
+    from core.memory import _L0
+    store_fact({"fact_id": "pm-new", "claim": "c", "source": "s",
+                "metadata": {"k": 1}}, preserve_metadata=True)
+    assert get_fact("pm-new")["metadata"] == {"k": 1}
+    store_fact({"fact_id": "pm-new", "claim": "c", "source": "s"},
+               preserve_metadata=True)
+    assert get_fact("pm-new")["metadata"] == {"k": 1}  # L0
+    _L0.clear()
+    assert get_fact("pm-new")["metadata"] == {"k": 1}  # L1
+    store_fact({"fact_id": "pm-new", "claim": "c", "source": "s"})
+    _L0.clear()
+    assert get_fact("pm-new")["metadata"] == {}         # default: overwrite

@@ -3,7 +3,7 @@
 This module decides response strategy (ASSERT / HEDGE / etc.) using the
 existing Crystal axes from core/memory.py:
 - claim_type (WORLD_FACT, USER_EXPERIENCE, EMOTION, ...)
-- source_status (USER_REPORTED, OBSERVED, DERIVED, EXTERNAL, LLM_OUTPUT, ...)
+- source_status (USER_REPORTED, SYSTEM_AUTHORED, OBSERVED, DERIVED, EXTERNAL, LLM_OUTPUT, ...)
 - epistemic_state (Validated, Supported, Contradicted, ...)
 - risk_domain + mode_hint for context.
 
@@ -47,7 +47,7 @@ def decide_response_policy(inp: ResponsePolicyInput) -> ResponsePolicyDecision:
     - High-risk domains (HEALTH/LEGAL/FINANCIAL/SAFETY) require CITE_OR_LIMIT unless strongly validated
     - Validated + reliable source (EXTERNAL/DERIVED/OBSERVED) → ASSERT (with citation=True)
     - Supported → HEDGE
-    - Weak WORLD_FACT from USER_REPORTED → SPECULATIVE
+    - Weak WORLD_FACT from USER_REPORTED or SYSTEM_AUTHORED → SPECULATIVE
     - Default safe fallback: ACKNOWLEDGE
     """
     ct = (inp.claim_type or "").upper().strip()
@@ -109,12 +109,13 @@ def decide_response_policy(inp: ResponsePolicyInput) -> ResponsePolicyDecision:
             requires_citation=high_risk
         )
 
-    # 7. Weak user-reported world fact → SPECULATIVE
+    # 7. Weak user-reported or system-authored world fact → SPECULATIVE
     weak_states = {"HYPOTHESIZED", "OBSERVED"}
-    if ct == "WORLD_FACT" and ss == "USER_REPORTED" and es_upper in weak_states:
+    if ct == "WORLD_FACT" and ss in {"USER_REPORTED", "SYSTEM_AUTHORED"} and es_upper in weak_states:
         return ResponsePolicyDecision(
             action="SPECULATIVE",
-            reason="User-reported world fact without strong validation.",
+            reason=("User-reported" if ss == "USER_REPORTED" else "System-authored")
+            + " world fact without strong validation.",
             requires_citation=True
         )
 
