@@ -1,5 +1,6 @@
 """A source ID is not sufficient to replay sealed evidence after drift."""
 import copy
+import json
 
 import pytest
 
@@ -67,6 +68,10 @@ def test_missing_evidence_has_priority_over_changed_evidence():
     report = provenance.verify_receipt(receipt)
     assert report["verified"] is False
     assert report["citations"][0]["status"] == "evidence_missing"
+    assert report["summary"] == {"evidence_missing": 1}
+    assert {span["status"] for span in report["citations"][0]["evidence"]} == {
+        "evidence_missing", "evidence_modified",
+    }
 
 
 def test_claim_drift_keeps_fact_level_verdict_with_existing_evidence():
@@ -82,3 +87,50 @@ def test_claim_drift_keeps_fact_level_verdict_with_existing_evidence():
     assert report["verified"] is False
     assert report["citations"][0]["status"] == "modified"
     assert report["citations"][0]["evidence"][0]["status"] == "modified"
+
+
+def test_cli_negative_evidence_verdict_keeps_json_contract(tmp_path, capsys):
+    """Exit zero means a verdict was emitted, not that the receipt is valid."""
+    from core.cli import main
+
+    receipt = _receipt()
+    evidence_id = receipt["citations"][0]["evidence"][0]["evidence_id"]
+    with memory._db() as conn:
+        conn.execute(
+            "UPDATE evidence_spans SET source_uri = ? WHERE evidence_id = ?",
+            ("tampered.txt", evidence_id),
+        )
+
+    path = tmp_path / "receipt.json"
+    path.write_text(json.dumps(receipt), encoding="utf-8")
+    assert main(["verify-receipt", str(path), "--strict-provenance"]) == 0
+
+    report = json.loads(capsys.readouterr().out)
+    assert report["digest_valid"] is True
+    assert report["verified"] is False
+    assert report["citations"][0]["status"] == "evidence_modified"
+    assert report["summary"] == {"evidence_modified": 1}
+
+
+def test_mcp_transports_negative_evidence_verdict_without_tool_error():
+    """MCP transport success is not receipt verification success."""
+    from core.mcp_server import handle_message
+
+    receipt = _receipt()
+    evidence_id = receipt["citations"][0]["evidence"][0]["evidence_id"]
+    with memory._db() as conn:
+        conn.execute(
+            "UPDATE evidence_spans SET source_sha256 = ? WHERE evidence_id = ?",
+            ("0" * 64, evidence_id),
+        )
+
+    response = handle_message({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "tools/call",
+        "params": {"name": "verify_receipt", "arguments": {"receipt": receipt}},
+    })
+    assert response["result"]["isError"] is False
+    report = json.loads(response["result"]["content"][0]["text"])
+    assert report["verified"] is False
+    assert report["citations"][0]["status"] == "evidence_modified"
