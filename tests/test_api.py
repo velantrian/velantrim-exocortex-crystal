@@ -164,6 +164,40 @@ def test_receipt_and_verify(client):
     v = client.post("/verify-receipt", json={"receipt": receipt})
     assert v.status_code == 200
     assert v.json()["digest_valid"] is True
+    assert v.json()["verified"] is True
+
+
+def test_receipt_verify_http_negative_evidence_verdict(client):
+    """HTTP 200 says the request was served, not that its receipt passed."""
+    from core import memory, provenance
+    from core.ingest import ingest
+
+    fact = ingest(
+        "A sourced and attributable test claim", source_status="EXTERNAL"
+    )["fact"]
+    evidence.attach_evidence(
+        fact["fact_id"], "file://source.txt",
+        source_text="A sourced and attributable test claim",
+    )
+    receipt = provenance.build_receipt({
+        "query": "test", "answer": fact["claim"], "facts": [fact],
+    })
+    evidence_id = receipt["citations"][0]["evidence"][0]["evidence_id"]
+    with memory._db() as conn:
+        conn.execute(
+            "UPDATE evidence_spans SET source_uri = ? WHERE evidence_id = ?",
+            ("file://altered.txt", evidence_id),
+        )
+
+    r = client.post("/verify-receipt", json={
+        "receipt": receipt, "strict_provenance": True,
+    })
+    assert r.status_code == 200
+    report = r.json()
+    assert report["digest_valid"] is True
+    assert report["verified"] is False
+    assert report["citations"][0]["status"] == "evidence_modified"
+    assert report["summary"] == {"evidence_modified": 1}
 
 
 def test_receipt_blocked_returns_422(client):
