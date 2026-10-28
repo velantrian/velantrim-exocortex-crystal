@@ -110,6 +110,18 @@ external source again. A retained evidence ID whose sealed fields changed
 reports `evidence_modified`. Automated gates must inspect the JSON `verified`
 field: an exit code of zero also means a negative report was printed correctly.
 
+For example, this Bash gate fails closed on negative, missing or malformed JSON
+verdicts; `pipefail` also preserves CLI execution failures:
+
+```bash
+set -o pipefail
+velantrim verify-receipt receipt.json --strict-provenance \
+  | python -c 'import json, sys; sys.exit(0 if json.load(sys.stdin).get("verified") is True else 1)'
+```
+
+The strict check is an integration policy choice; it does not change the
+`verify-receipt` CLI exit-code contract.
+
 If a cited fact is later **erased, restricted, modified or contradicted**, replay
 reports the drift instead of silently returning a stale answer.
 
