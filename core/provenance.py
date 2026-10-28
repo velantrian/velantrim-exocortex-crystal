@@ -54,6 +54,7 @@ _SEALED_EVIDENCE_FIELDS = (
     "source_uri", "source_kind", "chunk_id", "section", "span_start", "span_end",
     "source_sha256", "claim_sha256",
 )
+_OPTIONAL_LEGACY_EVIDENCE_FIELDS = frozenset({"section", "chunk_id"})
 
 
 def _now() -> str:
@@ -212,7 +213,11 @@ def verify_receipt(
                 elif status in ("modified", "erased", "missing"):
                     ev_status = status               # the underlying fact drifted
                 elif any(
-                    field in span and span[field] != live.get(field)
+                    (field not in span and field not in _OPTIONAL_LEGACY_EVIDENCE_FIELDS)
+                    or (field in span and (
+                        field not in live or type(span[field]) is not type(live[field])
+                        or span[field] != live[field]
+                    ))
                     for field in _SEALED_EVIDENCE_FIELDS
                 ):
                     ev_status = "evidence_modified"

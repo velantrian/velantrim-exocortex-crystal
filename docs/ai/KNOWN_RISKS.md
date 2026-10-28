@@ -1,5 +1,12 @@
 # ⚠️ Crystal Known Risks and Open Boundaries
 
+## 2026-10-28 — Receipt compatibility and replay storage boundary
+
+Receipt v2 historically sealed all source fields except `section`, introduced later. The compatibility test also preserves omitted `chunk_id`. Other missing sealed fields now fail closed as `evidence_modified`; exact type and key presence are checked for present fields. Legacy optional omissions cannot attest the omitted value. An unsigned digest does not authenticate its author.
+
+Replay leaves the logical contents of an initialized SQLite database unchanged in the focused regression. `memory._db()` may initialize or migrate the schema for a fresh or old database and `get_fact()` may update the L0 cache; replay is not a no-filesystem-write guarantee in those cases. A dedicated read-only storage design is not implemented here. External sources are not re-fetched, and no semantic truth or production authorization is established.
+
+
 ## 2026-10-28 — Focused receipt replay hardening
 
 This change compares the source-span fields sealed by a receipt with the current
