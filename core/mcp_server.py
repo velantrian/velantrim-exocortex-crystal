@@ -175,8 +175,9 @@ _register(_Tool(
 
 _register(_Tool(
     "verify_receipt",
-    "Read-only: replay a provenance receipt against current memory and report "
-    "drift (erased / restricted / modified / contradicted).",
+    "Read-only receipt replay. Inspect JSON `verified` for the verdict; "
+    "citation statuses include evidence_missing and evidence_modified. "
+    "A successful MCP tool call does not mean receipt verification passed.",
     {
         "type": "object",
         "properties": {
