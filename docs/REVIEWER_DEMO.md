@@ -170,7 +170,18 @@ velantrim verify-receipt demo-data/receipt.json --strict-provenance
 ```
 
 With `--strict-provenance`, a VERIFIED citation must still be backed by
-source-span evidence — otherwise the replay fails.
+source-span evidence — otherwise the replay fails. For automated approval in
+Bash, check the JSON verdict, not just the CLI's exit code:
+
+```bash
+set -o pipefail
+velantrim verify-receipt demo-data/receipt.json --strict-provenance \
+  | python -c 'import json, sys; sys.exit(0 if json.load(sys.stdin).get("verified") is True else 1)'
+```
+
+This pipeline exits non-zero for `verified: false`, invalid JSON, or a failing
+verifier process. The raw CLI intentionally returns exit code zero when it
+successfully emits a negative verdict.
 
 ## Step 7 — Controlled receipt-integrity check (on a copy)
 
