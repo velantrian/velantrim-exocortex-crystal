@@ -2,6 +2,21 @@
 
 This compact log records material decisions, exact evidence, limitations and hand-offs. It does not replace Git history, issues, pull requests, `CHANGELOG.md` or Notion.
 
+## 2026-10-28 — Receipt evidence drift and reproducible demo
+
+- Base: `main@c5b180f4abc308c145185e78bcea05a89ca76720`.
+- Replay now compares fields actually sealed in each evidence span; it does not
+  accept a changed source digest merely because its evidence ID survives.
+- New regressions cover each sealed field with signed/unsigned receipts and
+  strict/default replay, optional legacy fields, and mixed missing/changed spans.
+- Updated demo distinguishes USER_CLAIMED refusal from a fresh source-import
+  success path. Security wording states the L1-only field-encryption boundary
+  and the need to inspect the JSON `verified` verdict in automation.
+- Documentation impact: `GITHUB_ONLY`, a bounded correction to existing replay
+  and demonstration contracts; no new module, admission authority, grant scope,
+  production activation or dependency. Historical test/checkpoint counts stay
+  unchanged. PR/CI evidence must be read from the proposed change's actual head.
+
 ## 2026-10-20 — Human introduction and completed NLnet synchronization
 
 - Base: `main@6fab6a10bf4cead9118ed11e49f6bcc9fd2a36ed`, after merged PR #496.

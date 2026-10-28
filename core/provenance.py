@@ -30,6 +30,8 @@
 #   modified     — the claim text changed since the answer was produced
 #   invalidated  — fact dropped to Contradicted / Deprecated / Collapsed
 #   missing      — fact is gone with no tombstone (unexpected)
+#   evidence_missing  — a sealed source-span record no longer exists
+#   evidence_modified — a sealed source-span field differs from the live record
 
 import os
 import json
@@ -45,6 +47,13 @@ _ENV_KEY = "VELANTRIM_PROVENANCE_KEY"
 
 # ESM states in which a cited fact still "stands" behind the answer.
 _LIVE_STATES = {"Validated", "Supported", "ImmutableCore"}
+
+# Compare only fields actually sealed by the receipt. Older receipts may omit
+# optional span fields, but a retained evidence_id never licenses changed data.
+_SEALED_EVIDENCE_FIELDS = (
+    "source_uri", "source_kind", "chunk_id", "section", "span_start", "span_end",
+    "source_sha256", "claim_sha256",
+)
 
 
 def _now() -> str:
@@ -192,13 +201,21 @@ def verify_receipt(
         # Receipt v2: replay sealed source-span evidence against the live store.
         sealed_spans = cit.get("evidence")
         if sealed_spans:
-            live_ids = {s["evidence_id"] for s in evidence.evidence_for(cit.get("fact_id"))}
+            live_spans = {
+                s["evidence_id"]: s for s in evidence.evidence_for(cit.get("fact_id"))
+            }
             ev_report = []
             for span in sealed_spans:
-                if span.get("evidence_id") not in live_ids:
+                live = live_spans.get(span.get("evidence_id"))
+                if live is None:
                     ev_status = "evidence_missing"   # the source link was removed
                 elif status in ("modified", "erased", "missing"):
                     ev_status = status               # the underlying fact drifted
+                elif any(
+                    field in span and span[field] != live.get(field)
+                    for field in _SEALED_EVIDENCE_FIELDS
+                ):
+                    ev_status = "evidence_modified"
                 else:
                     ev_status = "ok"
                 ev_report.append({"evidence_id": span.get("evidence_id"),
@@ -207,7 +224,12 @@ def verify_receipt(
             out_cit["evidence"] = ev_report
             # A citation is only fully "ok" if its evidence still stands.
             if status == "ok" and any(e["status"] != "ok" for e in ev_report):
-                out_cit["status"] = status = "evidence_missing"
+                status = (
+                    "evidence_missing"
+                    if any(e["status"] == "evidence_missing" for e in ev_report)
+                    else "evidence_modified"
+                )
+                out_cit["status"] = status
         citations.append(out_cit)
         summary[status] = summary.get(status, 0) + 1
 

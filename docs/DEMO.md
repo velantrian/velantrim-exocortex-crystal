@@ -2,8 +2,10 @@
 
 A reproducible, ~5-minute tour of the verifiable memory core, using **only the
 CLI** and the **dependency-free runtime** (no LLM, no cloud, no native deps).
-Every command and every block of output below was captured from an actual run —
-nothing here is mocked.
+The ingest/source-import/receipt path below was replayed on 2026-10-28 with
+SQLite, HashingEmbedder and ExtractiveGenerator. Later sections remain
+walkthrough examples and were not all replayed in that check. IDs and timestamps
+are illustrative; use the values returned by your own commands.
 
 > **Companion docs:** [`ARCHITECTURE.md`](ARCHITECTURE.md) (how it works),
 > [`COMPARISON.md`](COMPARISON.md) (vs vector-only memory),
@@ -16,29 +18,31 @@ nothing here is mocked.
 
 ```bash
 pip install .                 # exposes the `velantrim` console script; zero mandatory deps
-# isolate this demo in a scratch directory so it never touches real data:
-export VELANTRIM_L3_PATH=/tmp/velantrim_demo/l3.db
-export VELANTRIM_DB=/tmp/velantrim_demo/l1.db
+# isolate this demo in a new scratch directory:
+export VELANTRIM_DEMO_DIR="$(mktemp -d)"
+cd "$VELANTRIM_DEMO_DIR"
+export VELANTRIM_L3_PATH="$VELANTRIM_DEMO_DIR/l3.db"
+export VELANTRIM_DB="$VELANTRIM_DEMO_DIR/l1.db"
+export VELANTRIM_STORAGE_PROFILE_PATH="$VELANTRIM_DEMO_DIR/storage-profile.json"
+export VELANTRIM_L3_BACKEND=sqlite
+export VELANTRIM_EMBEDDER=hashing
+export VELANTRIM_GENERATOR=extractive
+export VELANTRIM_QUEUE_BACKEND=sqlite
 export VELANTRIM_DEMO_SEED=0   # start from an EMPTY canon (production default)
 ```
 
-On a stdlib-only machine the core announces its dependency-free fallbacks on
-first use and keeps working — no install failure, no network:
-
-```
-auto L3: LadybugDB unavailable (ImportError), falling back to on-disk SQLite
-auto embedder: sbert unavailable (ImportError), falling back to HashingEmbedder
-```
+These explicit settings select the dependency-free, deterministic demo profile.
+They do not exercise optional graph, embedding or model providers.
 
 ---
 
-## 1. Ingest a fact, then ask — a grounded answer **without an LLM**
+## 1. Distinguish a user claim from source-grounded recall
 
 ```bash
 velantrim ingest "The Eiffel Tower is in Paris."
 ```
 ```json
-{"accepted": true, "reinforced": false, "fact_id": "ing:fe37d9fe9778",
+{"accepted": true, "duplicate": false, "fact_id": "ing:35719d66c970",
  "claim_type": "WORLD_FACT", "truth_status": "USER_CLAIMED", "conflicts": []}
 ```
 
@@ -46,13 +50,13 @@ velantrim ingest "The Eiffel Tower is in Paris."
 velantrim ask "Where is the Eiffel Tower?"
 ```
 ```
-The Eiffel Tower is in Paris.
+[blocked] insufficient grounding: no strict-canonical (VERIFIED) facts available
 ```
 
-The answer comes from the stored fact via extractive retrieval — **no model was
-called**. The fact was classified (`WORLD_FACT`), gated, and given an epistemic
-state. `velantrim report` shows the L3 store state (all epistemic states —
-physical L3 != strict Canon):
+The claim is stored, but a user report alone is not enough for a strict factual
+answer. No model was called. `Validated` is an ESM state; it does not turn
+`USER_CLAIMED` into externally sourced knowledge. `velantrim report` shows all
+physical L3 states, not just strict Canon:
 
 ```
 MEMORY REPORT (L3 store — all epistemic states)
@@ -61,6 +65,23 @@ MEMORY REPORT (L3 store — all epistemic states)
   claim_type:      {'WORLD_FACT': 1}
   truth_status:    {'USER_CLAIMED': 1}
 ```
+
+For the successful source path, select a **second empty scratch memory** so an
+already-stored user claim is not silently upgraded by a duplicate import:
+
+```bash
+export VELANTRIM_L3_PATH="$VELANTRIM_DEMO_DIR/source-l3.db"
+export VELANTRIM_DB="$VELANTRIM_DEMO_DIR/source-l1.db"
+export VELANTRIM_STORAGE_PROFILE_PATH="$VELANTRIM_DEMO_DIR/source-profile.json"
+printf 'The Eiffel Tower is in Paris.\n' > tower.txt
+velantrim learn tower.txt
+velantrim ask "Where is the Eiffel Tower?"
+```
+
+The final command returns `The Eiffel Tower is in Paris.` from the imported
+source, without an LLM. This demonstrates provenance and admission behavior on
+a synthetic local file; it does not independently establish that an arbitrary
+document is factually correct.
 
 ---
 
@@ -80,9 +101,14 @@ velantrim verify-receipt receipt.json
 ```
 ```json
 {"digest_valid": true, "signature_valid": null,
- "citations": [{"fact_id": "ing:fe37d9fe9778", "status": "ok"}],
  "summary": {"ok": 1}, "verified": true}
 ```
+
+This excerpt omits the detailed `citations`/source-span report. Replay compares
+the receipt with the current local records; it does not automatically fetch the
+external source again. A retained evidence ID whose sealed fields changed
+reports `evidence_modified`. Automated gates must inspect the JSON `verified`
+field: an exit code of zero also means a negative report was printed correctly.
 
 If a cited fact is later **erased, restricted, modified or contradicted**, replay
 reports the drift instead of silently returning a stale answer.

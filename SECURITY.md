@@ -118,3 +118,19 @@ Bandit/pip-audit/Gitleaks run is evidence for that run, not a security or legal 
 
 Before network exposure, require TLS, authenticated access, least privilege, protected
 storage, restore drills, secret rotation, resource monitoring and independent review.
+
+## Encryption and receipt replay scope
+
+`VELANTRIM_ENCRYPTION_KEY` enables field-level encryption for L1 claim/metadata
+columns. It does not encrypt the complete deployment: the SQLite L3 graph can
+retain the same claim in plaintext. Indexes, logs, exports, WAL and backups need
+their own storage/access controls. Use an appropriately protected disk/volume
+when the deployment requires confidentiality for every stored copy. The key
+setting alone is not a whole-memory encryption or GDPR certification claim.
+
+Receipt replay compares sealed source-span fields with the current evidence
+records. A retained evidence ID with changed fields reports `evidence_modified`.
+This checks the local stored relationship; it does not automatically re-fetch
+external source documents or prove semantic truth. `verify-receipt` emits the
+JSON verdict; automation must inspect `verified`, because command exit zero also
+means a negative report was successfully generated.

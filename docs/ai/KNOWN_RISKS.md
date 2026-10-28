@@ -1,5 +1,18 @@
 # ⚠️ Crystal Known Risks and Open Boundaries
 
+## 2026-10-28 — Focused receipt replay hardening
+
+This change compares the source-span fields sealed by a receipt with the current
+record, instead of treating an unchanged evidence ID as sufficient. Changed
+fields report `evidence_modified`; missing evidence remains `evidence_missing`.
+Optional fields absent in older receipts remain compatible. Focused coverage:
+`tests/test_receipt_evidence_drift.py`, existing evidence and provenance suites.
+
+Boundaries remain: no automatic external-source re-fetch, no new Canon authority,
+and no semantic truth guarantee. Encryption configured through `core.crypto`
+covers L1 claim/metadata fields, not every L3/index/export copy; see `SECURITY.md`.
+Historical checkpoints below are not advanced by this focused fix.
+
 **NLnet decision (2026-10-09):** `NOT_SELECTED / NOT_AWARDED`; review completed. Submission remains recorded; no award, approved budget or payment commitment.
 
 
