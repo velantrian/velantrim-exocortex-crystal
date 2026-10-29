@@ -156,6 +156,33 @@ def _citation_status(cit: Dict[str, Any], tombstoned: set) -> str:
     return "ok"
 
 
+def _receipt_structure_valid(receipt: Any) -> bool:
+    """Fail closed on malformed JSON containers; absent evidence remains legacy-valid."""
+    if not isinstance(receipt, dict):
+        return False
+    citations = receipt.get("citations")
+    if not isinstance(citations, list):
+        return False
+    signature = receipt.get("signature")
+    if signature is not None and not isinstance(signature, str):
+        return False
+    for cit in citations:
+        if not isinstance(cit, dict):
+            return False
+        fid = cit.get("fact_id")
+        if fid is not None and not isinstance(fid, str):
+            return False
+        if "evidence" not in cit:
+            continue
+        spans = cit["evidence"]
+        if not isinstance(spans, list):
+            return False
+        for span in spans:
+            if not isinstance(span, dict) or not isinstance(span.get("evidence_id"), str):
+                return False
+    return True
+
+
 def verify_receipt(
     receipt: Dict[str, Any], *, strict_provenance: bool = False
 ) -> Dict[str, Any]:
@@ -176,15 +203,34 @@ def verify_receipt(
     may not stand on zero evidence. The default (False) preserves the lenient
     contract so existing receipts replay unchanged.
     """
-    digest_valid = (
-        "digest" in receipt and _digest(receipt) == receipt["digest"]
-    )
+    try:
+        digest_valid = (
+            isinstance(receipt, dict)
+            and "digest" in receipt
+            and _digest(receipt) == receipt["digest"]
+        )
+    except (KeyError, TypeError, ValueError):
+        digest_valid = False
 
     signature_valid: Optional[bool] = None
     key = _prov_key()
-    if receipt.get("signature") is not None and key is not None:
-        expected = _sign(receipt.get("digest", ""), key)
-        signature_valid = hmac.compare_digest(receipt["signature"], expected or "")
+    if isinstance(receipt, dict) and receipt.get("signature") is not None and key is not None:
+        signature = receipt["signature"]
+        digest = receipt.get("digest")
+        signature_valid = (
+            isinstance(signature, str)
+            and isinstance(digest, str)
+            and hmac.compare_digest(signature, _sign(digest, key) or "")
+        )
+
+    if not _receipt_structure_valid(receipt):
+        return {
+            "digest_valid": digest_valid,
+            "signature_valid": signature_valid,
+            "citations": [],
+            "summary": {"invalid_receipt": 1},
+            "verified": False,
+        }
 
     tombstoned = {t["fact_id"] for t in memory.get_tombstones()}
     citations, summary = [], {}
