@@ -193,3 +193,62 @@ def test_mcp_transports_negative_evidence_verdict_without_tool_error():
     report = json.loads(response["result"]["content"][0]["text"])
     assert report["verified"] is False
     assert report["citations"][0]["status"] == "evidence_modified"
+
+
+@pytest.mark.parametrize("signed", [False, True])
+@pytest.mark.parametrize("strict", [False, True])
+@pytest.mark.parametrize("malformed", [None, "", {}, [None], [{"evidence_id": []}]])
+def test_malformed_evidence_container_fails_closed(monkeypatch, signed, strict, malformed):
+    """A malformed evidence value must not masquerade as evidence-free v1."""
+    if signed:
+        monkeypatch.setenv("VELANTRIM_PROVENANCE_KEY", "synthetic-test-key")
+    else:
+        monkeypatch.delenv("VELANTRIM_PROVENANCE_KEY", raising=False)
+    receipt = _receipt()
+    receipt["citations"][0]["evidence"] = copy.deepcopy(malformed)
+    receipt["digest"] = provenance._digest(receipt)
+    if signed:
+        receipt["signature"] = provenance._sign(receipt["digest"])
+    report = provenance.verify_receipt(receipt, strict_provenance=strict)
+    assert report["digest_valid"] is True
+    assert report["signature_valid"] is (True if signed else None)
+    assert report["verified"] is False
+    assert report["summary"] == {"invalid_receipt": 1}
+
+
+@pytest.mark.parametrize("malformed", [None, "", {}, [None], [{"fact_id": []}]])
+def test_malformed_citations_fail_closed(malformed):
+    receipt = _receipt()
+    receipt["citations"] = copy.deepcopy(malformed)
+    receipt["digest"] = provenance._digest(receipt)
+    report = provenance.verify_receipt(receipt)
+    assert report["digest_valid"] is True
+    assert report["verified"] is False
+    assert report["summary"] == {"invalid_receipt": 1}
+
+
+def test_malformed_signature_is_not_an_authenticated_receipt(monkeypatch):
+    monkeypatch.setenv("VELANTRIM_PROVENANCE_KEY", "synthetic-test-key")
+    receipt = _receipt()
+    receipt["signature"] = [1]
+    report = provenance.verify_receipt(receipt)
+    assert report["digest_valid"] is True
+    assert report["signature_valid"] is False
+    assert report["verified"] is False
+    assert report["summary"] == {"invalid_receipt": 1}
+
+
+@pytest.mark.parametrize("malformed", [[], {"citations": []}, {"version": 2, "citations": []}])
+def test_incomplete_receipt_returns_negative_verdict(malformed):
+    report = provenance.verify_receipt(malformed)
+    assert report["digest_valid"] is False
+    assert report["verified"] is False
+    assert report["summary"] == {"invalid_receipt": 1}
+
+
+def test_legacy_evidence_free_citation_still_replays():
+    receipt = _receipt()
+    del receipt["citations"][0]["evidence"]
+    receipt["digest"] = provenance._digest(receipt)
+    report = provenance.verify_receipt(receipt)
+    assert report["verified"] is True
