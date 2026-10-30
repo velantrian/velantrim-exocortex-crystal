@@ -57,6 +57,65 @@ def test_omitted_optional_legacy_span_fields_remain_compatible():
     assert provenance.verify_receipt(receipt)["verified"] is True
 
 
+@pytest.mark.parametrize("field", [
+    "source_uri", "source_kind", "span_start", "span_end", "source_sha256", "claim_sha256",
+])
+@pytest.mark.parametrize("signed", [False, True])
+def test_missing_required_sealed_field_fails_closed(monkeypatch, field, signed):
+    if signed:
+        monkeypatch.setenv("VELANTRIM_PROVENANCE_KEY", "synthetic-test-key")
+    else:
+        monkeypatch.delenv("VELANTRIM_PROVENANCE_KEY", raising=False)
+    receipt = _receipt()
+    del receipt["citations"][0]["evidence"][0][field]
+    receipt["digest"] = provenance._digest(receipt)
+    if signed:
+        receipt["signature"] = provenance._sign(receipt["digest"])
+    report = provenance.verify_receipt(receipt, strict_provenance=True)
+    assert report["digest_valid"] is True
+    assert report["verified"] is False
+    assert report["citations"][0]["status"] == "evidence_modified"
+
+
+def test_null_and_live_missing_field_are_distinct(monkeypatch):
+    receipt = _receipt()
+    span = receipt["citations"][0]["evidence"][0]
+    span["section"] = None
+    receipt["digest"] = provenance._digest(receipt)
+    live = evidence.evidence_for(receipt["citations"][0]["fact_id"])[0]
+    del live["section"]
+    monkeypatch.setattr(evidence, "evidence_for", lambda _: [live])
+    report = provenance.verify_receipt(receipt)
+    assert report["verified"] is False
+    assert report["citations"][0]["status"] == "evidence_modified"
+
+
+def test_boolean_is_not_the_integer_zero(monkeypatch):
+    receipt = _receipt()
+    live = evidence.evidence_for(receipt["citations"][0]["fact_id"])[0]
+    assert live["span_start"] == 0
+    live["span_start"] = False
+    monkeypatch.setattr(evidence, "evidence_for", lambda _: [live])
+    report = provenance.verify_receipt(receipt)
+    assert report["verified"] is False
+    assert report["citations"][0]["status"] == "evidence_modified"
+
+
+def test_replay_does_not_change_initialized_database():
+    import sqlite3
+
+    receipt = _receipt()
+    with sqlite3.connect(memory.SQLITE_PATH) as conn:
+        before = list(conn.iterdump())
+    original = copy.deepcopy(receipt)
+    report = provenance.verify_receipt(receipt, strict_provenance=True)
+    with sqlite3.connect(memory.SQLITE_PATH) as conn:
+        after = list(conn.iterdump())
+    assert report["verified"] is True
+    assert receipt == original
+    assert after == before
+
+
 def test_missing_evidence_has_priority_over_changed_evidence():
     receipt = _receipt()
     citation = receipt["citations"][0]
@@ -134,3 +193,70 @@ def test_mcp_transports_negative_evidence_verdict_without_tool_error():
     report = json.loads(response["result"]["content"][0]["text"])
     assert report["verified"] is False
     assert report["citations"][0]["status"] == "evidence_modified"
+
+
+@pytest.mark.parametrize("signed", [False, True])
+@pytest.mark.parametrize("strict", [False, True])
+@pytest.mark.parametrize("malformed", [None, "", {}, [None], [{"evidence_id": []}]])
+def test_malformed_evidence_container_fails_closed(monkeypatch, signed, strict, malformed):
+    """A malformed evidence value must not masquerade as evidence-free v1."""
+    if signed:
+        monkeypatch.setenv("VELANTRIM_PROVENANCE_KEY", "synthetic-test-key")
+    else:
+        monkeypatch.delenv("VELANTRIM_PROVENANCE_KEY", raising=False)
+    receipt = _receipt()
+    receipt["citations"][0]["evidence"] = copy.deepcopy(malformed)
+    receipt["digest"] = provenance._digest(receipt)
+    if signed:
+        receipt["signature"] = provenance._sign(receipt["digest"])
+    report = provenance.verify_receipt(receipt, strict_provenance=strict)
+    assert report["digest_valid"] is True
+    assert report["signature_valid"] is (True if signed else None)
+    assert report["verified"] is False
+    assert report["summary"] == {"invalid_receipt": 1}
+
+
+@pytest.mark.parametrize("malformed", [None, "", {}, [None], [{"fact_id": []}]])
+def test_malformed_citations_fail_closed(malformed):
+    receipt = _receipt()
+    receipt["citations"] = copy.deepcopy(malformed)
+    receipt["digest"] = provenance._digest(receipt)
+    report = provenance.verify_receipt(receipt)
+    assert report["digest_valid"] is True
+    assert report["verified"] is False
+    assert report["summary"] == {"invalid_receipt": 1}
+
+
+def test_malformed_signature_is_not_an_authenticated_receipt(monkeypatch):
+    monkeypatch.setenv("VELANTRIM_PROVENANCE_KEY", "synthetic-test-key")
+    receipt = _receipt()
+    receipt["signature"] = [1]
+    report = provenance.verify_receipt(receipt)
+    assert report["digest_valid"] is True
+    assert report["signature_valid"] is False
+    assert report["verified"] is False
+    assert report["summary"] == {"invalid_receipt": 1}
+
+
+@pytest.mark.parametrize("malformed", [[], {"citations": []}, {"version": 2, "citations": []}])
+def test_incomplete_receipt_returns_negative_verdict(malformed):
+    report = provenance.verify_receipt(malformed)
+    assert report["digest_valid"] is False
+    assert report["verified"] is False
+    assert report["summary"] == {"invalid_receipt": 1}
+
+
+def test_legacy_evidence_free_citation_still_replays():
+    receipt = _receipt()
+    del receipt["citations"][0]["evidence"]
+    receipt["digest"] = provenance._digest(receipt)
+    report = provenance.verify_receipt(receipt)
+    assert report["verified"] is True
+
+
+def test_undigestable_receipt_returns_negative_verdict():
+    receipt = _receipt()
+    receipt["answer"] = {"not", "json"}  # a set cannot be canonicalised
+    report = provenance.verify_receipt(receipt)
+    assert report["digest_valid"] is False
+    assert report["verified"] is False

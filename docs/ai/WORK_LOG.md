@@ -1,5 +1,10 @@
 # 🧾 Crystal AI Work Log
 
+## 2026-10-28 — Receipt evidence shape follow-up
+
+Bounded follow-up to #500: reject absent required v2 source fields, distinguish present null from absent live keys and avoid boolean/integer equivalence; preserve legacy `section` and `chunk_id` omissions. Historical source: initial v2 producer `7242bf1e18802629602faa91f1d594e2ffecc00a`; `section` added in `a471af7aaf5188f164fa8495d0395ec40551b590`. Focused SQLite regression covers unchanged logical database contents after replay on initialized storage. Schema initialization/migration and L0 caching remain explicit boundaries; no Canon or TruthGate authority changes.
+
+
 This compact log records material decisions, exact evidence, limitations and hand-offs. It does not replace Git history, issues, pull requests, `CHANGELOG.md` or Notion.
 
 ## 2026-10-28 — Receipt evidence drift and reproducible demo
