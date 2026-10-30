@@ -160,6 +160,8 @@ def _receipt_structure_valid(receipt: Any) -> bool:
     """Fail closed on malformed JSON containers; absent evidence remains legacy-valid."""
     if not isinstance(receipt, dict):
         return False
+    if not isinstance(receipt.get("digest"), str):
+        return False  # a receipt without a sealed digest is incomplete, not empty
     citations = receipt.get("citations")
     if not isinstance(citations, list):
         return False

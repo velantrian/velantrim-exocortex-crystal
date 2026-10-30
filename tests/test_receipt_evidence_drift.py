@@ -252,3 +252,11 @@ def test_legacy_evidence_free_citation_still_replays():
     receipt["digest"] = provenance._digest(receipt)
     report = provenance.verify_receipt(receipt)
     assert report["verified"] is True
+
+
+def test_undigestable_receipt_returns_negative_verdict():
+    receipt = _receipt()
+    receipt["answer"] = {"not", "json"}  # a set cannot be canonicalised
+    report = provenance.verify_receipt(receipt)
+    assert report["digest_valid"] is False
+    assert report["verified"] is False
