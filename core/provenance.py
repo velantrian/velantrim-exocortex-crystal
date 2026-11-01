@@ -177,8 +177,8 @@ def _receipt_structure_valid(receipt: Any) -> bool:
         if "evidence" not in cit:
             continue
         spans = cit["evidence"]
-        if not isinstance(spans, list):
-            return False
+        if not isinstance(spans, list) or not spans:
+            return False  # legacy evidence-free citations omit the key entirely
         for span in spans:
             if not isinstance(span, dict) or not isinstance(span.get("evidence_id"), str):
                 return False

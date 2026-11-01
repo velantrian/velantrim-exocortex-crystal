@@ -197,7 +197,7 @@ def test_mcp_transports_negative_evidence_verdict_without_tool_error():
 
 @pytest.mark.parametrize("signed", [False, True])
 @pytest.mark.parametrize("strict", [False, True])
-@pytest.mark.parametrize("malformed", [None, "", {}, [None], [{"evidence_id": []}]])
+@pytest.mark.parametrize("malformed", [None, "", {}, [], [None], [{"evidence_id": []}]])
 def test_malformed_evidence_container_fails_closed(monkeypatch, signed, strict, malformed):
     """A malformed evidence value must not masquerade as evidence-free v1."""
     if signed:
