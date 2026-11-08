@@ -5,6 +5,7 @@ or revisions of its historical labels. Manual attribution is explicit below.
 """
 import asyncio
 from copy import deepcopy
+from contextlib import closing
 import json
 from pathlib import Path
 import sqlite3
@@ -57,7 +58,7 @@ def dumps(durable):
     # Detect ALL durable changes, not only claim/verdict changes.
     result = []
     for path in (Path(memory.SQLITE_PATH), durable / "l3.db"):
-        with sqlite3.connect(path) as conn:
+        with closing(sqlite3.connect(path)) as conn:
             result.append(tuple(conn.iterdump()))
     return result
 

@@ -37,8 +37,6 @@ from core import metrics, adaptation
 from core.applicability import (
     FIELDS as _PERSISTED_APPLICABILITY_FIELDS, embed as _embed_applicability_in_metadata,
     lift as _lift_applicability, select as select_applicability, declarations, request_error,
-    _declared_primary_object, _facts_applicable_to_asked_object,
-    _facts_covering_as_of, _fact_covers_as_of, _parse_temporal_instant,
 )
 
 logger = logging.getLogger(__name__)
@@ -955,7 +953,7 @@ def generate_answer(
     if not uncertainty and applicability["exclusions"]:
         uncertainty = "; ".join(dict.fromkeys(e["reason"] for e in applicability["exclusions"]))
     current_requested = (isinstance(facts_pack.get("temporal_scope"), str)
-                         and facts_pack["temporal_scope"].strip() == "current")
+                         and facts_pack["temporal_scope"].strip().casefold() == "current")
     if not canonical_facts and current_requested and not applicability["request_error"]:
         uncertainty = "current status is not established" + (": " + uncertainty if uncertainty else "")
     elif canonical_facts and uncertainty:

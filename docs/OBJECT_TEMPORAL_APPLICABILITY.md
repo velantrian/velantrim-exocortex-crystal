@@ -53,8 +53,12 @@ CLI `ask` / `receipt` accept `--asked-object`, `--as-of`, `--temporal-scope`.
 
 No object, date, current intent or timezone is inferred from free text or the
 server clock. Without `asked_object`, the object sieve is off. Time filtering is
-off unless `temporal_scope="current"`. A current-state request without a valid
-explicit `as_of` returns an explanation, including when memory is empty.
+off only when `temporal_scope` is omitted (`None`). The only accepted explicit
+scope is `"current"` (surrounding whitespace is stripped and case is normalized:
+`"CURRENT"`, `"Current"`, and `" current "` behave identically). Unknown, misspelled,
+blank, or non-string scopes fail closed with an explanation; they never disable
+time filtering. A current-state request without a valid explicit `as_of` returns
+an explanation, including when memory is empty.
 
 - A present `primary_object` is decisive, including empty/malformed values;
   wrapper `object` cannot override it. Missing identity is a reported gap.
@@ -213,7 +217,8 @@ plus `tests/test_applicability_live_path.py`,
 The added files contain 84 passing tests (42 adapted lab + 42 live/boundary cases).
 Warnings: one optional HTTP-client deprecation and two expected synthetic
 curator-force-override warnings. No failures or skips in that final selection.
-The entire repository suite was not run; no broad whole-repository claim.
+Those were the initial focused checks; the follow-up full-suite coverage and CI
+results below supersede the initial limitation about not running the full suite.
 
 ## Known limits
 
@@ -225,3 +230,54 @@ Retrieval recall limits still exist; these filters cannot recover absent facts.
 Evidence-span and applicability semantics are not independently audited by this
 change. Non-extractive generators were not exercised. Only the selected offline
 SQLite/hash/extractive path is verified, not all remote backends or deployment.
+
+
+## Follow-up: fail-closed scope validation and CI coverage
+
+`temporal_scope` now accepts only omitted/None or explicit `"current"` after
+stripping surrounding whitespace and casefolding. `"CURRENT"`, `"Current"` and
+`" current "` enforce the same current-time filter. `"curent"`, unknown names, empty strings and
+non-string values return `invalid_applicability_request` through the public
+read-only query path, before retrieval. The direct rendering and compatibility
+helper boundaries also fail closed. Omitted scope preserves existing unscoped
+behavior; valid current scope still requires an explicit valid `as_of`.
+
+Public regression:
+`test_public_query_rejects_temporal_scope_typo_without_disabling_time_filter`.
+It uses real isolated stored historical evidence, asserts a refusal rather than
+an unfiltered answer, verifies the explanation, and compares complete before/after
+SQLite dumps. Other meaningful tests cover native date/datetime inputs,
+normalization, invalid requested objects, empty interval bounds with probe-date
+fallback, before/equal/after dates, future/expired/invalid bounds, mixed timezone
+awareness, whole-day precision and same-day historical-context limits.
+
+The five Ruff findings were F401 unused imports in `core/pipeline.py`:
+`_declared_primary_object`, `_facts_applicable_to_asked_object`,
+`_facts_covering_as_of`, `_fact_covers_as_of`, `_parse_temporal_instant`.
+They were removed; helper-focused tests import their actual owner,
+`core.applicability`. No lint rule or coverage threshold was relaxed.
+Interval admission and exclusion diagnostics now share one predicate, removing
+an unreachable generic fallback instead of adding a fake assertion for it.
+The focused branch-coverage command is:
+
+```sh
+python -m pytest tests/test_applicability_validation_coverage.py \
+ tests/test_applicability_live_path.py tests/test_generate_answer_asked_object.py \
+ tests/test_generate_answer_temporal_applicability.py -o addopts= \
+ --cov=core.applicability --cov-branch --cov-report=term-missing \
+ --cov-fail-under=100 -q
+```
+
+Focused result: **138 passed**, applicability **228 statements, 132 branches,
+zero missing statements or partial branches, 100.00% coverage**, against the
+unchanged 100% threshold. The full repository command is `python -m pytest tests/`
+with the unchanged pyproject default `--cov=. --cov-fail-under=100`; final global
+results are reported in the PR and its CI checks.
+A deterministic same-content atomic-file-replacement regression also pins the
+existing storage snapshot identity guard independently of filesystem timestamp
+resolution. Local subprocess tests require the existing venv's bin directory on
+PATH so their `python` executable resolves correctly.
+
+The change checks compliance with explicitly declared object, time and
+status-transfer fields; the semantic correctness of those declarations is not
+separately proven. This limitation remains applicable to all follow-up tests.

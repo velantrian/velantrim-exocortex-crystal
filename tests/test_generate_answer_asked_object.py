@@ -1,9 +1,6 @@
 """Object-applicability filter in generate_answer (asked_object)."""
-from core.pipeline import (
-    generate_answer,
-    _facts_applicable_to_asked_object,
-    _declared_primary_object,
-)
+from core.pipeline import generate_answer
+from core.applicability import _facts_applicable_to_asked_object, _declared_primary_object
 
 
 def _verified(fact_id, claim, **extra):

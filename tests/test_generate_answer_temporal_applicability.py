@@ -1,12 +1,10 @@
 """Temporal applicability in generate_answer (as_of + temporal_scope)."""
 from core.pipeline import (
     generate_answer,
-    _facts_covering_as_of,
-    _fact_covers_as_of,
-    _parse_temporal_instant,
     _lift_applicability,
     build_facts_pack,
 )
+from core.applicability import _facts_covering_as_of, _fact_covers_as_of, _parse_temporal_instant
 from datetime import date
 
 

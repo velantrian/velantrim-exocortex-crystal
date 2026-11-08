@@ -161,25 +161,28 @@ def _optional_temporal_bound(fact: Dict[str, Any], key: str):
     return parsed
 
 
-def _interval_covers_as_of(as_of_parsed: tuple, start, end) -> bool:
+def _interval_exclusion(as_of_parsed: tuple, start, end) -> Optional[str]:
     # Dates in intervals denote inclusive calendar-day bounds. With a timestamp
     # counterpart the day uses that explicit offset, never the server timezone.
     tz = (_datetime_tzinfo(as_of_parsed)
           or _datetime_tzinfo(start or ("date", None))
           or _datetime_tzinfo(end or ("date", None)))
-    first = ("datetime", _as_comparable_datetime(as_of_parsed, other_tz=tz))
-    last = ("datetime", _as_comparable_datetime(as_of_parsed, other_tz=tz, end_of_day=True))
-    if start is not None:
-        lower = ("datetime", _as_comparable_datetime(start, other_tz=tz))
-        comparison = _compare_temporals(first, lower)
-        if comparison is None or comparison < 0:
-            return False
-    if end is not None:
-        upper = ("datetime", _as_comparable_datetime(end, other_tz=tz, end_of_day=True))
-        comparison = _compare_temporals(last, upper)
-        if comparison is None or comparison > 0:
-            return False
-    return True
+    for bound, end_of_day, label in ((start, False, "validity starts after as_of"),
+                                     (end, True, "validity expired before as_of")):
+        if bound is None:
+            continue
+        requested = ("datetime", _as_comparable_datetime(as_of_parsed, other_tz=tz, end_of_day=end_of_day))
+        boundary = ("datetime", _as_comparable_datetime(bound, other_tz=tz, end_of_day=end_of_day))
+        comparison = _compare_temporals(requested, boundary)
+        if comparison is None:
+            return "validity interval/as_of timezone awareness differs"
+        if (not end_of_day and comparison < 0) or (end_of_day and comparison > 0):
+            return label + (" (whole-day coverage required)" if as_of_parsed[0] == "date" else "")
+    return None
+
+
+def _interval_covers_as_of(as_of_parsed: tuple, start, end) -> bool:
+    return _interval_exclusion(as_of_parsed, start, end) is None
 
 
 def _observation_covers_as_of(observed: tuple, as_of_parsed: tuple) -> bool:
@@ -232,11 +235,13 @@ def _facts_covering_as_of(
 ) -> List[Dict[str, Any]]:
     """Keep facts that may ground a current-state answer at as_of.
 
-    No-op unless temporal_scope is "current"; missing as_of fails closed.
-    Unparseable as_of fails closed: current status cannot be established.
+    Only omitted scope is a no-op. Unknown scope and missing/invalid as_of
+    fail closed; callers use request_error() for the explanatory message.
     """
-    if not isinstance(temporal_scope, str) or temporal_scope.strip() != "current":
+    if temporal_scope is None:
         return list(facts)
+    if not isinstance(temporal_scope, str) or temporal_scope.strip().casefold() != "current":
+        return []
     as_of_text = _normalize_as_of(as_of)
     if as_of_text is None:
         return []
@@ -255,21 +260,7 @@ def temporal_exclusion(fact, as_of):
     start = _optional_temporal_bound(fact, "valid_from")
     end = _optional_temporal_bound(fact, "valid_until")
     if start is not None or end is not None:
-        tz = (_datetime_tzinfo(instant)
-              or _datetime_tzinfo(start or ("date", None))
-              or _datetime_tzinfo(end or ("date", None)))
-        for bound, end_of_day, label in ((start, False, "validity starts after as_of"),
-                                         (end, True, "validity expired before as_of")):
-            if bound is None:
-                continue
-            requested = ("datetime", _as_comparable_datetime(instant, other_tz=tz, end_of_day=end_of_day))
-            boundary = ("datetime", _as_comparable_datetime(bound, other_tz=tz, end_of_day=end_of_day))
-            comparison = _compare_temporals(requested, boundary)
-            if comparison is None:
-                return "validity interval/as_of timezone awareness differs"
-            if (not end_of_day and comparison < 0) or (end_of_day and comparison > 0):
-                return label + (" (whole-day coverage required)" if instant[0] == "date" else "")
-        return "validity interval does not cover as_of"
+        return _interval_exclusion(instant, start, end)
     observed = _fact_observation(fact)
     if observed is None:
         if any(fact.get(k) not in (None, "") for k in ("observed_at", "date")):
@@ -302,7 +293,11 @@ def _historical_observation(observed, instant):
 def request_error(asked_object=None, as_of=None, temporal_scope=None):
     if asked_object is not None and (not isinstance(asked_object, str) or not asked_object.strip()):
         return "asked_object must be a non-empty object identifier"
-    if isinstance(temporal_scope, str) and temporal_scope.strip() == "current":
+    if temporal_scope is not None and (
+        not isinstance(temporal_scope, str) or temporal_scope.strip().casefold() != "current"
+    ):
+        return "invalid temporal_scope: expected 'current' or omitted (None); unknown values cannot disable time filtering"
+    if temporal_scope is not None:
         if _parse_temporal_instant(as_of) is None:
             return "current status is not established: temporal_scope=current requires a valid explicit as_of (ISO date or datetime)"
     return None
@@ -311,7 +306,7 @@ def request_error(asked_object=None, as_of=None, temporal_scope=None):
 def select(facts, *, asked_object=None, as_of=None, temporal_scope=None):
     """Return copies plus content-free exclusions and dated historical context."""
     kept, excluded, historical, context = [], [], [], []
-    current = isinstance(temporal_scope, str) and temporal_scope.strip() == "current"
+    current = isinstance(temporal_scope, str) and temporal_scope.strip().casefold() == "current"
     error = request_error(asked_object, as_of, temporal_scope)
     for original in facts:
         fact = deepcopy(original)
