@@ -34,7 +34,16 @@ from core.canonical_view import project_canonical, _in, _normalize_restricted_bi
 from core.rrf import rrf_fuse
 from core import metrics, adaptation
 
+from core.applicability import (
+    FIELDS as _PERSISTED_APPLICABILITY_FIELDS, embed as _embed_applicability_in_metadata,
+    lift as _lift_applicability, select as select_applicability, declarations, request_error,
+    _declared_primary_object, _facts_applicable_to_asked_object,
+    _facts_covering_as_of, _fact_covers_as_of, _parse_temporal_instant,
+)
+
 logger = logging.getLogger(__name__)
+
+
 
 
 def _safe_confidence(value: Any, default: float = 0.0) -> float:
@@ -506,6 +515,7 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
             "epistemic_state": node.get("epistemic_state", "Observed"),
             "truth_status":    node.get("truth_status"),
             "origin":          origin,
+            **declarations(node),
         }
 
     # Source 2: L3 canonical memory (recall of what was learned).
@@ -697,6 +707,7 @@ def retrieve(query: str, k: Optional[int] = None) -> List[Dict[str, Any]]:
 def build_facts_pack(
     retrieved: List[Dict[str, Any]],
     query: str,
+    *, asked_object=None, as_of=None, temporal_scope=None,
 ) -> Dict[str, Any]:
     """
     Assemble a FactsPack from the retrieved facts.
@@ -748,6 +759,8 @@ def build_facts_pack(
         # every query overwrote the stored metadata with {} and erased
         # authorship/lineage markers such as metadata.volition (system-
         # authored), occurrences and sources_seen.
+        _lift_applicability(fact, item)
+        _embed_applicability_in_metadata(fact)
         store_fact(fact, preserve_metadata=True)
         # Sync epistemic_state and restricted from the persisted store:
         # store_fact preserves the existing state on conflict, so the fact
@@ -761,6 +774,11 @@ def build_facts_pack(
         # or missing by the time generate_answer() runs.
         persisted = get_fact(fact_id)
         if persisted:
+            # Existing writer metadata wins over a retrieval wrapper's labels.
+            for key in _PERSISTED_APPLICABILITY_FIELDS:
+                fact.pop(key, None)
+            fact["metadata"] = persisted.get("metadata", {})
+            _lift_applicability(fact, persisted)
             fact["epistemic_state"] = persisted["epistemic_state"]
             fact["restricted"] = bool(persisted.get("restricted"))
         # _score — the relevance rank, only for ordering the pack; not written
@@ -776,6 +794,7 @@ def build_facts_pack(
         "facts": facts,
         "query": query,
         "total": len(facts),
+        "asked_object": asked_object, "as_of": as_of, "temporal_scope": temporal_scope,
     }
 
 
@@ -929,6 +948,23 @@ def generate_answer(
     rationale; this is the smallest production-safe runtime slice of that RFC.
     """
     canonical_facts = project_canonical(facts_pack["facts"])
+    canonical_facts, applicability = select_applicability(
+        canonical_facts, asked_object=facts_pack.get("asked_object"),
+        as_of=facts_pack.get("as_of"), temporal_scope=facts_pack.get("temporal_scope"))
+    uncertainty = applicability["request_error"]
+    if not uncertainty and applicability["exclusions"]:
+        uncertainty = "; ".join(dict.fromkeys(e["reason"] for e in applicability["exclusions"]))
+    current_requested = (isinstance(facts_pack.get("temporal_scope"), str)
+                         and facts_pack["temporal_scope"].strip() == "current")
+    if not canonical_facts and current_requested and not applicability["request_error"]:
+        uncertainty = "current status is not established" + (": " + uncertainty if uncertainty else "")
+    elif canonical_facts and uncertainty:
+        uncertainty = "Excluded evidence (not a denial of the admitted facts): " + uncertainty
+    historical_summary = "; ".join(
+        f"{f.get('observed_at', f.get('date'))}: {f['claim']}"
+        for f in applicability["historical_facts"])
+    if historical_summary:
+        uncertainty = (uncertainty or "current status is not established") + "; Historical evidence only: " + historical_summary
     if not canonical_facts:
         # Issue #64 + CanonicalView: a verifiable memory system must not answer
         # from material that is not strict-canonical (VERIFIED, non-contradicted/
@@ -972,15 +1008,20 @@ def generate_answer(
             refusal_trace.append(entry)
         return {
             "answer":      None,
-            "error":       "insufficient grounding: no strict-canonical (VERIFIED) facts available",
+            "error":       ("insufficient grounding: " + uncertainty if uncertainty else
+                            "insufficient grounding: no strict-canonical (VERIFIED) facts available"),
             "query":       facts_pack.get("query", ""),
             "facts":       [],
             "trace":       refusal_trace,
             "trace_fmt":   format_trace(refusal_trace),
             "total_facts": 0,
+            **({"applicability": applicability, "uncertainty": uncertainty} if uncertainty else {}),
         }
 
     answer = get_generator().generate(facts_pack.get("query", ""), canonical_facts)
+
+    if uncertainty:
+        answer += "\nUncertainty: " + uncertainty
 
     # Prune the trace to exactly the fact_ids that grounded this answer: the
     # public trace must not claim provenance for retrieved-but-excluded
@@ -1024,6 +1065,7 @@ def generate_answer(
         "trace":        grounded_trace,
         "trace_fmt":    format_trace(grounded_trace),
         "total_facts":  len(canonical_facts),
+        **({"applicability": applicability, "uncertainty": uncertainty} if uncertainty else {}),
     }
 
 
@@ -1183,7 +1225,8 @@ def drain_l3_outbox(graph=None) -> int:
     return healed
 
 
-def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+def run(query: str, episode: Optional[Dict[str, Any]] = None, *,
+        asked_object=None, as_of=None, temporal_scope=None) -> Dict[str, Any]:
     """
     The full Velantrim pipeline:
     Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer
@@ -1194,6 +1237,9 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     episode — optional episode context (who / where / when / event):
     facts recalled together are linked in L3 by an episodic edge.
     """
+    invalid = request_error(asked_object, as_of, temporal_scope)
+    if invalid:
+        return _blocked(invalid, query)
     metrics.incr("query.total")
     # 0. Self-heal: re-merge facts whose write to L3 previously failed (outbox).
     drain_l3_outbox()
@@ -1221,7 +1267,8 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         return _blocked("Retrieval returned 0 results.", query)
 
     # 2. FactsPack
-    facts_pack = build_facts_pack(retrieved, query)
+    facts_pack = build_facts_pack(retrieved, query, asked_object=asked_object,
+                                  as_of=as_of, temporal_scope=temporal_scope)
 
     # 3. Trace
     trace = build_trace(retrieved)

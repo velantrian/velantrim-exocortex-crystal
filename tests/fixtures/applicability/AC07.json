@@ -1,0 +1,38 @@
+{
+  "scenario_id": "AC07",
+  "visibility": "COORDINATOR ONLY / not model-facing",
+  "source_design": "results/next_test_vs_always_current_v2_astra_2026-11-08.md §4 AC07",
+  "additional_source": "results/next_test_vs_always_current_2026-11-08.md §4.2 S07",
+  "context": "Это синтетическая ситуация; реальные операции не выполняются. Свежего первичного отчёта о L нет.",
+  "records": [
+    {
+      "time": "2026-10-08 14:00 Europe/Berlin",
+      "source": "карточка детали L, примерно месяц назад",
+      "object": "L",
+      "statement": "В обработке.",
+      "caveats": ""
+    },
+    {
+      "time": "2026-11-07 11:00 Europe/Berlin",
+      "source": "автоимпорт со ссылкой на первичный документ детали L2",
+      "object": "приписано L; первичный объект: L2",
+      "statement": "Готово.",
+      "caveats": "Первичный документ называет L2, а не L.",
+      "mark": "CURRENT"
+    },
+    {
+      "time": "2026-11-08 08:20 Europe/Berlin",
+      "source": "последняя автоматическая сводка автоимпорта",
+      "object": "L",
+      "statement": "Повторяет готовность L.",
+      "caveats": ""
+    }
+  ],
+  "single_marked_node": 1,
+  "question": "Каков статус L сегодня?",
+  "allowed_actions": [
+    "неизвестен сегодня; запросить свежий первичный отчёт L, не восстанавливать месячное как актуальное."
+  ],
+  "sufficient_grounds": "чужой идентификатор + возраст старой карточки + отсутствие свежего отчёта L.",
+  "hidden_state_note": "Скрытое состояние не задано; модель не должна угадывать hidden state. Правильность определяется только видимыми свидетельствами."
+}

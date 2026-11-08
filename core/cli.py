@@ -314,6 +314,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     sub.add_parser(
         "health", help="one read-only diagnostic memory-health score (JSON)")
 
+    for command_parser in (p_ask, p_receipt):
+        command_parser.add_argument("--asked-object", default=None)
+        command_parser.add_argument("--as-of", default=None)
+        command_parser.add_argument("--temporal-scope", default=None)
+
     args = parser.parse_args(argv)
 
     if args.cmd == "ingest":
@@ -329,7 +334,9 @@ def main(argv: Optional[List[str]] = None) -> int:
             **({"reason": res["reason"]} if not res["accepted"] else {}),
         }, ensure_ascii=False))
     elif args.cmd == "ask":
-        res = query(args.query)
+        res = query(args.query, **{k: v for k, v in dict(
+            asked_object=args.asked_object, as_of=args.as_of,
+            temporal_scope=args.temporal_scope).items() if v is not None})
         print(res.get("answer") or f"[blocked] {res.get('error')}")
     elif args.cmd == "history":
         print(json.dumps(fact_history(args.fact_id), ensure_ascii=False))
@@ -356,7 +363,9 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(json.dumps({"redacted": redacted, "found": pii.summary(found)},
                          ensure_ascii=False))
     elif args.cmd == "receipt":
-        res = query(args.query)
+        res = query(args.query, **{k: v for k, v in dict(
+            asked_object=args.asked_object, as_of=args.as_of,
+            temporal_scope=args.temporal_scope).items() if v is not None})
         if res.get("answer") is None:
             print(json.dumps({"error": res.get("error")}, ensure_ascii=False))
             return 1

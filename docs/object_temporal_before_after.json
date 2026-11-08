@@ -1,0 +1,112 @@
+{
+  "later_observation": {
+    "before": {
+      "answer": "L ready",
+      "error": null
+    },
+    "after": {
+      "answer": null,
+      "error": "insufficient grounding: current status is not established: observation later than as_of"
+    }
+  },
+  "expired_interval": {
+    "before": {
+      "answer": "L ready",
+      "error": null
+    },
+    "after": {
+      "answer": null,
+      "error": "insufficient grounding: current status is not established: validity expired before as_of"
+    }
+  },
+  "invalid_as_of": {
+    "before": {
+      "answer": "L ready",
+      "error": null
+    },
+    "after": {
+      "answer": null,
+      "error": "insufficient grounding: current status is not established: temporal_scope=current requires a valid explicit as_of (ISO date or datetime)"
+    }
+  },
+  "today_write_old_event": {
+    "before": {
+      "answer": "L ready",
+      "error": null
+    },
+    "after": {
+      "answer": null,
+      "error": "insufficient grounding: current status is not established: date-only observation cannot establish state at a timestamp; Historical evidence only: 2026-10-08: L ready"
+    }
+  },
+  "write_only": {
+    "before": {
+      "answer": "L ready",
+      "error": null
+    },
+    "after": {
+      "answer": null,
+      "error": "insufficient grounding: current status is not established: observation time not established; write timestamps are not observation time"
+    }
+  },
+  "current_without_as_of": {
+    "before": {
+      "answer": "L ready",
+      "error": null
+    },
+    "after": {
+      "answer": null,
+      "error": "insufficient grounding: current status is not established: temporal_scope=current requires a valid explicit as_of (ISO date or datetime)"
+    }
+  },
+  "fresh_matching": {
+    "before": {
+      "answer": "L ready",
+      "error": null
+    },
+    "after": {
+      "answer": "L ready",
+      "error": null
+    }
+  },
+  "linked_no_transfer": {
+    "before": {
+      "answer": "L ready",
+      "error": null
+    },
+    "after": {
+      "answer": null,
+      "error": "insufficient grounding: current status is not established: primary object differs; linked_objects does not transfer status"
+    }
+  },
+  "missing_object_belonging": {
+    "before": {
+      "answer": "L ready",
+      "error": null
+    },
+    "after": {
+      "answer": null,
+      "error": "insufficient grounding: current status is not established: object belonging not established"
+    }
+  },
+  "real_store_cache_clear_reload": {
+    "before": {
+      "metadata": {}
+    },
+    "after": {
+      "metadata": {
+        "applicability": {
+          "primary_object": "L2",
+          "linked_objects": [
+            "L"
+          ],
+          "status_applies_to": [
+            "L"
+          ],
+          "observed_at": "2026-11-08T10:00:00+01:00",
+          "recorded_at": "2026-11-09"
+        }
+      }
+    }
+  }
+}
