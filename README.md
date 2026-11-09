@@ -16,6 +16,21 @@ Crystal is a **local-first research and implementation line for auditable AI mem
 
 `v0.3.0` · 🎯 **100% line-coverage gate** · 🧬 **Ring Zero mutation gate** · ✅ **9 permanent CI jobs** · 🐍 **standard-library-first default runtime** · ⚖️ **AGPL-3.0**
 
+## 🧭 Governed environment and replaceable models
+
+Crystal contributes evidence admission and controlled memory to an environment
+that can use different language models. Model output remains a proposal until the
+existing owning boundaries admit it. Durable storage alone does not make a
+hypothesis trusted knowledge.
+
+[Titan](https://github.com/velantrian/Velantrim-ExoCortex-Titan) provides its own
+memory and orchestration runtime. Connecting the projects requires an explicit
+bridge that preserves sources, scope and ownership; a laboratory context-transfer
+test does not establish a complete deployed integration.
+
+See [the design principle and integration requirements](docs/design/GOVERNED_MODEL_ENVIRONMENT.md).
+Experiments evaluate useful work and boundary failures across materials and models.
+
 ## 👋 What Crystal is — and why it exists
 
 Retrieval systems are good at answering:
