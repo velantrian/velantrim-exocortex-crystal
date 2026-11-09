@@ -37,6 +37,17 @@ records and the original proposal retain the status recorded at their checkpoint
 use [current grant scope](./GRANT_NLNET_SCOPE.md) and the machine manifest for the
 final outcome. Approximate €50,000 remains historical planning context only.
 
+## Environment-principle addition — 2026-11-09
+
+English and Russian root READMEs add the governed-environment principle and an
+explicit Crystal/Titan relationship, based on `ba8e84a4f8f24bdb816ea8fb89485f1dedccd0a3`.
+Russian is `CURRENT` for this addition only; this does not certify a new full
+translation audit. Arabic, German, Spanish, French, Hindi, Italian, Japanese and
+Simplified Chinese are `REFRESH_NEEDED` for this new section only. Their historical
+source checkpoints and earlier parity claims retain their recorded scope.
+The new `docs/design/GOVERNED_MODEL_ENVIRONMENT.md` is English source-first;
+its detail translations are `NOT_STARTED` and can follow in dedicated documentation PRs.
+
 ## Current localization truth
 
 ### Introductory wording — 2026-10-20
