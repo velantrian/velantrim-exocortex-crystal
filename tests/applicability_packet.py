@@ -20,7 +20,8 @@ def summarize(question, result):
             "exclusions": result.get("applicability", {}).get("exclusions", []),
             "historical_evidence": result.get("applicability", {}).get("historical_facts", []),
             "context_relations": result.get("applicability", {}).get("context_relations", []),
-            "answer": result["answer"], "error": result.get("error")}
+            "answer": result["answer"], "uncertainty": result.get("uncertainty"),
+            "error": result.get("error")}
 
 
 def isolated_case(callback):

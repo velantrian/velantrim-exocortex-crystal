@@ -1016,10 +1016,12 @@ def generate_answer(
             **({"applicability": applicability, "uncertainty": uncertainty} if uncertainty else {}),
         }
 
+    # The attested answer is only generator output from admitted current
+    # grounds. Exclusions and historical claims stay in the separately
+    # labelled "uncertainty"/"applicability" fields: build_receipt seals
+    # result["answer"] against result["facts"] citations only, so uncited
+    # historical text must never be concatenated into it.
     answer = get_generator().generate(facts_pack.get("query", ""), canonical_facts)
-
-    if uncertainty:
-        answer += "\nUncertainty: " + uncertainty
 
     # Prune the trace to exactly the fact_ids that grounded this answer: the
     # public trace must not claim provenance for retrieved-but-excluded

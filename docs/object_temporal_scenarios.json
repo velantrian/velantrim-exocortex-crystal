@@ -32,7 +32,8 @@
       }
     ],
     "context_relations": [],
-    "answer": "R-41: Проверка ожидается.\nUncertainty: Excluded evidence (not a denial of the admitted facts): primary object differs; linked_objects does not transfer status; historical observation does not cover as_of; Historical evidence only: 2026-10-15T09:30:00+02:00: R-41: Ожидает проверки.",
+    "answer": "R-41: Проверка ожидается.",
+    "uncertainty": "Excluded evidence (not a denial of the admitted facts): primary object differs; linked_objects does not transfer status; historical observation does not cover as_of; Historical evidence only: 2026-10-15T09:30:00+02:00: R-41: Ожидает проверки.",
     "error": null,
     "pre_applicability_exclusions": []
   },
@@ -61,7 +62,8 @@
       }
     ],
     "context_relations": [],
-    "answer": "M: Формат заменён на связный абзац. Новая просьба ограничена только заданием M.\nUncertainty: Excluded evidence (not a denial of the admitted facts): historical observation does not cover as_of; Historical evidence only: 2026-10-28T09:00:00+01:00: M: Табличный ответ.",
+    "answer": "M: Формат заменён на связный абзац. Новая просьба ограничена только заданием M.",
+    "uncertainty": "Excluded evidence (not a denial of the admitted facts): historical observation does not cover as_of; Historical evidence only: 2026-10-28T09:00:00+01:00: M: Табличный ответ.",
     "error": null,
     "pre_applicability_exclusions": [
       {
@@ -99,6 +101,7 @@
     ],
     "context_relations": [],
     "answer": null,
+    "uncertainty": "current status is not established: primary object differs; linked_objects does not transfer status; historical observation does not cover as_of; Historical evidence only: 2026-10-08T14:00:00+02:00: L: В обработке.",
     "error": "insufficient grounding: current status is not established: primary object differs; linked_objects does not transfer status; historical observation does not cover as_of; Historical evidence only: 2026-10-08T14:00:00+02:00: L: В обработке.",
     "pre_applicability_exclusions": []
   },
@@ -114,6 +117,7 @@
     "historical_evidence": [],
     "context_relations": [],
     "answer": "выбор способа упаковки: Решение не зафиксировано. Доступный журнал неполон; способ не записан.",
+    "uncertainty": null,
     "error": null,
     "pre_applicability_exclusions": [
       {
@@ -134,6 +138,7 @@
     "historical_evidence": [],
     "context_relations": [],
     "answer": "Laboratory component ready",
+    "uncertainty": null,
     "error": null
   },
   "foreign": {
@@ -148,6 +153,7 @@
     "historical_evidence": [],
     "context_relations": [],
     "answer": null,
+    "uncertainty": "current status is not established: primary object differs; linked_objects does not transfer status",
     "error": "insufficient grounding: current status is not established: primary object differs; linked_objects does not transfer status"
   },
   "old": {
@@ -171,6 +177,7 @@
     ],
     "context_relations": [],
     "answer": null,
+    "uncertainty": "current status is not established: historical observation does not cover as_of; Historical evidence only: 2026-10-08T10:00:00+02:00: Laboratory component ready",
     "error": "insufficient grounding: current status is not established: historical observation does not cover as_of; Historical evidence only: 2026-10-08T10:00:00+02:00: Laboratory component ready"
   },
   "later": {
@@ -185,6 +192,7 @@
     "historical_evidence": [],
     "context_relations": [],
     "answer": null,
+    "uncertainty": "current status is not established: observation later than as_of",
     "error": "insufficient grounding: current status is not established: observation later than as_of"
   },
   "linked": {
@@ -208,6 +216,7 @@
       }
     ],
     "answer": null,
+    "uncertainty": "current status is not established: primary object differs; linked_objects does not transfer status",
     "error": "insufficient grounding: current status is not established: primary object differs; linked_objects does not transfer status"
   },
   "incomplete_journal": {
@@ -222,6 +231,7 @@
     "historical_evidence": [],
     "context_relations": [],
     "answer": "выбор способа упаковки: Решение не зафиксировано. Доступный журнал неполон; способ не записан.",
+    "uncertainty": null,
     "error": null,
     "pre_applicability_exclusions": [
       {

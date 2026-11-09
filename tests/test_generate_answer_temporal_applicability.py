@@ -38,7 +38,7 @@ def _pack(*facts, asked_object=None, as_of=None, temporal_scope=None, query="q")
 def test_no_temporal_params_keeps_old_observation():
     old = _verified("e1", "L in progress", object="L", primary_object="L", observed_at="2026-10-08")
     out = generate_answer(_pack(old, asked_object="L"), trace=[])
-    assert out["answer"].split("\nUncertainty:")[0] == "L in progress"
+    assert out["answer"] == "L in progress"
     assert [f["fact_id"] for f in out["facts"]] == ["e1"]
 
 
@@ -52,7 +52,7 @@ def test_current_scope_without_as_of_explains_required_parameter():
 def test_as_of_without_current_scope_is_noop():
     old = _verified("e1", "L in progress", observed_at="2026-10-08")
     out = generate_answer(_pack(old, as_of="2026-11-08"), trace=[])
-    assert out["answer"].split("\nUncertainty:")[0] == "L in progress"
+    assert out["answer"] == "L in progress"
 
 
 def test_older_observation_excluded_for_current_as_of():
@@ -73,7 +73,7 @@ def test_same_day_observation_included():
         _pack(same, as_of="2026-11-08", temporal_scope="current"),
         trace=[],
     )
-    assert out["answer"].split("\nUncertainty:")[0] == "L in progress today"
+    assert out["answer"] == "L in progress today"
     assert [f["fact_id"] for f in out["facts"]] == ["e1"]
 
 
@@ -101,7 +101,7 @@ def test_matching_datetime_observation_included():
         _pack(same, as_of="2026-11-08T10:00:00+01:00", temporal_scope="current"),
         trace=[],
     )
-    assert out["answer"].split("\nUncertainty:")[0] == "observed that moment"
+    assert out["answer"] == "observed that moment"
 
 
 def test_equal_instants_across_timezones_are_included():
@@ -125,7 +125,7 @@ def test_interval_covering_as_of_included():
         _pack(covering, as_of="2026-11-08", temporal_scope="current"),
         trace=[],
     )
-    assert out["answer"].split("\nUncertainty:")[0] == "status valid through November"
+    assert out["answer"] == "status valid through November"
 
 
 def test_interval_not_covering_as_of_excluded():
@@ -218,7 +218,7 @@ def test_probe_date_used_when_no_observed_or_recorded():
         _pack(fact, as_of="2026-11-08", temporal_scope="current"),
         trace=[],
     )
-    assert out["answer"].split("\nUncertainty:")[0] == "probe date same day"
+    assert out["answer"] == "probe date same day"
 
 
 def test_ac07_object_then_time_reports_uncertainty():
@@ -264,7 +264,7 @@ def test_object_filter_unchanged_without_time():
     old_l = _verified("e1", "L in progress", object="L", primary_object="L", observed_at="2026-10-08")
     l2 = _verified("e2", "ready", object="L", primary_object="L2", observed_at="2026-11-08")
     out = generate_answer(_pack(old_l, l2, asked_object="L"), trace=[])
-    assert out["answer"].split("\nUncertainty:")[0] == "L in progress"
+    assert out["answer"] == "L in progress"
     assert [f["fact_id"] for f in out["facts"]] == ["e1"]
 
 
@@ -306,7 +306,7 @@ def test_run_without_time_keeps_old_l_card(monkeypatch):
 
     monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: _retrieved_l_pair())
     out = pipeline.run("Какой статус детали L сегодня?", asked_object="L")
-    assert out["answer"].split("\nUncertainty:")[0] == "L in progress"
+    assert out["answer"] == "L in progress"
     assert [f["fact_id"] for f in out["facts"]] == ["e1"]
 
 
@@ -336,7 +336,7 @@ def test_run_includes_same_day_observation(monkeypatch):
         as_of="2026-11-08",
         temporal_scope="current",
     )
-    assert out["answer"].split("\nUncertainty:")[0] == "L in progress today"
+    assert out["answer"] == "L in progress today"
     assert [f["fact_id"] for f in out["facts"]] == ["e1"]
 
 

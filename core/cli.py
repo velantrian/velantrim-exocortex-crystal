@@ -338,6 +338,9 @@ def main(argv: Optional[List[str]] = None) -> int:
             asked_object=args.asked_object, as_of=args.as_of,
             temporal_scope=args.temporal_scope).items() if v is not None})
         print(res.get("answer") or f"[blocked] {res.get('error')}")
+        if res.get("answer") is not None and res.get("uncertainty"):
+            # Display-only, separately labelled; never part of the answer text.
+            print(f"[uncertainty, not attested] {res['uncertainty']}")
     elif args.cmd == "history":
         print(json.dumps(fact_history(args.fact_id), ensure_ascii=False))
     elif args.cmd == "report":

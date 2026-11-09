@@ -8,7 +8,7 @@
 - Main Crystal base: branch `main`, `33228409a45835c47c972009e088c466c6095b60`,
   2026-10-28 22:27:21 CET (Europe/Berlin),
   `fix: reject receipt replay after sealed evidence changes (#500)`.
-- This is a draft-only, isolated-data implementation. No model API calls, live
+- This is an isolated-data implementation, not merged or deployed. No model API calls, live
   user queries, runtime deployment, merges, Titan changes or EPIS-001 changes.
 
 A successful laboratory PR does not establish correctness of main Crystal.
@@ -37,7 +37,8 @@ No applicability field promotes a verdict, bypasses a restriction, supplies a
 missing evidence span, transitions ESM, or changes historical truth. Disputed
 L1/L3 applicability declarations are omitted on read, so a requested object/time
 check fails closed. Successful answer traces remain pruned to admitted grounds.
-Excluded historical evidence and relation context are separate from answer facts.
+Excluded historical evidence and relation context are separate from answer facts
+and from the attested `answer` text (see "Attested answer boundary").
 
 `core.pipeline.run` is a separate legacy write/promote pipeline. Its explicit
 parameter forwarding and `build_facts_pack` save/reload compatibility are also
@@ -81,6 +82,32 @@ an explanation, including when memory is empty.
 - Valid current grounds are retained even when other retrieved records are
   excluded. Exclusions do not cancel an admitted answer or claim that its
   supported current state is unknown.
+
+## Attested answer boundary
+
+`result["answer"]` is only the generator output over the admitted current
+grounds (`result["facts"]`), or `None` on refusal. Exclusion reasons and
+historical claims are returned only in the separately labelled
+`result["uncertainty"]` and `result["applicability"]` (`exclusions`,
+`historical_facts`, `context_relations`); they are not appended to `answer`.
+`provenance.build_receipt` seals `result["answer"]` against citations built from
+`result["facts"]` only, so a receipt never attests uncited historical text, and
+historical facts are not added as citations (they did not ground the answer).
+
+- Current fact next to an old fact: `answer` and `receipt["answer"]` equal the
+  current claim; citations/trace/facts are the current fact; the old claim is in
+  `applicability["historical_facts"]` and `uncertainty` only.
+- Only old information: `answer` is `None`; `build_receipt` raises, HTTP
+  `/receipt` returns 422 and CLI `receipt` exits 1, so no current-status receipt
+  exists. Historical claims remain in the separate fields.
+- Only current information: the receipt attests the current claim; there are no
+  `uncertainty`/`applicability` fields.
+
+HTTP `/ask` returns those fields beside `answer` (unchanged JSON shape). CLI
+`ask` prints the answer, then a separate `[uncertainty, not attested] ...` line.
+HTTP `/receipt` and CLI `receipt` emit only `build_receipt` output. Covered by
+`tests/test_applicability_receipt_boundary.py` (real SQLite, real retrieval,
+`build_receipt` + `verify_receipt`, HTTP and CLI).
 
 ## Persistence, owner and source
 
@@ -176,7 +203,7 @@ with small-fixture retrieval quality; actual retrieval and SQLite are used.
 
 | Case / question | Admitted grounds | Exclusions | Final answer (summary) |
 |---|---|---|---|
-| AC03: Какой статус сообщить для R-41? (as_of 2026-11-06 13:45 CET) | fresh independent R-41 report, AC03-2 | R-14 document and derivative summary wrong object; old card not covering as_of | R-41: Проверка ожидается; exclusions/historical date explicit |
+| AC03: Какой статус сообщить для R-41? (as_of 2026-11-06 13:45 CET) | fresh independent R-41 report, AC03-2 | R-14 document and derivative summary wrong object; old card not covering as_of | R-41: Проверка ожидается; exclusions/historical date in separate `uncertainty`/`applicability` fields |
 | AC06: В каком формате ответить на M? (as_of 2026-11-08 09:30 CET) | owner's new M-scoped paragraph request, AC06-1 | old table request historical; assistant suggestion USER_CLAIMED/noncanonical | paragraph, only for M; historical request not current |
 | AC07: Каков статус L сегодня? (as_of 2026-11-08 10:00 CET) | none current; Oct 8 card historical only | L2 import and derivative summary wrong primary object; L card historical | current status not established; date of old L state preserved |
 | AC08: Можно ли по этим материалам напомнить согласованный способ упаковки? | journal says no recorded decision and journal incomplete, AC08-0 | unsupported assistant assertion USER_CLAIMED/noncanonical | only the scoped journal statement; no reconstructed method and no claim that no decision occurred |

@@ -40,7 +40,7 @@ def test_asked_object_excludes_other_primary_document():
     r14 = _verified("e2", "status closed via R-14", object="R-41", primary_object="R-14")
     r41 = _verified("e3", "status pending review", object="R-41", primary_object="R-41")
     out = generate_answer(_pack(r14, r41, asked_object="R-41"), trace=[])
-    assert out["answer"].split("\nUncertainty:")[0] == "status pending review"
+    assert out["answer"] == "status pending review"
     assert [f["fact_id"] for f in out["facts"]] == ["e3"]
     assert "closed" not in out["answer"]
 
@@ -69,7 +69,7 @@ def test_l2_excluded_but_old_l_card_remains():
     l2 = _verified("e2", "ready", object="L", primary_object="L2")
     summary = _verified("e3", "repeats readiness", object="L", primary_object="L2")
     out = generate_answer(_pack(old_l, l2, summary, asked_object="L"), trace=[])
-    assert out["answer"].split("\nUncertainty:")[0] == "L in progress"
+    assert out["answer"] == "L in progress"
     assert [f["fact_id"] for f in out["facts"]] == ["e1"]
 
 
@@ -85,7 +85,7 @@ def test_absent_primary_object_matching_object_is_kept():
     fact = _verified("only-object", "same object claim", object="R-41")
     assert "primary_object" not in fact
     out = generate_answer(_pack(fact, asked_object="R-41"), trace=[])
-    assert out["answer"].split("\nUncertainty:")[0] == "same object claim"
+    assert out["answer"] == "same object claim"
 
 
 def test_absent_primary_object_mismatching_object_is_excluded():
@@ -117,7 +117,7 @@ def test_linked_objects_does_not_keep_foreign_status():
         primary_object="R-41",
     )
     out = generate_answer(_pack(link, trap, on_object, asked_object="R-41"), trace=[])
-    assert out["answer"].split("\nUncertainty:")[0] == "status pending review"
+    assert out["answer"] == "status pending review"
     ids = [f["fact_id"] for f in out["facts"]]
     assert ids == ["on-r41"]
     assert "Register R-41 attaches primary document R-14" not in out["answer"]
@@ -212,7 +212,7 @@ def test_run_forwards_explicit_asked_object_to_generate_answer(monkeypatch):
         asked_object="R-41",
     )
     assert out.get("error") is None or out.get("answer") is not None
-    assert out["answer"].split("\nUncertainty:")[0] == "status pending review"
+    assert out["answer"] == "status pending review"
     assert [f["fact_id"] for f in out["facts"]] == ["e3"]
     assert "closed" not in out["answer"]
 
@@ -239,7 +239,7 @@ def test_run_does_not_treat_linked_objects_as_status_transfer(monkeypatch):
     )
     monkeypatch.setattr(pipeline, "retrieve", lambda q, k=3: items)
     out = pipeline.run("Какой статус сообщить для R-41?", asked_object="R-41")
-    assert out["answer"].split("\nUncertainty:")[0] == "status pending review"
+    assert out["answer"] == "status pending review"
     ids = [f["fact_id"] for f in out["facts"]]
     assert ids == ["e3"]
     assert "Register R-41 attaches primary document R-14" not in out["answer"]
