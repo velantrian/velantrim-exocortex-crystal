@@ -13,6 +13,7 @@ import math
 import os
 from typing import Any, Dict, List, Optional
 
+from core.applicability import declarations, request_error
 from core import metrics
 from core.embedding import get_embedder
 from core.evidence import has_valid_evidence_for_grounding
@@ -171,13 +172,19 @@ def _resolve_canonical_fact(item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     node = get_l3_graph().get_fact(fact_id)
     if node is None:
         return None
+    l1 = get_fact(fact_id)
     snapshot = TrustSnapshot.from_records(
         fact_id=fact_id,
         l3=node,
-        l1=get_fact(fact_id),
+        l1=l1,
         retrieval_score=item.get("_score", item.get("_relevance", 0.0)),
     )
     fact = snapshot.to_fact_dict()
+    # The admitted L3 record owns declarations. L1 disagreement cannot broaden
+    # applicability; omit disputed declarations (object/time checks fail closed).
+    values = declarations(node)
+    if l1 is None or declarations(l1) == values:
+        fact.update(values)
     # Retrieval metadata is query-local and never becomes L3/Canon state.
     for key in (
         "_retrieval_rank",
@@ -295,11 +302,16 @@ def search(query_text: str, k: int = 5) -> List[Dict[str, Any]]:
 def query(
     query_text: str,
     episode: Optional[Dict[str, Any]] = None,
+    *, asked_object=None, as_of=None, temporal_scope=None,
 ) -> Dict[str, Any]:
     """Answer from already-admitted local memory with zero durable mutation."""
     if not isinstance(query_text, str) or not query_text.strip():
         raise ValueError("query: empty query")
 
+    invalid = request_error(asked_object, as_of, temporal_scope)
+    if invalid:
+        return _blocked(invalid, query_text, reason_code="invalid_applicability_request",
+                        episode_requested=episode is not None)
     metrics.incr("query.total")
     try:
         retrieved = _retrieve_read_only(query_text)
@@ -374,7 +386,8 @@ def query(
         }
         for fact in facts
     ]
-    facts_pack = {"facts": facts, "query": query_text, "total": len(facts)}
+    facts_pack = {"facts": facts, "query": query_text, "total": len(facts),
+                  "asked_object": asked_object, "as_of": as_of, "temporal_scope": temporal_scope}
     trace = build_trace(trace_input)
     guardian_ok, guardian_reason = guardian(facts_pack, trace)
     if not guardian_ok:
