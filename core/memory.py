@@ -932,13 +932,26 @@ def store_fact(
 
 
 def get_fact(fact_id: str) -> Optional[Dict]:
-    """Get a fact: first L0 (LRU), then L1."""
+    """Get a fact from L0/L1 without serving an erased entry from a stale L0."""
     cached = _l0_get(fact_id)
-    if cached is not None:
-        return cached
     with _db() as conn:
+        if cached is not None:
+            # L0 is process-local. Another process may have committed a physical
+            # deletion without evicting this process's cached plaintext. Check
+            # the shared L1 row AND tombstone before returning the cache hit.
+            if conn.execute(
+                "SELECT 1 FROM facts WHERE fact_id = ? "
+                "AND NOT EXISTS (SELECT 1 FROM erasure_log WHERE fact_id = ?)",
+                (fact_id, fact_id),
+            ).fetchone() is not None:
+                return cached
+            _l0_pop(fact_id)
+            return None
+
         row = conn.execute(
-            "SELECT * FROM facts WHERE fact_id = ?", (fact_id,)
+            "SELECT * FROM facts WHERE fact_id = ? "
+            "AND NOT EXISTS (SELECT 1 FROM erasure_log WHERE fact_id = ?)",
+            (fact_id, fact_id),
         ).fetchone()
         if row:
             result = dict(row)
