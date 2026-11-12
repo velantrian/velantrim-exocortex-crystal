@@ -2,6 +2,24 @@
 
 This compact log records material decisions, exact evidence, limitations and hand-offs. It does not replace Git history, issues, pull requests, `CHANGELOG.md` or Notion.
 
+## 2026-11-12 — Cross-process L0 after erasure (#505) · LOCAL, NOT MERGED
+
+- Base: `main@ba8e84a4f8f24bdb816ea8fb89485f1dedccd0a3`. Reproduced with separate
+  OS processes on isolated SQLite storage: after `python -m core.cli erase` in one
+  process, an already-running reader kept returning the erased fact through
+  `memory.get_fact()` and MCP `get_fact` until restart; MCP `search` did not.
+- `get_fact()` now validates an L0 hit against the shared L1 row (`created_at`)
+  before serving it; a missing or re-created row evicts the entry and L1 decides.
+  No new queue, tombstone read, schema or dependency. The tombstone is not read
+  here, so same-text re-ingest after erasure keeps its current (separate) contract.
+- Limits: a read whose L1 check commits before the erasure may still return the
+  fact (ordinary linearization). Same-row updates by another process (for example
+  restriction) are still not revalidated from L0; separate follow-up. #504 (derived
+  records) is out of scope.
+- Regression: `tests/test_l0_cross_process_erasure.py` (fails on base, passes with
+  the fix). Documentation impact: `GITHUB_ONLY` bounded correction of the existing
+  erasure contract; owner may reclassify.
+
 ## 2026-10-28 — Receipt evidence drift and reproducible demo
 
 - Base: `main@c5b180f4abc308c145185e78bcea05a89ca76720`.

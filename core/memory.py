@@ -932,11 +932,28 @@ def store_fact(
 
 
 def get_fact(fact_id: str) -> Optional[Dict]:
-    """Get a fact: first L0 (LRU), then L1."""
+    """Get a fact: first L0 (LRU), validated against L1, then L1.
+
+    L0 is process-local, but erase_fact()/delete_fact_l1() can run in another
+    process against the same L1 database and can only evict their own L0
+    (#505). An L0 hit is therefore served only while the shared L1 row still
+    exists with the same created_at (so a row re-created under the same
+    fact_id after an erasure is not answered from the old snapshot);
+    otherwise the stale entry is evicted and L1 decides. Same-row updates by
+    another process are still detected by update_fact()'s revision CAS, not
+    here.
+    """
     cached = _l0_get(fact_id)
-    if cached is not None:
-        return cached
     with _db() as conn:
+        if cached is not None:
+            current = conn.execute(
+                "SELECT created_at FROM facts WHERE fact_id = ?", (fact_id,)
+            ).fetchone()
+            if current is not None and current["created_at"] == cached.get("created_at"):
+                return cached
+            _l0_pop(fact_id)
+            if current is None:
+                return None
         row = conn.execute(
             "SELECT * FROM facts WHERE fact_id = ?", (fact_id,)
         ).fetchone()
