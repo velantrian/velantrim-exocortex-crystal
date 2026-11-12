@@ -7,15 +7,21 @@ This compact log records material decisions, exact evidence, limitations and han
 - Base: `main@ba8e84a4f8f24bdb816ea8fb89485f1dedccd0a3`. Reproduced with separate
   OS processes on isolated SQLite storage: after `python -m core.cli erase` in one
   process, an already-running reader kept returning the erased fact through
-  `memory.get_fact()` and MCP `get_fact` until restart; MCP `search` did not.
-- `get_fact()` now validates an L0 hit against the shared L1 row (`created_at`)
-  before serving it; a missing or re-created row evicts the entry and L1 decides.
-  No new queue, tombstone read, schema or dependency. The tombstone is not read
-  here, so same-text re-ingest after erasure keeps its current (separate) contract.
-- Limits: a read whose L1 check commits before the erasure may still return the
-  fact (ordinary linearization). Same-row updates by another process (for example
-  restriction) are still not revalidated from L0; separate follow-up. #504 (derived
-  records) is out of scope.
+  `memory.get_fact()`, MCP `get_fact` and HTTP `GET /review/item/{id}` until
+  restart; MCP `search`, strict `ask` (CLI/HTTP) did not.
+- `get_fact()` now reads the shared L1 row on every call (one primary-key
+  lookup, no decryption) and serves the L0 record only if that raw row is
+  identical to the row the record was built from; otherwise L1 decides. A first
+  `created_at`-only check (local commit `fc2637f`) still served stale data when a
+  row was re-created under the same `fact_id` with an identical `created_at`
+  (controlled-clock test). No new queue, tombstone read, schema or dependency;
+  the re-ingest-after-erasure contract is unchanged.
+- Side effect, flagged for review: the same check also makes another process's
+  same-row updates (for example GDPR Art. 18 restriction) visible without
+  restart. Two `update_fact()` CAS tests that used a stale L0 entry to simulate
+  an in-flight read now inject that snapshot explicitly.
+- Limits: a read whose L1 lookup completes before the erasure commits may still
+  return the fact (ordinary linearization). #504 (derived records) is out of scope.
 - Regression: `tests/test_l0_cross_process_erasure.py` (fails on base, passes with
   the fix). Documentation impact: `GITHUB_ONLY` bounded correction of the existing
   erasure contract; owner may reclassify.

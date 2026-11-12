@@ -190,3 +190,62 @@ def test_this_process_l0_is_not_served_for_fact_recreated_after_erase(crystal_en
     assert fresh["claim"] == "new"
     assert fresh["created_at"] != old["created_at"]
     assert memory._L0["issue-505-r"] is fresh
+
+
+# Process B: erase through the real erase_fact() path, then re-create a row
+# under the SAME fact_id with the clock frozen at the original created_at.
+# Freezing core.memory's clock makes the created_at collision deterministic;
+# it models a wall clock that repeats a reading (step back, coarse clock).
+_RECREATE_SAME_CREATED_AT = r"""
+import json, sys
+from datetime import datetime as _datetime
+
+from core import memory
+from core.erasure import erase_fact
+
+fact_id, frozen, new_fact = sys.argv[1], sys.argv[2], json.loads(sys.argv[3])
+erased = erase_fact(fact_id, reason="test", actor="test")
+
+
+class _FrozenClock(_datetime):
+    @classmethod
+    def now(cls, tz=None):
+        return _datetime.fromisoformat(frozen)
+
+
+memory.datetime = _FrozenClock
+memory.store_fact({"fact_id": fact_id, **new_fact})
+print(json.dumps({"l1_removed": erased["l1_removed"],
+                  "created_at": memory.get_fact(fact_id)["created_at"]}))
+"""
+
+
+@pytest.mark.parametrize("new_fact", [
+    # Same fact_id and same claim (as an ingest-derived id implies), but other
+    # persisted fields differ.
+    {"claim": "same text", "source": "other-source", "confidence": 0.9,
+     "epistemic_state": "Validated", "metadata": {"generation": 2}},
+    # Same fact_id, different claim (direct store_fact with a chosen id).
+    {"claim": "different text", "source": "test"},
+], ids=["same-claim-other-fields", "different-claim"])
+def test_l0_not_served_for_recreation_with_same_created_at(crystal_env, new_fact):
+    env = _this_process_env(crystal_env)
+    memory.store_fact({"fact_id": "issue-505-t", "claim": "same text",
+                       "source": "test", "confidence": 0.2,
+                       "metadata": {"generation": 1}})
+    old = memory.get_fact("issue-505-t")
+    assert memory._L0["issue-505-t"] is old
+
+    done = subprocess.run(
+        [sys.executable, "-c", _RECREATE_SAME_CREATED_AT, "issue-505-t",
+         old["created_at"], json.dumps(new_fact)],
+        cwd=env["HOME"], env=env, capture_output=True, text=True, check=True,
+        timeout=60,
+    )
+    other = json.loads(done.stdout.strip().splitlines()[-1])
+    assert other == {"l1_removed": True, "created_at": old["created_at"]}
+
+    fresh = memory.get_fact("issue-505-t")  # this process was not restarted
+    for key, value in new_fact.items():
+        assert fresh[key] == value, key
+    assert fresh["created_at"] == old["created_at"]
