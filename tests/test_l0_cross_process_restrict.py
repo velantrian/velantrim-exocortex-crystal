@@ -7,6 +7,10 @@ Real OS processes on isolated temp storage, nothing stubbed:
      available in-process: core.memory.get_fact, MCP get_fact, MCP search,
      query_pipeline.query (strict ask), HTTP POST /ask, GET /review/item/{id},
      GET /evidence/{id} (FastAPI TestClient, no network);
+  M  an independent MCP-only reader: it never calls core.memory.get_fact
+     itself; it warms its OWN L0 through MCP get_fact, is probed for L0
+     membership right before the restriction, and its first read after the
+     restriction is again MCP get_fact;
   B  ``python -m core.cli restrict`` (compliance.restrict_processing);
   A  reads again WITHOUT restart; A' is a restarted reader;
   ``python -m core.cli ask`` is checked as a fresh process.
@@ -69,6 +73,45 @@ for line in sys.stdin:
 """
 
 
+# M: MCP-only. core.memory is imported only to observe L0 membership and to
+# wrap get_fact for instrumentation; the wrapper calls the real function, and
+# the only caller is the MCP server's own get_fact tool.
+_MCP_READER = r"""
+import json, os, sys
+from core import memory
+from core.mcp_server import handle_message
+
+_real_get_fact = memory.get_fact
+LAST = {}
+
+
+def _observed_get_fact(fact_id):
+    with memory._L0_LOCK:
+        cached = memory._L0.get(fact_id)
+    LAST.update(calls=LAST.get("calls", 0) + 1, l0_entry_before_read=cached is not None)
+    result = _real_get_fact(fact_id)
+    LAST["returned_cached_l0_object"] = cached is not None and result is cached
+    return result
+
+
+memory.get_fact = _observed_get_fact
+print(json.dumps({"ready": True, "pid": os.getpid()}), flush=True)
+for line in sys.stdin:
+    req = json.loads(line)
+    fid = req["fact_id"]
+    if req["op"] == "probe":
+        print(json.dumps({"pid": os.getpid(), "in_l0": fid in memory._L0}), flush=True)
+        continue
+    LAST.clear()
+    reply = handle_message({"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                            "params": {"name": "get_fact", "arguments": {"fact_id": fid}}})
+    print(json.dumps({"pid": os.getpid(), **LAST,
+                      "in_l0_after": fid in memory._L0,
+                      "mcp_get_fact": json.loads(reply["result"]["content"][0]["text"])}),
+          flush=True)
+"""
+
+
 @pytest.fixture
 def env(tmp_path):
     env = dict(os.environ)
@@ -90,22 +133,26 @@ def _run(env, *args):
 
 
 class _Reader:
-    def __init__(self, env):
+    def __init__(self, env, code=_READER):
         self.proc = subprocess.Popen(
-            [sys.executable, "-u", "-c", _READER], cwd=env["HOME"], env=env,
+            [sys.executable, "-u", "-c", code], cwd=env["HOME"], env=env,
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             text=True)
-        line = self.proc.stdout.readline()
-        assert line, self.proc.stderr.read()
-        assert json.loads(line) == {"ready": True}
+        self.ready = self._reply()
+        assert self.ready["ready"] is True
 
-    def read(self, fact_id):
-        self.proc.stdin.write(json.dumps(
-            {"fact_id": fact_id, "question": QUESTION, "needle": NEEDLE}) + "\n")
-        self.proc.stdin.flush()
+    def _reply(self):
         line = self.proc.stdout.readline()
         assert line, self.proc.stderr.read()
         return json.loads(line)
+
+    def send(self, request):
+        self.proc.stdin.write(json.dumps(request) + "\n")
+        self.proc.stdin.flush()
+        return self._reply()
+
+    def read(self, fact_id):
+        return self.send({"fact_id": fact_id, "question": QUESTION, "needle": NEEDLE})
 
     def close(self):
         if self.proc.poll() is None:
@@ -123,8 +170,8 @@ class _Reader:
 def readers():
     started = []
 
-    def start(env):
-        started.append(_Reader(env))
+    def start(env, code=_READER):
+        started.append(_Reader(env, code))
         return started[-1]
 
     yield start
@@ -165,8 +212,26 @@ def test_running_reader_sees_restriction_committed_by_other_process(env, readers
     assert before["http_ask_answers"] and before["http_review_item_shows_claim"]
     assert len(before["http_evidence"]) == 1
 
+    mcp_only = readers(env, _MCP_READER)
+    warm = mcp_only.send({"op": "read", "fact_id": fact_id})
+    assert warm["calls"] == 1 and warm["l0_entry_before_read"] is False
+    assert warm["in_l0_after"] is True  # M's own L0, warmed through MCP only
+    assert warm["mcp_get_fact"]["claim"].endswith(f"{NEEDLE}.")
+    assert mcp_only.send({"op": "probe", "fact_id": fact_id}) == {
+        "pid": mcp_only.ready["pid"], "in_l0": True}
+
     receipt = json.loads(_run(env, "-m", "core.cli", "restrict", fact_id).stdout)
     assert receipt["found"] is True and receipt["restricted"] is True
+
+    first = mcp_only.send({"op": "read", "fact_id": fact_id})  # M's first read after B
+    assert first["pid"] == mcp_only.ready["pid"]
+    assert first["calls"] == 1 and first["l0_entry_before_read"] is True
+    assert first["returned_cached_l0_object"] is False, "served M's stale L0 entry"
+    assert first["mcp_get_fact"] == {
+        "found": True, "fact_id": fact_id, "restricted": True,
+        "reason": "RESTRICTED_BY_POLICY",
+        "message": "Fact is restricted and cannot be returned through MCP get_fact.",
+    }
 
     for _ in range(2):  # same reader, no restart
         _assert_restricted_everywhere(reader.read(fact_id), fact_id)
