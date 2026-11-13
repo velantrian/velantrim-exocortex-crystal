@@ -18,8 +18,19 @@ This compact log records material decisions, exact evidence, limitations and han
   the re-ingest-after-erasure contract is unchanged.
 - Side effect, flagged for review: the same check also makes another process's
   same-row updates (for example GDPR Art. 18 restriction) visible without
-  restart. Two `update_fact()` CAS tests that used a stale L0 entry to simulate
-  an in-flight read now inject that snapshot explicitly.
+  restart. Three CAS tests (two `update_fact()` tests in `tests/test_memory.py`,
+  one `review.approve()` test in `tests/test_review.py`) that used a stale L0
+  entry to simulate an in-flight read now inject that snapshot explicitly;
+  `tests/test_cross_process_write_races.py` adds the same races with a real
+  second OS process as the concurrent writer.
+- Restriction is an additional verified effect, not a full resolution of
+  restriction issues: `tests/test_l0_cross_process_restrict.py` (fails on base,
+  passes with the fix) checks a running reader after `python -m core.cli restrict`
+  through `memory.get_fact()`, MCP `get_fact`/`search`, strict `ask` (in-process,
+  HTTP, fresh CLI), HTTP `GET /review/item/{id}` and `GET /evidence/{id}`, plus an
+  independent MCP-only reader whose first post-restrict read meets its own
+  warmed L0. Not verified: CanonicalView beyond strict ask, export paths, the
+  Neo4j/Ladybug/PostgreSQL backends, restriction with field encryption on.
 - Limits: a read whose L1 lookup completes before the erasure commits may still
   return the fact (ordinary linearization). #504 (derived records) is out of scope.
 - Regression: `tests/test_l0_cross_process_erasure.py` (fails on base, passes with
