@@ -1,16 +1,18 @@
 # ⚠️ Crystal Known Risks and Open Boundaries
 
-## 2026-11-13 — Cross-process L0 staleness after erasure/restriction (#505) · FIXED IN DRAFT PR #507, NOT MERGED
+## 2026-11-13 — Cross-process L0 staleness after erasure/restriction (#505) · MITIGATED IN VERSIONS WITH THE #505 FIX; RESIDUAL LIMITATIONS OPEN
 
-**Status:** fixed on branch `fix/505-l0-stale-after-erase` (draft PR #507); **not merged, so
-`main` still has this risk** until a merge is verified. Issue #505 stays open until then.
+**Status:** mitigated only in code versions that contain the #505 fix (PR #507); versions
+without it still have this risk. Not fully closed: the residual limitations below remain
+open. Whether a given checkout contains the fix must be resolved from its Git history, not
+from this register.
 
-Risk on `main`: L0 is a per-process cache. After `python -m core.cli erase` (or
+Risk in versions without the fix: L0 is a per-process cache. After `python -m core.cli erase` (or
 `restrict`) in another process, an already-running reader could keep serving the
 erased or restricted fact from its own L0 through `memory.get_fact()`, MCP `get_fact`,
 HTTP `GET /review/item/{id}` (and, for restriction, `GET /evidence/{id}`) until restart.
 
-Verified scope of the fix: every `get_fact()` reads the shared L1 (SQLite) row by primary
+Verified scope in versions with the fix: every `get_fact()` reads the shared L1 (SQLite) row by primary
 key and serves the L0 record only if that raw row is identical to the row the record was
 built from; otherwise L1 decides. Covered by real OS-process tests
 (`tests/test_l0_cross_process_erasure.py`, `tests/test_l0_cross_process_restrict.py`,

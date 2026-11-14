@@ -35,16 +35,17 @@ for compliant deployment.
 | **Data portability** | 20 | ✅ Export is standard SQLite + JSON, fully portable. |
 | **Object** | 21 | 🟡 Operator-controlled; supported operationally via erasure/restriction. |
 
-> **Process-local L0 and other processes (Issue #505).** L0 is a per-process cache.
-> On `main`, an already-running process that had the fact in its own L0 could keep
-> serving it after another process erased or restricted it, until that process restarted.
-> Draft PR #507 (**not merged into `main`**) makes every `get_fact()` validate the L0
-> entry against the shared L1 (SQLite) row; within the verified scope (real OS-process
+> **Process-local L0 and other processes (Issue #505, PR #507).** L0 is a per-process
+> cache. In versions without the #505 fix, an already-running process that had the fact in
+> its own L0 could keep serving it after another process erased or restricted it, until that
+> process restarted. In versions containing the #505 fix, every `get_fact()` validates the
+> L0 entry against the shared L1 (SQLite) row; within the verified scope (real OS-process
 > tests of `memory.get_fact()`, MCP, strict ask and the HTTP review/evidence paths), an
 > erased or restricted fact is then not served from a stale L0 in other processes.
-> Limitation: a read already in progress before the erase/restrict commit may still return
-> the old snapshot. This fix does not close every restriction question; it is not a claim
-> that every read path or backend is covered, nor a legal compliance statement.
+> Limitations: a read already in progress before the erase/restrict commit may still return
+> the old snapshot; every `get_fact()` now accesses SQLite, so an L1/SQLite error raises even
+> when the fact is in L0. This fix does not close every restriction question; it is not a
+> claim that every read path or backend is covered, nor a legal compliance statement.
 
 ## Privacy by design and by default (Article 25)
 

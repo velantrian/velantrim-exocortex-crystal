@@ -2,7 +2,7 @@
 
 This compact log records material decisions, exact evidence, limitations and hand-offs. It does not replace Git history, issues, pull requests, `CHANGELOG.md` or Notion.
 
-## 2026-11-12 — Cross-process L0 after erasure (#505) · BRANCH PUBLISHED, PR #507 OPEN AS DRAFT, NOT MERGED
+## 2026-11-12 — Cross-process L0 after erasure (#505) · PR #507
 
 - Base: `main@ba8e84a4f8f24bdb816ea8fb89485f1dedccd0a3`. Reproduced with separate
   OS processes on isolated SQLite storage: after `python -m core.cli erase` in one
@@ -38,12 +38,15 @@ This compact log records material decisions, exact evidence, limitations and han
   behaviour with material trade-offs: per-read SQLite cost and L1 availability).
   Notion record (safe title): "Crystal #505 — межпроцессный кэш L0: решение и
   проверка"; checked against `docs/DOCUMENTATION_SYNC_PROTOCOL.md` §6 (all 12
-  sections present). Notion synchronization: `SYNCED` (pre-merge; after merge the
-  record still needs the merge SHA and final CI per §5 "After merge").
-- Status: branch `fix/505-l0-stale-after-erase` published; PR #507 open as draft,
-  not merged. Hosted CI passed all 9 required checks on `d9703231`. Risk entry:
-  `docs/ai/KNOWN_RISKS.md` (2026-11-13). `GDPR.md` (Art. 17 row and a process-local
-  L0 note) states main vs. draft-PR behaviour. Main is unchanged until merge.
+  sections present). Notion synchronization: `SYNCED` (as of 2026-11-14,
+  pre-merge; after merge the record still needs the merge SHA and final CI per §5
+  "After merge").
+- Point-in-time status (as of 2026-11-14, head
+  `1c2d83b9e901a02ba8ef87a19fddfdaccf190526`): branch `fix/505-l0-stale-after-erase`
+  published; PR #507 open as draft, not merged; hosted CI passed all 9 required checks
+  on that head. This status is historical; resolve the current PR/merge state live on
+  GitHub. Risk entry: `docs/ai/KNOWN_RISKS.md` (2026-11-13); `GDPR.md` (Art. 17 row
+  and the process-local L0 note) describes behaviour with and without the #505 fix.
 
 ## 2026-10-28 — Receipt evidence drift and reproducible demo
 

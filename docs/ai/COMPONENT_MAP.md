@@ -11,7 +11,7 @@ Use this map to choose the smallest relevant inspection surface. GitHub merged `
 
 SQLite remains the active ordinary local-first profile. PostgreSQL/pgvector remains an inactive `active=false` import/equivalence target. Backend availability must not silently select another store.
 
-Cross-process L0 revalidation (#505; fixed in draft PR #507, **not merged**): `core/memory.py` `get_fact()` / `_L0_ROWS` with
+Cross-process L0 revalidation (#505, PR #507; present only in versions containing that fix): `core/memory.py` `get_fact()` / `_L0_ROWS` with
 - `tests/test_l0_cross_process_erasure.py` — erase in another OS process, same-process revalidation, re-creation after erase (including identical `created_at`);
 - `tests/test_l0_cross_process_restrict.py` — restriction committed by another OS process, as seen by a running reader through `memory.get_fact()`, MCP, strict ask and HTTP review/evidence paths;
 - `tests/test_cross_process_write_races.py` — `update_fact()` revision CAS and `review.approve()` against a write committed by a real second process.
