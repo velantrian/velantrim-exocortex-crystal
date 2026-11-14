@@ -36,11 +36,14 @@ This compact log records material decisions, exact evidence, limitations and han
 - Regression: `tests/test_l0_cross_process_erasure.py` (fails on base, passes with
   the fix). Documentation impact: `GITHUB_AND_NOTION` (privacy-relevant erasure
   behaviour with material trade-offs: per-read SQLite cost and L1 availability).
-  Notion record (safe title): "Grok-bot — Crystal audit handoff and sandbox
-  manifest (2026-11-11)"; synchronization is not yet `SYNCED` (see PR #507).
+  Notion record (safe title): "Crystal #505 — межпроцессный кэш L0: решение и
+  проверка"; checked against `docs/DOCUMENTATION_SYNC_PROTOCOL.md` §6 (all 12
+  sections present). Notion synchronization: `SYNCED` (pre-merge; after merge the
+  record still needs the merge SHA and final CI per §5 "After merge").
 - Status: branch `fix/505-l0-stale-after-erase` published; PR #507 open as draft,
   not merged. Hosted CI passed all 9 required checks on `d9703231`. Risk entry:
-  `docs/ai/KNOWN_RISKS.md` (2026-11-13). Main is unchanged until merge.
+  `docs/ai/KNOWN_RISKS.md` (2026-11-13). `GDPR.md` (Art. 17 row and a process-local
+  L0 note) states main vs. draft-PR behaviour. Main is unchanged until merge.
 
 ## 2026-10-28 — Receipt evidence drift and reproducible demo
 
