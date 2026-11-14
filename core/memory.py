@@ -175,6 +175,10 @@ _INGEST_EXPECTATION_UNSET = object()
 # helper may safely call another. All access goes through _l0_put/_l0_get/_l0_pop.
 L0_CAP = 5
 _L0: OrderedDict = OrderedDict()
+# Raw L1 row (SELECT * values, still encrypted when encryption is on) that each
+# L0 record was built from. get_fact() serves an L0 hit only while the shared
+# L1 row is still identical to it (#505). No entry means "re-read from L1".
+_L0_ROWS: Dict[str, tuple] = {}
 _L0_LOCK = threading.RLock()
 
 # ─── L1: SQLite path ──────────────────────────────────────────────────────────
@@ -621,8 +625,10 @@ def _l0_put(fact_id: str, record: Dict) -> None:
         if fact_id in _L0:
             del _L0[fact_id]
         _L0[fact_id] = record
+        _L0_ROWS.pop(fact_id, None)
         if len(_L0) > L0_CAP:
-            _L0.popitem(last=False)  # evict least-recently-used
+            evicted, _ = _L0.popitem(last=False)  # evict least-recently-used
+            _L0_ROWS.pop(evicted, None)
 
 
 def _l0_get(fact_id: str) -> Optional[Dict]:
@@ -638,9 +644,20 @@ def _l0_pop(fact_id: str) -> None:
     """Evict a fact from L0 if present (no-op on miss). Lock-guarded."""
     with _L0_LOCK:
         _L0.pop(fact_id, None)
+        _L0_ROWS.pop(fact_id, None)
 
 
-def _l0_put_if_fresher(fact_id: str, record: Dict) -> None:
+def _l0_attach_row(fact_id: str, record: Dict, row: Optional[sqlite3.Row]) -> None:
+    """Record the raw L1 row `record` was built from, if `record` is still the
+    cached entry. Without it, get_fact() treats the L0 entry as unvalidated."""
+    with _L0_LOCK:
+        if row is not None and _L0.get(fact_id) is record:
+            _L0_ROWS[fact_id] = tuple(row)
+
+
+def _l0_put_if_fresher(
+    fact_id: str, record: Dict, row: Optional[sqlite3.Row] = None
+) -> None:
     """Like _l0_put(), but refuses to overwrite an already-cached record with
     an OLDER one. Compares `updated_at` (an ISO-8601 UTC string set from
     datetime.now(timezone.utc).isoformat() everywhere it's produced, so
@@ -680,6 +697,7 @@ def _l0_put_if_fresher(fact_id: str, record: Dict) -> None:
         if cached is not None and cached.get("updated_at", "") > record.get("updated_at", ""):
             return  # a fresher record is already cached — do not clobber it
         _l0_put(fact_id, record)
+        _l0_attach_row(fact_id, record, row)
 
 
 # Shared facts-row write lock. store_fact(), update_fact(), transition_esm(),
@@ -904,9 +922,7 @@ def store_fact(
             # (revision defaults to 0 on INSERT). Mirrors the "L0 after DB write"
             # discipline in transition_esm().
             row = conn.execute(
-                "SELECT epistemic_state, created_at, restricted, revision "
-                "FROM facts WHERE fact_id = ?",
-                (fact_id,)
+                "SELECT * FROM facts WHERE fact_id = ?", (fact_id,)
             ).fetchone()
             persisted_state = row["epistemic_state"] if row else epistemic_state
             persisted_created_at = row["created_at"] if row else now
@@ -924,6 +940,7 @@ def store_fact(
         # on a timestamp comparison would reintroduce the exact bug this
         # lock exists to fix (see _l0_put_if_fresher's docstring).
         _l0_put(fact_id, record)
+        _l0_attach_row(fact_id, record, row)
         if return_persisted:
             # Do not expose the same dict held in L0: ingest adds transient
             # gate/result fields to its local snapshot after this write.
@@ -932,14 +949,29 @@ def store_fact(
 
 
 def get_fact(fact_id: str) -> Optional[Dict]:
-    """Get a fact: first L0 (LRU), then L1."""
-    cached = _l0_get(fact_id)
-    if cached is not None:
-        return cached
+    """Get a fact: L0 (LRU) only while it still matches L1, otherwise L1.
+
+    L0 is process-local, but erase_fact()/delete_fact_l1() and other writers
+    can run in another process against the same L1 database and can only
+    evict their own L0 (#505). Every call therefore reads the shared L1 row
+    (one primary-key lookup, no decryption). The cached record is served only
+    if that raw row is identical to the row it was built from (_L0_ROWS). A
+    missing row returns None; any difference (erasure, re-creation under the
+    same fact_id even with an identical created_at, or another process's
+    update) evicts the entry and rebuilds it from L1. Note: update_fact()'s
+    revision CAS protects writes only; on its own it does not keep an already
+    cached read fresh.
+    """
     with _db() as conn:
         row = conn.execute(
             "SELECT * FROM facts WHERE fact_id = ?", (fact_id,)
         ).fetchone()
+        with _L0_LOCK:
+            cached = _l0_get(fact_id)
+            if cached is not None:
+                if row is not None and _L0_ROWS.get(fact_id) == tuple(row):
+                    return cached
+                _l0_pop(fact_id)
         if row:
             result = dict(row)
             result["claim"] = crypto.decrypt(result["claim"])
@@ -949,7 +981,7 @@ def get_fact(fact_id: str) -> Optional[Dict]:
             # already populated L0 — do not let a stale read clobber it. The
             # value returned to THIS caller is unaffected either way (`result`
             # is returned regardless of which record wins the cache).
-            _l0_put_if_fresher(fact_id, result)
+            _l0_put_if_fresher(fact_id, result, row)
             return result
     return None
 
@@ -1120,6 +1152,7 @@ def update_fact(
         # fact_id — nothing else can have written something newer without
         # going through this same lock.
         _l0_put(fact_id, refreshed)
+        _l0_attach_row(fact_id, refreshed, row)
         return True
 
 
@@ -1205,6 +1238,7 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
         refreshed["claim"] = crypto.decrypt(refreshed["claim"])
         refreshed["metadata"] = json.loads(crypto.decrypt(refreshed["metadata"]))
         _l0_put(fact_id, refreshed)
+        _l0_attach_row(fact_id, refreshed, refreshed_row)
         return True
 
 
@@ -1291,6 +1325,7 @@ def transition_esm_if_unchanged(
         refreshed["claim"] = crypto.decrypt(refreshed["claim"])
         refreshed["metadata"] = json.loads(crypto.decrypt(refreshed["metadata"]))
         _l0_put(fact_id, refreshed)
+        _l0_attach_row(fact_id, refreshed, refreshed_row)
         # The caller adds transient truth_status/result fields; keep L0 isolated.
         return dict(refreshed)
 
@@ -1384,6 +1419,7 @@ def set_restricted(fact_id: str, restricted: bool) -> bool:
         refreshed["claim"] = crypto.decrypt(refreshed["claim"])
         refreshed["metadata"] = json.loads(crypto.decrypt(refreshed["metadata"]))
         _l0_put(fact_id, refreshed)
+        _l0_attach_row(fact_id, refreshed, refreshed_row)
         return True
 
 

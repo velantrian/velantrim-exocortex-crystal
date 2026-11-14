@@ -1,5 +1,36 @@
 # ⚠️ Crystal Known Risks and Open Boundaries
 
+## 2026-11-13 — Cross-process L0 staleness after erasure/restriction (#505) · MITIGATED IN VERSIONS WITH THE #505 FIX; RESIDUAL LIMITATIONS OPEN
+
+**Status:** mitigated only in code versions that contain the #505 fix (PR #507); versions
+without it still have this risk. Not fully closed: the residual limitations below remain
+open. Whether a given checkout contains the fix must be resolved from its Git history, not
+from this register.
+
+Risk in versions without the fix: L0 is a per-process cache. After `python -m core.cli erase` (or
+`restrict`) in another process, an already-running reader could keep serving the
+erased or restricted fact from its own L0 through `memory.get_fact()`, MCP `get_fact`,
+HTTP `GET /review/item/{id}` (and, for restriction, `GET /evidence/{id}`) until restart.
+
+Verified scope in versions with the fix: every `get_fact()` reads the shared L1 (SQLite) row by primary
+key and serves the L0 record only if that raw row is identical to the row the record was
+built from; otherwise L1 decides. Covered by real OS-process tests
+(`tests/test_l0_cross_process_erasure.py`, `tests/test_l0_cross_process_restrict.py`,
+`tests/test_cross_process_write_races.py`). This fix does not close every restriction
+question; not verified: CanonicalView beyond strict ask, export paths,
+Neo4j/Ladybug/PostgreSQL backends, restriction with field encryption on.
+
+Remaining limitations and trade-offs:
+
+- a read already in progress before the erase/restrict commit (its L1 lookup completed
+  before the commit) may still return the old snapshot; reads that start after the commit
+  see it;
+- cost of repeated SQLite access (one VM, indicative only): repeated L0 hit median
+  0.27 µs → 260 µs; typical local scenario, 10 facts: strict query +57%, MCP search +53%;
+  1000 facts: +2.9% / +1.8%. `_db()` optimization is deliberately not part of the fix;
+- availability behaviour change: `get_fact()` now raises when L1/SQLite is unavailable
+  (for example `sqlite3.OperationalError`) even if the fact is already in L0.
+
 ## 2026-10-28 — Focused receipt replay hardening
 
 This change compares the source-span fields sealed by a receipt with the current
