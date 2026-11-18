@@ -40,7 +40,7 @@ velantrim-storage backup BUNDLE [--profile PATH]
 velantrim-storage verify BUNDLE
 velantrim-storage restore BUNDLE \
   --target-database NEW_DB \
-  --target-profile NEW_PROFILE
+  --target-profile NEW_PROFILE [--receipt NEW_RECEIPT]
 velantrim-storage inspect-lock [--profile PATH]
 velantrim-storage recover-lock \
   [--profile PATH] \
@@ -103,7 +103,9 @@ Verification does not open, change or activate the current deployment profile.
 
 `restore` first performs complete bundle verification, then writes only new targets. It
 never overwrites an existing database, profile or restore receipt and rejects final-path
-symlinks.
+symlinks. By default it writes `<target-profile-name>.restore-receipt.json` next to the
+candidate profile. Use `--receipt` to select a different new path. All three outputs
+must be outside the source backup bundle.
 
 The operation:
 
