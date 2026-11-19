@@ -104,13 +104,22 @@ def _build_profile(backend: str, configuration: Mapping[str, str]) -> dict[str, 
 def _validate_profile(raw: Any) -> dict[str, Any]:
     if not isinstance(raw, dict):
         raise StorageProfileError("storage profile must be a JSON object")
-    if raw.get("schema_version") != PROFILE_SCHEMA_VERSION:
+    version = raw.get("schema_version")
+    if (
+        not isinstance(version, int)
+        or isinstance(version, bool)
+        or version != PROFILE_SCHEMA_VERSION
+    ):
         raise StorageProfileError("unsupported storage profile schema_version")
     if raw.get("profile") != "l3":
         raise StorageProfileError("storage profile must declare profile='l3'")
 
     backend = raw.get("backend")
-    if backend not in _KNOWN_BACKENDS or backend == "mock":
+    if (
+        not isinstance(backend, str)
+        or backend not in _KNOWN_BACKENDS
+        or backend == "mock"
+    ):
         raise StorageProfileError("storage profile backend must be durable and supported")
     if raw.get("durable") is not True:
         raise StorageProfileError("storage profile must declare durable=true")
@@ -161,7 +170,7 @@ def load_storage_profile(
     try:
         with target.open("r", encoding="utf-8") as handle:
             raw = json.load(handle)
-    except (OSError, json.JSONDecodeError) as exc:
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise StorageProfileError(
             f"cannot read valid storage profile {target}: {type(exc).__name__}"
         ) from exc

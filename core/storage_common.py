@@ -8,6 +8,9 @@ import json
 import os
 import shutil
 import sqlite3
+import tempfile
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping
@@ -108,6 +111,8 @@ def _write_new_json(path: Path, payload: Mapping[str, Any]) -> None:
 def _read_json_object(path: Path, label: str) -> dict[str, Any]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
+    except UnicodeDecodeError as exc:
+        raise StorageOperationError(f"cannot read valid {label}: UnicodeDecodeError") from exc
     except (OSError, json.JSONDecodeError) as exc:
         raise StorageOperationError(f"cannot read valid {label}: {exc}") from exc
     if not isinstance(payload, dict):
@@ -132,6 +137,43 @@ def _copy_new_file(source: Path, target: Path) -> None:
     _fsync_directory(target.parent)
 
 
+def _sqlite_sidecars(database: Path) -> tuple[Path, ...]:
+    return tuple(
+        database.with_name(f"{database.name}{suffix}") for suffix in ("-wal", "-shm", "-journal")
+    )
+
+
+@contextmanager
+def _inspection_copy(database: Path, *, bundle: Path) -> Iterator[Path]:
+    """Keep any SQLite side effects inside a directory owned by this check."""
+    try:
+        # Use an explicit directory. tempfile's default selection can probe
+        # TMPDIR or the working directory by writing a file there.
+        temp_candidates = (
+            tempfile.tempdir,
+            *(os.environ.get(name) for name in ("TMPDIR", "TEMP", "TMP")),
+            Path(os.environ.get("SystemRoot", r"C:\Windows")) / "Temp" if os.name == "nt" else "/tmp",
+            bundle.parent,
+        )
+        for candidate in temp_candidates:
+            if candidate:
+                parent = Path(os.fsdecode(candidate)).resolve()
+                if (
+                    not parent.is_relative_to(bundle)
+                    and parent.is_dir()
+                    and os.access(parent, os.W_OK | os.X_OK)
+                ):
+                    break
+        else:
+            raise StorageOperationError("no writable temporary directory outside backup bundle")
+        with tempfile.TemporaryDirectory(prefix="velantrim-sqlite-", dir=parent) as directory:
+            copy = Path(directory) / database.name
+            _copy_new_file(database, copy)
+            yield copy
+    except OSError as exc:
+        raise StorageOperationError(f"cannot inspect private SQLite copy: {exc}") from exc
+
+
 def _load_profile(path: Path) -> dict[str, Any]:
     try:
         profile = load_storage_profile(path, required=True)
@@ -154,7 +196,10 @@ def _sqlite_locator(profile: Mapping[str, Any]) -> Path:
     raw = configuration.get("path")
     if not isinstance(raw, str) or raw in {"", ":memory:"}:
         raise StorageOperationError("SQLite profile must point to a durable file")
-    return _resolve(raw)
+    try:
+        return _resolve(raw)
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise StorageOperationError("cannot resolve the SQLite storage profile path") from exc
 
 
 def _connect_readonly(path: Path) -> sqlite3.Connection:
