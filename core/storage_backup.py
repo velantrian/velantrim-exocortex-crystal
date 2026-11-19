@@ -6,6 +6,8 @@ from __future__ import annotations
 import os
 import shutil
 import sqlite3
+import stat
+from contextlib import closing
 from pathlib import Path
 from typing import Any, Mapping, Optional
 
@@ -18,6 +20,7 @@ from core.storage_common import (
     BUNDLE_SCHEMA_VERSION,
     StorageOperationError,
     _bundle_paths,
+    _inspection_copy,
     _json_bytes,
     _load_profile,
     _read_json_object,
@@ -28,11 +31,39 @@ from core.storage_common import (
     _sha256_file,
     _sqlite_locator,
     _sqlite_metrics,
+    _sqlite_sidecars,
     _utc_now,
     _write_new_bytes,
     _write_new_json,
     _connect_readonly,
 )
+
+
+def _check_bundle_sidecars(database: Path) -> None:
+    wal, shm, journal = _sqlite_sidecars(database)
+    for path in (wal, shm, journal):
+        try:
+            metadata = path.lstat()
+        except FileNotFoundError:
+            continue
+        except OSError as exc:
+            raise StorageOperationError(f"cannot inspect backup SQLite sidecar: {path.name}") from exc
+        if not stat.S_ISREG(metadata.st_mode) or (path != shm and metadata.st_size):
+            raise StorageOperationError(f"backup has an untracked SQLite sidecar: {path.name}")
+
+
+def _finalize_snapshot(database: Path) -> None:
+    try:
+        with closing(sqlite3.connect(database)) as connection:
+            if connection.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchone()[0] != 0:
+                raise StorageOperationError("cannot checkpoint SQLite backup snapshot")
+            mode = connection.execute("PRAGMA journal_mode=DELETE").fetchone()[0]
+            if mode != "delete":
+                raise StorageOperationError("SQLite backup snapshot did not enter DELETE mode")
+    except sqlite3.Error as exc:
+        raise StorageOperationError(f"cannot finalize SQLite backup snapshot: {exc}") from exc
+    if any(path.exists() or path.is_symlink() for path in _sqlite_sidecars(database)):
+        raise StorageOperationError("SQLite backup snapshot still has sidecar files")
 
 
 def _verify_backup_contents(bundle: Path) -> dict[str, Any]:
@@ -57,14 +88,16 @@ def _verify_backup_contents(bundle: Path) -> dict[str, Any]:
         raise StorageOperationError("backup source database path does not match profile")
     if receipt.get("source_locator_sha256") != profile.get("locator_sha256"):
         raise StorageOperationError("backup profile locator does not match receipt")
-    if receipt.get("database_sha256") != _sha256_file(database_file):
-        raise StorageOperationError("backup database SHA-256 mismatch")
-    if receipt.get("database_size") != database_file.stat().st_size:
-        raise StorageOperationError("backup database size mismatch")
     if receipt.get("profile_sha256") != _sha256_file(profile_file):
         raise StorageOperationError("backup profile SHA-256 mismatch")
 
-    metrics = _sqlite_metrics(database_file)
+    _check_bundle_sidecars(database_file)
+    with _inspection_copy(database_file, bundle=bundle) as snapshot:
+        if receipt.get("database_sha256") != _sha256_file(snapshot):
+            raise StorageOperationError("backup database SHA-256 mismatch")
+        if receipt.get("database_size") != snapshot.stat().st_size:
+            raise StorageOperationError("backup database size mismatch")
+        metrics = _sqlite_metrics(snapshot)
     recorded_sqlite = receipt.get("sqlite")
     if not isinstance(recorded_sqlite, Mapping):
         raise StorageOperationError("backup receipt SQLite metrics are invalid")
@@ -129,6 +162,7 @@ def create_backup(
             source.close()
 
         os.chmod(database_file, 0o600)
+        _finalize_snapshot(database_file)
         metrics = _sqlite_metrics(database_file)
         profile_bytes = _json_bytes(profile)
         _write_new_bytes(profile_copy, profile_bytes)
@@ -147,7 +181,7 @@ def create_backup(
             "sqlite": metrics,
         }
         _write_new_json(receipt_file, receipt)
-        report = _verify_backup_contents(output)
+        _verify_backup_contents(output)
         completion = {
             "schema_version": BUNDLE_SCHEMA_VERSION,
             "operation": "sqlite_backup_complete",
