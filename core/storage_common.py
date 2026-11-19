@@ -152,7 +152,7 @@ def _inspection_copy(database: Path, *, bundle: Path) -> Iterator[Path]:
         temp_candidates = (
             tempfile.tempdir,
             *(os.environ.get(name) for name in ("TMPDIR", "TEMP", "TMP")),
-            Path(os.environ.get("SystemRoot", r"C:\Windows")) / "Temp" if os.name == "nt" else "/tmp",
+            Path(os.environ.get("SystemRoot", r"C:\Windows")) / "Temp" if os.name == "nt" else "/tmp",  # nosec B108 - parent of a private TemporaryDirectory
             bundle.parent,
         )
         for candidate in temp_candidates:
