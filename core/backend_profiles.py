@@ -110,7 +110,7 @@ def _validate_profile(raw: Any) -> dict[str, Any]:
         raise StorageProfileError("storage profile must declare profile='l3'")
 
     backend = raw.get("backend")
-    if backend not in _KNOWN_BACKENDS or backend == "mock":
+    if not isinstance(backend, str) or backend not in _KNOWN_BACKENDS or backend == "mock":
         raise StorageProfileError("storage profile backend must be durable and supported")
     if raw.get("durable") is not True:
         raise StorageProfileError("storage profile must declare durable=true")
@@ -161,7 +161,7 @@ def load_storage_profile(
     try:
         with target.open("r", encoding="utf-8") as handle:
             raw = json.load(handle)
-    except (OSError, json.JSONDecodeError) as exc:
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise StorageProfileError(
             f"cannot read valid storage profile {target}: {type(exc).__name__}"
         ) from exc
