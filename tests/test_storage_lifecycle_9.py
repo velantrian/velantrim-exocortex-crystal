@@ -6,6 +6,8 @@ import os
 from pathlib import Path
 import shutil
 import sqlite3
+import subprocess
+import sys
 import tempfile
 from urllib.parse import unquote, urlsplit
 
@@ -75,7 +77,7 @@ def legacy_bundle(store: tuple[Path, Path], tmp_path: Path) -> Path:
 
 def test_wal_backup_preserves_uncheckpointed_commit_and_restores_via_cli(
     store: tuple[Path, Path], tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     profile, database = store
     monkeypatch.setenv("VELANTRIM_STORAGE_PROFILE_PATH", str(profile))
@@ -94,6 +96,8 @@ def test_wal_backup_preserves_uncheckpointed_commit_and_restores_via_cli(
         assert source_wal.stat().st_size > 0
         raw_database = tmp_path / "only-main-file.db"
         shutil.copyfile(database, raw_database)
+        with closing(sqlite3.connect(f"{raw_database.as_uri()}?immutable=1", uri=True)) as raw:
+            assert raw.execute("PRAGMA integrity_check").fetchall() == [("ok",)]
         assert WAL_ONLY_ID not in _node_ids(raw_database)
         original_database = database.read_bytes()
         original_wal = source_wal.read_bytes()
@@ -102,20 +106,32 @@ def test_wal_backup_preserves_uncheckpointed_commit_and_restores_via_cli(
         after_backup = _contents(bundle)
         assert set(after_backup) == BUNDLE_FILES
         assert after_backup[common.BUNDLE_DATABASE][18:20] == b"\x01\x01"
-        verified = backup.verify_backup(bundle)
+        transferred = tmp_path / "transferred"
+        transferred.mkdir()
+        for name in BUNDLE_FILES:
+            shutil.copyfile(bundle / name, transferred / name)
+        verified = backup.verify_backup(transferred)
         assert verified["status"] == "PASS"
         assert verified["sqlite"]["counts"]["nodes"] == 3
-        assert WAL_ONLY_ID in _node_ids(bundle / common.BUNDLE_DATABASE)
+        assert WAL_ONLY_ID in _node_ids(transferred / common.BUNDLE_DATABASE)
 
         target_dir = tmp_path / "candidate"
         candidate = target_dir / "restored.db"
         candidate_profile = target_dir / "candidate.json"
         candidate_receipt = target_dir / "receipt.json"
-        assert ops.main([
-            "restore", str(bundle), "--target-database", str(candidate),
-            "--target-profile", str(candidate_profile), "--receipt", str(candidate_receipt),
-        ]) == 0
-        result = json.loads(capsys.readouterr().out)
+        run = subprocess.run(
+            [sys.executable, "-m", "core.storage_ops", "restore", str(transferred),
+             "--target-database", str(candidate), "--target-profile", str(candidate_profile),
+             "--receipt", str(candidate_receipt)],
+            cwd=tmp_path,
+            env=dict(os.environ, PYTHONPATH=str(Path(__file__).resolve().parents[1])),
+            capture_output=True,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+        assert run.returncode == 0, run.stderr or run.stdout
+        result = json.loads(run.stdout)
         assert result["status"] == "PASS"
         assert result["receipt"]["activation"] == "candidate_profile_only"
         assert {path.name for path in target_dir.iterdir()} == {
@@ -123,6 +139,7 @@ def test_wal_backup_preserves_uncheckpointed_commit_and_restores_via_cli(
         }
         assert WAL_ONLY_ID in _node_ids(candidate)
         assert _contents(bundle) == after_backup
+        assert _contents(transferred) == after_backup
         assert writer.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
         assert database.read_bytes() == original_database
         assert source_wal.read_bytes() == original_wal
