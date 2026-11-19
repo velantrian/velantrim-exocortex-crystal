@@ -9,7 +9,9 @@ from typing import Any
 from core.backend_profiles import StorageProfileError, storage_profile_path
 from core.storage_backup import verify_backup
 from core.storage_common import (
+    SQLITE_SIDE_SUFFIXES,
     StorageOperationError,
+    _active_locator_paths,
     _bundle_paths,
     _copy_new_file,
     _json_bytes,
@@ -18,6 +20,7 @@ from core.storage_common import (
     _resolve_operator_path,
     _sha256_bytes,
     _sha256_file,
+    _side_path,
     _sqlite_metrics,
     _utc_now,
     _write_new_bytes,
@@ -56,6 +59,13 @@ def restore_backup(
     targets = (target_db, target_profile_file, restore_receipt_file)
     if active_profile in targets:
         raise StorageOperationError("restore target must not be the active storage profile")
+    if _active_locator_paths(active_profile).intersection(targets):
+        raise StorageOperationError(
+            "restore target must not be the active storage database or its SQLite side files"
+        )
+    for side in (_side_path(target_db, suffix) for suffix in SQLITE_SIDE_SUFFIXES):
+        if side.exists() or side.is_symlink():
+            raise StorageOperationError(f"restore target already exists: {side}")
     for target in targets:
         if target.exists() or target.is_symlink():
             raise StorageOperationError(f"restore target already exists: {target}")
@@ -116,8 +126,17 @@ def restore_backup(
             "receipt": receipt,
         }
     except Exception as exc:
+        failed: list[str] = []
         for path in reversed(created):
-            path.unlink(missing_ok=True)
+            try:
+                path.unlink(missing_ok=True)
+            except OSError as cleanup_exc:
+                failed.append(f"{path}: {cleanup_exc}")
+        if failed:
+            raise StorageOperationError(
+                f"cannot restore backup ({exc}); cleanup incomplete: "
+                + "; ".join(failed)
+            ) from exc
         if isinstance(exc, OSError):
             raise StorageOperationError(f"cannot restore backup: {exc}") from exc
         raise

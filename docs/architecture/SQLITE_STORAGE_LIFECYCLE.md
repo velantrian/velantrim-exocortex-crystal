@@ -123,6 +123,20 @@ restore result = new database + candidate profile + receipt
 activation      = separate explicit deployment action
 ```
 
+When an active profile exists, `restore` reads and validates it before creating anything.
+The SQLite database path it names, and that path's `-wal`, `-shm` and `-journal` names, are
+also forbidden as targets even when the database file is currently missing. An existing
+active profile that cannot be read or validated (invalid UTF-8, malformed JSON, wrong types)
+fails the restore with a JSON `FAIL` and exit code 2 before any output exists. With no
+active profile deployed nothing is protected. Existing `-wal`, `-shm` or `-journal` files
+beside the target database are refused and left untouched.
+
+Backups are published as self-contained rollback-journal snapshots (the live source may stay
+in WAL mode). Verification and restore inspect a private copy of the snapshot, so they never
+create SQLite side files in the bundle or beside the restored database. A non-empty `-wal` or
+`-journal` file beside a bundle snapshot is rejected as unaccounted state. If cleanup after a
+failed restore cannot remove an artifact, the error says so instead of hiding it.
+
 This ordering makes the candidate profile the last activation-relevant artifact. A hard
 crash can still leave partial new targets; the absence of a valid candidate profile and/or
 restore receipt identifies an incomplete restore. The command never deletes or modifies

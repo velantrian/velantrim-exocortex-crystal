@@ -21,7 +21,9 @@ from core.storage_common import (
     _json_bytes,
     _load_profile,
     _read_json_object,
+    _require_no_pending_journal,
     _require_regular_file,
+    _require_standalone_snapshot,
     _resolve,
     _resolve_operator_path,
     _sha256_bytes,
@@ -40,6 +42,7 @@ def _verify_backup_contents(bundle: Path) -> dict[str, Any]:
     _require_regular_file(database_file, "bundle database")
     _require_regular_file(profile_file, "bundle profile")
     _require_regular_file(receipt_file, "bundle receipt")
+    _require_no_pending_journal(database_file)
 
     receipt = _read_json_object(receipt_file, "backup receipt")
     if receipt.get("schema_version") != BUNDLE_SCHEMA_VERSION:
@@ -121,6 +124,14 @@ def create_backup(
             try:
                 source.backup(destination)
                 destination.commit()
+                # The copy inherits the source's WAL header; publish it as a
+                # self-contained rollback-journal file (source stays in WAL).
+                mode = destination.execute("PRAGMA journal_mode=DELETE").fetchone()
+                if mode is None or str(mode[0]).lower() != "delete":
+                    raise StorageOperationError(
+                        "cannot switch backup snapshot to rollback-journal mode"
+                    )
+                destination.commit()
             except sqlite3.Error as exc:
                 raise StorageOperationError(f"SQLite backup failed: {exc}") from exc
             finally:
@@ -128,6 +139,7 @@ def create_backup(
         finally:
             source.close()
 
+        _require_standalone_snapshot(database_file)
         os.chmod(database_file, 0o600)
         metrics = _sqlite_metrics(database_file)
         profile_bytes = _json_bytes(profile)
