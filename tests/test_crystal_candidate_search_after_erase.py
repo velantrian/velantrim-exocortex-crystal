@@ -25,8 +25,13 @@ before any returncode or presence assertion, so both surfaces stay visible if
 one fails. SQLite ``-shm`` is a WAL-index service file: the active-state
 snapshots compare its presence and size only, never its bytes.
 
-All data is synthetic. The pytest parent does not import project modules; every
-scenario runs in a child process with an isolated HOME/TMP and storage paths.
+All data is synthetic. The four scenarios above run in child processes with an
+isolated HOME/TMP and storage paths; the pytest parent does not import project
+modules for them. One additional in-process unit test
+(``test_resolver_returns_none_for_tombstoned_id_without_touching_l3``) executes
+the guard's early return directly in the parent so that it is visible to
+parent-process coverage, and asserts that no L3 / L1 / trust-snapshot path is
+reached when a tombstone is present.
 Run from the repository root (or set ``CRYSTAL_REPO_ROOT``); the test does not
 clone or fetch anything.
 """
@@ -41,6 +46,7 @@ import sys
 import textwrap
 from pathlib import Path
 from typing import Any
+from unittest import mock
 
 import pytest
 
@@ -937,3 +943,44 @@ def test_non_erased_sibling_in_restored_l3_remains_searchable(
     finally:
         document = _write_diagnostics(diag, surfaces=surfaces, extra=extra)
     _assert_search_diagnostics(diag, document, surfaces)
+    # Independent parent-side checks on each surface's persisted result: the
+    # erased id must be absent and the non-erased sibling present, for the
+    # direct and the MCP search separately.
+    for surface in ("direct", "mcp"):
+        returned = document["surfaces"][surface]["returned_fact_ids"]
+        assert F02_OLD_FACT_ID not in returned, (
+            f"{surface}: erased fact {F02_OLD_FACT_ID} must be absent; see {diag}"
+        )
+        assert F02_CONTROL_FACT_ID in returned, (
+            f"{surface}: non-erased sibling {F02_CONTROL_FACT_ID} must be present; see {diag}"
+        )
+
+
+def test_resolver_returns_none_for_tombstoned_id_without_touching_l3() -> None:
+    """(5) In-process unit test of the guard's early return.
+
+    With the current-L1 tombstone check returning True for a synthetic id,
+    ``_resolve_canonical_fact`` must return None before it touches the L3 graph,
+    reads L1, or builds a trust snapshot. Each of those is stubbed so that any
+    call raises and is also recorded.
+    """
+    from core import query_pipeline
+
+    def forbidden(name: str) -> mock.Mock:
+        return mock.Mock(side_effect=AssertionError(f"{name} must not be reached"))
+
+    tombstone_check = mock.Mock(return_value=True)
+    l3_graph = forbidden("get_l3_graph")
+    l1_read = forbidden("get_fact")
+    snapshot = forbidden("TrustSnapshot")
+    with mock.patch.object(query_pipeline, "is_erased", tombstone_check), \
+            mock.patch.object(query_pipeline, "get_l3_graph", l3_graph), \
+            mock.patch.object(query_pipeline, "get_fact", l1_read), \
+            mock.patch.object(query_pipeline, "TrustSnapshot", snapshot):
+        resolved = query_pipeline._resolve_canonical_fact({"fact_id": F02_OLD_FACT_ID})
+
+    assert resolved is None
+    tombstone_check.assert_called_once_with(F02_OLD_FACT_ID)
+    l3_graph.assert_not_called()
+    l1_read.assert_not_called()
+    snapshot.assert_not_called()
