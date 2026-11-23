@@ -8,6 +8,7 @@
 # Full L0–L6 architecture: docs/archive/Velantrim_V8_Crystal_Sprint1_toc.md
 # ESM (Epistemic State Machine): 8 states of a fact's lifecycle.
 
+import copy
 import os
 import sqlite3
 import json
@@ -605,9 +606,11 @@ def _db():
     # instead of racing on a computed seq; give queued writers real headroom
     # instead of sqlite3's 5s default before raising "database is locked".
     conn = sqlite3.connect(SQLITE_PATH, timeout=30.0)
-    conn.row_factory = sqlite3.Row
-    _ensure_schema(conn)
     try:
+        conn.row_factory = sqlite3.Row
+        # Inside the try: a schema/migration failure must still close the
+        # connection (the finally below) instead of leaking it.
+        _ensure_schema(conn)
         yield conn
         conn.commit()
     except Exception:
@@ -809,7 +812,9 @@ def store_fact(
     if source_status not in SOURCE_STATUSES:
         raise ValueError(f"store_fact: invalid source_status '{source_status}'")
 
-    metadata_dict = fact.get("metadata", {})
+    # L0 must own its record: a deep copy, so later mutation of the caller's
+    # metadata dict cannot change what get_fact() serves from the cache.
+    metadata_dict = copy.deepcopy(fact.get("metadata", {}))
 
     record = {
         "fact_id":         fact_id,
@@ -942,9 +947,10 @@ def store_fact(
         _l0_put(fact_id, record)
         _l0_attach_row(fact_id, record, row)
         if return_persisted:
-            # Do not expose the same dict held in L0: ingest adds transient
-            # gate/result fields to its local snapshot after this write.
-            return dict(record)
+            # Do not expose the dict held in L0 or anything nested in it:
+            # ingest adds transient gate/result fields to its local snapshot
+            # after this write, and a shallow copy would still share metadata.
+            return copy.deepcopy(record)
     return None
 
 
@@ -970,7 +976,10 @@ def get_fact(fact_id: str) -> Optional[Dict]:
             cached = _l0_get(fact_id)
             if cached is not None:
                 if row is not None and _L0_ROWS.get(fact_id) == tuple(row):
-                    return cached
+                    # A copy: the freshness check compares the raw L1 row, not
+                    # the cached dict, so a caller mutating the shared object
+                    # would change later reads without any write.
+                    return copy.deepcopy(cached)
                 _l0_pop(fact_id)
         if row:
             result = dict(row)
@@ -982,7 +991,8 @@ def get_fact(fact_id: str) -> Optional[Dict]:
             # value returned to THIS caller is unaffected either way (`result`
             # is returned regardless of which record wins the cache).
             _l0_put_if_fresher(fact_id, result, row)
-            return result
+            # `result` may now be the object held in L0: return a copy.
+            return copy.deepcopy(result)
     return None
 
 

@@ -2,6 +2,23 @@
 
 This compact log records material decisions, exact evidence, limitations and hand-offs. It does not replace Git history, issues, pull requests, `CHANGELOG.md` or Notion.
 
+## 2026-11-23 — L0 record ownership and `_db()` close on schema failure · draft PR
+
+- Base: `main@acb0a03`. Found in code review (no exploit run): `get_fact()` handed out
+  the cached L0 object; `store_fact()` cached the caller's metadata dict; `_db()` could
+  leak a connection when `_ensure_schema()` raised.
+- Change: `copy.deepcopy` at the L0 boundaries (`store_fact` input metadata,
+  `return_persisted` snapshot, both `get_fact` return paths); `_ensure_schema()` moved
+  inside the `try/finally` of `_db()`. No schema, dependency or contract change beyond
+  "callers get their own copy".
+- Tests: new `tests/test_l0_isolation_and_db_close.py`. Five tests in
+  `tests/test_l0_cross_process_erasure.py` detected an L0 hit by object identity
+  (`_L0[id] is fact`), which depended on the aliasing being fixed; they now detect it as
+  "the cached entry stayed in place and the returned record equals it". The #505
+  revalidation assertions are unchanged.
+- Local evidence: full suite 2681 passed, 13 skipped, coverage 100%; ruff clean; Ring Zero
+  mutation gate passed. Hosted CI pending.
+
 ## 2026-11-12 — Cross-process L0 after erasure (#505) · PR #507
 
 - Base: `main@ba8e84a4f8f24bdb816ea8fb89485f1dedccd0a3`. Reproduced with separate
