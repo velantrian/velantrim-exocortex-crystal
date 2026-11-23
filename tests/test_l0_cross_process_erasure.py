@@ -29,7 +29,17 @@ from core.mcp_server import handle_message
 print(json.dumps({"ready": True}), flush=True)
 for line in sys.stdin:
     fact_id = json.loads(line)["fact_id"]
+    # get_fact() returns a copy, never the cached object itself. An L0 hit
+    # leaves the cached entry in place (same object, same content); a miss or
+    # failed revalidation pops it and caches a newly built record.
+    cached_before = memory._L0.get(fact_id)
     fact = memory.get_fact(fact_id)
+    served_from_l0 = (
+        fact is not None
+        and cached_before is not None
+        and memory._L0.get(fact_id) is cached_before
+        and fact == cached_before
+    )
     reply = handle_message({
         "jsonrpc": "2.0", "id": 1, "method": "tools/call",
         "params": {"name": "get_fact", "arguments": {"fact_id": fact_id}},
@@ -37,7 +47,7 @@ for line in sys.stdin:
     mcp = json.loads(reply["result"]["content"][0]["text"])
     print(json.dumps({
         "claim": None if fact is None else fact["claim"],
-        "served_from_l0": fact is not None and memory._L0.get(fact_id) is fact,
+        "served_from_l0": served_from_l0,
         "in_l0": fact_id in memory._L0,
         "mcp_found": mcp["found"],
     }), flush=True)
@@ -165,15 +175,19 @@ def test_this_process_l0_is_revalidated_after_other_process_erase(crystal_env):
     assert memory.get_fact("issue-505") is None
     assert memory.get_fact("issue-505") is None
     assert "issue-505" not in memory._L0
+    # Valid L0 hit served: the cached entry stays in place and the caller
+    # gets an equal copy (get_fact never hands out the cached object).
     cached = memory._L0["issue-505-kept"]
-    assert memory.get_fact("issue-505-kept") is cached  # valid L0 hit served
+    served = memory.get_fact("issue-505-kept")
+    assert served == cached and served is not cached
+    assert memory._L0["issue-505-kept"] is cached
 
 
 def test_this_process_l0_is_not_served_for_fact_recreated_after_erase(crystal_env):
     env = _this_process_env(crystal_env)
     memory.store_fact({"fact_id": "issue-505-r", "claim": "old", "source": "test"})
     old = memory.get_fact("issue-505-r")
-    assert memory._L0["issue-505-r"] is old
+    assert memory._L0["issue-505-r"] == old
 
     # Another process erases the fact and then stores a new row under the
     # same fact_id (whether such re-creation should be allowed after an
@@ -189,7 +203,7 @@ def test_this_process_l0_is_not_served_for_fact_recreated_after_erase(crystal_en
     fresh = memory.get_fact("issue-505-r")
     assert fresh["claim"] == "new"
     assert fresh["created_at"] != old["created_at"]
-    assert memory._L0["issue-505-r"] is fresh
+    assert memory._L0["issue-505-r"] == fresh
 
 
 # Process B: erase through the real erase_fact() path, then re-create a row
@@ -234,7 +248,7 @@ def test_l0_not_served_for_recreation_with_same_created_at(crystal_env, new_fact
                        "source": "test", "confidence": 0.2,
                        "metadata": {"generation": 1}})
     old = memory.get_fact("issue-505-t")
-    assert memory._L0["issue-505-t"] is old
+    assert memory._L0["issue-505-t"] == old
 
     done = subprocess.run(
         [sys.executable, "-c", _RECREATE_SAME_CREATED_AT, "issue-505-t",
