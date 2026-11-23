@@ -1336,8 +1336,9 @@ def transition_esm_if_unchanged(
         refreshed["metadata"] = json.loads(crypto.decrypt(refreshed["metadata"]))
         _l0_put(fact_id, refreshed)
         _l0_attach_row(fact_id, refreshed, refreshed_row)
-        # The caller adds transient truth_status/result fields; keep L0 isolated.
-        return dict(refreshed)
+        # The caller adds transient truth_status/result fields; keep L0 isolated
+        # (deep copy: a shallow copy would still share the metadata dict).
+        return copy.deepcopy(refreshed)
 
 
 def get_all_facts(epistemic_state: Optional[str] = None) -> list:
