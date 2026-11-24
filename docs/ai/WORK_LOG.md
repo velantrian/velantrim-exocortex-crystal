@@ -2,6 +2,20 @@
 
 This compact log records material decisions, exact evidence, limitations and hand-offs. It does not replace Git history, issues, pull requests, `CHANGELOG.md` or Notion.
 
+## 2026-11-24 — Restricted repeat ingest refused; #505 restrict probe restored · draft PR
+
+- Base: `main@3b9ada9` (after #512). Both items come from an independent review of #512.
+- `core/ingest.py`: refuse a restricted prior fact with `IngestError("RESTRICTED")` before any
+  write. New `tests/test_ingest_restricted.py` (5 tests, all fail without the guard):
+  auto-id repeat for Validated and Observed, explicit-id update, HTTP 422 without the record,
+  and ordinary duplicate handling after the restriction is lifted.
+- `tests/test_l0_cross_process_restrict.py`: the probe `result is cached` became always false
+  after #512 (get_fact returns a copy), so its assertion no longer caught a stale L0 read. It
+  now checks that the cached entry stayed in place and equals the returned record. With L0
+  revalidation disabled as a mutant, the test fails on this assertion.
+- Local evidence: full suite 2687 passed, 13 skipped, coverage 100%; ruff clean; Ring Zero
+  mutation gate passed. Hosted CI pending.
+
 ## 2026-11-23 — L0 record ownership and `_db()` close on schema failure · draft PR
 
 - Base: `main@acb0a03`. Found in code review (no exploit run): `get_fact()` handed out
