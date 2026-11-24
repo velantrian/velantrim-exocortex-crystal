@@ -1,5 +1,20 @@
 # ⚠️ Crystal Known Risks and Open Boundaries
 
+## 2026-11-24 — Repeat ingest processed restricted facts (GDPR Art. 18) · FIX IN DRAFT PR (NOT MERGED)
+
+**Status:** fixed only on the draft branch of this change; `main` still has the defect until
+it is merged. Resolve from Git history, not from this register.
+
+`core/ingest.py` never checked `restricted`. A repeat ingest of a restricted Validated fact
+recorded an occurrence and returned the full stored record (HTTP `/ingest` passed it to the
+caller); a repeat of a restricted non-Validated fact updated source, confidence and metadata
+through `store_fact()`. Fix: ordinary ingest refuses a restricted prior fact with
+`IngestError("RESTRICTED")` before any write and returns no record (HTTP 422).
+
+Residual, not closed: the check reads the prior record before the write; a restriction set
+between that read and the write is not re-checked inside the write transaction. Other write
+paths (`reconcile.*`, `update_fact`) are not covered by this change.
+
 ## 2026-11-23 — In-process L0 aliasing and connection leak on schema failure · FIX IN DRAFT PR (NOT MERGED)
 
 **Status:** fixed only on the draft branch of this change; `main` still has both defects
