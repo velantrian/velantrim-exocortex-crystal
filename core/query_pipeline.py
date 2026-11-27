@@ -23,6 +23,7 @@ from core.legacy_retrieval import (
     LegacyRetrievalUnavailable,
     bounded_legacy_retrieve,
 )
+from core.erasure import is_erased
 from core.memory import get_fact
 from core.pipeline import generate_answer, guardian, retrieve
 from core.retrieval_config import get_retrieval_config
@@ -165,9 +166,24 @@ def _blocked(
     return result
 
 
+def _current_erasure_blocks(fact_id: str) -> bool:
+    """True if the current L1 erasure registry has a tombstone for fact_id.
+
+    After a completed erase, memory.get_fact(fact_id) is None because the L1
+    row was physically deleted. TrustSnapshot.from_records(l1=None) and
+    retrieve() do not treat that absence as a tombstone, so an L3 hit from a
+    restored old database can otherwise be resurfaced. The authoritative
+    current record is the live erasure_log (erasure.is_erased /
+    memory.get_tombstone), not the L3 node under inspection.
+    """
+    return is_erased(fact_id)
+
+
 def _resolve_canonical_fact(item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     fact_id = item.get("id") or item.get("fact_id")
     if not isinstance(fact_id, str) or not fact_id:
+        return None
+    if _current_erasure_blocks(fact_id):
         return None
     node = get_l3_graph().get_fact(fact_id)
     if node is None:

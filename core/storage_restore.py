@@ -30,6 +30,7 @@ def restore_backup(
     *,
     target_database: Path | str,
     target_profile: Path | str,
+    receipt_path: Path | str | None = None,
 ) -> dict[str, Any]:
     """Restore a verified bundle to new, inactive database/profile targets."""
 
@@ -44,17 +45,22 @@ def restore_backup(
         active_profile = storage_profile_path()
     except StorageProfileError as exc:
         raise StorageOperationError(str(exc)) from exc
-    if target_profile_file == active_profile:
-        raise StorageOperationError(
-            "restore target profile must not be the active storage profile"
+    if receipt_path is None:
+        restore_receipt_file = target_profile_file.with_name(
+            f"{target_profile_file.name}.restore-receipt.json"
         )
-    restore_receipt_file = target_profile_file.with_name(
-        f"{target_profile_file.name}.restore-receipt.json"
-    )
+    else:
+        restore_receipt_file = _resolve_operator_path(
+            receipt_path, "restore receipt target"
+        )
     targets = (target_db, target_profile_file, restore_receipt_file)
+    if active_profile in targets:
+        raise StorageOperationError("restore target must not be the active storage profile")
     for target in targets:
         if target.exists() or target.is_symlink():
             raise StorageOperationError(f"restore target already exists: {target}")
+        if target.is_relative_to(bundle):
+            raise StorageOperationError(f"restore target is inside the source backup bundle: {target}")
     if len(set(targets)) != len(targets):
         raise StorageOperationError(
             "restore database, profile and receipt targets must differ"
