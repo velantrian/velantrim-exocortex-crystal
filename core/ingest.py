@@ -19,7 +19,7 @@ from core.memory import (
     store_fact,
     get_fact,
     transition_esm_if_unchanged,
-    _remember_l3_admission,
+    _l3_admission_identity, _project_l3_admission,
     ClaimIdentityError,
     TerminalStateError,
     IngestStateChangedError,
@@ -28,7 +28,6 @@ from core.memory import (
 )
 from core.l3_graph import get_l3_graph
 from core.embedding import assert_compatible_embedder
-from core.queue import get_outbox_queue
 from core.pipeline import guardian, truth_gate, _truth_status_for
 from core.reconcile import record_occurrence, find_conflicts, REL_CONTRADICTS, _now
 from core.ingest_identity import normalize_claim, normalized_ingest_id
@@ -411,7 +410,10 @@ def ingest(
     # Passed the gates → attempt a claim-version-bound Validated promotion.
     # This short transaction re-checks the persisted identity, revision, state,
     # and gate inputs atomically; no SQLite write lock is held during the gates.
-    promoted_fact = transition_esm_if_unchanged(fact, "Validated")
+    verdict = _truth_status_for(ct, source_status)
+    promoted_fact = transition_esm_if_unchanged(
+        fact, "Validated", admission_verdict=verdict,
+    )
     if promoted_fact is None:
         adaptation.record_block()
         return {
@@ -423,7 +425,7 @@ def ingest(
             "conflicts": conflicts, "fact": fact,
         }
     fact = promoted_fact
-    fact["truth_status"] = _truth_status_for(ct, source_status)
+    fact["truth_status"] = verdict
     if not explicit_fact_id:
         # Only after the exact L1 snapshot passed Guardian/TruthGate and the
         # claim-version-bound ESM CAS committed may an incomplete index rebuild.
@@ -434,17 +436,11 @@ def ingest(
     graph = get_l3_graph()
     # Guard against mixing embedders: merge puts the claim's vector into the store.
     assert_compatible_embedder(graph)
-    # The promoted snapshot includes L1 timestamps and metadata.
+    # The promotion transaction already committed the recovery obligation.
     try:
-        graph.merge_fact(fact)
+        if not _project_l3_admission(graph, _l3_admission_identity(fact, verdict)):
+            raise RuntimeError("committed admission projection is no longer applicable")
     except Exception as exc:  # noqa: BLE001 — preserve post-gate recovery state
-        # Direct ingest and the main query pipeline share the same cross-store
-        # limitation: L1 and L3 have no transaction. Once the ESM transition has
-        # committed, an L3 failure must be recoverable rather than leaving a
-        # Validated/L3-missing fact with no repair record. Reuse the existing
-        # outbox; it remains a secondary-sync mechanism and grants no authority.
-        _remember_l3_admission(fact)
-        get_outbox_queue().enqueue(fid)
         metrics.incr("ingest.blocked")
         adaptation.record_block()
         return {

@@ -22,7 +22,7 @@ from typing import List, Dict, Any, Optional
 from core.trace import build_trace, promote_trace, format_trace
 from core.memory import (
     store_fact, get_fact, get_tombstone, _repair_fact_from_canon,
-    _remember_l3_admission, _l3_admission_verdict, _forget_l3_admission,
+    _pending_l3_admissions, _l3_admission_identity, _project_l3_admission,
     transition_esm_if_unchanged, ESM_TRANSITIONS, l3_secondary_sync_admissible,
     DEFAULT_SOURCE_STATUS, CLAIM_TYPES, SOURCE_STATUSES,
 )
@@ -1192,50 +1192,58 @@ def _l3_payload(fact: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def drain_l3_outbox(graph=None) -> int:
-    """
-    Re-merge into L3 the facts whose write to the canon previously failed (self-heal).
+    """Replay committed admissions before polling the configured queue.
 
-    L3 and SQLite do not share a transaction: on a merge failure a fact stays Validated in
-    SQLite but without a node in the graph (see enqueue in run()). Here we idempotently
-    retry the MERGE for the queue and remove the successful ones. If the backend is still
-    unavailable — we leave it in the queue and stop trying until next time.
-    Returns the number of successfully re-merged facts.
+    The SQLite admission ledger is authoritative for first projection. Redis
+    or SQLite queue entries without a ledger record are only secondary sync
+    work: they may preserve an existing verdict, never create one.
     """
     graph = graph or get_l3_graph()
-    queue = get_outbox_queue()
     healed = 0
-    for fid in queue.pending():
+    for obligation in _pending_l3_admissions():
+        try:
+            if _project_l3_admission(graph, obligation):
+                healed += 1
+        except Exception as exc:  # noqa: BLE001 — durable intent remains pending
+            logger.warning("L3 admission recovery waiting (%s)", type(exc).__name__)
+            break
+
+    # No automatic backend fallback. A transport outage cannot erase or
+    # prevent discovery of the committed local admission obligations.
+    try:
+        queue = get_outbox_queue()
+        queued = queue.pending()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("L3 secondary queue unavailable (%s)", type(exc).__name__)
+        return healed
+    pending_admissions = {item["fact_id"] for item in _pending_l3_admissions()}
+    for fid in queued:
+        if fid in pending_admissions:
+            continue
         fact = get_fact(fid)
         if fact is None or get_tombstone(fid) is not None:
             queue.clear(fid)
-            _forget_l3_admission(fid)
             continue
         if not l3_secondary_sync_admissible(
-            fact,
-            graph=graph,
-            allow_missing_validated_recovery=True,
+            fact, graph=graph, allow_missing_validated_recovery=True,
         ):
-            queue.clear(fid)  # outbox is for post-gate recovery only
+            queue.clear(fid)
             continue
         try:
             existing = graph.get_fact(fid)
-            if existing is None:
-                verdict = _l3_admission_verdict(fact)
-            elif all(existing.get(key) == fact.get(key)
-                     for key in ("claim", "source", "claim_type", "source_status")):
+            verdict = None
+            if existing is not None and all(existing.get(key) == fact.get(key)
+                    for key in ("claim", "source", "claim_type", "source_status")):
                 verdict = existing.get("truth_status")
-            else:
-                verdict = None
             if fact.get("restricted") or not _in(verdict, KNOWN_TRUTH_STATUSES):
                 logger.warning("drain_l3_outbox: %s has no usable projection authority", fid)
                 continue
             graph.merge_fact({**fact, "truth_status": verdict})
-        except Exception as e:  # noqa: BLE001 — backend still unavailable, do not lose the queue
+        except Exception as exc:  # noqa: BLE001
             logger.warning(
-                "drain_l3_outbox: %s is still waiting (%s)", fid, type(e).__name__)
+                "drain_l3_outbox: %s is still waiting (%s)", fid, type(exc).__name__)
             break
         queue.clear(fid)
-        _forget_l3_admission(fid)
         healed += 1
     return healed
 
@@ -1355,18 +1363,16 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None, *,
             if (persisted is None or persisted.get("restricted")
                     or any(persisted.get(key) != fact.get(key) for key in gated_fields)):
                 continue
-            payload = transition_esm_if_unchanged(persisted, "Validated")
+            verdict = _truth_status_for(persisted["claim_type"], persisted["source_status"])
+            payload = transition_esm_if_unchanged(
+                persisted, "Validated", admission_verdict=verdict,
+            )
             if payload is None:
                 continue
-            payload["truth_status"] = _truth_status_for(payload["claim_type"], payload["source_status"])
+            if not _project_l3_admission(graph, _l3_admission_identity(payload, verdict)):
+                raise RuntimeError("committed admission projection is no longer applicable")
             fact["epistemic_state"] = payload["epistemic_state"]
-            fact["truth_status"] = payload["truth_status"]
-            try:
-                graph.merge_fact(payload)
-            except Exception:
-                _remember_l3_admission(payload)
-                get_outbox_queue().enqueue(fact["fact_id"])
-                raise
+            fact["truth_status"] = verdict
     except Exception as e:  # noqa: BLE001 — an L3 failure must not crash the pipeline
         logger.error("L3 promotion failed: %s", e)
         adaptation.record_block()
