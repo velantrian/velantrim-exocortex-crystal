@@ -240,6 +240,77 @@ def test_find_conflicts_surfaces_near_but_different_canonical_fact():
     assert "cap1" in {h["fact_id"] for h in hits}
 
 
+def test_find_conflicts_obeys_current_erasure_registry():
+    from core.memory import write_tombstone, get_tombstone, delete_fact_l1
+
+    _validated_worldfact("retired", "The capital of Meridia is Ashfall")
+    _validated_worldfact("current", "The capital of Meridia is Brightholm")
+    query = "The capital of Meridia is Stonegate"
+    assert {hit["fact_id"] for hit in find_conflicts(query)} == {"retired", "current"}
+
+    write_tombstone("retired", reason="synthetic regression", actor="test")
+    assert delete_fact_l1("retired")
+    assert get_tombstone("retired") is not None
+    assert get_l3_graph().get_fact("retired") is not None
+    assert get_fact("retired") is None
+    assert [hit["fact_id"] for hit in find_conflicts(query)] == ["current"]
+
+
+def test_find_conflicts_reads_durable_tombstone_after_process_restart(tmp_path):
+    import os
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    env = dict(os.environ)
+    env.update({
+        "HOME": str(tmp_path),
+        "PYTHONPATH": str(Path(__file__).resolve().parents[1]),
+        "VELANTRIM_DB": str(tmp_path / "memory.db"),
+        "VELANTRIM_L3_BACKEND": "sqlite",
+        "VELANTRIM_L3_PATH": str(tmp_path / "l3.db"),
+        "VELANTRIM_STORAGE_PROFILE_PATH": str(tmp_path / "storage-profile.json"),
+        "VELANTRIM_EMBEDDER": "hashing",
+        "VELANTRIM_GENERATOR": "extractive",
+        "VELANTRIM_QUEUE_BACKEND": "sqlite",
+        "VELANTRIM_DEMO_SEED": "0",
+    })
+    seed = """
+from core.memory import store_fact, transition_esm, get_fact, write_tombstone, delete_fact_l1
+from core.l3_graph import get_l3_graph
+from core.reconcile import find_conflicts
+
+for fid, city in (("retired", "Ashfall"), ("current", "Brightholm")):
+    store_fact({"fact_id": fid, "claim": "The capital of Meridia is " + city,
+                "source": "synthetic", "confidence": 0.9, "claim_type": "WORLD_FACT"})
+    transition_esm(fid, "Validated")
+    get_l3_graph().merge_fact(get_fact(fid))
+query = "The capital of Meridia is Stonegate"
+assert {hit["fact_id"] for hit in find_conflicts(query)} == {"retired", "current"}
+write_tombstone("retired", reason="synthetic regression", actor="test")
+assert delete_fact_l1("retired")
+assert get_l3_graph().get_fact("retired") is not None
+"""
+    reader = """
+from core.memory import get_fact, get_tombstone
+from core.l3_graph import get_l3_graph
+from core.reconcile import find_conflicts
+
+assert get_tombstone("retired") is not None
+assert get_fact("retired") is None
+assert get_l3_graph().get_fact("retired") is not None
+assert get_l3_graph().get_fact("current") is not None
+assert [hit["fact_id"] for hit in find_conflicts(
+    "The capital of Meridia is Stonegate")] == ["current"]
+"""
+    for script in (seed, reader):
+        result = subprocess.run(
+            [sys.executable, "-c", script], env=env, cwd=tmp_path,
+            capture_output=True, text=True, timeout=60,
+        )
+        assert result.returncode == 0, result.stdout + result.stderr
+
+
 def test_find_conflicts_excludes_self_exact_repeat_and_unrelated():
     _validated_worldfact("cap1", "The capital of Australia is Sydney")
     _validated_worldfact("bee1", "Bees communicate through waggle dance")
