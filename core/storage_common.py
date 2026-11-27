@@ -8,6 +8,7 @@ import json
 import os
 import shutil
 import sqlite3
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping
@@ -108,6 +109,11 @@ def _write_new_json(path: Path, payload: Mapping[str, Any]) -> None:
 def _read_json_object(path: Path, label: str) -> dict[str, Any]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
+    except UnicodeDecodeError as exc:
+        # Name the failure class only: never echo bytes of a damaged artifact.
+        raise StorageOperationError(
+            f"cannot read valid {label}: {type(exc).__name__}"
+        ) from exc
     except (OSError, json.JSONDecodeError) as exc:
         raise StorageOperationError(f"cannot read valid {label}: {exc}") from exc
     if not isinstance(payload, dict):
@@ -168,7 +174,85 @@ def _connect_readonly(path: Path) -> sqlite3.Connection:
     return connection
 
 
+SQLITE_LOCAL_BACKENDS = frozenset({"sqlite", "ladybug"})
+SQLITE_SIDE_SUFFIXES = ("-wal", "-shm", "-journal")
+
+
+def _side_path(path: Path, suffix: str) -> Path:
+    return path.with_name(path.name + suffix)
+
+
+def _active_locator_paths(active_profile: Path) -> frozenset[Path]:
+    """File paths an existing active profile protects, even when the DB is gone.
+
+    A missing profile protects nothing (nothing is deployed). A profile that
+    exists but cannot be read or validated fails closed, so a restore never
+    guesses which path is active.
+    """
+
+    if not (active_profile.exists() or active_profile.is_symlink()):
+        return frozenset()
+    profile = _load_profile(active_profile)
+    if profile["backend"] not in SQLITE_LOCAL_BACKENDS:
+        return frozenset()
+    locator = _resolve(profile["configuration"]["path"])
+    return frozenset(
+        [locator] + [_side_path(locator, suffix) for suffix in SQLITE_SIDE_SUFFIXES]
+    )
+
+
+def _require_no_pending_journal(database: Path) -> None:
+    """Reject a snapshot whose WAL or rollback journal holds unhashed state.
+
+    Empty ``-wal`` files and ``-shm`` index files are derived and harmless;
+    anything the bundle hash does not cover must not be silently dropped.
+    """
+
+    for suffix in ("-wal", "-journal"):
+        side = _side_path(database, suffix)
+        if side.is_symlink() or (
+            side.exists() and (not side.is_file() or side.stat().st_size > 0)
+        ):
+            raise StorageOperationError(
+                f"backup bundle has an unaccounted SQLite {suffix[1:]} file: {side}"
+            )
+
+
+def _require_standalone_snapshot(database: Path) -> None:
+    """A published snapshot is one rollback-journal file with no side files."""
+
+    leftovers = [
+        suffix
+        for suffix in SQLITE_SIDE_SUFFIXES
+        if _side_path(database, suffix).exists()
+    ]
+    if leftovers:
+        raise StorageOperationError(
+            "backup snapshot is not self-contained; side files: " + ", ".join(leftovers)
+        )
+    with database.open("rb") as handle:
+        header = handle.read(20)
+    if header[18:20] != b"\x01\x01":
+        raise StorageOperationError(
+            "backup snapshot is not in rollback-journal mode"
+        )
+
+
 def _sqlite_metrics(path: Path) -> dict[str, Any]:
+    """Inspect a SQLite file on a private copy so the original gains no side files."""
+
+    if not path.is_file():
+        raise StorageOperationError(f"SQLite storage file does not exist: {path}")
+    try:
+        with tempfile.TemporaryDirectory(prefix="velantrim-inspect-") as scratch:
+            private = Path(scratch) / BUNDLE_DATABASE
+            shutil.copyfile(path, private)
+            return _sqlite_metrics_in_place(private)
+    except OSError as exc:
+        raise StorageOperationError(f"cannot inspect SQLite storage: {exc}") from exc
+
+
+def _sqlite_metrics_in_place(path: Path) -> dict[str, Any]:
     connection = _connect_readonly(path)
     try:
         integrity_rows = [row[0] for row in connection.execute("PRAGMA integrity_check")]
