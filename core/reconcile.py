@@ -26,6 +26,7 @@ from typing import Dict, Any, Optional, List
 
 from core.memory import (
     get_fact,
+    get_tombstone,
     store_fact,
     transition_esm,
     update_fact,
@@ -401,6 +402,9 @@ def find_conflicts(
     for node in graph.vector_search(q_vec, k=max(k * 3, k)):
         candidate_id = node.get("fact_id")
         if candidate_id == fact_id:
+            continue
+        # Erasure is authoritative even if L3 still holds a physical node.
+        if candidate_id and get_tombstone(candidate_id) is not None:
             continue
         # Backend-independent restriction check: LadybugL3Graph's `_COLS` is a
         # fixed typed-column list that does not include `restricted`, so its

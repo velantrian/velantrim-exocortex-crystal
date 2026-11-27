@@ -240,6 +240,21 @@ def test_find_conflicts_surfaces_near_but_different_canonical_fact():
     assert "cap1" in {h["fact_id"] for h in hits}
 
 
+def test_find_conflicts_obeys_current_erasure_registry(monkeypatch):
+    from core import reconcile
+
+    _validated_worldfact("retired", "The capital of Meridia is Ashfall")
+    _validated_worldfact("current", "The capital of Meridia is Brightholm")
+    monkeypatch.setattr(
+        reconcile, "get_tombstone",
+        lambda fact_id: {"fact_id": fact_id} if fact_id == "retired" else None,
+    )
+
+    hits = find_conflicts("The capital of Meridia is Stonegate")
+
+    assert [hit["fact_id"] for hit in hits] == ["current"]
+
+
 def test_find_conflicts_excludes_self_exact_repeat_and_unrelated():
     _validated_worldfact("cap1", "The capital of Australia is Sydney")
     _validated_worldfact("bee1", "Bees communicate through waggle dance")
