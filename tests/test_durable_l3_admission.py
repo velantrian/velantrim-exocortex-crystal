@@ -25,6 +25,11 @@ from core import memory, pipeline
 from core.l3_graph import get_l3_graph
 
 entrypoint, boundary = sys.argv[1:]
+if os.environ.get("CRYSTAL_TEST_REDIS_DOWN") == "1":
+    from core import queue
+    def unavailable():
+        raise ConnectionError("synthetic Redis connection failure")
+    queue._redis_client = unavailable
 ingestion = importlib.import_module("core.ingest")
 fid = "durable-admission"
 claim = "A synthetic durable admission sample about copper and quartz."
@@ -68,9 +73,15 @@ os._exit(73)
 """
 
 _READER = r"""
+import os
 import sys
 from core import memory, pipeline
 from core.l3_graph import get_l3_graph
+if os.environ.get("CRYSTAL_TEST_REDIS_DOWN") == "1":
+    from core import queue
+    def unavailable():
+        raise ConnectionError("synthetic Redis connection failure")
+    queue._redis_client = unavailable
 boundary = sys.argv[1]
 fid = "durable-admission"
 fact = memory.get_fact(fid)
@@ -334,6 +345,30 @@ def test_secondary_transport_acknowledges_only_current_replay():
 
 
 def test_no_local_secondary_entry_is_not_replayed():
+    assert memory._pending_l3_admissions() == []
     assert not memory._project_l3_secondary(
         get_l3_graph(), get_outbox_queue(), "missing-local-entry",
     )
+
+
+@pytest.mark.parametrize("entrypoint", ["ingest", "run"])
+def test_restart_recovers_without_redis_notification(child_env, entrypoint):
+    child_env["VELANTRIM_QUEUE_BACKEND"] = "auto"
+    child_env["CRYSTAL_TEST_REDIS_DOWN"] = "1"
+    profile = Path(child_env["VELANTRIM_QUEUE_PROFILE_PATH"])
+    profile.write_text("redis\n", encoding="ascii")
+    _child(child_env, _WRITER, entrypoint, "after_commit", exit_code=_EXIT)
+    _child(child_env, _READER, "after_commit")
+    assert profile.read_text(encoding="ascii") == "redis\n"
+
+
+def test_failed_recovery_keeps_durable_obligation(monkeypatch):
+    _, obligation = _stage()
+    graph = get_l3_graph()
+    with monkeypatch.context() as patch:
+        patch.setattr(graph, "merge_fact", Mock(side_effect=RuntimeError("unavailable")))
+        assert pipeline.drain_l3_outbox() == 0
+    assert memory._pending_l3_admissions() == [obligation]
+    assert memory.pending_l3_writes() == [_FID]
+    assert pipeline.drain_l3_outbox() == 1
+    assert memory._pending_l3_admissions() == []
