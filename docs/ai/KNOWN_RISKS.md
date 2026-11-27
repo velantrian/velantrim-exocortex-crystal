@@ -1,5 +1,39 @@
 # ⚠️ Crystal Known Risks and Open Boundaries
 
+## 2026-11-24 — Repeat ingest processed restricted facts (GDPR Art. 18) · FIX IN DRAFT PR (NOT MERGED)
+
+**Status:** fixed only on the draft branch of this change; `main` still has the defect until
+it is merged. Resolve from Git history, not from this register.
+
+`core/ingest.py` never checked `restricted`. A repeat ingest of a restricted Validated fact
+recorded an occurrence and returned the full stored record (HTTP `/ingest` passed it to the
+caller); a repeat of a restricted non-Validated fact updated source, confidence and metadata
+through `store_fact()`. Fix: ordinary ingest refuses a restricted prior fact with
+`IngestError("RESTRICTED")` before any write and returns no record (HTTP 422).
+
+Residual, not closed: the check reads the prior record before the write; a restriction set
+between that read and the write is not re-checked inside the write transaction. Other write
+paths (`reconcile.*`, `update_fact`) are not covered by this change.
+
+## 2026-11-23 — In-process L0 aliasing and connection leak on schema failure · FIX IN DRAFT PR (NOT MERGED)
+
+**Status:** fixed only on the draft branch of this change; `main` still has both defects
+until it is merged. Resolve from Git history, not from this register.
+
+- L0 aliasing: `memory.get_fact()` returned the very dict held in the process-local L0
+  cache (and `store_fact()` cached the caller's own metadata dict; `return_persisted`
+  returned a shallow copy). The L0 freshness check compares the raw L1 row, not the
+  cached dict, so a caller mutating a returned object (top-level fields such as
+  `restricted`, or nested `metadata`) changed later reads in the same process without
+  any write. The SQLite row was never changed; other processes were not affected.
+  Fix: L0 owns deep copies; every read returns a deep copy.
+- `_db()` ran `_ensure_schema(conn)` before the `try/finally` that closes the connection,
+  so a schema or migration failure leaked the connection. Fix: schema setup is inside
+  the guarded block.
+- Covered by `tests/test_l0_isolation_and_db_close.py` (8 of 9 tests fail on the unfixed
+  code; the ninth is a control). Not covered: L3 node dicts and other caches; erasure and
+  restore durability (separate, larger contract question).
+
 ## 2026-11-13 — Cross-process L0 staleness after erasure/restriction (#505) · MITIGATED IN VERSIONS WITH THE #505 FIX; RESIDUAL LIMITATIONS OPEN
 
 **Status:** mitigated only in code versions that contain the #505 fix (PR #507); versions

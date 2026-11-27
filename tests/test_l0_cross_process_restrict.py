@@ -90,7 +90,15 @@ def _observed_get_fact(fact_id):
         cached = memory._L0.get(fact_id)
     LAST.update(calls=LAST.get("calls", 0) + 1, l0_entry_before_read=cached is not None)
     result = _real_get_fact(fact_id)
-    LAST["returned_cached_l0_object"] = cached is not None and result is cached
+    # get_fact() returns a copy, never the cached object (#512), so identity
+    # with the returned object proves nothing. A read served from the L0 entry
+    # leaves that same entry in place and returns an equal record; a
+    # revalidation that rejects it pops it and caches a newly built record.
+    with memory._L0_LOCK:
+        after = memory._L0.get(fact_id)
+    LAST["served_from_l0_entry"] = (
+        cached is not None and after is cached and result == cached
+    )
     return result
 
 
@@ -226,7 +234,7 @@ def test_running_reader_sees_restriction_committed_by_other_process(env, readers
     first = mcp_only.send({"op": "read", "fact_id": fact_id})  # M's first read after B
     assert first["pid"] == mcp_only.ready["pid"]
     assert first["calls"] == 1 and first["l0_entry_before_read"] is True
-    assert first["returned_cached_l0_object"] is False, "served M's stale L0 entry"
+    assert first["served_from_l0_entry"] is False, "served M's stale L0 entry"
     assert first["mcp_get_fact"] == {
         "found": True, "fact_id": fact_id, "restricted": True,
         "reason": "RESTRICTED_BY_POLICY",
