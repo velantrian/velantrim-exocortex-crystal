@@ -22,6 +22,8 @@ Crystal — **local-first исследовательская и инженерн
 
 `v0.3.0` · 🎯 **100% line-coverage gate** · 🧬 **Ring Zero mutation gate** · ✅ **9 permanent CI jobs** · 🐍 **standard-library-first default runtime** · ⚖️ **AGPL-3.0**
 
+Границы допуска свидетельств и памяти Crystal действуют при смене языковых моделей. Для подключения к отдельному рантайму Titan нужен явный мост с сохранением источников, области применимости и владения состоянием. См. [принцип и требования к интеграции](docs/design/GOVERNED_MODEL_ENVIRONMENT.md).
+
 ## 👋 Что такое Crystal
 
 Обычная retrieval-система хорошо отвечает на вопрос «что выглядит релевантным?». Crystal задаёт дополнительные вопросы: откуда информация пришла, поддерживает ли она ту же proposition, может ли быть evidence, была ли contradiction adjudicated, что разрешено хранить как trusted state и что система вправе представить как grounded answer.

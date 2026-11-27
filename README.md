@@ -16,6 +16,8 @@ Crystal is a **local-first research and implementation line for auditable AI mem
 
 `v0.3.0` · 🎯 **100% line-coverage gate** · 🧬 **Ring Zero mutation gate** · ✅ **9 permanent CI jobs** · 🐍 **standard-library-first default runtime** · ⚖️ **AGPL-3.0**
 
+Crystal's evidence and memory boundaries apply across replaceable language models. An explicit bridge to Titan's independent memory runtime must preserve sources, scope and ownership. See [the design and integration requirements](docs/design/GOVERNED_MODEL_ENVIRONMENT.md).
+
 ## 👋 What Crystal is — and why it exists
 
 Retrieval systems are good at answering:
