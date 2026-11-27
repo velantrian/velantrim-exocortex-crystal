@@ -121,6 +121,9 @@ def create_app():
 
     class AskRequest(BaseModel):
         query: str = Field(..., min_length=1, max_length=_MAX_UTTERANCE)
+        asked_object: Optional[str] = None
+        as_of: Optional[str] = None
+        temporal_scope: Optional[str] = None
 
     class VerifyRequest(BaseModel):
         receipt: Dict[str, Any]
@@ -173,12 +176,19 @@ def create_app():
 
     @app.post("/ask", dependencies=_guarded)
     async def ask_endpoint(req: AskRequest) -> Dict[str, Any]:
-        return await aio.arun(req.query)
+        return await aio.arun(req.query, **{k: v for k, v in dict(
+            asked_object=req.asked_object, as_of=req.as_of,
+            temporal_scope=req.temporal_scope).items() if v is not None})
 
     @app.get("/receipt", dependencies=_guarded)
     async def receipt_endpoint(
-            q: str = Query(..., min_length=1, max_length=_MAX_UTTERANCE)) -> Dict[str, Any]:
-        result = await aio.arun(q)
+            q: str = Query(..., min_length=1, max_length=_MAX_UTTERANCE),
+            asked_object: Optional[str] = Query(None),
+            as_of: Optional[str] = Query(None),
+            temporal_scope: Optional[str] = Query(None)) -> Dict[str, Any]:
+        result = await aio.arun(q, **{k: v for k, v in dict(
+            asked_object=asked_object, as_of=as_of,
+            temporal_scope=temporal_scope).items() if v is not None})
         try:
             return await asyncio.to_thread(provenance.build_receipt, result)
         except ValueError as e:

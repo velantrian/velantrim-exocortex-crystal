@@ -217,6 +217,162 @@ def test_lock_snapshot_fail_closed_on_open_identity_and_read_races(
     assert unreadable["status"] == "FAIL" and "read lock" in unreadable["error"]
 
 
+@pytest.mark.parametrize("custom_receipt", [False, True], ids=["default", "custom"])
+def test_restore_cli_writes_receipt(
+    store: tuple[Path, Path],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    custom_receipt: bool,
+) -> None:
+    active_profile, _ = store
+    monkeypatch.setenv("VELANTRIM_STORAGE_PROFILE_PATH", str(active_profile))
+    bundle = tmp_path / "backup"
+    backup.create_backup(bundle, profile_path=active_profile)
+    # A sibling with the same name prefix is outside the source bundle.
+    target_db = tmp_path / "backup-restored" / "l3.db"
+    target_profile = target_db.with_suffix(".json")
+    default_receipt = target_profile.with_name(
+        f"{target_profile.name}.restore-receipt.json"
+    )
+    expected_receipt = default_receipt
+    args = [
+        "restore", str(bundle), "--target-database", str(target_db),
+        "--target-profile", str(target_profile),
+    ]
+    if custom_receipt:
+        monkeypatch.chdir(tmp_path)
+        expected_receipt = tmp_path / "receipts" / "restore.json"
+        args.extend(["--receipt", "receipts/restore.json"])
+
+    assert ops.main(args) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["status"] == "PASS"
+    assert report["restore_receipt"] == str(expected_receipt)
+    receipt = json.loads(expected_receipt.read_text())
+    assert receipt == report["receipt"]
+    assert receipt["activation"] == "candidate_profile_only"
+    assert receipt["target_database_sha256"] == common._sha256_file(target_db)
+    assert common._sqlite_metrics(target_db)["counts"]["nodes"] == 2
+    assert json.loads(target_profile.read_text())["configuration"]["path"] == str(target_db)
+    assert default_receipt.exists() is (not custom_receipt)
+
+
+@pytest.mark.parametrize("receipt_target", ["existing", "active-profile"])
+def test_restore_cli_rejects_unavailable_receipt_target(
+    store: tuple[Path, Path],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    receipt_target: str,
+) -> None:
+    source_profile, _ = store
+    bundle = tmp_path / "backup"
+    backup.create_backup(bundle, profile_path=source_profile)
+    receipt = tmp_path / "reserved.json"
+    target_db = tmp_path / "candidate.db"
+    target_profile = tmp_path / "candidate.json"
+    if receipt_target == "existing":
+        monkeypatch.setenv("VELANTRIM_STORAGE_PROFILE_PATH", str(source_profile))
+        receipt.write_text("existing receipt")
+        expected_error = "restore target already exists"
+    else:
+        monkeypatch.setenv("VELANTRIM_STORAGE_PROFILE_PATH", str(receipt))
+        expected_error = "active storage profile"
+
+    assert ops.main([
+        "restore", str(bundle), "--target-database", str(target_db),
+        "--target-profile", str(target_profile), "--receipt", str(receipt),
+    ]) == 2
+    assert expected_error in json.loads(capsys.readouterr().out)["error"]
+    assert not target_db.exists() and not target_profile.exists()
+    if receipt_target == "existing":
+        assert receipt.read_text() == "existing receipt"
+    else:
+        assert not receipt.exists()
+
+
+@pytest.mark.parametrize("existing", [False, True], ids=["dangling", "existing-file"])
+def test_restore_cli_rejects_receipt_symlink(
+    store: tuple[Path, Path],
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    existing: bool,
+) -> None:
+    profile, _ = store
+    bundle = tmp_path / "backup"
+    backup.create_backup(bundle, profile_path=profile)
+    destination = tmp_path / "destination.json"
+    if existing:
+        destination.write_text("original content")
+    receipt = tmp_path / "receipt.json"
+    receipt.symlink_to(destination)
+    target_db = tmp_path / "candidate.db"
+    target_profile = tmp_path / "candidate.json"
+
+    assert ops.main([
+        "restore", str(bundle), "--target-database", str(target_db),
+        "--target-profile", str(target_profile), "--receipt", str(receipt),
+    ]) == 2
+    assert "symbolic link" in json.loads(capsys.readouterr().out)["error"]
+    assert not target_db.exists() and not target_profile.exists()
+    assert receipt.readlink() == destination
+    if existing:
+        assert destination.read_text() == "original content"
+    else:
+        assert not destination.exists()
+
+
+@pytest.mark.parametrize("receipt_name", ["candidate.db", "candidate.json"])
+def test_restore_cli_requires_distinct_receipt_target(
+    store: tuple[Path, Path],
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    receipt_name: str,
+) -> None:
+    profile, _ = store
+    bundle = tmp_path / "backup"
+    backup.create_backup(bundle, profile_path=profile)
+    target_db = tmp_path / "candidate.db"
+    target_profile = tmp_path / "candidate.json"
+
+    assert ops.main([
+        "restore", str(bundle), "--target-database", str(target_db),
+        "--target-profile", str(target_profile), "--receipt", str(tmp_path / receipt_name),
+    ]) == 2
+    assert "targets must differ" in json.loads(capsys.readouterr().out)["error"]
+    assert not target_db.exists() and not target_profile.exists()
+
+
+@pytest.mark.parametrize("target_flag", ["--target-database", "--target-profile", "--receipt"])
+def test_restore_cli_keeps_outputs_outside_source_bundle(
+    store: tuple[Path, Path],
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    target_flag: str,
+) -> None:
+    profile, _ = store
+    bundle = tmp_path / "backup"
+    backup.create_backup(bundle, profile_path=profile)
+    before = {p.name: p.read_bytes() for p in bundle.iterdir()}
+    bundle_alias = tmp_path / "same-backup"
+    bundle_alias.symlink_to(bundle, target_is_directory=True)
+    targets = {
+        "--target-database": tmp_path / "candidate.db",
+        "--target-profile": tmp_path / "candidate.json",
+        "--receipt": tmp_path / "restore.json",
+    }
+    targets[target_flag] = bundle_alias / targets[target_flag].name
+    args = ["restore", str(bundle)]
+    for flag, path in targets.items():
+        args.extend([flag, str(path)])
+
+    assert ops.main(args) == 2
+    assert "inside the source backup bundle" in json.loads(capsys.readouterr().out)["error"]
+    assert all(not path.exists() for path in targets.values())
+    assert {p.name: p.read_bytes() for p in bundle.iterdir()} == before
+
+
 def test_main_dispatch_and_exit_codes(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
     monkeypatch.setattr(ops, "status_report", lambda **_k: {"status": "PASS", "kind": "status"})
     assert ops.main(["status"]) == 0

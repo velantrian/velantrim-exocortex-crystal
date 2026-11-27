@@ -1,0 +1,38 @@
+{
+  "scenario_id": "AC06",
+  "visibility": "COORDINATOR ONLY / not model-facing",
+  "source_design": "results/next_test_vs_always_current_v2_astra_2026-11-08.md §4 AC06",
+  "additional_source": "results/next_test_vs_always_current_2026-11-08.md §4.2 S06",
+  "context": "Это синтетическая ситуация; реальные операции не выполняются.",
+  "records": [
+    {
+      "time": "2026-10-28 09:00 Europe/Berlin",
+      "source": "прежняя просьба о формате задания M",
+      "object": "M",
+      "statement": "Табличный ответ.",
+      "caveats": ""
+    },
+    {
+      "time": "2026-11-08 09:30 Europe/Berlin",
+      "source": "владелец задания M; регистр M отражает эту просьбу",
+      "object": "M",
+      "statement": "Формат заменён на связный абзац.",
+      "caveats": "Новая просьба ограничена только заданием M.",
+      "mark": "CURRENT"
+    },
+    {
+      "time": "2026-11-08 10:05 Europe/Berlin",
+      "source": "помощник",
+      "object": "M",
+      "statement": "Предлагает таблицу «по привычке».",
+      "caveats": "У помощника нет полномочий менять просьбу владельца."
+    }
+  ],
+  "single_marked_node": 1,
+  "question": "В каком формате ответить на M?",
+  "allowed_actions": [
+    "связный абзац только для M."
+  ],
+  "sufficient_grounds": "новая просьба владельца и ограниченная область M.",
+  "hidden_state_note": "Скрытое состояние не задано; модель не должна угадывать hidden state. Правильность определяется только видимыми свидетельствами."
+}

@@ -30,10 +30,22 @@ for compliant deployment.
 | **Information / transparency** | 13–14 | ✅ Provenance & source status recorded per fact. |
 | **Access** | 15 | ✅ `get_all_facts()` / CLI `report` export the full store (plain SQLite/JSON). |
 | **Rectification** | 16 | ✅ `update_fact()` and supersede flow (`core/reconcile.py`). |
-| **Erasure ("right to be forgotten")** | 17 | ✅ **Physical erasure** (`core/erasure.py`): `erase_fact()` removes the fact from L0, L1, the L3 canonical graph (node + all edges + mentions) and the outbox, then writes a content-free tombstone. CLI: `erase`. |
+| **Erasure ("right to be forgotten")** | 17 | ✅ **Physical erasure** (`core/erasure.py`): `erase_fact()` removes the fact from L1, the L3 canonical graph (node + all edges + mentions) and the outbox, then writes a content-free tombstone. It clears the process-local L0 cache only in the process that performs the erasure. CLI: `erase`. Other already-running processes: see the note on process-local L0 below the table. |
 | **Restriction of processing** | 18 | ✅ `restrict_processing()` / `unrestrict_processing()` (`core/compliance.py`): a per-fact reversible flag that excludes the fact from recall/answers (`pipeline.retrieve`) without deleting it or changing its truth state. CLI: `restrict` / `unrestrict`. |
 | **Data portability** | 20 | ✅ Export is standard SQLite + JSON, fully portable. |
 | **Object** | 21 | 🟡 Operator-controlled; supported operationally via erasure/restriction. |
+
+> **Process-local L0 and other processes (Issue #505, PR #507).** L0 is a per-process
+> cache. In versions without the #505 fix, an already-running process that had the fact in
+> its own L0 could keep serving it after another process erased or restricted it, until that
+> process restarted. In versions containing the #505 fix, every `get_fact()` validates the
+> L0 entry against the shared L1 (SQLite) row; within the verified scope (real OS-process
+> tests of `memory.get_fact()`, MCP, strict ask and the HTTP review/evidence paths), an
+> erased or restricted fact is then not served from a stale L0 in other processes.
+> Limitations: a read already in progress before the erase/restrict commit may still return
+> the old snapshot; every `get_fact()` now accesses SQLite, so an L1/SQLite error raises even
+> when the fact is in L0. This fix does not close every restriction question; it is not a
+> claim that every read path or backend is covered, nor a legal compliance statement.
 
 ## Privacy by design and by default (Article 25)
 

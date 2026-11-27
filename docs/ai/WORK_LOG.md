@@ -7,6 +7,83 @@ Bounded follow-up to #500: reject absent required v2 source fields, distinguish 
 
 This compact log records material decisions, exact evidence, limitations and hand-offs. It does not replace Git history, issues, pull requests, `CHANGELOG.md` or Notion.
 
+## 2026-11-24 — Restricted repeat ingest refused; #505 restrict probe restored · draft PR
+
+- Base: `main@3b9ada9` (after #512). Both items come from an independent review of #512.
+- `core/ingest.py`: refuse a restricted prior fact with `IngestError("RESTRICTED")` before any
+  write. New `tests/test_ingest_restricted.py` (5 tests, all fail without the guard):
+  auto-id repeat for Validated and Observed, explicit-id update, HTTP 422 without the record,
+  and ordinary duplicate handling after the restriction is lifted.
+- `tests/test_l0_cross_process_restrict.py`: the probe `result is cached` became always false
+  after #512 (get_fact returns a copy), so its assertion no longer caught a stale L0 read. It
+  now checks that the cached entry stayed in place and equals the returned record. With L0
+  revalidation disabled as a mutant, the test fails on this assertion.
+- Local evidence: full suite 2687 passed, 13 skipped, coverage 100%; ruff clean; Ring Zero
+  mutation gate passed. Hosted CI pending.
+
+## 2026-11-23 — L0 record ownership and `_db()` close on schema failure · draft PR
+
+- Base: `main@acb0a03`. Found in code review (no exploit run): `get_fact()` handed out
+  the cached L0 object; `store_fact()` cached the caller's metadata dict; `_db()` could
+  leak a connection when `_ensure_schema()` raised.
+- Change: `copy.deepcopy` at the L0 boundaries (`store_fact` input metadata,
+  `return_persisted` snapshot, both `get_fact` return paths); `_ensure_schema()` moved
+  inside the `try/finally` of `_db()`. No schema, dependency or contract change beyond
+  "callers get their own copy".
+- Tests: new `tests/test_l0_isolation_and_db_close.py`. Five tests in
+  `tests/test_l0_cross_process_erasure.py` detected an L0 hit by object identity
+  (`_L0[id] is fact`), which depended on the aliasing being fixed; they now detect it as
+  "the cached entry stayed in place and the returned record equals it". The #505
+  revalidation assertions are unchanged.
+- Local evidence: full suite 2681 passed, 13 skipped, coverage 100%; ruff clean; Ring Zero
+  mutation gate passed. Hosted CI pending.
+
+## 2026-11-12 — Cross-process L0 after erasure (#505) · PR #507
+
+- Base: `main@ba8e84a4f8f24bdb816ea8fb89485f1dedccd0a3`. Reproduced with separate
+  OS processes on isolated SQLite storage: after `python -m core.cli erase` in one
+  process, an already-running reader kept returning the erased fact through
+  `memory.get_fact()`, MCP `get_fact` and HTTP `GET /review/item/{id}` until
+  restart; MCP `search`, strict `ask` (CLI/HTTP) did not.
+- `get_fact()` now reads the shared L1 row on every call (one primary-key
+  lookup, no decryption) and serves the L0 record only if that raw row is
+  identical to the row the record was built from; otherwise L1 decides. A first
+  `created_at`-only check (local commit `fc2637f`) still served stale data when a
+  row was re-created under the same `fact_id` with an identical `created_at`
+  (controlled-clock test). No new queue, tombstone read, schema or dependency;
+  the re-ingest-after-erasure contract is unchanged.
+- Side effect, flagged for review: the same check also makes another process's
+  same-row updates (for example GDPR Art. 18 restriction) visible without
+  restart. Three CAS tests (two `update_fact()` tests in `tests/test_memory.py`,
+  one `review.approve()` test in `tests/test_review.py`) that used a stale L0
+  entry to simulate an in-flight read now inject that snapshot explicitly;
+  `tests/test_cross_process_write_races.py` adds the same races with a real
+  second OS process as the concurrent writer.
+- Restriction is an additional verified effect, not a full resolution of
+  restriction issues: `tests/test_l0_cross_process_restrict.py` (fails on base,
+  passes with the fix) checks a running reader after `python -m core.cli restrict`
+  through `memory.get_fact()`, MCP `get_fact`/`search`, strict `ask` (in-process,
+  HTTP, fresh CLI), HTTP `GET /review/item/{id}` and `GET /evidence/{id}`, plus an
+  independent MCP-only reader whose first post-restrict read meets its own
+  warmed L0. Not verified: CanonicalView beyond strict ask, export paths, the
+  Neo4j/Ladybug/PostgreSQL backends, restriction with field encryption on.
+- Limits: a read whose L1 lookup completes before the erasure commits may still
+  return the fact (ordinary linearization). #504 (derived records) is out of scope.
+- Regression: `tests/test_l0_cross_process_erasure.py` (fails on base, passes with
+  the fix). Documentation impact: `GITHUB_AND_NOTION` (privacy-relevant erasure
+  behaviour with material trade-offs: per-read SQLite cost and L1 availability).
+  Notion record (safe title): "Crystal #505 — межпроцессный кэш L0: решение и
+  проверка"; checked against `docs/DOCUMENTATION_SYNC_PROTOCOL.md` §6 (all 12
+  sections present). Notion synchronization: `SYNCED` (as of 2026-11-14,
+  pre-merge; after merge the record still needs the merge SHA and final CI per §5
+  "After merge").
+- Point-in-time status (as of 2026-11-14, head
+  `1c2d83b9e901a02ba8ef87a19fddfdaccf190526`): branch `fix/505-l0-stale-after-erase`
+  published; PR #507 open as draft, not merged; hosted CI passed all 9 required checks
+  on that head. This status is historical; resolve the current PR/merge state live on
+  GitHub. Risk entry: `docs/ai/KNOWN_RISKS.md` (2026-11-13); `GDPR.md` (Art. 17 row
+  and the process-local L0 note) describes behaviour with and without the #505 fix.
+
 ## 2026-10-28 — Receipt evidence drift and reproducible demo
 
 - Base: `main@c5b180f4abc308c145185e78bcea05a89ca76720`.

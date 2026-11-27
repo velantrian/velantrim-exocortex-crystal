@@ -592,3 +592,17 @@ def test_safe_file_read_reports_lstat_error(tmp_path, monkeypatch):
 
     monkeypatch.setattr(Path, "lstat", fail_lstat)
     assert_error("cannot inspect payload", m._read_regular_bytes, path, "payload")
+
+
+def test_unchanged_file_rejects_atomic_same_content_inode_replacement(tmp_path):
+    """Identity checks must work even when bytes and timestamps look unchanged."""
+    from core import storage_migration as migration
+    path = tmp_path / "payload.json"
+    path.write_bytes(b'{"safe": true}')
+    _, snapshot = migration._read_regular_bytes(path, "payload")
+    replacement = tmp_path / "replacement.json"
+    replacement.write_bytes(path.read_bytes())
+    # Both files coexist, so replacement necessarily has a different inode.
+    replacement.replace(path)
+    assert_error("payload changed during verification", migration._require_unchanged_file,
+                 path, snapshot, "payload")

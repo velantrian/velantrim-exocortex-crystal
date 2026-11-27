@@ -198,12 +198,20 @@ def test_approve_aborts_on_cas_miss_without_l3_merge(monkeypatch):
     monkeypatch.setenv("VELANTRIM_DEMO_SEED", "0")
     from core.memory import _db
     fid = _ready_pending("A concurrently collapsed world claim", "cas:rev1")
-    get_fact(fid)  # prime L0 with the "Observed" record the curator sees
+    stale = get_fact(fid)  # the "Observed" record the curator sees
 
-    # A competing reviewer collapses the row directly in the DB; L0 stays stale.
+    # A competing reviewer collapses the row directly in the DB.
     with _db() as conn:
         conn.execute("UPDATE facts SET epistemic_state = ? WHERE fact_id = ?",
                      ("Collapsed", fid))
+
+    # approve() still acts on the curator's earlier, now stale read. Since
+    # #505 get_fact() revalidates L0 against L1, so inject that in-flight
+    # snapshot into approve()'s first read instead of relying on stale L0.
+    pending = [stale]
+    real_get_fact = review.get_fact
+    monkeypatch.setattr(review, "get_fact",
+                        lambda f: pending.pop() if pending else real_get_fact(f))
 
     res = review.approve(fid, actor="alice")
     assert res["approved"] is False

@@ -1,0 +1,243 @@
+{
+  "AC03": {
+    "question": "Какой статус сообщить для R-41?",
+    "admitted_grounds": [
+      {
+        "fact_id": "AC03-2",
+        "claim": "R-41: Проверка ожидается."
+      }
+    ],
+    "exclusions": [
+      {
+        "fact_id": "AC03-1",
+        "reason": "primary object differs; linked_objects does not transfer status"
+      },
+      {
+        "fact_id": "AC03-3",
+        "reason": "primary object differs; linked_objects does not transfer status"
+      },
+      {
+        "fact_id": "AC03-0",
+        "reason": "historical observation does not cover as_of"
+      }
+    ],
+    "historical_evidence": [
+      {
+        "fact_id": "AC03-0",
+        "claim": "R-41: Ожидает проверки.",
+        "object": "R-41",
+        "primary_object": "R-41",
+        "observed_at": "2026-10-15T09:30:00+02:00",
+        "use": "historical only, not current grounding"
+      }
+    ],
+    "context_relations": [],
+    "answer": "R-41: Проверка ожидается.",
+    "uncertainty": "Excluded evidence (not a denial of the admitted facts): primary object differs; linked_objects does not transfer status; historical observation does not cover as_of; Historical evidence only: 2026-10-15T09:30:00+02:00: R-41: Ожидает проверки.",
+    "error": null,
+    "pre_applicability_exclusions": []
+  },
+  "AC06": {
+    "question": "В каком формате ответить на M?",
+    "admitted_grounds": [
+      {
+        "fact_id": "AC06-1",
+        "claim": "M: Формат заменён на связный абзац. Новая просьба ограничена только заданием M."
+      }
+    ],
+    "exclusions": [
+      {
+        "fact_id": "AC06-0",
+        "reason": "historical observation does not cover as_of"
+      }
+    ],
+    "historical_evidence": [
+      {
+        "fact_id": "AC06-0",
+        "claim": "M: Табличный ответ.",
+        "object": "M",
+        "primary_object": "M",
+        "observed_at": "2026-10-28T09:00:00+01:00",
+        "use": "historical only, not current grounding"
+      }
+    ],
+    "context_relations": [],
+    "answer": "M: Формат заменён на связный абзац. Новая просьба ограничена только заданием M.",
+    "uncertainty": "Excluded evidence (not a denial of the admitted facts): historical observation does not cover as_of; Historical evidence only: 2026-10-28T09:00:00+01:00: M: Табличный ответ.",
+    "error": null,
+    "pre_applicability_exclusions": [
+      {
+        "fact_id": "AC06-2",
+        "reason": "USER_CLAIMED, not strict-canonical"
+      }
+    ]
+  },
+  "AC07": {
+    "question": "Каков статус L сегодня?",
+    "admitted_grounds": [],
+    "exclusions": [
+      {
+        "fact_id": "AC07-2",
+        "reason": "primary object differs; linked_objects does not transfer status"
+      },
+      {
+        "fact_id": "AC07-1",
+        "reason": "primary object differs; linked_objects does not transfer status"
+      },
+      {
+        "fact_id": "AC07-0",
+        "reason": "historical observation does not cover as_of"
+      }
+    ],
+    "historical_evidence": [
+      {
+        "fact_id": "AC07-0",
+        "claim": "L: В обработке.",
+        "object": "L",
+        "primary_object": "L",
+        "observed_at": "2026-10-08T14:00:00+02:00",
+        "use": "historical only, not current grounding"
+      }
+    ],
+    "context_relations": [],
+    "answer": null,
+    "uncertainty": "current status is not established: primary object differs; linked_objects does not transfer status; historical observation does not cover as_of; Historical evidence only: 2026-10-08T14:00:00+02:00: L: В обработке.",
+    "error": "insufficient grounding: current status is not established: primary object differs; linked_objects does not transfer status; historical observation does not cover as_of; Historical evidence only: 2026-10-08T14:00:00+02:00: L: В обработке.",
+    "pre_applicability_exclusions": []
+  },
+  "AC08": {
+    "question": "Можно ли по этим материалам напомнить согласованный способ упаковки?",
+    "admitted_grounds": [
+      {
+        "fact_id": "AC08-0",
+        "claim": "выбор способа упаковки: Решение не зафиксировано. Доступный журнал неполон; способ не записан."
+      }
+    ],
+    "exclusions": [],
+    "historical_evidence": [],
+    "context_relations": [],
+    "answer": "выбор способа упаковки: Решение не зафиксировано. Доступный журнал неполон; способ не записан.",
+    "uncertainty": null,
+    "error": null,
+    "pre_applicability_exclusions": [
+      {
+        "fact_id": "AC08-1",
+        "reason": "USER_CLAIMED, not strict-canonical"
+      }
+    ]
+  },
+  "fresh": {
+    "question": "Laboratory component status: what is L's current state?",
+    "admitted_grounds": [
+      {
+        "fact_id": "fresh",
+        "claim": "Laboratory component ready"
+      }
+    ],
+    "exclusions": [],
+    "historical_evidence": [],
+    "context_relations": [],
+    "answer": "Laboratory component ready",
+    "uncertainty": null,
+    "error": null
+  },
+  "foreign": {
+    "question": "Laboratory component status: what is L's current state?",
+    "admitted_grounds": [],
+    "exclusions": [
+      {
+        "fact_id": "foreign",
+        "reason": "primary object differs; linked_objects does not transfer status"
+      }
+    ],
+    "historical_evidence": [],
+    "context_relations": [],
+    "answer": null,
+    "uncertainty": "current status is not established: primary object differs; linked_objects does not transfer status",
+    "error": "insufficient grounding: current status is not established: primary object differs; linked_objects does not transfer status"
+  },
+  "old": {
+    "question": "Laboratory component status: what is L's current state?",
+    "admitted_grounds": [],
+    "exclusions": [
+      {
+        "fact_id": "old",
+        "reason": "historical observation does not cover as_of"
+      }
+    ],
+    "historical_evidence": [
+      {
+        "fact_id": "old",
+        "claim": "Laboratory component ready",
+        "primary_object": "L",
+        "observed_at": "2026-10-08T10:00:00+02:00",
+        "recorded_at": "2026-11-08T10:00:00+01:00",
+        "use": "historical only, not current grounding"
+      }
+    ],
+    "context_relations": [],
+    "answer": null,
+    "uncertainty": "current status is not established: historical observation does not cover as_of; Historical evidence only: 2026-10-08T10:00:00+02:00: Laboratory component ready",
+    "error": "insufficient grounding: current status is not established: historical observation does not cover as_of; Historical evidence only: 2026-10-08T10:00:00+02:00: Laboratory component ready"
+  },
+  "later": {
+    "question": "Laboratory component status: what is L's current state?",
+    "admitted_grounds": [],
+    "exclusions": [
+      {
+        "fact_id": "later",
+        "reason": "observation later than as_of"
+      }
+    ],
+    "historical_evidence": [],
+    "context_relations": [],
+    "answer": null,
+    "uncertainty": "current status is not established: observation later than as_of",
+    "error": "insufficient grounding: current status is not established: observation later than as_of"
+  },
+  "linked": {
+    "question": "Laboratory component status: what is L's current state?",
+    "admitted_grounds": [],
+    "exclusions": [
+      {
+        "fact_id": "linked",
+        "reason": "primary object differs; linked_objects does not transfer status"
+      }
+    ],
+    "historical_evidence": [],
+    "context_relations": [
+      {
+        "fact_id": "linked",
+        "primary_object": "L2",
+        "linked_objects": [
+          "L"
+        ],
+        "status_transferred": false
+      }
+    ],
+    "answer": null,
+    "uncertainty": "current status is not established: primary object differs; linked_objects does not transfer status",
+    "error": "insufficient grounding: current status is not established: primary object differs; linked_objects does not transfer status"
+  },
+  "incomplete_journal": {
+    "question": "Можно ли по этим материалам напомнить согласованный способ упаковки?",
+    "admitted_grounds": [
+      {
+        "fact_id": "AC08-0",
+        "claim": "выбор способа упаковки: Решение не зафиксировано. Доступный журнал неполон; способ не записан."
+      }
+    ],
+    "exclusions": [],
+    "historical_evidence": [],
+    "context_relations": [],
+    "answer": "выбор способа упаковки: Решение не зафиксировано. Доступный журнал неполон; способ не записан.",
+    "uncertainty": null,
+    "error": null,
+    "pre_applicability_exclusions": [
+      {
+        "fact_id": "AC08-1",
+        "reason": "USER_CLAIMED, not strict-canonical"
+      }
+    ]
+  }
+}

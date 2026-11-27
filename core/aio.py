@@ -22,9 +22,12 @@ from core import pipeline as _pipeline_mod
 from core import query_pipeline as _query_mod
 
 
-async def arun(query: str, episode: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+async def arun(query: str, episode: Optional[Dict[str, Any]] = None, *,
+               asked_object=None, as_of=None, temporal_scope=None) -> Dict[str, Any]:
     """Async wrapper around the strict read-only query pipeline."""
-    return await asyncio.to_thread(_query_mod.query, query, episode)
+    return await asyncio.to_thread(_query_mod.query, query, episode,
+                                   **{k: v for k, v in dict(asked_object=asked_object,
+                                      as_of=as_of, temporal_scope=temporal_scope).items() if v is not None})
 
 
 async def aingest(*args: Any, **kwargs: Any) -> Any:

@@ -170,7 +170,23 @@ def test_update_fact_missing_or_no_fields_returns_false():
     assert update_fact("u2", epistemic_state="Validated") is False  # not updatable
 
 
-def test_update_fact_cas_rejects_stale_revision_without_poisoning_cache():
+def _serve_stale_snapshot_once(monkeypatch, snapshot):
+    """Make update_fact()'s own initial read return `snapshot` once.
+
+    Since #505, get_fact() revalidates L0 against the L1 row, so a stale L0
+    entry can no longer stand in for "a read taken before a concurrent write
+    committed". This injects that in-flight snapshot directly instead.
+    """
+    real_get_fact = memory.get_fact
+    pending = [snapshot]
+
+    def get_fact_once(fact_id):
+        return pending.pop() if pending else real_get_fact(fact_id)
+
+    monkeypatch.setattr(memory, "get_fact", get_fact_once)
+
+
+def test_update_fact_cas_rejects_stale_revision_without_poisoning_cache(monkeypatch):
     """Regression: update_fact() blindly overwrote based on whatever the
     caller last saw (indirectly, via get_fact), with no version check —
     concurrent update_fact() calls on the same fact_id (e.g. two reconcile.
@@ -202,9 +218,10 @@ def test_update_fact_cas_rejects_stale_revision_without_poisoning_cache():
              datetime.now(timezone.utc).isoformat(), "cas1"),
         )
 
-    # update_fact()'s internal get_fact() still returns the stale L0 snapshot,
-    # so its CAS check must find the persisted revision has moved and abort —
-    # not silently overwrite the other writer's claim.
+    # update_fact()'s internal read still holds the pre-write snapshot (an
+    # in-flight read), so its CAS check must find the persisted revision has
+    # moved and abort — not silently overwrite the other writer's claim.
+    _serve_stale_snapshot_once(monkeypatch, stale)
     assert update_fact("cas1", confidence=0.9) is False
 
     # L0 must be evicted on the CAS miss: the next read reflects the real
@@ -220,7 +237,7 @@ def test_update_fact_cas_rejects_stale_revision_without_poisoning_cache():
     assert get_fact("cas1")["revision"] == stale["revision"] + 2
 
 
-def test_update_fact_stale_writer_is_rejected_after_a_real_concurrent_winner():
+def test_update_fact_stale_writer_is_rejected_after_a_real_concurrent_winner(monkeypatch):
     """The #248-style race applied to update_fact(): writer A reads the fact
     early; writer B then makes a REAL, successful update_fact() call, which
     commits to L1 and populates L0; writer A, still holding its now-stale
@@ -236,10 +253,9 @@ def test_update_fact_stale_writer_is_rejected_after_a_real_concurrent_winner():
     assert get_fact("cas3")["confidence"] == 0.5
 
     # Simulate writer A having been scheduled out between its early read and
-    # its own write attempt, so it still acts on the pre-B snapshot — force
-    # L0 back to that stale view (this is what a delayed, in-flight read on a
-    # second thread would still be holding at this point).
-    memory._l0_put("cas3", stale_snapshot)
+    # its own write attempt, so it still acts on the pre-B snapshot (what a
+    # delayed, in-flight read on a second thread would still be holding).
+    _serve_stale_snapshot_once(monkeypatch, stale_snapshot)
 
     assert update_fact("cas3", confidence=0.9) is False  # A's stale revision is rejected
 

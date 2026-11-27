@@ -272,6 +272,15 @@ def ingest(
                 "TERMINAL_STATE",
                 "ordinary ingest cannot update a terminal fact or its provenance",
             )
+        # GDPR Art. 18: a restricted fact takes no part in processing. A repeat
+        # ingest would otherwise record an occurrence (duplicate path) or
+        # update source/confidence/metadata (store_fact path), and return the
+        # stored record. Refuse before any write, and return nothing.
+        if prior.get("restricted"):
+            raise IngestError(
+                "RESTRICTED",
+                "ordinary ingest cannot process a restricted fact",
+            )
 
     # Exact-duplicate dedup (Variant B): a repeat of an already-Validated fact is
     # NOT independent evidence. It only records an occurrence (frequency) via
