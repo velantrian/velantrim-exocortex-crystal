@@ -88,10 +88,11 @@ def restore_backup(
     targets = (target_db, target_profile_file, restore_receipt_file)
     if active_profile in targets:
         raise StorageOperationError("restore target must not be the active storage profile")
-    if current_profile is not None and current_profile["backend"] == "sqlite":
+    if current_profile is not None and current_profile["backend"] in {"sqlite", "ladybug"}:
         protected = _active_sqlite_paths(current_profile["configuration"]["path"])
         if protected.intersection(targets):
-            raise StorageOperationError("restore target must not be an active SQLite storage path")
+            backend_name = {"sqlite": "SQLite", "ladybug": "LadybugDB"}[current_profile["backend"]]
+            raise StorageOperationError(f"restore target must not be an active {backend_name} storage path")
     for target in targets:
         if target.exists() or target.is_symlink():
             raise StorageOperationError(f"restore target already exists: {target}")
@@ -158,8 +159,17 @@ def restore_backup(
             "receipt": receipt,
         }
     except Exception as exc:
+        cleanup_failures: list[str] = []
         for path in reversed(created):
-            path.unlink(missing_ok=True)
+            try:
+                path.unlink(missing_ok=True)
+            except OSError as cleanup_error:
+                cleanup_failures.append(f"{path}: {type(cleanup_error).__name__}")
+        if cleanup_failures:
+            raise StorageOperationError(
+                f"cannot restore backup ({exc}); cleanup incomplete: "
+                + "; ".join(cleanup_failures)
+            ) from exc
         if isinstance(exc, OSError):
             raise StorageOperationError(f"cannot restore backup: {exc}") from exc
         raise

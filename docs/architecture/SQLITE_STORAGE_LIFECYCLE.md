@@ -135,7 +135,9 @@ The operation:
 4. writes a restore receipt;
 5. writes and validates the candidate profile last.
 
-Activation remains a separate operator action after successful restore.
+Restore reserves the active profile and its local SQLite or LadybugDB locator, even
+when the configured database is absent. An existing invalid active profile causes
+restore to refuse. Activation remains a separate operator action after successful restore.
 
 ```text
 restore result = new database + candidate profile + receipt
@@ -144,8 +146,9 @@ activation      = separate explicit deployment action
 
 This ordering makes the candidate profile the last activation-relevant artifact. A hard
 crash can still leave partial new targets; the absence of a valid candidate profile and/or
-restore receipt identifies an incomplete restore. The command never deletes or modifies
-the source bundle or current storage.
+restore receipt identifies an incomplete restore. On a handled failure, cleanup attempts
+every artifact created by the restore. A cleanup error reports the affected paths and
+the original failure. The source bundle and current storage remain intact.
 
 ## Multiple deployments
 

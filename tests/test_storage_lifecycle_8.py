@@ -138,16 +138,32 @@ def test_restore_cli_reserves_active_path_for_default_receipt(
     assert _source_artifacts(source_bundle) == original_source
 
 
-def _profile_with_locator(active_database: Path, locator: str) -> dict:
+def _profile_with_locator(active_database: Path, locator: str, *, backend: str = "sqlite") -> dict:
     profile = _profile_payload(active_database)
     configuration = {"path": locator}
+    profile["backend"] = backend
     profile["configuration"] = configuration
     canonical = json.dumps(
-        {"backend": "sqlite", "configuration": configuration},
+        {"backend": backend, "configuration": configuration},
         sort_keys=True, separators=(",", ":"), ensure_ascii=True,
     )
     profile["locator_sha256"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     return profile
+
+
+def test_restore_reserves_local_ladybug_locator(source_bundle, tmp_path, monkeypatch):
+    _, _, bundle = source_bundle
+    active_db = tmp_path / "deployed.graph"
+    active_profile = tmp_path / "deployment.json"
+    active_profile.write_text(json.dumps(
+        _profile_with_locator(active_db, str(active_db), backend="ladybug"),
+    ))
+    monkeypatch.setenv("VELANTRIM_STORAGE_PROFILE_PATH", str(active_profile))
+
+    with pytest.raises(common.StorageOperationError, match="active LadybugDB storage path"):
+        restore.restore_backup(bundle, target_database=active_db,
+                               target_profile=tmp_path / "candidate.json")
+    assert not active_db.exists()
 
 
 def _invalid_active_profile(active_database: Path, problem: str) -> bytes:

@@ -14,6 +14,7 @@ import pytest
 from core import storage_backup as backup
 from core import storage_common as common
 from core import storage_ops as ops
+from core import storage_restore as restore
 from tests import storage_lifecycle_support
 
 store = storage_lifecycle_support.store
@@ -111,6 +112,37 @@ def test_restore_rolls_back_after_copy_failure_points(
     assert f"test {phase} failure" in report["error"]
     assert "Traceback" not in output.err
     assert _snapshot(tmp_path) == initial
+
+
+def test_restore_reports_failed_cleanup_and_continues_rollback(store, tmp_path, monkeypatch):
+    active_profile, _ = store
+    bundle = _legacy_bundle(tmp_path, active_profile)
+    original_bundle = _snapshot(bundle)
+    monkeypatch.setenv("VELANTRIM_STORAGE_PROFILE_PATH", str(active_profile))
+    database = tmp_path / "candidate.db"
+    profile = tmp_path / "candidate.json"
+    receipt = tmp_path / "restore.json"
+    unlink = Path.unlink
+
+    def fail_profile(_path, _data):
+        raise OSError("synthetic profile write failure")
+
+    def deny_receipt_cleanup(path, *args, **kwargs):
+        if path == receipt:
+            raise PermissionError("synthetic unlink failure")
+        return unlink(path, *args, **kwargs)
+
+    monkeypatch.setattr(restore, "_write_new_bytes", fail_profile)
+    monkeypatch.setattr(Path, "unlink", deny_receipt_cleanup)
+    with pytest.raises(common.StorageOperationError, match="cleanup incomplete") as failure:
+        restore.restore_backup(bundle, target_database=database, target_profile=profile,
+                               receipt_path=receipt)
+    assert "synthetic profile write failure" in str(failure.value)
+    assert str(receipt) in str(failure.value)
+    assert receipt.exists()
+    assert not database.exists()
+    assert not profile.exists()
+    assert _snapshot(bundle) == original_bundle
 
 
 @pytest.mark.parametrize("suffix", ["", "-wal", "-shm", "-journal"])
