@@ -177,6 +177,9 @@ def test_verify_detects_stale_source():
     report = evidence.verify_evidence(
         fid, current_sources={"geo.md": "The Alps were leveled."})
     assert report[0]["status"] == "stale_source"
+    assert report[0]["claim_check"] == "match"
+    assert report[0]["source_check"] == "mismatch"
+    assert report[0]["provenance_authenticity"] == "not_checked"
 
 
 def test_verify_source_unchanged_is_ok():
@@ -185,14 +188,19 @@ def test_verify_source_unchanged_is_ok():
     report = evidence.verify_evidence(
         fid, current_sources={"geo.md": "The Nile is a river."})
     assert report[0]["status"] == "ok"
+    assert report[0]["source_check"] == "match"
+    assert report[0]["provenance_authenticity"] == "not_checked"
+    raw_report = evidence.verify_evidence(fid, current_sources={"geo.md": b"The Nile is a river."})
+    assert raw_report == report
 
 
 def test_verify_source_not_supplied_is_not_rechecked():
     fid = ingest("The Sahara is a desert")["fact"]["fact_id"]
     evidence.attach_evidence(fid, "geo.md", source_text="The Sahara is a desert.")
-    # No current_sources for this uri → span is not re-hashed, stays ok.
     report = evidence.verify_evidence(fid, current_sources={"other.md": "x"})
     assert report[0]["status"] == "ok"
+    assert report[0]["claim_check"] == "match"
+    assert report[0]["source_check"] == "not_checked"
 
 
 # ─── provenance-coverage guard (#61) ──────────────────────────────────────────

@@ -162,7 +162,7 @@ def delete_evidence_for(fact_id: str) -> int:
 
 def verify_evidence(
     fact_id: str,
-    current_sources: Optional[Dict[str, str]] = None,
+    current_sources: Optional[Dict[str, str | bytes]] = None,
 ) -> List[Dict[str, Any]]:
     """
     Replay every evidence span for a fact against the current canon.
@@ -175,41 +175,47 @@ def verify_evidence(
       erased        — the fact has a deletion tombstone (Art. 17);
       missing       — the fact is gone with no tombstone.
 
-    `current_sources` optionally maps `source_uri` → the source's current text.
-    When a span's `source_uri` is present in the map and the span recorded a
-    `source_sha256`, the live text is re-hashed; a mismatch is reported as
-    `stale_source`. Spans whose source is not supplied are not re-checked.
+    `current_sources` maps source URIs to caller-supplied text or raw bytes.
+    `claim_check` and `source_check` report their digest comparisons separately.
+    The legacy `status` remains available. Digest agreement alone provides
+    no authentication of the source or evidence about the truth of the claim.
     """
     fact = memory.get_fact(fact_id)
     tombstoned = {t["fact_id"] for t in memory.get_tombstones()}
     out: List[Dict[str, Any]] = []
     for span in evidence_for(fact_id):
+        source_check = _source_digest_check(span, current_sources)
         if fact is None:
             status = "erased" if fact_id in tombstoned else "missing"
+            claim_check = "not_checked"
         elif sha256(fact.get("claim", "")) != span["claim_sha256"]:
             status = "modified"
-        elif _source_is_stale(span, current_sources):
-            status = "stale_source"
+            claim_check = "mismatch"
         else:
-            status = "ok"
+            claim_check = "match"
+            status = "stale_source" if source_check == "mismatch" else "ok"
         out.append({"evidence_id": span["evidence_id"],
-                    "source_uri": span["source_uri"], "status": status})
+                    "source_uri": span["source_uri"], "status": status,
+                    "claim_check": claim_check, "source_check": source_check,
+                    "provenance_authenticity": "not_checked"})
     return out
 
 
-def _source_is_stale(
-    span: Dict[str, Any], current_sources: Optional[Dict[str, str]]
-) -> bool:
-    """True if the live source text no longer hashes to the sealed source_sha256."""
+def _source_digest_check(
+    span: Dict[str, Any], current_sources: Optional[Dict[str, str | bytes]]
+) -> str:
+    """Compare only when the span and caller both provide source material."""
     if not current_sources:
-        return False
+        return "not_checked"
     stored = span.get("source_sha256")
     if not stored:
-        return False
+        return "not_checked"
     uri = span.get("source_uri")
     if uri not in current_sources:
-        return False
-    return sha256(current_sources[uri]) != stored
+        return "not_checked"
+    value = current_sources[uri]
+    digest = hashlib.sha256(value).hexdigest() if isinstance(value, bytes) else sha256(value)
+    return "match" if digest == stored else "mismatch"
 
 
 # ─── Provenance-coverage guard (#61) ──────────────────────────────────────────
@@ -345,7 +351,7 @@ def public_evidence_for(fact_id: str) -> List[Dict[str, Any]]:
 
 def public_verify_evidence(
     fact_id: str,
-    current_sources: Optional[Dict[str, str]] = None,
+    current_sources: Optional[Dict[str, str | bytes]] = None,
 ) -> List[Dict[str, Any]]:
     """Like verify_evidence(), but returns [] for a fact under processing
     restriction instead of a per-span report (which includes source_uri)."""
