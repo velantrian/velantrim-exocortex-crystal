@@ -372,3 +372,32 @@ def test_failed_recovery_keeps_durable_obligation(monkeypatch):
     assert memory.pending_l3_writes() == [_FID]
     assert pipeline.drain_l3_outbox() == 1
     assert memory._pending_l3_admissions() == []
+
+
+def test_repeat_ingest_cannot_strand_pending_admission():
+    ingestion = importlib.import_module("core.ingest")
+    fact, obligation = _stage()
+    with pytest.raises(ingestion.IngestError, match="CONCURRENT_STATE_CHANGE"):
+        ingestion.ingest(_CLAIM, fact_id=_FID, source="synthetic", confidence=0.9,
+                         source_status="EXTERNAL")
+    assert memory.get_fact(_FID) == fact
+    assert memory._pending_l3_admissions() == [obligation]
+    assert pipeline.drain_l3_outbox() == 1
+
+
+def test_repeated_run_during_backend_failure_does_not_invalidate_intent(monkeypatch):
+    fact, obligation = _stage()
+    graph = get_l3_graph()
+    monkeypatch.setattr(pipeline, "retrieve", lambda *a, **k: [{
+        "id": _FID, "text": _CLAIM, "source": "synthetic", "confidence": 0.9,
+        "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+        "significance": 0.5, "_score": 0.9, "epistemic_state": "Observed",
+        "origin": "memory",
+    }])
+    with monkeypatch.context() as patch:
+        patch.setattr(graph, "merge_fact", Mock(side_effect=RuntimeError("unavailable")))
+        assert pipeline.run("synthetic")["answer"] is None
+        assert memory.get_fact(_FID) == fact
+        assert memory._pending_l3_admissions() == [obligation]
+    assert pipeline.drain_l3_outbox() == 1
+    assert memory._pending_l3_admissions() == []

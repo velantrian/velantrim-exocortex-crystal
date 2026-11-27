@@ -340,6 +340,7 @@ def ingest(
             expected_state=expected_state,
             reject_terminal=True,
             return_persisted=True,
+            reject_pending_admission=True,
         )
     except TerminalStateError as exc:
         raise IngestError(

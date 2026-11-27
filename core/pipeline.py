@@ -24,7 +24,7 @@ from core.memory import (
     store_fact, get_fact, _repair_fact_from_canon,
     _pending_l3_admissions, _l3_admission_identity, _project_l3_admission,
     _project_l3_secondary, transition_esm_if_unchanged, ESM_TRANSITIONS,
-    DEFAULT_SOURCE_STATUS, CLAIM_TYPES, SOURCE_STATUSES,
+    DEFAULT_SOURCE_STATUS, CLAIM_TYPES, SOURCE_STATUSES, IngestStateChangedError,
 )
 from core.queue import get_outbox_queue
 from core.l3_graph import get_l3_graph
@@ -762,7 +762,13 @@ def build_facts_pack(
         # authored), occurrences and sources_seen.
         _lift_applicability(fact, item)
         _embed_applicability_in_metadata(fact)
-        store_fact(fact, preserve_metadata=True)
+        try:
+            store_fact(fact, preserve_metadata=True, reject_pending_admission=True)
+        except IngestStateChangedError:
+            # A recall must not advance the exact admitted revision while
+            # first projection is waiting, even if another worker staged it
+            # after retrieval. It cannot ground this answer yet.
+            continue
         # Sync epistemic_state and restricted from the persisted store:
         # store_fact preserves the existing state on conflict, so the fact
         # dict may carry a stale retrieve() value (e.g. demo-seed items

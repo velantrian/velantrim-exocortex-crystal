@@ -776,6 +776,7 @@ def store_fact(
     reject_terminal: bool = False,
     return_persisted: bool = False,
     preserve_metadata: bool = False,
+    reject_pending_admission: bool = False,
 ) -> Optional[Dict]:
     """
     Store a fact in L0 (LRU RAM) and L1 (SQLite).
@@ -868,6 +869,8 @@ def store_fact(
             # an already-promoted claim.
             begin_immediate(conn)
             index_was_complete = _normalized_index_capture_complete(conn)
+            if reject_pending_admission and _has_l3_admission(conn, fact_id):
+                raise IngestStateChangedError("first L3 projection is still pending")
             existing_row = conn.execute(
                 "SELECT claim, epistemic_state, metadata FROM facts WHERE fact_id = ?",
                 (fact_id,),
@@ -1106,6 +1109,8 @@ def update_fact(
                 or expected_claim is not _INGEST_EXPECTATION_UNSET
             )
             if guarded:
+                if _has_l3_admission(conn, fact_id):
+                    raise IngestStateChangedError("first L3 projection is still pending")
                 row = conn.execute(
                     "SELECT claim, epistemic_state, revision "
                     "FROM facts WHERE fact_id = ?",
@@ -1422,6 +1427,17 @@ def _stage_l3_admission(conn, row, verdict: str) -> None:
     )
 
 
+def _has_l3_admission(conn, fact_id: str) -> bool:
+    # The first promotion creates the table in its own transaction. Do not
+    # create schema during a guarded preflight on an older database.
+    return (conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type = 'table' "
+        "AND name = 'l3_outbox_admissions'"
+    ).fetchone() is not None and conn.execute(
+        "SELECT 1 FROM l3_outbox_admissions WHERE fact_id = ?", (fact_id,)
+    ).fetchone() is not None)
+
+
 def _pending_l3_admissions() -> list:
     """Read durable admission obligations independently of queue transport."""
     with _db() as conn:
@@ -1517,9 +1533,7 @@ def _project_l3_secondary(graph, queue, fid: str) -> bool:
 
     with _db() as conn:
         begin_immediate(conn)
-        if conn.execute(
-            "SELECT 1 FROM l3_outbox_admissions WHERE fact_id = ?", (fid,)
-        ).fetchone() is not None:
+        if _has_l3_admission(conn, fid):
             return False
 
         local = isinstance(queue, SqliteOutboxQueue)
