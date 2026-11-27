@@ -112,9 +112,9 @@ def test_cli_eval_gate_failure_exits_nonzero(monkeypatch, capsys):
 
 # ─── evidence.py — stale-source guard & truth-status passthrough ────────────────
 
-def test_source_is_stale_false_without_stored_hash():
+def test_source_digest_not_checked_without_stored_hash():
     # A span with no sealed source_sha256 can never be judged stale.
-    assert evidence._source_is_stale({"source_uri": "u"}, {"u": "text"}) is False
+    assert evidence._source_digest_check({"source_uri": "u"}, {"u": "text"}) == "not_checked"
 
 
 def test_truth_status_of_uses_stored_value():
