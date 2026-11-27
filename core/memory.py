@@ -1504,6 +1504,68 @@ def _project_l3_admission(graph, obligation: Dict[str, Any]) -> bool:
         return True
 
 
+def _project_l3_secondary(graph, queue, fid: str) -> bool:
+    """Replay the latest secondary-sync state without acquiring admission authority.
+
+    Share the SQLite write fence with admission projection. A stale queue
+    snapshot cannot clear or write through a newly staged admission. Redis
+    entries are secondary notifications only; first-projection obligations are
+    never acknowledged through Redis.
+    """
+    from core.queue import SqliteOutboxQueue
+    from core.canonical_view import KNOWN_TRUTH_STATUSES, _in
+
+    with _db() as conn:
+        begin_immediate(conn)
+        if conn.execute(
+            "SELECT 1 FROM l3_outbox_admissions WHERE fact_id = ?", (fid,)
+        ).fetchone() is not None:
+            return False
+
+        local = isinstance(queue, SqliteOutboxQueue)
+        token = conn.execute(
+            "SELECT enqueued_at FROM l3_outbox WHERE fact_id = ?", (fid,)
+        ).fetchone() if local else None
+        if local and token is None:
+            return False
+
+        def acknowledge():
+            if local:
+                conn.execute(
+                    "DELETE FROM l3_outbox WHERE fact_id = ? AND enqueued_at = ?",
+                    (fid, token["enqueued_at"]),
+                )
+            else:
+                queue.clear(fid)
+
+        row = conn.execute("SELECT * FROM facts WHERE fact_id = ?", (fid,)).fetchone()
+        if row is None or conn.execute(
+            "SELECT 1 FROM erasure_log WHERE fact_id = ?", (fid,)
+        ).fetchone() is not None:
+            acknowledge()
+            return False
+        fact = dict(row)
+        fact["claim"] = crypto.decrypt(row["claim"])
+        fact["metadata"] = json.loads(crypto.decrypt(row["metadata"]))
+        if not l3_secondary_sync_admissible(
+            fact, graph=graph, allow_missing_validated_recovery=True,
+        ):
+            acknowledge()
+            return False
+        existing = graph.get_fact(fid)
+        if (fact["restricted"] or existing is None
+                or any(existing.get(key) != fact[key]
+                       for key in ("claim", "source", "claim_type", "source_status"))
+                or not _in(existing.get("truth_status"), KNOWN_TRUTH_STATUSES)
+                or ("created_at" in existing and existing["created_at"] != fact["created_at"])
+                or (isinstance(existing.get("revision"), int)
+                    and existing["revision"] > fact["revision"])):
+            return False
+        graph.merge_fact({**fact, "truth_status": existing["truth_status"]})
+        acknowledge()
+        return True
+
+
 def enqueue_l3_write(fact_id: str) -> None:
     """Enqueue a fact for re-merge into L3 (idempotent: upsert by fact_id)."""
     now = datetime.now(timezone.utc).isoformat()

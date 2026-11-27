@@ -21,9 +21,9 @@ from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from core.trace import build_trace, promote_trace, format_trace
 from core.memory import (
-    store_fact, get_fact, get_tombstone, _repair_fact_from_canon,
+    store_fact, get_fact, _repair_fact_from_canon,
     _pending_l3_admissions, _l3_admission_identity, _project_l3_admission,
-    transition_esm_if_unchanged, ESM_TRANSITIONS, l3_secondary_sync_admissible,
+    _project_l3_secondary, transition_esm_if_unchanged, ESM_TRANSITIONS,
     DEFAULT_SOURCE_STATUS, CLAIM_TYPES, SOURCE_STATUSES,
 )
 from core.queue import get_outbox_queue
@@ -32,7 +32,7 @@ from core.embedding import get_embedder, cosine, assert_compatible_embedder
 from core.retrieval_config import get_retrieval_config
 from core.generation import get_generator
 from core.canonical_view import (
-    KNOWN_TRUTH_STATUSES, project_canonical, _in, _normalize_restricted_bit,
+    project_canonical, _in, _normalize_restricted_bit,
 )
 from core.rrf import rrf_fuse
 from core import metrics, adaptation
@@ -1216,35 +1216,14 @@ def drain_l3_outbox(graph=None) -> int:
     except Exception as exc:  # noqa: BLE001
         logger.warning("L3 secondary queue unavailable (%s)", type(exc).__name__)
         return healed
-    pending_admissions = {item["fact_id"] for item in _pending_l3_admissions()}
     for fid in queued:
-        if fid in pending_admissions:
-            continue
-        fact = get_fact(fid)
-        if fact is None or get_tombstone(fid) is not None:
-            queue.clear(fid)
-            continue
-        if not l3_secondary_sync_admissible(
-            fact, graph=graph, allow_missing_validated_recovery=True,
-        ):
-            queue.clear(fid)
-            continue
         try:
-            existing = graph.get_fact(fid)
-            verdict = None
-            if existing is not None and all(existing.get(key) == fact.get(key)
-                    for key in ("claim", "source", "claim_type", "source_status")):
-                verdict = existing.get("truth_status")
-            if fact.get("restricted") or not _in(verdict, KNOWN_TRUTH_STATUSES):
-                logger.warning("drain_l3_outbox: %s has no usable projection authority", fid)
-                continue
-            graph.merge_fact({**fact, "truth_status": verdict})
+            if _project_l3_secondary(graph, queue, fid):
+                healed += 1
         except Exception as exc:  # noqa: BLE001
             logger.warning(
                 "drain_l3_outbox: %s is still waiting (%s)", fid, type(exc).__name__)
             break
-        queue.clear(fid)
-        healed += 1
     return healed
 
 
