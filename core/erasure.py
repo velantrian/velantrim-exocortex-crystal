@@ -78,9 +78,9 @@ def erase_fact(
     the L3 outbox, evidence_spans, import_sessions, and the derived exact-normalized
     ingest compatibility index, then writes a content-free tombstone to erasure_log.
 
-    cascade=True: besides the fact itself, also erases everything derived from it —
-    facts with a DERIVED_FROM edge to it (recursively, with cycle protection). This way
-    derived personal data does not survive the deletion of the source.
+    cascade=True follows explicitly recorded DERIVED_FROM edges present in L3
+    when each fact is erased, recursively and with cycle protection. Erasing a
+    fact removes its incident edges. Shipped ingest does not record derivations.
 
     Ring Zero / VALUES_CORE are non-deletable (I6) → ImmutableStateError.
 

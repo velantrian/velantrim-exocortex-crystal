@@ -97,7 +97,12 @@ transfer.
 These are explicit, fundable deliverables (see [ROADMAP.md](./ROADMAP.md)):
 
 1. ✅ **Physical erasure** with content-free tombstoning (Art. 17) —
-   `core/erasure.py`, with **cascade erasure** of derived facts (`DERIVED_FROM`).
+   `core/erasure.py`. The optional cascade follows `DERIVED_FROM` edges present
+   in L3 when erasure begins. Crystal's shipped ingestion, Reader and
+   consolidation paths do not register those edges. A regular erasure removes
+   incident graph edges, so a later cascade can no longer traverse them.
+   See [issue #504](https://github.com/velantrian/velantrim-exocortex-crystal/issues/504)
+   for the unresolved lineage and interruption behavior.
 2. ✅ **Per-fact processing-restriction** (Art. 18) — `core/compliance.py`.
 3. ✅ **Exportable record-of-processing** (Art. 30) — `record_of_processing()`.
 4. ✅ **Application-level encryption at rest** (Art. 32) — `core/crypto.py`.

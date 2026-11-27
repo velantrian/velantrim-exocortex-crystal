@@ -74,7 +74,7 @@ Query → Retrieve → FactsPack → Trace → Guardian → TruthGate → Answer
 
 | Статья GDPR | Реализация | Файл |
 |---|---|---|
-| **Art. 17** (erasure) | Физическое удаление по L0/L1/L3/outbox + immutable tombstone с content-light erasure-метаданными (`fact_id`, timestamp, reason, actor + hash удалённого claim — не сам текст claim); каскад по `DERIVED_FROM` с защитой от циклов | `core/erasure.py` |
+| **Art. 17** (erasure) | Физическое удаление по L0/L1/L3/outbox и immutable tombstone с идентификатором, временем, причиной, субъектом операции и хешем утверждения. Каскад с защитой от циклов проходит по явно зарегистрированным рёбрам `DERIVED_FROM`. Штатные пути Crystal их не регистрируют. Обычное удаление уничтожает связи, по которым мог бы пройти последующий каскад. | `core/erasure.py`, [#504](https://github.com/velantrian/velantrim-exocortex-crystal/issues/504) |
 | **Art. 18** (restriction) | Флаг `restricted` исключает факт из retrieval и graph-walk | `core/compliance.py` |
 | **Art. 30** (record of processing) | `record_of_processing`, `erasure_log` | `core/compliance.py` |
 | **Art. 32** (encryption at rest) | Field-level шифрование claim/metadata; Fernet/AES или stdlib-only HMAC-SHA256-CTR encrypt-then-MAC; PBKDF2 200k. **Opt-in**: off by default (identity-функция без ключа), включается `VELANTRIM_ENCRYPTION_KEY` | `core/crypto.py` |
