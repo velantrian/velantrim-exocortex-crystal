@@ -50,15 +50,17 @@ velantrim-storage recover-lock \
   --confirm-no-writer
 ```
 
-Every command emits one JSON object. Exit `0` means `PASS`, exit `1` means a non-fatal
-`WARN`, and exit `2` means fail-closed refusal.
+Each parsed storage operation emits one JSON object. Exit `0` means `PASS`, exit `1`
+means a non-fatal `WARN`, and exit `2` with `status: FAIL` means refusal. Invalid UTF-8
+in JSON inputs and invalid storage profile shapes are reported through this error path.
 
 ## Backup contract
 
 `backup` accepts only a valid locked SQLite profile and a regular source database. It:
 
 1. creates the destination directory with no-overwrite semantics;
-2. uses the SQLite online backup API for a transactionally consistent snapshot;
+2. uses the SQLite online backup API for a transactionally consistent snapshot and sets
+   the snapshot's journal mode to `DELETE` before verification and hashing;
 3. runs `PRAGMA integrity_check` on the snapshot;
 4. verifies the required Crystal L3 tables;
 5. records table counts, page/freelist counts and `user_version`;
@@ -75,6 +77,9 @@ receipt.json      paths, hashes, counts and SQLite metrics
 complete.json     final publication marker bound to receipt.json
 ```
 
+The source database keeps its journal mode. The new bundle's database is a standalone
+snapshot with the existing bundle format.
+
 A missing, malformed or mismatched completion marker causes `verify` to fail closed. A
 handled backup failure removes the incomplete output. A hard process or host failure can
 leave an incomplete directory without a valid completion marker; it is not accepted as a
@@ -85,7 +90,12 @@ cryptographic signature against a malicious actor who can rewrite the whole bund
 
 ## Verify contract
 
-`verify` is read-only. It rejects:
+`verify` leaves the bundle files untouched. SQLite checks run on a private temporary
+copy outside the bundle, including for older snapshots with a WAL-mode header. A nonempty
+WAL or rollback journal alongside the bundle database is rejected because the receipt
+does not cover those bytes.
+
+Verification rejects:
 
 - a symlinked bundle or symlinked bundle file;
 - missing or malformed files;
@@ -98,6 +108,8 @@ cryptographic signature against a malicious actor who can rewrite the whole bund
 - table-count or `user_version` disagreement.
 
 Verification does not open, change or activate the current deployment profile.
+Allow temporary space outside the bundle for an additional database-sized copy when
+verifying. Restore needs that space in addition to the candidate database itself.
 
 ## Restore contract
 
@@ -107,16 +119,25 @@ symlinks. By default it writes `<target-profile-name>.restore-receipt.json` next
 candidate profile. Use `--receipt` to select a different new path. All three outputs
 must be outside the source backup bundle.
 
+All three must also avoid the current profile path and, for a configured SQLite profile,
+its database path and SQLite sidecar paths (`-wal`, `-shm`, `-journal`). The reserved
+paths remain protected if the active database file is missing. If the current profile
+file is absent, restore can still create a separate candidate. An existing invalid profile
+causes refusal. The target database's sidecar names are reserved. An existing sidecar
+causes refusal and is left in place.
+
 The operation:
 
-1. copies the verified database to a new path with no-overwrite semantics;
-2. reruns SQLite integrity/table metrics and compares them with the backup;
+1. copies the verified database bytes to a new path with no-overwrite semantics;
+2. reruns SQLite integrity/table metrics in a private temporary copy and compares them
+   with the backup;
 3. verifies the copied database hash;
 4. writes a restore receipt;
 5. writes and validates the candidate profile last.
 
-The current active profile path is explicitly forbidden as a restore target. Therefore a
-successful restore is not automatically activated:
+Restore reserves the active profile and its local SQLite or LadybugDB locator, even
+when the configured database is absent. An existing invalid active profile causes
+restore to refuse. Activation remains a separate operator action after successful restore.
 
 ```text
 restore result = new database + candidate profile + receipt
@@ -125,8 +146,9 @@ activation      = separate explicit deployment action
 
 This ordering makes the candidate profile the last activation-relevant artifact. A hard
 crash can still leave partial new targets; the absence of a valid candidate profile and/or
-restore receipt identifies an incomplete restore. The command never deletes or modifies
-the source bundle or current storage.
+restore receipt identifies an incomplete restore. On a handled failure, cleanup attempts
+every artifact created by the restore. A cleanup error reports the affected paths and
+the original failure. The source bundle and current storage remain intact.
 
 ## Multiple deployments
 
