@@ -1277,6 +1277,12 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None, *,
     # 2. FactsPack
     facts_pack = build_facts_pack(retrieved, query, asked_object=asked_object,
                                   as_of=as_of, temporal_scope=temporal_scope)
+    # Bind automatic promotion to a persisted snapshot captured before either
+    # gate. Re-reading a newer revision after the gates would defeat the CAS.
+    admission_snapshots = {
+        fact["fact_id"]: get_fact(fact["fact_id"])
+        for fact in facts_pack["facts"]
+    }
 
     # 3. Trace
     trace = build_trace(retrieved)
@@ -1342,7 +1348,7 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None, *,
                 fact.get("epistemic_state", "Observed"), set()
             ):
                 continue
-            persisted = get_fact(fact["fact_id"])
+            persisted = admission_snapshots.get(fact["fact_id"])
             gated_fields = ("claim", "source", "confidence", "claim_type", "source_status",
                             "epistemic_state")
             if (persisted is None or persisted.get("restricted")

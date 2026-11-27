@@ -401,3 +401,26 @@ def test_repeated_run_during_backend_failure_does_not_invalidate_intent(monkeypa
         assert memory._pending_l3_admissions() == [obligation]
     assert pipeline.drain_l3_outbox() == 1
     assert memory._pending_l3_admissions() == []
+
+def test_run_binds_first_projection_to_revision_before_gates(monkeypatch):
+    graph = get_l3_graph()
+    monkeypatch.setattr(pipeline, "retrieve", lambda *a, **k: [{
+        "id": _FID, "text": _CLAIM, "source": "synthetic", "confidence": 0.9,
+        "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
+        "significance": 0.5, "_score": 0.9, "epistemic_state": "Observed",
+        "origin": "memory",
+    }])
+    real_gate = pipeline.truth_gate
+
+    def change_revision(pack):
+        result = real_gate(pack)
+        assert result[0]
+        assert memory.update_fact(_FID, metadata={"changed": True})
+        return result
+
+    monkeypatch.setattr(pipeline, "truth_gate", change_revision)
+    assert pipeline.run("synthetic")["answer"] is None
+    assert memory.get_fact(_FID)["epistemic_state"] == "Observed"
+    assert graph.get_fact(_FID) is None
+    assert memory._pending_l3_admissions() == []
+    assert memory.pending_l3_writes() == []
