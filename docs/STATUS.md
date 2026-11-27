@@ -70,6 +70,12 @@ receipt authenticity != current standing
 
 This hardening does not rewrite historical ESM/receipt state, expand Canon authority, change TruthGate/Guardian/WriteGate ownership, or authorize production.
 
+## Post-V1 memory lifecycle — verified merge scope
+
+At the audited code checkpoint `78088e029b86d8f923178d19e9cecabd650a4f61`, #507 (#505) revalidates the process-local L0 cache against shared SQLite L1 on every `get_fact()`; #512 isolates returned records by deep copy and closes connections on schema failure; #513 refuses ordinary repeat ingest of a previously restricted record before writing; #511 checks the tombstone before resolving a canonical search hit. These are bounded fixes, not a global erasure or restriction guarantee: in-flight reads, the restriction/write race, other read/write paths, recovery and independent copies remain separate concerns. Optional cascade follows explicitly recorded `DERIVED_FROM` edges; production lineage completeness and interruption behavior remain open in [#504](https://github.com/velantrian/velantrim-exocortex-crystal/issues/504). Neither V1 scope closure nor passing CI certifies absence of post-V1 defects, legal compliance or production authorization.
+
+[Exact-main CI 45327666846](https://github.com/velantrian/velantrim-exocortex-crystal/actions/runs/45327666846) completed nine jobs successfully on the audited checkpoint; this is existing hosted CI evidence, not a fresh local test run.
+
 ## Authority boundaries
 
 ```text

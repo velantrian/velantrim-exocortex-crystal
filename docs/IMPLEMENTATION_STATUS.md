@@ -172,6 +172,12 @@ SQLite ordinary active local-first
 
 PostgreSQL/pgvector activation, queue federation, distributed exactly-once behavior and distributed sync are outside V1 authority.
 
+## Post-V1 memory lifecycle — bounded maintenance
+
+At the audited code checkpoint `78088e029b86d8f923178d19e9cecabd650a4f61`, #507 (#505) revalidates the process-local L0 cache against shared SQLite L1 on every `get_fact()`; #512 isolates returned records by deep copy and closes connections on schema failure; #513 refuses ordinary repeat ingest of a previously restricted record before writing; #511 checks the tombstone before resolving a canonical search hit. These are bounded fixes, not a global erasure or restriction guarantee: in-flight reads, the restriction/write race, other read/write paths, recovery and independent copies remain separate concerns. Optional cascade follows explicitly recorded `DERIVED_FROM` edges; production lineage completeness and interruption behavior remain open in [#504](https://github.com/velantrian/velantrim-exocortex-crystal/issues/504). Neither V1 scope closure nor passing CI certifies absence of post-V1 defects, legal compliance or production authorization.
+
+See [Current Status](./STATUS.md) and [Safety, Privacy and Failure Boundaries](./SAFETY_PRIVACY_AND_FAILURES.md).
+
 ## Validation / governance
 
 The permanent V1 PR matrix consists of nine checks: `code-quality`, `Ring Zero mutation gate`, `docs-status`, `test (3.11)`, `test (3.12)`, `jsonl-integrity`, `eval-gate`, `security`, and `docker-build`.

@@ -86,6 +86,8 @@ This map answers **what conceptual domains exist**. The important distinction is
 
 A retrieval score, model label or typed suspicion may help inspection. None of them owns the right to mutate trusted state.
 
+Admission and read authority are separate: physical L3 is not strict Canon. `TrustSnapshot` reconciles current records and `CanonicalView` selects trusted grounding; discovery, a stored node or a historic verdict cannot bypass these checks.
+
 ## 🌳 Project tree
 
 ```text
@@ -150,6 +152,14 @@ The topology is intentionally asymmetric: discovery can generate candidates, but
 | 🗄 PostgreSQL/pgvector | ⛔ **Inactive** | import/equivalence target only; `active=false`; no Reader activation |
 | 🧠 Semantic/hybrid Reader runtime | ❌ **Not authorized** | no Reader FTS/ANN/vector backend or NLI/RRTIC runtime stage |
 | 🤖 Dedicated/full autonomous Reader | ❌ **Not implemented** | bounded Reader layers exist; no full autonomous Reader core |
+
+### 🧩 Post-V1 implemented boundaries
+
+Reader Product Bridge v0.1 and the local UTF-8 text/Markdown and PDF source bridges v0.1 are implemented bounded post-V1 read-side components (#455, #457, #458). They prepare or execute caller-supplied bounded Reader inspection before admission; they do not authorize semantic/model execution, evidence admission, Canon writes, or production use.
+
+For public factual answer grounding, a `VERIFIED` fact must retain qualifying replayable evidence bound to the exact `TrustSnapshot`-resolved claim (#464). A matching fact ID, historical verdict or sealed receipt is not enough; loss of current support does not prove falsity. This is a read-authority condition, not a new admission or a rewrite of historical decisions.
+
+For bounded memory-lifecycle fixes and unresolved risks, see [Current Status](./docs/STATUS.md) and [Safety, Privacy and Failure Boundaries](./docs/SAFETY_PRIVACY_AND_FAILURES.md).
 
 For exact implementation flags and current verification evidence, use [Implementation Status](./docs/IMPLEMENTATION_STATUS.md), [Current Status](./docs/STATUS.md), [TEST_REPORT](./TEST_REPORT.md) and the [machine-readable implementation manifest](./docs/status/implementation-manifest.json).
 

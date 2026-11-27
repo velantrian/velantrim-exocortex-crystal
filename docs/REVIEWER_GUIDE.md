@@ -88,6 +88,10 @@ velantrim audit-verify
 The behaviour pins live in executable tests such as `tests/test_truth_gate.py` and
 `tests/test_read_only_query_surfaces.py`.
 
+For public factual answer grounding, a `VERIFIED` fact must retain qualifying replayable evidence bound to the exact `TrustSnapshot`-resolved claim (#464). A matching fact ID, historical verdict or sealed receipt is not enough; loss of current support does not prove falsity. This is a read-authority condition, not a new admission or a rewrite of historical decisions.
+
+Reader Product Bridge v0.1 and the local UTF-8 text/Markdown and PDF source bridges v0.1 are implemented bounded post-V1 read-side components (#455, #457, #458). They prepare or execute caller-supplied bounded Reader inspection before admission; they do not authorize semantic/model execution, evidence admission, Canon writes, or production use.
+
 ## 5. Verify storage and migration boundaries
 
 The ordinary documented profile is SQLite. A first durable `auto` selection may choose the
@@ -156,6 +160,10 @@ Review:
 
 Read [`PRIVACY.md`](../PRIVACY.md), [`GDPR.md`](../GDPR.md) and the
 [D2 safety/privacy/failure summary](./SAFETY_PRIVACY_AND_FAILURES.md).
+
+At the audited code checkpoint `78088e029b86d8f923178d19e9cecabd650a4f61`, #507 (#505) revalidates the process-local L0 cache against shared SQLite L1 on every `get_fact()`; #512 isolates returned records by deep copy and closes connections on schema failure; #513 refuses ordinary repeat ingest of a previously restricted record before writing; #511 checks the tombstone before resolving a canonical search hit. These are bounded fixes, not a global erasure or restriction guarantee: in-flight reads, the restriction/write race, other read/write paths, recovery and independent copies remain separate concerns. Optional cascade follows explicitly recorded `DERIVED_FROM` edges; production lineage completeness and interruption behavior remain open in [#504](https://github.com/velantrian/velantrim-exocortex-crystal/issues/504). Neither V1 scope closure nor passing CI certifies absence of post-V1 defects, legal compliance or production authorization.
+
+Consult [Safety, Privacy and Failure Boundaries](./SAFETY_PRIVACY_AND_FAILURES.md).
 
 ## 8. Review failure behaviour
 

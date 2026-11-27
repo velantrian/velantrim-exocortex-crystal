@@ -67,6 +67,8 @@ runtime capability != architecture research
 
 `dedicated_reader_core=false` remains the larger capability truth.
 
+Reader Product Bridge v0.1 and the local UTF-8 text/Markdown and PDF source bridges v0.1 are implemented bounded post-V1 read-side components (#455, #457, #458). They prepare or execute caller-supplied bounded Reader inspection before admission; they do not authorize semantic/model execution, evidence admission, Canon writes, or production use.
+
 ## RC-5 relation semantics remain authoritative
 
 RC-5 registers only explicit pre-admission relations between valid RC-4 candidates from one open
@@ -154,6 +156,8 @@ comparison pass    != runtime authorization
 Public query paths through `core.query_pipeline.query()` are read-only. A query must not mutate facts,
 ESM, L3, outbox, episode links, embedding identity or unknown candidates. When strict grounding is
 insufficient, bounded refusal is expected.
+
+For public factual answer grounding, a `VERIFIED` fact must retain qualifying replayable evidence bound to the exact `TrustSnapshot`-resolved claim (#464). A matching fact ID, historical verdict or sealed receipt is not enough; loss of current support does not prove falsity. This is a read-authority condition, not a new admission or a rewrite of historical decisions.
 
 ## Storage profiles
 

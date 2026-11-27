@@ -1,9 +1,8 @@
 # ⚠️ Crystal Known Risks and Open Boundaries
 
-## 2026-11-24 — Repeat ingest processed restricted facts (GDPR Art. 18) · FIX IN DRAFT PR (NOT MERGED)
+## 2026-11-24 — Repeat ingest processed restricted facts (GDPR Art. 18) · #513 MERGED; RESIDUAL RACE OPEN
 
-**Status:** fixed only on the draft branch of this change; `main` still has the defect until
-it is merged. Resolve from Git history, not from this register.
+**Status:** the bounded pre-write guard is merged in PR #513 (`de0a425fd7e6eb2c65d8a98ff41c94125faffc42`). The residual race below is not fixed by that merge.
 
 `core/ingest.py` never checked `restricted`. A repeat ingest of a restricted Validated fact
 recorded an occurrence and returned the full stored record (HTTP `/ingest` passed it to the
@@ -15,10 +14,9 @@ Residual, not closed: the check reads the prior record before the write; a restr
 between that read and the write is not re-checked inside the write transaction. Other write
 paths (`reconcile.*`, `update_fact`) are not covered by this change.
 
-## 2026-11-23 — In-process L0 aliasing and connection leak on schema failure · FIX IN DRAFT PR (NOT MERGED)
+## 2026-11-23 — In-process L0 aliasing and connection leak on schema failure · #512 MERGED
 
-**Status:** fixed only on the draft branch of this change; `main` still has both defects
-until it is merged. Resolve from Git history, not from this register.
+**Status:** bounded fixes merged in PR #512 (`3b9ada90490c715c120e58164f1091dd6df9e780`). The scope limitations below remain.
 
 - L0 aliasing: `memory.get_fact()` returned the very dict held in the process-local L0
   cache (and `store_fact()` cached the caller's own metadata dict; `return_persisted`
@@ -64,6 +62,10 @@ Remaining limitations and trade-offs:
   1000 facts: +2.9% / +1.8%. `_db()` optimization is deliberately not part of the fix;
 - availability behaviour change: `get_fact()` now raises when L1/SQLite is unavailable
   (for example `sqlite3.OperationalError`) even if the fact is already in L0.
+
+## 2026-11-27 — Canonical search tombstone / lineage scope
+
+#511 is merged (`78088e029b86d8f923178d19e9cecabd650a4f61`); `_resolve_canonical_fact()` checks the current erasure marker before fetching the L3 node. This does not cover every conflict, evidence, episode or recovery path. #504 remains open; a cascade can follow only recorded `DERIVED_FROM` edges. Do not treat unmerged #514–#517 as runtime fixes. Further audit hypotheses require reproduction.
 
 ## 2026-10-28 — Focused receipt replay hardening
 

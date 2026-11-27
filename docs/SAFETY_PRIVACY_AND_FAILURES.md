@@ -29,6 +29,8 @@ Crystal does not guarantee truth or zero hallucinations. Its measurable goal is 
 unsupported material is blocked, labelled, refused or auditable instead of being silently
 promoted.
 
+For public factual answer grounding, a `VERIFIED` fact must retain qualifying replayable evidence bound to the exact `TrustSnapshot`-resolved claim (#464). A matching fact ID, historical verdict or sealed receipt is not enough; loss of current support does not prove falsity. This is a read-authority condition, not a new admission or a rewrite of historical decisions.
+
 ## 2. Default local trust boundary
 
 The default installation has no mandatory cloud, LLM, telemetry or analytics dependency.
@@ -111,6 +113,12 @@ Erasure from the active local store does not automatically erase:
 - already emitted logs or receipts where retention policy requires separate handling.
 
 Operators need an inventory and deletion policy for those copies.
+
+### Bounded memory-lifecycle maintenance
+
+At the audited code checkpoint `78088e029b86d8f923178d19e9cecabd650a4f61`, #507 (#505) revalidates the process-local L0 cache against shared SQLite L1 on every `get_fact()`; #512 isolates returned records by deep copy and closes connections on schema failure; #513 refuses ordinary repeat ingest of a previously restricted record before writing; #511 checks the tombstone before resolving a canonical search hit. These are bounded fixes, not a global erasure or restriction guarantee: in-flight reads, the restriction/write race, other read/write paths, recovery and independent copies remain separate concerns. Optional cascade follows explicitly recorded `DERIVED_FROM` edges; production lineage completeness and interruption behavior remain open in [#504](https://github.com/velantrian/velantrim-exocortex-crystal/issues/504). Neither V1 scope closure nor passing CI certifies absence of post-V1 defects, legal compliance or production authorization.
+
+See [Current Status](./STATUS.md) and [Known Risks](./ai/KNOWN_RISKS.md).
 
 ## 8. Failure-mode matrix
 

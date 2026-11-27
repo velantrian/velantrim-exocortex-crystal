@@ -52,6 +52,8 @@ summary                 != Canon admission
 
 Public `HTTP /ask`, `CLI ask` and `MCP search` use the read-only query pipeline. Explicit ingest is admission-capable through Guardian/TruthGate. Reader RC-1 through RC-6 are upstream domain layers and do not perform admission.
 
+For public factual answer grounding, a `VERIFIED` fact must retain qualifying replayable evidence bound to the exact `TrustSnapshot`-resolved claim (#464). A matching fact ID, historical verdict or sealed receipt is not enough; loss of current support does not prove falsity. This is a read-authority condition, not a new admission or a rewrite of historical decisions.
+
 ## 4. SQLite lifecycle and PostgreSQL target
 
 ```text
@@ -81,6 +83,8 @@ An optional RC-5 registry may contribute existing relation IDs to a working set 
 
 A caller may explicitly register a `SourceFidelity.SUMMARY` for one current working set. Before registration RC-6 rechecks the working-set direct-leaf provenance snapshot against the current RC-4 candidates, then records the exact RC-4 candidate IDs and direct replayable source locators. Summary text is not generated automatically and another summary cannot serve as the only provenance source.
 
+Reader Product Bridge v0.1 and the local UTF-8 text/Markdown and PDF source bridges v0.1 are implemented bounded post-V1 read-side components (#455, #457, #458). They prepare or execute caller-supplied bounded Reader inspection before admission; they do not authorize semantic/model execution, evidence admission, Canon writes, or production use.
+
 ## 6. Authority isolation
 
 RC-5 does not call `core.evidence.attach_evidence()`, create `evidence_spans`, write strict Canon, mutate `truth_status` or ESM, weaken Guardian/TruthGate, promote confidence, assert evidence sufficiency or choose a contradiction winner. It does not import the existing contradiction-resolution modules.
@@ -94,6 +98,8 @@ Telemetry is only counts/resource references. It is not truth probability, confi
 ## 7. Secret/privacy boundary
 
 Credentials and credential-bearing DSNs must not enter profiles, bundles, receipts, logs, issues or Notion. Reader RC-1/RC-2/RC-3/RC-4/RC-5/RC-6 retain no source body. Relation sides, working sets and summaries inherit the exact source restriction/sensitivity context.
+
+At the audited code checkpoint `78088e029b86d8f923178d19e9cecabd650a4f61`, #507 (#505) revalidates the process-local L0 cache against shared SQLite L1 on every `get_fact()`; #512 isolates returned records by deep copy and closes connections on schema failure; #513 refuses ordinary repeat ingest of a previously restricted record before writing; #511 checks the tombstone before resolving a canonical search hit. These are bounded fixes, not a global erasure or restriction guarantee: in-flight reads, the restriction/write race, other read/write paths, recovery and independent copies remain separate concerns. Optional cascade follows explicitly recorded `DERIVED_FROM` edges; production lineage completeness and interruption behavior remain open in [#504](https://github.com/velantrian/velantrim-exocortex-crystal/issues/504). Neither V1 scope closure nor passing CI certifies absence of post-V1 defects, legal compliance or production authorization.
 
 ## 8. Authority table
 

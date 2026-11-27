@@ -2,6 +2,12 @@
 
 This compact log records material decisions, exact evidence, limitations and hand-offs. It does not replace Git history, issues, pull requests, `CHANGELOG.md` or Notion.
 
+## 2026-11-27 — Post-merge reconciliation (documentation only)
+
+- #507 merged `27fff55f69f7b76b3d41ad92ebc1b883be526653`; #505 closed. #512 merged `3b9ada90490c715c120e58164f1091dd6df9e780`; #513 merged `de0a425fd7e6eb2c65d8a98ff41c94125faffc42`; #511 merged `78088e029b86d8f923178d19e9cecabd650a4f61`.
+- Existing exact-main CI [45327666846](https://github.com/velantrian/velantrim-exocortex-crystal/actions/runs/45327666846): 9/9 successful. Older draft/pending labels below describe their historical time, not live status.
+- #504 remains open; #516 is an independent draft for cascade wording. No runtime or authority change in this documentation work.
+
 ## 2026-11-24 — Restricted repeat ingest refused; #505 restrict probe restored · draft PR
 
 - Base: `main@3b9ada9` (after #512). Both items come from an independent review of #512.
