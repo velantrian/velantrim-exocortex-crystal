@@ -135,10 +135,10 @@ def test_drain_l3_outbox_keeps_queue_when_backend_down(monkeypatch):
     """If the backend is still down during a drain, the entry stays queued."""
     from core import pipeline
     from core.l3_graph import get_l3_graph
-    from core.memory import store_fact, enqueue_l3_write, pending_l3_writes
+    from core.ingest import ingest
+    from core.memory import enqueue_l3_write, pending_l3_writes
 
-    store_fact({"fact_id": "q1", "claim": "c", "source": "s",
-                "confidence": 0.8, "epistemic_state": "Validated"})
+    assert ingest("A synthetic test sample", fact_id="q1")["accepted"]
     enqueue_l3_write("q1")
     graph = get_l3_graph()
     monkeypatch.setattr(graph, "merge_fact",
@@ -146,6 +146,22 @@ def test_drain_l3_outbox_keeps_queue_when_backend_down(monkeypatch):
 
     assert pipeline.drain_l3_outbox() == 0
     assert "q1" in pending_l3_writes()              # kept for retry
+
+
+def test_outbox_preserves_node_when_projection_inputs_disagree():
+    from core import pipeline
+    from core.ingest import ingest
+    from core.l3_graph import get_l3_graph
+    from core.memory import enqueue_l3_write, update_fact
+
+    fid = "queue-inputs-changed"
+    assert ingest("A synthetic accepted sample", source="original", fact_id=fid)["accepted"]
+    node = get_l3_graph().get_fact(fid)
+    assert update_fact(fid, source="different source")
+    enqueue_l3_write(fid)
+
+    assert pipeline.drain_l3_outbox() == 0
+    assert get_l3_graph().get_fact(fid) == node
 
 
 # ─── episodic binding ─────────────────────────────────────────────────────────
@@ -1643,14 +1659,10 @@ def test_new_admission_with_non_promotable_state_is_skipped_not_merged(monkeypat
     assert g.get_fact(fid) is None  # never merged
 
 
-def test_l1_validated_l3_missing_outbox_recovery_self_heals_correctly(monkeypatch):
-    """Blocker 1 test 5: a fact already Validated in L1 but missing from L3
-    (simulating a prior merge failure) must still be recognized as a
-    genuinely new L3 admission (no existing node to preserve) and self-heal
-    with a freshly computed truth_status — the outbox-recovery path must
-    keep working, not be mistaken for "not a new admission"."""
+def test_l1_validated_without_projection_authority_stays_out_of_l3(monkeypatch):
+    """The persisted ESM label is insufficient for either recovery or recall."""
     from core import pipeline
-    from core.memory import store_fact
+    from core.memory import enqueue_l3_write, pending_l3_writes, store_fact
     from core.l3_graph import get_l3_graph
     g = get_l3_graph()
     fid = "outbox-recovery-candidate"
@@ -1659,6 +1671,7 @@ def test_l1_validated_l3_missing_outbox_recovery_self_heals_correctly(monkeypatc
                "epistemic_state": "Validated", "claim_type": "WORLD_FACT",
                "source_status": "EXTERNAL", "significance": 0.5})
     assert g.get_fact(fid) is None  # L3 merge never happened (simulated failure)
+    enqueue_l3_write(fid)
 
     item = {"id": fid, "text": claim, "source": "s", "confidence": 0.9,
             "claim_type": "WORLD_FACT", "source_status": "EXTERNAL",
@@ -1668,10 +1681,9 @@ def test_l1_validated_l3_missing_outbox_recovery_self_heals_correctly(monkeypatc
 
     result = pipeline.run("q")
 
-    assert result["answer"] is not None
-    after = g.get_fact(fid)
-    assert after is not None            # self-healed: now merged
-    assert after["truth_status"] == "VERIFIED"
+    assert result["answer"] is None
+    assert g.get_fact(fid) is None
+    assert pending_l3_writes() == [fid]
 
 
 # ─── Recall reconciliation (#257 review round 5) ──────────────────────────────
@@ -2611,11 +2623,11 @@ def test_run_blocks_when_truth_gate_fails(monkeypatch):
 
 
 def test_pipeline_skips_l3_merge_on_cas_miss(monkeypatch):
-    """If transition_esm reports a CAS miss during promotion, the pipeline skips
+    """If transition_esm_if_unchanged reports a CAS miss during promotion, the pipeline skips
     merging that fact into the canon (no stale promotion) instead of continuing to
     a success merge. Defense-in-depth, not a full atomicity guarantee."""
     from core import pipeline
-    monkeypatch.setattr(pipeline, "transition_esm", lambda *a, **k: False)
+    monkeypatch.setattr(pipeline, "transition_esm_if_unchanged", lambda *a, **k: None)
     result = pipeline.run("DNA")
     # The run completes without crashing; any fact that hit the CAS miss was
     # skipped before its truth_status was set / before the L3 merge.
@@ -2624,3 +2636,22 @@ def test_pipeline_skips_l3_merge_on_cas_miss(monkeypatch):
     for f in result.get("facts", []):
         if f.get("epistemic_state") != "Validated":
             assert "truth_status" not in f
+
+
+def test_pipeline_skips_admission_when_gate_inputs_change(monkeypatch):
+    from core import pipeline
+    from core.l3_graph import get_l3_graph
+    from core.memory import update_fact
+
+    gate = pipeline.truth_gate
+
+    def change_source_after_gate(facts_pack):
+        result = gate(facts_pack)
+        assert result[0]
+        for fact in facts_pack["facts"]:
+            assert update_fact(fact["fact_id"], source="new synthetic source")
+        return result
+
+    monkeypatch.setattr(pipeline, "truth_gate", change_source_after_gate)
+    assert pipeline.run("DNA")["answer"] is None
+    assert get_l3_graph().all_facts() == []

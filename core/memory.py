@@ -9,6 +9,7 @@
 # ESM (Epistemic State Machine): 8 states of a fact's lifecycle.
 
 import copy
+import hashlib
 import os
 import sqlite3
 import json
@@ -214,6 +215,16 @@ _OUTBOX_DDL = """
     CREATE TABLE IF NOT EXISTS l3_outbox (
         fact_id     TEXT PRIMARY KEY,
         enqueued_at TEXT NOT NULL
+    )
+"""
+
+_OUTBOX_ADMISSION_DDL = """
+    CREATE TABLE IF NOT EXISTS l3_outbox_admissions (
+        fact_id TEXT PRIMARY KEY,
+        created_at TEXT NOT NULL,
+        revision INTEGER NOT NULL,
+        binding TEXT NOT NULL,
+        truth_status TEXT NOT NULL
     )
 """
 
@@ -765,6 +776,7 @@ def store_fact(
     reject_terminal: bool = False,
     return_persisted: bool = False,
     preserve_metadata: bool = False,
+    reject_pending_admission: bool = False,
 ) -> Optional[Dict]:
     """
     Store a fact in L0 (LRU RAM) and L1 (SQLite).
@@ -857,6 +869,8 @@ def store_fact(
             # an already-promoted claim.
             begin_immediate(conn)
             index_was_complete = _normalized_index_capture_complete(conn)
+            if reject_pending_admission and _has_l3_admission(conn, fact_id):
+                raise IngestStateChangedError("first L3 projection is still pending")
             existing_row = conn.execute(
                 "SELECT claim, epistemic_state, metadata FROM facts WHERE fact_id = ?",
                 (fact_id,),
@@ -1095,6 +1109,8 @@ def update_fact(
                 or expected_claim is not _INGEST_EXPECTATION_UNSET
             )
             if guarded:
+                if _has_l3_admission(conn, fact_id):
+                    raise IngestStateChangedError("first L3 projection is still pending")
                 row = conn.execute(
                     "SELECT claim, epistemic_state, revision "
                     "FROM facts WHERE fact_id = ?",
@@ -1253,9 +1269,13 @@ def transition_esm(fact_id: str, new_state: str) -> bool:
 
 
 def transition_esm_if_unchanged(
-    expected_fact: Dict[str, Any], new_state: str
+    expected_fact: Dict[str, Any], new_state: str, *,
+    admission_verdict: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
     """Promote only the exact persisted claim version supplied to its gates.
+
+    For automatic first projection, the caller supplies the already determined
+    verdict. Its durable obligation and the L1 transition commit together.
 
     The read/check/update is one SQLite ``BEGIN IMMEDIATE`` transaction. The
     Guardian and TruthGate calls happen before this helper and hold no SQLite
@@ -1305,6 +1325,14 @@ def transition_esm_if_unchanged(
                 _l0_pop(fact_id)
                 return None
 
+            if admission_verdict is not None and (
+                row["restricted"] or conn.execute(
+                    "SELECT 1 FROM erasure_log WHERE fact_id = ?", (fact_id,)
+                ).fetchone() is not None
+            ):
+                _l0_pop(fact_id)
+                return None
+
             current_state = row["epistemic_state"]
             allowed = ESM_TRANSITIONS.get(current_state)
             if allowed is not None and new_state not in allowed:
@@ -1330,6 +1358,8 @@ def transition_esm_if_unchanged(
             refreshed_row = conn.execute(
                 "SELECT * FROM facts WHERE fact_id = ?", (fact_id,)
             ).fetchone()
+            if admission_verdict is not None:
+                _stage_l3_admission(conn, refreshed_row, admission_verdict)
 
         refreshed = dict(refreshed_row)
         refreshed["claim"] = crypto.decrypt(refreshed["claim"])
@@ -1361,6 +1391,194 @@ def get_all_facts(epistemic_state: Optional[str] = None) -> list:
 
 
 # ─── L3 OUTBOX API ────────────────────────────────────────────────────────────
+
+def _l3_admission_binding(fact: Dict[str, Any]) -> str:
+    fields = ("claim", "source", "claim_type", "source_status", "confidence")
+    encoded = json.dumps([fact[key] for key in fields], ensure_ascii=False).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _stage_l3_admission(conn, row, verdict: str) -> None:
+    """Stage first-projection authority on the caller's promotion transaction."""
+    from core.canonical_view import KNOWN_TRUTH_STATUSES
+    if row["epistemic_state"] != "Validated" or verdict not in (
+        KNOWN_TRUTH_STATUSES - {"CURATOR_OVERRIDE"}
+    ):
+        raise ValueError("invalid automatic L3 admission verdict")
+    fact = dict(row)
+    fact["claim"] = crypto.decrypt(row["claim"])
+    conn.execute(_OUTBOX_ADMISSION_DDL)
+    conn.execute(
+        "INSERT INTO l3_outbox_admissions "
+        "(fact_id, created_at, revision, binding, truth_status) VALUES (?, ?, ?, ?, ?) "
+        "ON CONFLICT(fact_id) DO UPDATE SET created_at = excluded.created_at, "
+        "revision = excluded.revision, binding = excluded.binding, "
+        "truth_status = excluded.truth_status",
+        (fact["fact_id"], fact["created_at"], fact["revision"],
+         _l3_admission_binding(fact), verdict),
+    )
+    # This row is an operational queue entry, not a second authority. It is
+    # staged even when Redis is selected, so lost notification cannot strand
+    # a committed decision. No change of the configured queue backend.
+    conn.execute(
+        "INSERT INTO l3_outbox (fact_id, enqueued_at) VALUES (?, ?) "
+        "ON CONFLICT(fact_id) DO UPDATE SET enqueued_at = excluded.enqueued_at",
+        (fact["fact_id"], fact["updated_at"]),
+    )
+
+
+def _has_l3_admission(conn, fact_id: str) -> bool:
+    # The first promotion creates the table in its own transaction. Do not
+    # create schema during a guarded preflight on an older database.
+    return (conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type = 'table' "
+        "AND name = 'l3_outbox_admissions'"
+    ).fetchone() is not None and conn.execute(
+        "SELECT 1 FROM l3_outbox_admissions WHERE fact_id = ?", (fact_id,)
+    ).fetchone() is not None)
+
+
+def _pending_l3_admissions() -> list:
+    """Read durable admission obligations independently of queue transport."""
+    with _db() as conn:
+        conn.execute(_OUTBOX_ADMISSION_DDL)
+        return [dict(row) for row in conn.execute(
+            "SELECT * FROM l3_outbox_admissions ORDER BY created_at, fact_id"
+        )]
+
+
+def _l3_admission_identity(fact: Dict[str, Any], verdict: str) -> Dict[str, Any]:
+    return {
+        "fact_id": fact["fact_id"], "created_at": fact["created_at"],
+        "revision": fact["revision"], "binding": _l3_admission_binding(fact),
+        "truth_status": verdict,
+    }
+
+
+def _project_l3_admission(graph, obligation: Dict[str, Any]) -> bool:
+    """Project one exact committed obligation, never overwrite a newer node.
+
+    The short SQLite write fence serializes admission projectors with L1
+    writers and erasure/restriction. L3 itself is a separate transaction: if
+    the process dies after its MERGE, the next worker checks the existing node
+    and acknowledges only the same durable obligation. No verdict is computed
+    here. An incompatible existing node or changed revision remains pending
+    for explicit inspection, not automatic re-admission.
+    """
+    from core.embedding import assert_compatible_embedder
+    from core.canonical_view import KNOWN_TRUTH_STATUSES, _in
+
+    fid = obligation["fact_id"]
+    with _db() as conn:
+        begin_immediate(conn)
+        current = conn.execute(
+            "SELECT * FROM l3_outbox_admissions WHERE fact_id = ?", (fid,)
+        ).fetchone()
+        if current is None or dict(current) != obligation:
+            return False
+        row = conn.execute("SELECT * FROM facts WHERE fact_id = ?", (fid,)).fetchone()
+        if row is None or row["restricted"] or row["epistemic_state"] != "Validated":
+            return False
+        if conn.execute(
+            "SELECT 1 FROM erasure_log WHERE fact_id = ?", (fid,)
+        ).fetchone() is not None:
+            return False
+        fact = dict(row)
+        fact["claim"] = crypto.decrypt(row["claim"])
+        fact["metadata"] = json.loads(crypto.decrypt(row["metadata"]))
+        verdict = current["truth_status"]
+        if (not _in(verdict, KNOWN_TRUTH_STATUSES - {"CURATOR_OVERRIDE"})
+                or _l3_admission_identity(fact, verdict) != obligation):
+            return False
+        payload = {**fact, "truth_status": verdict}
+        existing = graph.get_fact(fid)
+        if existing is None:
+            assert_compatible_embedder(graph)
+            graph.merge_fact(payload)
+        else:
+            # An already-applied obligation is a no-op. Do not repair or
+            # replace an existing conflicting/newer projection here.
+            fields = ("fact_id", "claim", "source", "claim_type", "source_status",
+                      "confidence", "epistemic_state", "truth_status")
+            if (any(existing.get(k) != payload[k] for k in fields)
+                    or existing.get("restricted")
+                    or any(k in existing and existing[k] != payload[k]
+                           for k in ("created_at", "revision"))):
+                return False
+        conn.execute(
+            "DELETE FROM l3_outbox_admissions WHERE fact_id = ? AND created_at = ? "
+            "AND revision = ? AND binding = ? AND truth_status = ?",
+            (fid, obligation["created_at"], obligation["revision"],
+             obligation["binding"], verdict),
+        )
+        # An independently queued secondary sync may have replaced this row.
+        # Acknowledge only the operational entry staged by this promotion.
+        conn.execute(
+            "DELETE FROM l3_outbox WHERE fact_id = ? AND enqueued_at = ?",
+            (fid, fact["updated_at"]),
+        )
+        return True
+
+
+def _project_l3_secondary(graph, queue, fid: str) -> bool:
+    """Replay the latest secondary-sync state without acquiring admission authority.
+
+    Share the SQLite write fence with admission projection. A stale queue
+    snapshot cannot clear or write through a newly staged admission. Redis
+    entries are secondary notifications only; first-projection obligations are
+    never acknowledged through Redis.
+    """
+    from core.queue import SqliteOutboxQueue
+    from core.canonical_view import KNOWN_TRUTH_STATUSES, _in
+
+    with _db() as conn:
+        begin_immediate(conn)
+        if _has_l3_admission(conn, fid):
+            return False
+
+        local = isinstance(queue, SqliteOutboxQueue)
+        token = conn.execute(
+            "SELECT enqueued_at FROM l3_outbox WHERE fact_id = ?", (fid,)
+        ).fetchone() if local else None
+        if local and token is None:
+            return False
+
+        def acknowledge():
+            if local:
+                conn.execute(
+                    "DELETE FROM l3_outbox WHERE fact_id = ? AND enqueued_at = ?",
+                    (fid, token["enqueued_at"]),
+                )
+            else:
+                queue.clear(fid)
+
+        row = conn.execute("SELECT * FROM facts WHERE fact_id = ?", (fid,)).fetchone()
+        if row is None or conn.execute(
+            "SELECT 1 FROM erasure_log WHERE fact_id = ?", (fid,)
+        ).fetchone() is not None:
+            acknowledge()
+            return False
+        fact = dict(row)
+        fact["claim"] = crypto.decrypt(row["claim"])
+        fact["metadata"] = json.loads(crypto.decrypt(row["metadata"]))
+        if not l3_secondary_sync_admissible(
+            fact, graph=graph, allow_missing_validated_recovery=True,
+        ):
+            acknowledge()
+            return False
+        existing = graph.get_fact(fid)
+        if (fact["restricted"] or existing is None
+                or any(existing.get(key) != fact[key]
+                       for key in ("claim", "source", "claim_type", "source_status"))
+                or not _in(existing.get("truth_status"), KNOWN_TRUTH_STATUSES)
+                or ("created_at" in existing and existing["created_at"] != fact["created_at"])
+                or (isinstance(existing.get("revision"), int)
+                    and existing["revision"] > fact["revision"])):
+            return False
+        graph.merge_fact({**fact, "truth_status": existing["truth_status"]})
+        acknowledge()
+        return True
+
 
 def enqueue_l3_write(fact_id: str) -> None:
     """Enqueue a fact for re-merge into L3 (idempotent: upsert by fact_id)."""
@@ -1449,6 +1667,9 @@ def delete_fact_l1(fact_id: str) -> bool:
             begin_immediate(conn)
             index_was_complete = _normalized_index_capture_complete(conn)
             cur = conn.execute("DELETE FROM facts WHERE fact_id = ?", (fact_id,))
+            conn.execute(_OUTBOX_ADMISSION_DDL)
+            conn.execute("DELETE FROM l3_outbox_admissions WHERE fact_id = ?", (fact_id,))
+            conn.execute("DELETE FROM l3_outbox WHERE fact_id = ?", (fact_id,))
             _normalized_index_refresh_after_write(
                 conn, (fact_id,), was_complete=index_was_complete
             )

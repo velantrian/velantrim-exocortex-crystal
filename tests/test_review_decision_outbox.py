@@ -48,6 +48,33 @@ def _validated(fid: str, claim: str) -> str:
     return fid
 
 
+def test_secondary_recovery_keeps_curator_verdict(monkeypatch):
+    from core import pipeline, reconcile
+    from core.queue import get_outbox_queue
+
+    fid = _pending("decision:secondary-recovery")
+    assert update_fact(fid, confidence=0.01)
+    with pytest.warns(RuntimeWarning, match="Force override"):
+        result = review.approve(fid, actor="reviewer", force=True, reason="local fixture")
+    assert result["truth_status"] == "CURATOR_OVERRIDE"
+    assert result["projection_status"] == "completed"
+
+    graph = get_l3_graph()
+
+    def unavailable(_fact):
+        raise RuntimeError("synthetic L3 outage")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(graph, "merge_fact", unavailable)
+        reconcile.reinforce(fid)
+        assert get_outbox_queue().pending() == [fid]
+
+    assert pipeline.drain_l3_outbox() == 1
+    assert graph.get_fact(fid)["truth_status"] == result["truth_status"]
+    assert graph.get_fact(fid)["confidence"] == get_fact(fid)["confidence"]
+    assert pipeline.drain_l3_outbox() == 0
+
+
 def test_l3_failure_leaves_durable_decision_and_retryable_projection(monkeypatch):
     fid = _pending("decision:approve-failure")
     graph = get_l3_graph()
