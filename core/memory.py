@@ -9,6 +9,7 @@
 # ESM (Epistemic State Machine): 8 states of a fact's lifecycle.
 
 import copy
+import hashlib
 import os
 import sqlite3
 import json
@@ -214,6 +215,16 @@ _OUTBOX_DDL = """
     CREATE TABLE IF NOT EXISTS l3_outbox (
         fact_id     TEXT PRIMARY KEY,
         enqueued_at TEXT NOT NULL
+    )
+"""
+
+_OUTBOX_ADMISSION_DDL = """
+    CREATE TABLE IF NOT EXISTS l3_outbox_admissions (
+        fact_id TEXT PRIMARY KEY,
+        created_at TEXT NOT NULL,
+        revision INTEGER NOT NULL,
+        binding TEXT NOT NULL,
+        truth_status TEXT NOT NULL
     )
 """
 
@@ -1362,6 +1373,50 @@ def get_all_facts(epistemic_state: Optional[str] = None) -> list:
 
 # ─── L3 OUTBOX API ────────────────────────────────────────────────────────────
 
+def _l3_admission_binding(fact: Dict[str, Any]) -> str:
+    fields = ("claim", "source", "claim_type", "source_status", "confidence")
+    encoded = json.dumps([fact[key] for key in fields], ensure_ascii=False).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _remember_l3_admission(fact: Dict[str, Any]) -> None:
+    """Record the verdict from a failed first projection of an admitted L1 revision."""
+    with _db() as conn:
+        conn.execute(_OUTBOX_ADMISSION_DDL)
+        conn.execute(
+            "INSERT INTO l3_outbox_admissions "
+            "(fact_id, created_at, revision, binding, truth_status) "
+            "SELECT fact_id, created_at, revision, ?, ? FROM facts "
+            "WHERE fact_id = ? AND created_at = ? AND revision = ? AND restricted = 0 "
+            "AND NOT EXISTS (SELECT 1 FROM erasure_log WHERE fact_id = facts.fact_id) "
+            "ON CONFLICT(fact_id) DO UPDATE SET created_at = excluded.created_at, "
+            "revision = excluded.revision, binding = excluded.binding, "
+            "truth_status = excluded.truth_status "
+            "WHERE excluded.created_at > l3_outbox_admissions.created_at OR "
+            "(excluded.created_at = l3_outbox_admissions.created_at "
+            "AND excluded.revision > l3_outbox_admissions.revision)",
+            (_l3_admission_binding(fact), fact["truth_status"],
+             fact["fact_id"], fact["created_at"], fact["revision"]),
+        )
+
+
+def _l3_admission_verdict(fact: Dict[str, Any]) -> Optional[str]:
+    with _db() as conn:
+        conn.execute(_OUTBOX_ADMISSION_DDL)
+        row = conn.execute(
+            "SELECT truth_status FROM l3_outbox_admissions "
+            "WHERE fact_id = ? AND created_at = ? AND binding = ?",
+            (fact["fact_id"], fact["created_at"], _l3_admission_binding(fact)),
+        ).fetchone()
+    return row["truth_status"] if row else None
+
+
+def _forget_l3_admission(fact_id: str) -> None:
+    with _db() as conn:
+        conn.execute(_OUTBOX_ADMISSION_DDL)
+        conn.execute("DELETE FROM l3_outbox_admissions WHERE fact_id = ?", (fact_id,))
+
+
 def enqueue_l3_write(fact_id: str) -> None:
     """Enqueue a fact for re-merge into L3 (idempotent: upsert by fact_id)."""
     now = datetime.now(timezone.utc).isoformat()
@@ -1449,6 +1504,8 @@ def delete_fact_l1(fact_id: str) -> bool:
             begin_immediate(conn)
             index_was_complete = _normalized_index_capture_complete(conn)
             cur = conn.execute("DELETE FROM facts WHERE fact_id = ?", (fact_id,))
+            conn.execute(_OUTBOX_ADMISSION_DDL)
+            conn.execute("DELETE FROM l3_outbox_admissions WHERE fact_id = ?", (fact_id,))
             _normalized_index_refresh_after_write(
                 conn, (fact_id,), was_complete=index_was_complete
             )

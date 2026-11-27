@@ -19,6 +19,7 @@ from core.memory import (
     store_fact,
     get_fact,
     transition_esm_if_unchanged,
+    _remember_l3_admission,
     ClaimIdentityError,
     TerminalStateError,
     IngestStateChangedError,
@@ -28,7 +29,7 @@ from core.memory import (
 from core.l3_graph import get_l3_graph
 from core.embedding import assert_compatible_embedder
 from core.queue import get_outbox_queue
-from core.pipeline import guardian, truth_gate, _truth_status_for, _l3_payload
+from core.pipeline import guardian, truth_gate, _truth_status_for
 from core.reconcile import record_occurrence, find_conflicts, REL_CONTRADICTS, _now
 from core.ingest_identity import normalize_claim, normalized_ingest_id
 from core.normalized_ingest_index import (
@@ -433,16 +434,16 @@ def ingest(
     graph = get_l3_graph()
     # Guard against mixing embedders: merge puts the claim's vector into the store.
     assert_compatible_embedder(graph)
-    # We merge the persistent record (created_at/metadata) — otherwise SleepCycle
-    # will not find a reference timestamp for decay (see pipeline._l3_payload).
+    # The promoted snapshot includes L1 timestamps and metadata.
     try:
-        graph.merge_fact(_l3_payload(fact))
+        graph.merge_fact(fact)
     except Exception as exc:  # noqa: BLE001 — preserve post-gate recovery state
         # Direct ingest and the main query pipeline share the same cross-store
         # limitation: L1 and L3 have no transaction. Once the ESM transition has
         # committed, an L3 failure must be recoverable rather than leaving a
         # Validated/L3-missing fact with no repair record. Reuse the existing
         # outbox; it remains a secondary-sync mechanism and grants no authority.
+        _remember_l3_admission(fact)
         get_outbox_queue().enqueue(fid)
         metrics.incr("ingest.blocked")
         adaptation.record_block()

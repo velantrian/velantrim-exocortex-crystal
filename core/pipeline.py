@@ -21,8 +21,9 @@ from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from core.trace import build_trace, promote_trace, format_trace
 from core.memory import (
-    store_fact, get_fact, _repair_fact_from_canon,
-    transition_esm, ESM_TRANSITIONS, l3_secondary_sync_admissible,
+    store_fact, get_fact, get_tombstone, _repair_fact_from_canon,
+    _remember_l3_admission, _l3_admission_verdict, _forget_l3_admission,
+    transition_esm_if_unchanged, ESM_TRANSITIONS, l3_secondary_sync_admissible,
     DEFAULT_SOURCE_STATUS, CLAIM_TYPES, SOURCE_STATUSES,
 )
 from core.queue import get_outbox_queue
@@ -30,7 +31,9 @@ from core.l3_graph import get_l3_graph
 from core.embedding import get_embedder, cosine, assert_compatible_embedder
 from core.retrieval_config import get_retrieval_config
 from core.generation import get_generator
-from core.canonical_view import project_canonical, _in, _normalize_restricted_bit
+from core.canonical_view import (
+    KNOWN_TRUTH_STATUSES, project_canonical, _in, _normalize_restricted_bit,
+)
 from core.rrf import rrf_fuse
 from core import metrics, adaptation
 
@@ -1203,8 +1206,9 @@ def drain_l3_outbox(graph=None) -> int:
     healed = 0
     for fid in queue.pending():
         fact = get_fact(fid)
-        if fact is None:
-            queue.clear(fid)  # the fact vanished from SQLite — drop the stale entry
+        if fact is None or get_tombstone(fid) is not None:
+            queue.clear(fid)
+            _forget_l3_admission(fid)
             continue
         if not l3_secondary_sync_admissible(
             fact,
@@ -1213,14 +1217,25 @@ def drain_l3_outbox(graph=None) -> int:
         ):
             queue.clear(fid)  # outbox is for post-gate recovery only
             continue
-        fact["truth_status"] = _truth_status_for(fact.get("claim_type", "WORLD_FACT"), fact.get("source_status"))
         try:
-            graph.merge_fact(_l3_payload(fact))
+            existing = graph.get_fact(fid)
+            if existing is None:
+                verdict = _l3_admission_verdict(fact)
+            elif all(existing.get(key) == fact.get(key)
+                     for key in ("claim", "source", "claim_type", "source_status")):
+                verdict = existing.get("truth_status")
+            else:
+                verdict = None
+            if fact.get("restricted") or not _in(verdict, KNOWN_TRUTH_STATUSES):
+                logger.warning("drain_l3_outbox: %s has no usable projection authority", fid)
+                continue
+            graph.merge_fact({**fact, "truth_status": verdict})
         except Exception as e:  # noqa: BLE001 — backend still unavailable, do not lose the queue
             logger.warning(
                 "drain_l3_outbox: %s is still waiting (%s)", fid, type(e).__name__)
             break
         queue.clear(fid)
+        _forget_l3_admission(fid)
         healed += 1
     return healed
 
@@ -1328,49 +1343,33 @@ def run(query: str, episode: Optional[Dict[str, Any]] = None, *,
                 _reconcile_recalled_fact(fact, existing_node)
                 continue
 
-            # Genuinely new to the L3 canon (this also correctly covers the
-            # L1-Validated/L3-missing outbox-recovery case: epistemic_state is
-            # already "Validated" here, so the transition attempt below is
-            # skipped — Validated->Validated is illegal in the ESM matrix —
-            # but there is still no PRIOR L3 verdict to preserve, since this
-            # fact_id was never actually merged, so truth_status is computed
-            # fresh below, exactly reproducing what the original admission
-            # would have set).
-            if fact.get("epistemic_state") != "Validated":
-                # Promotion guard: only attempt the transition if "Validated" is a
-                # reachable next state from the fact's current ESM state. Terminal
-                # states (Collapsed, ImmutableCore) and non-promotable states
-                # (Contradicted, Deprecated) would raise ValueError inside
-                # transition_esm, which the broad L3 exception handler would catch
-                # and misroute into the L3 outbox — letting drain_l3_outbox() later
-                # merge a non-Validated fact into Canon without re-checking the gate.
-                if "Validated" not in ESM_TRANSITIONS.get(
-                    fact.get("epistemic_state", "Observed"), set()
-                ):
-                    continue
-                # CAS guard: if the persisted state changed under us (a competing
-                # writer), transition_esm returns False and evicts the stale L0
-                # entry. Do NOT merge a stale payload into the canon — skip this
-                # fact. Defense-in-depth, not a full atomicity guarantee.
-                if not transition_esm(fact["fact_id"], "Validated"):
-                    continue
-                updated = get_fact(fact["fact_id"])
-                if updated:
-                    fact["epistemic_state"] = updated["epistemic_state"]
-
-            fact["truth_status"] = _truth_status_for(
-                fact.get("claim_type", "WORLD_FACT"), fact.get("source_status"))
-            # The only entry into L3: the canonical MERGE strictly after the TruthGate.
-            # We merge the persistent record (created_at/metadata → for SleepCycle),
-            # not the transient fact with _score (see _l3_payload).
-            graph.merge_fact(_l3_payload(fact))
+            # Recoveries are handled before retrieval. An existing Validated
+            # L1 row carries no authority to issue a replacement verdict.
+            if "Validated" not in ESM_TRANSITIONS.get(
+                fact.get("epistemic_state", "Observed"), set()
+            ):
+                continue
+            persisted = get_fact(fact["fact_id"])
+            gated_fields = ("claim", "source", "confidence", "claim_type", "source_status",
+                            "epistemic_state")
+            if (persisted is None or persisted.get("restricted")
+                    or any(persisted.get(key) != fact.get(key) for key in gated_fields)):
+                continue
+            payload = transition_esm_if_unchanged(persisted, "Validated")
+            if payload is None:
+                continue
+            payload["truth_status"] = _truth_status_for(payload["claim_type"], payload["source_status"])
+            fact["epistemic_state"] = payload["epistemic_state"]
+            fact["truth_status"] = payload["truth_status"]
+            try:
+                graph.merge_fact(payload)
+            except Exception:
+                _remember_l3_admission(payload)
+                get_outbox_queue().enqueue(fact["fact_id"])
+                raise
     except Exception as e:  # noqa: BLE001 — an L3 failure must not crash the pipeline
         logger.error("L3 promotion failed: %s", e)
         adaptation.record_block()
-        # We put the failed facts into the outbox — they will be re-merged on the next access.
-        queue = get_outbox_queue()
-        for f in facts_pack["facts"]:
-            queue.enqueue(f["fact_id"])
         return _blocked(f"L3 promotion failed: {e}", query, facts_pack, trace)
 
     promote_trace(trace, "Validated")
