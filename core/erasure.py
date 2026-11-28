@@ -23,6 +23,7 @@ from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 
 from core.memory import (
+    _db,
     get_fact,
     delete_fact_l1,
     delete_import_session_entries_for,
@@ -43,6 +44,41 @@ from core.provenance_chain import ProvenanceChain
 # from another. Used by cascade deletion: erasing the source can also erase
 # everything derived from it (GDPR Art. 17 — derived personal data).
 REL_DERIVED_FROM = "DERIVED_FROM"
+
+# Recovery obligations, not a complete lineage registry or a read-authority gate.
+# Retain only identifiers of pending explicit cascade edges; no claim or source text.
+_CASCADE_TARGETS_DDL = """
+    CREATE TABLE IF NOT EXISTS erasure_cascade_targets (
+        parent_id TEXT NOT NULL,
+        derived_id TEXT NOT NULL,
+        PRIMARY KEY (parent_id, derived_id)
+    )
+"""
+
+
+def _cascade_targets(fact_id: str, graph=None) -> List[str]:
+    """Load retained work and optionally record observed edges before deleting L3."""
+    discovered = (
+        [edge["source"] for edge in graph.incoming_edges(fact_id, REL_DERIVED_FROM)]
+        if graph is not None else []
+    )
+    with _db() as conn:
+        conn.execute(_CASCADE_TARGETS_DDL)
+        conn.executemany(
+            "INSERT OR IGNORE INTO erasure_cascade_targets (parent_id, derived_id) "
+            "VALUES (?, ?)",
+            [(fact_id, child) for child in discovered],
+        )
+        return [row["derived_id"] for row in conn.execute(
+            "SELECT derived_id FROM erasure_cascade_targets "
+            "WHERE parent_id = ? ORDER BY derived_id", (fact_id,)
+        )]
+
+
+def _complete_cascade_targets(fact_id: str) -> None:
+    """Release the retained work only after the recursive operation returns."""
+    with _db() as conn:
+        conn.execute("DELETE FROM erasure_cascade_targets WHERE parent_id = ?", (fact_id,))
 
 
 def _now() -> str:
@@ -100,6 +136,8 @@ def erase_fact(
     graph = get_l3_graph()
     fact = get_fact(fact_id)
     l3_node = graph.get_fact(fact_id)
+    # A previous invocation may already have removed the source and its graph edges.
+    derived_ids = _cascade_targets(fact_id) if cascade else []
     # Delete evidence and import-session entries BEFORE the no-op check below,
     # and fold their results into that check. Either can be the only remaining
     # trace of a fact_id whose L1/L3 rows are already gone (e.g. left behind by
@@ -123,7 +161,8 @@ def erase_fact(
     # because it is already gone, but a tombstone exists) still falls
     # through to the idempotent path below, unchanged.
     if (fact is None and l3_node is None and not evidence_removed
-            and not import_sessions_removed and get_tombstone(fact_id) is None):
+            and not import_sessions_removed and get_tombstone(fact_id) is None
+            and not derived_ids):
         return {
             "fact_id": fact_id,
             "erased_now": False,
@@ -144,11 +183,11 @@ def erase_fact(
     else:
         content_hash = None
 
-    # Who to cascade-erase — collected BEFORE deletion (deletion removes the edges).
-    derived_ids: List[str] = []
+    # Commit explicit child obligations before deleting the source node/edges.
+    # Reuse pending obligations if this invocation follows an interrupted cascade.
+    # This is not a fence against concurrent new derivations or reads.
     if cascade:
-        derived_ids = [e["source"]
-                       for e in graph.incoming_edges(fact_id, REL_DERIVED_FROM)]
+        derived_ids = _cascade_targets(fact_id, graph)
 
     # Deletion across all fabrics. Each step is idempotent and independent.
     # (evidence_spans, import_sessions and the derived compatibility mapping
@@ -198,6 +237,7 @@ def erase_fact(
             cascaded.append(erase_fact(
                 d, reason=f"cascade_from:{fact_id}", actor=actor,
                 cascade=True, _visited=visited))
+        _complete_cascade_targets(fact_id)
         receipt["cascaded"] = cascaded
     return receipt
 
